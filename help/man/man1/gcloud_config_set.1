@@ -14,6 +14,7 @@ gcloud config set \- set a Cloud SDK property
 \f5gcloud config set\fR \fISECTION\fR/\fIPROPERTY\fR \fIVALUE\fR [\fB\-\-installation\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
+
 .SH "DESCRIPTION"
 
 By default, sets the property in your active configuration only. Use the
@@ -54,23 +55,7 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 
 
-.SH "EXAMPLES"
-
-To set the project property in the core section, run:
-
-.RS 2m
-$ gcloud config set project myProject
-.RE
-
-To set the zone property in the compute section, run:
-
-.RS 2m
-$ gcloud config set compute/zone zone3
-.RE
-
-
-
-.SH "AVAILABLE PROPERTIES"
+.SH "AVAIABLE PROPERTIES"
 
 \fIcore\fR
 .RS 2m
@@ -79,6 +64,13 @@ $ gcloud config set compute/zone zone3
 .RS 2m
 The account gcloud should use for authentication. You can run \f5gcloud auth
 list\fR to see the accounts you currently have available.
+
+
+.RE
+\fBactivate_on_create\fR
+.RS 2m
+If True, creating a new configuration using \f5gcloud config configurations
+create\fR will also activate it.
 
 
 .RE
@@ -206,6 +198,12 @@ this value, if set.
 \fIcontainer\fR
 .RS 2m
 
+\fBbuild_timeout\fR
+.RS 2m
+The timeout, in seconds, to wait for container builds to complete.
+
+
+.RE
 \fBcluster\fR
 .RS 2m
 The name of the cluster to use by default when working with Container Engine.
@@ -250,5 +248,21 @@ http_no_tunnel, socks4, socks5].
 \fBusername\fR
 .RS 2m
 If your proxy requires authentication, the username to use when connecting.
+
+
 .RE
+.RE
+
+.SH "EXAMPLES"
+
+To set the project property in the core section, run:
+
+.RS 2m
+$ gcloud config set project myProject
+.RE
+
+To set the zone property in the compute section, run:
+
+.RS 2m
+$ gcloud config set compute/zone zone3
 .RE

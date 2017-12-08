@@ -109,6 +109,6 @@ Read.detailed_help = {
           $ {command} "timestamp<='2015-05-31T23:59:59Z' AND timestamp>='2015-05-31T00:00:00Z'"
 
         Detailed information about filters can be found at:
-        https://cloud.google.com/logging/docs/view/advanced_filters
+        [](https://cloud.google.com/logging/docs/view/advanced_filters)
     """,
 }

@@ -17,6 +17,8 @@ from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 from googlecloudsdk.third_party.py27 import py27_copy as copy
 
 
@@ -27,14 +29,7 @@ class UpdateAlpha(base_classes.ReadWriteCommand):
   @staticmethod
   def Args(parser):
     backend_buckets_utils.AddUpdatableArgs(parser)
-
-    gcs_bucket_name = parser.add_argument(
-        '--gcs-bucket-name',
-        help='The name of the GCS Bucket to use.')
-    gcs_bucket_name.detailed_help = """\
-        The name of the Google Cloud Storage bucket to serve from.
-        The storage bucket must be owned by the project's owner.
-        """
+    backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -45,7 +40,9 @@ class UpdateAlpha(base_classes.ReadWriteCommand):
     return 'backendBuckets'
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return backend_buckets_flags.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args, self.resources,
+        default_scope=flags.ScopeEnum.GLOBAL)
 
   def GetGetRequest(self, args):
     return (

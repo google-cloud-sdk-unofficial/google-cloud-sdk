@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Pub/Sub topics create command."""
+
 import json
+
+from apitools.base.py import exceptions as api_ex
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import resources
-from googlecloudsdk.third_party.apitools.base.py import exceptions as api_ex
 
 
 class Create(base.CreateCommand):

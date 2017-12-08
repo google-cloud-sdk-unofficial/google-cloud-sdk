@@ -227,9 +227,8 @@ class ExternalRuntimeConfigurator(Configurator):
     self.data = data
     if generated_appinfo:
 
-      # Provide api_version as a default.  Add vm: true if we don't have an
-      # "env" field.
-      self.generated_appinfo = {'api_version': 1}
+      # Add vm: true if we don't have an "env" field.
+      self.generated_appinfo = {}
       if not generated_appinfo.has_key('env'):
         self.generated_appinfo['vm'] = True
 

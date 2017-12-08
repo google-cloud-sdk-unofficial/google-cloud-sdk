@@ -81,7 +81,7 @@ class Run(base.Command):
         '--pipeline-file',
         required=True,
         help='''A YAML or JSON file containing a Pipeline object. See
-          https://cloud.google.com/genomics/reference/rest/v1alpha2/pipelines#Pipeline
+          [](https://cloud.google.com/genomics/reference/rest/v1alpha2/pipelines#Pipeline)
 
           YAML Example:
             name: hello world

@@ -14,15 +14,20 @@
 
 """Command to remove a principal from a service's access policy."""
 
+import httplib
+
 from googlecloudsdk.api_lib.service_management import base_classes
-from googlecloudsdk.api_lib.service_management import services_util
 from googlecloudsdk.api_lib.util import http_error_handler
+from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core.iam import iam_util
 
 
-class Remove(base.Command, base_classes.AccessCommand):
-  """Removes a principal from a service's access policy."""
+class Remove(base.Command, base_classes.BaseServiceManagementCommand):
+  """Removes an IAM policy binding from a service's access policy."""
+
+  detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
+      'service', 'my-service')
 
   @staticmethod
   def Args(parser):
@@ -35,25 +40,14 @@ class Remove(base.Command, base_classes.AccessCommand):
     """
 
     parser.add_argument(
-        '--service',
-        help='The service from which the principal is to be removed.',
-        required=True)
+        'service',
+        help='The service from which the member is to be removed.')
     parser.add_argument(
-        '--label',
-        help=('Optionally, the visibility label from which the principal is '
-              'to be removed.'))
-    parser.add_argument(
-        'type',
-        help=('The type of principal to remove from the access policy entity. '
-              'Choose from {0}.').format(
-                  ', '.join(sorted(Remove._PRINCIPAL_TYPES))),
-        type=lambda x: str(x).lower(),
-        choices=sorted(Remove._PRINCIPAL_TYPES))
-    parser.add_argument(
-        'principal',
-        help='The user or group email to remove from the access policy entity.')
+        '--member', required=True,
+        help='The member to remove from the binding.')
 
   @http_error_handler.HandleHttpErrors
+  @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     """Run 'service-management access remove'.
 
@@ -70,96 +64,18 @@ class Remove(base.Command, base_classes.AccessCommand):
         label.
     """
     request = (self.services_messages
-               .ServicemanagementServicesGetAccessPolicyRequest(
-                   serviceName=args.service))
+               .ServicemanagementServicesGetIamPolicyRequest(
+                   servicesId=args.service))
 
-    if not services_util.ValidateEmailString(args.principal):
-      raise exceptions.ToolException('Invalid email string')
+    policy = self.services_client.services.GetIamPolicy(request)
 
-    access_policy = self.services_client.services.GetAccessPolicy(request)
-
-    # Fill in the serviceName field if GetAccessPolicy didn't do so for us.
-    if not access_policy.serviceName:
-      access_policy.serviceName = args.service
-
-    # Fill in the accessList field if GetAccessPolicy didn't do so for us.
-    if not access_policy.accessList:
-      access_policy.accessList = self.services_messages.ServiceAccessList()
-
-    principal_string = self._BuildPrincipalString(args.principal, args.type)
-
-    if args.label:
-      # If a visibility label is provided, try to remove the principal from it.
-      self._RemovePrincipalFromLabel(principal_string, args.service,
-                                     args.label, access_policy)
-    else:
-      # Otherwise, try to remove principal from the service access policy
-      # directly.
-      self._RemovePrincipalFromService(principal_string, args.service,
-                                       access_policy)
+    iam_util.RemoveBindingFromIamPolicy(
+        policy, args.member, 'roles/servicemanagement.serviceConsumer')
 
     # Send updated access policy to backend
-    return self.services_client.services.UpdateAccessPolicy(access_policy)
-
-  def _RemovePrincipalFromLabel(self, principal, service, label,
-                                access_policy):
-    """Removes a principal from a service's access policy under a label.
-
-    Args:
-      principal: The principal to remove from the service access policy.
-          Note that this string must already begin with "user:" or "group:".
-      service: The name of the service to modify
-      label: The name of the visibility label from which to remove the principal
-      access_policy: The access policy to modify. It will be edited in-place.
-
-    Raises:
-      exceptions.ToolException: The principal was not a member of the
-          visibility label or the visibility label doesn't exist.
-    """
-    # First, check to see if the project has the label. If so, remove the
-    # principal from that label, if present.
-    lists = (self.services_messages
-             .ServiceAccessPolicy.VisibilityLabelAccessListsValue())
-    if access_policy and access_policy.visibilityLabelAccessLists:
-      lists = access_policy.visibilityLabelAccessLists
-
-    for access_list in lists.additionalProperties:
-      if access_list.key == label:
-        found_list_members = access_list.value.members
-        if principal not in found_list_members:
-          raise exceptions.ToolException(
-              '%s is not a member of visibility label %s for service %s.'
-              % (principal, label, service))
-        else:
-          # Remove the targeted principal from the label's access list,
-          # then return.
-          found_list_members.remove(principal)
-          return
-
-    # Raise an exception if the label doesn't exist for the service
-    raise exceptions.ToolException(
-        'No visibility label named %s for service %s.'
-        % (label, service))
-
-  def _RemovePrincipalFromService(self, principal, service, access_policy):
-    """Removes a principal from a service's access policy.
-
-    Args:
-      principal: The principal to remove fromthe service access policy.
-          Note that this string must already begin with "user:" or "group:".
-      service: The name of the service to modify
-      access_policy: The access policy to modify. It will be edited in-place.
-
-    Raises:
-      exceptions.ToolException: The principal was already a member of the
-          service.
-    """
-
-    if principal not in access_policy.accessList.members:
-      # If principal is not already a member of the service,
-      # raise exception now.
-      raise exceptions.ToolException(
-          '%s is not a member of service %s.' % (principal, service))
-    else:
-      # Otherwise, remove the principal from the service access policy.
-      access_policy.accessList.members.remove(principal)
+    request = (self.services_messages
+               .ServicemanagementServicesSetIamPolicyRequest(
+                   servicesId=args.service,
+                   setIamPolicyRequest=(self.services_messages.
+                                        SetIamPolicyRequest(policy=policy))))
+    return self.services_client.services.SetIamPolicy(request)

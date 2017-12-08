@@ -50,6 +50,7 @@ class Create(base.CreateCommand):
     arg_support.AddTargetArg(parser)
     arg_support.AddNetworksArg(parser)
     arg_support.AddDescriptionArg(parser)
+    arg_support.AddEnableExternalArg(parser)
 
   def Run(self, args):
     """Runs 'endpoints create'.
@@ -80,7 +81,9 @@ class Create(base.CreateCommand):
             description=args.description,
             addresses=args.target,
             dnsIntegration=messages.EndpointDnsIntegration(
-                networks=arg_support.ExpandNetworks(args.networks, project))
+                networks=arg_support.ExpandNetworks(args.networks, project),
+                enableExternal=args.enable_external,
+            ),
         )
     )
 

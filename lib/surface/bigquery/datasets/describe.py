@@ -21,7 +21,7 @@ from googlecloudsdk.core import log
 from surface import bigquery as commands
 
 
-class DatasetsDescribe(base.Command):
+class DatasetsDescribe(base.DescribeCommand):
   """Shows the last-modified date and access-control lists of a dataset.
   """
 

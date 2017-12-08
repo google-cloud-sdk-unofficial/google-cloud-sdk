@@ -144,9 +144,11 @@ class Transport(object):
         'User-Agent': USER_AGENT,
     }
     resp, unused_content = self._transport.request(
-        'https://{registry}/v2/'.format(
-            registry=self._name.registry),
-        'GET', body=None, headers=headers)
+        '{scheme}://{registry}/v2/'.format(scheme=Scheme(self._name.registry),
+                                           registry=self._name.registry),
+        'GET',
+        body=None,
+        headers=headers)
 
     # We expect a www-authenticate challenge.
     _CheckState(resp.status == httplib.UNAUTHORIZED,
@@ -265,3 +267,11 @@ class Transport(object):
       raise V2DiagnosticException(resp, content)
 
     return resp, content
+
+
+def Scheme(endpoint):
+  """Returns https scheme for all the endpoints except localhost."""
+  if endpoint.startswith('localhost:'):
+    return 'http'
+  else:
+    return 'https'

@@ -14,14 +14,15 @@
 
 """Diagnose cluster command."""
 
+from apitools.base.py import encoding
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
-from googlecloudsdk.third_party.apitools.base.py import encoding
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Diagnose(base.Command):

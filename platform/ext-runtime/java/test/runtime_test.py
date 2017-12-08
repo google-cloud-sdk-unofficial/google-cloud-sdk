@@ -189,7 +189,6 @@ class RuntimeTests(testutil.TestBase):
         appinfo = testutil.AppInfoFake(
             runtime='java',
             env='2',
-            api_version='1',
             runtime_config=dict(
                 jdk='openjdk8',
                 server='jetty9'))
@@ -209,7 +208,6 @@ class RuntimeTests(testutil.TestBase):
         config = testutil.AppInfoFake(
             runtime='java',
             env='2',
-            api_version='1',
             runtime_config=dict(
               jdk='openjdk8',
               server='jetty9'))
@@ -229,7 +227,6 @@ class RuntimeTests(testutil.TestBase):
         config = testutil.AppInfoFake(
             runtime='java',
             vm=True,
-            api_version='1',
             runtime_config=dict(server='jetty9'))
         self.generate_configs(appinfo=config, deploy=True)
         dockerfile_contents = [
@@ -247,7 +244,6 @@ class RuntimeTests(testutil.TestBase):
         config = testutil.AppInfoFake(
             runtime='java',
             vm=True,
-            api_version='1',
             runtime_config=dict(
                 jdk='openjdk8',
                 server='jetty9'))
@@ -273,7 +269,6 @@ class RuntimeTests(testutil.TestBase):
         config = testutil.AppInfoFake(
             runtime='java',
             env='2',
-            api_version='1',
             runtime_config=dict(
                 jdk='openjdk9'))
         with mock.patch.dict(ext_runtime._LOG_FUNCS, {'error': ErrorFake}):
@@ -285,16 +280,14 @@ class RuntimeTests(testutil.TestBase):
         self.write_file('foo.jar', '')
         config = testutil.AppInfoFake(
             runtime='java',
-            env='2',
-            api_version='1')
+            env='2')
         self.assertTrue(self.generate_configs(appinfo=config))
 
     def test_java7_runtime(self):
         self.write_file('WEB-INF', '')
         config = testutil.AppInfoFake(
             runtime='java7',
-            vm=True,
-            api_version='1')
+            vm=True)
         self.generate_configs(appinfo=config, deploy=True)
         dockerfile_contents = [
             constants.DOCKERFILE_LEGACY_PREAMBLE,

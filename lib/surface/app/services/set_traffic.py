@@ -84,8 +84,8 @@ class SetTraffic(base.Command):
         'during the operation. Traffic migration will attempt to automatically '
         'migrate traffic from the previous version to the new version, giving '
         'the autoscaler time to respond. See the documentation here: '
-        'https://cloud.google.com/appengine/docs/python/console/'
-        'trafficmigration for more information.'
+        '[](https://cloud.google.com/appengine/docs/python/console/'
+        'trafficmigration) for more information.'
     )
 
   def Run(self, args):

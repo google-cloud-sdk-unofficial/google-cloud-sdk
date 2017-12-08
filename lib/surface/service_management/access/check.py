@@ -19,8 +19,8 @@ from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
-class Check(base.Command, base_classes.AccessCommand):
-  """Returns information about a principal's permissions on a service."""
+class Check(base.Command, base_classes.BaseServiceManagementCommand):
+  """Returns information about a member's permissions on a service."""
 
   @staticmethod
   def Args(parser):
@@ -33,11 +33,12 @@ class Check(base.Command, base_classes.AccessCommand):
     """
 
     parser.add_argument(
-        '--service',
-        required=True,
-        help='The service for which to check the access policy.')
+        'service',
+        help='The service for which to check the IAM policy.')
     parser.add_argument(
-        'principal', help='The user email for which to check permissions.')
+        '--member',
+        required=True,
+        help='The member for which to check permissions.')
 
   @http_error_handler.HandleHttpErrors
   def Run(self, args):
@@ -52,7 +53,12 @@ class Check(base.Command, base_classes.AccessCommand):
     """
     # Shorten the query request name for better readability
     query_request = (self.services_messages
-                     .ServicemanagementServicesAccessPolicyQueryRequest)
-    request = query_request(serviceName=args.service, userEmail=args.principal)
+                     .ServicemanagementServicesTestIamPermissionsRequest)
 
-    return self.services_client.services_accessPolicy.Query(request)
+    request = query_request(
+        servicesId=args.service,
+        testIamPermissionsRequest=(self.services_messages.
+                                   TestIamPermissionsRequest(
+                                       permissions=self.all_iam_permissions)))
+
+    return self.services_client.services.TestIamPermissions(request)

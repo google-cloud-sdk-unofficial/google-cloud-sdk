@@ -15,10 +15,11 @@
 
 import httplib
 
+from apitools.base.py import exceptions
+
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.command_lib.iam import base_classes
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class Update(base_classes.BaseIamCommand):

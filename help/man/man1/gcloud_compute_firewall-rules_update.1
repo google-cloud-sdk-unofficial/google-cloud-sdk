@@ -14,6 +14,7 @@ gcloud compute firewall\-rules update \- update a firewall rule
 \f5gcloud compute firewall\-rules update\fR \fINAME\fR [\fB\-\-allow\fR\ [\fIPROTOCOL\fR[:\fIPORT\fR[\-\fIPORT\fR]],...]] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-source\-ranges\fR\ [\fICIDR_RANGE\fR,...]] [\fB\-\-source\-tags\fR\ [\fITAG\fR,...]] [\fB\-\-target\-tags\fR\ [\fITAG\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
+
 .SH "DESCRIPTION"
 
 \fBgcloud compute firewall\-rules update\fR is used to update firewall rules
@@ -48,7 +49,7 @@ ranges are allowed. For example, the following will create a rule that allows
 TCP traffic through port 80 and allows ICMP traffic:
 
 .RS 2m
-$ gcloud compute firewall\-rules update MY\-RULE \-\-allow tcp:80 icmp
+$ gcloud compute firewall\-rules update MY\-RULE \-\-allow tcp:80,icmp
 .RE
 
 TCP and UDP rules must include a port or port range.

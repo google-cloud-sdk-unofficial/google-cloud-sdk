@@ -15,12 +15,13 @@
 """Implementation of gcloud dataflow jobs drain command.
 """
 
+from apitools.base.py import exceptions
+
 from googlecloudsdk.api_lib.dataflow import dataflow_util
 from googlecloudsdk.api_lib.dataflow import job_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from surface import dataflow as commands
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 @base.Hidden

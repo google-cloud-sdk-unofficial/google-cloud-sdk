@@ -16,6 +16,8 @@
 """
 
 import textwrap
+from apitools.base.py import exceptions
+
 from googlecloudsdk.api_lib.source import git
 from googlecloudsdk.api_lib.source import source
 from googlecloudsdk.calliope import base
@@ -24,7 +26,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)

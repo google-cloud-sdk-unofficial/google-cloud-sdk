@@ -98,8 +98,8 @@ Write.detailed_help = {
         The log entries will be listed in the Logs Viewer under that service.
 
         {command} should be used for simple testing purposes.
-        Check Cloud Logging agent for a proper way to send log entries.
-        https://cloud.google.com/logging/docs/agent/
+        Check Cloud Logging agent for a proper way to send log entries:
+        [](https://cloud.google.com/logging/docs/agent/)
     """,
     'EXAMPLES': """\
         To create a log entry in a given log, run:

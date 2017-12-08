@@ -17,6 +17,8 @@ import httplib
 import os
 import random
 import string
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.functions import cloud_storage as storage
 from googlecloudsdk.api_lib.functions import exceptions
 from googlecloudsdk.api_lib.functions import operations
@@ -26,7 +28,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import archive
 from googlecloudsdk.core.util import files as file_utils
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Deploy(base.Command):

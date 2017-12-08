@@ -16,6 +16,8 @@
 
 import argparse
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.compute import utils as api_utils
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import constants
@@ -26,7 +28,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
 def _CommonArgs(parser):

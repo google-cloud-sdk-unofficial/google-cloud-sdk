@@ -14,6 +14,8 @@
 
 """Updates the settings of a Cloud SQL instance."""
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import operations
@@ -24,7 +26,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_diff
-from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
 class _BasePatch(object):

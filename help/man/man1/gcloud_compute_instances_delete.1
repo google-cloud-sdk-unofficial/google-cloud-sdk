@@ -14,6 +14,7 @@ gcloud compute instances delete \- delete Google Compute Engine virtual machine 
 \f5gcloud compute instances delete\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-delete\-disks\fR\ {\fIboot\fR,\fIdata\fR,\fIall\fR}\ |\ \fB\-\-keep\-disks\fR\ {\fIboot\fR,\fIdata\fR,\fIall\fR}] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
+
 .SH "DESCRIPTION"
 
 \fBgcloud compute instances delete\fR deletes one or more Google Compute Engine
@@ -38,7 +39,7 @@ The types of disks to delete with instance deletion regardless of the disks'
 auto\-delete configuration. When this flag is provided, the auto\-delete bits on
 the attached disks are modified accordingly before the instance deletion
 requests are issued. For more information on disk auto\-deletion, see
-https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete.
+https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete
 
 .RE
 \fB\-\-keep\-disks\fR {\fIboot\fR,\fIdata\fR,\fIall\fR}
@@ -47,7 +48,7 @@ The types of disks to not delete with instance deletion regardless of the disks'
 auto\-delete configuration. When this flag is provided, the auto\-delete bits on
 the attached disks are modified accordingly before the instance deletion
 requests are issued. For more information on disk auto\-deletion, see
-https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete.
+https://cloud.google.com/compute/docs/disks/persistent\-disks#updateautodelete
 
 .RE
 \fB\-\-zone\fR \fIZONE\fR

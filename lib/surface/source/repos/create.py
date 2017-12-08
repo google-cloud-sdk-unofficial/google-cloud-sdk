@@ -16,6 +16,8 @@
 """
 
 import textwrap
+from apitools.base.py import exceptions
+
 from googlecloudsdk.api_lib.source import git
 from googlecloudsdk.api_lib.source import source
 from googlecloudsdk.api_lib.util import http_error_handler
@@ -23,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -40,7 +41,7 @@ class Create(base.Command):
           following commands:
 
             $ gcloud init
-            $ gcloud source repos create REPO_NAME
+            $ gcloud alpha source repos create REPO_NAME
 
           Once you push contents to it, they can be browsed in the
           Developers Console.

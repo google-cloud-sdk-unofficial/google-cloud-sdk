@@ -22,30 +22,29 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import remote_completion
 
 
-DETAILED_HELP = {
-    'DESCRIPTION': '{description}',
-    'EXAMPLES': """\
-        To set the project property in the core section, run:
-
-          $ {command} project myProject
-
-        To set the zone property in the compute section, run:
-
-          $ {command} compute/zone zone3
-        """,
-    '+AVAILABLE PROPERTIES': properties.VALUES.GetHelpString(),
-}
-
-
 class Set(base.Command):
   """Set a Cloud SDK property.
 
   By default, sets the property in your active configuration only. Use the
   `--installation` flag to set the property across all configurations. See
   `gcloud topic configurations` for more information.
+
+  ## AVAIABLE PROPERTIES
+
+  {properties}
+
+  ## EXAMPLES
+
+  To set the project property in the core section, run:
+
+    $ {command} project myProject
+
+  To set the zone property in the compute section, run:
+
+    $ {command} compute/zone zone3
   """
 
-  detailed_help = DETAILED_HELP
+  detailed_help = {'properties': properties.VALUES.GetHelpString()}
 
   @staticmethod
   def Args(parser):

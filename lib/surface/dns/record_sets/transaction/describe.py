@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Describe the transaction.
 
   This command displays the contents of the transaction.

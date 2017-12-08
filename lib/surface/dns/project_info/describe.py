@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """View Cloud DNS related information for a project.
 
   This command displays Cloud DNS related information for your project including

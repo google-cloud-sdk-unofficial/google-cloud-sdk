@@ -18,38 +18,33 @@ from googlecloudsdk.calliope import base
 
 
 class Access(base.Group):
-  """Manage access policies for services and their visibility labels."""
+  """Manage IAM policies for services."""
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          To describe the access policy for a service, run:
+          To describe the IAM policy for a service, run:
 
             $ {command} describe SERVICE_NAME
 
-          To check a user or group's permissions for a service, run:
+          To check a member's permissions for a service, run:
 
-            $ {command} check EMAIL --service SERVICE_NAME
+            $ {command} check SERVICE_NAME --member MEMBER
 
           To add a user to a service's access policy, run:
 
-            $ {command} add user EMAIL --service SERVICE_NAME
+            $ {command} add SERVICE_NAME --member user:USER_EMAIL
 
           To add a group to a service's access policy, run:
 
-            $ {command} add group GROUP_EMAIL --service SERVICE_NAME
-
-          To add a user to a service under a visibility label, run:
-
-            $ {command} add user EMAIL --service SERVICE_NAME --label LABEL_NAME
+            $ {command} add SERVICE_NAME --member group:GROUP_EMAIL
 
           To remove a user from a service's access policy, run:
 
-            $ {command} remove user EMAIL --service SERVICE_NAME
+            $ {command} remove SERVICE_NAME --member user:USER_EMAIL
 
-          To remove a user from a service's visibility label, run:
-
-            $ {command} remove user EMAIL --service SERVICE_NAME --label LABEL_NAME
+          See https://cloud.google.com/iam/docs/managing-policies for details
+          of policy role and member types.
           """,
   }
 

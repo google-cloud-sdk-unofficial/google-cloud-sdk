@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """List clusters command."""
+
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -19,7 +23,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from surface.container.clusters.upgrade import UpgradeHelpText
 from surface.container.clusters.upgrade import VersionVerifier
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class List(base.ListCommand):

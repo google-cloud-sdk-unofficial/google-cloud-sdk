@@ -15,6 +15,8 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -24,9 +26,7 @@ class EditAlpha(base_classes.BaseEdit):
   @staticmethod
   def Args(parser):
     base_classes.BaseEdit.Args(parser)
-    parser.add_argument(
-        'name',
-        help='The name of the backend bucket to modify.')
+    backend_buckets_flags.BACKEND_BUCKET_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -49,7 +49,9 @@ class EditAlpha(base_classes.BaseEdit):
     )
 
   def CreateReference(self, args):
-    return self.CreateGlobalReference(args.name)
+    return backend_buckets_flags.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args, self.resources,
+        default_scope=flags.ScopeEnum.GLOBAL)
 
   @property
   def reference_normalizers(self):

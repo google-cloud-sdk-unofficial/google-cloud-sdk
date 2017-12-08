@@ -93,7 +93,7 @@ RESET_PASSWORD_WARNING = textwrap.dedent("""
     files and stored passwords.
 
     For more information, see:
-    https://cloud.google.com/compute/docs/operating-systems/windows#reset.""")
+    https://cloud.google.com/compute/docs/operating-systems/windows#reset""")
 
 
 class ResetWindowsPassword(base_classes.ReadWriteCommand):

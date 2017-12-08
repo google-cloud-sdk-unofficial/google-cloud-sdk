@@ -15,11 +15,12 @@
 """Implementation of gcloud genomics datasets list.
 """
 
+from apitools.base.py import exceptions as apitools_exceptions
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base.ListCommand):

@@ -13,11 +13,12 @@
 # limitations under the License.
 """Command for deleting user-managed service account keys."""
 
+from apitools.base.py import exceptions
+
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class Delete(base_classes.BaseIamCommand):

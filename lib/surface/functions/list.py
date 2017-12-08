@@ -15,12 +15,13 @@
 """'functions list' command."""
 
 import sys
+from apitools.base.py import exceptions
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base.ListCommand):

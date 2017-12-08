@@ -13,11 +13,11 @@
 # limitations under the License.
 """Command for setting IAM policies for service accounts."""
 
+from apitools.base.py import exceptions
 
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.core.iam import iam_util
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class SetIamPolicy(base_classes.BaseIamCommand):

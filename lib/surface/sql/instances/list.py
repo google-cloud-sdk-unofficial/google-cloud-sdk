@@ -18,11 +18,12 @@ Lists instances in a given project in the alphabetical order of the
  instance name.
 """
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class _BaseList(object):

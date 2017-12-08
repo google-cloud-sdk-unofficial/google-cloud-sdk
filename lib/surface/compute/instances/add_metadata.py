@@ -33,7 +33,7 @@ InstancesAddMetadata.detailed_help = {
         virtual machine instance. Every instance has access to a
         metadata server that can be used to query metadata that has
         been set through this tool. For information on metadata, see
-        https://cloud.google.com/compute/docs/metadata.
+        [](https://cloud.google.com/compute/docs/metadata)
 
         Only metadata keys that are provided are mutated. Existing
         metadata entries will remain unaffected.

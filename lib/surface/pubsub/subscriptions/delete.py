@@ -14,11 +14,12 @@
 """Cloud Pub/Sub subscription delete command."""
 
 import json
+from apitools.base.py import exceptions as api_ex
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.util import text
-from googlecloudsdk.third_party.apitools.base.py import exceptions as api_ex
 
 
 class Delete(base.Command):

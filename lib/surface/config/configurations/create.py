@@ -14,8 +14,10 @@
 
 """Command to create named configuration."""
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 
 
@@ -42,13 +44,34 @@ class Create(base.SilentCommand):
     parser.add_argument(
         'configuration_name',
         help='Name of the configuration to create')
+    parser.add_argument(
+        '--activate',
+        default=None,  # None => don't override the property
+        action=actions.StoreBooleanProperty(
+            properties.VALUES.core.activate_on_create),
+        help='If true, activate this configuration upon create.')
 
   def Run(self, args):
     named_configs.ConfigurationStore.CreateConfig(args.configuration_name)
-
     log.CreatedResource(args.configuration_name)
-    log.status.Print(
-        'To use this configuration, activate it by running:\n'
-        '  $ gcloud config configurations activate {name}'.format(
-            name=args.configuration_name))
+
+    activate = properties.VALUES.core.activate_on_create.GetBool()
+    if activate is None:
+      log.warn(
+          'In the future, configurations will be activated by default\n'
+          'upon create. To use this feature now, run create with the\n'
+          '--activate flag or set core/activate_on_create to true in the\n'
+          'active configuration. After that, the current default behavior\n'
+          'can be enabled by the --no-activate flag.'
+      )
+      activate = False
+
+    if activate:
+      named_configs.ConfigurationStore.ActivateConfig(args.configuration_name)
+      log.status.Print('Activated [{0}].'.format(args.configuration_name))
+    else:
+      log.status.Print('To use this configuration, activate it by running:\n'
+                       '  $ gcloud config configurations activate {name}\n\n'.
+                       format(name=args.configuration_name))
+
     return args.configuration_name

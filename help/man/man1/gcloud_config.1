@@ -14,6 +14,7 @@ gcloud config \- view and edit Cloud SDK properties
 \f5gcloud config\fR \fIGROUP\fR | \fICOMMAND\fR [\fIGLOBAL\-FLAG\ ...\fR]
 
 
+
 .SH "DESCRIPTION"
 
 A configuration is a set of properties that govern the behavior of gcloud and
@@ -71,7 +72,7 @@ Unset a Cloud SDK property.
 
 .RE
 
-.SH "AVAILABLE PROPERTIES"
+.SH "AVAIABLE PROPERTIES"
 
 \fIcore\fR
 .RS 2m
@@ -80,6 +81,13 @@ Unset a Cloud SDK property.
 .RS 2m
 The account gcloud should use for authentication. You can run \f5gcloud auth
 list\fR to see the accounts you currently have available.
+
+
+.RE
+\fBactivate_on_create\fR
+.RS 2m
+If True, creating a new configuration using \f5gcloud config configurations
+create\fR will also activate it.
 
 
 .RE
@@ -207,6 +215,12 @@ this value, if set.
 \fIcontainer\fR
 .RS 2m
 
+\fBbuild_timeout\fR
+.RS 2m
+The timeout, in seconds, to wait for container builds to complete.
+
+
+.RE
 \fBcluster\fR
 .RS 2m
 The name of the cluster to use by default when working with Container Engine.

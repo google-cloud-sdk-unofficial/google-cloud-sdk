@@ -107,7 +107,7 @@ class Init(base.Command):
     log.status.write('Your current configuration has been set to: [{0}]\n\n'
                      .format(configuration_name))
 
-    if not network_diagnostics.NetworkDiagnostic().Run():
+    if not network_diagnostics.NetworkDiagnostic().RunChecks():
       return
 
     if not self._PickAccount(args.console_only, preselected=args.account):

@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Describe an operation.
 
   This command describes an operation in Service Registry.

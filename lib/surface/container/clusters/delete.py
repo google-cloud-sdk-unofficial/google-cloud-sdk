@@ -14,13 +14,15 @@
 
 """Delete cluster command."""
 import argparse
+
+from apitools.base.py import exceptions
+
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class Delete(base.Command):

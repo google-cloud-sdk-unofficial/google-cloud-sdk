@@ -16,11 +16,12 @@
 """
 
 import sys
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Export(base.Command):
@@ -29,7 +30,7 @@ class Export(base.Command):
   Exports a read group set, optionally restricted by reference name, to a BAM
   file in a provided Google Cloud Storage object. This command yields an
   asynchronous Operation resource which tracks the completion of this task. See
-  https://cloud.google.com/genomics/managing-reads for more details.
+  [](https://cloud.google.com/genomics/managing-reads for more details)
   """
 
   @staticmethod

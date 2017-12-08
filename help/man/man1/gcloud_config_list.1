@@ -14,6 +14,7 @@ gcloud config list \- view Cloud SDK properties
 \f5gcloud config list\fR [\fISECTION\fR/\fIPROPERTY\fR] [\fB\-\-all\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
+
 .SH "DESCRIPTION"
 
 Lists all properties in your active configuration. These include the account
@@ -48,30 +49,6 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 
 
 
-.SH "EXAMPLES"
-
-To list the project property in the core section, run:
-
-.RS 2m
-$ gcloud config list project
-.RE
-
-To list the zone property in the compute section, run:
-
-.RS 2m
-$ gcloud config list compute/zone
-.RE
-
-To list all the properties, run:
-
-.RS 2m
-$ gcloud config list \-\-all
-.RE
-
-Note you cannot specify both \-\-all and a property name.
-
-
-
 .SH "AVAILABLE PROPERTIES"
 
 \fIcore\fR
@@ -81,6 +58,13 @@ Note you cannot specify both \-\-all and a property name.
 .RS 2m
 The account gcloud should use for authentication. You can run \f5gcloud auth
 list\fR to see the accounts you currently have available.
+
+
+.RE
+\fBactivate_on_create\fR
+.RS 2m
+If True, creating a new configuration using \f5gcloud config configurations
+create\fR will also activate it.
 
 
 .RE
@@ -208,6 +192,12 @@ this value, if set.
 \fIcontainer\fR
 .RS 2m
 
+\fBbuild_timeout\fR
+.RS 2m
+The timeout, in seconds, to wait for container builds to complete.
+
+
+.RE
 \fBcluster\fR
 .RS 2m
 The name of the cluster to use by default when working with Container Engine.
@@ -252,5 +242,29 @@ http_no_tunnel, socks4, socks5].
 \fBusername\fR
 .RS 2m
 If your proxy requires authentication, the username to use when connecting.
+
+
 .RE
 .RE
+
+.SH "EXAMPLES"
+
+To list the project property in the core section, run:
+
+.RS 2m
+$ gcloud config list project
+.RE
+
+To list the zone property in the compute section, run:
+
+.RS 2m
+$ gcloud config list compute/zone
+.RE
+
+To list all the properties, run:
+
+.RS 2m
+$ gcloud config list \-\-all
+.RE
+
+Note you cannot specify both \-\-all and a property name.

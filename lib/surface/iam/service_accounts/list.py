@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command for to list all of a project's service accounts."""
 
+from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.api_lib.util import http_error_handler
@@ -20,7 +21,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base_classes.BaseIamCommand, base.ListCommand):

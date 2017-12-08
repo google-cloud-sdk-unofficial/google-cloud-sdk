@@ -14,6 +14,7 @@ gcloud compute project\-info add\-metadata \- add or update project\-wide metada
 \f5gcloud compute project\-info add\-metadata\fR [\fB\-\-metadata\fR\ \fIKEY\fR=\fIVALUE\fR,[\fIKEY\fR=\fIVALUE\fR,...]] [\fB\-\-metadata\-from\-file\fR\ \fIKEY\fR=\fILOCAL_FILE_PATH\fR,[\fIKEY\fR=\fILOCAL_FILE_PATH\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
+
 .SH "DESCRIPTION"
 
 \fBgcloud compute project\-info add\-metadata\fR can be used to add or update
@@ -21,7 +22,7 @@ project\-wide metadata. Every instance has access to a metadata server that can
 be used to query metadata that has been set through this tool. Project\-wide
 metadata entries are visible to all instances. To set metadata for individual
 instances, use 'gcloud compute instances add\-metadata'. For information on
-metadata, see https://cloud.google.com/compute/docs/metadata.
+metadata, see https://cloud.google.com/compute/docs/metadata
 
 Only metadata keys that are provided are mutated. Existing metadata entries will
 remain unaffected.

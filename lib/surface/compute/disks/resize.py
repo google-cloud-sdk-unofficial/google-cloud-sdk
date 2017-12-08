@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.core.console import console_io
 
 CONTINUE_WITH_RESIZE_PROMPT = textwrap.dedent("""
@@ -45,15 +46,9 @@ class Resize(base_classes.BaseAsyncMutator):
   def method(self):
     return 'Resize'
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        'disk_names',
-        metavar='DISK_NAME',
-        nargs='+',
-        completion_resource='compute.disks',
-        help='The names of the disks to resize.')
-
+  @classmethod
+  def Args(cls, parser):
+    disks_flags.DISKS_ARG.AddArgument(parser)
     size = parser.add_argument(
         '--size',
         required=True,
@@ -67,18 +62,13 @@ class Resize(base_classes.BaseAsyncMutator):
         must be a multiple of 10 GB.
         """
 
-    flags.AddZoneFlag(
-        parser,
-        resource_type='disks',
-        operation_type='be resized')
-
   def CreateRequests(self, args):
     """Returns a request for resizing a disk."""
 
     size_gb = utils.BytesToGb(args.size)
-
-    disk_refs = self.CreateZonalReferences(
-        args.disk_names, args.zone, resource_type='disks')
+    disk_refs = disks_flags.DISKS_ARG.ResolveAsResource(
+        args, self.resources,
+        default_scope=flags.ScopeEnum.ZONE)
 
     console_io.PromptContinue(
         message=CONTINUE_WITH_RESIZE_PROMPT,

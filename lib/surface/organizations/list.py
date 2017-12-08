@@ -13,12 +13,13 @@
 # limitations under the License.
 """Command to list all organization IDs associated with the active user."""
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.organizations import orgs_base
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(orgs_base.OrganizationCommand, base.ListCommand):
   """List organizations accessible by the active account.
 

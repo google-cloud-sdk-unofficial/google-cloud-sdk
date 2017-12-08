@@ -15,15 +15,16 @@
 """Implementation of gcloud bigquery tables describe.
 """
 
+from apitools.base.py import exceptions
+
 from googlecloudsdk.api_lib.bigquery import bigquery
 from googlecloudsdk.api_lib.bigquery import message_conversions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from surface import bigquery as commands
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
-class TablesDescribe(base.Command):
+class TablesDescribe(base.DescribeCommand):
   """Displays metadata about a table or view.
   """
 

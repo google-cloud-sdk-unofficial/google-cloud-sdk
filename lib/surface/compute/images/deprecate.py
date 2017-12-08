@@ -17,6 +17,7 @@ import datetime
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.core import apis as core_apis
 
 
@@ -45,10 +46,7 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'name',
-        metavar='NAME',
-        help='The name of the image to set deprecation status of.')
+    flags.DISK_IMAGE_ARG.AddArgument(parser)
 
     messages = core_apis.GetMessagesModule('compute', 'v1')
     deprecation_statuses = sorted(['ACTIVE'] + messages.DeprecationStatus
@@ -191,7 +189,7 @@ class DeprecateImages(base_classes.NoOutputAsyncMutator):
     else:
       replacement_uri = None
 
-    image_ref = self.CreateGlobalReference(args.name)
+    image_ref = flags.DISK_IMAGE_ARG.ResolveAsResource(args, self.resources)
 
     request = self.messages.ComputeImagesDeprecateRequest(
         deprecationStatus=self.messages.DeprecationStatus(

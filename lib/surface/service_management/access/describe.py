@@ -18,8 +18,8 @@ from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command, base_classes.AccessCommand):
-  """Describes the access policy for a service."""
+class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
+  """Describes the IAM policy for a service."""
 
   @staticmethod
   def Args(parser):
@@ -31,7 +31,7 @@ class Describe(base.Command, base_classes.AccessCommand):
           allowed.
     """
     parser.add_argument(
-        'service', help='The service whose access policy is to be described.')
+        'service', help='The service whose IAM policy is to be described.')
 
   def Run(self, args):
     """Run 'service-management access describe'.
@@ -48,7 +48,7 @@ class Describe(base.Command, base_classes.AccessCommand):
           request.
     """
     request = (self.services_messages
-               .ServicemanagementServicesGetAccessPolicyRequest(
-                   serviceName=args.service))
+               .ServicemanagementServicesGetIamPolicyRequest(
+                   servicesId=args.service))
 
-    return self.services_client.services.GetAccessPolicy(request)
+    return self.services_client.services.GetIamPolicy(request)

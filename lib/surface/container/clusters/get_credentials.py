@@ -24,7 +24,7 @@ from googlecloudsdk.core import properties
 class GetCredentials(base.Command):
   """Fetch credentials for a running cluster.
 
-  See https://cloud.google.com/container-engine/docs/kubectl for
+  See [](https://cloud.google.com/container-engine/docs/kubectl) for
   kubectl documentation.
   """
 

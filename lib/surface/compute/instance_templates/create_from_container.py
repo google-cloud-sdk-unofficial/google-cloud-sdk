@@ -142,8 +142,8 @@ class CreateFromContainer(base_classes.BaseAsyncCreator):
                 networkInterfaces=[network_interface],
                 serviceAccounts=service_accounts,
                 scheduling=scheduling,
-                tags=(self.messages.Tags(items=args.tags)
-                      if args.tags else None),
+                tags=containers_utils.CreateTagsMessage(
+                    self.messages, args.tags),
             ),
             description=args.description,
             name=instance_template_ref.Name(),

@@ -33,27 +33,29 @@ class List(base.Command):
   account used to authorize access to the Cloud Platform, the current Cloud
   Platform project, and the default Compute Engine region and zone, if set. See
   `gcloud topic configurations` for more information.
+
+  ## AVAILABLE PROPERTIES
+
+  {properties}
+
+  ## EXAMPLES
+
+  To list the project property in the core section, run:
+
+    $ {command} project
+
+  To list the zone property in the compute section, run:
+
+    $ {command} compute/zone
+
+  To list all the properties, run:
+
+    $ {command} --all
+
+  Note you cannot specify both --all and a property name.
   """
 
-  detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          To list the project property in the core section, run:
-
-            $ {command} project
-
-          To list the zone property in the compute section, run:
-
-            $ {command} compute/zone
-
-          To list all the properties, run:
-
-            $ {command} --all
-
-          Note you cannot specify both --all and a property name.
-          """,
-      '+AVAILABLE PROPERTIES': properties.VALUES.GetHelpString(),
-  }
+  detailed_help = {'properties': properties.VALUES.GetHelpString()}
 
   @staticmethod
   def Args(parser):

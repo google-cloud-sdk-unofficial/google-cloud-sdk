@@ -71,6 +71,6 @@ Create.detailed_help = {
         monitor instances in a load balancer controlled by a target pool. All
         arguments to the command are optional except for the name of the health
         check. For more information on load balancing, see
-        link:https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/[].
+        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
         """,
 }

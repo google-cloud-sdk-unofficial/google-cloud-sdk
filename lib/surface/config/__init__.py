@@ -41,9 +41,12 @@ class Config(base.Group):
   settings across command executions.
 
   For more information on configurations, see `gcloud topic configurations`.
+
+  ## AVAIABLE PROPERTIES
+
+  {properties}
   """
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
-      '+AVAILABLE PROPERTIES': properties.VALUES.GetHelpString(),
+      'properties': properties.VALUES.GetHelpString(),
   }

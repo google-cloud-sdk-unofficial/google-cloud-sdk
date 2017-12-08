@@ -14,11 +14,12 @@
 
 """The runtime-configs variables list command."""
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.deployment_manager.runtime_configs import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import flags
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base.ListCommand):

@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Move(base.Command):
   """Move a project into an organization.
 

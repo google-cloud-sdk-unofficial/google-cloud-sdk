@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.sql import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Retrieves information about a backup.
 
   Retrieves information about a backup.
@@ -79,7 +79,7 @@ class Describe(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.Command):
+class DescribeBeta(base.DescribeCommand):
   """Retrieves information about a backup.
 
   Retrieves information about a backup.

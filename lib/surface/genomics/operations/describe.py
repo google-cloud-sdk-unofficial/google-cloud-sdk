@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 _OPERATIONS_PREFIX = 'operations/'
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Returns details about an operation.
   """
 

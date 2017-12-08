@@ -13,9 +13,10 @@
 # limitations under the License.
 """Command to list all Project IDs linked with a billing account."""
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.billing import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base.ListCommand):

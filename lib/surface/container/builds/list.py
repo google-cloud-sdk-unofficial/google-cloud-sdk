@@ -13,11 +13,12 @@
 # limitations under the License.
 """List builds command."""
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis as core_apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 # TODO(user): allow a longer threshold, set by property?

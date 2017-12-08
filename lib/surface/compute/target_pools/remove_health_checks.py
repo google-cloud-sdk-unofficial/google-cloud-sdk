@@ -25,7 +25,7 @@ class RemoveHealthChecks(base_classes.NoOutputAsyncMutator):
   from a target pool. Health checks are used to determine
   the health status of instances in the target pool. For more
   information on health checks and load balancing, see
-  link:https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/[].
+  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
   """
 
   @staticmethod

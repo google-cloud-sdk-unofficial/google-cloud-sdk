@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.organizations import orgs_base
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(orgs_base.OrganizationCommand):
   """Update the name of an organization.
 

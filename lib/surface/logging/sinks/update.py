@@ -14,11 +14,12 @@
 
 """'logging sinks update' command."""
 
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Update(base.Command):
@@ -191,6 +192,6 @@ Update.detailed_help = {
           $ {command} my-sink --log-filter='metadata.severity>=ERROR'
 
         Detailed information about filters can be found at:
-        https://cloud.google.com/logging/docs/view/advanced_filters
+        [](https://cloud.google.com/logging/docs/view/advanced_filters)
    """,
 }

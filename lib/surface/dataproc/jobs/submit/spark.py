@@ -16,10 +16,11 @@
 
 import argparse
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.dataproc import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
 class Spark(base_classes.JobSubmitter):

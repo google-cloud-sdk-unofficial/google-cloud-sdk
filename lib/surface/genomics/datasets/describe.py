@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Returns details about a dataset.
   """
 

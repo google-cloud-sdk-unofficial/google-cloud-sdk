@@ -1,3 +1,6 @@
+# # header
+# coding: utf-8
+
 
 class Token(object):
     def __init__(self, start_mark, end_mark):
@@ -186,3 +189,7 @@ class CommentToken(Token):
     def __init__(self, value, start_mark, end_mark):
         Token.__init__(self, start_mark, end_mark)
         self.value = value
+
+    def reset(self):
+        if hasattr(self, 'pre_done'):
+            delattr(self, 'pre_done')

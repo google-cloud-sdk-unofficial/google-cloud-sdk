@@ -95,7 +95,7 @@ SetMachineType.detailed_help = {
         next start ``example-instance'', it will be provisioned as an
         ``n1-standard-4'' instead of a ``g1-small''.
 
-        See <https://cloud.google.com/compute/docs/machine-types> for more
+        See [](https://cloud.google.com/compute/docs/machine-types) for more
         information on machine types.
         """,
 }

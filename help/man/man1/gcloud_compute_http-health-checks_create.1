@@ -14,13 +14,14 @@ gcloud compute http\-health\-checks create \- create an HTTP health check to mon
 \f5gcloud compute http\-health\-checks create\fR \fINAME\fR [\fB\-\-check\-interval\fR\ \fICHECK_INTERVAL\fR;\ default="5s"] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-healthy\-threshold\fR\ \fIHEALTHY_THRESHOLD\fR;\ default="2"] [\fB\-\-host\fR\ \fIHOST\fR] [\fB\-\-port\fR\ \fIPORT\fR;\ default="80"] [\fB\-\-request\-path\fR\ \fIREQUEST_PATH\fR;\ default="/"] [\fB\-\-timeout\fR\ \fITIMEOUT\fR;\ default="5s"] [\fB\-\-unhealthy\-threshold\fR\ \fIUNHEALTHY_THRESHOLD\fR;\ default="2"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
+
 .SH "DESCRIPTION"
 
 \fBgcloud compute http\-health\-checks create\fR is used to create an HTTP
 health check. HTTP health checks monitor instances in a load balancer controlled
 by a target pool. All arguments to the command are optional except for the name
 of the health check. For more information on load balancing, see
-https://cloud.google.com/compute/docs/load\-balancing\-and\-autoscaling/.
+https://cloud.google.com/compute/docs/load\-balancing\-and\-autoscaling/
 
 
 

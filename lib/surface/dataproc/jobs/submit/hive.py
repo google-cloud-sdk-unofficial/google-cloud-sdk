@@ -14,9 +14,10 @@
 
 """Submit a Hive job to a cluster."""
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.dataproc import base_classes
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
 class Hive(base_classes.JobSubmitter):

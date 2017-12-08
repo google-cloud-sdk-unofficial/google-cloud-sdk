@@ -11,8 +11,6 @@ gcloud topic configurations \- supplementary help for named configurations
 
 .SH "DESCRIPTION"
 
-Supplementary help for named configurations.
-
 gcloud properties can be stored in \fBnamed configurations\fR, which are
 collections of key\-value pairs that influence the behavior of gcloud.
 
@@ -113,6 +111,13 @@ You can activate a configuration for a single gcloud invocation using flag,
 .RS 2m
 The account gcloud should use for authentication. You can run \f5gcloud auth
 list\fR to see the accounts you currently have available.
+
+
+.RE
+\fBactivate_on_create\fR
+.RS 2m
+If True, creating a new configuration using \f5gcloud config configurations
+create\fR will also activate it.
 
 
 .RE
@@ -240,6 +245,12 @@ this value, if set.
 \fIcontainer\fR
 .RS 2m
 
+\fBbuild_timeout\fR
+.RS 2m
+The timeout, in seconds, to wait for container builds to complete.
+
+
+.RE
 \fBcluster\fR
 .RS 2m
 The name of the cluster to use by default when working with Container Engine.

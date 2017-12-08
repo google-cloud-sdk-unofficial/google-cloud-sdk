@@ -14,6 +14,9 @@
 
 """Creates a new Cloud SQL instance."""
 import argparse
+
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import operations
@@ -24,7 +27,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import remote_completion
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class _BaseCreate(object):
@@ -88,10 +90,11 @@ class _BaseCreate(object):
     parser.add_argument(
         '--database-version',
         required=False,
-        choices=['MYSQL_5_5', 'MYSQL_5_6'],
+        # POSTGRES_9_5 isn't publicly announced so it's in the choice not help
+        choices=['MYSQL_5_5', 'MYSQL_5_6', 'MYSQL_5_7', 'POSTGRES_9_5'],
         default='MYSQL_5_6',
-        help='The database engine type and version. Can be MYSQL_5_5 or '
-        'MYSQL_5_6.')
+        help='The database engine type and version. Can be MYSQL_5_5, '
+        'MYSQL_5_6, or MYSQL_5_7.')
     parser.add_argument(
         '--enable-bin-log',
         required=False,

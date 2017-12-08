@@ -13,15 +13,11 @@
 # limitations under the License.
 """Stream-logs command."""
 
-import time
 
-
-from googlecloudsdk.api_lib.app import cloud_storage
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis as core_apis
-from googlecloudsdk.core import log
 
 
 class StreamLogs(base.Command):

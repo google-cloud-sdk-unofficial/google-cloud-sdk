@@ -15,11 +15,12 @@
 """Implementation of gcloud bigquery datasets list.
 """
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.bigquery import bigquery
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from surface import bigquery as commands
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class DatasetsList(base.ListCommand):

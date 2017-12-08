@@ -13,10 +13,11 @@
 # limitations under the License.
 
 """Wait operations command."""
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Wait(base.Command):

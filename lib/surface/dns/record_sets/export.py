@@ -13,6 +13,8 @@
 # limitations under the License.
 """gcloud dns record-sets export command."""
 
+from apitools.base.py import exceptions as apitools_exceptions
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import export_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
@@ -20,8 +22,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class Export(base.Command):

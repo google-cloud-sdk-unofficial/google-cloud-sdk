@@ -16,6 +16,8 @@
 from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -25,14 +27,7 @@ class CreateAlpha(base_classes.BaseAsyncCreator):
   @staticmethod
   def Args(parser):
     backend_buckets_utils.AddUpdatableArgs(parser)
-    gcs_bucket_name = parser.add_argument(
-        '--gcs-bucket-name',
-        required=True,
-        help='The name of the GCS Bucket to use.')
-    gcs_bucket_name.detailed_help = """\
-        The name of the Google Cloud Storage bucket to serve from.
-        The storage bucket must be owned by the project's owner.
-        """
+    backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
 
   @property
   def service(self):
@@ -47,7 +42,10 @@ class CreateAlpha(base_classes.BaseAsyncCreator):
     return 'backendBuckets'
 
   def CreateRequests(self, args):
-    backend_buckets_ref = self.CreateGlobalReference(args.name)
+    backend_buckets_ref = (
+        backend_buckets_flags.BACKEND_BUCKET_ARG.ResolveAsResource(
+            args, self.resources,
+            default_scope=flags.ScopeEnum.GLOBAL))
     request = self.messages.ComputeBackendBucketsInsertRequest(
         backendBucket=self.messages.BackendBucket(
             description=args.description,

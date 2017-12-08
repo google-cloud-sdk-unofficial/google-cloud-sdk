@@ -42,10 +42,10 @@ class Docker(base.Command):
           gcloud can inject the appropriate fresh authentication token into
           requests that interact with the docker registry.  As commands are
           simply passed through to docker, see
-          http://docs.docker.com/reference/commandline/cli/[] for a full
+          [](http://docs.docker.com/reference/commandline/cli/) for a full
           reference of command-line options that can be supplied after the --.
 
-          For more information please visit https://gcr.io/[].
+          For more information please visit [](https://gcr.io/)
       """,
       'EXAMPLES': """\
           Pull the image '{registry}/google-containers/pause:1.0' from the

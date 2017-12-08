@@ -30,7 +30,7 @@ from googlecloudsdk.core import resolvers
 from googlecloudsdk.core import resources as cloud_resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Pubsub(base.Group):
   """Manage Cloud Pub/Sub topics and subscriptions."""
 

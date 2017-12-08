@@ -17,19 +17,10 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Projects(base.Group):
   """Manage your projects.
 
   Commands to get information about your Google Developer projects.
   """
-  pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ProjectsAlpha(base.Group):
-  """Manage your projects.
-
-  Commands to get information about your Google Developer projects.
-  """
-  pass

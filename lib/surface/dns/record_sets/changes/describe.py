@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resolvers
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """View the details of a change.
 
   This command displays the details of the specified change.

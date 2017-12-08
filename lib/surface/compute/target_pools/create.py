@@ -29,7 +29,7 @@ class Create(base_classes.BaseAsyncCreator):
   target pool based on a hash of the source and
   destination IP addresses and ports. For more
   information on load balancing, see
-  link:https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/[].
+  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
 
   To add instances to a target pool, use 'gcloud compute
   target-pools add-instances'.

@@ -57,6 +57,7 @@ class Update(base.Command):
     arg_support.AddTargetArg(parser)
     arg_support.AddNetworksArg(parser)
     arg_support.AddDescriptionArg(parser)
+    arg_support.AddEnableExternalArg(parser)
 
   @http_error_handler.HandleHttpErrors
   def Run(self, args):
@@ -100,7 +101,9 @@ class Update(base.Command):
             description=args.description,
             addresses=args.target,
             dnsIntegration=messages.EndpointDnsIntegration(
-                networks=arg_support.ExpandNetworks(args.networks, project)),
+                networks=arg_support.ExpandNetworks(args.networks, project),
+                enableExternal=args.enable_external,
+            ),
             fingerprint=fingerprint
         )
     )

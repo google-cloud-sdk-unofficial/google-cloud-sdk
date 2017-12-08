@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.organizations import orgs_base
 from googlecloudsdk.core.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class AddIamPolicyBinding(orgs_base.OrganizationCommand):
   """Add IAM policy binding for an organization.
 

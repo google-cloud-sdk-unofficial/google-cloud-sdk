@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import apis as core_apis
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Get information about a particular build."""
 
   @staticmethod

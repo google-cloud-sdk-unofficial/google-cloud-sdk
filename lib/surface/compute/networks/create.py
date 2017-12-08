@@ -76,7 +76,7 @@ class Create(base_classes.BaseAsyncCreator):
     range_arg.detailed_help = """\
         Specifies the IPv4 address range of legacy mode networks. The range
         must be specified in CIDR format:
-        http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing.
+        [](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 
         This flag only works if mode is legacy.
         """

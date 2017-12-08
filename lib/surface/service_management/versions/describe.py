@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command, base_classes.BaseServiceManagementCommand):
+class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
   """Describes the configuration for a given version of a service."""
 
   @staticmethod

@@ -15,6 +15,10 @@
 """Connects to a Cloud SQL instance."""
 
 import datetime
+
+from apitools.base.protorpclite import util as protorpc_util
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import network
 from googlecloudsdk.api_lib.sql import operations
@@ -24,8 +28,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import retry
-from googlecloudsdk.third_party.apitools.base.protorpclite import util as protorpc_util
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources):

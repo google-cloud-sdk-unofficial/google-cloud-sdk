@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Returns details about a reference set.
   """
 

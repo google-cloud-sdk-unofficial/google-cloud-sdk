@@ -90,6 +90,6 @@ AddInstances.detailed_help = {
     'DESCRIPTION': """\
         *{command}* is used to add one or more instances to a target pool.
         For more information on health checks and load balancing, see
-        link:https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/[].
+        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
         """,
 }

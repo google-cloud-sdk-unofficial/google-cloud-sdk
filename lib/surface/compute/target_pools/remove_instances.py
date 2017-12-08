@@ -95,6 +95,6 @@ RemoveInstances.detailed_help = {
         *{command}* is used to remove one or more instances from a
         target pool.
         For more information on health checks and load balancing, see
-        link:https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/[].
+        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
         """,
 }

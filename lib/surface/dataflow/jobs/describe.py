@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.dataflow import job_utils
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Outputs the Job object resulting from the Get API.
 
   By default this will display the Summary view which includes:

@@ -16,19 +16,20 @@
 """
 
 import sys
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class Import(base.Command):
   """Imports read group sets into a dataset.
 
   Imports read group sets from a set of BAM files in Google Cloud Storage. See
-  https://cloud.google.com/genomics/managing-reads for more details.
+  [](https://cloud.google.com/genomics/managing-reads for more details)
   """
   # TODO(user): Improve line-wrap formatting of examples.
   detailed_help = {

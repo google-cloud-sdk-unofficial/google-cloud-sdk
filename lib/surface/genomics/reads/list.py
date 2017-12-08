@@ -15,9 +15,10 @@
 """Implementation of gcloud genomics reads list.
 """
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base.ListCommand):

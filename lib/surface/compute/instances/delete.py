@@ -44,7 +44,7 @@ class Delete(base_classes.ZonalDeleter):
         provided, the auto-delete bits on the attached disks are
         modified accordingly before the instance deletion requests are
         issued. For more information on disk auto-deletion, see
-        link:https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete[].
+        [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
         """
 
     keep_disks = auto_delete_override.add_argument(
@@ -59,7 +59,7 @@ class Delete(base_classes.ZonalDeleter):
         provided, the auto-delete bits on the attached disks are
         modified accordingly before the instance deletion requests are
         issued. For more information on disk auto-deletion, see
-        link:https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete[].
+        [](https://cloud.google.com/compute/docs/disks/persistent-disks#updateautodelete)
         """
 
     parser.add_argument(

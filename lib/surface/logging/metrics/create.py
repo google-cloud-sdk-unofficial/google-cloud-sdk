@@ -75,6 +75,6 @@ Create.detailed_help = {
           $ {command} high_severity_count "Number of high severity log entries" "metadata.severity > WARNING"
 
         Detailed information about filters can be found at:
-        https://cloud.google.com/logging/docs/view/advanced_filters
+        [](https://cloud.google.com/logging/docs/view/advanced_filters)
     """,
 }

@@ -13,6 +13,9 @@
 # limitations under the License.
 
 """Update cluster command."""
+
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import arg_parsers
@@ -20,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class InvalidAddonValueError(util.Error):
@@ -51,7 +53,7 @@ def _AddCommonArgs(parser):
   flags.AddClustersWaitAndAsyncFlags(parser)
 
 
-def _AddMutuallyExclusiveArgs(parser, mutex_group):
+def _AddMutuallyExclusiveArgs(mutex_group):
   """Add all arguments that need to be mutually eclusive from each other."""
   mutex_group.add_argument(
       '--monitoring-service',
@@ -71,7 +73,6 @@ def _AddMutuallyExclusiveArgs(parser, mutex_group):
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED'''.format(
     hpa=api_adapter.HPA, ingress=api_adapter.INGRESS))
-  flags.AddClusterAutoscalingFlags(parser, mutex_group)
 
 
 def _AddAdditionalZonesArg(mutex_group):
@@ -113,7 +114,8 @@ class Update(base.Command):
     """
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
-    _AddMutuallyExclusiveArgs(parser, group)
+    _AddMutuallyExclusiveArgs(group)
+    flags.AddClusterAutoscalingFlags(parser, group, suppressed=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -163,7 +165,7 @@ class Update(base.Command):
       log.UpdatedResource(cluster_ref)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update cluster settings for an existing container cluster."""
 
@@ -171,5 +173,21 @@ class UpdateBeta(Update):
   def Args(parser):
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
-    _AddMutuallyExclusiveArgs(parser, group)
+    _AddMutuallyExclusiveArgs(group)
+    flags.AddClusterAutoscalingFlags(parser, group, suppressed=True)
     _AddAdditionalZonesArg(group)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update cluster settings for an existing container cluster."""
+
+  @staticmethod
+  def Args(parser):
+    _AddCommonArgs(parser)
+    group = parser.add_mutually_exclusive_group(required=True)
+    _AddMutuallyExclusiveArgs(group)
+    flags.AddClusterAutoscalingFlags(parser, group)
+    _AddAdditionalZonesArg(group)
+
+

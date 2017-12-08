@@ -13,7 +13,10 @@
 # limitations under the License.
 
 """Create node pool command."""
+
 import argparse
+
+from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.container import api_adapter
@@ -25,7 +28,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 DETAILED_HELP = {
@@ -129,9 +131,9 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'node pool', False)
-    flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser, True)
+    flags.AddImageTypeFlag(parser, 'node pool', suppressed=False)
+    flags.AddClusterAutoscalingFlags(parser, suppressed=True)
+    flags.AddLocalSSDFlag(parser, suppressed=True)
 
   def ParseCreateNodePoolOptions(self, args):
     return api_adapter.CreateNodePoolOptions(
@@ -190,9 +192,6 @@ class Create(base.CreateCommand):
     return self.ListFormat(args)
 
 
-Create.detailed_help = DETAILED_HELP
-
-
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a node pool in a running cluster."""
@@ -200,9 +199,9 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'node pool', False)
-    flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser, False)
+    flags.AddImageTypeFlag(parser, 'node pool')
+    flags.AddClusterAutoscalingFlags(parser, suppressed=True)
+    flags.AddLocalSSDFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -212,6 +211,9 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'node pool', False)
+    flags.AddImageTypeFlag(parser, 'node pool')
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser, False)
+    flags.AddLocalSSDFlag(parser)
+
+
+Create.detailed_help = DETAILED_HELP

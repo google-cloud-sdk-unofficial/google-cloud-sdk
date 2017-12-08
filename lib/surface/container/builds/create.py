@@ -15,6 +15,8 @@
 
 import os.path
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.app import cloud_build
 from googlecloudsdk.api_lib.cloudbuild import config
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
@@ -31,7 +33,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import times
-from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
 class Create(base.Command):
@@ -104,18 +105,28 @@ class Create(base.Command):
     gcs_client = cb_storage.Client(properties.VALUES.core.project.Get())
 
     # First, create the build request.
+    build_timeout = properties.VALUES.container.build_timeout.Get()
+    if build_timeout is not None:
+      timeout_str = build_timeout + 's'
+    else:
+      timeout_str = None
+
     if args.tag:
       build_config = messages.Build(
           images=[args.tag],
           steps=[
               messages.BuildStep(
                   name='gcr.io/cloud-builders/docker',
-                  args=['build', '-t', args.tag],
+                  args=['build', '-t', args.tag, '.'],
               ),
           ],
+          timeout=timeout_str,
       )
     elif args.config:
       build_config = config.LoadCloudbuildConfig(args.config, messages)
+
+    if build_config.timeout is None:
+      build_config.timeout = timeout_str
 
     # Next, stage the source to Cloud Storage.
     staged_object = '{stamp}_{tag_ish}.tgz'.format(

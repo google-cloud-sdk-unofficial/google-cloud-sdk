@@ -16,12 +16,13 @@
 
 import os
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
 class ConvertConfig(base.Command, base_classes.BaseServiceManagementCommand):

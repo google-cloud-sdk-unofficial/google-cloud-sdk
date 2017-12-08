@@ -108,6 +108,6 @@ triggered by instance's status i.e. the autohealing action (RECREATE) on an
 instance will be performed if the instance.status is not RUNNING.
 --initial-delay specifies the length of the period during which IGM will
 refrain from autohealing the instance even if the instance is reported as not
-RUNNING or UNHEALTHY.
+RUNNING or UNHEALTHY. This value must be from range [0, 3600].
 """,
 }

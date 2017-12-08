@@ -13,6 +13,9 @@
 # limitations under the License.
 
 """Upgrade cluster command."""
+
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
@@ -20,8 +23,8 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import text
 from googlecloudsdk.core.util.semver import SemVer
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 class UpgradeHelpText(object):
@@ -155,8 +158,9 @@ class Upgrade(base.Command):
       node_message = 'Master'
       current_version = cluster.currentMasterVersion
     else:
-      node_message = 'All {node_count} nodes'.format(
-          node_count=cluster.currentNodeCount)
+      node_message = 'All {node_count} {node}'.format(
+          node_count=cluster.currentNodeCount,
+          node=text.Pluralize(cluster.currentNodeCount, 'node'))
       current_version = cluster.currentNodeVersion
 
     console_io.PromptContinue(

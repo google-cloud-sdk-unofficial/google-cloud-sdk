@@ -38,7 +38,7 @@ class Upload(base.Command):
           When creating a capture, this command can also produce a source
           context json file describing the capture.
 
-          See https://cloud.google.com/tools/cloud-debugger/ for details on
+          See [](https://cloud.google.com/tools/cloud-debugger/) for details on
           where to deploy the source context json file in order to enable
           Cloud Diagnostic tools to display the captured sources.
 

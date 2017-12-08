@@ -75,6 +75,11 @@ lists the resource in \fBjson\fR format.
 
 The formats and format specific attributes are:
 
+\fBconfig\fR
+.RS 2m
+A dictionary of dictionaries in config style.
+
+.RE
 \fBcsv\fR
 .RS 2m
 Comma Separated Values (http://www.ietf.org/rfc/rfc4180.txt) with no keys. This
@@ -101,9 +106,14 @@ The format attributes are:
 
 \fBno\-pad\fR
 .RS 2m
-bool, Print only one space after ':'. The default adjusts the space to align the
-values into the same output column. Use \fBno\-pad\fR for comparing resource
+Don't print space after the separator. The default adjusts the space to align
+the values into the same output column. Use \fBno\-pad\fR for comparing resource
 outputs.
+.RE
+\fBseparator=\fISEPARATOR\fR\fR
+.RS 2m
+Print \fISEPARATOR\fR between the \fBkey\fR and \fBvalue\fR. The default is ":
+".
 
 .RE
 .RE

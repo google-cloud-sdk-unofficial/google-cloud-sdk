@@ -21,7 +21,7 @@ from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.configurations import properties_file
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Describes a named configuration by listing its properties."""
 
   detailed_help = {

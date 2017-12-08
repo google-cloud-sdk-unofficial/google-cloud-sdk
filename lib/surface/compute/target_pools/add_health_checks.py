@@ -27,7 +27,7 @@ class AddHealthChecks(base_classes.NoOutputAsyncMutator):
   health check can be attached to a target pool, so this command
   will fail if there as already a health check attached to the target
   pool. For more information on health checks and load balancing, see
-  link:https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/[].
+  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
   """
 
   @staticmethod

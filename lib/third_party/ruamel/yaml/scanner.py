@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from __future__ import absolute_import
 from __future__ import print_function
 
@@ -31,9 +33,14 @@ from __future__ import print_function
 
 __all__ = ['Scanner', 'RoundTripScanner', 'ScannerError']
 
-from .error import MarkedYAMLError
-from .tokens import *
-from .compat import utf8, unichr, PY3
+try:
+    from .error import MarkedYAMLError
+    from .tokens import *                           # NOQA
+    from .compat import utf8, unichr, PY3
+except (ImportError, ValueError):  # for Jython
+    from ruamel.yaml.error import MarkedYAMLError
+    from ruamel.yaml.tokens import *                # NOQA
+    from ruamel.yaml.compat import utf8, unichr, PY3
 
 
 class ScannerError(MarkedYAMLError):
@@ -309,10 +316,6 @@ class Scanner(object):
 
         # Check if a simple key is required at the current position.
         required = not self.flow_level and self.indent == self.column
-
-        # A simple key is required only if it is the first token in the current
-        # line. Therefore it is always allowed.
-        assert self.allow_simple_key or not required
 
         # The next token might be a simple key. Let's save it's number and
         # position.
@@ -758,9 +761,9 @@ class Scanner(object):
         # '-' character) because we want the flow context to be space
         # independent.
         ch = self.peek()
-        return ch not in u'\0 \t\r\n\x85\u2028\u2029-?:,[]{}#&*!|>\'\"%@`' \
-            or (self.peek(1) not in u'\0 \t\r\n\x85\u2028\u2029'
-                and (ch == u'-' or (not self.flow_level and ch in u'?:')))
+        return ch not in u'\0 \t\r\n\x85\u2028\u2029-?:,[]{}#&*!|>\'\"%@`' or \
+            (self.peek(1) not in u'\0 \t\r\n\x85\u2028\u2029' and
+             (ch == u'-' or (not self.flow_level and ch in u'?:')))
 
     # Scanners.
 
@@ -823,7 +826,7 @@ class Scanner(object):
         length = 0
         ch = self.peek(length)
         while u'0' <= ch <= u'9' or u'A' <= ch <= u'Z' or u'a' <= ch <= u'z' \
-                or ch in u'-_':
+                or ch in u'-_:.':
             length += 1
             ch = self.peek(length)
         if not length:
@@ -1069,15 +1072,27 @@ class Scanner(object):
             else:
                 break
 
-        # Chomp the tail.
-        if chomping is not False:
+        # Process trailing line breaks. The 'chomping' setting determines
+        # whether they are included in the value.
+        comment = []
+        if chomping in [None, True]:
             chunks.append(line_break)
         if chomping is True:
             chunks.extend(breaks)
+        elif chomping in [None, False]:
+            comment.extend(breaks)
 
         # We are done.
-        return ScalarToken(u''.join(chunks), False, start_mark, end_mark,
-                           style)
+        token = ScalarToken(u''.join(chunks), False, start_mark, end_mark,
+                            style)
+        if len(comment) > 0:
+            # Keep track of the trailing whitespace as a comment token, if
+            # isn't all included in the actual value.
+            comment_end_mark = self.get_mark()
+            comment = CommentToken(''.join(comment), end_mark,
+                                   comment_end_mark)
+            token.add_post_comment(comment)
+        return token
 
     def scan_block_scalar_indicators(self, start_mark):
         # See the specification for details.
@@ -1359,7 +1374,13 @@ class Scanner(object):
             if not spaces or self.peek() == u'#' \
                     or (not self.flow_level and self.column < indent):
                 break
-        return ScalarToken(u''.join(chunks), True, start_mark, end_mark)
+
+        token = ScalarToken(u''.join(chunks), True, start_mark, end_mark)
+        if spaces and spaces[0] == '\n':
+            # Create a comment token to preserve the trailing line breaks.
+            comment = CommentToken(''.join(spaces) + '\n', start_mark, end_mark)
+            token.add_post_comment(comment)
+        return token
 
     def scan_plain_spaces(self, indent, start_mark):
         # See the specification for details.
@@ -1524,6 +1545,7 @@ class RoundTripScanner(Scanner):
             return self.tokens[0]
 
     def _gather_comments(self):
+        """combine multiple comment lines"""
         comments = []
         if not self.tokens:
             return comments
@@ -1556,11 +1578,17 @@ class RoundTripScanner(Scanner):
             self.fetch_more_tokens()
         self._gather_comments()
         if self.tokens:
-            # only add post comment to scalar token or value token. otherwise
+            # only add post comment to single line tokens:
+            # scalar, value token. FlowXEndToken, otherwise
             # hidden streamtokens could get them (leave them and they will be
             # pre comments for the next map/seq
             if len(self.tokens) > 1 and \
-               isinstance(self.tokens[0], (ScalarToken, ValueToken)) and \
+               isinstance(self.tokens[0], (
+                   ScalarToken,
+                   ValueToken,
+                   FlowSequenceEndToken,
+                   FlowMappingEndToken,
+                   )) and \
                isinstance(self.tokens[1], CommentToken) and \
                self.tokens[0].end_mark.line == self.tokens[1].start_mark.line:
                 self.tokens_taken += 1
@@ -1611,6 +1639,11 @@ class RoundTripScanner(Scanner):
                         break
                     comment += ch
                     self.forward()
+                # gather any blank lines following the comment too
+                ch = self.scan_line_break()
+                while len(ch) > 0:
+                    comment += ch
+                    ch = self.scan_line_break()
                 end_mark = self.get_mark()
                 if not self.flow_level:
                     self.allow_simple_key = True

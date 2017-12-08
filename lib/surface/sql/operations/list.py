@@ -18,11 +18,12 @@ Lists all instance operations that have been performed on the given
 Cloud SQL instance.
 """
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.sql import errors
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class _BaseList(object):

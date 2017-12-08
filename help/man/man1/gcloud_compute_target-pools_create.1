@@ -14,6 +14,7 @@ gcloud compute target\-pools create \- define a load\-balanced pool of virtual m
 \f5gcloud compute target\-pools create\fR \fINAME\fR [\fB\-\-backup\-pool\fR\ \fIBACKUP_POOL\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-failover\-ratio\fR\ \fIFAILOVER_RATIO\fR] [\fB\-\-health\-check\fR\ \fIHEALTH_CHECK\fR] [\fB\-\-region\fR\ \fIREGION\fR] [\fB\-\-session\-affinity\fR\ \fISESSION_AFFINITY\fR;\ default="NONE"] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
+
 .SH "DESCRIPTION"
 
 \fBgcloud compute target\-pools create\fR is used to create a target pool. A
@@ -22,7 +23,7 @@ traffic from forwarding rules. When a forwarding rule directs traffic to a
 target pool, Google Compute Engine picks an instance from the target pool based
 on a hash of the source and destination IP addresses and ports. For more
 information on load balancing, see
-https://cloud.google.com/compute/docs/load\-balancing\-and\-autoscaling/.
+https://cloud.google.com/compute/docs/load\-balancing\-and\-autoscaling/
 
 To add instances to a target pool, use 'gcloud compute target\-pools
 add\-instances'.

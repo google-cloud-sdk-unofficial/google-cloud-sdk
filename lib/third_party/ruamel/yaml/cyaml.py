@@ -1,34 +1,40 @@
+# coding: utf-8
+
 from __future__ import absolute_import
+
+from _ruamel_yaml import CParser, CEmitter
+
+try:
+    from .constructor import *                               # NOQA
+    from .serializer import *                               # NOQA
+    from .representer import *                               # NOQA
+    from .resolver import *                               # NOQA
+except (ImportError, ValueError):  # for Jython
+    from ruamel.yaml.constructor import *                               # NOQA
+    from ruamel.yaml.serializer import *                               # NOQA
+    from ruamel.yaml.representer import *                               # NOQA
+    from ruamel.yaml.resolver import *                               # NOQA
 
 __all__ = ['CBaseLoader', 'CSafeLoader', 'CLoader',
            'CBaseDumper', 'CSafeDumper', 'CDumper']
 
-from _yaml import CParser, CEmitter
-
-from .constructor import *
-
-from .serializer import *
-from .representer import *
-
-from .resolver import *
-
 
 class CBaseLoader(CParser, BaseConstructor, BaseResolver):
-    def __init__(self, stream):
+    def __init__(self, stream, version=None):
         CParser.__init__(self, stream)
         BaseConstructor.__init__(self)
         BaseResolver.__init__(self)
 
 
 class CSafeLoader(CParser, SafeConstructor, Resolver):
-    def __init__(self, stream):
+    def __init__(self, stream, version=None):
         CParser.__init__(self, stream)
         SafeConstructor.__init__(self)
         Resolver.__init__(self)
 
 
 class CLoader(CParser, Constructor, Resolver):
-    def __init__(self, stream):
+    def __init__(self, stream, version=None):
         CParser.__init__(self, stream)
         Constructor.__init__(self)
         Resolver.__init__(self)

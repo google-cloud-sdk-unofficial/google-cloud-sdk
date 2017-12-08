@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """View the details of a Cloud DNS managed-zone.
 
   This command displays the details of the specified managed-zone.

@@ -11,7 +11,8 @@ gcloud compute disks create \- create Google Compute Engine persistent disks
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute disks create\fR \fINAME\fR [\fINAME\fR\ ...] [\fB\-\-csek\-key\-file\fR\ \fIFILE\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fB\-\-image\-family\fR\ \fIIMAGE_FAMILY\fR\ |\ \fB\-\-source\-snapshot\fR\ \fISOURCE_SNAPSHOT\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-size\fR\ \fISIZE\fR] [\fB\-\-type\fR\ \fITYPE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute disks create\fR \fIDISK_NAME\fR [\fIDISK_NAME\fR\ ...] [\fB\-\-csek\-key\-file\fR\ \fIFILE\fR] [\fB\-\-description\fR\ \fIDESCRIPTION\fR] [\fB\-\-image\fR\ \fIIMAGE\fR\ |\ \fB\-\-image\-family\fR\ \fIIMAGE_FAMILY\fR\ |\ \fB\-\-source\-snapshot\fR\ \fISOURCE_SNAPSHOT\fR] [\fB\-\-image\-project\fR\ \fIIMAGE_PROJECT\fR] [\fB\-\-no\-require\-csek\-key\-create\fR] [\fB\-\-size\fR\ \fISIZE\fR] [\fB\-\-type\fR\ \fITYPE\fR] [\fB\-\-zone\fR\ \fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+
 
 
 .SH "DESCRIPTION"
@@ -40,9 +41,9 @@ $ gcloud compute disks create my\-disk\-1 my\-disk\-2 \-\-zone us\-east1\-a
 
 .SH "POSITIONAL ARGUMENTS"
 
-\fINAME\fR [\fINAME\fR ...]
+\fIDISK_NAME\fR [\fIDISK_NAME\fR ...]
 .RS 2m
-The names of the disks to create.
+The names of the disks.
 
 
 .RE
@@ -129,7 +130,7 @@ Specifies the type of disk to create. To get a list of available disk types, run
 .RE
 \fB\-\-zone\fR \fIZONE\fR
 .RS 2m
-The zone of the disks to create. If not specified, you will be prompted to
+The zone of the disk to operate on. If not specified, you will be prompted to
 select a zone.
 
 To avoid prompting when this flag is omitted, you can set the

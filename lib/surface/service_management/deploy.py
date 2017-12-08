@@ -16,6 +16,8 @@
 
 import os
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.service_management import base_classes
 from googlecloudsdk.api_lib.service_management import enable_api
 from googlecloudsdk.api_lib.service_management import services_util
@@ -24,7 +26,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apitools.base.py import encoding
 
 
 class SwaggerUploadException(exceptions.Error):

@@ -16,9 +16,10 @@
 
 import textwrap
 
+from apitools.base.py import exceptions
+
 from googlecloudsdk.api_lib.iam import utils
 from googlecloudsdk.command_lib.iam import base_classes
-from googlecloudsdk.third_party.apitools.base.py import exceptions
 
 
 class GetIamPolicy(base_classes.BaseIamCommand):

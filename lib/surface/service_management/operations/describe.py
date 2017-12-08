@@ -27,7 +27,7 @@ OPTIONAL_PREFIX_TO_STRIP = 'operations/'
 MAX_RESPONSE_BYTES = 1000
 
 
-class Describe(base.Command, base_classes.BaseServiceManagementCommand):
+class Describe(base.DescribeCommand, base_classes.BaseServiceManagementCommand):
   """Describes a service given a service name."""
 
   @staticmethod

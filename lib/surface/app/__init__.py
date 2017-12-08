@@ -58,6 +58,7 @@ class AppengineGA(base.Group):
     checks.RaiseIfNotPython27()
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.PREVIEW)
 class AppenginePreview(base.Group):
 

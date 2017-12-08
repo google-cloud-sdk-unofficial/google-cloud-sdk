@@ -166,7 +166,7 @@ class UpdateAlpha(UpdateGA):
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
     flags.AddHealthChecks(parser)
-    flags.AddSessionAffinity(parser)
+    flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
 
   def Modify(self, args, existing):

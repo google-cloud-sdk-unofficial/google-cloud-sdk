@@ -53,7 +53,7 @@ def _Args(parser):
           The name of a container inside of the virtual machine instance to
           connect to. This only applies to virtual machines that are using
           a Google container virtual machine image. For more information,
-          see link:https://cloud.google.com/compute/docs/containers[].
+          see [](https://cloud.google.com/compute/docs/containers)
           """)
 
   user_host = parser.add_argument(

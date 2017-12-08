@@ -17,8 +17,7 @@ class RuntimeTest(testutil.TestBase):
     self.write_file('Dockerfile', 'boring contents')
     cleaner = self.generate_configs()
     self.assert_file_exists_with_contents('app.yaml',
-                                          'runtime: custom\nvm: true\n'
-                                          'api_version: 1\n')
+                                          'runtime: custom\nvm: true\n')
 
 
 if __name__ == '__main__':

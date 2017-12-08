@@ -14,13 +14,14 @@
 
 """gcloud dns record-sets transaction remove command."""
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.dns import transaction_util as trans_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class Remove(base.Command):

@@ -33,7 +33,7 @@ class ActivateServiceAccount(base.Command):
 
   Obtains access credentials for the service account using a .json (preferred)
   or .p12 file that contains a private authorization key. You obtain the key
-  file from the Cloud Platform console (https://console.cloud.google.com). For
+  file from the [Cloud Platform console](https://console.cloud.google.com). For
   .p12 files, a password is required. This password is displayed in the console
   when you create the key. If you specify a project using the `--project` flag,
   the project is set in your active configuration.

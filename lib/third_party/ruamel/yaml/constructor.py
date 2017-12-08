@@ -1,8 +1,7 @@
+# coding: utf-8
+
 from __future__ import absolute_import
 from __future__ import print_function
-
-__all__ = ['BaseConstructor', 'SafeConstructor', 'Constructor',
-           'ConstructorError', 'RoundTripConstructor']
 
 import collections
 import datetime
@@ -12,10 +11,23 @@ import re
 import sys
 import types
 
-from .error import *
-from .nodes import *
-from .compat import utf8, builtins_module, to_str, PY2, PY3, ordereddict
-from .comments import *
+try:
+    from .error import *                               # NOQA
+    from .nodes import *                               # NOQA
+    from .compat import utf8, builtins_module, to_str, PY2, PY3, ordereddict, text_type
+    from .comments import *                               # NOQA
+    from .scalarstring import *                           # NOQA
+except (ImportError, ValueError):  # for Jython
+    from ruamel.yaml.error import *                               # NOQA
+    from ruamel.yaml.nodes import *                               # NOQA
+    from ruamel.yaml.compat import (utf8, builtins_module, to_str, PY2, PY3,
+                                    ordereddict, text_type)
+    from ruamel.yaml.comments import *                               # NOQA
+    from ruamel.yaml.scalarstring import *                           # NOQA
+
+
+__all__ = ['BaseConstructor', 'SafeConstructor', 'Constructor',
+           'ConstructorError', 'RoundTripConstructor']
 
 
 class ConstructorError(MarkedYAMLError):
@@ -63,6 +75,9 @@ class BaseConstructor(object):
         return data
 
     def construct_object(self, node, deep=False):
+        """deep is True when creating an object/mapping recursively,
+        in that case want the underlying elements available during construction
+        """
         if node in self.constructed_objects:
             return self.constructed_objects[node]
         if deep:
@@ -122,6 +137,9 @@ class BaseConstructor(object):
         return node.value
 
     def construct_sequence(self, node, deep=False):
+        """deep is True when creating an object/mapping recursively,
+        in that case want the underlying elements available during construction
+        """
         if not isinstance(node, SequenceNode):
             raise ConstructorError(
                 None, None,
@@ -131,6 +149,9 @@ class BaseConstructor(object):
                 for child in node.value]
 
     def construct_mapping(self, node, deep=False):
+        """deep is True when creating an object/mapping recursively,
+        in that case want the underlying elements available during construction
+        """
         if not isinstance(node, MappingNode):
             raise ConstructorError(
                 None, None,
@@ -197,6 +218,11 @@ class SafeConstructor(BaseConstructor):
         return BaseConstructor.construct_scalar(self, node)
 
     def flatten_mapping(self, node):
+        """
+        This implements the merge key feature http://yaml.org/type/merge.html
+        by inserting keys from the merge dict/list of dicts if not yet
+        available in this node
+        """
         merge = []
         index = 0
         while index < len(node.value):
@@ -235,6 +261,9 @@ class SafeConstructor(BaseConstructor):
             node.value = merge + node.value
 
     def construct_mapping(self, node, deep=False):
+        """deep is True when creating an object/mapping recursively,
+        in that case want the underlying elements available during construction
+        """
         if isinstance(node, MappingNode):
             self.flatten_mapping(node)
         return BaseConstructor.construct_mapping(self, node, deep=deep)
@@ -243,6 +272,7 @@ class SafeConstructor(BaseConstructor):
         self.construct_scalar(node)
         return None
 
+    # YAML 1.2 spec doesn't mention yes/no etc any more, 1.1 does
     bool_values = {
         u'yes':     True,
         u'no':      False,
@@ -272,9 +302,9 @@ class SafeConstructor(BaseConstructor):
             return sign*int(value[2:], 16)
         elif value.startswith('0o'):
             return sign*int(value[2:], 8)
-        elif value[0] == '0':
+        elif self.processing_version != (1, 2) and value[0] == '0':
             return sign*int(value, 8)
-        elif ':' in value:
+        elif self.processing_version != (1, 2) and ':' in value:
             digits = [int(part) for part in value.split(':')]
             digits.reverse()
             base = 1
@@ -356,7 +386,7 @@ class SafeConstructor(BaseConstructor):
           (?::(?P<tz_minute>[0-9][0-9]))?))?)?$''', re.X)
 
     def construct_yaml_timestamp(self, node):
-        value = self.construct_scalar(node)
+        value = self.construct_scalar(node)  # NOQA
         match = self.timestamp_regexp.match(node.value)
         values = match.groupdict()
         year = int(values['year'])
@@ -791,6 +821,31 @@ class RoundTripConstructor(SafeConstructor):
     as well as on the items
     """
 
+    def construct_scalar(self, node):
+        if not isinstance(node, ScalarNode):
+            raise ConstructorError(
+                None, None,
+                "expected a scalar node, but found %s" % node.id,
+                node.start_mark)
+
+        if node.style == '|' and isinstance(node.value, text_type):
+            return PreservedScalarString(node.value)
+        return node.value
+
+    def construct_yaml_str(self, node):
+        value = self.construct_scalar(node)
+        if isinstance(value, ScalarString):
+            return value
+        if PY3:
+            return value
+        try:
+            return value.encode('ascii')
+        except AttributeError:
+            # in case you replace the node dynamically e.g. with a dict
+            return value
+        except UnicodeEncodeError:
+            return value
+
     def construct_sequence(self, node, seqtyp, deep=False):
         if not isinstance(node, SequenceNode):
             raise ConstructorError(
@@ -802,11 +857,79 @@ class RoundTripConstructor(SafeConstructor):
             seqtyp._yaml_add_comment(node.comment[:2])
             if len(node.comment) > 2:
                 seqtyp.yaml_end_comment_extend(node.comment[2], clear=True)
+        if node.anchor:
+            from ruamel.yaml.serializer import templated_id
+            if not templated_id(node.anchor):
+                seqtyp.yaml_set_anchor(node.anchor)
         for idx, child in enumerate(node.value):
             ret_val.append(self.construct_object(child, deep=deep))
             if child.comment:
                 seqtyp._yaml_add_comment(child.comment, key=idx)
+            seqtyp._yaml_set_idx_line_col(
+                idx, [child.start_mark.line, child.start_mark.column])
         return ret_val
+
+    def flatten_mapping(self, node):
+        """
+        This implements the merge key feature http://yaml.org/type/merge.html
+        by inserting keys from the merge dict/list of dicts if not yet
+        available in this node
+        """
+
+        def constructed(value_node):
+            # If the contents of a merge are defined within the
+            # merge marker, then they won't have been constructed
+            # yet. But if they were already constructed, we need to use
+            # the existing object.
+            if value_node in self.constructed_objects:
+                value = self.constructed_objects[value_node]
+            else:
+                value = self.construct_object(value_node, deep=False)
+            return value
+
+        # merge = []
+        merge_map_list = []
+        index = 0
+        while index < len(node.value):
+            key_node, value_node = node.value[index]
+            if key_node.tag == u'tag:yaml.org,2002:merge':
+                del node.value[index]
+                if isinstance(value_node, MappingNode):
+                    merge_map_list.append(
+                        (index, constructed(value_node)))
+                    # self.flatten_mapping(value_node)
+                    # merge.extend(value_node.value)
+                elif isinstance(value_node, SequenceNode):
+                    # submerge = []
+                    for subnode in value_node.value:
+                        if not isinstance(subnode, MappingNode):
+                            raise ConstructorError(
+                                "while constructing a mapping",
+                                node.start_mark,
+                                "expected a mapping for merging, but found %s"
+                                % subnode.id, subnode.start_mark)
+                        merge_map_list.append(
+                            (index, constructed(subnode)))
+                    #     self.flatten_mapping(subnode)
+                    #     submerge.append(subnode.value)
+                    # submerge.reverse()
+                    # for value in submerge:
+                    #     merge.extend(value)
+                else:
+                    raise ConstructorError(
+                        "while constructing a mapping", node.start_mark,
+                        "expected a mapping or list of mappings for merging, "
+                        "but found %s"
+                        % value_node.id, value_node.start_mark)
+            elif key_node.tag == u'tag:yaml.org,2002:value':
+                key_node.tag = u'tag:yaml.org,2002:str'
+                index += 1
+            else:
+                index += 1
+        # print ('merge_map_list', merge_map_list)
+        return merge_map_list
+        # if merge:
+        #     node.value = merge + node.value
 
     def construct_mapping(self, node, maptyp, deep=False):
         if not isinstance(node, MappingNode):
@@ -814,11 +937,18 @@ class RoundTripConstructor(SafeConstructor):
                 None, None,
                 "expected a mapping node, but found %s" % node.id,
                 node.start_mark)
+        merge_map = self.flatten_mapping(node)
+        if merge_map:
+            maptyp.add_yaml_merge(merge_map)
         # mapping = {}
         if node.comment:
             maptyp._yaml_add_comment(node.comment[:2])
             if len(node.comment) > 2:
                 maptyp.yaml_end_comment_extend(node.comment[2], clear=True)
+        if node.anchor:
+            from ruamel.yaml.serializer import templated_id
+            if not templated_id(node.anchor):
+                maptyp.yaml_set_anchor(node.anchor)
         for key_node, value_node in node.value:
             # keys can be list -> deep
             key = self.construct_object(key_node, deep=True)
@@ -844,6 +974,9 @@ class RoundTripConstructor(SafeConstructor):
                 maptyp._yaml_add_comment(key_node.comment, key=key)
             if value_node.comment:
                 maptyp._yaml_add_comment(value_node.comment, value=key)
+            maptyp._yaml_set_kv_line_col(
+                key, [key_node.start_mark.line, key_node.start_mark.column,
+                      value_node.start_mark.line, value_node.start_mark.column])
             maptyp[key] = value
 
     def construct_setting(self, node, typ, deep=False):
@@ -856,6 +989,10 @@ class RoundTripConstructor(SafeConstructor):
             typ._yaml_add_comment(node.comment[:2])
             if len(node.comment) > 2:
                 typ.yaml_end_comment_extend(node.comment[2], clear=True)
+        if node.anchor:
+            from ruamel.yaml.serializer import templated_id
+            if not templated_id(node.anchor):
+                typ.yaml_set_anchor(node.anchor)
         for key_node, value_node in node.value:
             # keys can be list -> deep
             key = self.construct_object(key_node, deep=True)
@@ -876,7 +1013,7 @@ class RoundTripConstructor(SafeConstructor):
                     raise ConstructorError(
                         "while constructing a mapping", node.start_mark,
                         "found unhashable key", key_node.start_mark)
-            value = self.construct_object(value_node, deep=deep)
+            value = self.construct_object(value_node, deep=deep)  # NOQA
             if key_node.comment:
                 typ._yaml_add_comment(key_node.comment, key=key)
             if value_node.comment:
@@ -885,6 +1022,11 @@ class RoundTripConstructor(SafeConstructor):
 
     def construct_yaml_seq(self, node):
         data = CommentedSeq()
+        data._yaml_set_line_col(node.start_mark.line, node.start_mark.column)
+        if node.flow_style is True:
+            data.fa.set_flow_style()
+        elif node.flow_style is False:
+            data.fa.set_block_style()
         if node.comment:
             data._yaml_add_comment(node.comment)
         yield data
@@ -892,12 +1034,22 @@ class RoundTripConstructor(SafeConstructor):
 
     def construct_yaml_map(self, node):
         data = CommentedMap()
+        data._yaml_set_line_col(node.start_mark.line, node.start_mark.column)
+        if node.flow_style is True:
+            data.fa.set_flow_style()
+        elif node.flow_style is False:
+            data.fa.set_block_style()
         yield data
         self.construct_mapping(node, data)
 
     def construct_yaml_omap(self, node):
         # Note: we do now check for duplicate keys
         omap = CommentedOrderedMap()
+        omap._yaml_set_line_col(node.start_mark.line, node.start_mark.column)
+        if node.flow_style is True:
+            omap.fa.set_flow_style()
+        elif node.flow_style is False:
+            omap.fa.set_block_style()
         yield omap
         if node.comment:
             omap._yaml_add_comment(node.comment[:2])
@@ -934,8 +1086,28 @@ class RoundTripConstructor(SafeConstructor):
 
     def construct_yaml_set(self, node):
         data = CommentedSet()
+        data._yaml_set_line_col(node.start_mark.line, node.start_mark.column)
         yield data
         self.construct_setting(node, data)
+
+    def construct_undefined(self, node):
+        try:
+            data = CommentedMap()
+            data._yaml_set_line_col(node.start_mark.line, node.start_mark.column)
+            if node.flow_style is True:
+                data.fa.set_flow_style()
+            elif node.flow_style is False:
+                data.fa.set_block_style()
+            data.yaml_set_tag(node.tag)
+            yield data
+            self.construct_mapping(node, data)
+        except:
+            raise ConstructorError(
+                None, None,
+                "could not determine a constructor for the tag %r" %
+                utf8(node.tag),
+                node.start_mark)
+
 
 RoundTripConstructor.add_constructor(
     u'tag:yaml.org,2002:null',

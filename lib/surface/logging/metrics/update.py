@@ -108,6 +108,6 @@ Update.detailed_help = {
           $ {command} high_severity_count --filter="metadata.severity >= WARNING"
 
         Detailed information about filters can be found at:
-        https://cloud.google.com/logging/docs/view/advanced_filters
+        [](https://cloud.google.com/logging/docs/view/advanced_filters)
     """,
 }

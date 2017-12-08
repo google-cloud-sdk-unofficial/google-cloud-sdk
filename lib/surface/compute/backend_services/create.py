@@ -117,7 +117,7 @@ class CreateAlpha(CreateGA):
     # These are in beta
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=False)
-    flags.AddSessionAffinity(parser)
+    flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
 
     # These are added for alpha

@@ -17,6 +17,8 @@ import argparse
 import random
 import string
 
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
@@ -26,7 +28,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 def _Args(parser):
@@ -190,9 +191,9 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster', True)
-    flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser, True)
+    flags.AddImageTypeFlag(parser, 'cluster', suppressed=True)
+    flags.AddClusterAutoscalingFlags(parser, suppressed=True)
+    flags.AddLocalSSDFlag(parser, suppressed=True)
 
   def ParseCreateOptions(self, args):
     if not args.scopes:
@@ -288,9 +289,9 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster', False)
-    flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser, False)
+    flags.AddImageTypeFlag(parser, 'cluster')
+    flags.AddClusterAutoscalingFlags(parser, suppressed=True)
+    flags.AddLocalSSDFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -300,6 +301,6 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddImageTypeFlag(parser, 'cluster', False)
+    flags.AddImageTypeFlag(parser, 'cluster')
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddLocalSSDFlag(parser, False)
+    flags.AddLocalSSDFlag(parser)

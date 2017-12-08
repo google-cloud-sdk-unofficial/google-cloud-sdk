@@ -22,7 +22,7 @@ from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
-
+from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 
 DETAILED_HELP = {
     'brief': 'Create Google Compute Engine persistent disks',
@@ -51,7 +51,7 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser):
+def _SourceArgs(parser, source_snapshot_arg):
   """Add mutually exclusive source args."""
 
   source_group = parser.add_mutually_exclusive_group()
@@ -81,27 +81,10 @@ def _SourceArgs(parser):
             'with. When a family is used instead of an image, the latest '
             'non-deprecated image associated with that family is used.')
   )
-
-  source_snapshot = source_group.add_argument(
-      '--source-snapshot',
-      help='A source snapshot used to create the disks.')
-  source_snapshot.detailed_help = """\
-      A source snapshot used to create the disks. It is safe to
-      delete a snapshot after a disk has been created from the
-      snapshot. In such cases, the disks will no longer reference
-      the deleted snapshot. To get a list of snapshots in your
-      current project, run `gcloud compute snapshots list`. A
-      snapshot from an existing disk can be created using the
-      'gcloud compute disks snapshot' command. This flag is mutually
-      exclusive with ``--image''.
-
-      When using this option, the size of the disks must be at least
-      as large as the snapshot size. Use ``--size'' to adjust the
-      size of the disks.
-      """
+  source_snapshot_arg.AddArgument(source_group)
 
 
-def _CommonArgs(parser):
+def _CommonArgs(parser, source_snapshot_arg):
   """Add arguments used for parsing in all command tracks."""
   parser.add_argument(
       '--description',
@@ -122,12 +105,6 @@ def _CommonArgs(parser):
       must be a multiple of 10 GB.
       """
 
-  parser.add_argument(
-      'names',
-      metavar='NAME',
-      nargs='+',
-      help='The names of the disks to create.')
-
   disk_type = parser.add_argument(
       '--type',
       help='Specifies the type of disk to create.')
@@ -137,12 +114,7 @@ def _CommonArgs(parser):
       disk-types list'. The default disk type is pd-standard.
       """
 
-  _SourceArgs(parser)
-
-  flags.AddZoneFlag(
-      parser,
-      resource_type='disks',
-      operation_type='create')
+  _SourceArgs(parser, source_snapshot_arg)
 
   csek_utils.AddCsekKeyArgs(parser)
 
@@ -153,7 +125,8 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    disks_flags.DISKS_ARG.AddArgument(parser)
+    _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
   @property
   def service(self):
@@ -181,8 +154,11 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
     utils.WarnIfDiskSizeIsTooSmall(size_gb, args.type)
 
     requests = []
-
-    disk_refs = self.CreateZonalReferences(args.names, args.zone)
+    disk_refs = disks_flags.DISKS_ARG.ResolveAsResource(
+        args, self.resources,
+        default_scope=flags.ScopeEnum.ZONE,
+        scope_lister=flags.GetDefaultScopeLister(
+            self.compute_client, self.project))
 
     # Check if the zone is deprecated or has maintenance coming.
     self.WarnForZonalCreation(disk_refs)
@@ -193,9 +169,9 @@ class Create(base_classes.BaseAsyncCreator, image_utils.ImageExpander,
     else:
       source_image_uri = None
 
-    if args.source_snapshot:
-      snapshot_ref = self.CreateGlobalReference(
-          args.source_snapshot, resource_type='snapshots')
+    snapshot_ref = disks_flags.SOURCE_SNAPSHOT_ARG.ResolveAsResource(
+        args, self.resources, default_scope=flags.ScopeEnum.GLOBAL)
+    if snapshot_ref:
       snapshot_uri = snapshot_ref.SelfLink()
     else:
       snapshot_uri = None

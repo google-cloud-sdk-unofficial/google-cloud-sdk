@@ -25,7 +25,7 @@ class _BaseGet(object):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class Get(_BaseGet, base.Command):
+class Get(_BaseGet, base.DescribeCommand):
   """Retrieves information about a Cloud SQL instance operation."""
 
   @staticmethod
@@ -75,7 +75,7 @@ class Get(_BaseGet, base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetBeta(_BaseGet, base.Command):
+class GetBeta(_BaseGet, base.DescribeCommand):
   """Retrieves information about a Cloud SQL instance operation."""
 
   @staticmethod

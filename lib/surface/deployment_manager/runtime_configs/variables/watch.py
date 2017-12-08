@@ -15,6 +15,9 @@
 """The runtime-configs variables watch command."""
 
 import socket
+
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.deployment_manager.runtime_configs import util
 from googlecloudsdk.api_lib.util import http_error_handler
 from googlecloudsdk.calliope import arg_parsers
@@ -22,7 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.command_lib.deployment_manager.runtime_configs import flags
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.third_party.apitools.base.py import exceptions as apitools_exceptions
 
 
 TIMEOUT_MESSAGE = 'The read operation timed out'

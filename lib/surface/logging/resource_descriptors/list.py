@@ -14,9 +14,10 @@
 
 """'logging resource-descriptors list' command."""
 
+from apitools.base.py import list_pager
+
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.third_party.apitools.base.py import list_pager
 
 
 class List(base.ListCommand):

@@ -85,6 +85,6 @@ Create.detailed_help = {
         traffic from one or more forwarding rules. Target instances
         are ideal for traffic that should be managed by a single
         source. For more information on target instances, see
-        link:https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances[].
+        [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
         """,
 }

@@ -18,7 +18,7 @@ from surface.container.clusters.upgrade import UpgradeHelpText
 from surface.container.clusters.upgrade import VersionVerifier
 
 
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Describe an existing cluster for running containers."""
 
   @staticmethod

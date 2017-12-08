@@ -1,13 +1,19 @@
+# coding: utf-8
+
 from __future__ import absolute_import
 from __future__ import print_function
 
-__all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
-           'RepresenterError', 'RoundTripRepresenter']
+try:
+    from .error import *                                  # NOQA
+    from .nodes import *                                  # NOQA
+    from .compat import text_type, binary_type, to_unicode, PY2, PY3, ordereddict
+    from .scalarstring import *                           # NOQA
+except (ImportError, ValueError):  # for Jython
+    from ruamel.yaml.error import *                       # NOQA
+    from ruamel.yaml.nodes import *                       # NOQA
+    from ruamel.yaml.compat import text_type, binary_type, to_unicode, PY2, PY3, ordereddict
+    from ruamel.yaml.scalarstring import *                # NOQA
 
-from .error import *
-from .nodes import *
-from .compat import text_type, binary_type, to_unicode, PY2, PY3, \
-    ordereddict, nprint
 
 import datetime
 import sys
@@ -17,6 +23,10 @@ if PY3:
     import base64
 else:
     import copy_reg as copyreg
+
+
+__all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
+           'RepresenterError', 'RoundTripRepresenter']
 
 
 class RepresenterError(YAMLError):
@@ -565,8 +575,12 @@ Representer.add_multi_representer(object,
                                   Representer.represent_object)
 
 
-from .comments import CommentedMap, CommentedOrderedMap, CommentedSeq, \
-    CommentedSet, comment_attrib
+try:
+    from .comments import CommentedMap, CommentedOrderedMap, CommentedSeq, \
+        CommentedSet, comment_attrib, merge_attrib
+except ImportError:  # for Jython
+    from ruamel.yaml.comments import CommentedMap, CommentedOrderedMap, \
+        CommentedSeq, CommentedSet, comment_attrib, merge_attrib
 
 
 class RoundTripRepresenter(SafeRepresenter):
@@ -583,9 +597,28 @@ class RoundTripRepresenter(SafeRepresenter):
         return self.represent_scalar(u'tag:yaml.org,2002:null',
                                      u'')
 
+    def represent_preserved_scalarstring(self, data):
+        tag = None
+        style = '|'
+        if PY2 and not isinstance(data, unicode):
+            data = unicode(data, 'ascii')
+        tag = u'tag:yaml.org,2002:str'
+        return self.represent_scalar(tag, data, style=style)
+
     def represent_sequence(self, tag, sequence, flow_style=None):
         value = []
-        node = SequenceNode(tag, value, flow_style=flow_style)
+        # if the flow_style is None, the flow style tacked on to the object
+        # explicitly will be taken. If that is None as well the default flow
+        # style rules
+        try:
+            flow_style = sequence.fa.flow_style(flow_style)
+        except AttributeError:
+            flow_style = flow_style
+        try:
+            anchor = sequence.yaml_anchor()
+        except AttributeError:
+            anchor = None
+        node = SequenceNode(tag, value, flow_style=flow_style, anchor=anchor)
         if self.alias_key is not None:
             self.represented_objects[self.alias_key] = node
         best_style = True
@@ -614,7 +647,15 @@ class RoundTripRepresenter(SafeRepresenter):
 
     def represent_mapping(self, tag, mapping, flow_style=None):
         value = []
-        node = MappingNode(tag, value, flow_style=flow_style)
+        try:
+            flow_style = mapping.fa.flow_style(flow_style)
+        except AttributeError:
+            flow_style = flow_style
+        try:
+            anchor = mapping.yaml_anchor()
+        except AttributeError:
+            anchor = None
+        node = MappingNode(tag, value, flow_style=flow_style, anchor=anchor)
         if self.alias_key is not None:
             self.represented_objects[self.alias_key] = node
         best_style = True
@@ -622,7 +663,14 @@ class RoundTripRepresenter(SafeRepresenter):
         try:
             comment = getattr(mapping, comment_attrib)
             node.comment = comment.comment
+            if node.comment and node.comment[1]:
+                for ct in node.comment[1]:
+                    ct.reset()
             item_comments = comment.items
+            for v in item_comments.values():
+                if v and v[1]:
+                    for ct in v[1]:
+                        ct.reset()
             try:
                 node.comment.append(comment.end)
             except AttributeError:
@@ -653,18 +701,44 @@ class RoundTripRepresenter(SafeRepresenter):
                 node.flow_style = self.default_flow_style
             else:
                 node.flow_style = best_style
+        merge_list = [m[1] for m in getattr(mapping, merge_attrib, [])]
+        if merge_list:
+            # because of the call to represent_data here, the anchors
+            # are marked as being used and thereby created
+            if len(merge_list) == 1:
+                arg = self.represent_data(merge_list[0])
+            else:
+                arg = self.represent_data(merge_list)
+                arg.flow_style = True
+            value.insert(0,
+                         (ScalarNode(u'tag:yaml.org,2002:merge', '<<'), arg))
         return node
 
     def represent_omap(self, tag, omap, flow_style=None):
         value = []
-        node = SequenceNode(tag, value, flow_style=flow_style)
+        try:
+            flow_style = omap.fa.flow_style(flow_style)
+        except AttributeError:
+            flow_style = flow_style
+        try:
+            anchor = omap.yaml_anchor()
+        except AttributeError:
+            anchor = None
+        node = SequenceNode(tag, value, flow_style=flow_style, anchor=anchor)
         if self.alias_key is not None:
             self.represented_objects[self.alias_key] = node
         best_style = True
         try:
             comment = getattr(omap, comment_attrib)
             node.comment = comment.comment
+            if node.comment and node.comment[1]:
+                for ct in node.comment[1]:
+                    ct.reset()
             item_comments = comment.items
+            for v in item_comments.values():
+                if v and v[1]:
+                    for ct in v[1]:
+                        ct.reset()
             try:
                 node.comment.append(comment.end)
             except AttributeError:
@@ -703,7 +777,12 @@ class RoundTripRepresenter(SafeRepresenter):
         tag = u'tag:yaml.org,2002:set'
         # return self.represent_mapping(tag, value)
         value = []
-        node = MappingNode(tag, value, flow_style=flow_style)
+        flow_style = setting.fa.flow_style(flow_style)
+        try:
+            anchor = setting.yaml_anchor()
+        except AttributeError:
+            anchor = None
+        node = MappingNode(tag, value, flow_style=flow_style, anchor=anchor)
         if self.alias_key is not None:
             self.represented_objects[self.alias_key] = node
         best_style = True
@@ -711,7 +790,14 @@ class RoundTripRepresenter(SafeRepresenter):
         try:
             comment = getattr(setting, comment_attrib)
             node.comment = comment.comment
+            if node.comment and node.comment[1]:
+                for ct in node.comment[1]:
+                    ct.reset()
             item_comments = comment.items
+            for v in item_comments.values():
+                if v and v[1]:
+                    for ct in v[1]:
+                        ct.reset()
             try:
                 node.comment.append(comment.end)
             except AttributeError:
@@ -732,11 +818,30 @@ class RoundTripRepresenter(SafeRepresenter):
                     node_value.style):
                 best_style = False
             value.append((node_key, node_value))
+        best_style = best_style
         return node
+
+    def represent_dict(self, data):
+        """write out tag if saved on loading"""
+        try:
+            t = data.tag.value
+        except AttributeError:
+            t = None
+        if t:
+            while t and t[0] == '!':
+                t = t[1:]
+            tag = 'tag:yaml.org,2002:' + t
+        else:
+            tag = u'tag:yaml.org,2002:map'
+        return self.represent_mapping(tag, data)
 
 
 RoundTripRepresenter.add_representer(type(None),
                                      RoundTripRepresenter.represent_none)
+
+RoundTripRepresenter.add_representer(
+    PreservedScalarString,
+    RoundTripRepresenter.represent_preserved_scalarstring)
 
 RoundTripRepresenter.add_representer(CommentedSeq,
                                      RoundTripRepresenter.represent_list)
@@ -744,9 +849,13 @@ RoundTripRepresenter.add_representer(CommentedSeq,
 RoundTripRepresenter.add_representer(CommentedMap,
                                      RoundTripRepresenter.represent_dict)
 
-RoundTripRepresenter.add_representer(
-    CommentedOrderedMap,
-    RoundTripRepresenter.represent_ordereddict)
+RoundTripRepresenter.add_representer(CommentedOrderedMap,
+                                     RoundTripRepresenter.represent_ordereddict)
+
+if sys.version_info >= (2, 7):
+    import collections
+    RoundTripRepresenter.add_representer(collections.OrderedDict,
+                                         RoundTripRepresenter.represent_ordereddict)
 
 RoundTripRepresenter.add_representer(CommentedSet,
                                      RoundTripRepresenter.represent_set)

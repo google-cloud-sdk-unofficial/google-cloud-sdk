@@ -21,30 +21,29 @@ from googlecloudsdk.command_lib.config import flags
 from googlecloudsdk.core import properties
 
 
-DETAILED_HELP = {
-    'DESCRIPTION': '{description}',
-    'EXAMPLES': """\
-        To unset the project property in the core section, run:
-
-          $ {command} project
-
-        To unset the zone property in the compute section, run:
-
-          $ {command} compute/zone
-        """,
-    '+AVAILABLE PROPERTIES': properties.VALUES.GetHelpString(),
-}
-
-
 class Unset(base.Command):
   """Unset a Cloud SDK property.
 
   By default, unsets the property in your active configuration only. Use the
   `--installation` flag to unset the property across all configurations. See
   `gcloud topic configurations` for more information.
+
+  ## AVAIABLE PROPERTIES
+
+  {properties}
+
+  ## EXAMPLES
+
+  To unset the project property in the core section, run:
+
+    $ {command} project
+
+  To unset the zone property in the compute section, run:
+
+    $ {command} compute/zone
   """
 
-  detailed_help = DETAILED_HELP
+  detailed_help = {'properties': properties.VALUES.GetHelpString()}
 
   @staticmethod
   def Args(parser):

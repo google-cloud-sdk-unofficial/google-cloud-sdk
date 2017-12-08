@@ -18,7 +18,8 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.images import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -31,9 +32,7 @@ class Create(base_classes.BaseAsyncCreator):
         '--description',
         help=('An optional, textual description for the image being created.'))
 
-    source_group = parser.add_mutually_exclusive_group(required=True)
-
-    source_uri = source_group.add_argument(
+    source_uri = parser.add_argument(
         '--source-uri',
         help=('The full Google Cloud Storage URI where the disk image is '
               'stored.'))
@@ -45,24 +44,7 @@ class Create(base_classes.BaseAsyncCreator):
         This flag is mutually exclusive with ``--source-disk''.
         """
 
-    source_disk = source_group.add_argument(
-        '--source-disk',
-        help='A source disk to create the image from.')
-    source_disk.detailed_help = """\
-        A source disk to create the image from. The value for this option can be
-        the name of a disk with the zone specified via ``--source-disk-zone''
-        flag.
-
-        This flag is mutually exclusive with ``--source-uri''.
-        """
-
-    source_disk_zone = parser.add_argument(
-        '--source-disk-zone',
-        help='The zone of the disk specified by --source-disk.')
-    source_disk_zone.detailed_help = ("""\
-        The zone of the disk specified by --source-disk.
-        """ + flags.ZONE_PROPERTY_EXPLANATION)
-
+    flags.SOURCE_DISK_ARG.AddArgument(parser)
     parser.add_argument(
         '--family',
         help=('The family of the image. When creating an instance or disk, '
@@ -107,15 +89,19 @@ class Create(base_classes.BaseAsyncCreator):
           'You cannot specify [--source-disk-zone] unless you are specifying '
           '[--source-disk].')
 
+    if args.source_disk and args.source_uri:
+      raise exceptions.ConflictingArgumentsException(
+          '--source-uri', '--source-disk')
+
+    # TODO(user): use resources.Parse() to pase GCS URIs (b/30086260).
     if args.source_uri:
       source_uri = utils.NormalizeGoogleStorageUri(args.source_uri)
       image.rawDisk = self.messages.Image.RawDiskValue(source=source_uri)
     else:
-      source_disk_ref = self.CreateZonalReference(
-          args.source_disk,
-          args.source_disk_zone,
-          flag_names=['--source-disk-zone'],
-          resource_type='disks')
+      source_disk_ref = flags.SOURCE_DISK_ARG.ResolveAsResource(
+          args, self.resources, default_scope=compute_flags.ScopeEnum.ZONE,
+          scope_lister=compute_flags.GetDefaultScopeLister(
+              self.compute_client, self.project))
       image.sourceDisk = source_disk_ref.SelfLink()
 
     if args.licenses:
@@ -151,7 +137,7 @@ Create.detailed_help = {
         projects.
 
         To learn more about creating image tarballs, visit
-        link:https://cloud.google.com/compute/docs/creating-custom-image[].
+        [](https://cloud.google.com/compute/docs/creating-custom-image)
         """,
 }
 

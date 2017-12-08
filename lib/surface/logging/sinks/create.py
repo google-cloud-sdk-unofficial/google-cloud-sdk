@@ -151,6 +151,6 @@ Create.detailed_help = {
           $ {command} my-error-logs bigquery.googleapis.com/project/my-project/dataset/my_dataset --log-filter='metadata.serviceName="appengine.googleapis.com" AND metadata.severity=ERROR'
 
         Detailed information about filters can be found at:
-        https://cloud.google.com/logging/docs/view/advanced_filters
+        [](https://cloud.google.com/logging/docs/view/advanced_filters)
     """,
 }
