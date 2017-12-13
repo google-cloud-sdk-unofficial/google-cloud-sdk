@@ -39,6 +39,4 @@ class CreateSignaturePayload(base.Command):
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
-    normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
-        args.artifact_url)
-    return binauthz_command_util.MakeSignaturePayload(normalized_artifact_url)
+    return binauthz_command_util.MakeSignaturePayload(args.artifact_url)

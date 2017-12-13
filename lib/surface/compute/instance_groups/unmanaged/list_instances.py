@@ -33,7 +33,7 @@ class ListInstances(base.ListCommand):
     parser.display_info.AddFormat(
         'table(instance.basename():label=NAME, status)')
     parser.display_info.AddUriFunc(
-        instance_groups_utils.UriFuncForListInstances)
+        instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     ListInstances.ZonalInstanceGroupArg = (
         instance_groups_flags.MakeZonalInstanceGroupArg())
     ListInstances.ZonalInstanceGroupArg.AddArgument(parser)

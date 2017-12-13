@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Detect and extract text within an image.
     DESCRIPTION: |
       Detect and extract text within an image.

@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Detect faces within an image.
     DESCRIPTION: |
       Detect faces within an image.

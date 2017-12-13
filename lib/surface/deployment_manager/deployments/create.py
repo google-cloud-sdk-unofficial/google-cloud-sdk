@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import exceptions as dm_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deployment_manager import alpha_flags
 from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
@@ -207,10 +208,10 @@ class Create(base.CreateCommand, dm_base.DmCommand):
           args.format = flags.OPERATION_FORMAT
         return response
 
-      return dm_api_util.FetchResourcesAndOutputs(self.client,
-                                                  self.messages,
-                                                  dm_base.GetProject(),
-                                                  deployment_ref.deployment)
+      return dm_api_util.FetchResourcesAndOutputs(
+          self.client, self.messages, dm_base.GetProject(),
+          deployment_ref.deployment,
+          self.ReleaseTrack() is base.ReleaseTrack.ALPHA)
 
   def _HandleOperationError(
       self, error, args, operation, project, deployment_ref):
@@ -281,7 +282,8 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser, version=base.ReleaseTrack.ALPHA)
-    flags.AddCredentialFlag(parser)
+    alpha_flags.AddCredentialFlag(parser)
+    parser.display_info.AddFormat(alpha_flags.RESOURCES_AND_OUTPUTS_FORMAT)
 
   def _SetMetadata(self, args, deployment):
     if args.credential:

@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Get transcripts of longer audio from an audio file.
     DESCRIPTION: |
       Get a transcript of audio up to 80 minutes in length. If the audio is

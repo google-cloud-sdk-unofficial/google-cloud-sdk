@@ -90,6 +90,7 @@ for examples.
 """)
   flags.AddDiskTypeFlag(parser, suppressed=True)
   flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
+  flags.AddNodePoolNodeIdentityFlags(parser)
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
 
 
@@ -127,7 +128,6 @@ class Create(base.CreateCommand):
     flags.AddLocalSSDFlag(parser, suppressed=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
-    flags.AddOldNodePoolNodeIdentityFlags(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNodeVersionFlag(parser, hidden=True)
 
@@ -150,12 +150,8 @@ class Create(base.CreateCommand):
     adapter = self.context['api_adapter']
     location_get = self.context['location_get']
     location = location_get(args)
-    if not args.scopes:
-      args.scopes = []
 
     try:
-      if not args.scopes:
-        args.scopes = []
       pool_ref = adapter.ParseNodePool(args.name, location)
       options = self.ParseCreateNodePoolOptions(args)
 
@@ -194,7 +190,6 @@ class CreateBeta(Create):
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
-    flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     # TODO(b/64091817) Un-hide once we're ready to release.
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
@@ -229,7 +224,6 @@ class CreateAlpha(Create):
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
     flags.AddAcceleratorArgs(parser)
-    flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)

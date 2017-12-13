@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Detect broad sets of categories within an image.
     DESCRIPTION: |
       Label Detection detects categories in an image, ranging from modes of

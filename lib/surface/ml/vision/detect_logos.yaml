@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Detect popular product logos within an image.
     DESCRIPTION: |
       Detect popular product logos within an image.

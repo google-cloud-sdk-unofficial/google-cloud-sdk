@@ -78,5 +78,5 @@ class Create(base.CreateCommand):
         candidate_subnets=args.candidate_subnets,
         partner_asn=args.partner_asn,
         partner_name=args.partner_name,
-        partner_interconnect=args.partner_interconnect,
+        partner_interconnect=args.partner_interconnect_name,
         partner_portal_url=args.partner_portal_url)

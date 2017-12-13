@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.health_checks import flags as health_checks_flags
@@ -52,7 +51,7 @@ def _AddInstanceGroupManagerArgs(parser):
       '--size',
       required=True,
       type=arg_parsers.BoundedInt(0, sys.maxint, unlimited=True),
-      help=('The initial number of instances you want in this group.'))
+      help='The initial number of instances you want in this group.')
   parser.add_argument(
       '--description',
       help='An optional description for this group.')
@@ -281,31 +280,29 @@ class CreateAlpha(CreateBeta):
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
-    instance_groups_flags.AddSettingStatefulDisksFlag(parser)
+    instance_groups_flags.AddMigCreateStatefulFlags(parser)
 
-  def _GetStatefulPolicy(self, stateful_disks, client):
-    if stateful_disks is None:
-      return None
-    disks = [
-        client.messages.StatefulPolicyPreservedDisk(deviceName=device)
-        for device in stateful_disks
-    ]
-    preserved_resources = client.messages.StatefulPolicyPreservedResources(
-        disks=disks
-    )
-    return client.messages.StatefulPolicy(
-        preservedResources=preserved_resources)
+  @staticmethod
+  def _GetStatefulPolicy(args, client):
+    if args.stateful_disks:
+      disks = [
+          client.messages.StatefulPolicyPreservedDisk(deviceName=device)
+          for device in args.stateful_disks
+      ]
+      preserved_resources = client.messages.StatefulPolicyPreservedResources(
+          disks=disks)
+      return client.messages.StatefulPolicy(
+          preservedResources=preserved_resources)
+    if args.stateful_names:
+      return client.messages.StatefulPolicy()
+    return None
 
   def _CreateInstanceGroupManager(
       self, args, group_ref, template_ref, client, holder):
     """Create parts of Instance Group Manager shared for the track."""
-    if (group_ref.Collection() != 'compute.instanceGroupManagers' and
-        args.IsSpecified('stateful_disks')):
-      raise exceptions.BadArgumentException(
-          '--stateful-disks',
-          'Allowed only with zonal managed instance groups.')
     instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
         args, holder.resources)
+    instance_groups_flags.ValidateManagedInstanceGroupStatefulProperties(args)
     health_check = managed_instance_groups_utils.GetHealthCheckUri(
         holder.resources, args, self.HEALTH_CHECK_ARG)
     return client.messages.InstanceGroupManager(
@@ -322,7 +319,7 @@ class CreateAlpha(CreateBeta):
                 client.messages, health_check, args.initial_delay)),
         distributionPolicy=self._CreateDistributionPolicy(
             args.zones, holder.resources, client.messages),
-        statefulPolicy=self._GetStatefulPolicy(args.stateful_disks, client),
+        statefulPolicy=self._GetStatefulPolicy(args, client),
     )
 
 DETAILED_HELP = {

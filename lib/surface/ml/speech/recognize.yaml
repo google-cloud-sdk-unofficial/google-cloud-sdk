@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Get transcripts of short (less than 60 seconds) audio from an audio file.
     DESCRIPTION: |
       Get a transcript of an audio file that is less than 60 seconds. You can use

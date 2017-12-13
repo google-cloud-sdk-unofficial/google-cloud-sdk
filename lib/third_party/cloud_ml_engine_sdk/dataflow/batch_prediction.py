@@ -255,7 +255,7 @@ class PredictionDoFn(beam.DoFn):
       # For successful processing, record the time.
       td = datetime.datetime.now() - start
       time_delta_in_ms = int(
-          td.microseconds / 1**3  + (td.seconds + td.days * 24 * 3600) * 10**3)
+          td.microseconds / 10**3  + (td.seconds + td.days * 24 * 3600) * 10**3)
       self._batch_process_ms_distribution.update(time_delta_in_ms)
 
       for i, p in zip(inputs, predictions):

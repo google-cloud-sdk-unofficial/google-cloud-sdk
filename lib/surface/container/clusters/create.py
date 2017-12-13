@@ -146,6 +146,7 @@ for examples.
   flags.AddClusterVersionFlag(parser)
   flags.AddDiskTypeFlag(parser, suppressed=True)
   flags.AddEnableAutoUpgradeFlag(parser)
+  flags.AddClusterNodeIdentityFlags(parser)
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
 
 
@@ -175,8 +176,6 @@ def ValidateBasicAuthFlags(args):
 
 
 def ParseCreateOptionsBase(args):
-  if not args.scopes:
-    args.scopes = []
   flags.MungeBasicAuthFlags(args)
   cluster_ipv4_cidr = args.cluster_ipv4_cidr
   enable_master_authorized_networks = args.enable_master_authorized_networks
@@ -247,7 +246,6 @@ class Create(base.CreateCommand):
     flags.AddMasterAuthorizedNetworksFlags(parser, hidden=True)
     flags.AddNetworkPolicyFlags(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, hidden=True)
-    flags.AddOldClusterNodeIdentityFlags(parser)
     flags.AddPreemptibleFlag(parser, suppressed=True)
     flags.AddNodeVersionFlag(parser, hidden=True)
 
@@ -276,8 +274,6 @@ class Create(base.CreateCommand):
     location_get = self.context['location_get']
     location = location_get(args)
 
-    if not args.scopes:
-      args.scopes = []
     cluster_ref = adapter.ParseCluster(args.name, location)
     options = self.ParseCreateOptions(args)
 
@@ -348,7 +344,6 @@ class CreateBeta(Create):
 
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddClusterNodeIdentityFlags(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
@@ -391,7 +386,6 @@ class CreateAlpha(Create):
     flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddClusterNodeIdentityFlags(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
@@ -411,6 +405,7 @@ class CreateAlpha(Create):
     flags.AddNodeVersionFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser, hidden=True)
     flags.AddAllowRouteOverlapFlag(parser)
+    flags.AddPrivateClusterFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -427,4 +422,6 @@ class CreateAlpha(Create):
     ops.enable_shared_network = args.enable_shared_network
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
+    ops.private_cluster = args.private_cluster
+    ops.master_ipv4_cidr = args.master_ipv4_cidr
     return ops

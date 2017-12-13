@@ -79,7 +79,8 @@ from google.cloud.ml.dataflow import _aggregators as aggregators
 from google.cloud.ml.dataflow import batch_prediction_pipeline
 # pylint: enable=g-import-not-at-top
 
-FILE_FORMAT_SUPPORTED = ["text", "tfrecord", "tfrecord_gzip"]
+FILE_FORMAT_SUPPORTED = ["json", "tfrecord", "tfrecord_gzip"]
+OUTPUT_FORMAT_SUPPORTED = ["json", "csv"]
 FRAMEWORKS_SUPPORTED = [
     mlprediction.TENSORFLOW_FRAMEWORK_NAME,
     mlprediction.SCIKIT_LEARN_FRAMEWORK_NAME,
@@ -96,10 +97,18 @@ class BatchPredictionOptions(PipelineOptions):
     parser.add_argument(
         "--input_file_format",
         dest="input_file_format",
-        default="text",
+        default="json",
         choices=FILE_FORMAT_SUPPORTED,
         help=("The input file format for batch prediction. "
               "Supported formats: %s" % FILE_FORMAT_SUPPORTED))
+
+    parser.add_argument(
+        "--output_file_format",
+        dest="output_file_format",
+        default="json",
+        choices=OUTPUT_FORMAT_SUPPORTED,
+        help=("The output file format for batch prediction. "
+              "Supported formats: %s" % OUTPUT_FORMAT_SUPPORTED))
 
     # TODO(user): consider to use "action=append"-style argparse flag.
     parser.add_value_provider_argument(

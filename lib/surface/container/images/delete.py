@@ -41,9 +41,19 @@ class Delete(base.DeleteCommand):
       """,
       'EXAMPLES':
           """\
-          Deletes the image (and tags) from the input IMAGE_NAME:
+          Deletes the image as long as there aren't additional, unspecified tags
+          referencing it:
 
             $ {command} <IMAGE_NAME>
+
+          Deletes the image (and tags) from the input IMAGE_NAME:
+
+            $ {command} <IMAGE_NAME> --force-delete-tags
+
+          Deletes the image (and tags) from the input IMAGE_NAME, without
+          additional prompting:
+
+            $ {command} <IMAGE_NAME> --force-delete-tags --quiet
 
       """,
   }

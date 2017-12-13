@@ -19,7 +19,6 @@ import os
 
 from googlecloudsdk.api_lib.source import capture
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 from googlecloudsdk.third_party.appengine.tools import context_util
@@ -63,7 +62,6 @@ class Upload(base.CreateCommand):
             The directory tree under source-location will be uploaded under
             target-path in the capture's directory tree.
         """)
-    parser.add_argument('--context-file', metavar='json-file-name', hidden=True)
     parser.add_argument(
         '--output-directory',
         default='.',
@@ -86,13 +84,8 @@ class Upload(base.CreateCommand):
     mgr = capture.CaptureManager()
     result = mgr.UploadCapture(args.capture_id, args.source_location,
                                args.target_path)
-    if args.context_file:
-      raise exceptions.ToolException(
-          'The [--context-file] argument has been deprecated. Use '
-          '[--output-directory] instead.')
-    else:
-      output_dir = args.output_directory
-      files.MakeDir(output_dir)
+    output_dir = args.output_directory
+    files.MakeDir(output_dir)
     output_dir = os.path.realpath(output_dir)
     extended_contexts = result['source_contexts']
 

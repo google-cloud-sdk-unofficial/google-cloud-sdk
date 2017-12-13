@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddBgpPeer(base.UpdateCommand):
   """Add a BGP peer to a Google Compute Engine router.
 
@@ -79,8 +79,8 @@ class AddBgpPeer(base.UpdateCommand):
         [self.GetSetRequest(client, router_ref, modified_router)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddBgpPeerAlpha(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class AddBgpPeerWithCustomAdvertisements(base.UpdateCommand):
   """Add a BGP peer to a Google Compute Engine router."""
 
   ROUTER_ARG = None

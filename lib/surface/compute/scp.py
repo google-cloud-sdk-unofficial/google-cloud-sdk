@@ -97,4 +97,5 @@ class Scp(base.Command):
         recursive=args.recurse,
         compress=args.compress,
         extra_flags=extra_flags,
-        use_account_service=False)
+        use_account_service=False,
+        release_track=self.ReleaseTrack())

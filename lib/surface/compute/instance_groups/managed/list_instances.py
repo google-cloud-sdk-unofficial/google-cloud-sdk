@@ -41,7 +41,7 @@ class ListInstances(base.ListCommand):
                 :label=LAST_ERROR
         )""")
     parser.display_info.AddUriFunc(
-        instance_groups_utils.UriFuncForListInstances)
+        instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -112,7 +112,7 @@ class ListInstancesBeta(ListInstances):
                 :label=LAST_ERROR
         )""")
     parser.display_info.AddUriFunc(
-        instance_groups_utils.UriFuncForListInstances)
+        instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 

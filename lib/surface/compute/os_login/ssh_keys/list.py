@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements command to remove an SSH Public Key from the OS Login Profile."""
+"""Implements command to remove an SSH public key from the OS Login profile."""
 
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
@@ -32,7 +32,7 @@ def _TransformExpiry(resource, undefined=None):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
-  """List the SSH Public Keys from an OS Login Profile."""
+  """List the SSH public keys from an OS Login profile."""
 
   def __init__(self, *args, **kwargs):
     super(List, self).__init__(*args, **kwargs)
@@ -61,6 +61,6 @@ class List(base.ListCommand):
     return keys
 
 List.detailed_help = {
-    'brief': 'List SSH Public Keys from an OS Login Profile.',
+    'brief': 'List SSH public keys from an OS Login profile.',
 }
 

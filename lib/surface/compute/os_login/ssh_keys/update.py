@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements command to remove an SSH Public Key from the OS Login Profile."""
+"""Implements command to remove an SSH public key from the OS Login profile."""
 
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
@@ -23,7 +23,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.Command):
-  """Update an SSH Public Key from an OS Login Profile."""
+  """Update an SSH public key from an OS Login profile."""
 
   def __init__(self, *args, **kwargs):
     super(Update, self).__init__(*args, **kwargs)
@@ -61,11 +61,11 @@ class Update(base.Command):
 
 
 Update.detailed_help = {
-    'brief': 'Update an SSH Public Key in an OS Login Profile.',
+    'brief': 'Update an SSH public key in an OS Login profile.',
     'DESCRIPTION': """\
-      *{command}* will take either a string containing an SSH Public
-      Key or a filename for an SSH Public key and will update the key
-      in the user's OS Login Profile. Currently, only the expiration time,
+      *{command}* will take either a string containing an SSH public
+      key or a filename for an SSH public key and will update the key
+      in the user's OS Login profile. Currently, only the expiration time,
       ``--ttl'', can be updated.
     """
 }

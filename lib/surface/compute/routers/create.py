@@ -24,13 +24,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine router.
-
-    *{command}* is used to create a router for use in dynamic
-  routing with vpn tunnels.
-  """
+  """Create a Google Compute Engine router."""
 
   NETWORK_ARG = None
   ROUTER_ARG = None
@@ -66,12 +62,12 @@ class Create(base.CreateCommand):
                                  request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateWithCustomAdvertisements(base.CreateCommand):
   """Create a Google Compute Engine router.
 
-    *{command}* is used to create a router for use in dynamic
-  routing with VPN tunnels.
+     *{command}* is used to create a router to provide dynamic routing to VPN
+     tunnels and interconnects.
   """
 
   ROUTER_ARG = None

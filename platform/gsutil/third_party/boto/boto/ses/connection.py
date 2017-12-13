@@ -559,4 +559,7 @@ class SESConnection(AWSAuthConnection):
         :type forwarding_enabled: bool
         :param forwarding_enabled: Specifies whether or not to enable feedback forwarding.
         """
-        return self._make_request('SetIdentityFeedbackForwardin                                                                                                                                     
+        return self._make_request('SetIdentityFeedbackForwardingEnabled', {
+            'Identity': identity,
+            'ForwardingEnabled': 'true' if forwarding_enabled else 'false'
+        })

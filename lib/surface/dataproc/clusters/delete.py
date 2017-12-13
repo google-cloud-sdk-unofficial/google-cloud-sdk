@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -36,7 +37,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     parser.add_argument('name', help='The name of the cluster to delete.')
     base.ASYNC_FLAG.AddToParser(parser)
-    util.AddTimeoutFlag(parser)
+    flags.AddTimeoutFlag(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())

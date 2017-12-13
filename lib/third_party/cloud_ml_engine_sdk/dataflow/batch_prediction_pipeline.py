@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Dataflow pipeline for batch prediction in Cloud ML."""
+import cStringIO
+import csv
 import json
 import apache_beam as beam
 from apache_beam.io.textio import WriteToText
+from apache_beam.transforms.combiners import Sample
 import batch_prediction
 from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesText
 from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesTFRecord
@@ -23,6 +26,20 @@ from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesTFRe
 FILE_LIST_SEPARATOR = ","
 OUTPUT_RESULTS_FILES_BASENAME_ = "prediction.results"
 OUTPUT_ERRORS_FILES_BASENAME_ = "prediction.errors_stats"
+
+
+def keys_to_csv(keys):
+  output = cStringIO.StringIO()
+  csv_writer = csv.writer(output)
+  csv_writer.writerow(keys)
+  return output.getvalue()
+
+
+def values_to_csv(entry, keys):
+  output = cStringIO.StringIO()
+  csv_writer = csv.DictWriter(output, keys)
+  csv_writer.writerow(entry)
+  return output.getvalue()
 
 
 def run(p, args, aggregator_dict):
@@ -34,7 +51,7 @@ def run(p, args, aggregator_dict):
   input_file_patterns = args.input_file_patterns
 
   # Setup reader.
-  if input_file_format == "text":
+  if input_file_format == "json":
     reader = p | "READ_TEXT_FILES" >> ReadFromMultiFilesText(
         input_file_patterns)
   elif input_file_format == "tfrecord":
@@ -56,11 +73,32 @@ def run(p, args, aggregator_dict):
                          user_job_id=args.user_job_id,
                          framework=args.framework))
 
-  # Convert predictions to JSON and then write to output files.
-  _ = (results
-       | "TO_JSON" >> beam.Map(json.dumps)
-       | "WRITE_PREDICTION_RESULTS" >> WriteToText(
-           args.output_result_prefix))
+  output_file_format = args.output_file_format.lower()
+  # Convert predictions to target format and then write to output files.
+  if output_file_format == "json":
+    _ = (results
+         | "TO_JSON" >> beam.Map(json.dumps)
+         | "WRITE_PREDICTION_RESULTS" >> WriteToText(
+             args.output_result_prefix))
+  elif output_file_format == "csv":
+    fields = (results
+              | "SAMPLE_SINGLE_ELEMENT" >> Sample.FixedSizeGlobally(1)
+              | "GET_KEYS" >> beam.Map(
+                  # entry could be None if no inputs were valid
+                  lambda entry: entry[0].keys() if entry else []))
+    _ = (fields
+         | "KEYS_TO_CSV" >> beam.Map(keys_to_csv)
+         | "WRITE_KEYS" >> WriteToText(
+             args.output_result_prefix,
+             file_name_suffix="_header.csv",
+             shard_name_template=""))
+    _ = (results
+         | "VALUES_TO_CSV" >> beam.Map(values_to_csv,
+                                       beam.pvalue.AsSingleton(fields))
+         | "WRITE_PREDICTION_RESULTS" >> WriteToText(
+             args.output_result_prefix,
+             file_name_suffix=".csv",
+             append_trailing_newlines=False))
   # Write prediction errors counts to output files.
   _ = (errors
        | "GROUP_BY_ERROR_TYPE" >> beam.combiners.Count.PerKey()

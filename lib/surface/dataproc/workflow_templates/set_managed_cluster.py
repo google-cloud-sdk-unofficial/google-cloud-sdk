@@ -32,33 +32,14 @@ class SetManagedCluster(base.UpdateCommand):
     flags.AddTemplateFlag(parser, 'set managed cluster')
     parser.add_argument(
         '--cluster-name', help='The name of the managed dataproc cluster.')
-    clusters.ArgsForClusterRef(parser)
+    clusters.ArgsForClusterRef(parser, beta=True)
     flags.AddZoneFlag(parser)
+    flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
-    parser.add_argument(
-        '--num-masters',
-        type=int,
-        help="""\
-      The number of master nodes in the cluster.
-
-      [format="csv",options="header"]
-      |========
-      Number of Masters,Cluster Mode
-      1,Standard
-      3,High Availability
-      |========
-      """)
-
-    parser.add_argument(
-        '--single-node',
-        action='store_true',
-        help="""\
-      Create a single node cluster.
-
-      A single node cluster has all master and worker components.
-      It cannot have any separate worker nodes.
-      """)
-
+    # TODO(b/70164645): Consolidate these arguments with the other beta args
+    # All arguments for these arguments are duplicated from the cluster creation
+    # beta track. There should be a ArgsForClusterRefBeta method in clusters.py
+    # that is invoked here so that we don't have to duplicate the arguments.
     parser.add_argument(
         '--max-idle',
         type=arg_parsers.Duration(),
@@ -112,17 +93,6 @@ class SetManagedCluster(base.UpdateCommand):
           }),
           metavar='type=TYPE,[count=COUNT]',
           help=help_msg)
-    parser.add_argument(
-        '--no-address',
-        action='store_true',
-        help="""\
-        If provided, the instances in the cluster will not be assigned external
-        IP addresses.
-
-        Note: Dataproc VMs need access to the Dataproc API. This can be achieved
-        without external IP addresses using Private Google Access
-        (https://cloud.google.com/compute/docs/private-google-access).
-        """)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -138,10 +108,11 @@ class SetManagedCluster(base.UpdateCommand):
         self.ReleaseTrack(), cluster_name)
     use_accelerators = self.ReleaseTrack() == base.ReleaseTrack.BETA
     use_auto_delete_ttl = self.ReleaseTrack() == base.ReleaseTrack.BETA
+    use_min_cpu_platform = self.ReleaseTrack() == base.ReleaseTrack.BETA
 
     cluster_config = clusters.GetClusterConfig(
         args, dataproc, template.projectsId, compute_resources,
-        use_accelerators, use_auto_delete_ttl)
+        use_accelerators, use_auto_delete_ttl, use_min_cpu_platform)
 
     labels = labels_util.ParseCreateArgs(
         args, dataproc.messages.ManagedCluster.LabelsValue)

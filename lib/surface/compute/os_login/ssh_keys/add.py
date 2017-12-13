@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements the command to add an SSH Public Key to the OS Login Profile."""
+"""Implements the command to add an SSH public key to the OS Login profile."""
 
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
@@ -51,11 +51,11 @@ class Add(base.Command):
 
 
 Add.detailed_help = {
-    'brief': 'Add an SSH Public Key to an OS Login Profile.',
+    'brief': 'Add an SSH public key to an OS Login profile.',
     'DESCRIPTION': """\
-      *{command}* will take either a string containing an SSH Public
-      Key or a filename for an SSH Public key and will add that key to the
-      user's OS Login Profile.
+      *{command}* will take either a string containing an SSH public
+      key or a filename for an SSH public key and will add that key to the
+      user's OS Login profile.
     """
 }
 

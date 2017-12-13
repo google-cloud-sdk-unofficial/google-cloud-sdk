@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deployment_manager import alpha_flags
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import properties
 
@@ -110,6 +111,11 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
           self.messages.DeploymentmanagerResourcesListRequest(
               project=dm_base.GetProject(), deployment=deployment.name))
       resources = response.resources
+      if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+        dm_api_util.UpdateActionResourceIntent(resources)
+        if (not args.IsSpecified('format')) and (deployment.update):
+          args.format = (
+              alpha_flags.PREVIEWED_DEPLOYMENT_AND_RESOURCES_AND_OUTPUTS_FORMAT)
     except apitools_exceptions.HttpError:
       # Couldn't get resources, skip adding them to the table.
       resources = None
@@ -144,24 +150,8 @@ class DescribeAlpha(Describe):
   @staticmethod
   def Args(parser):
     Describe.Args(parser, version=base.ReleaseTrack.ALPHA)
-    parser.display_info.AddFormat("""
-              table(
-                deployment:format='default(name, id, description, fingerprint,
-                credential.serviceAccount.email,
-                insertTime, manifest.basename(), labels, operation.operationType,
-                operation.name, operation.progress, operation.status,
-                operation.user, operation.endTime, operation.startTime,
-                operation.error, operation.warnings, update)',
-                resources:format='table(
-                  name:label=NAME,
-                  type:label=TYPE,
-                  update.state.yesno(no="COMPLETED"),
-                  update.intent)',
-              outputs:format='table(
-                name:label=OUTPUTS,
-                finalValue:label=VALUE)'
-             )
-    """)
+    parser.display_info.AddFormat(
+        alpha_flags.DEPLOYMENT_AND_RESOURCES_AND_OUTPUTS_FORMAT)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

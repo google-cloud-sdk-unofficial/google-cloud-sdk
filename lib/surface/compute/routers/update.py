@@ -24,8 +24,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Update a Google Compute Engine router."""
 
   ROUTER_ARG = None
@@ -153,7 +153,7 @@ class UpdateAlpha(base.UpdateCommand):
                           'Updating router [{0}]'.format(router_ref.Name()))
 
 
-UpdateAlpha.detailed_help = {
+UpdateBeta.detailed_help = {
     'DESCRIPTION':
         """
         *{command}* is used to update a Google Compute Engine router.

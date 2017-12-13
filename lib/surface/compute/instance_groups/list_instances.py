@@ -31,7 +31,7 @@ class ListInstances(base.ListCommand):
           instance.scope().segment(0):label=ZONE,
           status)""")
     parser.display_info.AddUriFunc(
-        instance_groups_utils.UriFuncForListInstances)
+        instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(parser)
     flags.AddRegexArg(parser)
 

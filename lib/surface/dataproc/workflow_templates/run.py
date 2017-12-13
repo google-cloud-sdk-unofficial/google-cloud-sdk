@@ -32,7 +32,7 @@ class Run(base.CreateCommand):
   @staticmethod
   def Args(parser):
     flags.AddTemplateFlag(parser, 'run')
-    util.AddTimeoutFlag(parser, default='24h')
+    flags.AddTimeoutFlag(parser, default='24h')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

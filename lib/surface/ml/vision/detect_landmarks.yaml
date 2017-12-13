@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Detect popular natural and man-made structures within an image.
     DESCRIPTION: |
       Google Cloud Vision will recognize landmarks in an image, such as "Palace

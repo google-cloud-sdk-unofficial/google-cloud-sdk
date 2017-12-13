@@ -17,6 +17,10 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command group is deprecated. '
+             'Please use `gcloud beta debug source upload` instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class Capture(base.Group):

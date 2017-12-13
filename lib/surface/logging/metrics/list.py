@@ -20,8 +20,18 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
-class List(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListGA(base.ListCommand):
   """Displays all logs-based metrics."""
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Lists all logs-based metrics.
+      """,
+      'EXAMPLES': """\
+        $ {command} --limit=10
+      """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -47,11 +57,29 @@ class List(base.ListCommand):
         limit=args.limit, batch_size=None, batch_size_attribute='pageSize')
 
 
-List.detailed_help = {
-    'DESCRIPTION': """\
-        Lists all logs-based metrics.
-    """,
-    'EXAMPLES': """\
-          $ {command} --limit=10
-    """,
-}
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(ListGA):
+  """Displays all logs-based metrics."""
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Lists all logs-based metrics.
+      """,
+      'EXAMPLES': """\
+
+      To list up to 10 logs-based metrics, run:
+
+        $ {command} --limit=10
+
+      To view as a simple table with just the name, description, and filter
+      fields, run:
+
+        $ {command} --format="table(name, description, filter)"
+        """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat('yaml')

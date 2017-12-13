@@ -74,6 +74,6 @@ class List(base.ListCommand):
       for tag in model.tags:
         if re.match('deprecated', tag):
           return (
-              'Some devices are deprecated. Learn more at '
-              'https://firebase.google.com/docs/test-lab/overview#deprecation')
+              'Some devices are deprecated. Learn more at https://firebase.'
+              'google.com/docs/test-lab/available-testing-devices#deprecated')
     return None

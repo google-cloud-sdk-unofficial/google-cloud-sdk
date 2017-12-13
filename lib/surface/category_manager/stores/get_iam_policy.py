@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.category_manager import flags
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetIamPolicy(base.Command):
+class GetIamPolicy(base.ListCommand):
   """Get iam policy of a taxonomy store."""
 
   @staticmethod

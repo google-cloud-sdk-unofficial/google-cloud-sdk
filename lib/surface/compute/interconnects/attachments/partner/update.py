@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
+from googlecloudsdk.command_lib.util import labels_util
 
 
 class Update(base.UpdateCommand):
@@ -40,6 +41,7 @@ class Update(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -51,7 +53,20 @@ class Update(base.UpdateCommand):
     interconnect_attachment = client.InterconnectAttachment(
         attachment_ref, compute_client=holder.client)
 
+    labels = None
+    label_fingerprint = None
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
+      old_attachment = interconnect_attachment.Describe()
+      labels_cls = holder.client.messages.InterconnectAttachment.LabelsValue
+      labels = labels_diff.Apply(labels_cls,
+                                 labels=old_attachment.labels).GetOrNone()
+      if labels is not None:
+        label_fingerprint = old_attachment.labelFingerprint
+
     return interconnect_attachment.PatchAlpha(
         description=args.description,
         admin_enabled=args.admin_enabled,
+        labels=labels,
+        label_fingerprint=label_fingerprint
     )

@@ -42,7 +42,8 @@ class CopyFiles(base.Command):
     cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
 
     scp_helper = scp_utils.BaseScpHelper()
-    return scp_helper.RunScp(holder, cua_holder, args, recursive=True)
+    return scp_helper.RunScp(holder, cua_holder, args, recursive=True,
+                             release_track=self.ReleaseTrack())
 
 
 # pylint:disable=line-too-long

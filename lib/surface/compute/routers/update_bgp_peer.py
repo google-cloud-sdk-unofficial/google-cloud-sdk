@@ -24,7 +24,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateBgpPeer(base.UpdateCommand):
   """Update a BGP peer on a Google Compute Engine router."""
 
@@ -69,8 +69,8 @@ UpdateBgpPeer.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateBgpPeerAlpha(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateBgpPeerBeta(base.UpdateCommand):
   """Update a BGP peer on a Google Compute Engine router."""
 
   ROUTER_ARG = None
@@ -215,7 +215,7 @@ def _UpdateBgpPeer(resource, args):
   return peer
 
 
-UpdateBgpPeerAlpha.detailed_help = {
+UpdateBgpPeerBeta.detailed_help = {
     'DESCRIPTION':
         """
         *{command}* is used to update a BGP peer on a Google Compute Engine

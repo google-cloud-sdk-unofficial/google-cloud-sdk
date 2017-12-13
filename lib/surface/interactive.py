@@ -39,14 +39,9 @@ _SPLASH = """
 Tips:
 
 * start by typing "gcloud " to get auto-suggestions
-* hit *F7* at any point in the command line to make it the default prefix
-* hit *F8* at any point in the command line to open the detailed help
-  page in your browser, if available, or to display it in the terminal
-* run `gcloud alpha interactive --help` for detailed interactive help
-* to enable autocompletion and active help for *gsutil* and *kubectl*:
-  * exit `gcloud alpha interactive`
-  * run `gcloud alpha interactive --update-cli-trees`
-  * it takes a few minutes, but will not be needed in a future release
+* run *gcloud alpha interactive --update-cli-trees* to enable autocompletion
+  for *gsutil* and *kubectl*
+* run `gcloud alpha interactive --help` for more info
 
 Run *$ gcloud feedback* to report bugs or request new features.
 
@@ -195,11 +190,6 @@ class Interactive(base.Command):
       {command} --context="gcloud "
 
   ## NOTES
-
-  Although the goal is to provide the same experience across all platforms,
-  the underlying open-source libraries are biased in this decreasing order:
-  *linux*, *macos*, *Windows*. As the alpha implementation matures the platform
-  differences will subside.
 
   On Windows install *git*(1) for a *bash*(1) experience. *{command}* will
   then use the *git* (MinGW) *bash* instead of *cmd.exe*.

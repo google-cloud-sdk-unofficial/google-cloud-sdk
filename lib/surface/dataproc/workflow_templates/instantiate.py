@@ -28,7 +28,7 @@ class Instantiate(base.CreateCommand):
   @staticmethod
   def Args(parser):
     flags.AddTemplateFlag(parser, 'run')
-    util.AddTimeoutFlag(parser, default='35m')
+    flags.AddTimeoutFlag(parser, default='35m')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

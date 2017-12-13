@@ -131,19 +131,19 @@ class Oauth2WithReauthCredentials(client.OAuth2Credentials):
             self._do_refresh_request(http, rapt_refreshed=True)
             return
 
-          # An {'error':...} response body at this time means the refresh token
-          # is expired or revoked, so we flag the credentials as such.
-          logger.info('Failed to retrieve access token: {0}'.format(content))
-          error_msg = 'Invalid response {0}.'.format(resp.status)
-          if 'error' in d:
-              error_msg = d['error']
-              if 'error_description' in d:
-                  error_msg += ': ' + d['error_description']
-              self.invalid = True
-              if self.store is not None:
-                  self.store.locked_put(self)
-          raise reauth_errors.HttpAccessTokenRefreshError(
-            error_msg, status=resp.status)
+        # An {'error':...} response body at this time means the refresh token
+        # is expired or revoked, so we flag the credentials as such.
+        logger.info('Failed to retrieve access token: {0}'.format(content))
+        error_msg = 'Invalid response {0}.'.format(resp.status)
+        if 'error' in d:
+            error_msg = d['error']
+            if 'error_description' in d:
+                error_msg += ': ' + d['error_description']
+            self.invalid = True
+            if self.store is not None:
+                self.store.locked_put(self)
+        raise reauth_errors.HttpAccessTokenRefreshError(
+          error_msg, status=resp.status)
 
     def _do_refresh_request(self, http, rapt_refreshed=False):
       """Refresh the access_token using the refresh_token.

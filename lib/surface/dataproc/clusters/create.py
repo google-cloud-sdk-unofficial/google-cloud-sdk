@@ -23,16 +23,17 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataproc import clusters
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _CommonArgs(parser):
+def _CommonArgs(parser, beta=False):
   """Register flags common to all tracks."""
   base.ASYNC_FLAG.AddToParser(parser)
   parser.add_argument('name', help='The name of this cluster.')
-  clusters.ArgsForClusterRef(parser)
+  clusters.ArgsForClusterRef(parser, beta)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -49,15 +50,12 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, beta=False)
     parser.add_argument(
         '--zone',
         '-z',
         help='The compute zone (e.g. us-central1-a) for the cluster.',
         action=actions.StoreProperty(properties.VALUES.compute.zone))
-    parser.add_argument('--num-masters', type=int, hidden=True)
-    parser.add_argument('--single-node', action='store_true', hidden=True)
-    parser.add_argument('--no-address', action='store_true', hidden=True)
 
   @staticmethod
   def ValidateArgs(args):
@@ -90,10 +88,11 @@ class Create(base.CreateCommand):
         self.ReleaseTrack(), args.name)
     use_accelerators = self.ReleaseTrack() == base.ReleaseTrack.BETA
     use_auto_delete_ttl = self.ReleaseTrack() == base.ReleaseTrack.BETA
+    use_min_cpu_platform = self.ReleaseTrack() == base.ReleaseTrack.BETA
 
     cluster_config = clusters.GetClusterConfig(
         args, dataproc, cluster_ref.projectId, compute_resources,
-        use_accelerators, use_auto_delete_ttl)
+        use_accelerators, use_auto_delete_ttl, use_min_cpu_platform)
 
     cluster = dataproc.messages.Cluster(
         config=cluster_config,
@@ -156,7 +155,8 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, beta=True)
+    flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     parser.add_argument(
         '--zone',
         '-z',
@@ -166,30 +166,6 @@ class CreateBeta(Create):
             pick a zone in the region.
             """,
         action=actions.StoreProperty(properties.VALUES.compute.zone))
-
-    parser.add_argument(
-        '--num-masters',
-        type=int,
-        help="""\
-      The number of master nodes in the cluster.
-
-      [format="csv",options="header"]
-      |========
-      Number of Masters,Cluster Mode
-      1,Standard
-      3,High Availability
-      |========
-      """)
-
-    parser.add_argument(
-        '--single-node',
-        action='store_true',
-        help="""\
-      Create a single node cluster.
-
-      A single node cluster has all master and worker components.
-      It cannot have any separate worker nodes.
-      """)
 
     parser.add_argument(
         '--max-idle',
@@ -244,20 +220,10 @@ class CreateBeta(Create):
           }),
           metavar='type=TYPE,[count=COUNT]',
           help=help_msg)
-    parser.add_argument(
-        '--no-address',
-        action='store_true',
-        help="""\
-        If provided, the instances in the cluster will not be assigned external
-        IP addresses.
-
-        Note: Dataproc VMs need access to the Dataproc API. This can be achieved
-        without external IP addresses using Private Google Access
-        (https://cloud.google.com/compute/docs/private-google-access).
-        """)
 
   @staticmethod
   def ValidateArgs(args):
+    super(CreateBeta, CreateBeta).ValidateArgs(args)
     if args.master_accelerator and 'type' not in args.master_accelerator:
       raise exceptions.InvalidArgumentException(
           '--master-accelerator', 'accelerator type must be specified. '

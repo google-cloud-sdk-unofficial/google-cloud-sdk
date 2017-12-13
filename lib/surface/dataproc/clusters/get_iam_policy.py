@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class GetIamPolicy(base.Command):
+class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a cluster.
 
   Gets the IAM policy for a cluster, given a cluster name.

@@ -13,46 +13,71 @@
 # limitations under the License.
 """Command for listing instance configs of a managed instance group."""
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_groups_utils
+from googlecloudsdk.api_lib.compute import request_helper
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
-  """List per instance configs of a managed instance group."""
+  """List per instance configs of a managed instance group.
+
+  Lists per instance configs for each instance with preserved instance name
+  and/or resources (like disks). List is presented by default in form of a tree
+  (YAML) due to a potential for having multiple resources by single per instance
+  config.
+  """
 
   @staticmethod
   def Args(parser):
-    instance_groups_flags.GetInstanceGroupManagerArg(
-        region_flag=False).AddArgument(
-            parser, operation_type='list instance configs for')
-    parser.display_info.AddFormat("""table(
-        items.instance,
-        items.override.disks.deviceName)
-    """)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser, operation_type='list instance configs for')
+
+    parser.display_info.AddFormat('yaml')
+    parser.display_info.AddUriFunc(
+        instance_groups_utils.UriFuncForListInstanceRelatedObjects)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-    project = properties.VALUES.core.project.Get(required=True)
-    igm_ref = (
-        instance_groups_flags.GetInstanceGroupManagerArg(
-            region_flag=False).
-        ResolveAsResource)(
-            args, holder.resources, default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(holder.client, project))
+    resources = holder.resources
 
-    request = (
-        client.messages.
-        ComputeInstanceGroupManagersListPerInstanceConfigsRequest)(
-            filter=args.filter,
-            instanceGroupManager=igm_ref.Name(),
-            project=igm_ref.project,
-            zone=igm_ref.zone,
-        )
+    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+               ResolveAsResource)(
+                   args,
+                   resources,
+                   scope_lister=compute_flags.GetDefaultScopeLister(client),
+               )
 
-    return client.MakeRequests([(
-        client.apitools_client.instanceGroupManagers, 'ListPerInstanceConfigs',
-        request)])
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      service = client.apitools_client.instanceGroupManagers
+      request = (client.messages.
+                 ComputeInstanceGroupManagersListPerInstanceConfigsRequest)(
+                     instanceGroupManager=igm_ref.Name(),
+                     project=igm_ref.project,
+                     zone=igm_ref.zone,
+                 )
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      service = client.apitools_client.regionInstanceGroupManagers
+      request = (
+          client.messages.
+          ComputeRegionInstanceGroupManagersListPerInstanceConfigsRequest)(
+              instanceGroupManager=igm_ref.Name(),
+              project=igm_ref.project,
+              region=igm_ref.region,
+          )
+
+    errors = []
+    results = list(
+        request_helper.MakeRequests(
+            requests=[(service, 'ListPerInstanceConfigs', request)],
+            http=client.apitools_client.http,
+            batch_url=client.batch_url,
+            errors=errors))
+
+    if errors:
+      utils.RaiseToolException(errors)
+
+    return instance_groups_utils.UnwrapResponse(results, 'items')

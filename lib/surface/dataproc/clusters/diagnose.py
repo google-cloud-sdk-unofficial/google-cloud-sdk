@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
 
@@ -30,7 +31,7 @@ class Diagnose(base.Command):
 
   @staticmethod
   def Args(parser):
-    util.AddTimeoutFlag(parser)
+    flags.AddTimeoutFlag(parser)
     parser.add_argument(
         'name',
         help='The name of the cluster to diagnose.')

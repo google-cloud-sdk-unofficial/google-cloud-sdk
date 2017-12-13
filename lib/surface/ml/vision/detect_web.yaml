@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Detect entities in an image from similar images on the web.
     DESCRIPTION: |
       Detect entities in an image from similar images on the web.

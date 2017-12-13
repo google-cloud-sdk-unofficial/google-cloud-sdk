@@ -126,9 +126,26 @@ class AlphaCreate(Create):
   """
   with_disabled = True
 
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='create')
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        'The network to which this rule is attached.', required=False)
+    firewalls_utils.AddCommonArgs(
+        parser,
+        for_update=False,
+        with_egress_support=True,
+        with_service_account=True,
+        with_disabled=cls.with_disabled)
+    firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
+    flags.AddEnableLogging(parser, default=None)
+
   def _CreateFirewall(self, holder, args):
     firewall, project = super(AlphaCreate, self)._CreateFirewall(holder, args)
     if args.disabled is not None:
       firewall.disabled = args.disabled
+    firewall.enableLogging = args.enable_logging
 
     return firewall, project

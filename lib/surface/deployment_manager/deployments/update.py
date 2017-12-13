@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.deployment_manager import dm_labels
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.deployment_manager import alpha_flags
 from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
@@ -289,10 +290,10 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, dm_api_util.HTTP_ERROR_FORMAT)
 
-      return dm_api_util.FetchResourcesAndOutputs(self.client,
-                                                  self.messages,
-                                                  dm_base.GetProject(),
-                                                  deployment_ref.deployment)
+      return dm_api_util.FetchResourcesAndOutputs(
+          self.client, self.messages, dm_base.GetProject(),
+          deployment_ref.deployment,
+          self.ReleaseTrack() is base.ReleaseTrack.ALPHA)
 
   def _GetUpdatedDeploymentLabels(self, args, deployment):
     update_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
@@ -315,7 +316,8 @@ class UpdateAlpha(Update):
   @staticmethod
   def Args(parser):
     Update.Args(parser, version=base.ReleaseTrack.ALPHA)
-    flags.AddCredentialFlag(parser)
+    alpha_flags.AddCredentialFlag(parser)
+    parser.display_info.AddFormat(alpha_flags.RESOURCES_AND_OUTPUTS_FORMAT)
 
 
 @base.UnicodeIsSupported

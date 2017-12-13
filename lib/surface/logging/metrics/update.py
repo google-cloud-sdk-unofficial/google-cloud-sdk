@@ -15,25 +15,49 @@
 """'logging metrics update' command."""
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 
 
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
   """Updates the definition of a logs-based metric."""
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Updates the description or the filter expression of an existing
+          logs-based metric.
+      """,
+      'EXAMPLES': """\
+          To update the description of a metric called high_severity_count, run:
+
+            $ {command} high_severity_count --description="Count of high-severity log entries."
+
+          To update the filter expression of the metric, run:
+
+            $ {command} high_severity_count --log-filter="severity >= WARNING"
+
+          Detailed information about filters can be found at:
+          [](https://cloud.google.com/logging/docs/view/advanced_filters)
+      """,
+  }
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument(
         'metric_name', help='The name of the log-based metric to update.')
-    parser.add_argument(
-        '--description', required=False,
+    config_group = parser.add_argument_group(
+        help='Data about the metric to update.',
+        required=True
+    )
+    config_group.add_argument(
+        '--description',
         help=('A new description for the metric. '
               'If omitted, the description is not changed.'))
-    parser.add_argument(
-        '--log-filter', required=False,
+    config_group.add_argument(
+        '--log-filter',
         help=('A new filter string for the metric. '
               'If omitted, the filter is not changed.'))
 
@@ -47,11 +71,6 @@ class Update(base.UpdateCommand):
     Returns:
       The updated metric.
     """
-    # One of the flags is required to update the metric.
-    if not (args.description or args.log_filter):
-      raise exceptions.MinimumArgumentException(
-          ['--description', '--log-filter'])
-
     # Calling the API's Update method on a non-existing metric creates it.
     # Make sure the metric exists so we don't accidentally create it.
     metric = util.GetClient().projects_metrics.Get(
@@ -59,19 +78,10 @@ class Update(base.UpdateCommand):
             metricName=util.CreateResourceName(
                 util.GetCurrentProjectParent(), 'metrics', args.metric_name)))
 
-    if args.description:
-      metric_description = args.description
-    else:
-      metric_description = metric.description
-    if args.log_filter:
-      metric_filter = args.log_filter
-    else:
-      metric_filter = metric.filter
-
-    updated_metric = util.GetMessages().LogMetric(
-        name=args.metric_name,
-        description=metric_description,
-        filter=metric_filter)
+    updated_metric = util.UpdateLogMetric(
+        metric,
+        description=args.description,
+        log_filter=args.log_filter)
 
     result = util.GetClient().projects_metrics.Update(
         util.GetMessages().LoggingProjectsMetricsUpdateRequest(
@@ -82,21 +92,93 @@ class Update(base.UpdateCommand):
     return result
 
 
-Update.detailed_help = {
-    'DESCRIPTION': """\
-        Updates the description or the filter expression of an existing
-        logs-based metric.
-    """,
-    'EXAMPLES': """\
-        To update the description of a metric called high_severity_count, run:
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
+  """Updates the definition of a logs-based metric."""
 
-          $ {command} high_severity_count --description="Count of high-severity log entries."
+  detailed_help = {
+      'DESCRIPTION': """\
+          Updates the description or the filter expression of an existing
+          logs-based metric.
+      """,
+      'EXAMPLES': """\
+          To update the description of a metric called high_severity_count, run:
 
-        To update the filter expression of the metric, run:
+            $ {command} high_severity_count --description="Count of high-severity log entries."
 
-          $ {command} high_severity_count --log-filter="severity >= WARNING"
+          To update the filter expression of the metric, run:
 
-        Detailed information about filters can be found at:
-        [](https://cloud.google.com/logging/docs/view/advanced_filters)
-    """,
-}
+            $ {command} high_severity_count --log-filter="severity >= WARNING"
+
+          Detailed information about filters can be found at:
+          [](https://cloud.google.com/logging/docs/view/advanced_filters)
+
+          For advanced features such as user-defined labels and distribution
+          metrics, update using a config file:
+
+            $ {command} high_severity_count --config-from-file=$PATH_TO_FILE
+
+          The config file should be in YAML format. Detailed information about
+          how to configure metrics can be found at: [](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics#LogMetric).
+          Any top-level fields in the LogMetric definition that aren't specified
+          in the config file will not be updated in the metric.
+      """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    parser.add_argument(
+        'metric_name', help='The name of the log-based metric to update.')
+    config_group = parser.add_argument_group(
+        help='Data about the metric to update.',
+        mutex=True,
+        required=True)
+    legacy_mode_group = config_group.add_argument_group(
+        help=('Arguments to specify information about simple counter logs-'
+              'based metrics.'))
+    legacy_mode_group.add_argument(
+        '--description', required=False,
+        help=('A new description for the metric. '
+              'If omitted, the description is not changed.'))
+    legacy_mode_group.add_argument(
+        '--log-filter', required=False,
+        help=('A new filter string for the metric. '
+              'If omitted, the filter is not changed.'))
+    config_group.add_argument('--config-from-file',
+                              help=('A path to a YAML file specifying the '
+                                    'updates to be made to the logs-based '
+                                    'metric.'),
+                              type=arg_parsers.BufferedFileInput())
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to
+        this command invocation.
+
+    Returns:
+      The updated metric.
+    """
+
+    # Calling the API's Update method on a non-existing metric creates it.
+    # Make sure the metric exists so we don't accidentally create it.
+    metric = util.GetClient().projects_metrics.Get(
+        util.GetMessages().LoggingProjectsMetricsGetRequest(
+            metricName=util.CreateResourceName(
+                util.GetCurrentProjectParent(), 'metrics', args.metric_name)))
+
+    updated_metric = util.UpdateLogMetric(metric,
+                                          args.description,
+                                          args.log_filter,
+                                          args.config_from_file)
+
+    result = util.GetClient().projects_metrics.Update(
+        util.GetMessages().LoggingProjectsMetricsUpdateRequest(
+            metricName=util.CreateResourceName(
+                util.GetCurrentProjectParent(), 'metrics', args.metric_name),
+            logMetric=updated_metric))
+    log.UpdatedResource(args.metric_name)
+    return result
+

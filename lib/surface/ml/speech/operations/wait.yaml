@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Poll long-running speech recognition operation until it completes.
     DESCRIPTION: |
       Poll a long-running speech recognition operation until it completes. When

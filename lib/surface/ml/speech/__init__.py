@@ -16,7 +16,9 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Speech(base.Group):
   """Use Google Cloud Speech to get transcripts of audio.
 

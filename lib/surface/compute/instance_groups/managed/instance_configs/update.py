@@ -12,112 +12,168 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for deleting managed instance group."""
+"""Command for updating managed instance config."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_getter
+from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
+from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_disk_getter
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  """Update per instance config of a managed instance group.
+  r"""Update per instance config of a managed instance group.
 
-  *{command}* updates per instance config of a Google Compute Engine managed
-  instance group.
+  *{command}* updates per instance config of instance controlled by a Google
+  Compute Engine managed instance group. Command gives option to change the list
+  of preserved resources by the instance during restart or recreation.
+
+  For example:
+
+    $ {command} example-group --instance=example-instance \
+        --update-stateful-disk=device-name=my-disk-3,\
+        source=projects/my-project/zones/us-central1-a/disks/my-disk-3 \
+        --remove-stateful-disks=my-disk-1,my-disk-2
+
+  will update stateful disk `my-disk-3` to the new one pointed by `source` (or
+  add if `my-disk-3` did not exist in the instance config); it will also remove
+  `my-disk-1` and `my-disk-2` from the instance config overrides - they will not
+  be preserved anymore during next restart or recreation of the instance.
   """
+
+  @staticmethod
+  def _CombinePerInstanceConfigMessage(holder, configs_getter, igm_ref,
+                                       instance_ref, update_stateful_disks,
+                                       remove_stateful_disks):
+    disk_getter = instance_disk_getter.InstanceDiskGetter(
+        instance_ref=instance_ref, holder=holder)
+    messages = holder.client.messages
+    per_instance_config = configs_getter.get_instance_config(
+        igm_ref=igm_ref, instance_ref=instance_ref)
+
+    per_instance_config.override.reset('origin')
+
+    remove_stateful_disks_set = set(remove_stateful_disks or [])
+    update_stateful_disks_dict = Update._UpdateStatefulDisksToDict(
+        update_stateful_disks)
+
+    new_stateful_disks = []
+    for current_stateful_disk in per_instance_config.override.disks:
+      if current_stateful_disk.deviceName in remove_stateful_disks_set:
+        continue
+      if current_stateful_disk.deviceName in update_stateful_disks_dict:
+        update_stateful_disk = update_stateful_disks_dict[
+            current_stateful_disk.deviceName]
+        source = update_stateful_disk.get('source')
+        mode = update_stateful_disk.get('mode')
+        if not (source or mode):
+          raise exceptions.InvalidArgumentException(
+              parameter_name='--update-stateful-disk',
+              message=('[source] or [mode] is required when updating'
+                       ' [device-name] already existing in instance config'))
+        if source:
+          current_stateful_disk.source = source
+        if mode:
+          current_stateful_disk.mode = instance_configs_messages.GetMode(
+              messages=messages, mode=mode)
+        del update_stateful_disks_dict[current_stateful_disk.deviceName]
+      new_stateful_disks.append(current_stateful_disk)
+
+    for update_stateful_disk in update_stateful_disks_dict.values():
+      new_stateful_disks.append(
+          instance_configs_messages.GetDiskOverride(
+              messages=messages,
+              stateful_disk=update_stateful_disk,
+              disk_getter=disk_getter))
+
+    per_instance_config.override.disks = new_stateful_disks
+
+    return per_instance_config
+
+  @staticmethod
+  def _UpdateStatefulDisksToDict(update_stateful_disks):
+    update_stateful_disks_dict = {}
+    for update_stateful_disk in update_stateful_disks or []:
+      update_stateful_disks_dict[update_stateful_disk.get(
+          'device-name')] = update_stateful_disk
+    return update_stateful_disks_dict
+
+  @staticmethod
+  def _CreateInstanceReference(holder, igm_ref, instance_name):
+    """Creates reference to instance in instance group (zonal or regional)."""
+    if instance_name.startswith('https://') or instance_name.startswith(
+        'http://'):
+      return holder.resources.ParseURL(instance_name)
+    instance_references = (
+        managed_instance_groups_utils.CreateInstanceReferences)(
+            holder=holder, igm_ref=igm_ref, instance_names=[instance_name])
+    if not instance_references:
+      raise managed_instance_groups_utils.ResourceCannotBeResolvedException(
+          'Instance name {0} cannot be resolved'.format(instance_name))
+    return instance_references[0]
 
   @staticmethod
   def Args(parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
-        region_flag=False).AddArgument(parser, operation_type='update')
-    parser.add_argument(
-        '--instance',
-    )
-    instance_groups_flags.AddSettingStatefulDisksFlag(parser, required=True)
-
-  def _GetInstance(self, holder, igm_ref, instance_name):
-    messages = holder.client.messages
-    instance_ref = holder.resources.Parse(
-        instance_name,
-        collection='compute.instances',
-        params={
-            'project': igm_ref.project,
-            'zone': igm_ref.zone,
-        })
-    request = messages.ComputeInstancesGetRequest(
-        instance=instance_ref.Name(),
-        project=instance_ref.project,
-        zone=instance_ref.zone,
-    )
-    return holder.client.apitools_client.instances.Get(request)
-
-  def _GetDiskSource(self, instance, device):
-    for d in instance.disks:
-      if d.deviceName == device:
-        return d.source
-    raise exceptions.BadArgumentException(
-        '--stateful-disks',
-        'The instance doesn\'t have a disk with specified device name.')
-
-  def _GetDiskOverride(self, messages, device, instance):
-    return messages.ManagedInstanceOverrideDiskOverride(
-        deviceName=device,
-        source=self._GetDiskSource(instance, device)
-    )
-
-  def _GetUpdatePerInstanceConfigRequests(
-      self, client, igm_ref, instance, stateful_devices):
-    """Returns a list of delete messages for instance group managers."""
-
-    if not stateful_devices:
-      stateful_devices = []
-
-    messages = client.messages
-    disk_overrides = [
-        self._GetDiskOverride(messages, device, instance)
-        for device in stateful_devices
-    ]
-    override = messages.ManagedInstanceOverride(disks=disk_overrides)
-    per_instance_config = messages.PerInstanceConfig(
-        instance=instance.selfLink,
-        override=override,
-    )
-    req = messages.InstanceGroupManagersUpdatePerInstanceConfigsReq(
-        perInstanceConfigs=[per_instance_config],
-    )
-    return messages.ComputeInstanceGroupManagersUpdatePerInstanceConfigsRequest(
-        instanceGroupManager=igm_ref.Name(),
-        instanceGroupManagersUpdatePerInstanceConfigsReq=req,
-        project=igm_ref.project,
-        zone=igm_ref.zone,
-    )
+        region_flag=True).AddArgument(
+            parser, operation_type='update per instance config for')
+    instance_groups_flags.AddMigStatefulFlagsForInstanceConfigs(
+        parser, for_update=True)
+    instance_groups_flags.AddMigStatefulForceInstanceUpdateFlag(parser)
 
   def Run(self, args):
+    instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
+        args, for_update=True)
+
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-    project = properties.VALUES.core.project.Get(required=True)
-    igm_ref = (
-        instance_groups_flags.GetInstanceGroupManagerArg(
-            region_flag=False).
-        ResolveAsResource)(
-            args, holder.resources, default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=flags.GetDefaultScopeLister(client, project))
+    resources = holder.resources
 
-    instance = self._GetInstance(holder, igm_ref, args.instance)
-    request = self._GetUpdatePerInstanceConfigRequests(
-        client, igm_ref, instance, args.stateful_disks)
+    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
+               ResolveAsResource)(
+                   args,
+                   resources,
+                   scope_lister=compute_flags.GetDefaultScopeLister(client),
+               )
+    instance_ref = self._CreateInstanceReference(
+        holder=holder, igm_ref=igm_ref, instance_name=args.instance)
 
-    service = client.apitools_client.instanceGroupManagers
-    operation = service.UpdatePerInstanceConfigs(request)
-    operation_ref = holder.resources.Parse(
-        operation.selfLink, collection='compute.zoneOperations')
+    configs_getter = (
+        instance_configs_getter.InstanceConfigsGetterWithSimpleCache)(
+            client)
+    configs_getter.check_if_instance_config_exists(
+        igm_ref=igm_ref, instance_ref=instance_ref, should_exist=True)
+
+    per_instance_config_message = self._CombinePerInstanceConfigMessage(
+        holder, configs_getter, igm_ref, instance_ref,
+        args.update_stateful_disk, args.remove_stateful_disks)
+
+    operation_ref = instance_configs_messages.CallPerInstanceConfigUpdate(
+        holder=holder,
+        igm_ref=igm_ref,
+        per_instance_config_message=per_instance_config_message)
+
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      service = holder.client.apitools_client.instanceGroupManagers
+    else:
+      service = holder.client.apitools_client.regionInstanceGroupManagers
+
     operation_poller = poller.Poller(service)
-    return waiter.WaitFor(
-        operation_poller, operation_ref, 'Updating instance configs.')
+    update_result = waiter.WaitFor(operation_poller, operation_ref,
+                                   'Updating instance config.')
+
+    if args.force_instance_update:
+      apply_operation_ref = (
+          instance_configs_messages.CallApplyUpdatesToInstances)(
+              holder=holder, igm_ref=igm_ref, instances=[str(instance_ref)])
+      return waiter.WaitFor(operation_poller, apply_operation_ref,
+                            'Applying updates to instances.')
+
+    return update_result

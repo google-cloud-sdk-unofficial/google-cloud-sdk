@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements command to remove an SSH Public Key from the OS Login Profile."""
+"""Implements command to remove an SSH public key from the OS Login profile."""
 
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
@@ -23,7 +23,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Remove(base.Command):
-  """Remove an SSH Public Key from an OS Login Profile."""
+  """Remove an SSH public key from an OS Login profile."""
 
   def __init__(self, *args, **kwargs):
     super(Remove, self).__init__(*args, **kwargs)
@@ -54,11 +54,11 @@ class Remove(base.Command):
 
 
 Remove.detailed_help = {
-    'brief': 'Remove an SSH Public Key from an OS Login Profile.',
+    'brief': 'Remove an SSH public key from an OS Login profile.',
     'DESCRIPTION': """\
-      *{command}* will take either a string containing an SSH Public
-      Key or a filename for an SSH Public key and will remove that key from the
-      user's OS Login Profile. The key value passed in can either be the
+      *{command}* will take either a string containing an SSH public
+      key or a filename for an SSH public key and will remove that key from the
+      user's OS Login profile. The key value passed in can either be the
       full SSH key or the OS Login fingerprint for that key.
     """
 }

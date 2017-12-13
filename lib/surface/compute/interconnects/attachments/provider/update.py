@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
+from googlecloudsdk.command_lib.util import labels_util
 
 
 class Update(base.UpdateCommand):
@@ -40,6 +41,7 @@ class Update(base.UpdateCommand):
     attachment_flags.AddBandwidth(parser, required=False)
     attachment_flags.AddPartnerMetadata(parser, required=False)
     attachment_flags.AddDescription(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -51,9 +53,22 @@ class Update(base.UpdateCommand):
     interconnect_attachment = client.InterconnectAttachment(
         attachment_ref, compute_client=holder.client)
 
+    labels = None
+    label_fingerprint = None
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    if labels_diff.MayHaveUpdates():
+      old_attachment = interconnect_attachment.Describe()
+      labels_cls = holder.client.messages.InterconnectAttachment.LabelsValue
+      labels = labels_diff.Apply(labels_cls,
+                                 labels=old_attachment.labels).GetOrNone()
+      if labels is not None:
+        label_fingerprint = old_attachment.labelFingerprint
+
     return interconnect_attachment.PatchAlpha(
         description=args.description,
         bandwidth=args.bandwidth,
         partner_name=args.partner_name,
-        partner_interconnect=args.partner_interconnect,
-        partner_portal_url=args.partner_portal_url)
+        partner_interconnect=args.partner_interconnect_name,
+        partner_portal_url=args.partner_portal_url,
+        labels=labels,
+        label_fingerprint=label_fingerprint)

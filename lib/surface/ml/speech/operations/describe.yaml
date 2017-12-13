@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Get description of a long-running speech recognition operation.
     DESCRIPTION: |
       Get information about a long-running speech recognition operation.

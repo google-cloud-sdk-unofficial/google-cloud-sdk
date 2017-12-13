@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA, BETA]
-
-  help_text:
+- help_text:
     brief: Detect dense text in an image.
     DESCRIPTION: |
       Detect dense text in an image, such as books and research reports.

@@ -14,12 +14,13 @@
 """`gcloud tasks queues get-iam-policy` command."""
 
 from googlecloudsdk.api_lib.tasks import queues
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 
 
-class GetIamPolicy(base_classes.BaseIamCommand):
+class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
   """Get the IAM policy for a queue.
 
   This command gets the IAM policy for a queue. If formatted as JSON, the output

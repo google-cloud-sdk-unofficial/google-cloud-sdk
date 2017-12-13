@@ -32,6 +32,7 @@ class UpdateFirewall(base.UpdateCommand):
   with_egress_firewall = True
   with_service_account = True
   with_disabled = False
+  with_logging = False
 
   FIREWALL_RULE_ARG = None
 
@@ -65,6 +66,8 @@ class UpdateFirewall(base.UpdateCommand):
           for x in (args.source_service_accounts, args.target_service_accounts))
     if self.with_disabled:
       args_unset = args_unset and args.disabled is None
+    if self.with_logging:
+      args_unset = (args_unset and args.enable_logging is None)
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
@@ -231,6 +234,20 @@ class AlphaUpdateFirewall(UpdateFirewall):
   unaffected.
   """
   with_disabled = True
+  with_logging = True
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
+    firewalls_utils.AddCommonArgs(
+        parser,
+        for_update=True,
+        with_egress_support=cls.with_egress_firewall,
+        with_service_account=cls.with_service_account,
+        with_disabled=cls.with_disabled)
+    firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
+    flags.AddEnableLogging(parser, default=None)
 
   def Modify(self, client, args, existing, cleared_fields):
     new_firewall = super(AlphaUpdateFirewall, self).Modify(
@@ -238,4 +255,8 @@ class AlphaUpdateFirewall(UpdateFirewall):
 
     if args.disabled is not None:
       new_firewall.disabled = args.disabled
+    if args.enable_logging is None:
+      new_firewall.enableLogging = existing.enableLogging
+    else:
+      new_firewall.enableLogging = args.enable_logging
     return new_firewall
