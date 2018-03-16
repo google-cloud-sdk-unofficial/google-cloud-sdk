@@ -52,8 +52,9 @@ class DockerHelper(base.Command):
       cred = c_store.Load()
       c_store.Refresh(cred)
       url = sys.stdin.read().strip()
-      if not (url in constants.ALL_SUPPORTED_REGISTRIES or
-              url.lstrip('https://') in constants.ALL_SUPPORTED_REGISTRIES):
+      if not (url in constants.ALL_SUPPORTED_REGISTRIES or url.replace(
+          'https://', '', 1) in constants.ALL_SUPPORTED_REGISTRIES):
+
         raise exceptions.Error(
             'Repository url [{url}] is not supported'.format(url=url))
       # Putting an actual username in the response doesn't work. Docker will

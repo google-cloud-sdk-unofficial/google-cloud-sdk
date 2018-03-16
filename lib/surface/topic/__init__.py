@@ -28,7 +28,7 @@ class Topic(base.Group):
 
     $ gcloud topic [TOPIC_NAME]
 
-  For a lits of available topics run:
+  For a list of available topics run:
 
     $ gcloud topic --help
   """

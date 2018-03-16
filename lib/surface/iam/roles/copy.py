@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command for creating a role from an existing role."""
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope.exceptions import RequiredArgumentException
 from googlecloudsdk.command_lib.iam import base_classes
@@ -80,32 +81,15 @@ class Copy(base_classes.BaseIamCommand):
 
     new_role = messages.Role(
         title=source_role.title,
-        description=source_role.description,
-        includedPermissions=source_role.includedPermissions)
+        description=source_role.description)
 
-    if source_role.includedPermissions:
-      full_resource_name = '//cloudresourcemanager.googleapis.com/'
-      if args.dest_project:
-        full_resource_name += 'projects/{0}'.format(args.dest_project)
-      else:
-        full_resource_name += 'organizations/{0}'.format(args.dest_organization)
-      valid_permissions = []
-      token = None
-      source_permissions = set(source_role.includedPermissions)
-      while len(source_role.includedPermissions) != len(valid_permissions):
-        resp = iam_client.permissions.QueryTestablePermissions(
-            messages.QueryTestablePermissionsRequest(
-                fullResourceName=full_resource_name, pageToken=token))
-        for testable_permission in resp.permissions:
-          if (testable_permission.name in source_permissions and
-              (testable_permission.customRolesSupportLevel !=
-               messages.Permission.CustomRolesSupportLevelValueValuesEnum.
-               NOT_SUPPORTED)):
-            valid_permissions.append(testable_permission.name)
-        token = resp.nextPageToken
-        if not token:
-          break
-      new_role.includedPermissions = valid_permissions
+    valid_permissions, testing_permissions = util.GetValidAndTestingPermissions(
+        iam_client, messages,
+        iam_util.GetResourceReference(args.dest_project,
+                                      args.dest_organization),
+        source_role.includedPermissions)
+    iam_util.TestingPermissionsWarning(testing_permissions)
+    new_role.includedPermissions = valid_permissions
 
     result = iam_client.organizations_roles.Create(
         messages.IamOrganizationsRolesCreateRequest(

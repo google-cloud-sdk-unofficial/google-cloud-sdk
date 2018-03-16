@@ -13,7 +13,7 @@
   output:
       format: |
           table(
-              name,
+              name.basename(),
               title,
               format("{0}", basic.yesno(yes="Basic", no="")):label=LEVEL_TYPE
           )

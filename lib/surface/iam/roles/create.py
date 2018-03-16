@@ -13,6 +13,7 @@
 # limitations under the License.
 """Command to create a custom role for a project or an organization."""
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
@@ -77,6 +78,13 @@ class Create(base_classes.BaseIamCommand):
 
     if not role.title:
       role.title = args.role
+
+    if not args.quiet:
+      testing_permissions = util.GetTestingPermissions(
+          iam_client, messages,
+          iam_util.GetResourceReference(args.project, args.organization),
+          role.includedPermissions)
+      iam_util.TestingPermissionsWarning(testing_permissions)
 
     result = iam_client.organizations_roles.Create(
         messages.IamOrganizationsRolesCreateRequest(

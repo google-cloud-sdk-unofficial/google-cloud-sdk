@@ -23,6 +23,7 @@ from containerregistry.client.v2_2 import docker_session as v2_2_session
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -84,6 +85,12 @@ class Create(base.CreateCommand):
 
     src_name = util.GetDockerImageFromTagOrDigest(args.src_image)
     dest_name = docker_name.Tag(args.dest_image)
+
+    if '/' not in dest_name.repository:
+      raise exceptions.Error(
+          'Pushing to project root-level images is disabled. '
+          'Please designate an image within a project, '
+          'e.g. gcr.io/project-id/my-image:tag')
 
     console_io.PromptContinue(
         'This will tag {0} with {1}'.format(src_name, dest_name),

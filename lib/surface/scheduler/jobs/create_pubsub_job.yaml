@@ -11,7 +11,8 @@
   arguments:
     resource:
       help_text: The ID of the job to create.
-      spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:location
+      is_parent_resource: True
       removed_flags: [ location ]
     params:
       - _COMMON_: args.schedule

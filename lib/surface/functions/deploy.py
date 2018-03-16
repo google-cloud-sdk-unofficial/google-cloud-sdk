@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
 from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -115,7 +116,7 @@ def _SourceCodeArgs(parser):
 
       If you'd like to deploy sources from a directory different from the root,
       you must specify a revision, a moveable alias, or a fixed alias, as above,
-      and append `/path/${PATH_TO_SOURCES_DIRECTORY}` to the URL.
+      and append `/paths/${PATH_TO_SOURCES_DIRECTORY}` to the URL.
 
       Overall, the URL should match the following regular expression:
 
@@ -331,7 +332,11 @@ class Deploy(base.Command):
 
     self._ApplyNonSourceArgsToFunction(
         function, function_ref, update_mask, messages, args, trigger_params)
-    if args.source or args.stage_bucket or is_new_function:
+    # Only Add source to function if its explicitly provided, a new function,
+    # using a stage budget or deploy of an existing function that previously
+    # used local source
+    if (args.source or args.stage_bucket or is_new_function or
+        function.sourceUploadUrl):  #
       deploy_util.AddSourceToFunction(
           function, function_ref, update_mask, args.source, args.stage_bucket,
           messages, client.projects_locations_functions)
@@ -436,4 +441,7 @@ class Deploy(base.Command):
     if is_new_function:
       return self._CreateFunction(location, function)
     else:
-      return self._PatchFunction(function, update_mask)
+      if update_mask:
+        return self._PatchFunction(function, update_mask)
+      else:
+        log.status.Print('Nothing to update.')
