@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The configs command group for the Cloud IoT CLI."""
-from googlecloudsdk.calliope import base
+"""Exceptions for the iam surface."""
+
+from googlecloudsdk.core import exceptions
 
 
-# TODO(b/64597141): Remove this command group when usage is low.
-@base.Deprecate(
-    is_removed=False,
-    warning=('This command group is deprecated. Use \'gcloud iot devices '
-             'configs\' instead.'))
-@base.Hidden
-class Configs(base.Group):
-  """Manage configurations for Cloud IoT devices.
+class Error(exceptions.Error):
+  """Base class for exceptions in the iam surface."""
 
-  Commands for managing configurations for Google Cloud IoT devices.
-  """
+
+class FileReadException(Error):
+  """Raised when there is an error reading a file."""
+
+
+class InvalidResourceException(Error):
+  """Raised when there is an error parsing a resource."""
+
+
+class InvalidArgumentException(Error):
+  """Raised when there is an invalid argument."""

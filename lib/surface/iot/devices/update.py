@@ -33,10 +33,9 @@ class Update(base.UpdateCommand):
 
     device_ref = args.CONCEPTS.device.Parse()
 
-    blocked = util.ParseDeviceBlocked(args.blocked, args.enable_device)
     metadata = util.ParseMetadata(args.metadata, args.metadata_from_file,
                                   client.messages)
 
-    device = client.Patch(device_ref, blocked=blocked, metadata=metadata)
+    device = client.Patch(device_ref, blocked=args.blocked, metadata=metadata)
     log.UpdatedResource(device_ref.Name(), 'device')
     return device

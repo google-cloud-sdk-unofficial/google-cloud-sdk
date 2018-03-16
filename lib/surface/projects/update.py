@@ -19,13 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
-
-
-class ArgumentError(exceptions.Error):
-  """For missing required mutually inclusive flags."""
-  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -51,15 +45,15 @@ class UpdateAlpha(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     flags.GetProjectFlag('update').AddToParser(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
-    parser.add_argument('--name', help='New name for the project.')
+    update_flags = parser.add_group(required=True)
+    update_flags.add_argument('--name', help='New name for the project.')
+
+    labels_group = update_flags.add_group('Labels Flags')
+    labels_util.AddUpdateLabelsFlags(labels_group)
     parser.display_info.AddFormat(command_lib_util.LIST_FORMAT)
 
   def Run(self, args):
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if args.name is None and not labels_diff.MayHaveUpdates():
-      raise ArgumentError('At least one of --name, --update-labels or '
-                          '--remove-labels must be specified.')
     project_ref = command_lib_util.ParseProject(args.id)
     result = projects_api.Update(project_ref, name=args.name,
                                  labels_diff=labels_diff)
@@ -92,11 +86,10 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     flags.GetProjectFlag('update').AddToParser(parser)
-    parser.add_argument('--name', help='New name for the project.')
+    parser.add_argument('--name', required=True,
+                        help='New name for the project.')
 
   def Run(self, args):
-    if args.name is None:
-      raise ArgumentError('--name must be specified.')
     project_ref = command_lib_util.ParseProject(args.id)
     result = projects_api.Update(project_ref, name=args.name,
                                  labels_diff=labels_util.Diff())

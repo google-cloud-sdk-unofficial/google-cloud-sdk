@@ -149,6 +149,7 @@ for examples.
   flags.AddEnableAutoUpgradeFlag(parser)
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
   flags.AddNodeVersionFlag(parser)
+  flags.AddIssueClientCertificateFlag(parser)
 
 
 def ValidateBasicAuthFlags(args):
@@ -206,6 +207,7 @@ def ParseCreateOptionsBase(args):
       enable_master_authorized_networks=enable_master_authorized_networks,
       enable_network_policy=args.enable_network_policy,
       image_type=args.image_type,
+      issue_client_certificate=args.issue_client_certificate,
       labels=args.labels,
       local_ssd_count=args.local_ssd_count,
       maintenance_window=args.maintenance_window,
@@ -289,10 +291,6 @@ class Create(base.CreateCommand):
                                 cancel_on_no=True)
 
     if getattr(args, 'region', None):
-      message = messages.NonGAFeatureUsingV1APIWarning(self._release_track)
-      if message:
-        console_io.PromptContinue(message=message, cancel_on_no=True)
-
       # TODO(b/68496825): Remove this completely after regional clusters beta
       # launch.
       if self._release_track == base.ReleaseTrack.ALPHA:

@@ -42,6 +42,7 @@ def _CommonArgs(parser,
                 support_create_disk=False,
                 support_network_tier=False,
                 support_local_ssd_size=False,
+                support_shielded_vms=False
                ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -68,6 +69,8 @@ def _CommonArgs(parser,
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddImageArgs(parser)
   instances_flags.AddNetworkArgs(parser)
+  if support_shielded_vms:
+    instances_flags.AddShieldedVMConfigArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
   if support_network_tier:
@@ -172,10 +175,49 @@ def _AddSourceInstanceToTemplate(
   instance_template.properties = None
 
 
+def BuildShieldedVMConfigMessage(messages, args):
+  """Common routine for creating instance template.
+
+  Build a shielded VM config message.
+
+  Args:
+      messages: The client messages.
+      args: the arguments passed to the test.
+
+  Returns:
+      A shielded VM config message.
+  """
+  # Set the default values for ShieledVmConfig parameters
+
+  shielded_vm_config_message = None
+  enable_secure_boot = None
+  enable_vtpm = None
+  if not (hasattr(args, 'shielded_vm_secure_boot') or
+          hasattr(args, 'shielded_vm_vtpm')):
+    return shielded_vm_config_message
+
+  if (not args.IsSpecified('shielded_vm_secure_boot') and
+      not args.IsSpecified('shielded_vm_vtpm')):
+    return shielded_vm_config_message
+
+  if args.shielded_vm_secure_boot is not None:
+    enable_secure_boot = args.shielded_vm_secure_boot
+  if args.shielded_vm_vtpm is not None:
+    enable_vtpm = args.shielded_vm_vtpm
+  # compute message for shielded VM configuration.
+  shielded_vm_config_message = instance_utils.CreateShieldedVmConfigMessage(
+      messages,
+      enable_secure_boot,
+      enable_vtpm)
+
+  return shielded_vm_config_message
+
+
 def _RunCreate(compute_api,
                args,
                support_source_instance,
-               support_network_tier=False):
+               support_network_tier=False,
+               support_shielded_vms=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -186,6 +228,8 @@ def _RunCreate(compute_api,
           arguments specified in the .Args() method.
       support_source_instance: indicates whether source instance is supported.
       support_network_tier: Indicates whether network tier is supported or not.
+      support_shielded_vms: Indicate whether a shielded vm config is supported
+      or not.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -232,6 +276,12 @@ def _RunCreate(compute_api,
                      else args.address),
             network_tier=network_tier)
     ]
+
+  # Compute the shieldedVmConfig message.
+  if support_shielded_vms:
+    shieldedvm_config_message = BuildShieldedVMConfigMessage(
+        messages=client.messages,
+        args=args)
 
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
@@ -341,6 +391,9 @@ def _RunCreate(compute_api,
       name=instance_template_ref.Name(),
   )
 
+  if support_shielded_vms:
+    instance_template.properties.shieldedVmConfig = shieldedvm_config_message
+
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template,
       project=instance_template_ref.project)
@@ -418,7 +471,7 @@ class CreateBeta(Create):
     _CommonArgs(
         parser,
         release_track=base.ReleaseTrack.BETA,
-        support_create_disk=False,
+        support_create_disk=True,
         support_network_tier=False,
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
@@ -458,6 +511,7 @@ class CreateAlpha(Create):
   instances in any zone.
   """
   _support_source_instance = True
+  _support_shielded_vms = True
 
   @classmethod
   def Args(cls, parser):
@@ -468,6 +522,7 @@ class CreateAlpha(Create):
         support_network_tier=True,
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
+        support_shielded_vms=cls._support_shielded_vms,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
@@ -486,4 +541,5 @@ class CreateAlpha(Create):
         args=args,
         support_network_tier=True,
         support_source_instance=self._support_source_instance,
+        support_shielded_vms=self._support_shielded_vms,
     )

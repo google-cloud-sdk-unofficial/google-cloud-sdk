@@ -54,7 +54,10 @@ class SetIamPolicy(base.UpdateCommand):
       (sourcerepo_v1_messsages.Policy) The IAM policy.
 
     Raises:
-      ToolException: on project initialization errors.
+      sourcerepo.RepoResourceError: on resource initialization errors.
+      iam_util.BadFileException: if the YAML or JSON file is malformed.
+      iam_util.IamEtagReadError: if the etag is badly formatted.
+      apitools.base.py.exceptions.HttpError: on request errors.
     """
     res = sourcerepo.ParseRepo(args.name)
     source = sourcerepo.Source()

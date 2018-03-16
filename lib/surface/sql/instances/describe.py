@@ -13,9 +13,14 @@
 # limitations under the License.
 """Retrieves information about a Cloud SQL instance."""
 
+import httplib
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.sql import api_util
+from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
@@ -62,8 +67,7 @@ class Get(base.DescribeCommand):
     Raises:
       HttpException: A http error response was received while executing api
           request.
-      ToolException: An error other than http error occured while executing the
-          command.
+    SQLInstanceNotFoundException: The SQL instance was not found.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
@@ -75,6 +79,14 @@ class Get(base.DescribeCommand):
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances')
 
-    return sql_client.instances.Get(
-        sql_messages.SqlInstancesGetRequest(
-            project=instance_ref.project, instance=instance_ref.instance))
+    try:
+      return sql_client.instances.Get(
+          sql_messages.SqlInstancesGetRequest(
+              project=instance_ref.project, instance=instance_ref.instance))
+    except apitools_exceptions.HttpError as error:
+      if error.status_code == httplib.FORBIDDEN:
+        raise instances.SQLInstanceNotFoundException(
+            'There was no instance found at {} or you are not authorized to '
+            'access it.'.format(instance_ref.RelativeName()))
+      raise exceptions.HttpException(error)
+

@@ -49,7 +49,8 @@ class Describe(base.DescribeCommand):
       (sourcerepo_v1_messages.Repo) The named repository.
 
     Raises:
-      ToolException: on project initialization errors.
+      sourcerepo.RepoResourceError: on resource initialization errors.
+      apitools.base.py.exceptions.HttpError: on request errors.
     """
     res = sourcerepo.ParseRepo(args.repository_name)
     sourcerepo_handler = sourcerepo.Source()

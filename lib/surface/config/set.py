@@ -41,7 +41,21 @@ class Set(base.Command):
 
   To set the zone property in the compute section, run:
 
-    $ {command} compute/zone zone3
+    $ {command} compute/zone asia-east1-b
+
+  To disable prompting for scripting, run:
+
+    $ {command} disable_prompts true
+
+  To set a proxy with the appropriate type, and specify the address and port on
+  which to reach it, run:
+
+    $ {command} proxy/type http
+    $ {command} proxy/address 1.234.56.78
+    $ {command} proxy/port 8080
+
+  For a full list of accepted values, see the Cloud SDK properties
+  page: https://cloud.google.com/sdk/docs/properties
   """
 
   detailed_help = {'properties': properties.VALUES.GetHelpString()}

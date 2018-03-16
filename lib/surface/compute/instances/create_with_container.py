@@ -114,7 +114,7 @@ class CreateWithContainer(base.CreateCommand):
     user_metadata = instance_utils.GetValidatedMetadata(args, client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, client, holder)
-    network_interfaces = instance_utils.GetNetworkInterfacesBeta(
+    network_interfaces = instance_utils.GetNetworkInterfaces(
         args, client, holder, instance_refs, skip_defaults)
     machine_type_uris = instance_utils.GetMachineTypeUris(
         args, client, holder, instance_refs, skip_defaults)

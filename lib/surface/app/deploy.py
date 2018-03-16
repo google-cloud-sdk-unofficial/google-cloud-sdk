@@ -26,12 +26,17 @@ _DETAILED_HELP = {
         This command is used to deploy both code and configuration to the App
         Engine server.  As an input it takes one or more ``DEPLOYABLES'' that
         should be uploaded.  A ``DEPLOYABLE'' can be a service's .yaml file or a
-        configuration's .yaml file.
+        configuration's .yaml file. For Java Standard apps, add the path to the
+        `appengine-web.xml` file, inside the WEB-INF directory.
         """,
     'EXAMPLES': """\
         To deploy a single service, run:
 
           $ {command} ~/my_app/app.yaml
+
+        To deploy an App Engine Standard Java service, run:
+
+          $ {command} ~/my_app/WEB-INF/appengine-web.xml
 
         By default, the service is deployed the current project configured via:
 

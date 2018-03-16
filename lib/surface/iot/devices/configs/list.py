@@ -16,7 +16,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List configs for a device.
 

@@ -31,4 +31,7 @@ class Speech(base.Group):
   For audio 60 seconds or longer, use:
 
     $ {command} recognize-long-running
+
+  For more information about the Google Cloud Speech API, refer to this
+  guide: https://cloud.google.com/speech/docs/
   """

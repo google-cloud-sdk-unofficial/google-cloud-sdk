@@ -15,9 +15,9 @@
 
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.iam import exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 
@@ -57,7 +57,7 @@ class ListTestablePermissions(base_classes.BaseIamCommand):
       resource = iam_util.GetResourceName(
           self.resources.REGISTRY.Parse(args.resource))
     if not resource:
-      raise exceptions.ToolException(
+      raise exceptions.InvalidResourceException(
           'The given resource is not a valid full resource name or URL.')
 
     return list_pager.YieldFromList(

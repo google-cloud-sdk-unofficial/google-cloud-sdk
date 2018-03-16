@@ -17,9 +17,9 @@
 import re
 
 from googlecloudsdk.api_lib.dataflow import apis
+from googlecloudsdk.api_lib.dataflow import exceptions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.core.util import times
@@ -111,6 +111,10 @@ class List(base.ListCommand):
 
     Returns:
       List of metric values.
+
+    Raises:
+      exceptions.InvalidExclusionException: If the excluded metrics are not
+        valid.
     """
     job_ref = job_utils.ExtractJobRef(args)
 
@@ -118,7 +122,7 @@ class List(base.ListCommand):
 
     preds = []
     if not args.tentative and args.hide_committed:
-      raise calliope_exceptions.ToolException(
+      raise exceptions.InvalidExclusionException(
           'Cannot exclude both tentative and committed metrics.')
     elif not args.tentative and not args.hide_committed:
       preds.append(lambda m: self._GetContextValue(m, 'tentative') != 'true')

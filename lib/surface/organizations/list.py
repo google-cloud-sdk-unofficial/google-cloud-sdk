@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to list all organization IDs associated with the active user."""
-
-from apitools.base.py import list_pager
-
+from googlecloudsdk.api_lib.cloudresourcemanager import organizations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.organizations import orgs_base
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(orgs_base.OrganizationCommand, base.ListCommand):
   """List organizations accessible by the active account.
 
@@ -41,16 +37,5 @@ class List(orgs_base.OrganizationCommand, base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    messages = self.OrganizationsMessages()
-    return list_pager.YieldFromList(
-        self.OrganizationsClient(),
-        # Note that args.filter is not included in the
-        # SearchOrganizationsRequest to CRM.
-        # Filtering occurs as part of the display functionality in
-        # googlecloudsdk.calliope.display
-        messages.SearchOrganizationsRequest(),
-        method='Search',
-        limit=args.limit,
-        batch_size_attribute='pageSize',
-        batch_size=args.page_size,
-        field='organizations')
+    orgs_client = organizations.Client()
+    return orgs_client.List(limit=args.limit, page_size=args.page_size)

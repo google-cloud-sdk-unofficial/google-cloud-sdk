@@ -24,6 +24,7 @@ from googlecloudsdk.core import log
 def _AddUpdateArgs(parser):
   """Get arguments for the `ml-engine models update` command."""
   flags.GetModelName().AddToParser(parser)
+  flags.GetDescriptionFlag('model').AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
 
 

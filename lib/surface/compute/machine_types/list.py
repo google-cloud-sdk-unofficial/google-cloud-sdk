@@ -20,10 +20,18 @@ from googlecloudsdk.command_lib.compute import completers
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine machine types."""
+  """List Google Compute Engine machine types.
+
+  """
 
   @staticmethod
   def Args(parser):
+    List.detailed_help['DESCRIPTION'] += """
+*OBSOLETE* machine types are filtered out by default. Add *--verbosity=info*
+to display the default filter expression. Use *--filter=""* to list all images,
+or specify your own *--filter* to override the default.
+"""
+    parser.display_info.AddFilter('deprecated.state!=OBSOLETE')
     parser.display_info.AddFormat("""\
     table(
       name,

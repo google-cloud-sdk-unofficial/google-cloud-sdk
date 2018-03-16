@@ -60,7 +60,8 @@ class Delete(base.DeleteCommand):
       The path to the deleted git repository.
 
     Raises:
-      ToolException: on project initialization errors.
+      sourcerepo.RepoResourceError: on resource initialization errors.
+      apitools.base.py.exceptions.HttpError: on request errors.
     """
     res = sourcerepo.ParseRepo(args.repository_name)
     delete_warning = ('If {repo} is deleted, the name cannot be reused for up '

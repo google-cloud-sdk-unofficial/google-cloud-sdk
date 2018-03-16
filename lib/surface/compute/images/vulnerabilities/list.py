@@ -40,7 +40,7 @@ class List(base.ListCommand):
     lister.AddBaseListerArgs(parser)
     parser.display_info.AddFormat("""\
         table(
-          resourceUrl.name():label=IMAGE_ID,
+          name,
           noteName.basename():label=NOTE,
           vulnerabilityDetails.severity,
           vulnerabilityDetails.cvssScore,

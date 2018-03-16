@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Spark(spark.SparkBase, submitter.JobSubmitter):
+  # pylint: disable=line-too-long
   """Submit a Spark job to a cluster.
 
   Submit a Spark job to a cluster.
@@ -40,12 +41,13 @@ class Spark(spark.SparkBase, submitter.JobSubmitter):
 
     $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/lib/spark-examples.jar 1000
   """
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):
     spark.SparkBase.Args(parser)
     submitter.JobSubmitter.Args(parser)
-    driver_group = parser.add_argument_group()
+    driver_group = parser.add_argument_group(required=True, mutex=True)
     util.AddJvmDriverFlags(driver_group)
 
   def ConfigureJob(self, messages, job, args):
@@ -57,6 +59,7 @@ class Spark(spark.SparkBase, submitter.JobSubmitter):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SparkBeta(spark.SparkBase, submitter.JobSubmitterBeta):
+  # pylint: disable=line-too-long
   """Submit a Spark job to a cluster.
 
   Submit a Spark job to a cluster.
@@ -75,12 +78,13 @@ class SparkBeta(spark.SparkBase, submitter.JobSubmitterBeta):
 
     $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/lib/spark-examples.jar 1000
   """
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):
     spark.SparkBase.Args(parser)
     submitter.JobSubmitterBeta.Args(parser)
-    driver_group = parser.add_mutually_exclusive_group(required=True)
+    driver_group = parser.add_argument_group(required=True, mutex=True)
     util.AddJvmDriverFlags(driver_group)
 
   def ConfigureJob(self, messages, job, args):

@@ -13,195 +13,15 @@
 # limitations under the License.
 
 """Creates or updates a Google Cloud Function."""
-import httplib
-
-from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.api_lib.functions import operations
-from googlecloudsdk.api_lib.functions import util
-from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.api_lib.functions import util as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.command_lib.functions.deploy import util as deploy_util
-from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.command_lib.functions.deploy import labels_util
+from googlecloudsdk.command_lib.functions.deploy import source_util
+from googlecloudsdk.command_lib.functions.deploy import trigger_util
+from googlecloudsdk.command_lib.util.args import labels_util as args_labels_util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
-
-_DEPLOY_WAIT_NOTICE = 'Deploying function (may take a while - up to 2 minutes)'
-_NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE = (
-    'Label keys starting with `deployment` are reserved for use by deployment '
-    'tools and cannot be specified manually.')
-
-
-def _FunctionArgs(parser):
-  """Add arguments specyfying functions behavior to the parser."""
-  parser.add_argument(
-      'name',
-      help='Name of the function to deploy.',
-      type=util.ValidateFunctionNameOrRaise,
-  )
-  parser.add_argument(
-      '--memory',
-      type=arg_parsers.BinarySize(
-          suggested_binary_size_scales=['KB', 'MB', 'MiB', 'GB', 'GiB'],
-          default_unit='MB'),
-      help="""\
-      Limit on the amount of memory the function can use.
-
-      Allowed values are: 128MB, 256MB, 512MB, 1024MB, and 2048MB. By default,
-      a new function is limited to 256MB of memory. When deploying an update to
-      an existing function, the function will keep its old memory limit unless
-      you specify this flag.""")
-  parser.add_argument(
-      '--timeout',
-      help="""\
-      The function execution timeout, e.g. 30s for 30 seconds. Defaults to
-      original value for existing function or 60 seconds for new functions.
-      Cannot be more than 540s.
-      See $ gcloud topic datetimes for information on duration formats.""",
-      type=arg_parsers.Duration(lower_bound='1s', upper_bound='540s'))
-  parser.add_argument(
-      '--retry',
-      help=('If specified, then the function will be retried in case of a '
-            'failure.'),
-      action='store_true',
-  )
-  labels_util.AddUpdateLabelsFlags(
-      parser,
-      extra_update_message=' ' + _NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
-      extra_remove_message=' ' + _NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
-
-
-def _SourceCodeArgs(parser):
-  """Add arguments specifying functions source code to the parser."""
-  parser.add_argument(
-      '--source',
-      help="""\
-      Location of source code to deploy.
-
-      Location of the source can be one of the following:
-
-      * Source code in Google Cloud Storage,
-      * Reference to source repository or,
-      * Local filesystem path.
-
-      The value of the flag will be interpreted as a Cloud Storage location, if
-      it starts with `gs://`.
-
-      The value will be interpreted as a reference to a source repository, if it
-      starts with `https://`.
-
-      Otherwise, it will be interpreted as the local filesystem path. When
-      deploying source from the local filesystem, this command skips files
-      specified in the `.gcloudignore` file (see `gcloud topic gcloudignore` for
-      more information). If the `.gcloudignore` file doesn't exist, the command
-      will try to create it.
-
-      The minimal source repository URL is:
-
-
-      `https://source.developers.google.com/projects/${PROJECT}/repos/${REPO}`
-
-      By using the URL above, sources from the root directory of the repository
-      on the revision tagged `master` will be used.
-
-      If you want to deploy from a revision different from `master`, append one
-      of the following to the URL:
-
-      * `/revisions/${REVISION}`,
-      * `/moveable-aliases/${MOVEABLE_ALIAS}`,
-      * `/fixed-aliases/${FIXED_ALIAS}`.
-
-      If you'd like to deploy sources from a directory different from the root,
-      you must specify a revision, a moveable alias, or a fixed alias, as above,
-      and append `/paths/${PATH_TO_SOURCES_DIRECTORY}` to the URL.
-
-      Overall, the URL should match the following regular expression:
-
-      ```
-      ^https://source\\.developers\\.google\\.com/projects/
-      (?<accountId>[^/]+)/repos/(?<repoName>[^/]+)
-      (((/revisions/(?<commit>[^/]+))|(/moveable-aliases/(?<branch>[^/]+))|
-      (/fixed-aliases/(?<tag>[^/]+)))(/paths/(?<path>.*))?)?$
-      ```
-
-      If the source location is not explicitly set, new functions will deploy
-      from the current directory. Existing functions keep their old source.
-
-      """)
-
-  parser.add_argument(
-      '--stage-bucket',
-      help=('When deploying a function from a local directory, this flag\'s '
-            'value is the name of the Google Cloud Storage bucket in which '
-            'source code will be stored.'),
-      type=util.ValidateAndStandarizeBucketUriOrRaise)
-  parser.add_argument(
-      '--entry-point',
-      type=util.ValidateEntryPointNameOrRaise,
-      help="""\
-      By default when a Google Cloud Function is triggered, it executes a
-      JavaScript function with the same name. Or, if it cannot find a
-      function with the same name, it executes a function named `function`.
-      You can use this flag to override the default behavior, by specifying
-      the name of a JavaScript function that will be executed when the
-      Google Cloud Function is triggered."""
-  )
-
-
-def _TriggerArgs(parser):
-  """Add arguments specyfying functions trigger to the parser."""
-  # You can also use --trigger-provider but it is hidden argument so not
-  # mentioning it for now.
-  one_trigger_mandatory_for_new_deployment = (
-      ' If you don\'t specify a trigger when deploying an update to an '
-      'existing function it will keep its current trigger. You must specify '
-      '`--trigger-topic`, `--trigger-bucket`, `--trigger-http` or '
-      '(`--trigger-event` AND `--trigger-resource`) when deploying a '
-      'new function.'
-  )
-  trigger_group = parser.add_mutually_exclusive_group(
-      help=one_trigger_mandatory_for_new_deployment)
-  trigger_group.add_argument(
-      '--trigger-topic',
-      help=('Name of Pub/Sub topic. Every message published in this topic '
-            'will trigger function execution with message contents passed as '
-            'input data.'),
-      type=util.ValidatePubsubTopicNameOrRaise)
-  trigger_group.add_argument(
-      '--trigger-bucket',
-      help=('Google Cloud Storage bucket name. Every change in files in this '
-            'bucket will trigger function execution.'),
-      type=util.ValidateAndStandarizeBucketUriOrRaise)
-  trigger_group.add_argument(
-      '--trigger-http', action='store_true',
-      help="""\
-      Function will be assigned an endpoint, which you can view by using
-      the `describe` command. Any HTTP request (of a supported type) to the
-      endpoint will trigger function execution. Supported HTTP request
-      types are: POST, PUT, GET, DELETE, and OPTIONS.""")
-
-  trigger_provider_spec_group = trigger_group.add_argument_group()
-  # check later as type of applicable input depends on options above
-  trigger_provider_spec_group.add_argument(
-      '--trigger-event',
-      metavar='EVENT_TYPE',
-      choices=sorted(util.input_trigger_provider_registry.AllEventLabels()),
-      help=('Specifies which action should trigger the function. For a '
-            'list of acceptable values, call `functions event_types list`.')
-  )
-  trigger_provider_spec_group.add_argument(
-      '--trigger-resource',
-      metavar='RESOURCE',
-      help=('Specifies which resource from `--trigger-event` is being '
-            'observed. E.g. if `--trigger-event` is  '
-            '`providers/cloud.storage/eventTypes/object.change`, '
-            '`--trigger-resource` must be a bucket name. For a list of '
-            'expected resources, call `functions event_types list`.'),
-  )
 
 
 class Deploy(base.Command):
@@ -210,175 +30,30 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    _FunctionArgs(parser)
-    _SourceCodeArgs(parser)
-    _TriggerArgs(parser)
+    # Add args for function properties
+    flags.AddFunctionNameArg(parser)
+    flags.AddFunctionMemoryFlag(parser)
+    flags.AddFunctionTimeoutFlag(parser)
+    flags.AddFunctionRetryFlag(parser)
+    args_labels_util.AddUpdateLabelsFlags(
+        parser,
+        extra_update_message=
+        ' ' + labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
+        extra_remove_message=
+        ' ' + labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
+
+    # Add args for specifying the function source code
+    flags.AddSourceFlag(parser)
+    flags.AddStageBucketFlag(parser)
+    flags.AddEntryPointFlag(parser)
+
+    # Add args for specifying the function trigger
+    flags.AddTriggerFlagGroup(parser)
+
     flags.AddRegionFlag(
         parser,
         help_text='The region in which the function will run.',
     )
-
-  @util.CatchHTTPErrorRaiseHTTPException
-  def _GetExistingFunction(self, name):
-    client = util.GetApiClientInstance()
-    messages = client.MESSAGES_MODULE
-    try:
-      # We got response for a get request so a function exists.
-      return client.projects_locations_functions.Get(
-          messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
-              name=name))
-    except apitools_exceptions.HttpError as error:
-      if error.status_code == httplib.NOT_FOUND:
-        # The function has not been found.
-        return None
-      raise
-
-  def _EventTrigger(self, trigger_provider, trigger_event,
-                    trigger_resource):
-    messages = util.GetApiMessagesModule()
-    event_trigger = messages.EventTrigger()
-    event_trigger.eventType = trigger_event
-    event_trigger.resource = (
-        deploy_util.ConvertTriggerArgsToRelativeName(
-            trigger_provider,
-            trigger_event,
-            trigger_resource))
-    return event_trigger
-
-  def _ApplyNonSourceArgsToFunction(
-      self, function, function_ref, update_mask, messages, args,
-      trigger_params):
-    """Modifies a function object without touching in the sources properties.
-
-    Args:
-      function: message, function resource to be modified.
-      function_ref: reference to function.
-      update_mask: update mask to which modified fields will be added.
-      messages: messages module.
-      args: parsed commandline arguments.
-      trigger_params: None or dict from str to str, the dict is assumed to
-                      contain exactly the following keys: trigger_provider,
-                      trigger_event, trigger_resource.
-    """
-    function.name = function_ref.RelativeName()
-    if args.entry_point:
-      function.entryPoint = args.entry_point
-      update_mask.append('entryPoint')
-    if args.timeout:
-      function.timeout = '{}s'.format(args.timeout)
-      update_mask.append('timeout')
-    if args.trigger_http:
-      deploy_util.CleanOldTriggerInfo(function, update_mask)
-      function.httpsTrigger = messages.HttpsTrigger()
-    if trigger_params:
-      deploy_util.CleanOldTriggerInfo(function, update_mask)
-      function.eventTrigger = self._EventTrigger(**trigger_params)
-    if args.IsSpecified('retry'):
-      update_mask.append('eventTrigger.failurePolicy')
-      if args.retry:
-        function.eventTrigger.failurePolicy = messages.FailurePolicy()
-        function.eventTrigger.failurePolicy.retry = messages.Retry()
-      else:
-        function.eventTrigger.failurePolicy = None
-    elif function.eventTrigger:
-      function.eventTrigger.failurePolicy = None
-    if args.memory:
-      function.availableMemoryMb = utils.BytesToMb(args.memory)
-      update_mask.append('availableMemoryMb')
-
-  def _ApplyArgsToFunction(
-      self, function, is_new_function, trigger_params, function_ref, args,
-      project):
-    """Apply values from args to base_function.
-
-    Args:
-        function: function message to modify
-        is_new_function: bool, indicates if this is a new function (and source
-                         code for it must be deployed) or an existing function
-                         (so it may keep its old source code).
-        trigger_params: parameters for creating functions trigger.
-        function_ref: reference to function.
-        args: commandline args specyfying how to modify the function.
-        project: project of the function.
-    Returns:
-      Pair of function and update mask.
-    """
-    update_mask = []
-
-    messages = util.GetApiMessagesModule()
-    client = util.GetApiClientInstance()
-
-    self._ApplyNonSourceArgsToFunction(
-        function, function_ref, update_mask, messages, args, trigger_params)
-    # Only Add source to function if its explicitly provided, a new function,
-    # using a stage budget or deploy of an existing function that previously
-    # used local source
-    if (args.source or args.stage_bucket or is_new_function or
-        function.sourceUploadUrl):  #
-      deploy_util.AddSourceToFunction(
-          function, function_ref, update_mask, args.source, args.stage_bucket,
-          messages, client.projects_locations_functions)
-    # Set information about deployment tool.
-    labels_to_update = args.update_labels or {}
-    labels_to_update['deployment-tool'] = 'cli-gcloud'
-    labels_diff = labels_util.Diff(additions=labels_to_update,
-                                   subtractions=args.remove_labels,
-                                   clear=args.clear_labels)
-    labels_update = labels_diff.Apply(messages.CloudFunction.LabelsValue,
-                                      function.labels)
-    if labels_update.needs_update:
-      function.labels = labels_update.labels
-      update_mask.append('labels')
-    return function, ','.join(sorted(update_mask))
-
-  def _ValidateAfterCheckingFunctionsExistence(self, function, args):
-    if function is None:
-      if (not args.IsSpecified('trigger_topic') and
-          not args.IsSpecified('trigger_bucket') and
-          not args.IsSpecified('trigger_http') and
-          not args.IsSpecified('trigger_event')):
-        # --trigger-provider is hidden for now so not mentioning it.
-        raise calliope_exceptions.OneOfArgumentsRequiredException(
-            ['--trigger-topic', '--trigger-bucket', '--trigger-http',
-             '--trigger-event'],
-            'You must specify a trigger when deploying a new function.'
-        )
-
-  @util.CatchHTTPErrorRaiseHTTPException
-  def _CreateFunction(self, location, function):
-    client = util.GetApiClientInstance()
-    messages = client.MESSAGES_MODULE
-    op = client.projects_locations_functions.Create(
-        messages.CloudfunctionsProjectsLocationsFunctionsCreateRequest(
-            location=location, cloudFunction=function))
-    operations.Wait(op, messages, client, _DEPLOY_WAIT_NOTICE)
-    return self._GetExistingFunction(function.name)
-
-  @util.CatchHTTPErrorRaiseHTTPException
-  def _PatchFunction(self, function, update_mask):
-    client = util.GetApiClientInstance()
-    messages = client.MESSAGES_MODULE
-    op = client.projects_locations_functions.Patch(
-        messages.CloudfunctionsProjectsLocationsFunctionsPatchRequest(
-            cloudFunction=function,
-            name=function.name,
-            updateMask=update_mask,
-        )
-    )
-    operations.Wait(op, messages, client, _DEPLOY_WAIT_NOTICE)
-    return self._GetExistingFunction(function.name)
-
-  def _ValidateLabelsFlagKeys(self, flag_name, keys):
-    for key in keys:
-      if key.startswith('deployment'):
-        raise calliope_exceptions.InvalidArgumentException(
-            flag_name, _NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
-
-  def _ValidateLabelsFlags(self, args):
-    if args.remove_labels:
-      self._ValidateLabelsFlagKeys('--remove-labels', args.remove_labels)
-    if args.update_labels:
-      self._ValidateLabelsFlagKeys('--update-labels', args.update_labels.keys())
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -393,34 +68,81 @@ class Deploy(base.Command):
     Raises:
       FunctionsError if command line parameters are not valid.
     """
-    self._ValidateLabelsFlags(args)
-    trigger_params = deploy_util.DeduceAndCheckArgs(args)
-    project = properties.VALUES.core.project.Get(required=True)
-    location_ref = resources.REGISTRY.Parse(
-        properties.VALUES.functions.region.Get(),
-        params={'projectsId': project},
-        collection='cloudfunctions.projects.locations')
-    location = location_ref.RelativeName()
-    function_ref = resources.REGISTRY.Parse(
-        args.name, params={
-            'projectsId': project,
-            'locationsId': properties.VALUES.functions.region.Get()},
-        collection='cloudfunctions.projects.locations.functions')
+    # Check for labels that start with `deployment`, which is not allowed.
+    labels_util.CheckNoDeploymentLabels('--remove-labels', args.remove_labels)
+    labels_util.CheckNoDeploymentLabels('--update-labels', args.update_labels)
+
+    # Check that exactly one trigger type is specified properly.
+    trigger_util.ValidateTriggerArgs(
+        args.trigger_event, args.trigger_resource,
+        args.IsSpecified('retry'), args.IsSpecified('trigger_http'))
+
+    trigger_params = trigger_util.GetTriggerEventParams(
+        args.trigger_http, args.trigger_bucket, args.trigger_topic,
+        args.trigger_event, args.trigger_resource)
+
+    function_ref = api_util.GetFunctionRef(args.name)
     function_url = function_ref.RelativeName()
 
-    function = self._GetExistingFunction(function_url)
-    self._ValidateAfterCheckingFunctionsExistence(function, args)
+    messages = api_util.GetApiMessagesModule()
+
+    # Get an existing function or create a new one.
+    function = api_util.GetFunction(function_url)
     is_new_function = function is None
     if is_new_function:
-      messages = util.GetApiMessagesModule()
+      trigger_util.CheckTriggerSpecified(args)
       function = messages.CloudFunction()
-    function, update_mask = self._ApplyArgsToFunction(
-        function, is_new_function, trigger_params, function_ref, args,
-        project)
-    if is_new_function:
-      return self._CreateFunction(location, function)
-    else:
-      if update_mask:
-        return self._PatchFunction(function, update_mask)
+      function.name = function_url
+
+    # Keep track of which fields are updated in the case of patching.
+    updated_fields = []
+
+    # Populate function properties based on args.
+    if args.entry_point:
+      function.entryPoint = args.entry_point
+      updated_fields.append('entryPoint')
+    if args.timeout:
+      function.timeout = '{}s'.format(args.timeout)
+      updated_fields.append('timeout')
+    if args.memory:
+      function.availableMemoryMb = utils.BytesToMb(args.memory)
+      updated_fields.append('availableMemoryMb')
+
+    # Populate trigger properties of function based on trigger args.
+    if args.trigger_http:
+      function.httpsTrigger = messages.HttpsTrigger()
+      function.eventTrigger = None
+      updated_fields.extend(['eventTrigger', 'httpsTrigger'])
+    if trigger_params:
+      function.eventTrigger = trigger_util.CreateEventTrigger(**trigger_params)
+      function.httpsTrigger = None
+      updated_fields.extend(['eventTrigger', 'httpsTrigger'])
+    if args.IsSpecified('retry'):
+      updated_fields.append('eventTrigger.failurePolicy')
+      if args.retry:
+        function.eventTrigger.failurePolicy = messages.FailurePolicy()
+        function.eventTrigger.failurePolicy.retry = messages.Retry()
       else:
-        log.status.Print('Nothing to update.')
+        function.eventTrigger.failurePolicy = None
+    elif function.eventTrigger:
+      function.eventTrigger.failurePolicy = None
+
+    # Populate source properties of function based on source args.
+    # Only Add source to function if its explicitly provided, a new function,
+    # using a stage budget or deploy of an existing function that previously
+    # used local source.
+    if (args.source or args.stage_bucket or is_new_function or
+        function.sourceUploadUrl):
+      updated_fields.extend(source_util.SetFunctionSourceProps(
+          function, function_ref, args.source, args.stage_bucket))
+
+    # Apply label args to function
+    if labels_util.SetFunctionLabels(function, args.update_labels,
+                                     args.remove_labels, args.clear_labels):
+      updated_fields.append('labels')
+
+    if is_new_function:
+      return api_util.CreateFunction(function)
+    if updated_fields:
+      return api_util.PatchFunction(function, updated_fields)
+    log.status.Print('Nothing to update.')

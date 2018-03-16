@@ -29,8 +29,6 @@ _DEFAULT_KINDS = [
     'BUILD_DETAILS',
     'IMAGE_BASIS',
 ]
-# How many images to consider by default.
-_DEFAULT_LIMIT = 10
 # How many images for which to report vulnerabilities, by default. These are
 # always the most recent images, regardless of sorting.
 _DEFAULT_SHOW_OCCURRENCES_FROM = 10
@@ -89,8 +87,6 @@ class ListTagsGAandBETA(base.ListCommand):
           to capture some information, but behaves like an ArgumentParser.
     """
     flags.AddImagePositional(parser, verb='list tags for')
-    # Set flag defaults to return X most recent images instead of all.
-    base.LIMIT_FLAG.SetDefault(parser, _DEFAULT_LIMIT)
     base.SORT_BY_FLAG.SetDefault(parser, _DEFAULT_SORT_BY)
 
     # Does nothing for us, included in base.ListCommand

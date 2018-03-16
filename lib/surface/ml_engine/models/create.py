@@ -24,6 +24,7 @@ from googlecloudsdk.core import log
 def _AddCreateArgs(parser):
   """Get arguments for the `ml-engine models create` command."""
   flags.GetModelName().AddToParser(parser)
+  flags.GetDescriptionFlag('model').AddToParser(parser)
   parser.add_argument(
       '--regions',
       metavar='REGION',
@@ -54,5 +55,6 @@ class Create(base.CreateCommand):
     model = models_util.Create(models_client, args.model,
                                regions=args.regions,
                                enable_logging=args.enable_logging,
-                               labels=labels)
+                               labels=labels,
+                               description=args.description)
     log.CreatedResource(model.name, kind='ml engine model')

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The credentials command group for the Cloud IoT CLI."""
-from googlecloudsdk.calliope import base
-
-
-# TODO(b/64597154): Remove this command group when usage is low.
-@base.Deprecate(
-    is_removed=False,
-    warning=('This command group is deprecated. Use \'gcloud iot devices '
-             'credentials\' instead.'))
-@base.Hidden
-class Credentials(base.Group):
-  """Manage credentials for Cloud IoT devices.
-
-  Commands for managing credentials for Google Cloud IoT devices.
-  """
+"""Package marker file."""

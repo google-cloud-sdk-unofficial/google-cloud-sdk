@@ -20,7 +20,6 @@ from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
-from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -63,10 +62,6 @@ class Delete(base.DeleteCommand):
     adapter = self.context['api_adapter']
     location_get = self.context['location_get']
     location = location_get(args)
-    if getattr(args, 'region', None):
-      message = messages.NonGAFeatureUsingV1APIWarning(self._release_track)
-      if message:
-        console_io.PromptContinue(message=message, cancel_on_no=True)
     cluster_refs = []
     for name in args.names:
       cluster_refs.append(adapter.ParseCluster(name, location))

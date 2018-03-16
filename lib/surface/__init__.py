@@ -50,7 +50,9 @@ class Gcloud(base.Group):
         action=actions.StoreProperty(properties.VALUES.core.project),
         help="""\
         The Google Cloud Platform project name to use for this invocation. If
-        omitted then the current project is assumed.
+        omitted, then the current project is assumed; the current project can be
+        listed using `gcloud config list --format='text(core.project)'` and
+        can be set using `gcloud config set project PROJECTID`.
         """)
     # Must have a None default so properties are not always overridden when the
     # arg is not provided.

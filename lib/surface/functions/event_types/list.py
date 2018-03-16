@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """List types of events that can be a trigger for a Google Cloud Function."""
-from googlecloudsdk.api_lib.functions import util
+from googlecloudsdk.api_lib.functions import triggers
 from googlecloudsdk.calliope import base
 
 
@@ -39,6 +39,6 @@ class List(base.Command):
      ''')
 
   def Run(self, args):
-    for provider in util.output_trigger_provider_registry.providers:
+    for provider in triggers.OUTPUT_TRIGGER_PROVIDER_REGISTRY.providers:
       for event in provider.events:
         yield event

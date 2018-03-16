@@ -46,4 +46,5 @@ class Describe(base.DescribeCommand):
     return debuggee.ListBreakpoints(args.location,
                                     include_all_users=True,
                                     resource_ids=args.ids,
-                                    restrict_to_type=debugger.SNAPSHOT_TYPE)
+                                    restrict_to_type=debugger.SNAPSHOT_TYPE,
+                                    full_details=True)

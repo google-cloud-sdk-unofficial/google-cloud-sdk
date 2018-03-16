@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new device."""
 
@@ -36,11 +36,6 @@ class Create(base.CreateCommand):
     device_ref = args.CONCEPTS.device.Parse()
     registry_ref = device_ref.Parent()
 
-    # Defaults are set here because right now with nested groups, help text
-    # isn't being generated correctly.
-    args_blocked = False if args.blocked is None else args.blocked
-    args_enabled = True if args.enable_device is None else args.enable_device
-    blocked = util.ParseDeviceBlocked(args_blocked, args_enabled)
     credentials = util.ParseCredentials(args.public_keys,
                                         messages=client.messages)
     metadata = util.ParseMetadata(args.metadata, args.metadata_from_file,
@@ -48,7 +43,7 @@ class Create(base.CreateCommand):
 
     response = client.Create(
         registry_ref, device_ref.devicesId,
-        blocked=blocked,
+        blocked=args.blocked,
         credentials=credentials,
         metadata=metadata
     )

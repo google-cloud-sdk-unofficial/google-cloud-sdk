@@ -30,7 +30,7 @@ class Hadoop(hadoop.HadoopBase, submitter.JobSubmitter):
 
   To submit a Hadoop job that runs the main class of a jar, run:
 
-   $ {command} --cluster my_cluster --jar my_jar.jar -- arg1 arg2
+    $ {command} --cluster my_cluster --jar my_jar.jar -- arg1 arg2
 
   To submit a Hadoop job that runs a specific class of a jar, run:
 
@@ -48,7 +48,7 @@ class Hadoop(hadoop.HadoopBase, submitter.JobSubmitter):
   def Args(parser):
     hadoop.HadoopBase.Args(parser)
     submitter.JobSubmitter.Args(parser)
-    driver_group = parser.add_argument_group()
+    driver_group = parser.add_argument_group(required=True, mutex=True)
     util.AddJvmDriverFlags(driver_group)
 
   def ConfigureJob(self, messages, job, args):
@@ -86,7 +86,7 @@ class HadoopBeta(hadoop.HadoopBase, submitter.JobSubmitterBeta):
   def Args(parser):
     hadoop.HadoopBase.Args(parser)
     submitter.JobSubmitterBeta.Args(parser)
-    driver_group = parser.add_mutually_exclusive_group(required=True)
+    driver_group = parser.add_argument_group(required=True, mutex=True)
     util.AddJvmDriverFlags(driver_group)
 
   def ConfigureJob(self, messages, job, args):

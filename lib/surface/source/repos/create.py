@@ -69,8 +69,9 @@ class Create(base.CreateCommand):
       (sourcerepo_v1_messages.Repo) The created respository.
 
     Raises:
-      ToolException: on project initialization errors, on missing billing
-        account, and when the repo name is already in use.
+      sourcerepo.RepoResourceError: on resource initialization errors.
+      c_exc.HttpException: on missing billing account, and when the repo name is
+        already in use.
     """
     res = sourcerepo.ParseRepo(args.repository_name)
     # check that the name does not have forbidden characters.

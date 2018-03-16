@@ -19,6 +19,8 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
+from googlecloudsdk.command_lib.container import messages
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -96,5 +98,10 @@ class ClustersAlphaBeta(Clusters):
     Returns:
       The refined command context.
     """
+    if properties.VALUES.container.use_v1_api.GetBool():
+      warning = messages.GetAPIMismatchingWarning(self.ReleaseTrack())
+      if warning:
+        log.warn(warning)
+
     context['location_get'] = container_command_util.GetZoneOrRegion
     return context

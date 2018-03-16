@@ -6,8 +6,11 @@
 
   request:
     collection: cloudiot.projects.locations.registries
+    modify_request_hooks:
+      - googlecloudsdk.command_lib.iot.util:AddEventNotificationConfigsToRequest
 
   arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.iot.flags:_GetEventNotificationConfigFlags
     resource:
       help_text: The registry you want to create.
       spec: !REF googlecloudsdk.command_lib.iot.resources:registry
@@ -50,27 +53,3 @@
           ([RFC5280](https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64,
           and wrapped by `-----BEGIN CERTIFICATE-----` and
           `-----END CERTIFICATE-----`.
-      - group:
-          mutex: True
-          params:
-            - api_field: deviceRegistry.eventNotificationConfigs.pubsubTopicName
-              arg_name: pubsub-topic
-              type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
-              processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
-              hidden: True
-              help_text: |
-                The Google Cloud Pub/Sub topic on which to forward messages,
-                such as telemetry events.
-              action:
-                deprecated:
-                  warn: >
-                    Flag {flag_name} is deprecated. Use --event-pubsub-topic
-                    instead.
-
-            - api_field: deviceRegistry.eventNotificationConfigs.pubsubTopicName
-              arg_name: event-pubsub-topic
-              type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
-              processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
-              help_text: |
-                The Google Cloud Pub/Sub topic on which to forward messages, such
-                as telemetry events.

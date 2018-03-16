@@ -66,7 +66,7 @@ class Formats(base.TopicCommand):
           List a table of compute instance resources sorted by *name* with
           box decorations and title *Instances*:
 
-            $ gcloud compute instances list --format='table[box,title=Instances](name:sort=1, zone:title=zone, status)'
+            $ gcloud compute instances list --format='table[box,title=Instances](name:sort=1, zone:label=zone, status)'
 
           List a nested table of the quotas of a region:
 

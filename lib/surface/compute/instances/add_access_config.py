@@ -39,7 +39,7 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser, support_public_dns, support_public_ptr, support_network_tier):
+def _Args(parser, support_public_dns, support_network_tier):
   """Register parser args common to all tracks."""
 
   parser.add_argument(
@@ -64,10 +64,9 @@ def _Args(parser, support_public_dns, support_public_ptr, support_network_tier):
       """)
 
   flags.AddNetworkInterfaceArgs(parser)
+  flags.AddPublicPtrArgs(parser, instance=False)
   if support_public_dns:
     flags.AddPublicDnsArgs(parser, instance=False)
-  if support_public_ptr:
-    flags.AddPublicPtrArgs(parser, instance=False)
   if support_network_tier:
     flags.AddNetworkTierArgs(parser, instance=False)
   flags.INSTANCE_ARG.AddArgument(parser)
@@ -78,7 +77,6 @@ class AddAccessConfigInstances(base.SilentCommand):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
-  _support_public_ptr = False
   _support_network_tier = False
 
   @classmethod
@@ -86,7 +84,6 @@ class AddAccessConfigInstances(base.SilentCommand):
     _Args(
         parser,
         support_public_dns=cls._support_public_dns,
-        support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier)
 
   def Run(self, args):
@@ -114,16 +111,15 @@ class AddAccessConfigInstances(base.SilentCommand):
       elif args.public_dns is True:
         access_config.setPublicDns = True
 
-    if self._support_public_ptr:
-      flags.ValidatePublicPtrFlags(args)
-      if args.no_public_ptr is True:
-        access_config.setPublicPtr = False
-      elif args.public_ptr is True:
-        access_config.setPublicPtr = True
+    flags.ValidatePublicPtrFlags(args)
+    if args.no_public_ptr is True:
+      access_config.setPublicPtr = False
+    elif args.public_ptr is True:
+      access_config.setPublicPtr = True
 
-      if (args.no_public_ptr_domain is not True and
-          args.public_ptr_domain is not None):
-        access_config.publicPtrDomainName = args.public_ptr_domain
+    if (args.no_public_ptr_domain is not True and
+        args.public_ptr_domain is not None):
+      access_config.publicPtrDomainName = args.public_ptr_domain
 
     network_tier = getattr(args, 'network_tier', None)
     if network_tier is not None:
@@ -146,7 +142,6 @@ class AddAccessConfigInstancesBeta(AddAccessConfigInstances):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
-  _support_public_ptr = True
   _support_network_tier = False
 
 
@@ -155,7 +150,6 @@ class AddAccessConfigInstancesAlpha(AddAccessConfigInstances):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = True
-  _support_public_ptr = True
   _support_network_tier = True
 
 AddAccessConfigInstances.detailed_help = DETAILED_HELP

@@ -62,6 +62,7 @@ def _AddArgs(cls, parser):
       """)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Define a subnet for a network in custom subnet mode.
 
@@ -78,6 +79,15 @@ class Create(base.CreateCommand):
     _AddArgs(cls, parser)
     parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
 
+  def _CreateSubnetwork(self, messages, subnet_ref, network_ref, args):
+    return messages.Subnetwork(
+        name=subnet_ref.Name(),
+        description=args.description,
+        network=network_ref.SelfLink(),
+        ipCidrRange=args.range,
+        privateIpGoogleAccess=args.enable_private_ip_google_access,
+    )
+
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -90,13 +100,8 @@ class Create(base.CreateCommand):
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     request = client.messages.ComputeSubnetworksInsertRequest(
-        subnetwork=client.messages.Subnetwork(
-            name=subnet_ref.Name(),
-            description=args.description,
-            network=network_ref.SelfLink(),
-            ipCidrRange=args.range,
-            privateIpGoogleAccess=args.enable_private_ip_google_access,
-        ),
+        subnetwork=self._CreateSubnetwork(client.messages, subnet_ref,
+                                          network_ref, args),
         region=subnet_ref.region,
         project=subnet_ref.project)
 
@@ -112,3 +117,34 @@ class Create(base.CreateCommand):
     request.subnetwork.secondaryIpRanges = secondary_ranges
     return client.MakeRequests([(client.apitools_client.subnetworks,
                                  'Insert', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Define a subnet for a network in custom subnet mode.
+
+  Define a subnet for a network in custom subnet mode. Subnets must be uniquely
+  named per region.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    _AddArgs(cls, parser)
+
+    parser.add_argument(
+        '--enable-flow-logs',
+        action='store_true',
+        default=None,
+        help='Enable/disable flow logs for this subnet.')
+
+    parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
+
+  def _CreateSubnetwork(self, messages, subnet_ref, network_ref, args):
+    return messages.Subnetwork(
+        name=subnet_ref.Name(),
+        description=args.description,
+        network=network_ref.SelfLink(),
+        ipCidrRange=args.range,
+        privateIpGoogleAccess=args.enable_private_ip_google_access,
+        enableFlowLogs=args.enable_flow_logs)

@@ -28,25 +28,23 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser, support_public_dns, support_public_ptr, support_network_tier):
+def _Args(parser, support_public_dns, support_network_tier):
   """Register parser args common to all tracks."""
 
   flags.INSTANCE_ARG.AddArgument(parser)
   flags.AddNetworkInterfaceArgs(parser)
+  flags.AddPublicPtrArgs(parser, instance=False)
   if support_public_dns:
     flags.AddPublicDnsArgs(parser, instance=False)
-  if support_public_ptr:
-    flags.AddPublicPtrArgs(parser, instance=False)
   if support_network_tier:
     flags.AddNetworkTierArgs(parser, instance=False, for_update=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateAccessConfigInstances(base.UpdateCommand):
   """Update a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
-  _support_public_ptr = True
   _support_network_tier = False
 
   @classmethod
@@ -54,7 +52,6 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
     _Args(
         parser,
         support_public_dns=cls._support_public_dns,
-        support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier)
 
   def CreateReference(self, client, resources, args):
@@ -91,11 +88,10 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
         set_public_dns = False
 
     set_ptr = None
-    if self._support_public_ptr:
-      if args.public_ptr is True:
-        set_ptr = True
-      elif args.no_public_ptr is True:
-        set_ptr = False
+    if args.public_ptr is True:
+      set_ptr = True
+    elif args.no_public_ptr is True:
+      set_ptr = False
 
     modified = encoding.CopyProtoMessage(original)
     for interface in modified.networkInterfaces:
@@ -106,7 +102,7 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
             # publicDnsName is output only.
           interface.accessConfigs[0].publicDnsName = None
 
-        if self._support_public_ptr and set_ptr is not None:
+        if set_ptr is not None:
           interface.accessConfigs[0].setPublicPtr = set_ptr
           interface.accessConfigs[0].publicPtrDomainName = ''
           if args.public_ptr_domain is not None:
@@ -127,10 +123,9 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
             args.network_interface))
 
   def Run(self, args):
+    flags.ValidatePublicPtrFlags(args)
     if self._support_public_dns:
       flags.ValidatePublicDnsFlags(args)
-    if self._support_public_ptr:
-      flags.ValidatePublicPtrFlags(args)
     if self._support_network_tier:
       flags.ValidateNetworkTierArgs(args)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -156,12 +151,19 @@ class UpdateAccessConfigInstances(base.UpdateCommand):
         requests=[self.GetSetRequest(client, args, instance_ref, new_object)])
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateAccessConfigInstancesBeta(UpdateAccessConfigInstances):
+  """Update a Google Compute Engine virtual machine access configuration."""
+
+  _support_public_dns = False
+  _support_network_tier = False
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAccessConfigInstancesAlpha(UpdateAccessConfigInstances):
   """Update a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = True
-  _support_public_ptr = True
   _support_network_tier = True
 
 UpdateAccessConfigInstances.detailed_help = DETAILED_HELP

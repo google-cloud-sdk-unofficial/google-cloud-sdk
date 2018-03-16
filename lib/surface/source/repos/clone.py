@@ -97,9 +97,9 @@ class CloneGA(base.Command):
     if not repo:
       message = ('Repository "{src}" in project "{prj}" does not '
                  'exist.\nList current repos with\n'
-                 '$ gcloud beta source repos list\n'
+                 '$ gcloud source repos list\n'
                  'or create with\n'
-                 '$ gcloud beta source repos create {src}'.format(
+                 '$ gcloud source repos create {src}'.format(
                      src=args.src, prj=res.projectsId))
       raise c_exc.InvalidArgumentException('REPOSITORY_NAME', message)
     if hasattr(repo, 'mirrorConfig') and repo.mirrorConfig:

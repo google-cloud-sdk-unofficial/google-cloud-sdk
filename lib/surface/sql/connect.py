@@ -14,10 +14,12 @@
 
 """Connects to a Cloud SQL instance."""
 
+import httplib
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import constants
+from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import network
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -32,6 +34,15 @@ from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import retry
 from googlecloudsdk.core.util import text
+
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To connect to a Cloud SQL instance, run:
+
+          $ {command} my-instance --user=root
+        """,
+}
 
 # TODO(b/62055574): Improve test coverage in this file.
 
@@ -61,6 +72,7 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
     HttpException: An http error response was received while executing api
         request.
     ToolException: Server did not complete the whitelisting operation in time.
+    SQLInstanceNotFoundException: The SQL instance was not found.
   """
   time_of_connection = network.GetCurrentTime()
 
@@ -77,6 +89,10 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
             project=instance_ref.project,
             instance=instance_ref.instance))
   except apitools_exceptions.HttpError as error:
+    if error.status_code == httplib.FORBIDDEN:
+      raise instances.SQLInstanceNotFoundException(
+          'There was no instance found at {} or you are not authorized to '
+          'connect to it.'.format(instance_ref.RelativeName()))
     raise exceptions.HttpException(error)
 
   original.settings.ipConfiguration.authorizedNetworks.append(user_acl)
@@ -117,121 +133,154 @@ def _GetClientIP(instance_ref, sql_client, acl_name):
   return instance_info, client_ip
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Connect(base.Command):
-  """Connects to a Cloud SQL instance."""
+def AddBaseArgs(parser):
+  """Declare flag and positional arguments for this command parser.
 
-  detailed_help = {
-      'EXAMPLES': """\
-          To connect to a Cloud SQL instance, run:
-
-            $ {command} my-instance --user=root
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
+  Args:
       parser: An argparse parser that you can use it to add arguments that go
           on the command line after this command. Positional arguments are
           allowed.
-    """
-    parser.add_argument(
-        'instance',
-        completer=sql_flags.InstanceCompleter,
-        help='Cloud SQL instance ID.')
+  """
+  parser.add_argument(
+      'instance',
+      completer=sql_flags.InstanceCompleter,
+      help='Cloud SQL instance ID.')
 
-    parser.add_argument(
-        '--user', '-u',
-        required=False,
-        help='Cloud SQL instance user to connect as.')
+  parser.add_argument(
+      '--user',
+      '-u',
+      required=False,
+      help='Cloud SQL instance user to connect as.')
+
+
+def RunConnectCommand(args, supports_database=False):
+  """Connects to a Cloud SQL instance.
+
+  Args:
+    args: argparse.Namespace, The arguments that this command was invoked
+        with.
+    supports_database: Whether or not the `--database` flag needs to be
+        accounted for.
+
+  Returns:
+    If no exception is raised this method does not return. A new process is
+    started and the original one is killed.
+  Raises:
+    HttpException: An http error response was received while executing api
+        request.
+    ToolException: An error other than http error occurred while executing the
+        command.
+  """
+  # TODO(b/62055495): Replace ToolExceptions with specific exceptions.
+  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  sql_client = client.sql_client
+  sql_messages = client.sql_messages
+
+  validate.ValidateInstanceName(args.instance)
+  instance_ref = client.resource_parser.Parse(
+      args.instance,
+      params={'project': properties.VALUES.core.project.GetOrFail},
+      collection='sql.instances')
+
+  acl_name = _WhitelistClientIP(instance_ref, sql_client, sql_messages,
+                                client.resource_parser)
+
+  # Get the client IP that the server sees. Sadly we can only do this by
+  # checking the name of the authorized network rule.
+  retryer = retry.Retryer(max_retrials=2, exponential_sleep_multiplier=2)
+  try:
+    instance_info, client_ip = retryer.RetryOnResult(
+        _GetClientIP,
+        [instance_ref, sql_client, acl_name],
+        should_retry_if=lambda x, s: x[1] is None,  # client_ip is None
+        sleep_ms=500)
+  except retry.RetryException:
+    raise exceptions.ToolException('Could not whitelist client IP. Server '
+                                   'did not reply with the whitelisted IP.')
+
+  # Check for the mysql or psql executable based on the db version.
+  db_type = instance_info.databaseVersion.split('_')[0]
+  exe_name = constants.DB_EXE.get(db_type, 'mysql')
+  exe = files.FindExecutableOnPath(exe_name)
+  if not exe:
+    raise exceptions.ToolException(
+        '{0} client not found.  Please install a {1} client and make sure '
+        'it is in PATH to be able to connect to the database instance.'.format(
+            exe_name.title(), exe_name))
+
+  # Check the version of IP and decide if we need to add ipv4 support.
+  ip_type = network.GetIpVersion(client_ip)
+  if ip_type == network.IP_VERSION_4:
+    if instance_info.settings.ipConfiguration.ipv4Enabled:
+      ip_address = instance_info.ipAddresses[0].ipAddress
+    else:
+      # TODO(b/36049930): ask user if we should enable ipv4 addressing
+      message = ('It seems your client does not have ipv6 connectivity and '
+                 'the database instance does not have an ipv4 address. '
+                 'Please request an ipv4 address for this database instance.')
+      raise exceptions.ToolException(message)
+  elif ip_type == network.IP_VERSION_6:
+    ip_address = instance_info.ipv6Address
+  else:
+    raise exceptions.ToolException('Could not connect to SQL server.')
+
+  # Determine what SQL user to connect with.
+  sql_user = constants.DEFAULT_SQL_USER[exe_name]
+  if args.user:
+    sql_user = args.user
+
+  # We have everything we need, time to party!
+  flags = constants.EXE_FLAGS[exe_name]
+  sql_args = [exe_name, flags['hostname'], ip_address]
+  sql_args.extend([flags['user'], sql_user])
+  sql_args.append(flags['password'])
+
+  # Check for database name.
+  if supports_database and args.IsSpecified('database'):
+    try:
+      sql_args.extend([flags['database'], args.database])
+    except KeyError:
+      raise exceptions.InvalidArgumentException(
+          '--database',
+          'This instance does not support the database argument.')
+
+  try:
+    log.status.write(
+        'Connecting to database with SQL user [{0}].'.format(sql_user))
+    execution_utils.Exec(sql_args)
+  except OSError:
+    log.error('Failed to execute command "{0}"'.format(' '.join(sql_args)))
+    log.Print(info_holder.InfoHolder())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Connect(base.Command):
+  """Connects to a Cloud SQL instance."""
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    AddBaseArgs(parser)
 
   def Run(self, args):
-    """Connects to a Cloud SQL instance.
+    """Connects to a Cloud SQL instance."""
+    return RunConnectCommand(args)
 
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
 
-    Returns:
-      If no exception is raised this method does not return. A new process is
-      started and the original one is killed.
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
-      ToolException: An error other than http error occurred while executing the
-          command.
-    """
-    # TODO(b/62055495): Replace ToolExceptions with specific exceptions.
-    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ConnectBeta(base.Command):
+  """Connects to a Cloud SQL instance."""
 
-    validate.ValidateInstanceName(args.instance)
-    instance_ref = client.resource_parser.Parse(
-        args.instance,
-        params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
+  detailed_help = DETAILED_HELP
 
-    acl_name = _WhitelistClientIP(instance_ref, sql_client, sql_messages,
-                                  client.resource_parser)
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    AddBaseArgs(parser)
+    sql_flags.AddDatabase(parser, 'The PostgreSQL database to connect to.')
 
-    # Get the client IP that the server sees. Sadly we can only do this by
-    # checking the name of the authorized network rule.
-    retryer = retry.Retryer(max_retrials=2, exponential_sleep_multiplier=2)
-    try:
-      instance_info, client_ip = retryer.RetryOnResult(
-          _GetClientIP,
-          [instance_ref, sql_client, acl_name],
-          should_retry_if=lambda x, s: x[1] is None,  # client_ip is None
-          sleep_ms=500)
-    except retry.RetryException:
-      raise exceptions.ToolException('Could not whitelist client IP. Server '
-                                     'did not reply with the whitelisted IP.')
-
-    # Check for the mysql or psql executable based on the db version.
-    db_type = instance_info.databaseVersion.split('_')[0]
-    exe_name = constants.DB_EXE.get(db_type, 'mysql')
-    exe = files.FindExecutableOnPath(exe_name)
-    if not exe:
-      raise exceptions.ToolException(
-          '{0} client not found.  Please install a {1} client and make sure '
-          'it is in PATH to be able to connect to the database instance.'
-          .format(exe_name.title(), exe_name))
-
-    # Check the version of IP and decide if we need to add ipv4 support.
-    ip_type = network.GetIpVersion(client_ip)
-    if ip_type == network.IP_VERSION_4:
-      if instance_info.settings.ipConfiguration.ipv4Enabled:
-        ip_address = instance_info.ipAddresses[0].ipAddress
-      else:
-        # TODO(b/36049930): ask user if we should enable ipv4 addressing
-        message = ('It seems your client does not have ipv6 connectivity and '
-                   'the database instance does not have an ipv4 address. '
-                   'Please request an ipv4 address for this database instance.')
-        raise exceptions.ToolException(message)
-    elif ip_type == network.IP_VERSION_6:
-      ip_address = instance_info.ipv6Address
-    else:
-      raise exceptions.ToolException('Could not connect to SQL server.')
-
-    # Determine what SQL user to connect with.
-    sql_user = constants.DEFAULT_SQL_USER[exe_name]
-    if args.user:
-      sql_user = args.user
-
-    # We have everything we need, time to party!
-    flags = constants.EXE_FLAGS[exe_name]
-    sql_args = [exe_name, flags['hostname'], ip_address]
-    sql_args.extend([flags['user'], sql_user])
-    sql_args.append(flags['password'])
-
-    try:
-      log.status.write(
-          'Connecting to database with SQL user [{0}].'.format(sql_user))
-      execution_utils.Exec(sql_args)
-    except OSError:
-      log.error('Failed to execute command "{0}"'.format(' '.join(sql_args)))
-      log.Print(info_holder.InfoHolder())
+  def Run(self, args):
+    """Connects to a Cloud SQL instance."""
+    return RunConnectCommand(args, supports_database=True)

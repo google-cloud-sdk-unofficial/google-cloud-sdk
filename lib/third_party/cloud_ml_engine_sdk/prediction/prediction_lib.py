@@ -41,6 +41,7 @@ import numpy as np
 
 from tensorflow.python.client import session as tf_session
 from tensorflow.python.framework import dtypes
+from tensorflow.python.lib.io import file_io
 from tensorflow.python.saved_model import loader
 from tensorflow.python.saved_model import signature_constants
 from tensorflow.python.saved_model import tag_constants
@@ -1041,20 +1042,54 @@ def create_sklearn_model(model_path, unused_flags):
 def create_xgboost_client(model_path, unused_tags):
   """Returns a prediction client for the corresponding xgboost model."""
   logging.info("Loading the xgboost model from %s", model_path)
+  booster = _load_joblib_or_pickle_model(model_path) or _load_xgboost_model(
+      model_path)
+  if not booster:
+    error_msg = "Could not find {}, {}, or {} in {}".format(
+        MODEL_FILE_NAME_JOBLIB, MODEL_FILE_NAME_PICKLE, MODEL_FILE_NAME_BST,
+        model_path)
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+
+  return XgboostClient(booster)
+
+
+def _load_xgboost_model(model_path):
+  """Loads an xgboost model from GCS or local.
+
+  Args:
+      model_path: path to the directory containing the xgboost model.bst file.
+        This path can be either a local path or a GCS path.
+
+  Returns:
+    A xgboost.Booster with the model at model_path loaded.
+
+  Raises:
+    PredictionError: If there is a problem while loading the file.
+  """
   # TODO(b/64574886): Move this to the top once b/64574886 is resolved. Before
   # then, it would work in production since we install xgboost in the
   # Dockerfile, but the problem is the unit test that will fail to build and run
   # since xgboost can not be added as a dependency to this target.
   import xgboost as xgb  # pylint: disable=g-import-not-at-top
+  model_file = os.path.join(model_path, MODEL_FILE_NAME_BST)
+  if not file_io.file_exists(model_file):
+    return None
   try:
-    booster = _load_joblib_or_pickle_model(model_path) or xgb.Booster(
-        model_file=os.path.join(model_path, MODEL_FILE_NAME_BST))
+    if model_file.startswith("gs://"):
+      with file_io.FileIO(model_file, mode="rb") as f:
+        # TODO(b/72736769): Load model in memory twice. Use readinto if/when
+        # that becomes available in FileIO. Or copy model locally before
+        # loading.
+        model_buf = bytearray(f.read())
+        return xgb.Booster(model_file=model_buf)
+    else:
+      return xgb.Booster(model_file=model_file)
   except xgb.core.XGBoostError as e:
     error_msg = "Could not load the model: {}. {}.".format(
         os.path.join(model_path, MODEL_FILE_NAME_BST), str(e))
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
-  return XgboostClient(booster)
 
 
 def create_xgboost_model(model_path, unused_flags):
@@ -1122,19 +1157,20 @@ class _RestrictedUnpickler(pickle.Unpickler):
 
 
 def _load_joblib_or_pickle_model(model_path):
-  """Loads either a .joblib or .pkl file.
+  """Loads either a .joblib or .pkl file from GCS or from local.
 
   Loads one of MODEL_FILE_NAME_JOBLIB or MODEL_FILE_NAME_PICKLE files if they
-  exist.
+  exist. This is used for both sklearn and xgboost.
 
   Arguments:
-    model_path: The path to the directory that contains the model file.
+    model_path: The path to the directory that contains the model file. This
+      path can be either a local path or a GCS path.
 
   Raises:
     PredictionError: If there is a problem while loading the file.
 
   Returns:
-    A loaded scikit-learn predictor object or None if neither
+    A loaded scikit-learn or xgboost predictor object or None if neither
     MODEL_FILE_NAME_JOBLIB nor MODEL_FILE_NAME_PICKLE files are found.
   """
   try:
@@ -1146,22 +1182,24 @@ def _load_joblib_or_pickle_model(model_path):
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
   try:
-    if os.path.exists(os.path.join(model_path, MODEL_FILE_NAME_JOBLIB)):
+    if file_io.file_exists(os.path.join(model_path, MODEL_FILE_NAME_JOBLIB)):
       model_file_name = os.path.join(model_path, MODEL_FILE_NAME_JOBLIB)
       logging.info("Loading model %s using joblib.", model_file_name)
-      return joblib.load(os.path.join(model_path, MODEL_FILE_NAME_JOBLIB))
+      with file_io.FileIO(model_file_name, mode="rb") as f:
+        return joblib.load(f)
 
-    elif os.path.exists(os.path.join(model_path, MODEL_FILE_NAME_PICKLE)):
+    elif file_io.file_exists(os.path.join(model_path, MODEL_FILE_NAME_PICKLE)):
       model_file_name = os.path.join(model_path, MODEL_FILE_NAME_PICKLE)
       logging.info("Loading model %s using pickle.", model_file_name)
-      with open(os.path.join(model_path, MODEL_FILE_NAME_PICKLE), "rb") as f:
+      with file_io.FileIO(model_file_name, "rb") as f:
         return _RestrictedUnpickler.load_string(f.read())
+
+    return None
   except Exception as e:
     error_msg = "Could not load the model: {}. {}.".format(
         model_file_name, str(e))
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
-  return None
 
 
 _FRAMEWORK_TO_MODEL_MAP = {

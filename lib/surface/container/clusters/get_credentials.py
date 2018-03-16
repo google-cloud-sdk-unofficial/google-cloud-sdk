@@ -17,10 +17,8 @@
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
 
 
 NOT_RUNNING_MSG = '''\
@@ -81,10 +79,6 @@ class GetCredentials(base.Command):
     location_get = self.context['location_get']
     location = location_get(args)
     cluster_ref = adapter.ParseCluster(args.name, location)
-    if getattr(args, 'region', None):
-      message = messages.NonGAFeatureUsingV1APIWarning(self._release_track)
-      if message:
-        console_io.PromptContinue(message=message, cancel_on_no=True)
     log.status.Print('Fetching cluster endpoint and auth data.')
     # Call DescribeCluster to get auth info and cache for next time
     cluster = adapter.GetCluster(cluster_ref)

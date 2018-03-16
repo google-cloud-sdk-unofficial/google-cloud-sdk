@@ -5,6 +5,7 @@
   request:
     collection: accesscontextmanager.accessPolicies.accessZones
     modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.zones:AddImplicitServiceWildcard
       - googlecloudsdk.command_lib.accesscontextmanager.zones:AddAccessLevels
       - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=accessZone.name
 
@@ -38,15 +39,21 @@
               metavar: SERVICE
               help_text: |
                   Comma-separated list of services to which the zone boundary
-                  DOES NOT apply (for example, `storage.googleapis.com`). A
-                  wildcard (```*```) may be given to denote all services.
+                  *does not* apply (for example, `storage.googleapis.com`).
             - api_field: accessZone.restrictedServices
               arg_name: restricted-services
               metavar: SERVICE
               help_text: |
                   Comma-separated list of services to which the zone boundary
-                  DOES apply (for example, `storage.googleapis.com`). A wildcard
-                  (```*```) may be given to denote all services.
+                  *does* apply (for example, `storage.googleapis.com`).
+          help_text: |
+              For a *regular* access zone, these parameters specify the services
+              to which the zone boundary applies. Only one may be provided, and
+              the other is implicitly provided as a wildcard (```*```) matching
+              all other services. For instance, `--restricted-services
+              storage.googleapis.com` applies the zone boundary to the Google
+              Cloud Storage service, but *not* any other services.
+
       - arg_name: access-levels
         api_field: accessZone.accessLevels
         metavar: LEVEL

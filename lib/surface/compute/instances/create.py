@@ -62,7 +62,6 @@ DETAILED_HELP = {
 def _CommonArgs(parser,
                 release_track,
                 support_public_dns,
-                support_public_ptr,
                 support_network_tier,
                 enable_regional=False,
                 support_local_ssd_size=False,
@@ -71,8 +70,9 @@ def _CommonArgs(parser,
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
-  if release_track in [base.ReleaseTrack.ALPHA]:
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms)
+  if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddShieldedVMConfigArgs(parser)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -100,10 +100,9 @@ def _CommonArgs(parser,
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddImageArgs(parser)
   instances_flags.AddDeletionProtectionFlag(parser)
+  instances_flags.AddPublicPtrArgs(parser, instance=True)
   if support_public_dns:
     instances_flags.AddPublicDnsArgs(parser, instance=True)
-  if support_public_ptr:
-    instances_flags.AddPublicPtrArgs(parser, instance=True)
   if support_network_tier:
     instances_flags.AddNetworkTierArgs(parser, instance=True)
   if enable_maintenance_policies:
@@ -134,7 +133,6 @@ class Create(base.CreateCommand):
   _support_kms = False
   _support_network_tier = False
   _support_public_dns = False
-  _support_public_ptr = False
 
   @classmethod
   def Args(cls, parser):
@@ -142,7 +140,6 @@ class Create(base.CreateCommand):
         parser,
         release_track=base.ReleaseTrack.GA,
         support_public_dns=cls._support_public_dns,
-        support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier,
         enable_kms=cls._support_kms,
     )
@@ -180,7 +177,7 @@ class Create(base.CreateCommand):
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
-    return instance_utils.GetNetworkInterfacesGa(
+    return instance_utils.GetNetworkInterfaces(
         args, client, holder, instance_refs, skip_defaults)
 
   def _GetDiskMessagess(
@@ -329,10 +326,9 @@ class Create(base.CreateCommand):
           instance_refs=instance_refs,
           support_network_tier=self._support_network_tier)
     else:
+      instances_flags.ValidatePublicPtrFlags(args)
       if self._support_public_dns is True:
         instances_flags.ValidatePublicDnsFlags(args)
-      if self._support_public_ptr is True:
-        instances_flags.ValidatePublicPtrFlags(args)
 
       return self._GetNetworkInterfaces(
           args, compute_client, holder, instance_refs, skip_defaults)
@@ -503,11 +499,10 @@ class CreateBeta(Create):
   _support_kms = False
   _support_network_tier = False
   _support_public_dns = False
-  _support_public_ptr = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
-    return instance_utils.GetNetworkInterfacesBeta(
+    return instance_utils.GetNetworkInterfaces(
         args, client, holder, instance_refs, skip_defaults)
 
   @classmethod
@@ -516,7 +511,6 @@ class CreateBeta(Create):
         parser,
         release_track=base.ReleaseTrack.BETA,
         support_public_dns=cls._support_public_dns,
-        support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier,
         enable_kms=cls._support_kms,
     )
@@ -538,7 +532,6 @@ class CreateAlpha(CreateBeta):
   _support_kms = True
   _support_network_tier = True
   _support_public_dns = True
-  _support_public_ptr = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -555,7 +548,6 @@ class CreateAlpha(CreateBeta):
         parser,
         release_track=base.ReleaseTrack.ALPHA,
         support_public_dns=cls._support_public_dns,
-        support_public_ptr=cls._support_public_ptr,
         support_network_tier=cls._support_network_tier,
         enable_regional=True,
         support_local_ssd_size=True,

@@ -140,7 +140,8 @@ _cmd_alias_list = {}    # list of command_names index by command_alias
 
 def GetAppBasename():
   """Returns the friendly basename of this application."""
-  return os.path.basename(sys.argv[0])
+  base = os.path.basename(sys.argv[0]).split('.')
+  return base[0]
 
 
 def ShortHelpAndExit(message=None):

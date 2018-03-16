@@ -85,19 +85,22 @@ class Submit(base.CreateCommand):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    parser.add_argument(
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument(
         'source',
         nargs='?',
+        default='.',  # By default, the current directory is used.
         help='The source directory on local disk or tarball in Google Cloud '
              'Storage or disk to use for this build. If source is a local '
              'directory this command skips files specified in the '
              '`.gcloudignore` file (see `$ gcloud topic gcloudignore` for more '
              'information).'
     )
-    parser.add_argument(
+    source.add_argument(
         '--no-source',
         action='store_true',
         help='Specify that no source should be uploaded with this build.')
+
     parser.add_argument(
         '--gcs-source-staging-dir',
         help='Directory in Google Cloud Storage to stage a copy of the source '
@@ -251,15 +254,12 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
     if timeout_str:
       build_config.timeout = timeout_str
 
+    # --no-source overrides the default --source.
+    if not args.IsSpecified('source') and args.no_source:
+      args.source = None
+
     gcs_source_staging = None
     if args.source:
-      if args.no_source:
-        raise c_exceptions.InvalidArgumentException(
-            '--no-source',
-            'Cannot provide both source [{src}] and [--no-source].'.format(
-                src=args.source,
-            ))
-
       suffix = '.tgz'
       if args.source.startswith('gs://') or os.path.isfile(args.source):
         _, suffix = os.path.splitext(args.source)

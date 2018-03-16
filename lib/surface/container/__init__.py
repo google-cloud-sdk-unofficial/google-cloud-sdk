@@ -18,6 +18,8 @@ import argparse
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container import constants
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -86,7 +88,7 @@ class ContainerBeta(Container):
       The refined command context.
     """
     base.DisableUserProjectQuota()
-    if properties.VALUES.container.use_v1_api_client.GetBool():
+    if properties.VALUES.container.use_v1_api.GetBool():
       api_version = 'v1'
     else:
       api_version = 'v1beta1'
@@ -111,7 +113,7 @@ class ContainerAlpha(Container):
       The refined command context.
     """
     base.DisableUserProjectQuota()
-    if properties.VALUES.container.use_v1_api_client.GetBool():
+    if properties.VALUES.container.use_v1_api.GetBool():
       api_version = 'v1'
     else:
       api_version = 'v1alpha1'

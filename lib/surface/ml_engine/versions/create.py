@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 def _AddCreateArgs(parser):
   """Add common arguments for `versions create` command."""
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
+  flags.GetDescriptionFlag('version').AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
   base.Argument(
       '--origin',
@@ -104,6 +105,7 @@ class Create(base.CreateCommand):
                                 runtime_version=args.runtime_version,
                                 config_file=args.config,
                                 async_=args.async,
+                                description=args.description,
                                 labels=labels)
 
 
@@ -135,4 +137,5 @@ class CreateAlpha(base.CreateCommand):
                                 config_file=args.config,
                                 async_=args.async,
                                 labels=labels,
+                                description=args.description,
                                 machine_type=args.machine_type)

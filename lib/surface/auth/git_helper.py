@@ -89,17 +89,20 @@ class GitHelper(base.Command):
     if extra:
       credentialed_domains.extend(extra.split(','))
     host = info.get('host')
-    def ValidateHost(host):
-      if args.ignore_unknown:
-        return
+
+    def _ValidateHost(host):
       if host in credentialed_domains:
-        return
+        return True
       for suffix in credentialed_domains_suffix:
         if host.endswith(suffix):
-          return
-      raise auth_exceptions.GitCredentialHelperError(
-          'Unknown host [{host}].'.format(host=host))
-    ValidateHost(host)
+          return True
+      return False
+
+    if not _ValidateHost(host):
+      if not args.ignore_unknown:
+        raise auth_exceptions.GitCredentialHelperError(
+            'Unknown host [{host}].'.format(host=host))
+      return
 
     if args.method == GitHelper.GET:
       account = properties.VALUES.core.account.Get()

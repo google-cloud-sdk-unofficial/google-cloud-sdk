@@ -119,7 +119,6 @@ class UpdateAlpha(base.UpdateCommand):
   def GetLabelsReplacementRequest(
       self, disk_ref, disk, messages, labels_diff):
     if disk_ref.Collection() == 'compute.disks':
-      # TODO(b/69033695): Cover this branch via unit tests
       labels_update = labels_diff.Apply(
           messages.ZoneSetLabelsRequest.LabelsValue, disk.labels)
       if labels_update.needs_update:
