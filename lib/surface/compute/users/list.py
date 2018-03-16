@@ -26,6 +26,7 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat(user_utils.DEFAULT_LIST_FORMAT)
     lister.AddBaseListerArgs(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

@@ -21,6 +21,8 @@
           large size or because of the sensitivity of data that it contains.
         default: basic
         choices:
-          full: FULL
-          basic: BASIC
+          - arg_value: full
+            enum_value: FULL
+          - arg_value: basic
+            enum_value: BASIC
 

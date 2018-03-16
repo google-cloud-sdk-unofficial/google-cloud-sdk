@@ -49,6 +49,7 @@ class SetPassword(base.CreateCommand):
     flags.AddPassword(password_group)
     flags.AddPromptForPassword(password_group)
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """Changes a user's password in a given instance.

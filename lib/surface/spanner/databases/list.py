@@ -39,6 +39,7 @@ class List(base.ListCommand):
             state
           )
         """)
+    parser.display_info.AddCacheUpdater(flags.DatabaseCompleter)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -24,6 +24,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleter)
     lister.AddBaseListerArgs(parser)
 
   def Run(self, args):

@@ -41,6 +41,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     flags.GetDnsZoneArg(
         'The name of the empty managed-zone to be deleted.').AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v1')
@@ -79,6 +80,7 @@ class DeleteBeta(base.DeleteCommand):
   def Args(parser):
     flags.GetDnsZoneArg(
         'The name of the empty managed-zone to be deleted.').AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v1beta2')

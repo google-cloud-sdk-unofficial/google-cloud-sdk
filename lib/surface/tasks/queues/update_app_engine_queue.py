@@ -35,12 +35,13 @@ class UpdateAppEngine(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to update')
+    flags.AddLocationFlag(parser)
     flags.AddUpdateAppEngineQueueFlags(parser)
 
   def Run(self, args):
     parsers.CheckUpdateArgsSpecified(args, constants.APP_ENGINE_QUEUE)
     queues_client = queues.Queues()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.APP_ENGINE_QUEUE, queues_client.api.messages,
         is_update=True)

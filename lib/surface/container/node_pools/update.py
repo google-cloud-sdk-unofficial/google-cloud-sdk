@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Update node pool command."""
-import argparse
-
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
@@ -51,7 +49,8 @@ def _Args(parser):
       '--timeout',
       type=int,
       default=1800,
-      help=argparse.SUPPRESS)
+      hidden=True,
+      help='THIS ARGUMENT NEEDS HELP TEXT.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

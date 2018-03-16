@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
+from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
 
 
@@ -37,6 +38,7 @@ Will soon be required, but defaults to 'us-central1' for now.
       '--enable-logging',
       action='store_true',
       help=('If set, enables StackDriver Logging for online prediction.'))
+  labels_util.AddCreateLabelsFlags(parser)
 
 
 class Create(base.CreateCommand):
@@ -47,7 +49,10 @@ class Create(base.CreateCommand):
     _AddCreateArgs(parser)
 
   def Run(self, args):
-    model = models_util.Create(models.ModelsClient(), args.model,
+    models_client = models.ModelsClient()
+    labels = models_util.ParseCreateLabels(models_client, args)
+    model = models_util.Create(models_client, args.model,
                                regions=args.regions,
-                               enable_logging=args.enable_logging)
+                               enable_logging=args.enable_logging,
+                               labels=labels)
     log.CreatedResource(model.name, kind='ml engine model')

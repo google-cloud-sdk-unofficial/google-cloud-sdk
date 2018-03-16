@@ -41,6 +41,7 @@ class CreateInstance(base.CreateCommand):
          },
          default='PRODUCTION',
          help_text='The type of instance to create.'))
+    parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

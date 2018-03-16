@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
@@ -31,6 +32,7 @@ class Create(base.CreateCommand):
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTPS')
+    parser.display_info.AddCacheUpdater(completers.HttpsHealthChecksCompleter)
 
   def CustomizeRequest(self, args, request):
     """Allow subclasses to customize request just before executing it."""
@@ -76,6 +78,7 @@ class CreateAlpha(Create):
   def Args(parser):
     Create.Args(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
+    parser.display_info.AddCacheUpdater(completers.HttpsHealthChecksCompleter)
 
   def CustomizeRequest(self, args, request):
     """Initialize httpsHealthCheck response field."""

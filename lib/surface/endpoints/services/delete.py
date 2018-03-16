@@ -52,6 +52,7 @@ class Delete(base.DeleteCommand):
     common_flags.producer_service_flag(suffix='to delete').AddToParser(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """Run 'service-management delete'.

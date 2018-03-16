@@ -47,6 +47,8 @@ class Create(base.CreateCommand):
         '--description',
         help='An optional, textual description of the target instance.')
 
+    parser.display_info.AddCacheUpdater(flags.TargetInstancesCompleter)
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client

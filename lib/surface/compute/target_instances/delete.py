@@ -33,6 +33,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument(plural=True)
     Delete.TARGET_INSTANCE_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.TargetInstancesCompleter)
 
   def Run(self, args):
     """Issues requests necessary to delete Target Instances."""

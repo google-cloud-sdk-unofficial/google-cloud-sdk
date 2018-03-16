@@ -34,6 +34,7 @@ class List(base.ListCommand):
   def Args(parser):
     flags.AddInstance(parser)
     parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """Lists all instance operations that have been performed on an instance.
@@ -48,7 +49,7 @@ class List(base.ListCommand):
     Raises:
       HttpException: A http error response was received while executing api
           request.
-      ToolException: An error other than http error occured while executing the
+      ToolException: An error other than http error occurred while executing the
           command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)

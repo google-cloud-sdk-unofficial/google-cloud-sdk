@@ -72,6 +72,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     _AddArgs(cls, parser)
+    parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""

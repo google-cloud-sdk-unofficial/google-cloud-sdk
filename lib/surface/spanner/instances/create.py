@@ -38,6 +38,7 @@ class Create(base.CreateCommand):
     flags.Description().AddToParser(parser)
     flags.Nodes().AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

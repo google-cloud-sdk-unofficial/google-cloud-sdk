@@ -33,10 +33,11 @@ class Purge(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to purge')
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     console_io.PromptContinue(
         cancel_on_no=True,
         prompt_string='Are you sure you want to purge: [{}]'.format(

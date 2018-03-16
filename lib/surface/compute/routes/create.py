@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
@@ -109,6 +110,8 @@ def _Args(parser):
       '--next-hop-vpn-tunnel-region',
       help=('The region of the next hop vpn tunnel. ' +
             compute_flags.REGION_PROPERTY_EXPLANATION))
+
+  parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
 
 class Create(base.CreateCommand):

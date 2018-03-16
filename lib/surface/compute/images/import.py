@@ -37,6 +37,7 @@ class Import(base.CreateCommand):
               'virtual disk file to import.'),
     )
     daisy_utils.AddCommonDaisyArgs(parser)
+    parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
     variables = """source_disk_file={0},disk_size=50g,image_name={1}""".format(

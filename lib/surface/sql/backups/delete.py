@@ -49,6 +49,7 @@ class Delete(base.DeleteCommand):
         help="""The ID of the backup run. You can find the ID by running
             $ gcloud beta sql backups list.""")
     flags.AddInstance(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """Deletes a backup of a Cloud SQL instance.

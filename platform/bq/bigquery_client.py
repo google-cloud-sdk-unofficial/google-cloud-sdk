@@ -23,10 +23,10 @@ import time
 import traceback
 
 
-import apiclient
-from apiclient import discovery
-from apiclient import http as http_request
-from apiclient import model
+import googleapiclient
+from googleapiclient import discovery
+from googleapiclient import http as http_request
+from googleapiclient import model
 import httplib2
 
 
@@ -230,11 +230,13 @@ class BigqueryError(Exception):
     if job_ref:
       message = 'Error processing %r: %s' % (job_ref, error.get('message'))
     else:
-      message = error.get('message') or ''
+      message = error.get('message', '')
     # We don't want to repeat the "main" error message.
     new_errors = [err for err in error_ls if err != error]
     if new_errors:
       message += '\nFailure details:\n'
+    wrap_error_message = True
+    if wrap_error_message:
       message += '\n'.join(
           textwrap.fill(
               ': '.join(filter(None, [
@@ -242,6 +244,13 @@ class BigqueryError(Exception):
               initial_indent=' - ',
               subsequent_indent='   ')
           for err in new_errors)
+    else:
+      error_message = '\n'.join(
+          ': '.join(filter(None, [
+              err.get('location', None), err.get('message', '')]))
+          for err in new_errors)
+      if error_message:
+        message += '- ' + error_message
 
     # Sometimes we will have type(message) being <type 'unicode'>, for example
     # from an invalid query containing a non-English string.  Reduce this
@@ -427,7 +436,7 @@ class BigqueryHttp(http_request.HttpRequest):
   def execute(self, **kwds):  # pylint: disable=g-bad-name
     try:
       return super(BigqueryHttp, self).execute(**kwds)
-    except apiclient.errors.HttpError, e:
+    except googleapiclient.errors.HttpError, e:
       # TODO(user): Remove this when apiclient supports logging
       # of error responses.
       self._model._log_response(e.resp, e.content)  # pylint: disable=protected-access
@@ -631,7 +640,7 @@ class BigqueryClient(object):
             discovery_url = self.GetDiscoveryUrl().format(
                 api='bigquery', apiVersion=self.api_version)
           _, discovery_document = http.request(discovery_url)
-        except (httplib2.HttpLib2Error, apiclient.errors.HttpError), e:
+        except (httplib2.HttpLib2Error, googleapiclient.errors.HttpError), e:
           # We can't find the specified server. This can be thrown for
           # multiple reasons, so inspect the error.
           if hasattr(e, 'content'):
@@ -648,7 +657,7 @@ class BigqueryClient(object):
           if iterations == max_retries - 1:
             raise BigqueryCommunicationError(
                 'Cannot contact server. Please try again.\nError: %r' % (e,))
-        except apiclient.errors.UnknownApiNameOrVersion, e:
+        except googleapiclient.errors.UnknownApiNameOrVersion, e:
           # We can't resolve the discovery url for the given server.
           # Don't retry in this case.
           raise BigqueryCommunicationError(
@@ -1443,10 +1452,15 @@ class BigqueryClient(object):
     if 'timePartitioning' in result:
       if 'type' in result['timePartitioning']:
         result['Time Partitioning'] = result['timePartitioning']['type']
+        extra_info = []
+        if 'field' in result['timePartitioning']:
+          partitioning_field = result['timePartitioning']['field']
+          extra_info.append('field: %s' % partitioning_field)
         if 'expirationMs' in result['timePartitioning']:
           expiration_ms = int(result['timePartitioning']['expirationMs'])
-          result['Time Partitioning'] += (
-              ' (expirationMs: %d)' % (expiration_ms,))
+          extra_info.append('expirationMs: %d' % (expiration_ms,))
+        if extra_info:
+          result['Time Partitioning'] += (' (%s)' % (', '.join(extra_info),))
     if 'type' in result:
       result['Type'] = result['type']
       if 'view' in result and 'query' in result['view']:
@@ -1583,7 +1597,7 @@ class BigqueryClient(object):
                                      run_attempt,
                                      max_results=None,
                                      page_token=None,
-                                     statuses=None):
+                                     states=None):
     """Create and populate a transfer run list request."""
     request = dict(parent=reference)
     request['runAttempt'] = run_attempt
@@ -1591,15 +1605,15 @@ class BigqueryClient(object):
       if max_results > _MAX_RESULTS:
         max_results = _MAX_RESULTS
       request['pageSize'] = max_results
-    if statuses is not None:
-      if 'statuses:' in statuses:
+    if states is not None:
+      if 'states:' in states:
         try:
-          statuses = statuses.split(':')[1].split(',')
-          request['statuses'] = statuses
+          states = states.split(':')[1].split(',')
+          request['states'] = states
         except IndexError:
-          raise BigqueryError('Invalid flag argument "' + statuses + '"')
+          raise BigqueryError('Invalid flag argument "' + states + '"')
       else:
-        raise BigqueryError('Invalid flag argument "' + statuses + '"')
+        raise BigqueryError('Invalid flag argument "' + states + '"')
     if page_token is not None:
       request['pageToken'] = page_token
     return request
@@ -1733,15 +1747,15 @@ class BigqueryClient(object):
     return (results,)
 
   def ListTransferRuns(self, reference, run_attempt, max_results=None,
-                       statuses=None, page_token=None):
+                       page_token=None, states=None):
     """Return a list of transfer runs.
 
     Args:
       reference: The ProjectReference to list transfer runs for.
       run_attempt: Which runs should be pulled.
-      max_results: The maximum number of transfer runs to return.
-      statuses: Statuses to filter transfer runs.
+      max_results: The maximum number of transfer runs to return (optional).
       page_token: Current page token (optional).
+      states: States to filter transfer runs (optional).
 
     Returns:
       A list of transfer runs.
@@ -1752,7 +1766,7 @@ class BigqueryClient(object):
     reference = str(reference)
     request = self._PrepareTransferRunListRequest(reference, run_attempt,
                                                   max_results, page_token,
-                                                  statuses)
+                                                  states)
     response = transfer_client.projects().locations().transferConfigs().runs(
     ).list(**request).execute()
     transfer_runs = response.get('transferRuns', [])
@@ -1762,7 +1776,7 @@ class BigqueryClient(object):
         max_results -= len(transfer_runs)
         request = self._PrepareTransferRunListRequest(reference, run_attempt,
                                                       max_results, page_token,
-                                                      statuses)
+                                                      states)
         response = transfer_client.projects().locations().transferConfigs(
         ).runs().list(**request).execute()
         transfer_runs.extend(response.get('transferRuns', []))
@@ -2072,7 +2086,7 @@ class BigqueryClient(object):
 
     try:
       body = BigqueryClient.ConstructObjectInfo(reference)
-      if schema:
+      if schema is not None:
         body['schema'] = {'fields': schema}
       if friendly_name is not None:
         body['friendlyName'] = friendly_name
@@ -2367,8 +2381,11 @@ class BigqueryClient(object):
       get_request.headers['If-Match'] = etag
     table = get_request.execute()
 
-    if schema:
+    if schema is not None:
       table['schema'] = {'fields': schema}
+    else:
+      table['schema'] = None
+
     if friendly_name is not None:
       table['friendlyName'] = friendly_name
     if description is not None:
@@ -2573,7 +2590,7 @@ class BigqueryClient(object):
     while result is None:
       try:
         status, result = request.next_chunk()
-      except apiclient.errors.HttpError, e:
+      except googleapiclient.errors.HttpError, e:
         logging.error('HTTP Error %d during resumable media upload', e.resp.status)
         # Log response headers, which contain debug info for GFEs.
         for key, value in e.resp.items():

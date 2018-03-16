@@ -55,6 +55,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     _SSL_POLICY_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
 
   def Run(self, args):
     """Issues the request to delete a SSL policy."""

@@ -32,6 +32,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.TARGET_VPN_GATEWAY_ARG = flags.TargetVpnGatewayArgument(plural=True)
     Delete.TARGET_VPN_GATEWAY_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.TargetVpnGatewaysCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

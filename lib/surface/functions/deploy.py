@@ -119,12 +119,12 @@ def _SourceCodeArgs(parser):
 
       Overall, the URL should match the following regular expression:
 
-
-      `^https://source\\.developers\\.google\\.com/projects/`
-      `(?<accountId>[^/]+)/repos/(?<repoName>[^/]+)`
-      `(((/revisions/(?<commit>[^/]+))|(/moveable-aliases/(?<branch>[^/]+))|`
-      `(/fixed-aliases/(?<tag>[^/]+)))(/paths/(?<path>.*))?)?$`
-
+      ```
+      ^https://source\\.developers\\.google\\.com/projects/
+      (?<accountId>[^/]+)/repos/(?<repoName>[^/]+)
+      (((/revisions/(?<commit>[^/]+))|(/moveable-aliases/(?<branch>[^/]+))|
+      (/fixed-aliases/(?<tag>[^/]+)))(/paths/(?<path>.*))?)?$
+      ```
 
       If the source location is not explicitly set, new functions will deploy
       from the current directory. Existing functions keep their old source.
@@ -135,8 +135,7 @@ def _SourceCodeArgs(parser):
       '--stage-bucket',
       help=('When deploying a function from a local directory, this flag\'s '
             'value is the name of the Google Cloud Storage bucket in which '
-            'source code will be stored. Required, if a function is deployed '
-            'from a local directory.'),
+            'source code will be stored.'),
       type=util.ValidateAndStandarizeBucketUriOrRaise)
   parser.add_argument(
       '--entry-point',

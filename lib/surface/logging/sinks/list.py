@@ -28,6 +28,7 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     util.AddNonProjectArgs(parser, 'List sinks')
     parser.display_info.AddFormat('table(name, destination, filter)')
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

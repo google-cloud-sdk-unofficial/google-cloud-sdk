@@ -34,6 +34,7 @@ class Delete(base.DeleteCommand):
     """Register flags for this command."""
     parser.add_argument('sink_name', help='The name of the sink to delete.')
     util.AddNonProjectArgs(parser, 'Delete a sink')
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

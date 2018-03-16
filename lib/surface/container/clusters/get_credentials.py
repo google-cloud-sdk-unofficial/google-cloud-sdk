@@ -89,6 +89,8 @@ class GetCredentials(base.Command):
     # Call DescribeCluster to get auth info and cache for next time
     cluster = adapter.GetCluster(cluster_ref)
     auth = cluster.masterAuth
+    # TODO(b/70856999) Make this consistent with the checks in
+    # api_lib/container/kubeconfig.py.
     has_creds = (auth and ((auth.clientCertificate and auth.clientKey) or
                            (auth.username and auth.password)))
     if not has_creds and not util.ClusterConfig.UseGCPAuthProvider(cluster):

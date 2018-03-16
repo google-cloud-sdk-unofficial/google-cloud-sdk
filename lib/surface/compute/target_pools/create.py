@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
     cls.HTTP_HEALTH_CHECK_ARG.AddArgument(parser)
     cls.TARGET_POOL_ARG = flags.TargetPoolArgument()
     cls.TARGET_POOL_ARG.AddArgument(parser, operation_type='create')
+    parser.display_info.AddCacheUpdater(flags.TargetPoolsCompleter)
 
     parser.add_argument(
         '--backup-pool',

@@ -34,6 +34,7 @@ class Describe(base.ListCommand):
     """
     flags.Instance(positional=False).AddToParser(parser)
     flags.Database().AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

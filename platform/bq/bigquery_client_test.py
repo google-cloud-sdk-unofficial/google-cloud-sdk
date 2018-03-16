@@ -23,6 +23,45 @@ import bq_flags
 
 FLAGS = flags.FLAGS
 
+_TABLE_INFO = """
+{
+  "creationTime": "1513021634803",
+  "id": "bigquerytestdefault:vimota.table1",
+  "kind": "bigquery#table",
+  "lastModifiedTime": "1513021634803",
+  "numBytes": "0",
+  "numLongTermBytes": "0",
+  "numRows": "0",
+  "schema": {
+    "fields": [
+      {
+        "name": "ts",
+        "type": "TIMESTAMP"
+      },
+      {
+        "name": "field1",
+        "type": "STRING"
+      },
+      {
+        "name": "field2",
+        "type": "INTEGER"
+      }
+    ]
+  },
+  "tableReference": {
+    "datasetId": "vimota",
+    "projectId": "bigquerytestdefault",
+    "tableId": "table1"
+  },
+  "timePartitioning": {
+    "field": "ts",
+    "type": "DAY",
+    "expirationMs": "10"
+  },
+  "type": "TABLE"
+}
+"""
+
 
 class BigqueryClientTest(googletest.TestCase):
 
@@ -124,6 +163,15 @@ class BigqueryClientTest(googletest.TestCase):
     self.assertRaises(bigquery_client.BigquerySchemaError,
                       bigquery_client.BigqueryClient.ReadSchema,
                       '../foo/bar/fake_filename')
+
+  def testFormatTableInfo(self):
+    formatted_table_info = bigquery_client.BigqueryClient.FormatTableInfo(
+        json.loads(_TABLE_INFO))
+    self.assertEqual(formatted_table_info['Last modified'], '11 Dec 11:47:14')
+    self.assertEqual(formatted_table_info['Total Rows'], '0')
+    self.assertEqual(formatted_table_info['Total Bytes'], '0')
+    self.assertEqual(formatted_table_info['Time Partitioning'],
+                     'DAY (field: ts, expirationMs: 10)')
 
   def testParseIdentifier(self):
     for identifier, parse in self.parse_tests.iteritems():

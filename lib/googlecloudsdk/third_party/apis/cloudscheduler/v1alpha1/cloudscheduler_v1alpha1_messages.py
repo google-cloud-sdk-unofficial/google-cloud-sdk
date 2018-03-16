@@ -1,4 +1,4 @@
-"""Generated message classes for cloudscheduler version v1beta1.
+"""Generated message classes for cloudscheduler version v1alpha1.
 
 Creates and manages jobs run on a regular recurring schedule.
 """
@@ -406,16 +406,20 @@ class Job(_messages.Message):
   """Configuration for a job.
 
   Enums:
-    JobStateValueValuesEnum: Output only.  State of the job. For example:
+    JobStateValueValuesEnum: Output only. State of the job. For example:
       running, paused, or disabled.
 
   Fields:
     appEngineHttpTarget: App Engine Http target.
-    jobState: Output only.  State of the job. For example: running, paused, or
+    description: A human-readable description for the job.
+    jobState: Output only. State of the job. For example: running, paused, or
       disabled.
     name: The job name. For example:
       `projects/PROJECT_ID/locations/LOCATION_ID/jobs/JOB_ID`.  Caller-
       specified in CreateJobRequest, after which it becomes output only.
+    nextScheduleTime: Output only. The next time the job is scheduled. Note
+      that this may be a retry of a previously failed execution or the next
+      execution time according to the schedule.
     pubsubTarget: Pub/Sub target.
     schedule: Specifies a schedule of start times. This can be used to specify
       more complicated, and time-zone-aware schedules than is possible using
@@ -424,12 +428,14 @@ class Job(_messages.Message):
       RetryConfig.retry_count > 0 and a job attempt fails, the job will be a
       total of tried RetryConfig.retry_count times, with exponential backoff,
       until the next scheduled start time.
-    userUpdateTime: Output only.  The time of the last user update to the job,
+    status: Output only. The response from the target of the last attempted
+      execution.
+    userUpdateTime: Output only. The time of the last user update to the job,
       or the creation time if there have been no updates.
   """
 
   class JobStateValueValuesEnum(_messages.Enum):
-    """Output only.  State of the job. For example: running, paused, or
+    """Output only. State of the job. For example: running, paused, or
     disabled.
 
     Values:
@@ -437,17 +443,24 @@ class Job(_messages.Message):
       ENABLED: The job is executing normally.
       PAUSED: The job is paused by the user. It will not execute. A user can
         intentionally pause the job using CloudScheduler.PauseJobRequest.
+      DISABLED: The job is disabled by the system due to error. The user
+        cannot directly set a job to be disabled. The error can be viewed in
+        Job.status.
     """
     JOB_STATE_UNSPECIFIED = 0
     ENABLED = 1
     PAUSED = 2
+    DISABLED = 3
 
   appEngineHttpTarget = _messages.MessageField('AppEngineHttpTarget', 1)
-  jobState = _messages.EnumField('JobStateValueValuesEnum', 2)
-  name = _messages.StringField(3)
-  pubsubTarget = _messages.MessageField('PubsubTarget', 4)
-  schedule = _messages.MessageField('Schedule', 5)
-  userUpdateTime = _messages.StringField(6)
+  description = _messages.StringField(2)
+  jobState = _messages.EnumField('JobStateValueValuesEnum', 3)
+  name = _messages.StringField(4)
+  nextScheduleTime = _messages.StringField(5)
+  pubsubTarget = _messages.MessageField('PubsubTarget', 6)
+  schedule = _messages.MessageField('Schedule', 7)
+  status = _messages.MessageField('Status', 8)
+  userUpdateTime = _messages.StringField(9)
 
 
 class ListJobsResponse(_messages.Message):
@@ -668,23 +681,25 @@ class RetryConfig(_messages.Message):
   Fields:
     jobAgeLimit: The time limit for retrying a failed job, measured from when
       the job was first run. If specified with RetryConfig.retry_count, the
-      job will be retried until both limits are reached.
+      job will be retried until both limits are reached.  The default value
+      for job_age_limit is zero, which means job age is unlimited.
     maxBackoffSeconds: The maximum amount of time to wait before retrying a
-      task after it fails.
+      task after it fails.  The default value of this field is 1 hour.
     maxDoublings: The maximum number of times that the interval between failed
       job retries will be doubled before the increase becomes constant. The
       constant is: 2**(max_doublings - 1) * RetryConfig.min_backoff_seconds.
+      The default value of this field is 16.
     minBackoffSeconds: The minimum amount of time to wait before retrying a
-      task after it fails.
+      task after it fails.  The default value of this field is 0.1 seconds.
     retryCount: It determines the total number  attempts that the system will
       make to deliver a job using the exponential backoff procedure described
-      above.  If retry_count is zero, a job attempt will *not* be retried if
-      it fails. Instead the Cloud Scheduler system will wait for the next
-      scheduled execution time.  If retry_count is set to a non-zero number
-      then Cloud Scheduler will retry failed attempts, using exponential
-      backoff, retry_count times, or until the next scheduled execution time,
-      whichever comes first. A negative value for retry_count is interpreted
-      as unbounded.  Value greater than 5 and negative values are not allowed.
+      above.  The default value of retry_count is zero.  If retry_count is
+      zero, a job attempt will *not* be retried if it fails. Instead the Cloud
+      Scheduler system will wait for the next scheduled execution time.  If
+      retry_count is set to a non-zero number then Cloud Scheduler will retry
+      failed attempts, using exponential backoff, retry_count times, or until
+      the next scheduled execution time, whichever comes first.  Value greater
+      than 5 and negative values are not allowed.
   """
 
   jobAgeLimit = _messages.StringField(1)
@@ -711,7 +726,7 @@ class Schedule(_messages.Message):
       ScheduleSpec.schedule. The value of this field must be a time zone name
       from the tz database: http://en.wikipedia.org/wiki/Tz_database.  Note
       that some timezones include a includes a provision for daylight savings
-      time. The rules for daylight saving time are determined by the choosen
+      time. The rules for daylight saving time are determined by the chosen
       tz. For UTC use the string "utc". If a timezone is not specified, the
       default will be in UTC (also known as GMT).
   """
@@ -785,6 +800,84 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(12)
   uploadType = _messages.StringField(13)
   upload_protocol = _messages.StringField(14)
+
+
+class Status(_messages.Message):
+  """The `Status` type defines a logical error model that is suitable for
+  different programming environments, including REST APIs and RPC APIs. It is
+  used by [gRPC](https://github.com/grpc). The error model is designed to be:
+  - Simple to use and understand for most users - Flexible enough to meet
+  unexpected needs  # Overview  The `Status` message contains three pieces of
+  data: error code, error message, and error details. The error code should be
+  an enum value of google.rpc.Code, but it may accept additional error codes
+  if needed.  The error message should be a developer-facing English message
+  that helps developers *understand* and *resolve* the error. If a localized
+  user-facing error message is needed, put the localized message in the error
+  details or localize it in the client. The optional error details may contain
+  arbitrary information about the error. There is a predefined set of error
+  detail types in the package `google.rpc` that can be used for common error
+  conditions.  # Language mapping  The `Status` message is the logical
+  representation of the error model, but it is not necessarily the actual wire
+  format. When the `Status` message is exposed in different client libraries
+  and different wire protocols, it can be mapped differently. For example, it
+  will likely be mapped to some exceptions in Java, but more likely mapped to
+  some error codes in C.  # Other uses  The error model and the `Status`
+  message can be used in a variety of environments, either with or without
+  APIs, to provide a consistent developer experience across different
+  environments.  Example uses of this error model include:  - Partial errors.
+  If a service needs to return partial errors to the client,     it may embed
+  the `Status` in the normal response to indicate the partial     errors.  -
+  Workflow errors. A typical workflow has multiple steps. Each step may
+  have a `Status` message for error reporting.  - Batch operations. If a
+  client uses batch request and batch response, the     `Status` message
+  should be used directly inside batch response, one for     each error sub-
+  response.  - Asynchronous operations. If an API call embeds asynchronous
+  operation     results in its response, the status of those operations should
+  be     represented directly using the `Status` message.  - Logging. If some
+  API errors are stored in logs, the message `Status` could     be used
+  directly after any stripping needed for security/privacy reasons.
+
+  Messages:
+    DetailsValueListEntry: A DetailsValueListEntry object.
+
+  Fields:
+    code: The status code, which should be an enum value of google.rpc.Code.
+    details: A list of messages that carry the error details.  There is a
+      common set of message types for APIs to use.
+    message: A developer-facing error message, which should be in English. Any
+      user-facing error message should be localized and sent in the
+      google.rpc.Status.details field, or localized by the client.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DetailsValueListEntry(_messages.Message):
+    """A DetailsValueListEntry object.
+
+    Messages:
+      AdditionalProperty: An additional property for a DetailsValueListEntry
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      """An additional property for a DetailsValueListEntry object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
+  message = _messages.StringField(3)
 
 
 encoding.AddCustomJsonFieldMapping(

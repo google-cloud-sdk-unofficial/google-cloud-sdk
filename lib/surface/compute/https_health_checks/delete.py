@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.https_health_checks import flags
 
@@ -32,6 +33,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument(plural=True)
     Delete.HTTPS_HEALTH_CHECK_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(completers.HttpsHealthChecksCompleter)
 
   def Run(self, args):
     """Issues requests necessary to delete HTTPS Health Checks."""

@@ -27,8 +27,9 @@ class List(base.ListCommand):
   def Args(parser):
     list_formats.AddListTasksFormats(parser)
     flags.AddQueueResourceFlag(parser, plural_tasks=True)
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     return tasks_client.List(queue_ref, args.limit, args.page_size)

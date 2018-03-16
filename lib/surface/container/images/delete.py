@@ -55,6 +55,16 @@ class Delete(base.DeleteCommand):
 
             $ {command} <IMAGE_NAME> --force-delete-tags --quiet
 
+          To easily identify and delete untagged images in a project, first
+          filter digests that lack tags:
+
+            $ gcloud container images list-tags [HOSTNAME]/[PROJECT-ID]/[IMAGE]\
+              --filter='-tags:*'  --format='get(digest)' --limit=$BIG_NUMBER
+
+          Then, delete these tagless images without prompting by running:
+
+            $ {command} --quiet [HOSTNAME]/[PROJECT-ID]/[IMAGE]@DIGEST
+
       """,
   }
 
@@ -158,6 +168,8 @@ class Delete(base.DeleteCommand):
       if isinstance(docker_obj, docker_name.Digest):
         digests.add(docker_obj)
       elif isinstance(docker_obj, docker_name.Tag):
+        if not util.IsFullySpecified(image_name):
+          log.warn('Implicit ":latest" tag specified: ' + image_name)
         tags.add(docker_obj)
     return [digests, tags]
 

@@ -64,6 +64,7 @@ class Create(base.CreateCommand):
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
     flags.AddCreateGaArgs(parser)
+    parser.display_info.AddCacheUpdater(flags.InterconnectsCompleter)
 
   def Collection(self):
     return 'compute.interconnects'

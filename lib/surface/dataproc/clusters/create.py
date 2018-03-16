@@ -86,13 +86,10 @@ class Create(base.CreateCommand):
 
     compute_resources = compute_helpers.GetComputeResources(
         self.ReleaseTrack(), args.name)
-    use_accelerators = self.ReleaseTrack() == base.ReleaseTrack.BETA
-    use_auto_delete_ttl = self.ReleaseTrack() == base.ReleaseTrack.BETA
-    use_min_cpu_platform = self.ReleaseTrack() == base.ReleaseTrack.BETA
 
+    beta = self.ReleaseTrack() == base.ReleaseTrack.BETA
     cluster_config = clusters.GetClusterConfig(
-        args, dataproc, cluster_ref.projectId, compute_resources,
-        use_accelerators, use_auto_delete_ttl, use_min_cpu_platform)
+        args, dataproc, cluster_ref.projectId, compute_resources, beta)
 
     cluster = dataproc.messages.Cluster(
         config=cluster_config,

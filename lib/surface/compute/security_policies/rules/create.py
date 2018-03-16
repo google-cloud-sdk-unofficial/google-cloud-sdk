@@ -20,7 +20,7 @@ from __future__ import print_function
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute.security_policies import flags as security_policy_flags
+from googlecloudsdk.command_lib.compute.security_policies import flags as security_policies_flags
 from googlecloudsdk.command_lib.compute.security_policies.rules import flags
 from googlecloudsdk.core import properties
 
@@ -45,12 +45,14 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     flags.AddPriority(parser, 'add')
     cls.SECURITY_POLICY_ARG = (
-        security_policy_flags.SecurityPolicyArgumentForRules())
+        security_policies_flags.SecurityPolicyArgumentForRules())
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddMatcher(parser)
     flags.AddAction(parser)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
+    parser.display_info.AddCacheUpdater(
+        security_policies_flags.SecurityPoliciesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

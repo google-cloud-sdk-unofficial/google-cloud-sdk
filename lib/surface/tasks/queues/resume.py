@@ -27,10 +27,11 @@ class Resume(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to resume')
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     log.warn(constants.QUEUE_MANAGEMENT_WARNING)
     queues_client.Resume(queue_ref)
     log.status.Print('Resumed queue [{}].'.format(queue_ref.Name()))

@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import versions_util
+from googlecloudsdk.command_lib.util import labels_util
 
 
 def _AddCreateArgs(parser):
@@ -59,6 +60,8 @@ def _AddCreateArgs(parser):
                 nodes: 10  # The number of nodes to allocate for this model.
               autoScaling:
                 minNodes: 0  # The minimum number of nodes to allocate for this model.
+              labels:
+                user-defined-key: user-defined-value
 
           The name of the version must always be specified via the required
           VERSION argument.
@@ -71,6 +74,7 @@ def _AddCreateArgs(parser):
           configuration file.
       """
   ).AddToParser(parser)
+  labels_util.AddCreateLabelsFlags(parser)
 
 
 class Create(base.CreateCommand):
@@ -87,7 +91,9 @@ class Create(base.CreateCommand):
     _AddCreateArgs(parser)
 
   def Run(self, args):
-    return versions_util.Create(versions_api.VersionsClient(),
+    versions_client = versions_api.VersionsClient()
+    labels = versions_util.ParseCreateLabels(versions_client, args)
+    return versions_util.Create(versions_client,
                                 operations.OperationsClient(),
                                 args.version,
                                 model=args.model,
@@ -95,4 +101,5 @@ class Create(base.CreateCommand):
                                 staging_bucket=args.staging_bucket,
                                 runtime_version=args.runtime_version,
                                 config_file=args.config,
-                                async_=args.async)
+                                async_=args.async,
+                                labels=labels)

@@ -25,12 +25,13 @@ class RenewLease(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddTaskResourceArgs(parser, 'to renew the lease of')
+    flags.AddLocationFlag(parser)
     flags.AddTaskLeaseScheduleTimeFlag(parser, 'renewing')
     flags.AddTaskLeaseDurationFlag(parser)
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_ref = parsers.ParseTask(args.task, queue_ref)
     duration = parsers.FormatLeaseDuration(args.lease_duration)
     return tasks_client.RenewLease(task_ref, args.schedule_time, duration)

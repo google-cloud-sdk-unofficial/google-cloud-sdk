@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating instances."""
-import argparse
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -24,6 +23,7 @@ from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.maintenance_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.maintenance_policies import util as maintenance_util
@@ -119,6 +119,7 @@ def _CommonArgs(parser,
   base.ASYNC_FLAG.AddToParser(parser)
   parser.display_info.AddFormat(
       resource_registry.RESOURCE_REGISTRY['compute.instances'].list_format)
+  parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -541,7 +542,10 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument('--sole-tenancy-host', help=argparse.SUPPRESS)
+    parser.add_argument(
+        '--sole-tenancy-host',
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
     _CommonArgs(
         parser,
         release_track=base.ReleaseTrack.ALPHA,

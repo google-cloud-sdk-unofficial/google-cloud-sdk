@@ -18,6 +18,7 @@ import json
 import os
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 from googlecloudsdk.third_party.appengine.tools import context_util
@@ -58,8 +59,13 @@ class GenRepoInfoFile(base.Command):
         help='The directory in which to create the source context files. ')
 
   def Run(self, args):
-    contexts = context_util.CalculateExtendedSourceContexts(
-        args.source_directory)
+    try:
+      contexts = context_util.CalculateExtendedSourceContexts(
+          args.source_directory)
+    except context_util.GenerateSourceContextError as e:
+      # This is a usage error. Wrap it with core_exceptions.Error to report
+      # it properly (i.e., as an error instead of a crash).
+      raise core_exceptions.Error(e)
 
     # First create the old-style source-context.json file
     output_file = context_util.CONTEXT_FILENAME

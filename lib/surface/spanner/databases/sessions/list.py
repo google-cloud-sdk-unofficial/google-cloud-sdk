@@ -34,6 +34,7 @@ class List(base.ListCommand):
     """
     flags.Instance(positional=False).AddToParser(parser)
     flags.Database(positional=False).AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.DatabaseSessionCompleter)
 
     parser.add_argument(
         '--server-filter',

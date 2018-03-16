@@ -125,12 +125,6 @@ class SnapshotDisks(base.SilentCommand):
       disk_key_or_none = csek_utils.MaybeLookupKeyMessage(
           csek_keys, disk_ref, client)
 
-      # TODO(b/35852475) drop test after 'guestFlush' goes GA.
-      if hasattr(args, 'guest_flush') and args.guest_flush:
-        request_kwargs = {'guestFlush': True}
-      else:
-        request_kwargs = {}
-
       if disk_ref.Collection() == 'compute.disks':
         request = messages.ComputeDisksCreateSnapshotRequest(
             disk=disk_ref.Name(),
@@ -141,7 +135,7 @@ class SnapshotDisks(base.SilentCommand):
             ),
             project=disk_ref.project,
             zone=disk_ref.zone,
-            **request_kwargs)
+            guestFlush=args.guest_flush)
         requests.append((client.disks, 'CreateSnapshot', request))
       elif disk_ref.Collection() == 'compute.regionDisks':
         request = messages.ComputeRegionDisksCreateSnapshotRequest(
@@ -153,7 +147,7 @@ class SnapshotDisks(base.SilentCommand):
             ),
             project=disk_ref.project,
             region=disk_ref.region,
-            **request_kwargs)
+            guestFlush=args.guest_flush)
         requests.append((client.regionDisks, 'CreateSnapshot', request))
 
     errors_to_collect = []

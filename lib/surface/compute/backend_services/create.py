@@ -117,6 +117,7 @@ class CreateGA(base.CreateCommand):
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
     flags.AddCacheKeyQueryStringList(parser)
     AddIapFlag(parser)
+    parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
 
   def _CreateBackendService(self, holder, args, backend_services_ref):
     health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
@@ -277,6 +278,7 @@ class CreateAlpha(CreateGA):
     flags.AddDropTrafficIfUnhealthy(parser, default=None)
     flags.AddFailoverRatio(parser)
     AddIapFlag(parser)
+    parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
 
   def CreateGlobalRequests(self, holder, args, backend_services_ref):
     if args.load_balancing_scheme == 'INTERNAL':

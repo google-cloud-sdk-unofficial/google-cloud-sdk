@@ -45,6 +45,8 @@ class Create(base.CreateCommand):
         '--description',
         help='An optional, textual description for the target HTTP proxy.')
 
+    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleter)
+
   def Run(self, args):
     """Issue a Target HTTP Proxy Insert request."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

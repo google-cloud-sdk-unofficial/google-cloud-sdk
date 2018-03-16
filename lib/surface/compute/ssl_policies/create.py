@@ -43,6 +43,7 @@ class Create(base.CreateCommand):
     flags.GetProfileFlag(default='COMPATIBLE').AddToParser(parser)
     flags.GetMinTlsVersionFlag(default='1.0').AddToParser(parser)
     flags.GetCustomFeaturesFlag().AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.SslPoliciesCompleter)
 
   def Run(self, args):
     """Issues the request to create a new SSL policy."""

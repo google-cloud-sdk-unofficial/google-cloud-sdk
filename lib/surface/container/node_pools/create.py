@@ -13,8 +13,6 @@
 # limitations under the License.
 """Create node pool command."""
 
-import argparse
-
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -24,6 +22,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -60,7 +59,8 @@ def _Args(parser):
   flags.AddNodePoolClusterFlag(parser, 'The cluster to add the node pool to.')
   # Timeout in seconds for operation
   parser.add_argument(
-      '--timeout', type=int, default=1800, help=argparse.SUPPRESS)
+      '--timeout', type=int, default=1800, hidden=True,
+      help='THIS ARGUMENT NEEDS HELP TEXT.')
   parser.add_argument(
       '--num-nodes',
       type=int,
@@ -90,11 +90,15 @@ for examples.
 """)
   flags.AddDiskTypeFlag(parser, suppressed=True)
   flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
-  flags.AddNodePoolNodeIdentityFlags(parser)
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
+  flags.AddNodeVersionFlag(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
+  if (args.IsSpecified('enable_cloud_endpoints') and
+      properties.VALUES.container.new_scopes_behavior.GetBool()):
+    raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
+                     'property container/ new_scopes_behavior is set to true.')
   return api_adapter.CreateNodePoolOptions(
       machine_type=args.machine_type,
       disk_size_gb=args.disk_size,
@@ -129,7 +133,7 @@ class Create(base.CreateCommand):
     flags.AddPreemptibleFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, suppressed=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True, hidden=True)
-    flags.AddNodeVersionFlag(parser, hidden=True)
+    flags.AddDeprecatedNodePoolNodeIdentityFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     return ParseCreateNodePoolOptionsBase(args)
@@ -194,12 +198,13 @@ class CreateBeta(Create):
     # TODO(b/64091817) Un-hide once we're ready to release.
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
-    flags.AddNodeVersionFlag(parser)
+    flags.AddNodePoolNodeIdentityFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
+    ops.new_scopes_behavior = True
     return ops
 
 
@@ -213,6 +218,8 @@ class CreateAlpha(Create):
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_autoprovisioning = args.enable_autoprovisioning
+    ops.new_scopes_behavior = True
+    ops.local_ssd_volume_configs = args.local_ssd_volumes
     return ops
 
   @staticmethod
@@ -220,14 +227,14 @@ class CreateAlpha(Create):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
-    flags.AddLocalSSDFlag(parser)
+    flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser, for_node_pool=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
     flags.AddAcceleratorArgs(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
-    flags.AddNodeVersionFlag(parser)
+    flags.AddNodePoolNodeIdentityFlags(parser)
 
 
 Create.detailed_help = DETAILED_HELP

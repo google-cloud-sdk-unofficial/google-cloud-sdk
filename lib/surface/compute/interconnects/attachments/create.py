@@ -54,6 +54,9 @@ class Create(base.CreateCommand):
         help='An optional, textual description for the '
         'interconnect attachment.')
 
+    parser.display_info.AddCacheUpdater(
+        interconnect_flags.InterconnectsCompleter)
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(

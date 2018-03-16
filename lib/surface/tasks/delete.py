@@ -26,10 +26,11 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     flags.AddTaskResourceArgs(parser, 'to delete')
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_ref = parsers.ParseTask(args.task, queue_ref)
     tasks_client.Delete(task_ref)
     log.DeletedResource(task_ref.Name(), kind='task')

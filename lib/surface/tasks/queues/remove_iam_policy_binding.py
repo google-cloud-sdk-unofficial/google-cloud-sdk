@@ -30,11 +30,12 @@ class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to remove the IAM policy binding from')
+    flags.AddLocationFlag(parser)
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     policy = queues_client.GetIamPolicy(queue_ref)
     iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
     response = queues_client.SetIamPolicy(queue_ref, policy)

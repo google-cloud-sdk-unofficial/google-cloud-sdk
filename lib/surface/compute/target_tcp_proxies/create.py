@@ -42,6 +42,8 @@ class Create(base.CreateCommand):
         '--description',
         help='An optional, textual description for the target TCP proxy.')
 
+    parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 

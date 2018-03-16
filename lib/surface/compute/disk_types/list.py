@@ -36,6 +36,7 @@ class List(base.ListCommand):
         )""")
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
     lister.AddZonalListerArgs(parser)
+    parser.display_info.AddCacheUpdater(completers.DiskTypesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -72,6 +73,7 @@ class ListAlpha(base.ListCommand):
         A regular expression to filter the names of the results on. Any names
         that do not match the entire regular expression will be filtered out.
         """)
+    parser.display_info.AddCacheUpdater(completers.DiskTypesCompleter)
 
     scope = parser.add_mutually_exclusive_group()
     scope.add_argument(

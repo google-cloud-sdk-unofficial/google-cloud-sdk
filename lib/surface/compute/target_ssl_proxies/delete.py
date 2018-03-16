@@ -27,6 +27,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument(plural=True)
     Delete.TARGET_SSL_PROXY_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.TargetSslProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

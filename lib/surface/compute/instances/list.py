@@ -16,6 +16,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags
 
 
@@ -27,6 +28,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
     lister.AddZonalListerArgs(parser)
+    parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

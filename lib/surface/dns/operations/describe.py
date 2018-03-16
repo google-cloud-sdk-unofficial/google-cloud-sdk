@@ -35,7 +35,8 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.GetZoneArg('Name of zone to get operations from.').AddToParser(parser)
-    parser.add_argument('operation_id', metavar='OPERATION_ID')
+    parser.add_argument('operation_id', metavar='OPERATION_ID',
+                        help='The id of the operation to display.')
 
   def Run(self, args):
     dns_client = apis.GetClientInstance('dns', 'v1beta2')

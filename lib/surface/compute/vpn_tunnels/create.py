@@ -113,7 +113,8 @@ class CreateGA(base.CreateCommand):
     parser.add_argument(
         '--ike-networks',
         type=arg_parsers.ArgList(min_length=1),
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
 
     parser.add_argument(
         '--local-traffic-selector',
@@ -143,6 +144,8 @@ class CreateGA(base.CreateCommand):
     parser.add_argument(
         '--router',
         help='The Router to use for dynamic routing.')
+
+    parser.display_info.AddCacheUpdater(flags.VpnTunnelsCompleter)
 
   def Run(self, args):
     """Issues API requests to construct VPN Tunnels."""

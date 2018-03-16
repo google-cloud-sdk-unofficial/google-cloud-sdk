@@ -73,6 +73,7 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat('config')
+    parser.display_info.AddCacheUpdater(None)
 
   def _GetPropertiesToDisplay(self, args):
     """List available regular properties."""

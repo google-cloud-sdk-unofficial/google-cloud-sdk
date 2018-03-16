@@ -35,6 +35,7 @@ class Delete(base.DeleteCommand):
     flags.Instance(positional=False).AddToParser(parser)
     flags.Database(positional=False).AddToParser(parser)
     flags.Session().AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.DatabaseSessionCompleter)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

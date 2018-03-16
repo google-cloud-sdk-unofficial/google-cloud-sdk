@@ -32,6 +32,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.FIREWALL_ARG = flags.FirewallRuleArgument(plural=True)
     Delete.FIREWALL_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.FirewallsCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

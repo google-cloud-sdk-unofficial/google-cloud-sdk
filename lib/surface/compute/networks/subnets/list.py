@@ -26,6 +26,7 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     lister.AddRegionsArg(parser)
+    parser.display_info.AddCacheUpdater(flags.SubnetworksCompleter)
 
     parser.add_argument(
         '--network',

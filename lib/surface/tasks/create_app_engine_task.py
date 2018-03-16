@@ -28,10 +28,11 @@ class CreateAppEngine(base.CreateCommand):
   @staticmethod
   def Args(parser):
     flags.AddCreateAppEngineTaskFlags(parser)
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_ref = parsers.ParseTask(args.id, queue_ref) if args.id else None
     task_config = parsers.ParseCreateTaskArgs(
         args, constants.APP_ENGINE_QUEUE, tasks_client.api.messages)

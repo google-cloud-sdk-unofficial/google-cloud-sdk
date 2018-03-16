@@ -32,6 +32,7 @@ class Delete(base.DeleteCommand):
   def Args(cls, parser):
     cls.FORWARDING_RULES_ARG = flags.ForwardingRuleArgumentPlural()
     cls.FORWARDING_RULES_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
 
   def Run(self, args):
     """Issues requests necessary to delete Forwarding Rules."""

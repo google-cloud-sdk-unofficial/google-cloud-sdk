@@ -39,6 +39,7 @@ def _Args(parser):
       help=('A backend bucket that will be used for requests for which this '
             'URL map has no mappings. Exactly one of --default-service or '
             '--default-backend-bucket is required.'))
+  parser.display_info.AddCacheUpdater(flags.UrlMapsCompleter)
 
 
 class Create(base.CreateCommand):

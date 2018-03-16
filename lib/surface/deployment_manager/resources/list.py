@@ -54,7 +54,7 @@ class List(base.ListCommand, dm_base.DmCommand):
     parser.display_info.AddFormat("""
           table(
             name,
-            type,
+            type:wrap,
             update.state.yesno(no="COMPLETED"),
             update.error.errors.group(code),
             update.intent

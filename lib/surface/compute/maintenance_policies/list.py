@@ -31,6 +31,7 @@ class List(base.ListCommand):
         )""")
     # TODO(b/69426858): Remove these deprecated flags.
     lister.AddRegionsArg(parser, hidden=True)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

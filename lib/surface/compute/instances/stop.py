@@ -36,18 +36,18 @@ class Stop(base.SilentCommand):
   @staticmethod
   def Args(parser):
     flags.INSTANCES_ARG.AddArgument(parser)
-    parser.add_argument(
-        '--discard-local-ssd',
-        action='store_true',
-        help=('If provided, local SSD data is discarded.'))
-
     base.ASYNC_FLAG.AddToParser(parser)
 
-  def _CreateStopRequest(self, client, instance_ref, unused_discard_local_ssd):
+  def _CreateStopRequest(self, client, instance_ref):
     return client.messages.ComputeInstancesStopRequest(
         instance=instance_ref.Name(),
         project=instance_ref.project,
         zone=instance_ref.zone)
+
+  def _CreateRequests(self, client, instance_refs, unused_args):
+    return [(client.apitools_client.instances, 'Stop',
+             self._CreateStopRequest(client, instance_ref))
+            for instance_ref in instance_refs]
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -57,10 +57,7 @@ class Stop(base.SilentCommand):
         args, holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(client))
 
-    requests = [(client.apitools_client.instances, 'Stop',
-                 self._CreateStopRequest(client, instance_ref,
-                                         args.discard_local_ssd))
-                for instance_ref in instance_refs]
+    requests = self._CreateRequests(client, instance_refs, args)
 
     errors_to_collect = []
     responses = client.BatchRequests(requests, errors_to_collect)
@@ -101,6 +98,16 @@ class StopAlpha(Stop):
   is not supported and will result in an API error.
   """
 
+  @staticmethod
+  def Args(parser):
+    flags.INSTANCES_ARG.AddArgument(parser)
+    parser.add_argument(
+        '--discard-local-ssd',
+        action='store_true',
+        help=('If provided, local SSD data is discarded.'))
+
+    base.ASYNC_FLAG.AddToParser(parser)
+
   def _CreateStopRequest(self, client, instance_ref, discard_local_ssd):
     """Adds the discardLocalSsd var into the message."""
     return client.messages.ComputeInstancesStopRequest(
@@ -108,3 +115,9 @@ class StopAlpha(Stop):
         instance=instance_ref.Name(),
         project=instance_ref.project,
         zone=instance_ref.zone)
+
+  def _CreateRequests(self, client, instance_refs, args):
+    return [(client.apitools_client.instances, 'Stop',
+             self._CreateStopRequest(client, instance_ref,
+                                     args.discard_local_ssd))
+            for instance_ref in instance_refs]

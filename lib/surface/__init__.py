@@ -82,15 +82,18 @@ class Gcloud(base.Group):
         metavar='USERNAME',
         default=None,
         action=actions.StoreProperty(properties.VALUES.core.trace_email),
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
     trace_group.add_argument(
         '--trace-log',
         default=None,
         action=actions.StoreBooleanProperty(properties.VALUES.core.trace_log),
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
     trace_group.add_argument(
         '--capture-session-file',
         default=None,
         action=actions.StoreProperty(
             properties.VALUES.core.capture_session_file),
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')

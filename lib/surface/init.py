@@ -14,7 +14,6 @@
 
 """Workflow to set up gcloud environment."""
 
-import argparse
 import os
 
 from googlecloudsdk.calliope import base
@@ -65,7 +64,8 @@ class Init(base.Command):
     parser.add_argument(
         'obsolete_project_arg',
         nargs='?',
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
     parser.add_argument(
         '--console-only',
         action='store_true',
@@ -277,7 +277,9 @@ class Init(base.Command):
   def _PickDefaultRegionAndZone(self):
     """Pulls metadata properties for region and zone and sets them in gcloud."""
     try:
-      project_info = self._RunCmd(['compute', 'project-info', 'describe'])
+      # Use --quiet flag to skip the enable api prompt.
+      project_info = self._RunCmd(['compute', 'project-info', 'describe'],
+                                  params=['--quiet'])
     except Exception:  # pylint:disable=broad-except
       log.status.write("""\
 Not setting default zone/region (this feature makes it easier to use

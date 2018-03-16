@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import app
+from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
 
@@ -25,9 +26,11 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser)
     list_formats.AddListQueuesFormats(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
-    region_ref = parsers.ParseLocation(app.ResolveAppLocation())
+    app_location = args.location or app.ResolveAppLocation()
+    region_ref = parsers.ParseLocation(app_location)
     return queues_client.List(region_ref, args.limit, args.page_size)

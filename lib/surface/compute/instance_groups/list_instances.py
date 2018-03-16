@@ -34,6 +34,7 @@ class ListInstances(base.ListCommand):
         instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(parser)
     flags.AddRegexArg(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """Retrieves response with instance in the instance group."""
@@ -85,5 +86,27 @@ ListInstances.detailed_help = {
     'brief':
         'List instances present in the instance group',
     'DESCRIPTION':
-        '*{command}* list instances in an instance group.',
+        """\
+          *{command}* list instances in an instance group.
+
+          The required permission to execute this command is
+          `compute.instanceGroups.list`. If needed, you can include this
+          permission, or choose any of the following preexisting IAM roles
+          that contain this particular permission:
+
+          *   Compute Admin
+          *   Compute Viewer
+          *   Compute Instance Admin (v1)
+          *   Compute Instance Admin (beta)
+          *   Compute Network Admin
+          *   Compute Network Viewer
+          *   Editor
+          *   Owner
+          *   Security Reviewer
+          *   Viewer
+
+          For more information regarding permissions required by
+          instance groups, refer to Compute Engine's access control guide :
+          https://cloud.google.com/compute/docs/access/iam-permissions#instancegroups_collection.
+        """,
 }

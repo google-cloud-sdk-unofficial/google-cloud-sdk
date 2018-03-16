@@ -47,6 +47,7 @@ class Create(base.CreateCommand):
         with_service_account=True,
         with_disabled=cls.with_disabled)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
+    parser.display_info.AddCacheUpdater(flags.FirewallsCompleter)
 
   def _CreateFirewall(self, holder, args):
     client = holder.client
@@ -128,7 +129,7 @@ class AlphaCreate(Create):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_ALPHA)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='create')
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(

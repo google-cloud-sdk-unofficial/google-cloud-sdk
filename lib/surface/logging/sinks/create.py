@@ -69,6 +69,7 @@ class Create(base.CreateCommand):
         help=('Whether to export logs from all child projects and folders. '
               'Only applies to sinks for organizations and folders.'))
     util.AddNonProjectArgs(parser, 'Create a sink')
+    parser.display_info.AddCacheUpdater(None)
 
   def CreateSink(self, parent, sink_data):
     """Creates a v2 sink specified by the arguments."""

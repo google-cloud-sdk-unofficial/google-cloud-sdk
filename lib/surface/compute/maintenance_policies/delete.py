@@ -24,6 +24,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     flags.MakeMaintenancePolicyArg().AddArgument(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

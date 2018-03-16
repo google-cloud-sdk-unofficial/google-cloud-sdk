@@ -16,6 +16,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_groups_utils
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 
 
 def _Args(parser):
@@ -30,6 +31,7 @@ def _Args(parser):
           size:label=INSTANCES
         )""")
   lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
+  parser.display_info.AddCacheUpdater(completers.InstanceGroupsCompleter)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

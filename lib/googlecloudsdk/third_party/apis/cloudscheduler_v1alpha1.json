@@ -1,10 +1,10 @@
 {
   "kind": "discovery#restDescription",
   "discoveryVersion": "v1",
-  "id": "cloudscheduler:v1beta1",
+  "id": "cloudscheduler:v1alpha1",
   "name": "cloudscheduler",
   "canonicalName": "Cloud Scheduler",
-  "version": "v1beta1",
+  "version": "v1alpha1",
   "revision": "0",
   "title": "Cloud Scheduler API",
   "description": "Creates and manages jobs run on a regular recurring schedule.",
@@ -195,6 +195,10 @@
           "description": "The job name. For example:\n`projects\/PROJECT_ID\/locations\/LOCATION_ID\/jobs\/JOB_ID`.\n\nCaller-specified in CreateJobRequest, after which it becomes\noutput only.",
           "type": "string"
         },
+        "description": {
+          "description": "A human-readable description for the job.",
+          "type": "string"
+        },
         "pubsubTarget": {
           "description": "Pub\/Sub target.",
           "$ref": "PubsubTarget"
@@ -208,23 +212,34 @@
           "$ref": "Schedule"
         },
         "userUpdateTime": {
-          "description": "Output only.\n\nThe time of the last user update to the job, or the creation\ntime if there have been no updates.",
+          "description": "Output only. The time of the last user update to the job, or the creation\ntime if there have been no updates.",
           "type": "string",
           "format": "google-datetime"
         },
         "jobState": {
-          "description": "Output only.\n\nState of the job. For example: running, paused, or disabled.",
+          "description": "Output only. State of the job. For example: running, paused, or disabled.",
           "enumDescriptions": [
             "Unspecified state.",
             "The job is executing normally.",
-            "The job is paused by the user. It will not execute. A user can\nintentionally pause the job using\nCloudScheduler.PauseJobRequest."
+            "The job is paused by the user. It will not execute. A user can\nintentionally pause the job using\nCloudScheduler.PauseJobRequest.",
+            "The job is disabled by the system due to error. The user\ncannot directly set a job to be disabled. The error can be\nviewed in Job.status."
           ],
           "type": "string",
           "enum": [
             "JOB_STATE_UNSPECIFIED",
             "ENABLED",
-            "PAUSED"
+            "PAUSED",
+            "DISABLED"
           ]
+        },
+        "status": {
+          "description": "Output only. The response from the target of the last attempted execution.",
+          "$ref": "Status"
+        },
+        "nextScheduleTime": {
+          "description": "Output only. The next time the job is scheduled. Note that this may be a\nretry of a previously failed execution or the next execution time\naccording to the schedule.",
+          "type": "string",
+          "format": "google-datetime"
         }
       }
     },
@@ -327,27 +342,27 @@
       "type": "object",
       "properties": {
         "retryCount": {
-          "description": "It determines the total number  attempts that the system will make to\ndeliver a job using the exponential backoff procedure described above.\n\nIf retry_count is zero, a job attempt will *not* be retried if\nit fails. Instead the Cloud Scheduler system will wait for the\nnext scheduled execution time.\n\nIf retry_count is set to a non-zero number then Cloud Scheduler\nwill retry failed attempts, using exponential backoff,\nretry_count times, or until the next scheduled execution time,\nwhichever comes first. A negative value for retry_count is\ninterpreted as unbounded.\n\nValue greater than 5 and negative values are not allowed.",
+          "description": "It determines the total number  attempts that the system will make to\ndeliver a job using the exponential backoff procedure described above.\n\nThe default value of retry_count is zero.\n\nIf retry_count is zero, a job attempt will *not* be retried if\nit fails. Instead the Cloud Scheduler system will wait for the\nnext scheduled execution time.\n\nIf retry_count is set to a non-zero number then Cloud Scheduler\nwill retry failed attempts, using exponential backoff,\nretry_count times, or until the next scheduled execution time,\nwhichever comes first.\n\nValue greater than 5 and negative values are not allowed.",
           "type": "integer",
           "format": "int32"
         },
         "jobAgeLimit": {
-          "description": "The time limit for retrying a failed job, measured from when the\njob was first run. If specified with RetryConfig.retry_count,\nthe job will be retried until both limits are reached.",
+          "description": "The time limit for retrying a failed job, measured from when the\njob was first run. If specified with RetryConfig.retry_count,\nthe job will be retried until both limits are reached.\n\nThe default value for job_age_limit is zero, which means job age is\nunlimited.",
           "type": "string",
           "format": "google-duration"
         },
         "minBackoffSeconds": {
-          "description": "The minimum amount of time to wait before retrying a task after\nit fails.",
+          "description": "The minimum amount of time to wait before retrying a task after\nit fails.\n\nThe default value of this field is 0.1 seconds.",
           "type": "string",
           "format": "google-duration"
         },
         "maxBackoffSeconds": {
-          "description": "The maximum amount of time to wait before retrying a task after\nit fails.",
+          "description": "The maximum amount of time to wait before retrying a task after\nit fails.\n\nThe default value of this field is 1 hour.",
           "type": "string",
           "format": "google-duration"
         },
         "maxDoublings": {
-          "description": "The maximum number of times that the interval between failed job\nretries will be doubled before the increase becomes constant. The\nconstant is: 2**(max_doublings - 1) *\nRetryConfig.min_backoff_seconds.",
+          "description": "The maximum number of times that the interval between failed job\nretries will be doubled before the increase becomes constant. The\nconstant is: 2**(max_doublings - 1) *\nRetryConfig.min_backoff_seconds.\n\nThe default value of this field is 16.",
           "type": "integer",
           "format": "int32"
         }
@@ -359,12 +374,39 @@
       "type": "object",
       "properties": {
         "timezone": {
-          "description": "Specifies the time zone to be used in interpreting\nScheduleSpec.schedule. The value of this field must be a\ntime zone name from the tz database:\nhttp:\/\/en.wikipedia.org\/wiki\/Tz_database.\n\nNote that some timezones include a includes a provision for\ndaylight savings time. The rules for daylight saving time are\ndetermined by the choosen tz. For UTC use the string \"utc\". If a\ntimezone is not specified, the default will be in UTC (also known\nas GMT).",
+          "description": "Specifies the time zone to be used in interpreting\nScheduleSpec.schedule. The value of this field must be a\ntime zone name from the tz database:\nhttp:\/\/en.wikipedia.org\/wiki\/Tz_database.\n\nNote that some timezones include a includes a provision for\ndaylight savings time. The rules for daylight saving time are\ndetermined by the chosen tz. For UTC use the string \"utc\". If a\ntimezone is not specified, the default will be in UTC (also known\nas GMT).",
           "type": "string"
         },
         "schedule": {
           "description": "Required.\n\nScheduler schedules are specified using an English-like\nformat. See\nhttps:\/\/cloud.google.com\/appengine\/docs\/standard\/python\/config\/cronref#schedule_format",
           "type": "string"
+        }
+      }
+    },
+    "Status": {
+      "id": "Status",
+      "description": "The `Status` type defines a logical error model that is suitable for different\nprogramming environments, including REST APIs and RPC APIs. It is used by\n[gRPC](https:\/\/github.com\/grpc). The error model is designed to be:\n\n- Simple to use and understand for most users\n- Flexible enough to meet unexpected needs\n\n# Overview\n\nThe `Status` message contains three pieces of data: error code, error message,\nand error details. The error code should be an enum value of\ngoogle.rpc.Code, but it may accept additional error codes if needed.  The\nerror message should be a developer-facing English message that helps\ndevelopers *understand* and *resolve* the error. If a localized user-facing\nerror message is needed, put the localized message in the error details or\nlocalize it in the client. The optional error details may contain arbitrary\ninformation about the error. There is a predefined set of error detail types\nin the package `google.rpc` that can be used for common error conditions.\n\n# Language mapping\n\nThe `Status` message is the logical representation of the error model, but it\nis not necessarily the actual wire format. When the `Status` message is\nexposed in different client libraries and different wire protocols, it can be\nmapped differently. For example, it will likely be mapped to some exceptions\nin Java, but more likely mapped to some error codes in C.\n\n# Other uses\n\nThe error model and the `Status` message can be used in a variety of\nenvironments, either with or without APIs, to provide a\nconsistent developer experience across different environments.\n\nExample uses of this error model include:\n\n- Partial errors. If a service needs to return partial errors to the client,\n    it may embed the `Status` in the normal response to indicate the partial\n    errors.\n\n- Workflow errors. A typical workflow has multiple steps. Each step may\n    have a `Status` message for error reporting.\n\n- Batch operations. If a client uses batch request and batch response, the\n    `Status` message should be used directly inside batch response, one for\n    each error sub-response.\n\n- Asynchronous operations. If an API call embeds asynchronous operation\n    results in its response, the status of those operations should be\n    represented directly using the `Status` message.\n\n- Logging. If some API errors are stored in logs, the message `Status` could\n    be used directly after any stripping needed for security\/privacy reasons.",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "The status code, which should be an enum value of google.rpc.Code.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\ngoogle.rpc.Status.details field, or localized by the client.",
+          "type": "string"
+        },
+        "details": {
+          "description": "A list of messages that carry the error details.  There is a common set of\nmessage types for APIs to use.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "any",
+              "description": "Properties of the object. Contains field @type with type URL."
+            }
+          }
         }
       }
     },
@@ -418,8 +460,8 @@
           "methods": {
             "list": {
               "id": "cloudscheduler.projects.locations.list",
-              "path": "v1beta1/{+name}/locations",
-              "flatPath": "v1beta1/projects/{projectsId}/locations",
+              "path": "v1alpha1/{+name}/locations",
+              "flatPath": "v1alpha1/projects/{projectsId}/locations",
               "httpMethod": "GET",
               "description": "Lists information about the supported locations for this service.",
               "parameters": {
@@ -459,8 +501,8 @@
             },
             "get": {
               "id": "cloudscheduler.projects.locations.get",
-              "path": "v1beta1/{+name}",
-              "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}",
+              "path": "v1alpha1/{+name}",
+              "flatPath": "v1alpha1/projects/{projectsId}/locations/{locationsId}",
               "httpMethod": "GET",
               "description": "Get information about a location.",
               "parameters": {
@@ -489,8 +531,8 @@
               "methods": {
                 "list": {
                   "id": "cloudscheduler.projects.locations.jobs.list",
-                  "path": "v1beta1/{+parent}/jobs",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/jobs",
+                  "path": "v1alpha1/{+parent}/jobs",
+                  "flatPath": "v1alpha1/projects/{projectsId}/locations/{locationsId}/jobs",
                   "httpMethod": "GET",
                   "description": "Lists jobs.\n\nListJobsRequest.filter can be used to specify a subset of\njobs. ListJobsRequest.response_view controls the subset of\ninformation returned. By default response_view is\nJob.View.BASIC; not all information is returned by default\ndue to performance considerations.",
                   "parameters": {
@@ -536,8 +578,8 @@
                 },
                 "get": {
                   "id": "cloudscheduler.projects.locations.jobs.get",
-                  "path": "v1beta1/{+name}",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/jobs/{jobsId}",
+                  "path": "v1alpha1/{+name}",
+                  "flatPath": "v1alpha1/projects/{projectsId}/locations/{locationsId}/jobs/{jobsId}",
                   "httpMethod": "GET",
                   "description": "Gets a job.",
                   "parameters": {
@@ -571,8 +613,8 @@
                 },
                 "create": {
                   "id": "cloudscheduler.projects.locations.jobs.create",
-                  "path": "v1beta1/{+parent}/jobs",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/jobs",
+                  "path": "v1alpha1/{+parent}/jobs",
+                  "flatPath": "v1alpha1/projects/{projectsId}/locations/{locationsId}/jobs",
                   "httpMethod": "POST",
                   "description": "Creates a job.",
                   "parameters": {
@@ -599,8 +641,8 @@
                 },
                 "delete": {
                   "id": "cloudscheduler.projects.locations.jobs.delete",
-                  "path": "v1beta1/{+name}",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/jobs/{jobsId}",
+                  "path": "v1alpha1/{+name}",
+                  "flatPath": "v1alpha1/projects/{projectsId}/locations/{locationsId}/jobs/{jobsId}",
                   "httpMethod": "DELETE",
                   "description": "Deletes a job.",
                   "parameters": {
@@ -624,10 +666,10 @@
                 },
                 "run": {
                   "id": "cloudscheduler.projects.locations.jobs.run",
-                  "path": "v1beta1/{+name}:run",
-                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/jobs/{jobsId}:run",
+                  "path": "v1alpha1/{+name}:run",
+                  "flatPath": "v1alpha1/projects/{projectsId}/locations/{locationsId}/jobs/{jobsId}:run",
                   "httpMethod": "POST",
-                  "description": "Forces a job to run now.\n\nWhen this method is called, Cloud Scheduler will immediately attempt the\njob. The attempt will be counted in the job's Job.total_attempt_count.\n\nThe job's Execution.schedule_time is not modified, so the job\nwill also be attempted according to its existing\nExecution.schedule_time.",
+                  "description": "Forces a job to run now.\n\nWhen this method is called, Cloud Scheduler will immediately attempt the\njob. The attempt will be counted in the job's Job.total_attempt_count.\n\nThe job's existing schedule is not modified, so the job\nwill also be attempted according to its normal schedule.",
                   "parameters": {
                     "name": {
                       "description": "Required.\n\nThe job name. For example:\n`projects\/PROJECT_ID\/locations\/LOCATION_ID\/jobs\/JOB_ID`.",

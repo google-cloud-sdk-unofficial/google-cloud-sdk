@@ -42,6 +42,7 @@ class Create(base.CreateCommand):
               'https://cloud.google.com/spanner/docs/data-definition-language'
              ).AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.DatabaseCompleter)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

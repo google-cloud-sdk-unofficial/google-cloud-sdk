@@ -25,9 +25,10 @@ class Run(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddTaskResourceArgs(parser, 'to run')
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_ref = parsers.ParseTask(args.task, queue_ref)
     return tasks_client.Run(task_ref)

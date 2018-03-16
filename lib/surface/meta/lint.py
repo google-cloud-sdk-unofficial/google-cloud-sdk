@@ -142,7 +142,17 @@ class BadListsChecker(Checker):
                 'flag [{flg}] has nargs={nargs}'.format(
                     flg=flag.option_strings[0],
                     nargs=repr(flag.nargs)))))
-      if isinstance(flag.type, arg_parsers.ArgType):
+      if isinstance(flag.type, arg_parsers.ArgDict):
+        if not (flag.metavar or flag.type.spec):
+          self._issues.append(
+              LintError(
+                  name=BadListsChecker.name,
+                  command=cmd_or_group,
+                  error_message=(
+                      ('dict flag [{flg}] has no metavar and type.spec'
+                       ' (at least one needed)'
+                      ).format(flg=flag.option_strings[0]))))
+      elif isinstance(flag.type, arg_parsers.ArgList):
         if not flag.metavar:
           self._issues.append(LintError(
               name=BadListsChecker.name,

@@ -62,6 +62,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     _Args(parser, cls.ReleaseTrack())
     image_utils.AddGuestOsFeaturesArg(parser, cls.ReleaseTrack())
+    parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
     """Returns a list of requests necessary for adding images."""
@@ -184,6 +185,7 @@ class CreateAlpha(CreateBeta):
     _Args(parser, cls.ReleaseTrack())
     image_utils.AddGuestOsFeaturesArg(parser, cls.ReleaseTrack())
     kms_utils.AddKmsKeyArgs(parser, resource_type='image')
+    parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
 
 Create.detailed_help = {

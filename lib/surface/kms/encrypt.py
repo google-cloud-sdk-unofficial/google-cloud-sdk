@@ -42,7 +42,8 @@ class Encrypt(base.Command):
   the CryptoKey `frodo` with the KeyRing `fellowship` and Location `global`, and
   write the ciphertext to 'path/to/ciphertext'.
 
-    $ {command} frodo \
+    $ {command} \
+        --key frodo \
         --keyring fellowship \
         --location global \
         --plaintext-file path/to/input/plaintext \

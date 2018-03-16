@@ -54,7 +54,8 @@ class Submit(base.Group):
   @staticmethod
   def Args(parser):
     # Allow user specified Job ID, but don't expose it.
-    parser.add_argument('--id', help=argparse.SUPPRESS)
+    parser.add_argument(
+        '--id', hidden=True, help='THIS ARGUMENT NEEDS HELP TEXT.')
 
     parser.add_argument(
         '--async',

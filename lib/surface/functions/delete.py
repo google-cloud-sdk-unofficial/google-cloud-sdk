@@ -38,6 +38,7 @@ class Delete(base.DeleteCommand):
     parser.add_argument(
         'name', help='The name of the function to delete.',
         type=util.ValidateFunctionNameOrRaise)
+    parser.display_info.AddCacheUpdater(None)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):

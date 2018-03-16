@@ -22,10 +22,6 @@ from googlecloudsdk.core.updater import local_state
 class PostProcess(base.SilentCommand):
   """Performs any necessary post installation steps."""
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument('data', nargs='*', default='')
-
   def Run(self, args):
     # Re-compile python files.
     state = local_state.InstallationState.ForCurrent()

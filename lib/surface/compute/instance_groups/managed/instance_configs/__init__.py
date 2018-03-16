@@ -19,4 +19,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ManagedInstanceGroupsInstanceConfigs(base.Group):
-  """Manage instance-specific settings of Managed Instance Group."""
+  """Manage instance-specific settings of managed instance group."""

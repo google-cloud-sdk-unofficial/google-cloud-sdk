@@ -16,18 +16,36 @@
 import enum
 
 
-BASE_URL = 'https://videointelligence.googleapis.com/'
-DOCS_URL = 'https://cloud.google.com/video-intelligence/docs/'
+BASE_URL = 'https://cloudscheduler.googleapis.com/v1alpha1/'
+DOCS_URL = 'https://cloud.google.com/cloud-scheduler/'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  VIDEOS = (
-      'videos',
-      'videos',
+  PROJECTS = (
+      'projects',
+      'projects/{projectsId}',
       {},
-      []
+      [u'projectsId']
+  )
+  PROJECTS_LOCATIONS = (
+      'projects.locations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}',
+      },
+      [u'name']
+  )
+  PROJECTS_LOCATIONS_JOBS = (
+      'projects.locations.jobs',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/jobs/{jobsId}',
+      },
+      [u'name']
   )
 
   def __init__(self, collection_name, path, flat_paths, params):

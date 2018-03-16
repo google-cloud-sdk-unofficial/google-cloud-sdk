@@ -31,6 +31,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.BACKEND_BUCKET_ARG = flags.BackendBucketArgument(plural=True)
     Delete.BACKEND_BUCKET_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.BackendBucketsCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

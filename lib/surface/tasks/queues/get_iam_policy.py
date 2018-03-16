@@ -33,8 +33,9 @@ class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to get the IAM policy for')
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     return queues_client.GetIamPolicy(queue_ref)

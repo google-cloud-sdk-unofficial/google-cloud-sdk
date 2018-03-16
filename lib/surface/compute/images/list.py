@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing images."""
-import argparse
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import lister
@@ -57,7 +55,8 @@ class List(base.ListCommand):
         '--show-preview-images',
         dest='preview_images',
         action='store_true',
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
 
     parser.add_argument(
         '--standard-images',

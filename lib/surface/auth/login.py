@@ -14,7 +14,6 @@
 
 """The auth command gets tokens via oauth2."""
 
-import argparse
 import textwrap
 
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
@@ -42,6 +41,13 @@ class Login(base.Command):
   authorization, the account is set to active without rerunning the flow.
 
   Use `gcloud auth list` to view credentialed accounts.
+
+  If you'd rather authorize without a web browser but still interact with
+  the command line, use the `--no-launch-browser` flag. To authorize without
+  a web browser and non-interactively, create a service account with the
+  appropriate scopes using the
+  [Google Cloud Platform Console](https://console.cloud.google.com) and use
+  `gcloud auth activate-service-account` with the corresponding JSON key file.
   """
 
   @staticmethod
@@ -59,7 +65,8 @@ class Login(base.Command):
     # --do-not-activate for (hidden) backwards compatibility.
     parser.add_argument(
         '--do-not-activate', action='store_false', dest='activate',
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
     parser.add_argument(
         '--brief', action='store_true',
         help='Minimal user output.')

@@ -61,6 +61,8 @@ class Create(base.CreateCommand):
     network_utils.AddCreateSubnetModeArg(parser)
     network_utils.AddCreateBgpRoutingModeArg(parser)
 
+    parser.display_info.AddCacheUpdater(flags.NetworksCompleter)
+
   def Run(self, args):
     """Issues the request necessary for adding the network."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

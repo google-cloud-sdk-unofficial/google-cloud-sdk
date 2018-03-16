@@ -41,6 +41,7 @@ class ListAlpha(base.ListCommand):
             billingEnabled
           )
     """)
+    parser.display_info.AddCacheUpdater(flags.BillingAccountsCompleter)
 
   @staticmethod
   def GetUriCacheUpdateOp():

@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
@@ -113,6 +114,8 @@ def _CommonArgs(parser,
         image to use. Valid values are: {}
         """.format(', '.join(_INSTANTIATE_FROM_VALUES)),
     )
+
+  parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
 
 def _ValidateInstancesFlags(args):

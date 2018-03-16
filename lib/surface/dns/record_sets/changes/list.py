@@ -47,6 +47,7 @@ class List(base.ListCommand):
         choices=['ascending', 'descending'],
         help='Sort order for listing.')
     parser.display_info.AddFormat(flags.CHANGES_FORMAT)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     api_version = 'v1'

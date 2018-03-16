@@ -59,6 +59,7 @@ class Create(base.CreateCommand):
         explanation=(
             'Zone in which TPU lives. '
             'If not specified, will use default compute/zone.'))
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     tpu = args.tpu_id

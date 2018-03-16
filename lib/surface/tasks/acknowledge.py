@@ -25,10 +25,11 @@ class Acknowledge(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddTaskResourceArgs(parser, 'to acknowledge')
+    flags.AddLocationFlag(parser)
     flags.AddTaskLeaseScheduleTimeFlag(parser, 'acknowledging')
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_ref = parsers.ParseTask(args.task, queue_ref)
     return tasks_client.Acknowledge(task_ref, args.schedule_time)

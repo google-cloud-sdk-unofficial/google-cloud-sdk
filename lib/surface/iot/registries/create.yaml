@@ -19,8 +19,10 @@
         action: store_true
         default: True
         choices:
-          True: MQTT_ENABLED
-          False: MQTT_DISABLED
+          - arg_value: True
+            enum_value: MQTT_ENABLED
+          - arg_value: False
+            enum_value: MQTT_DISABLED
 
       - api_field: deviceRegistry.httpConfig.httpEnabledState
         arg_name: enable-http-config
@@ -28,8 +30,10 @@
         action: store_true
         default: True
         choices:
-          True: HTTP_ENABLED
-          False: HTTP_DISABLED
+          - arg_value: True
+            enum_value: HTTP_ENABLED
+          - arg_value: False
+            enum_value: HTTP_DISABLED
 
       - api_field: deviceRegistry.stateNotificationConfig.pubsubTopicName
         arg_name: state-pubsub-topic
@@ -46,25 +50,27 @@
           ([RFC5280](https://www.ietf.org/rfc/rfc5280.txt)), encoded in base64,
           and wrapped by `-----BEGIN CERTIFICATE-----` and
           `-----END CERTIFICATE-----`.
-      - mutex: True
-        params:
-          - api_field: deviceRegistry.eventNotificationConfigs.pubsubTopicName
-            arg_name: pubsub-topic
-            type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
-            processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
-            hidden: True
-            help_text: |
-              The Google Cloud Pub/Sub topic on which to forward messages,
-              such as telemetry events.
-            deprecated:
-              warn: >
-                Flag {flag_name} is deprecated. Use --event-pubsub-topic
-                instead.
+      - group:
+          mutex: True
+          params:
+            - api_field: deviceRegistry.eventNotificationConfigs.pubsubTopicName
+              arg_name: pubsub-topic
+              type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
+              processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
+              hidden: True
+              help_text: |
+                The Google Cloud Pub/Sub topic on which to forward messages,
+                such as telemetry events.
+              action:
+                deprecated:
+                  warn: >
+                    Flag {flag_name} is deprecated. Use --event-pubsub-topic
+                    instead.
 
-          - api_field: deviceRegistry.eventNotificationConfigs.pubsubTopicName
-            arg_name: event-pubsub-topic
-            type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
-            processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
-            help_text: |
-              The Google Cloud Pub/Sub topic on which to forward messages, such
-              as telemetry events.
+            - api_field: deviceRegistry.eventNotificationConfigs.pubsubTopicName
+              arg_name: event-pubsub-topic
+              type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
+              processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
+              help_text: |
+                The Google Cloud Pub/Sub topic on which to forward messages, such
+                as telemetry events.

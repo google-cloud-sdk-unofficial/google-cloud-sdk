@@ -31,10 +31,11 @@ class Pause(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to pause')
+    flags.AddLocationFlag(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     log.warn(constants.QUEUE_MANAGEMENT_WARNING)
     queues_client.Pause(queue_ref)
     log.status.Print('Paused queue [{}].'.format(queue_ref.Name()))

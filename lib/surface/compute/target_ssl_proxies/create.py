@@ -68,6 +68,8 @@ class CreateGA(base.CreateCommand):
         '--description',
         help='An optional, textual description for the target SSL proxy.')
 
+    parser.display_info.AddCacheUpdater(flags.TargetSslProxiesCompleter)
+
   def _CreateResource(self, args, ssl_cert_refs, ssl_policy_ref=None):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 

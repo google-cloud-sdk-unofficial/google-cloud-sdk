@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 
 
 class List(base.ListCommand):
@@ -33,6 +34,7 @@ class List(base.ListCommand):
           deprecated.deleted:label=TURNDOWN_DATE
         )""")
     lister.AddBaseListerArgs(parser)
+    parser.display_info.AddCacheUpdater(completers.RegionsCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

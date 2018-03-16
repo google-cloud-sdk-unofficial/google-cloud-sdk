@@ -40,6 +40,7 @@ class Create(base.CreateCommand):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='create')
     flags.AddCreateRouterArgs(parser)
+    parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
 
   def Run(self, args):
     """Issues requests necessary for adding a router."""
@@ -85,6 +86,7 @@ class CreateWithCustomAdvertisements(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddCreateRouterArgs(parser)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'router')
+    parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
 
   def Run(self, args):
     """See base.CreateCommand."""

@@ -43,7 +43,7 @@ _TAGS_FORMAT = """
         digest.slice(7:19).join(''),
         tags.list(),
         timestamp.date():optional,
-        BUILD_DETAILS.buildDetails.provenance.sourceProvenance.sourceContext.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
+        BUILD_DETAILS.buildDetails.provenance.sourceProvenance.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
         vuln_counts.list():optional:label=VULNERABILITIES,
         IMAGE_BASIS.derivedImage.sort(distance).map().extract(baseResourceUrl).slice(:1).map().list().list().split('//').slice(1:).list().split('@').slice(:1).list():optional:label=FROM,
         BUILD_DETAILS.buildDetails.provenance.id.notnull().list():optional:label=BUILD

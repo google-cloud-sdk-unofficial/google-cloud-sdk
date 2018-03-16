@@ -9,9 +9,9 @@ import gflags as flags
 FLAGS = flags.FLAGS
 flags.DEFINE_string(
     'apilog', None,
-    'Turn on logging of all server requests and responses. If no string is '
-    'provided, log to stdout; if a string is provided, instead log to that '
-    'file.')
+    'Log all API requests and responses to the file specified by this flag. '
+    'Also accepts "stdout" and "stderr". Specifying the empty string will '
+    'direct to stdout.')
 flags.DEFINE_string(
     'api',
     'https://www.googleapis.com',

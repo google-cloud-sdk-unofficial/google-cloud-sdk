@@ -48,6 +48,7 @@ class List(base.ListCommand):
             metadata.'@type'.split('.').slice(-1:).join()
           )
         """)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -34,11 +34,12 @@ class CreatePull(base.CreateCommand):
   @staticmethod
   def Args(parser):
     flags.AddIdArg(parser, 'pull queue', 'to create')
+    flags.AddLocationFlag(parser)
     flags.AddCreatePullQueueFlags(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
-    queue_ref = parsers.ParseQueue(args.id)
+    queue_ref = parsers.ParseQueue(args.id, args.location)
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.PULL_QUEUE, queues_client.api.messages)

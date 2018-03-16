@@ -39,5 +39,3 @@ class Source(base.Group):
       The updated context.
     """
     base.DisableUserProjectQuota()
-    source.Source.SetResourceParser(resources.REGISTRY)
-    source.Source.SetApiEndpoint()

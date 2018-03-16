@@ -42,6 +42,7 @@ class Execute(base.ListCommand):
   def Args(parser):
     flags.GetZoneArg().AddToParser(parser)
     parser.display_info.AddFormat(flags.CHANGES_FORMAT)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     api_version = 'v1'

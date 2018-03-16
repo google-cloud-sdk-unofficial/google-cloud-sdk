@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.security_policies import flags
 
 
@@ -36,6 +37,8 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--description',
         help='An optional, textual description for the security policy.')
+
+    parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
   def Collection(self):
     return 'compute.securityPolicies'

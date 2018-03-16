@@ -32,6 +32,7 @@ class Delete(base.DeleteCommand):
     Delete.TARGET_POOL_ARG = flags.TargetPoolArgument(
         help_suffix=None, plural=True)
     Delete.TARGET_POOL_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.TargetPoolsCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

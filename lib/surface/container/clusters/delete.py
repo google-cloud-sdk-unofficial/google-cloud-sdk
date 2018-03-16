@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Delete cluster command."""
-import argparse
-
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
@@ -48,7 +46,8 @@ class Delete(base.DeleteCommand):
         '--timeout',
         type=int,
         default=1800,
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
     flags.AddAsyncFlag(parser)
 
   def Run(self, args):

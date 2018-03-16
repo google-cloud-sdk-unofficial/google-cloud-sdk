@@ -28,9 +28,9 @@ __version__ = "0.9.2"
 import re
 import sys
 import email
-import email.Utils
-import email.Message
-import email.FeedParser
+import email.utils
+import email.message
+import email.feedparser
 import StringIO
 import gzip
 import zlib
@@ -115,7 +115,7 @@ except (AttributeError, ImportError):
 
 
 if sys.version_info >= (2,3):
-    from iri2uri import iri2uri
+    from .iri2uri import iri2uri
 else:
     def iri2uri(uri):
         return uri
@@ -384,7 +384,7 @@ def _entry_disposition(response_headers, request_headers):
     elif cc.has_key('only-if-cached'):
         retval = "FRESH"
     elif response_headers.has_key('date'):
-        date = calendar.timegm(email.Utils.parsedate_tz(response_headers['date']))
+        date = calendar.timegm(email.utils.parsedate_tz(response_headers['date']))
         now = time.time()
         current_age = max(0, now - date)
         if cc_response.has_key('max-age'):
@@ -393,7 +393,7 @@ def _entry_disposition(response_headers, request_headers):
             except ValueError:
                 freshness_lifetime = 0
         elif response_headers.has_key('expires'):
-            expires = email.Utils.parsedate_tz(response_headers['expires'])
+            expires = email.utils.parsedate_tz(response_headers['expires'])
             if None == expires:
                 freshness_lifetime = 0
             else:
@@ -440,7 +440,7 @@ def _updateCache(request_headers, response_headers, content, cache, cachekey):
         if cc.has_key('no-store') or cc_response.has_key('no-store'):
             cache.delete(cachekey)
         else:
-            info = email.Message.Message()
+            info = email.message.Message()
             for key, value in response_headers.iteritems():
                 if key not in ['status','content-encoding','transfer-encoding']:
                     info[key] = value
@@ -1511,7 +1511,7 @@ class Http(object):
             if 'range' not in headers and 'accept-encoding' not in headers:
                 headers['accept-encoding'] = 'gzip, deflate'
 
-            info = email.Message.Message()
+            info = email.message.Message()
             cached_value = None
             if self.cache:
                 cachekey = defrag_uri.encode('utf-8')
@@ -1524,7 +1524,7 @@ class Http(object):
                     # bug report: http://mail.python.org/pipermail/python-bugs-list/2005-September/030289.html
                     try:
                         info, content = cached_value.split('\r\n\r\n', 1)
-                        feedparser = email.FeedParser.FeedParser()
+                        feedparser = email.feedparser.FeedParser()
                         feedparser.feed(info)
                         info = feedparser.close()
                         feedparser._parse = None
@@ -1669,7 +1669,7 @@ class Http(object):
 
 
 class Response(dict):
-    """An object more like email.Message than httplib.HTTPResponse."""
+    """An object more like email.message than httplib.HTTPResponse."""
 
     """Is this response from our local cache"""
     fromcache = False
@@ -1686,7 +1686,7 @@ class Response(dict):
     previous = None
 
     def __init__(self, info):
-        # info is either an email.Message or
+        # info is either an email.message or
         # an httplib.HTTPResponse object.
         if isinstance(info, httplib.HTTPResponse):
             for key, value in info.getheaders():
@@ -1695,7 +1695,7 @@ class Response(dict):
             self['status'] = str(self.status)
             self.reason = info.reason
             self.version = info.version
-        elif isinstance(info, email.Message.Message):
+        elif isinstance(info, email.message.Message):
             for key, value in info.items():
                 self[key.lower()] = value
             self.status = int(self['status'])

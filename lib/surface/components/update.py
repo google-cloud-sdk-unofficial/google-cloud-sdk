@@ -14,8 +14,6 @@
 
 """The command to install/update gcloud components."""
 
-import argparse
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.components import util
 from googlecloudsdk.core.console import console_io
@@ -67,12 +65,14 @@ class Update(base.SilentCommand):
         'component_ids',
         metavar='COMPONENT-IDS',
         nargs='*',
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
     parser.add_argument(
         '--allow-no-backup',
         required=False,
         action='store_true',
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
 
   def Run(self, args):
     """Runs the list command."""

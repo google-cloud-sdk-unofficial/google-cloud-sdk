@@ -34,6 +34,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.ROUTER_ARG = flags.RouterArgument(plural=True)
     Delete.ROUTER_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
 
   def Run(self, args):
     """Issues requests necessary to delete Routers."""

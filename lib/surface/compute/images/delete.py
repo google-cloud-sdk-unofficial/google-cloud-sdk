@@ -29,6 +29,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.DiskImageArg = flags.MakeDiskImageArg(plural=True)
     Delete.DiskImageArg.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

@@ -48,7 +48,7 @@ class Container(base.Group):
         for its capabilities.
     """
     parser.add_argument(
-        '--api-version', help=argparse.SUPPRESS,
+        '--api-version', hidden=True, help='THIS ARGUMENT NEEDS HELP TEXT.',
         action=actions.StoreProperty(
             properties.VALUES.api_client_overrides.container))
 

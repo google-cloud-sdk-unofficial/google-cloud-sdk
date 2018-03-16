@@ -33,6 +33,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.NETWORK_ARG = flags.NetworkArgument(plural=True)
     Delete.NETWORK_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.NetworksCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

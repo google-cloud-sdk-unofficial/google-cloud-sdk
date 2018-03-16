@@ -38,12 +38,13 @@ class SetIamPolicy(base_classes.BaseIamCommand):
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to set the IAM policy for')
+    flags.AddLocationFlag(parser)
     flags.AddPolicyFileFlag(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
     queues_messages = queues_client.api.messages
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     self.context['iam-messages'] = queues_messages
     policy = iam_util.ParsePolicyFile(args.policy_file, queues_messages.Policy)
     response = queues_client.SetIamPolicy(queue_ref, policy)

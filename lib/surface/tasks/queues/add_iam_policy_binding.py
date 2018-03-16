@@ -30,12 +30,13 @@ class AddIamPolicyBinding(base_classes.BaseIamCommand):
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to add the IAM policy binding to')
+    flags.AddLocationFlag(parser)
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
     queues_messages = queues_client.api.messages
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     try:
       policy = queues_client.GetIamPolicy(queue_ref)
     except apitools_exceptions.HttpNotFoundError:

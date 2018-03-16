@@ -61,6 +61,7 @@ class GetLogs(base.ListCommand):
         help=('Number of log entries to be fetched; must not be greater than '
               '1000.'))
     flags.AddMinLogLevelFlag(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):

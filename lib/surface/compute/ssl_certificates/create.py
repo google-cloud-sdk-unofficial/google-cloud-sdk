@@ -59,6 +59,8 @@ class Create(base.CreateCommand):
         format and must use RSA or ECDSA encryption.
         """)
 
+    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleter)
+
   def Run(self, args):
     """Issues the request necessary for adding the SSL certificate."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

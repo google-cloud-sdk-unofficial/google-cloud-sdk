@@ -42,13 +42,16 @@ NUM_ADVICE_TO_PRINT = 3
 
 
 def _CommonArgs(parser):
+  """Add common arguments for this command to the given parser."""
   parser.add_argument(
       'service_config_file',
       nargs='+',
       help=('The service configuration file (or files) containing the API '
             'specification to upload. Proto Descriptors, Open API (Swagger) '
             'specifications, and Google Service Configuration files in JSON '
-            'and YAML formats are acceptable.'))
+            'and YAML formats are acceptable. When uploading proto '
+            'descriptors, you can optionally pass the uncompiled proto '
+            'files as well.'))
   base.ASYNC_FLAG.AddToParser(parser)
 
 
@@ -246,11 +249,15 @@ class _BaseDeploy(object):
         config_files.append(
             self.MakeConfigFileMessage(config_contents, service_config_file,
                                        file_types.FILE_DESCRIPTOR_SET_PROTO))
+      elif services_util.IsRawProto(service_config_file):
+        config_files.append(
+            self.MakeConfigFileMessage(config_contents, service_config_file,
+                                       file_types.PROTO_FILE))
       else:
         raise calliope_exceptions.BadFileException((
             'Could not determine the content type of file [{0}]. Supported '
-            'extensions are .json .yaml .yml .pb. and .descriptor').format(
-                service_config_file))
+            'extensions are .json .yaml .yml .pb .proto and '
+            '.descriptor').format(service_config_file))
 
     # Check to see if the Endpoints meta service needs to be enabled.
     enable_api.EnableServiceIfDisabled(
@@ -333,7 +340,10 @@ class Deploy(_BaseDeploy, base.Command):
      to Google Service Management. As input, it takes one or more paths
      to service configurations that should be uploaded. These configuration
      files can be Proto Descriptors, Open API (Swagger) specifications,
-     or Google Service Configuration files in JSON or YAML formats.
+     or Google Service Configuration files in JSON or YAML formats. When
+     specifying Proto Descriptors, you can optionally pass in the uncompiled
+     proto files as well to enable documentation for your API in the Endpoints
+     Developer Portal.
 
      If a service name is present in multiple configuration files (given
      in the `host` field in OpenAPI specifications or the `name` field in

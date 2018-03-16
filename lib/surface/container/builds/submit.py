@@ -89,7 +89,10 @@ class Submit(base.CreateCommand):
         'source',
         nargs='?',
         help='The source directory on local disk or tarball in Google Cloud '
-             'Storage or disk to use for this build.',
+             'Storage or disk to use for this build. If source is a local '
+             'directory this command skips files specified in the '
+             '`.gcloudignore` file (see `$ gcloud topic gcloudignore` for more '
+             'information).'
     )
     parser.add_argument(
         '--no-source',
@@ -141,6 +144,10 @@ an underscore):
 This will result in a build where every occurrence of ```${_FAVORITE_COLOR}```
 in certain fields is replaced by "blue", and similarly for ```${_NUM_CANDIES}```
 and "10".
+
+Only the following built-in variables can be specified with the
+`--substitutions` flag: REPO_NAME, BRANCH_NAME, TAG_NAME, REVISION_ID,
+COMMIT_SHA, SHORT_SHA.
 
 For more details, see:
 https://cloud.google.com/container-builder/docs/api/build-requests#substitutions

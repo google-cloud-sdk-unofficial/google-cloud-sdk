@@ -84,6 +84,7 @@ class Clone(base.CreateCommand):
         log coordinates.
         e.g., 123 (a numeric value)
         """)
+    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
   def _CheckSourceAndDestination(self, source_instance_ref,
                                  destination_instance_ref):

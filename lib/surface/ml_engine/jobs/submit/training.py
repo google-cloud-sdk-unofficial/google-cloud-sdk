@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import jobs_util
+from googlecloudsdk.command_lib.util import labels_util
 
 
 def _AddSubmitTrainingArgs(parser):
@@ -50,6 +51,7 @@ def _AddSubmitTrainingArgs(parser):
           'Note that even if command execution is halted, the job will still '
           'run until cancelled with\n\n'
           '    $ gcloud ml-engine jobs cancel JOB_ID'))
+  labels_util.AddCreateLabelsFlags(parser)
 
 
 class Train(base.Command):
@@ -64,9 +66,10 @@ class Train(base.Command):
     stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
     scale_tier = jobs_util.ScaleTierFlagMap().GetEnumForChoice(args.scale_tier)
     scale_tier_name = scale_tier.name if scale_tier else None
+    jobs_client = jobs.JobsClient()
+    labels = jobs_util.ParseCreateLabels(jobs_client, args)
     job = jobs_util.SubmitTraining(
-        jobs.JobsClient(),
-        args.job,
+        jobs_client, args.job,
         job_dir=args.job_dir,
         staging_bucket=args.staging_bucket,
         packages=args.packages,
@@ -75,6 +78,7 @@ class Train(base.Command):
         config=args.config,
         module_name=args.module_name,
         runtime_version=args.runtime_version,
+        labels=labels,
         stream_logs=stream_logs,
         user_args=args.user_args)
     # If the job itself failed, we will return a failure status.

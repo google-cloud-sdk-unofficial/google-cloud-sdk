@@ -35,6 +35,14 @@ class InstancesAddTags(base.UpdateCommand):
   firewall rules. Tags can also be used to get firewall rules that
   already exist to be applied to the instance. See
   gcloud_compute_firewall-rules_create(1) for more details.
+
+  To list instances with their respective status and tags, run:
+
+    $ gcloud compute instances list --format='table(name,status,tags.list())'
+
+  To list instances tagged with a specific tag, `tag1`, run:
+
+    $ gcloud compute instances list --filter='tags:tag1'
   """
 
   @staticmethod

@@ -30,6 +30,7 @@ class List(base.ListCommand):
         explanation=(
             'List TPUs from this Region. '
             'If not specified, will list TPUs in `default` compute/zone.'))
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     return cli_util.List(

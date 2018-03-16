@@ -45,6 +45,7 @@ class List(base.ListCommand):
         status
       )
     """)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """Lists all backups associated with a given instance.
@@ -59,7 +60,7 @@ class List(base.ListCommand):
     Raises:
       HttpException: A http error response was received while executing api
           request.
-      ToolException: An error other than http error occured while executing the
+      ToolException: An error other than http error occurred while executing the
           command.
     """
 

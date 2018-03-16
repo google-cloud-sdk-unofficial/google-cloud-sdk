@@ -81,6 +81,7 @@ class List(base.ListCommand):
         help=_FILTER_HELP)
     parser.display_info.AddFormat(
         'table(name, done, metadata.startTime.date(tz=LOCAL))')
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """Run 'service-management operations list'.

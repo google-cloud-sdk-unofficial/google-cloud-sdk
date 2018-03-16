@@ -39,10 +39,10 @@ class InvalidAddonValueError(util.Error):
 
 
 class InvalidPasswordError(util.Error):
-  """A class for invalid --set-password input."""
+  """A class for invalid password input."""
 
   def __init__(self, value, error):
-    message = ('invalid --set-password value "{0}"; {1}'.format(value, error))
+    message = 'invalid password value "{0}"; {1}'.format(value, error)
     super(InvalidPasswordError, self).__init__(message)
 
 
@@ -226,14 +226,28 @@ class Update(base.UpdateCommand):
     if hasattr(args, 'node_locations') and args.node_locations is not None:
       locations = sorted(args.node_locations)
 
-    if args.generate_password or args.set_password:
+    if args.username is not None or args.enable_basic_auth is not None:
+      flags.MungeBasicAuthFlags(args)
+      options = api_adapter.SetMasterAuthOptions(
+          action=api_adapter.SetMasterAuthOptions.SET_USERNAME,
+          username=args.username,
+          password=args.password)
+
+      try:
+        op_ref = adapter.SetMasterAuth(cluster_ref, options)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif (args.generate_password or args.set_password or
+          args.password is not None):
       if args.generate_password:
         password = ''
         options = api_adapter.SetMasterAuthOptions(
             action=api_adapter.SetMasterAuthOptions.GENERATE_PASSWORD,
             password=password)
       else:
-        password = raw_input('Please enter the new password:')
+        password = args.password
+        if args.password is None:
+          password = raw_input('Please enter the new password:')
         _ValidatePassword(password)
         options = api_adapter.SetMasterAuthOptions(
             action=api_adapter.SetMasterAuthOptions.SET_PASSWORD,
@@ -246,17 +260,6 @@ class Update(base.UpdateCommand):
       except apitools_exceptions.HttpError as error:
         del password
         del options
-        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif args.username is not None or args.enable_basic_auth is not None:
-      flags.MungeBasicAuthFlags(args)
-      options = api_adapter.SetMasterAuthOptions(
-          action=api_adapter.SetMasterAuthOptions.SET_USERNAME,
-          username=args.username,
-          password=args.password)
-
-      try:
-        op_ref = adapter.SetMasterAuth(cluster_ref, options)
-      except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.enable_network_policy is not None:
       console_io.PromptContinue(
@@ -398,7 +401,7 @@ class UpdateAlpha(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group, hidden=False)
     flags.AddLoggingServiceFlag(group)
-    flags.AddAutoprovisioningFlags(parser, group, hidden=False)
+    flags.AddAutoprovisioningFlags(group, hidden=False)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group, hidden=True)
     flags.AddEnableBinAuthzFlag(group, hidden=True)
@@ -410,6 +413,8 @@ class UpdateAlpha(Update):
     opts.max_cpu = args.max_cpu
     opts.min_memory = args.min_memory
     opts.max_memory = args.max_memory
+    opts.min_accelerator = args.min_accelerator
+    opts.max_accelerator = args.max_accelerator
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.enable_binauthz = args.enable_binauthz
     return opts

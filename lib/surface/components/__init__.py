@@ -64,23 +64,24 @@ class Components(base.Group):
   def Args(parser):
     """Sets args for gcloud components."""
     # An override for the location to install components into.
-    parser.add_argument('--sdk-root-override', required=False,
-                        help=argparse.SUPPRESS)
+    parser.add_argument('--sdk-root-override', required=False, hidden=True,
+                        help='THIS ARGUMENT NEEDS HELP TEXT.')
     # A different URL to look at instead of the default.
-    parser.add_argument('--snapshot-url-override', required=False,
-                        help=argparse.SUPPRESS)
+    parser.add_argument('--snapshot-url-override', required=False, hidden=True,
+                        help='THIS ARGUMENT NEEDS HELP TEXT.')
     # This is not a commonly used option.  You can use this flag to create a
     # Cloud SDK install for an OS other than the one you are running on.
     # Running the updater multiple times for different operating systems could
     # result in an inconsistent install.
     parser.add_argument('--operating-system-override', required=False,
-                        help=argparse.SUPPRESS)
+                        hidden=True,
+                        help='THIS ARGUMENT NEEDS HELP TEXT.')
     # This is not a commonly used option.  You can use this flag to create a
     # Cloud SDK install for a processor architecture other than that of your
     # current machine.  Running the updater multiple times for different
     # architectures could result in an inconsistent install.
-    parser.add_argument('--architecture-override', required=False,
-                        help=argparse.SUPPRESS)
+    parser.add_argument('--architecture-override', required=False, hidden=True,
+                        help='THIS ARGUMENT NEEDS HELP TEXT.')
 
   # pylint:disable=g-missing-docstring
   def Filter(self, unused_tool_context, args):

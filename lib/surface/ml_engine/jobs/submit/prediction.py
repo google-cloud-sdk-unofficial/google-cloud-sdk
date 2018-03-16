@@ -17,6 +17,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import jobs_util
+from googlecloudsdk.command_lib.util import labels_util
 
 
 def _AddSubmitPredictionArgs(parser):
@@ -85,6 +86,7 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
             ' Defaults to 64 if not specified.'))
 
   flags.RUNTIME_VERSION.AddToParser(parser)
+  labels_util.AddCreateLabelsFlags(parser)
 
 
 class Prediction(base.Command):
@@ -98,8 +100,10 @@ class Prediction(base.Command):
   def Run(self, args):
     data_format = jobs_util.DataFormatFlagMap().GetEnumForChoice(
         args.data_format)
+    jobs_client = jobs.JobsClient()
+    labels = jobs_util.ParseCreateLabels(jobs_client, args)
     return jobs_util.SubmitPrediction(
-        jobs.JobsClient(), args.job,
+        jobs_client, args.job,
         model_dir=args.model_dir,
         model=args.model,
         version=args.version,
@@ -109,4 +113,5 @@ class Prediction(base.Command):
         region=args.region,
         runtime_version=args.runtime_version,
         max_worker_count=args.max_worker_count,
-        batch_size=args.batch_size)
+        batch_size=args.batch_size,
+        labels=labels)

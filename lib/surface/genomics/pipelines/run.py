@@ -14,8 +14,6 @@
 
 """Implementation of gcloud genomics pipelines run.
 """
-import argparse
-
 from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import exceptions
 from googlecloudsdk.api_lib.genomics import genomics_util
@@ -188,7 +186,8 @@ class Run(base.SilentCommand):
 
     parser.add_argument(
         '--run-id',
-        help=argparse.SUPPRESS)
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.')
 
     parser.add_argument(
         '--service-account-email',

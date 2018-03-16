@@ -36,6 +36,7 @@ class Pull(base.ListCommand):
     base.LIMIT_FLAG.RemoveFromParser(parser)  # have our own --limit flag
 
     flags.AddQueueResourceFlag(parser, required=True, plural_tasks=True)
+    flags.AddLocationFlag(parser)
     flags.AddTaskLeaseDurationFlag(parser, helptext="""\
         The number of seconds for the desired new lease duration for all tasks
         pulled, starting from now. The maximum lease duration is 1 week.
@@ -47,7 +48,7 @@ class Pull(base.ListCommand):
 
   def Run(self, args):
     tasks_client = tasks.Tasks()
-    queue_ref = parsers.ParseQueue(args.queue)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     duration = parsers.FormatLeaseDuration(args.lease_duration)
     filter_string = parsers.ParseTasksPullFilterFlags(args)
     return tasks_client.Pull(queue_ref, duration, filter_string=filter_string,

@@ -78,6 +78,7 @@ class Create(base.CreateCommand):
         choices=PURPOSE_MAP.keys(),
         required=True,
         help='The "purpose" of the key.')
+    parser.display_info.AddCacheUpdater(flags.KeyRingCompleter)
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

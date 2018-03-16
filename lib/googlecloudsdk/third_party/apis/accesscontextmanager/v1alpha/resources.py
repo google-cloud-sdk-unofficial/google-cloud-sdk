@@ -16,18 +16,40 @@
 import enum
 
 
-BASE_URL = 'https://videointelligence.googleapis.com/'
-DOCS_URL = 'https://cloud.google.com/video-intelligence/docs/'
+BASE_URL = 'https://accesscontextmanager.googleapis.com/v1alpha/'
+DOCS_URL = 'https://cloud.google.com/service-control'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  VIDEOS = (
-      'videos',
-      'videos',
-      {},
-      []
+  ACCESSPOLICIES = (
+      'accessPolicies',
+      '{+name}',
+      {
+          '':
+              'accessPolicies/{accessPoliciesId}',
+      },
+      [u'name']
+  )
+  ACCESSPOLICIES_ACCESSLEVELS = (
+      'accessPolicies.accessLevels',
+      '{+name}',
+      {
+          '':
+              'accessPolicies/{accessPoliciesId}/accessLevels/'
+              '{accessLevelsId}',
+      },
+      [u'name']
+  )
+  ACCESSPOLICIES_ACCESSZONES = (
+      'accessPolicies.accessZones',
+      '{+name}',
+      {
+          '':
+              'accessPolicies/{accessPoliciesId}/accessZones/{accessZonesId}',
+      },
+      [u'name']
   )
 
   def __init__(self, collection_name, path, flat_paths, params):

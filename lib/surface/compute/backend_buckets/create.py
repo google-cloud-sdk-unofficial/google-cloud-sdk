@@ -36,6 +36,8 @@ class Create(base.CreateCommand):
     parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
     backend_buckets_utils.AddUpdatableArgs(cls, parser, 'create')
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
+    parser.display_info.AddCacheUpdater(
+        backend_buckets_flags.BackendBucketsCompleter)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""

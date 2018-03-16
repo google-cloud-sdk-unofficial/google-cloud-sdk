@@ -6,6 +6,7 @@
 
 __author__ = 'craigcitro@google.com (Craig Citro)'
 
+import argparse
 import cmd
 import codecs
 import collections
@@ -43,20 +44,18 @@ if 'google' in sys.modules:
     imp.reload(google)
 
 
-import apiclient
+import googleapiclient
 import httplib2
-import oauth2client
-import oauth2client.client
-# TODO(user): Remove when all installation of oauth2client have been updated
-# to export oauth2client.contrib.gce.
-try:
-  from oauth2client.contrib.gce import AppAssertionCredentials
-except ImportError:
-  from oauth2client.gce import AppAssertionCredentials
-import oauth2client.devshell
-import oauth2client.file
-import oauth2client.service_account
-import oauth2client.tools
+
+from oauth2client_4_0 import GOOGLE_REVOKE_URI
+from oauth2client_4_0 import GOOGLE_TOKEN_URI
+import oauth2client_4_0.client
+import oauth2client_4_0.contrib.devshell
+import oauth2client_4_0.contrib.gce
+import oauth2client_4_0.file
+import oauth2client_4_0.service_account
+import oauth2client_4_0.tools
+
 import yaml
 
 from google.apputils import app
@@ -69,6 +68,27 @@ import bigquery_client
 import bq_flags
 # pylint: enable=unused-import
 
+try:
+  flags.DEFINE_boolean(
+      'auth_local_webserver',
+      False,
+      'Run a local web server to handle redirects during OAuth authorization.'
+  )
+  flags.DEFINE_string(
+      'auth_host_name',
+      'localhost',
+      'Host name to use when running a local web server to handle redirects '
+      'during OAuth authorization.'
+  )
+  flags.DEFINE_list(
+      'auth_host_port',
+      [8080, 8090],
+      'Port to use when running a local web server to handle redirects during '
+      'OAuth authorization.'
+  )
+except flags.DuplicateFlagError:
+  # _GetVersion() imports bq and defines the flags for the second time.
+  pass
 
 FLAGS = flags.FLAGS
 # These are long names.
@@ -132,7 +152,13 @@ _DELIMITER_MAP = {
     'tab': '\t',
     '\\t': '\t',
     }
-
+_DDL_OPERATION_MAP = {
+    'SKIP': 'Skipped',
+    'CREATE': 'Created',
+    'REPLACE': 'Replaced',
+    'ALTER': 'Altered',
+    'DROP': 'Dropped',
+    }
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
 # pylint: disable=g-doc-args
@@ -285,19 +311,23 @@ def _UseServiceAccount():
 
 
 def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-argument
-  if FLAGS.use_gce_service_account:
-    return AppAssertionCredentials()
 
-  if not oauth2client.client.HAS_OPENSSL:
+  if not oauth2client_4_0.client.HAS_OPENSSL:
     raise app.UsageError(
         'BigQuery requires OpenSSL to be installed in order to use '
         'service account credentials. Please install OpenSSL '
         'and the Python OpenSSL package.')
 
+  key_password = FLAGS.service_account_private_key_password
   if FLAGS.service_account_private_key_file:
     try:
-      with file(FLAGS.service_account_private_key_file, 'rb') as f:
-        key = f.read()
+      service_account_credentials = (
+          oauth2client_4_0.service_account.ServiceAccountCredentials
+          .from_p12_keyfile(
+              service_account_email=FLAGS.service_account,
+              filename=FLAGS.service_account_private_key_file,
+              scopes=_GetClientScopeFromFlags(),
+              private_key_password=key_password))
     except IOError as e:
       raise app.UsageError(
           'Service account specified, but private key in file "%s" '
@@ -306,11 +336,20 @@ def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-a
     raise app.UsageError(
         'Service account authorization requires the '
         'service_account_private_key_file flag to be set.')
+  service_account_credentials._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
+  return service_account_credentials
 
-  return oauth2client.client.SignedJwtAssertionCredentials(
-      FLAGS.service_account, key, _GetClientScopeFromFlags(),
-      private_key_password=FLAGS.service_account_private_key_password,
-      user_agent=_CLIENT_USER_AGENT)
+
+def _BuildOAuthFlags():
+  parser = argparse.ArgumentParser(
+      description=__doc__,
+      formatter_class=argparse.RawDescriptionHelpFormatter,
+      parents=[oauth2client_4_0.tools.argparser])
+  oauth_flags = parser.parse_args(['--logging_level=ERROR'])
+  oauth_flags.noauth_local_webserver = not FLAGS.auth_local_webserver
+  oauth_flags.auth_host_name = FLAGS.auth_host_name
+  oauth_flags.auth_host_port = FLAGS.auth_host_port
+  return oauth_flags
 
 
 def _GetCredentialsFromOAuthFlow(storage):
@@ -329,10 +368,11 @@ def _GetCredentialsFromOAuthFlow(storage):
     # cascade up and get caught elsewhere. If users want out of the
     # retry loop, they can ^C.
     try:
-      flow = oauth2client.client.OAuth2WebServerFlow(**client_info)
-      credentials = oauth2client.tools.run(flow, storage)
+      flow = oauth2client_4_0.client.OAuth2WebServerFlow(**client_info)
+      credentials = oauth2client_4_0.tools.run_flow(
+          flow, storage, _BuildOAuthFlags())
       break
-    except (oauth2client.client.FlowExchangeError, SystemExit) as e:
+    except (oauth2client_4_0.client.FlowExchangeError, SystemExit) as e:
       # Here SystemExit is "no credential at all", and the
       # FlowExchangeError is "invalid" -- usually because you reused
       # a token.
@@ -357,58 +397,28 @@ def _GetApplicationDefaultCredentialFromFile(filename):
   with open(filename) as file_obj:
     credentials = json.load(file_obj)
 
-  if credentials['type'] == oauth2client.client.AUTHORIZED_USER:
-    return oauth2client.client.OAuth2Credentials(
+  client_scope = _GetClientScopeFromFlags()
+  if credentials['type'] == oauth2client_4_0.client.AUTHORIZED_USER:
+    return oauth2client_4_0.client.OAuth2Credentials(
         access_token=None,
         client_id=credentials['client_id'],
         client_secret=credentials['client_secret'],
         refresh_token=credentials['refresh_token'],
         token_expiry=None,
-        token_uri=oauth2client.client.GOOGLE_TOKEN_URI,
-        user_agent=_CLIENT_USER_AGENT)
+        token_uri=GOOGLE_TOKEN_URI,
+        user_agent=_CLIENT_USER_AGENT,
+        scopes=client_scope)
   else:  # Service account
-    client_scope = _GetClientScopeFromFlags()
-    return oauth2client.service_account._ServiceAccountCredentials(  # pylint: disable=protected-access
-        service_account_id=credentials['client_id'],
-        service_account_email=credentials['client_email'],
-        private_key_id=credentials['private_key_id'],
-        private_key_pkcs8_text=credentials['private_key'],
-        scopes=client_scope,
-        user_agent=_CLIENT_USER_AGENT)
-
-
-# pylint: disable=protected-access
-# Patches in oauth2client service account implementation.
-# Later versions (2.0+) of oauth2client do not have this issue.
-def _ServiceAccountCredentialsToJson(self):
-  """Serializes service account credentials to json."""
-  self.service_account_name = self._service_account_email
-  strip = (['_private_key'] +
-           oauth2client.client.Credentials.NON_SERIALIZED_MEMBERS)
-  return self._to_json(strip)
-
-
-@classmethod
-def _ServiceAccountCredentialsFromJson(cls, s):
-  """Deserializes service account credentials from json."""
-  data = json.loads(s)
-  retval = cls(  # pylint: disable=not-callable
-      service_account_id=data['_service_account_id'],
-      service_account_email=data['_service_account_email'],
-      private_key_id=data['_private_key_id'],
-      private_key_pkcs8_text=data['_private_key_pkcs8_text'],
-      scopes=[_CLIENT_SCOPE],
-      user_agent=_CLIENT_USER_AGENT)
-  retval.invalid = data['invalid']
-  retval.access_token = data['access_token']
-  return retval
-
-
-oauth2client.service_account._ServiceAccountCredentials.to_json = (
-    _ServiceAccountCredentialsToJson)
-oauth2client.service_account._ServiceAccountCredentials.from_json = (
-    _ServiceAccountCredentialsFromJson)
-# pylint: enable=protected-access
+    credentials['type'] = oauth2client_4_0.client.SERVICE_ACCOUNT
+    service_account_credentials = (
+        oauth2client_4_0.service_account.ServiceAccountCredentials
+        .from_json_keyfile_dict(
+            keyfile_dict=credentials,
+            scopes=client_scope,
+            token_uri=GOOGLE_TOKEN_URI,
+            revoke_uri=GOOGLE_REVOKE_URI))
+    service_account_credentials._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
+    return service_account_credentials
 
 
 def _GetClientScopeFromFlags():
@@ -422,14 +432,14 @@ def _GetClientScopeFromFlags():
 def _GetCredentialsFromFlags():
   """Returns credentials based on user supplied flags."""
   try:
-    return oauth2client.devshell.DevshellCredentials()
+    return oauth2client_4_0.contrib.devshell.DevshellCredentials()
   except:  # pylint: disable=bare-except
     pass
 
   # In the case of a GCE service account, we can skip the entire
   # process of loading from storage.
   if FLAGS.use_gce_service_account:
-    return _GetServiceAccountCredentialsFromFlags(None)
+    return oauth2client_4_0.contrib.gce.AppAssertionCredentials()
 
 
   if FLAGS.service_account:
@@ -455,7 +465,7 @@ def _GetCredentialsFromFlags():
   try:
     # Note that oauth2client.file ensures the file is created with
     # the correct permissions.
-    storage = oauth2client.file.Storage(credential_file)
+    storage = oauth2client_4_0.file.Storage(credential_file)
   except OSError as e:
     raise bigquery_client.BigqueryError(
         'Cannot create credential file %s: %s' % (FLAGS.credential_file, e))
@@ -531,12 +541,23 @@ def _GetWaitPrinterFactoryFromFlags():
   return BigqueryClient.VerboseWaitPrinter
 
 
+def _RawInput(message):
+  try:
+    return raw_input(message)
+  except EOFError:
+    if sys.stdin.isatty():
+      print '\nGot EOF; exiting.'
+    else:
+      print '\nGot EOF; exiting. Is your input from a terminal?'
+    sys.exit(1)
+
+
 def _PromptWithDefault(message):
   """Prompts user with message, return key pressed or '' on enter."""
   if FLAGS.headless:
     print 'Running --headless, accepting default for prompt: %s' % (message,)
     return ''
-  return raw_input(message).lower()
+  return _RawInput(message).lower()
 
 
 def _PromptYN(message):
@@ -617,80 +638,67 @@ class TablePrinter(object):
                                 'field "%s" in CSV format.') % (field['name']))
 
   @staticmethod
-  def _ExpandForPrinting(fields, rows, formatter):
-    """Expand entries that require special bq-specific formatting."""
-    return [TablePrinter._ExpandRowForPrinting(fields, row, formatter)
-            for row in rows]
+  def _NormalizeRecord(field, value):
+    """Returns bq-specific formatting of a RECORD type."""
+    result = collections.OrderedDict()
+    for subfield, subvalue in zip(field.get('fields', []), value):
+      result[subfield.get('name', '')] = TablePrinter._NormalizeField(
+          subfield, subvalue)
+    return result
 
   @staticmethod
-  def _ExpandRowForPrinting(fields, row, formatter):
-    """Expand entries in a single row with bq-specific formatting."""
-    def NormalizeTimestampValue(timestamp):  # pylint: disable=unused-argument
-      try:
-        date = datetime.datetime.utcfromtimestamp(float(timestamp))
-        return date.strftime('%Y-%m-%d %H:%M:%S')
-      except ValueError:
-        return '<date out of range for display>'
+  def _NormalizeTimestamp(unused_field, value):
+    """Returns bq-specific formatting of a TIMESTAMP type."""
+    try:
+      date = datetime.datetime.utcfromtimestamp(float(value))
+      return date.strftime('%Y-%m-%d %H:%M:%S')
+    except ValueError:
+      return '<date out of range for display>'
 
-    def NormalizeTimestamp(entry, field):
-      if field.get('mode', 'NULLABLE').upper() == 'REPEATED':
-        return [NormalizeTimestampValue(timestamp) for timestamp in entry]
-      else:
-        return NormalizeTimestampValue(entry)
+  _FIELD_NORMALIZERS = {
+      'RECORD': _NormalizeRecord.__func__,
+      'TIMESTAMP': _NormalizeTimestamp.__func__,
+  }
 
-    def NormalizeRecordValue(entry, field):
-      """Normalizes a record, including values of subfields."""
-      subfields = field.get('fields', [])
-      subresults = TablePrinter._ExpandRowForPrinting(
-          subfields, entry, table_formatter.JsonFormatter())
-      subfield_names = [subfield.get('name', '') for subfield in subfields]
-      result = collections.OrderedDict()
-      for subfield_name, subfield_data in zip(subfield_names, subresults):
-        result[subfield_name] = subfield_data
-      # If we're printing outside of a JSON context, we want to materialize the
-      # dict as a string to remove the unicode marker prefix from strings.
-      # (In JSON format, the overall formatting pass takes care of this.)
-      if isinstance(formatter, table_formatter.JsonFormatter):
-        return result
-      else:
-        return json.dumps(result, separators=(',', ':'), ensure_ascii=False)
+  @staticmethod
+  def _NormalizeField(field, value):
+    """Returns bq-specific formatting of a field."""
+    if value is None:
+      return None
+    normalizer = TablePrinter._FIELD_NORMALIZERS.get(
+        field.get('type', '').upper(), lambda _, x: x)
+    if field.get('mode', '').upper() == 'REPEATED':
+      return [normalizer(field, value) for value in value]
+    return normalizer(field, value)
 
-    def NormalizeRecord(entry, field):
-      if field.get('mode', 'NULLABLE').upper() == 'REPEATED':
-        return [NormalizeRecordValue(record, field) for record in entry]
-      else:
-        return NormalizeRecordValue(entry, field)
+  @staticmethod
+  def _MaybeConvertToJson(value):
+    """Converts dicts and lists to JSON; returns everything else as-is."""
+    if isinstance(value, dict) or isinstance(value, list):
+      return json.dumps(value, separators=(',', ':'), ensure_ascii=False)
+    return value
 
-    column_normalizers = {}
-    for i, field in enumerate(fields):
-      if field['type'].upper() == 'TIMESTAMP':
-        column_normalizers[i] = NormalizeTimestamp
-      elif field['type'].upper() == 'RECORD':
-        column_normalizers[i] = NormalizeRecord
-
-    def NormalizeNone():
-      if isinstance(formatter, table_formatter.JsonFormatter):
-        return None
-      elif isinstance(formatter, table_formatter.CsvFormatter):
-        return ''
-      else:
-        return 'NULL'
-
-    def NormalizeEntry(i, entry):
-      if entry is None:
-        return NormalizeNone()
-      elif i in column_normalizers:
-        return column_normalizers[i](entry, fields[i])
-      return entry
-
-    return [NormalizeEntry(i, e) for i, e in enumerate(row)]
+  @staticmethod
+  def _FormatRow(fields, row, formatter):
+    """Convert fields in a single row to bq-specific formatting."""
+    values = [TablePrinter._NormalizeField(field, value)
+              for field, value in zip(fields, row)]
+    # Convert complex values to JSON if we're not already outputting as such.
+    if not isinstance(formatter, table_formatter.JsonFormatter):
+      values = map(TablePrinter._MaybeConvertToJson, values)
+    # Convert NULL values to strings for CSV and non-JSON formats.
+    if isinstance(formatter, table_formatter.CsvFormatter):
+      values = ['' if value is None else value for value in values]
+    elif not isinstance(formatter, table_formatter.JsonFormatter):
+      values = ['NULL' if value is None else value for value in values]
+    return values
 
   def PrintTable(self, fields, rows):
     formatter = _GetFormatterFromFlags(secondary_format='pretty')
     self._ValidateFields(fields, formatter)
     formatter.AddFields(fields)
-    rows = self._ExpandForPrinting(fields, rows, formatter)
-    formatter.AddRows(rows)
+    formatter.AddRows(TablePrinter._FormatRow(fields, row, formatter)
+                      for row in rows)
     formatter.Print()
 
 
@@ -747,9 +755,15 @@ class Client(object):
       credentials = _GetCredentialsFromFlags()
     assert credentials is not None
     client_args = {}
-    global_args = ('credential_file', 'job_property',
-                   'project_id', 'dataset_id', 'trace', 'sync',
-                   'api', 'api_version')
+    global_args = (
+        'credential_file',
+        'job_property',
+        'project_id',
+        'dataset_id',
+        'trace',
+        'sync',
+        'api',
+        'api_version')
     for name in global_args:
       client_args[name] = KwdsOrFlags(name)
     client_args['wait_printer_factory'] = _GetWaitPrinterFactoryFromFlags()
@@ -935,12 +949,13 @@ class NewCmd(appcommands.Cmd):
     """Run this command in debug mode."""
     try:
       return_value = self.RunWithArgs(*args, **kwds)
-    except (BaseException, apiclient.errors.ResumableUploadError) as e:
+    # pylint: disable=broad-except
+    except (BaseException, googleapiclient.errors.ResumableUploadError) as e:
       # Don't break into the debugger for expected exceptions.
       if (isinstance(e, app.UsageError) or (
           isinstance(e, bigquery_client.BigqueryError) and
           not isinstance(e, bigquery_client.BigqueryInterfaceError)) or
-          isinstance(e, apiclient.errors.ResumableUploadError)):
+          isinstance(e, googleapiclient.errors.ResumableUploadError)):
         return self._HandleError(e)
       print
       print '****************************************************'
@@ -1005,6 +1020,10 @@ class BigqueryCmd(NewCmd):
       e, name='unknown',
       message_prefix='You have encountered a bug in the BigQuery CLI.'):
     """Translate an error message into some printing and a return code."""
+
+    if isinstance(e, SystemExit):
+      return e.code  # sys.exit called somewhere, hopefully intentionally.
+
     response = []
     retcode = 1
 
@@ -1076,7 +1095,7 @@ class BigqueryCmd(NewCmd):
             'of the bq tool and try again. '
             'If this problem persists, you may have encountered a bug in the '
             'bigquery client.' % (name, message))
-      elif isinstance(e, oauth2client.client.Error):
+      elif isinstance(e, oauth2client_4_0.client.Error):
         message_prefix = (
             'Authorization error. This may be a network connection problem, '
             'so please try again. If this problem persists, the credentials '
@@ -1087,7 +1106,7 @@ class BigqueryCmd(NewCmd):
             'If this problem still occurs, you may have encountered a bug '
             'in the bigquery client.')
       elif (isinstance(e, httplib.HTTPException)
-            or isinstance(e, apiclient.errors.Error)
+            or isinstance(e, googleapiclient.errors.Error)
             or isinstance(e, httplib2.HttpLib2Error)):
         message_prefix = (
             'Network connection problem encountered, please try again.'
@@ -1095,12 +1114,20 @@ class BigqueryCmd(NewCmd):
             'If this problem persists, you may have encountered a bug in the '
             'bigquery client.')
 
-      print flags.TextWrap(message_prefix + ' ' + contact_us_msg)
+      message = message_prefix + ' ' + contact_us_msg
+      wrap_error_message = True
+      if wrap_error_message:
+        message = flags.TextWrap(message)
+      print message
       print error_details
       response.append('Unexpected exception in %s operation: %s' % (
           name, message))
 
-    print flags.TextWrap('\n'.join(response))
+    response_message = '\n'.join(response)
+    wrap_error_message = True
+    if wrap_error_message:
+      response_message = flags.TextWrap(response_message)
+    print response_message
     return retcode
 
   def PrintJobStartInfo(self, job):
@@ -2070,10 +2097,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'transfer configurations with '
         ' the specified dataSourceId. '
         '\nFor transfer runs, the filter expression, '
-        'in the form "statuses:VALUE(s)", will show '
-        'transfer runs with the specified statuses. See '
+        'in the form "states:VALUE(s)", will show '
+        'transfer runs with the specified states. See '
         'https://cloud.google.com/bigquery/docs/reference/datatransfer/rest/v1/'
-        'TransferStatus '
+        'TransferState '
         'for details'
         ,
         flag_values=fv)
@@ -2097,7 +2124,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       bq ls --filter 'labels.color:red labels.size:*'
       bq ls --transfer_config --transfer_location='us'
           --filter='dataSourceIds:play,adwords'
-      bq ls --transfer_run --filter='statuses:SUCCESSED,PENDING'
+      bq ls --transfer_run --filter='states:SUCCESSED,PENDING'
           --run_attempt='LATEST' projects/p/locations/l/transferConfigs/c
       bq ls --transfer_log --message_type='messageTypes:INFO,ERROR'
           projects/p/locations/l/transferConfigs/c/runs/r
@@ -2141,7 +2168,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     if self.d and isinstance(reference, DatasetReference):
       reference = reference.GetProjectReference()
 
-    page_token = None
+    page_token = self.k
     results = None
     object_type = None
     if self.j:
@@ -2187,7 +2214,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       # next page token at index 1 if there is next page token.
       list_transfer_runs_result = client.ListTransferRuns(
           reference, run_attempt, max_results=self.max_results,
-          statuses=self.filter, page_token=self.page_token)
+          page_token=self.page_token, states=self.filter)
       # If the max_results flag is set and the length of response is 2
       # then it also contains the next_page_token.
       if self.max_results and len(list_transfer_runs_result) == 2:
@@ -2405,7 +2432,9 @@ class _Copy(BigqueryCmd):
 
 def _ParseTimePartitioning(partitioning_type=None,
                            partitioning_expiration=None,
-                           partitioning_field=None):
+                           partitioning_field=None,
+                           partitioning_minimum_partition_date=None,
+                           partitioning_require_partition_filter=None):
   """Parses time partitioning from the arguments.
 
   Args:
@@ -2428,12 +2457,30 @@ def _ParseTimePartitioning(partitioning_type=None,
   key_type = 'type'
   key_expiration = 'expirationMs'
   key_field = 'field'
+  key_minimum_partition_date = 'minimumPartitionDate'
+  key_require_partition_filter = 'requirePartitionFilter'
   if partitioning_type is not None:
     time_partitioning[key_type] = partitioning_type
   if partitioning_expiration is not None:
     time_partitioning[key_expiration] = partitioning_expiration * 1000
   if partitioning_field is not None:
     time_partitioning[key_field] = partitioning_field
+  if partitioning_minimum_partition_date is not None:
+    if partitioning_field is not None:
+      time_partitioning[
+          key_minimum_partition_date] = partitioning_minimum_partition_date
+    else:
+      raise app.UsageError('Need to specify --time_partitioning_field for '
+                           '--time_partitioning_minimum_partition_date.')
+  if partitioning_require_partition_filter is not None:
+    if time_partitioning:
+      time_partitioning[
+          key_require_partition_filter] = partitioning_require_partition_filter
+    else:
+      raise app.UsageError(
+          'Need to specify either --time_partitioning_type, '
+          '--time_partitioning_field or --time_partitioning_expiration '
+          'for --require_partition_filter.')
 
   if time_partitioning:
     if key_type not in time_partitioning:
@@ -3056,12 +3103,12 @@ def RetrieveAuthorizationCode(reference, data_source, transfer_client):
       name=data_source_retrieval).execute()
   auth_uri = ('https://www.gstatic.com/bigquerydatatransfer/oauthz/'
               'auth?client_id=' + data_source_info['clientId'] + '&scope='+
-              data_source_info['scopes'][0]+
+              '%20'.join(data_source_info['scopes'])+
               '&redirect_uri=urn:ietf:wg:oauth:2.0:oob')
   print  '\n' + auth_uri
   print ('Please copy and paste the above URL into your web browser'
          ' and follow the instructions to retrieve an authentication code.')
-  authentication_code = raw_input('Enter your authentication code here: ')
+  authentication_code = _RawInput('Enter your authentication code here: ')
   return authentication_code
 
 
@@ -3311,7 +3358,7 @@ def _PrintObjectsArray(object_infos, objects_type):
 
 
 class _Cancel(BigqueryCmd):
-  """Attempt to cancel the specified job if it is runnning."""
+  """Attempt to cancel the specified job if it is running."""
   usage = """cancel [--nosync] [<job_id>]"""
 
   def __init__(self, name, fv):
@@ -4077,9 +4124,6 @@ def main(unused_argv):
   # bq <global flags> <command> <global and local flags> <command args>,
   # only "<global flags>" will parse before main, not "<global and local flags>"
   try:
-    # Some versions of oauthclient specify this flag.
-    if hasattr(FLAGS, 'auth_local_webserver'):
-      FLAGS.auth_local_webserver = False
     _ValidateGlobalFlags()
 
     bq_commands = {

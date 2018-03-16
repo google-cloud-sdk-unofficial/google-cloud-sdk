@@ -16,8 +16,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
-
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
@@ -91,7 +89,8 @@ def AddBaseArgs(parser):
             'replica of the specified master instance.'))
   flags.AddMemory(parser)
   parser.add_argument(
-      '--on-premises-host-port', required=False, help=argparse.SUPPRESS)
+      '--on-premises-host-port', required=False, hidden=True,
+      help='THIS ARGUMENT NEEDS HELP TEXT.')
   parser.add_argument(
       '--pricing-plan',
       '-p',

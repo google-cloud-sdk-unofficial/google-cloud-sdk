@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util import labels_util
 from googlecloudsdk.core import log
@@ -59,6 +60,7 @@ def _Args(parser, release_track):
   CreateWithContainer.SOURCE_INSTANCE_TEMPLATE = (
       instances_flags.MakeSourceInstanceTemplateArg())
   CreateWithContainer.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+  parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

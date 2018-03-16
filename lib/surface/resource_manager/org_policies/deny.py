@@ -41,7 +41,11 @@ class Deny(base.Command):
     flags.AddIdArgToParser(parser)
     flags.AddResourceFlagsToParser(parser)
     base.Argument(
-        'denied_value', metavar='DENIED_VALUE', nargs='+').AddToParser(parser)
+        'denied_value',
+        metavar='DENIED_VALUE',
+        nargs='+',
+        help='The values to add to the denied_values list policy.',
+    ).AddToParser(parser)
 
   def Run(self, args):
     flags.CheckResourceFlags(args)

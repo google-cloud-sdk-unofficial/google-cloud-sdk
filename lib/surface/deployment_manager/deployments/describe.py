@@ -71,7 +71,7 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
                 operation.error, operation.warnings, update)',
                 resources:format='table(
                   name:label=NAME,
-                  type:label=TYPE,
+                  type:wrap:label=TYPE,
                   update.state.yesno(no="COMPLETED"),
                   update.intent)',
               outputs:format='table(

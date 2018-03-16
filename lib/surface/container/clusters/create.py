@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Create cluster command."""
-import argparse
-
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -28,6 +26,7 @@ from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -71,7 +70,8 @@ def _Args(parser):
       '--timeout',
       type=int,
       default=1800,
-      help=argparse.SUPPRESS)
+      hidden=True,
+      help='THIS ARGUMENT NEEDS HELP TEXT.')
   flags.AddAsyncFlag(parser)
   parser.add_argument(
       '--num-nodes',
@@ -146,8 +146,8 @@ for examples.
   flags.AddClusterVersionFlag(parser)
   flags.AddDiskTypeFlag(parser, suppressed=True)
   flags.AddEnableAutoUpgradeFlag(parser)
-  flags.AddClusterNodeIdentityFlags(parser)
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
+  flags.AddNodeVersionFlag(parser)
 
 
 def ValidateBasicAuthFlags(args):
@@ -177,6 +177,10 @@ def ValidateBasicAuthFlags(args):
 
 def ParseCreateOptionsBase(args):
   flags.MungeBasicAuthFlags(args)
+  if (args.IsSpecified('enable_cloud_endpoints') and
+      properties.VALUES.container.new_scopes_behavior.GetBool()):
+    raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
+                     'property container/ new_scopes_behavior is set to true.')
   cluster_ipv4_cidr = args.cluster_ipv4_cidr
   enable_master_authorized_networks = args.enable_master_authorized_networks
   return api_adapter.CreateClusterOptions(
@@ -247,7 +251,7 @@ class Create(base.CreateCommand):
     flags.AddNetworkPolicyFlags(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser, hidden=True)
     flags.AddPreemptibleFlag(parser, suppressed=True)
-    flags.AddNodeVersionFlag(parser, hidden=True)
+    flags.AddDeprecatedClusterNodeIdentityFlags(parser)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
@@ -358,9 +362,9 @@ class CreateBeta(Create):
     flags.AddNetworkPolicyFlags(parser, hidden=True)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
-    flags.AddNodeVersionFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser, hidden=True)
     flags.AddAllowRouteOverlapFlag(parser)
+    flags.AddClusterNodeIdentityFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -369,6 +373,7 @@ class CreateBeta(Create):
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
+    ops.new_scopes_behavior = True
     return ops
 
 
@@ -392,7 +397,7 @@ class CreateAlpha(Create):
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser, hidden=False)
     flags.AddLabelsFlag(parser)
-    flags.AddLocalSSDFlag(parser)
+    flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser)
     flags.AddMaintenanceWindowFlag(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
@@ -402,10 +407,10 @@ class CreateAlpha(Create):
     flags.AddAutoprovisioningFlags(parser, hidden=False)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
-    flags.AddNodeVersionFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser, hidden=True)
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddPrivateClusterFlags(parser, hidden=True)
+    flags.AddClusterNodeIdentityFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -416,6 +421,9 @@ class CreateAlpha(Create):
     ops.max_cpu = args.max_cpu
     ops.min_memory = args.min_memory
     ops.max_memory = args.max_memory
+    ops.min_accelerator = args.min_accelerator
+    ops.max_accelerator = args.max_accelerator
+    ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.enable_binauthz = args.enable_binauthz
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
@@ -424,4 +432,5 @@ class CreateAlpha(Create):
     ops.allow_route_overlap = args.allow_route_overlap
     ops.private_cluster = args.private_cluster
     ops.master_ipv4_cidr = args.master_ipv4_cidr
+    ops.new_scopes_behavior = True
     return ops

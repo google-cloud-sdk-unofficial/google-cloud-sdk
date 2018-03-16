@@ -34,6 +34,7 @@ class Delete(base.DeleteCommand):
           allowed.
     """
     flags.Instance().AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

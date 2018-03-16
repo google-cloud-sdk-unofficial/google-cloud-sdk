@@ -27,6 +27,7 @@ class GetNamedPortsBeta(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat('table(name, port)')
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     """Retrieves response with named ports."""

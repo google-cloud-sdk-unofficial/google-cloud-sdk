@@ -67,6 +67,7 @@ class List(base.ListCommand):
               rrdatas.list():label=DATA
             )
         """)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     api_version = 'v1'

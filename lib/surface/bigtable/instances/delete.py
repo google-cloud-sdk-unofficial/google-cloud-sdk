@@ -28,6 +28,7 @@ class DeleteInstance(base.DeleteCommand):
   def Args(parser):
     """Register flags for this command."""
     arguments.ArgAdder(parser).AddInstance(multiple=True)
+    parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

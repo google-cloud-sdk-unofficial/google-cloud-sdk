@@ -47,6 +47,7 @@ class ListClusters(base.ListCommand):
           )
         """)
     parser.display_info.AddUriFunc(_GetUriFunction)
+    parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

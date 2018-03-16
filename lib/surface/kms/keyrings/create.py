@@ -34,6 +34,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     flags.AddKeyRingArgument(parser, 'to create')
+    parser.display_info.AddCacheUpdater(flags.KeyRingCompleter)
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

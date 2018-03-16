@@ -17,8 +17,10 @@ args:
     arg_name: content-type
     default: plain-text
     choices:
-      plain-text: PLAIN_TEXT
-      html: HTML
+      - arg_value: plain-text
+        enum_value: PLAIN_TEXT
+      - arg_value: html
+        enum_value: HTML
     help_text: Specify the format of the input text.
 
   language:
@@ -40,15 +42,16 @@ args:
       analyzed.
 
   content_group:
-    mutex: True
-    required: True
-    params:
-      - arg_name: content
-        help_text: |
-          Specify input text on the command line. Useful for experiments, or
-          for extremely short text.
-      - arg_name: content-file
-        help_text: |
-          Specify a local file or Google Cloud Storage (format
-          `gs://bucket/object`) file path containing the text to be analyzed.
-          More useful for longer text or data output from another system.
+    group:
+      mutex: True
+      required: True
+      params:
+        - arg_name: content
+          help_text: |
+            Specify input text on the command line. Useful for experiments, or
+            for extremely short text.
+        - arg_name: content-file
+          help_text: |
+            Specify a local file or Google Cloud Storage (format
+            `gs://bucket/object`) file path containing the text to be analyzed.
+            More useful for longer text or data output from another system.

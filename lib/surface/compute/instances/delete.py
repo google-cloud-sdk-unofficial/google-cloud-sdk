@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core.console import console_io
 
@@ -74,6 +75,8 @@ class Delete(base.DeleteCommand):
         """)
 
     flags.INSTANCES_ARG.AddArgument(parser, operation_type='delete')
+
+    parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
   def GetInstances(self, refs, client):
     """Fetches instance objects corresponding to the given references."""

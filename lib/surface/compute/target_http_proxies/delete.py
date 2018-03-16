@@ -31,6 +31,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument(plural=True)
     Delete.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

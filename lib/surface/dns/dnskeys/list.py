@@ -41,6 +41,7 @@ class List(base.ListCommand):
     flags.GetZoneArg(
         'The name of the managed-zone you want to list DnsKeys for.'
     ).AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     dns_client = apis.GetClientInstance('dns', 'v1beta2')

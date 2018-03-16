@@ -33,6 +33,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(plural=True)
     Delete.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

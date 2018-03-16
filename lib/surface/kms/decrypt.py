@@ -39,7 +39,8 @@ class Decrypt(base.Command):
   using the CryptoKey `frodo` with the KeyRing `fellowship` and Location
   `global`, and write the plaintext to 'path/to/plaintext'.
 
-    $ {command} frodo \
+    $ {command} \
+        --key frodo \
         --keyring fellowship \
         --location global \
         --ciphertext-file path/to/input/ciphertext \

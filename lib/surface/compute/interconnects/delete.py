@@ -35,6 +35,7 @@ class Delete(base.DeleteCommand):
   def Args(cls, parser):
     cls.INTERCONNECT_ARG = flags.InterconnectArgument(plural=True)
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.InterconnectsCompleter)
 
   def Collection(self):
     return 'compute.interconnects'

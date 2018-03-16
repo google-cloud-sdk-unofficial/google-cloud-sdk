@@ -31,6 +31,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.URL_MAP_ARG = flags.UrlMapArgument(plural=True)
     Delete.URL_MAP_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.UrlMapsCompleter)
 
   def Run(self, args):
     """Issues requests necessary to delete URL maps."""

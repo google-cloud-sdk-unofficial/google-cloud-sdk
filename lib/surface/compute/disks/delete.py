@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
@@ -34,6 +35,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.disks_arg = disks_flags.MakeDiskArg(plural=True)
     Delete.disks_arg.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(completers.DisksCompleter)
 
   def _GetCommonScopeNameForRefs(self, refs):
     """Gets common scope for references."""

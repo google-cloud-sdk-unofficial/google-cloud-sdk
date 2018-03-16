@@ -15,6 +15,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags
 
@@ -30,6 +31,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     Delete.InstanceTemplateArg = flags.MakeInstanceTemplateArg(plural=True)
     Delete.InstanceTemplateArg.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

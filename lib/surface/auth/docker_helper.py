@@ -43,7 +43,8 @@ class DockerHelper(base.Command):
       return {
           # This tells Docker that the secret will be an access token, not a
           # username/password.
-          url: 'oauth2accesstoken'
+          # Docker normally expects a prefixed 'https://' for auth configs.
+          ('https://'+url): 'oauth2accesstoken'
           for url in constants.ALL_SUPPORTED_REGISTRIES
       }
 
@@ -51,7 +52,8 @@ class DockerHelper(base.Command):
       cred = c_store.Load()
       c_store.Refresh(cred)
       url = sys.stdin.read().strip()
-      if url not in constants.ALL_SUPPORTED_REGISTRIES:
+      if not (url in constants.ALL_SUPPORTED_REGISTRIES or
+              url.lstrip('https://') in constants.ALL_SUPPORTED_REGISTRIES):
         raise exceptions.Error(
             'Repository url [{url}] is not supported'.format(url=url))
       # Putting an actual username in the response doesn't work. Docker will

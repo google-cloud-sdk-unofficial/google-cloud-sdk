@@ -34,6 +34,7 @@ class Create(base.CreateCommand):
     flags.MakeMaintenancePolicyArg().AddArgument(parser)
     flags.AddCommonArgs(parser)
     flags.AddCycleFrequencyArgs(parser)
+    parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

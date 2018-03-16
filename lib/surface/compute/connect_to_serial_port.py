@@ -14,7 +14,6 @@
 
 """Connects to a serial port gateway using SSH."""
 
-import argparse
 import sys
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -112,7 +111,8 @@ class ConnectToSerialPort(base.Command):
 
     parser.add_argument(
         '--serial-port-gateway',
-        help=argparse.SUPPRESS,
+        hidden=True,
+        help='THIS ARGUMENT NEEDS HELP TEXT.',
         default=SERIAL_PORT_GATEWAY)
 
     flags.AddZoneFlag(
@@ -186,6 +186,7 @@ class ConnectToSerialPort(base.Command):
     identity_file = ssh_helper.keys.key_file
     options = ssh_helper.GetConfig(hostname, strict_host_key_checking='yes')
     del options['HostKeyAlias']
+    options['ControlPath'] = 'none'
     cmd = ssh.SSHCommand(serial_remote, identity_file=identity_file,
                          port=CONNECTION_PORT,
                          options=options)

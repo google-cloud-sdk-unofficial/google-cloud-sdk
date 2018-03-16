@@ -25,8 +25,9 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     lister.AddBaseListerArgs(parser)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddCacheUpdater(flags.NetworksCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

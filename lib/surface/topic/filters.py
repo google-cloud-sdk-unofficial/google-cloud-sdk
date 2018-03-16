@@ -170,9 +170,9 @@ class Filters(base.TopicCommand):
 
             $ gcloud projects list --format="json" --filter="labels.env=test AND labels.version=alpha"
 
-          List projects that were created after a specific date:
+          List projects that were created on and after a specific date:
 
-            $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime.date('%Y-%m-%d', Z)='2016-05-11'"
+            $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime.date('%Y-%m-%d', Z)>='2016-05-11'"
 
           Note that in the last example, a projection on the key was used. The
           filter is applied on the createTime key after the date formatting is

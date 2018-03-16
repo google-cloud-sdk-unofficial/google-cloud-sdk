@@ -44,6 +44,14 @@ class List(base.ListCommand):
           To list only versions that are receiving traffic, run:
 
             $ {command} --hide-no-traffic
+
+          To list all version information in JSON, run:
+
+            $ {command} --format="json"
+
+          To list versions created after a specific date, run:
+
+            $ {command} --filter="version.createTime.date('%Y-%m-%d', Z)>'2017-11-03'"
           """,
   }
 

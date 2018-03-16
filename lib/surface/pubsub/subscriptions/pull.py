@@ -29,12 +29,13 @@ table[box](
 """
 
 
-def _Run(args, max_messages):
+def _Run(args, max_messages, return_immediately=True):
   """Pulls messages from a subscription."""
   client = subscriptions.SubscriptionsClient()
 
   subscription_ref = args.CONCEPTS.subscription.Parse()
-  pull_response = client.Pull(subscription_ref, max_messages)
+  pull_response = client.Pull(subscription_ref, max_messages,
+                              return_immediately)
 
   if args.auto_ack and pull_response.receivedMessages:
     ack_ids = [message.ackId for message in pull_response.receivedMessages]
@@ -77,7 +78,7 @@ class PullBeta(Pull):
   def Args(parser):
     parser.display_info.AddFormat(MESSAGE_FORMAT)
     resource_args.AddSubscriptionResourceArg(parser, 'to pull messages from.')
-    flags.AddPullFlags(parser, add_deprecated=True)
+    flags.AddPullFlags(parser, add_deprecated=True, add_wait=True)
 
   def Run(self, args):
     if args.IsSpecified('limit'):
@@ -87,4 +88,5 @@ class PullBeta(Pull):
       max_messages = args.limit
     else:
       max_messages = args.max_messages
-    return _Run(args, max_messages)
+    return_immediately = not args.wait if args.IsSpecified('wait') else True
+    return _Run(args, max_messages, return_immediately)

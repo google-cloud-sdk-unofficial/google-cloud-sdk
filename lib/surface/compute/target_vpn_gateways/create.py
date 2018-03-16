@@ -50,6 +50,8 @@ class Create(base.CreateCommand):
         '--description',
         help='An optional, textual description for the target VPN Gateway.')
 
+    parser.display_info.AddCacheUpdater(flags.TargetVpnGatewaysCompleter)
+
   def Run(self, args):
     """Issues API requests to construct Target VPN Gateways.
 

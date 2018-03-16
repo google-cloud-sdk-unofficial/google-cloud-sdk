@@ -39,6 +39,7 @@ class Create(base.CreateCommand):
     flags.AddHost(parser)
     flags.AddPassword(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
   def Run(self, args):
     """Creates a user in a given instance.
@@ -52,7 +53,7 @@ class Create(base.CreateCommand):
     Raises:
       HttpException: An http error response was received while executing api
           request.
-      ToolException: An error other than an http error occured while executing
+      ToolException: An error other than an http error occurred while executing
           the command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)

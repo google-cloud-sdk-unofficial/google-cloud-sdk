@@ -49,10 +49,14 @@ args:
   - api_field: locationId
     arg_name: region
     choices:
-      us-east1: us-east1
-      us-west1: us-west1
-      europe-west1: europe-west1
-      asia-east1: asia-east1
+      - arg_value: us-east1
+        enum_value: us-east1
+      - arg_value: us-west1
+        enum_value: us-west1
+      - arg_value: europe-west1
+        enum_value: europe-west1
+      - arg_value: asia-east1
+        enum_value: asia-east1
     help_text: |
       Optional cloud region where annotation should take place. If no region
       is specified, a region will be determined based on video file location.

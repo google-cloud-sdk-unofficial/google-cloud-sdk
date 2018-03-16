@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.http_health_checks import flags
 
 
@@ -36,6 +37,7 @@ class Create(base.CreateCommand):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.HTTP_HEALTH_CHECKS_ARG = flags.HttpHealthCheckArgument()
     cls.HTTP_HEALTH_CHECKS_ARG.AddArgument(parser, operation_type='create')
+    parser.display_info.AddCacheUpdater(completers.HttpHealthChecksCompleter)
 
     parser.add_argument(
         '--host',

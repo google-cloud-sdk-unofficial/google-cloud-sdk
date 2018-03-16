@@ -28,6 +28,7 @@ def _Args(cls, parser):
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
   cls.ADDRESSES_ARG.AddArgument(parser, operation_type='create')
   flags.AddDescription(parser)
+  parser.display_info.AddCacheUpdater(flags.AddressesCompleter)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

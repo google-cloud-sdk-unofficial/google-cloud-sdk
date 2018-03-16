@@ -34,6 +34,7 @@ class Delete(base.DeleteCommand):
   def Args(cls, parser):
     cls.SECURITY_POLICY_ARG = flags.SecurityPolicyArgument(plural=True)
     cls.SECURITY_POLICY_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.SecurityPoliciesCompleter)
 
   def Collection(self):
     return 'compute.securityPolicies'

@@ -17,6 +17,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
+from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -51,6 +52,8 @@ class List(base.ListCommand):
           sslCertificates.map().basename().list():label=SSL_CERTIFICATES
         )
     """)
+
+    parser.display_info.AddCacheUpdater(flags.TargetSslProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

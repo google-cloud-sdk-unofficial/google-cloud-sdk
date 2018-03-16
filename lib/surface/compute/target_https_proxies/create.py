@@ -67,6 +67,7 @@ class CreateGA(base.CreateCommand):
     parser.add_argument(
         '--description',
         help='An optional, textual description for the target HTTPS proxy.')
+    parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleter)
 
   def _GetSslCertificatesList(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

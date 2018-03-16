@@ -60,6 +60,7 @@ class Translate(base.CreateCommand):
               .format(_WORKFLOWS_URL)),
     )
     daisy_utils.AddCommonDaisyArgs(parser)
+    parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
     if args.os:

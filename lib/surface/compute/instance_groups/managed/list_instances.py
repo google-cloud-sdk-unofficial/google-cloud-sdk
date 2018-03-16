@@ -90,7 +90,26 @@ ListInstances.detailed_help = {
     'DESCRIPTION':
         """\
           *{command}* list instances in a managed instance group.
-          """,
+
+          The required permission to execute this command is
+          `compute.instanceGroupManagers.list`. If needed, you can include this
+          permission, or choose any of the following preexisting IAM roles
+          that contain this particular permission:
+
+          *   Compute Admin
+          *   Compute Viewer
+          *   Compute Instance Admin (v1)
+          *   Compute Instance Admin (beta)
+          *   Compute Network Admin
+          *   Editor
+          *   Owner
+          *   Security Reviewer
+          *   Viewer
+
+          For more information regarding permissions required by managed
+          instance groups, refer to Compute Engine's access control guide :
+          https://cloud.google.com/compute/docs/access/iam-permissions#instancegroupmanagers_collection.
+        """,
 }
 
 

@@ -41,7 +41,11 @@ class Allow(base.Command):
     flags.AddIdArgToParser(parser)
     flags.AddResourceFlagsToParser(parser)
     base.Argument(
-        'allowed_value', metavar='ALLOWED_VALUE', nargs='+').AddToParser(parser)
+        'allowed_value',
+        metavar='ALLOWED_VALUE',
+        nargs='+',
+        help='The values to add to the allowed_values list policy.',
+    ).AddToParser(parser)
 
   def Run(self, args):
     flags.CheckResourceFlags(args)
