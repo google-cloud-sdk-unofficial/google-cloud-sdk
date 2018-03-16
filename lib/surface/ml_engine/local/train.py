@@ -88,10 +88,10 @@ class RunLocal(base.Command):
           user_args=user_args)
     else:
       if args.parameter_server_count:
-        log.warn(_BAD_FLAGS_WARNING_MESSAGE.format(
+        log.warning(_BAD_FLAGS_WARNING_MESSAGE.format(
             flag='--parameter-server-count'))
       if args.worker_count:
-        log.warn(_BAD_FLAGS_WARNING_MESSAGE.format(flag='--worker-count'))
+        log.warning(_BAD_FLAGS_WARNING_MESSAGE.format(flag='--worker-count'))
       retval = local_train.MakeProcess(args.module_name,
                                        package_root,
                                        args=user_args,

@@ -26,8 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import export_util
 
 
-# TODO(b/67459595): Promote to GA once the command has been validated.
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Csv(base.Command):
   """Exports data from a Cloud SQL instance to a CSV file.
 

@@ -92,10 +92,10 @@ class CreateWithContainer(base.CreateCommand):
           image_family=args.image_family,
           image_project=args.image_project)
       if holder.resources.Parse(image_uri).project != 'cos-cloud':
-        log.warn('This container deployment mechanism requires a '
-                 'Container-Optimized OS image in order to work. Select an '
-                 'image from a cos-cloud project (cost-stable, cos-beta, '
-                 'cos-dev image families).')
+        log.warning('This container deployment mechanism requires a '
+                    'Container-Optimized OS image in order to work. Select an '
+                    'image from a cos-cloud project (cost-stable, cos-beta, '
+                    'cos-dev image families).')
     else:
       image_uri = containers_utils.ExpandKonletCosImageFlag(client)
     return image_uri

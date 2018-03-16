@@ -44,7 +44,7 @@ class CreateAppEngine(base.CreateCommand):
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.APP_ENGINE_QUEUE, queues_client.api.messages)
-    log.warn(constants.QUEUE_MANAGEMENT_WARNING)
+    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     create_response = queues_client.Create(
         location_ref, queue_ref,
         retry_config=queue_config.retryConfig,

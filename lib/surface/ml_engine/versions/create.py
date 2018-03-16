@@ -78,9 +78,8 @@ def _AddCreateArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA,
-                    base.ReleaseTrack.BETA)
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(base.CreateCommand):
   """Create a new Cloud ML Engine version.
 
   Creates a new version of a Cloud ML Engine model.
@@ -109,6 +108,39 @@ class Create(base.CreateCommand):
                                 labels=labels)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
+  """Create a new Cloud ML Engine version.
+
+  Creates a new version of a Cloud ML Engine model.
+
+  For more details on managing ML Engine models and versions see
+  https://cloud.google.com/ml-engine/docs/how-tos/managing-models-jobs
+  """
+
+  @staticmethod
+  def Args(parser):
+    _AddCreateArgs(parser)
+    flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
+
+  def Run(self, args):
+    versions_client = versions_api.VersionsClient()
+    labels = versions_util.ParseCreateLabels(versions_client, args)
+    framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
+    return versions_util.Create(versions_client,
+                                operations.OperationsClient(),
+                                args.version,
+                                model=args.model,
+                                origin=args.origin,
+                                staging_bucket=args.staging_bucket,
+                                runtime_version=args.runtime_version,
+                                config_file=args.config,
+                                async_=args.async,
+                                description=args.description,
+                                labels=labels,
+                                framework=framework)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.CreateCommand):
   """Create a new Cloud ML Engine version.
@@ -123,10 +155,12 @@ class CreateAlpha(base.CreateCommand):
   def Args(parser):
     _AddCreateArgs(parser)
     flags.MACHINE_TYPE.AddToParser(parser)
+    flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
     labels = versions_util.ParseCreateLabels(versions_client, args)
+    framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
     return versions_util.Create(versions_client,
                                 operations.OperationsClient(),
                                 args.version,
@@ -138,4 +172,5 @@ class CreateAlpha(base.CreateCommand):
                                 async_=args.async,
                                 labels=labels,
                                 description=args.description,
-                                machine_type=args.machine_type)
+                                machine_type=args.machine_type,
+                                framework=framework)

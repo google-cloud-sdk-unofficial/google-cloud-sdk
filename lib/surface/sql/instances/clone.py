@@ -14,10 +14,10 @@
 """Clones a Cloud SQL instance."""
 
 from googlecloudsdk.api_lib.sql import api_util
+from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -89,7 +89,7 @@ class Clone(base.CreateCommand):
   def _CheckSourceAndDestination(self, source_instance_ref,
                                  destination_instance_ref):
     if source_instance_ref.project != destination_instance_ref.project:
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           'The source and the clone instance must belong to the same project:'
           ' "{src}" != "{dest}".'.format(
               src=source_instance_ref.project,
@@ -120,7 +120,7 @@ class Clone(base.CreateCommand):
           binLogFileName=args.bin_log_file_name,
           binLogPosition=args.bin_log_position)
     elif args.bin_log_file_name or args.bin_log_position:
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           'Both --bin-log-file-name and --bin-log-position must be specified to'
           ' represent a valid binary log coordinate up to which the source is'
           ' cloned.')
@@ -136,13 +136,9 @@ class Clone(base.CreateCommand):
       A dict object representing the operations resource describing the
       clone operation if the clone was successful.
     Raises:
-      InvalidArgumentException: If one of the simulateneously required arguments
-          is not specified.
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occurred while executing the
-          command.
+      ArgumentError: The arguments are invalid for some reason.
     """
+
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages

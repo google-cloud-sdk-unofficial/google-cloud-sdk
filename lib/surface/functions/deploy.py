@@ -93,6 +93,11 @@ class Deploy(base.Command):
       trigger_util.CheckTriggerSpecified(args)
       function = messages.CloudFunction()
       function.name = function_url
+    elif trigger_params:
+      # If the new deployment would implicitly change the trigger_event type
+      # raise error
+      trigger_util.CheckLegacyTriggerUpdate(function.eventTrigger,
+                                            trigger_params['trigger_event'])
 
     # Keep track of which fields are updated in the case of patching.
     updated_fields = []

@@ -102,7 +102,6 @@ class SshGA(base.Command):
 
   def __init__(self, *args, **kwargs):
     super(SshGA, self).__init__(*args, **kwargs)
-    self._use_account_service = False
     self._use_internal_ip = False
 
   @staticmethod
@@ -117,13 +116,11 @@ class SshGA(base.Command):
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
     client = holder.client
 
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
     ssh_helper.Run(args)
-    user, instance_name = ssh_utils.GetUserAndInstance(
-        args.user_host, self._use_account_service)
+    user, instance_name = ssh_utils.GetUserAndInstance(args.user_host)
     instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
         [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
         holder.resources,
@@ -172,9 +169,7 @@ class SshGA(base.Command):
       keys_newly_added = False
     else:
       keys_newly_added = ssh_helper.EnsureSSHKeyExists(
-          client, cua_holder.client,
-          remote.user, instance, project,
-          use_account_service=self._use_account_service)
+          client, remote.user, instance, project)
 
     if keys_newly_added:
       poller = ssh.SSHPoller(
@@ -205,7 +200,6 @@ class SshBeta(SshGA):
 
   def __init__(self, *args, **kwargs):
     super(SshBeta, self).__init__(*args, **kwargs)
-    self._use_account_service = True
 
   @staticmethod
   def Args(parser):

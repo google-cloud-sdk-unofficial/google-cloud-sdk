@@ -19,7 +19,6 @@ from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -80,10 +79,10 @@ class NodePoolsAlphaBeta(NodePools):
     Returns:
       The refined command context.
     """
-    if properties.VALUES.container.use_v1_api.GetBool():
+    if container_command_util.GetUseV1APIProperty():
       warning = messages.GetAPIMismatchingWarning(self.ReleaseTrack())
       if warning:
-        log.warn(warning)
+        log.warning(warning)
 
     context['location_get'] = container_command_util.GetZoneOrRegion
     return context

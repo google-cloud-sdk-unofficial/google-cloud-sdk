@@ -92,7 +92,7 @@ class GetSerialPortOutput(base.Command):
 
   def Epilog(self, unused_resources_were_displayed):
     if self._start and self._response.start != self._start:
-      log.warn(
+      log.warning(
           'Some serial port output was lost due to a limited buffer. The '
           'oldest byte of output returned was at offset {0}.'.format(
               self._response.start))

@@ -15,9 +15,9 @@
 
 import os
 from googlecloudsdk.api_lib.sql import api_util
+from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -52,14 +52,11 @@ class _BaseAddCert(object):
       A dict object representing the operations resource describing the create
       operation if the create was successful.
     Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
+      ArgumentError: If the file path provided cannot be written to.
     """
 
     if os.path.exists(args.cert_file):
-      raise exceptions.ToolException(
+      raise exceptions.ArgumentError(
           'file [{path}] already exists'.format(path=args.cert_file))
 
     # First check if args.out_file is writeable. If not, abort and don't create
@@ -68,7 +65,7 @@ class _BaseAddCert(object):
       with files.OpenForWritingPrivate(args.cert_file) as cf:
         cf.write('placeholder\n')
     except (files.Error, OSError) as e:
-      raise exceptions.ToolException('unable to write [{path}]: {error}'.format(
+      raise exceptions.ArgumentError('unable to write [{path}]: {error}'.format(
           path=args.cert_file, error=str(e)))
 
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)

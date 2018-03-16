@@ -66,7 +66,7 @@ class List(base.ListCommand):
     super(List, self).Epilog(resources_were_displayed)
 
     if self._epilog:
-      log.warn(self._epilog)
+      log.warning(self._epilog)
 
   @staticmethod
   def _warn_on_deprecated_tag(models):

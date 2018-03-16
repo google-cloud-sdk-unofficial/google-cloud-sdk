@@ -49,7 +49,7 @@ class UpdateAppEngine(base.UpdateCommand):
         queue_config.appEngineHttpTarget.appEngineRoutingOverride if
         queue_config.appEngineHttpTarget is not None else
         None)
-    log.warn(constants.QUEUE_MANAGEMENT_WARNING)
+    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
         queue_ref,
         retry_config=queue_config.retryConfig,

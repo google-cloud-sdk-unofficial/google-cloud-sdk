@@ -21,7 +21,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Import(base.Command):
   """Import Cloud Datastore entities from Google Cloud Storage.
 

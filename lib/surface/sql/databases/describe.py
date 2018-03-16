@@ -51,11 +51,6 @@ class Get(base.DescribeCommand):
     Returns:
       A dict object representing the database resource if fetching the database
       was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
     """
 
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)

@@ -76,7 +76,7 @@ class Start(base.Command):
         args.versions, args.service)
 
     if not versions:
-      log.warn('No matching versions found.')
+      log.warning('No matching versions found.')
       return
 
     fmt = 'list[title="Starting the following versions:"]'

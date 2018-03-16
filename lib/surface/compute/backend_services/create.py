@@ -25,15 +25,7 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
 
 
-def _ResolvePort(args):
-  if args.port:
-    return args.port
-  if args.protocol in ['HTTPS', 'HTTP2', 'SSL']:
-    return 443
-  # Default to port 80, which is used for HTTP and TCP.
-  return 80
-
-
+# TODO(b/73642225): Determine whether 'https' should be default
 def _ResolvePortName(args):
   """Determine port name if one was not specified."""
   if args.port_name:
@@ -51,6 +43,7 @@ def _ResolvePortName(args):
   return 'http'
 
 
+# TODO(b/73642225): Determine whether 'HTTPS' should be default
 def _ResolveProtocol(messages, args, default='HTTP'):
   return messages.BackendService.ProtocolValueValuesEnum(
       args.protocol or default)
@@ -132,7 +125,6 @@ class CreateGA(base.CreateCommand):
         description=args.description,
         name=backend_services_ref.Name(),
         healthChecks=health_checks,
-        port=_ResolvePort(args),
         portName=_ResolvePortName(args),
         protocol=_ResolveProtocol(holder.client.messages, args),
         timeoutSec=args.timeout,

@@ -88,7 +88,7 @@ class Untag(base.DeleteCommand):
               'Image could not be found: [{}]'.format(str(tag)))
 
       if not tags:
-        log.warn('No tags found matching image names [%s].', ', '.join(
+        log.warning('No tags found matching image names [%s].', ', '.join(
             args.image_names))
         return
       for tag, digest in digests.iteritems():

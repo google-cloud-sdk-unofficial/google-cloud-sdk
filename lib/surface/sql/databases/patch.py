@@ -65,11 +65,6 @@ class Patch(base.Command):
     Returns:
       A dict object representing the operations resource describing the patch
       operation if the patch was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
     """
     if args.diff:
       args.GetDisplayInfo().AddFormat('diff(old, new)')

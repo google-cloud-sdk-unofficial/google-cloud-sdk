@@ -15,10 +15,10 @@
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import cert
+from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -59,10 +59,7 @@ class Delete(_BaseDelete, base.Command):
       A dict object representing the operations resource describing the delete
       operation if the api request was successful.
     Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
+      ResourceNotFoundError: The ssl cert could not be found for the instance.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
@@ -88,7 +85,7 @@ class Delete(_BaseDelete, base.Command):
                                        client.resource_parser, instance_ref,
                                        args.common_name)
     if not cert_ref:
-      raise exceptions.ToolException(
+      raise exceptions.ResourceNotFoundError(
           'no ssl cert named [{name}] for instance [{instance}]'.format(
               name=args.common_name, instance=instance_ref))
 

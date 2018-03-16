@@ -96,8 +96,8 @@ class Describe(base.DescribeCommand):
 
     if (sys.getsizeof(str(operation.response)) > MAX_RESPONSE_BYTES and
         not args.full):
-      log.warn('Response portion of operation resource redacted. '
-               'Use --full to see the whole Operation.\n')
+      log.warning('Response portion of operation resource redacted. '
+                  'Use --full to see the whole Operation.\n')
       operation.response = None
 
     # Set async to True because we don't need to wait for the operation

@@ -84,8 +84,8 @@ class Create(base.CreateCommand):
       repo = source_handler.CreateRepo(res)
       if repo:
         log.CreatedResource(res.Name())
-        log.warn('You may be billed for this repository. '
-                 'See {url} for details.'.format(url=_BILLING_URL))
+        log.warning('You may be billed for this repository. '
+                    'See {url} for details.'.format(url=_BILLING_URL))
         return repo
     except exceptions.HttpError as error:
       exc = c_exc.HttpException(error)

@@ -46,7 +46,7 @@ class RemoveProfile(base.Command):
       log.DeletedResource(account_id, details='posix account(s)')
       return res
     else:
-      log.warn('No profile found with accountId [{0}]'.format(project))
+      log.warning('No profile found with accountId [{0}]'.format(project))
 
 
 RemoveProfile.detailed_help = {

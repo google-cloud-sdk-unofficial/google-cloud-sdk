@@ -69,6 +69,7 @@ def AddBaseArgs(parser):
       help=('First Generation instances only. The App Engine app this '
             'instance should follow. It must be in the same region as '
             'the instance.'))
+  # TODO(b/73362466): Add `--zone` and deprecate `--gce-zone`.
   parser.add_argument(
       '--gce-zone',
       required=False,
@@ -100,6 +101,7 @@ def AddBaseArgs(parser):
       help=('First Generation instances only. The pricing plan for this '
             'instance.'))
   # TODO(b/31989340): add remote completion
+  # TODO(b/73362466): Make zone and region mutually exclusive.
   parser.add_argument(
       '--region',
       required=False,
@@ -152,8 +154,6 @@ def RunBaseCreateCommand(args, release_track):
   Raises:
     HttpException: A http error response was received while executing api
         request.
-    ToolException: An error other than http error occurred while executing the
-        command.
   """
   client = common_api_util.SqlClient(common_api_util.API_VERSION_DEFAULT)
   sql_client = client.sql_client

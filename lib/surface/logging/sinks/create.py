@@ -95,8 +95,8 @@ class Create(base.CreateCommand):
           'Sink with empty filter matches all entries.', cancel_on_no=True)
 
     if args.include_children and not (args.organization or args.folder):
-      log.warn('include-children only has an effect for sinks at the folder '
-               'or organization level')
+      log.warning('include-children only has an effect for sinks at the folder '
+                  'or organization level')
 
     sink_ref = util.GetSinkReference(args.sink_name, args)
 

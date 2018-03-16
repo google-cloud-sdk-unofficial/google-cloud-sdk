@@ -52,11 +52,6 @@ class PromoteReplica(base.Command):
     Returns:
       A dict object representing the operations resource describing the
       promote-replica operation if the promote-replica was successful.
-    Raises:
-      HttpException: An HTTP error response was received while executing api
-          request.
-      ToolException: An error other than an HTTP error occured while executing
-          the command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client

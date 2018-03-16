@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.category_manager import store
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.category_manager import flags
 from googlecloudsdk.command_lib.category_manager import iam_lib
+from googlecloudsdk.command_lib.category_manager import util
 from googlecloudsdk.command_lib.iam import iam_util
 
 
@@ -29,7 +30,7 @@ class AddIamPolicyBinding(base.Command):
   def Args(parser):
     """Register flags for this command."""
     iam_util.AddArgsForAddIamPolicyBinding(parser)
-    flags.AddStoreResourceFlags(parser)
+    flags.AddOrganizationIdArg(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -41,9 +42,9 @@ class AddIamPolicyBinding(base.Command):
     Returns:
       Status of command execution.
     """
-    store_resource_ref = flags.GetStoreResourceFromArgs(args)
+    org_ref = args.CONCEPTS.organization_id.Parse()
     return iam_lib.AddIamPolicyBinding(
-        resource_ref=store_resource_ref,
+        resource_ref=util.GetTaxonomyStoreRefFromOrgRef(org_ref),
         role=args.role,
         member=args.member,
         module=store)

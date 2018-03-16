@@ -30,7 +30,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-def _AddAdditionalZonesFlag(parser, deprecated=False):
+def _AddAdditionalZonesFlag(parser, deprecated=True):
   action = None
   if deprecated:
     action = actions.DeprecationAction(
@@ -239,7 +239,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    _AddAdditionalZonesFlag(parser)
+    _AddAdditionalZonesFlag(parser, deprecated=True)
     flags.AddNodeLocationsFlag(parser)
     flags.AddAddonsFlags(parser, add_disable_addons_flag=True)
     flags.AddClusterAutoscalingFlags(parser)
@@ -369,7 +369,7 @@ class CreateBeta(Create):
     flags.AddNetworkPolicyFlags(parser)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
-    flags.AddPodSecurityPolicyFlag(parser, hidden=True)
+    flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddClusterNodeIdentityFlags(parser)
 
@@ -415,7 +415,7 @@ class CreateAlpha(Create):
     flags.AddAutoprovisioningFlags(parser, hidden=False)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
-    flags.AddPodSecurityPolicyFlag(parser, hidden=True)
+    flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddPrivateClusterFlags(parser, hidden=True)
     flags.AddClusterNodeIdentityFlags(parser)

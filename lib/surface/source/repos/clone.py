@@ -76,7 +76,7 @@ class CloneGA(base.Command):
                'this clone will have no effect.  Instead, directly clone the '
                'mirrored repository directly with \n$ git clone '
                '{url}'.format(repo=repo, prj=project, url=mirror_url))
-    log.warn(message)
+    log.warning(message)
 
   def Run(self, args):
     """Clone a GCP repository to the current directory.

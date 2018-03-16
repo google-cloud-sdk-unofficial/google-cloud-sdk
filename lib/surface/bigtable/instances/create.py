@@ -28,19 +28,11 @@ class CreateInstance(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     (arguments.ArgAdder(parser).AddInstance()
-     .AddInstanceDescription(required=True)
+     .AddInstanceDisplayName(required=True)
      .AddCluster(positional=False).AddClusterNodes(in_instance=True)
      .AddClusterStorage(in_instance=True).AddClusterZone(in_instance=True)
      .AddAsync().AddInstanceType(
-         additional_choices={
-             'DEVELOPMENT':
-                 'Development instances are low-cost instances meant '
-                 'for development and testing only. They do not '
-                 'provide high availability and no service level '
-                 'agreement applies.'
-         },
-         default='PRODUCTION',
-         help_text='The type of instance to create.'))
+         default='PRODUCTION', help_text='The type of instance to create.'))
     parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
   def Run(self, args):
@@ -53,6 +45,9 @@ class CreateInstance(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
+    # TODO(b/73365914) remove after deprecation period
+    display_name = args.display_name or args.description
+
     cli = bigtable_util.GetAdminClient()
     ref = resources.REGISTRY.Parse(
         args.instance,
@@ -67,9 +62,11 @@ class CreateInstance(base.CreateCommand):
         instanceId=ref.Name(),
         parent=parent_ref.RelativeName(),
         instance=msgs.Instance(
-            displayName=args.description,
+            # TODO(b/73365914) replace with args.display_name after deprecation
+            displayName=display_name,
             type=msgs.Instance.TypeValueValuesEnum(args.instance_type)),
-        clusters=msgs.CreateInstanceRequest.ClustersValue(additionalProperties=[
+        clusters=msgs.CreateInstanceRequest.
+        ClustersValue(additionalProperties=[
             msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
                 key=args.cluster,
                 value=msgs.Cluster(

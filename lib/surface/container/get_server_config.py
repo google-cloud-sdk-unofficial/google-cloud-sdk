@@ -57,10 +57,10 @@ class GetServerConfigAlphaBeta(GetServerConfig):
   """Get Kubernetes Engine server config."""
 
   def __init__(self, *args, **kwargs):
-    if properties.VALUES.container.use_v1_api.GetBool():
+    if container_command_util.GetUseV1APIProperty():
       warning = messages.GetAPIMismatchingWarning(self.ReleaseTrack())
       if warning:
-        log.warn(warning)
+        log.warning(warning)
 
     super(GetServerConfigAlphaBeta, self).__init__(*args, **kwargs)
     self.location_get = container_command_util.GetZoneOrRegion

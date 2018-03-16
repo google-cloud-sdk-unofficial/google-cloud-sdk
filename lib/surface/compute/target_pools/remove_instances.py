@@ -62,8 +62,8 @@ class RemoveInstances(base.SilentCommand):
 
     if args.zone and not args.instances_zone:
       args.instances_zone = args.zone
-      log.warn('The --zone flag is deprecated. Use equivalent '
-               '--instances-zone=%s flag.', args.instances_zone)
+      log.warning('The --zone flag is deprecated. Use equivalent '
+                  '--instances-zone=%s flag.', args.instances_zone)
 
     instance_refs = self.INSTANCE_ARG.ResolveAsResource(
         args,

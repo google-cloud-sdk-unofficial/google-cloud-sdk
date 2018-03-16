@@ -100,14 +100,14 @@ class _BaseDeploy(object):
         filePath=os.path.basename(filename),
         fileType=file_type,)
 
-  def ShowConfigReport(self, service, service_config_id, log_func=log.warn):
+  def ShowConfigReport(self, service, service_config_id, log_func=log.warning):
     """Run and display results (if any) from the Push Advisor.
 
     Args:
       service: The name of the service for which to compare configs.
       service_config_id: The new config ID to compare against the active config.
       log_func: The function to which to pass advisory messages
-        (default: log.warn).
+        (default: log.warning).
 
     Returns:
       The number of advisory messages returned by the Push Advisor.
@@ -421,7 +421,7 @@ class DeployBetaAlpha(_BaseDeploy, base.Command):
       True if the deployment should be aborted due to warnings, otherwise
       False if it's safe to continue.
     """
-    log_func = log.warn if force else log.error
+    log_func = log.warning if force else log.error
     num_advices = self.ShowConfigReport(
         self.service_name, self.service_config_id, log_func)
     if num_advices > 0:

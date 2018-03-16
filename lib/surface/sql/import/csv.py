@@ -28,8 +28,7 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import import_util
 
 
-# TODO(b/67917387): Promote to GA once the command has been validated.
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Sql(base.Command):
   """Imports data into a Cloud SQL instance from a CSV file.
 

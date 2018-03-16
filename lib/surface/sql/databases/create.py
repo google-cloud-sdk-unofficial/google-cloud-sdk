@@ -13,7 +13,7 @@
 # limitations under the License.
 """Creates a database for a Cloud SQL instance."""
 from googlecloudsdk.api_lib.sql import api_util
-from googlecloudsdk.api_lib.sql import errors
+from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -51,11 +51,6 @@ class AddDatabase(base.Command):
     Returns:
       A dict object representing the operations resource describing the create
       operation if the create was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
@@ -91,7 +86,7 @@ class AddDatabase(base.Command):
         operations.OperationsV1Beta4.WaitForOperation(
             sql_client, operation_ref, 'Creating Cloud SQL database')
 
-      except errors.OperationError:
+      except exceptions.OperationError:
         log.Print('Database creation failed. Check if a database named {0} '
                   'already exists.'.format(args.database))
         # Must fail with non-zero exit code on API request failure.

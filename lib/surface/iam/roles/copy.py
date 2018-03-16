@@ -99,13 +99,13 @@ class Copy(base_classes.BaseIamCommand):
                                                 source_role.includedPermissions)
     not_supported_permissions = permissions_helper.GetNotSupportedPermissions()
     if not_supported_permissions:
-      log.warn(
+      log.warning(
           'Permissions don\'t support custom roles and won\'t be added: ['
           + ', '.join(not_supported_permissions) + '] \n')
     not_applicable_permissions = permissions_helper.GetNotApplicablePermissions(
     )
     if not_applicable_permissions:
-      log.warn(
+      log.warning(
           'Permissions not applicable to the current resource and won\'t'
           ' be added: [' + ', '.join(not_applicable_permissions) + '] \n')
     api_diabled_permissions = permissions_helper.GetApiDisabledPermissons()

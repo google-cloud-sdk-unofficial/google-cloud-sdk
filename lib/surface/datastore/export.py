@@ -21,7 +21,6 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Export(base.Command):
   """Export Cloud Datastore entities to Google Cloud Storage.
 

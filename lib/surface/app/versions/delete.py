@@ -108,8 +108,9 @@ class Delete(base.DeleteCommand):
 
     if services_to_delete:
       word = text.Pluralize(len(services_to_delete), 'service')
-      log.warn('Requested deletion of all existing versions for the following '
-               '{0}:'.format(word))
+      log.warning(
+          'Requested deletion of all existing versions for the following {0}:'
+          .format(word))
       resource_printer.Print(services_to_delete, 'list', out=log.status)
       console_io.PromptContinue(prompt_string=(
           '\nYou cannot delete all versions of a service. Would you like to '
@@ -122,6 +123,6 @@ class Delete(base.DeleteCommand):
       console_io.PromptContinue(cancel_on_no=True)
     else:
       if not services_to_delete:
-        log.warn('No matching versions found.')
+        log.warning('No matching versions found.')
 
     version_util.DeleteVersions(client, versions)

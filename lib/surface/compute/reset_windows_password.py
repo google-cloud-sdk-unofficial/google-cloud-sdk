@@ -375,15 +375,15 @@ class ResetWindowsPassword(base.UpdateCommand):
       access_configs = updated_instance.networkInterfaces[0].accessConfigs
       external_ip_address = access_configs[0].natIP
     except (KeyError, IndexError) as _:
-      log.warn(NO_IP_WARNING.format(updated_instance.name))
+      log.warning(NO_IP_WARNING.format(updated_instance.name))
       external_ip_address = None
 
     # Check for old Windows credentials.
     if self.old_metadata_keys:
-      log.warn(OLD_KEYS_WARNING.format(instance_ref.instance,
-                                       instance_ref.instance,
-                                       instance_ref.zone,
-                                       ','.join(self.old_metadata_keys)))
+      log.warning(OLD_KEYS_WARNING.format(instance_ref.instance,
+                                          instance_ref.instance,
+                                          instance_ref.zone,
+                                          ','.join(self.old_metadata_keys)))
 
     log.info('Total Elapsed Time: {0}'
              .format(time_util.CurrentTimeSec() - start))

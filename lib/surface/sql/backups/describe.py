@@ -70,11 +70,6 @@ class Describe(base.DescribeCommand):
     Returns:
       A dict object that has the backup run resource if the command ran
       successfully.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
     """
     validate.ValidateInstanceName(args.instance)
 

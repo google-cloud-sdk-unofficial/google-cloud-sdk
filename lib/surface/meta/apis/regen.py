@@ -83,11 +83,11 @@ class Regen(base.Command):
 
       api_name, api_version = match.group(1), match.group(2)
       if api_name not in config['apis']:
-        log.warn('No such api %s in config, adding...', api_name)
+        log.warning('No such api %s in config, adding...', api_name)
         config['apis'][api_name] = {api_version: {'discovery_doc': ''}}
         changed_config = True
       elif api_version not in config['apis'][api_name]:
-        log.warn('No such api version %s in config, adding...', api_version)
+        log.warning('No such api version %s in config, adding...', api_version)
         config['apis'][api_name][api_version] = {'discovery_doc': ''}
         changed_config = True
 
@@ -143,7 +143,7 @@ class Regen(base.Command):
 
     # Now that everything passed, config can be updated if needed.
     if changed_config:
-      log.warn(u'Updated %s', args.config)
+      log.warning(u'Updated %s', args.config)
       with open(args.config, 'w') as stream:
         ruamel.yaml.round_trip_dump(config, stream)
 

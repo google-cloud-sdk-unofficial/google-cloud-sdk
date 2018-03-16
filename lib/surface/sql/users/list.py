@@ -46,11 +46,6 @@ class List(base.ListCommand):
 
     Returns:
       SQL user resource iterator.
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
-      ToolException: An error other than an http error occurred while executing
-          the command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client

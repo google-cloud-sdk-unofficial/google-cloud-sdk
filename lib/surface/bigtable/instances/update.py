@@ -27,8 +27,10 @@ class UpdateInstance(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    (arguments.ArgAdder(parser).AddInstance().AddInstanceDescription()
+    (arguments.ArgAdder(parser).AddInstance().AddInstanceDisplayName()
+     # TODO(b/38428550) Remove after deprecation period
      .AddInstanceType(
+         create=False,
          help_text='Change the instance type. Note development instances can '
          'be promoted to production instances, but production instances '
          'cannot be downgraded to development.'))
@@ -54,10 +56,16 @@ class UpdateInstance(base.UpdateCommand):
     instance = cli.projects_instances.Get(
         msgs.BigtableadminProjectsInstancesGetRequest(name=ref.RelativeName()))
     instance.state = None  # must be unset when calling Update
-    if args.description:
-      instance.displayName = args.description
+
+    # TODO(b/73365914) Replace with args.display_name after deprecation
+    display_name = args.display_name or args.description
+    if display_name:
+      instance.displayName = display_name
+
+    # TODO(b/38428550) Remove after deprecation period
     if args.instance_type:
       instance.type = msgs.Instance.TypeValueValuesEnum(args.instance_type)
+    # end remove
     instance = cli.projects_instances.Update(instance)
     log.UpdatedResource(instance.name, kind='instance')
     return instance

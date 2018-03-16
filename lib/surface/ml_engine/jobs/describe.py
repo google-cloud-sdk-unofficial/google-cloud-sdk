@@ -37,7 +37,7 @@ class Describe(base.DescribeCommand):
     self.job = job  # Hack to make the Epilog method work
     if args.summarize:
       if args.format:
-        log.warn('--format is ignored when --summarize is present')
+        log.warning('--format is ignored when --summarize is present')
       args.format = jobs_util.GetSummaryFormat(job)
     return job
 

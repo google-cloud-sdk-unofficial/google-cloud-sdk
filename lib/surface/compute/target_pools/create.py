@@ -124,8 +124,8 @@ class Create(base.CreateCommand):
 
     if args.health_check:
       args.http_health_check = args.health_check
-      log.warn('The --health-check flag is deprecated. Use equivalent '
-               '--http-health-check=%s flag.', args.health_check)
+      log.warning('The --health-check flag is deprecated. Use equivalent '
+                  '--http-health-check=%s flag.', args.health_check)
 
     if args.http_health_check:
       http_health_check = [self.HTTP_HEALTH_CHECK_ARG.ResolveAsResource(

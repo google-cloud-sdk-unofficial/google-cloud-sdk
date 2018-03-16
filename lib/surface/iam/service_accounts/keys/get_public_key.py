@@ -18,7 +18,6 @@ from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
-from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -71,7 +70,7 @@ class GetPublicKey(base_classes.BaseIamCommand, base.Command):
         self.messages.IamProjectsServiceAccountsKeysGetRequest(
             name=key_ref.RelativeName(),
             publicKeyType=iam_util.PublicKeyTypeFromString(args.type)))
-    files.WriteFileOrStdoutContents(
+    log.WriteToFileOrStdout(
         args.output_file, content=result.publicKeyData, binary=True)
 
     log.status.Print('written key [{0}] for [{2}] as [{1}]'.format(

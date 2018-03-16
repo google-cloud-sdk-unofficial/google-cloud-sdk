@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binau
 from googlecloudsdk.command_lib.container.binauthz import flags as binauthz_flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
@@ -142,7 +143,8 @@ class Create(base.CreateCommand):
     )
     normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
         args.artifact_url)
-    signature = files.GetFileOrStdinContents(args.signature_file)
+    signature = console_io.ReadFromFileOrStdin(
+        args.signature_file, binary=False)
 
     if args.attestation_authority_note:
       client = binauthz_api_util.ContainerAnalysisClient()

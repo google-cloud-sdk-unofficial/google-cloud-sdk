@@ -367,8 +367,8 @@ def _GetPortRange(ports_range_list):
 def _ResolvePortRange(port_range, port_range_list):
   """Reconciles deprecated port_range value and list of port ranges."""
   if port_range:
-    log.warn('The --port-range flag is deprecated. Use equivalent --ports=%s'
-             ' flag.', port_range)
+    log.warning('The --port-range flag is deprecated. Use equivalent --ports=%s'
+                ' flag.', port_range)
   elif port_range_list:
     port_range = _GetPortRange(port_range_list)
   return str(port_range) if port_range else None

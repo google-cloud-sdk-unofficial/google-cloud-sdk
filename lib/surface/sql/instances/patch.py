@@ -19,12 +19,12 @@ from __future__ import print_function
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
+from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import instances as api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -60,7 +60,7 @@ def _PrintAndConfirmWarningMessage(args):
                       'if it is running in a different zone.')
 
   if continue_msg and not console_io.PromptContinue(continue_msg):
-    raise exceptions.ToolException('canceled by the user.')
+    raise exceptions.CancelledError('canceled by the user.')
 
 
 def _GetConfirmedClearedFields(args, patch_instance):
@@ -198,10 +198,7 @@ def RunBasePatchCommand(args, release_track):
     A dict object representing the operations resource describing the patch
     operation if the patch was successful.
   Raises:
-    HttpException: A http error response was received while executing api
-        request.
-    ToolException: An error other than http error occurred while executing the
-        command.
+    CancelledError: The user chose not to continue.
   """
   if args.diff and not args.IsSpecified('format'):
     args.format = 'diff(old, new)'

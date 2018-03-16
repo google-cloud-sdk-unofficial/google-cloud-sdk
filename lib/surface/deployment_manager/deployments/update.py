@@ -267,8 +267,9 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
           deployment_ref.deployment)
       if patch_request:
         if args.async:
-          log.warn('Updating Deployment metadata is synchronous, --async flag '
-                   'is ignored.')
+          log.warning(
+              'Updating Deployment metadata is synchronous, --async flag '
+              'is ignored.')
         log.status.Print('Update deployment metadata completed successfully.')
         return updated_deployment
       dm_util.PrintFingerprint(updated_deployment.fingerprint)

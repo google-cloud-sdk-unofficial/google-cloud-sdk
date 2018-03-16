@@ -45,7 +45,7 @@ class Import(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    log.warn('Importing image, this may take up to 1 hour.')
+    log.warning('Importing image, this may take up to 1 hour.')
 
     storage_client = storage_api.StorageClient()
     daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(

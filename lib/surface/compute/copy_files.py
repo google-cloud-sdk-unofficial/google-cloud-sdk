@@ -39,10 +39,9 @@ class CopyFiles(base.Command):
   def Run(self, args):
     """See scp_utils.BaseScpCommand.Run."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
 
     scp_helper = scp_utils.BaseScpHelper()
-    return scp_helper.RunScp(holder, cua_holder, args, recursive=True,
+    return scp_helper.RunScp(holder, args, recursive=True,
                              release_track=self.ReleaseTrack())
 
 

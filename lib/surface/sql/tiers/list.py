@@ -33,12 +33,6 @@ class _BaseList(object):
       unused_args: argparse.Namespace, The arguments that this command was
           invoked with.
 
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
-
     Returns:
       A dict object that has the list of tier resources if the command ran
       successfully.

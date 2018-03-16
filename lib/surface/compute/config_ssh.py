@@ -360,8 +360,9 @@ class ConfigSSH(base.Command):
             ssh_config_perms & stat.S_IRWXU == stat.S_IWUSR | stat.S_IRUSR and
             ssh_config_perms & stat.S_IWGRP == 0 and
             ssh_config_perms & stat.S_IWOTH == 0):
-          log.warn('Invalid permissions on [{0}]. Please change to match ssh '
-                   'requirements (see man 5 ssh).')
+          log.warning(
+              'Invalid permissions on [{0}]. Please change to match ssh '
+              'requirements (see man 5 ssh).')
       # TODO(b/36050483): This write will not work very well if there is
       # a lot of write contention for the SSH config file. We should
       # add a function to do a better job at "atomic file writes".
@@ -378,7 +379,7 @@ class ConfigSSH(base.Command):
           """.format(alias=_CreateAlias(instances[0]))))
 
     elif not instances and not args.remove:
-      log.warn(
+      log.warning(
           'No host aliases were added to your SSH configs because you do not '
           'have any instances. Try running this command again after creating '
           'some instances.')

@@ -78,7 +78,7 @@ class GetValue(base.Command):
         log.err.Print('(unset)')
     except properties.InvalidValueError as e:
       # Writing warning to stderr but returning invalid value as is
-      log.warn(str(e))
+      log.warning(str(e))
       value = properties.VALUES.Section(section).Property(prop).Get(
           validate=False)
     return value

@@ -47,9 +47,9 @@ class ConfigureDocker(base.Command):
   def Run(self, args):
     """Run the configure-docker command."""
     if not file_utils.SearchForExecutableOnPath('gcloud'):
-      log.warn('gcloud not in system PATH.\n'
-               'gcloud Docker Credential Helper can be configured but it '
-               'will not work until this is corrected.')
+      log.warning('gcloud not in system PATH.\n'
+                  'gcloud Docker Credential Helper can be configured but it '
+                  'will not work until this is corrected.')
 
     current_config = cred_utils.Configuration.ReadFromDisk()
 
@@ -69,9 +69,10 @@ class ConfigureDocker(base.Command):
       return
 
     if current_helpers:
-      log.warn('Your config file at [{0}] contains these credential helper '
-               'entries:\n\n{1}\nThese will be overwritten.'.format(
-                   current_config.path, json.dumps(current_helpers, indent=2)))
+      log.warning(
+          'Your config file at [{0}] contains these credential helper '
+          'entries:\n\n{1}\nThese will be overwritten.'.format(
+              current_config.path, json.dumps(current_helpers, indent=2)))
 
     console_io.PromptContinue(
         message='The following settings will be added to your Docker '

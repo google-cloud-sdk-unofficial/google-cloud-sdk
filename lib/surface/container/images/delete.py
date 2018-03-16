@@ -169,7 +169,7 @@ class Delete(base.DeleteCommand):
         digests.add(docker_obj)
       elif isinstance(docker_obj, docker_name.Tag):
         if not util.IsFullySpecified(image_name):
-          log.warn('Implicit ":latest" tag specified: ' + image_name)
+          log.warning('Implicit ":latest" tag specified: ' + image_name)
         tags.add(docker_obj)
     return [digests, tags]
 

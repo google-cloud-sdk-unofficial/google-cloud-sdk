@@ -33,7 +33,7 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.queue, args.location)
-    log.warn(constants.QUEUE_MANAGEMENT_WARNING)
+    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     console_io.PromptContinue(
         cancel_on_no=True,
         prompt_string='Are you sure you want to delete: [{}]'.format(

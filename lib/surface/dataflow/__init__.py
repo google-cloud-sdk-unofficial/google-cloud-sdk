@@ -61,5 +61,5 @@ class DataflowDeprecated(base.Group):
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()
-    log.warn('The Dataflow Alpha CLI is now deprecated and will soon be '
-             'removed. Please use the new `gcloud beta dataflow` commands.')
+    log.warning('The Dataflow Alpha CLI is now deprecated and will soon be '
+                'removed. Please use the new `gcloud beta dataflow` commands.')

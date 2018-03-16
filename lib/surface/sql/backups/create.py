@@ -54,11 +54,6 @@ class CreateBackup(base.CreateCommand):
     Returns:
       A dict object representing the operations resource describing the
       restoreBackup operation if the restoreBackup was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occurred while executing the
-          command.
     """
 
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)

@@ -151,9 +151,6 @@ class UpdateGA(base.UpdateCommand):
     if args.timeout:
       replacement.timeoutSec = args.timeout
 
-    if args.port:
-      replacement.port = args.port
-
     if args.port_name:
       replacement.portName = args.port_name
 
@@ -195,7 +192,6 @@ class UpdateGA(base.UpdateCommand):
         args.http_health_checks,
         args.https_health_checks,
         args.IsSpecified('iap'),
-        args.port,
         args.port_name,
         args.protocol,
         args.session_affinity is not None,
@@ -354,7 +350,6 @@ class UpdateAlpha(UpdateGA):
         args.IsSpecified('signed_url_cache_max_age'),
         args.http_health_checks,
         args.IsSpecified('iap'),
-        args.port,
         args.port_name,
         args.protocol,
         args.security_policy is not None,
@@ -448,7 +443,6 @@ class UpdateBeta(UpdateGA):
         args.http_health_checks,
         args.https_health_checks,
         args.IsSpecified('iap'),
-        args.port,
         args.port_name,
         args.protocol,
         args.security_policy is not None,

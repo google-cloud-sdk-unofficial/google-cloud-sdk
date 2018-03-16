@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,17 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for ml-engine models versions."""
+"""Common utilities for the Category Manager API."""
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.api_lib.category_manager import store
+from googlecloudsdk.core import resources
 
 
-# This group should remain in BETA only because all commands within it are
-# deprecated.
-@base.Deprecate(is_removed=True,
-                error=('This command group has been removed; '
-                       'please use `gcloud ml-engine versions` instead.'))
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Versions(base.Group):
-  """Cloud ML Engine Versions commands."""
-  pass
+def GetTaxonomyStoreRefFromOrgRef(org_ref):
+  """Gets a taxonomy store reference from an organization reference."""
+  return resources.REGISTRY.Parse(
+      store.GetTaxonomyStoreFromOrgRef(org_ref).name,
+      collection='categorymanager.taxonomyStores')

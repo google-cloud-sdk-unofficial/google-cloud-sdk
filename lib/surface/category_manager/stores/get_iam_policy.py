@@ -13,9 +13,9 @@
 # limitations under the License.
 """Category manager stores get-iam-policy-binding command."""
 
-from googlecloudsdk.api_lib.category_manager import store
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.category_manager import flags
+from googlecloudsdk.command_lib.category_manager import iam_lib
 
 
 @base.Hidden
@@ -26,7 +26,7 @@ class GetIamPolicy(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddStoreResourceFlags(parser)
+    flags.AddOrganizationIdArg(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -38,5 +38,5 @@ class GetIamPolicy(base.ListCommand):
     Returns:
       Status of command execution.
     """
-    store_resource_ref = flags.GetStoreResourceFromArgs(args)
-    return store.GetIamPolicy(store_resource_ref)
+    org_ref = args.CONCEPTS.organization_id.Parse()
+    return iam_lib.GetOrgIamPolicy(org_ref)

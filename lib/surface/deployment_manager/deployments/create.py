@@ -237,8 +237,8 @@ class Create(base.CreateCommand, dm_base.DmCommand):
 
   def _PerformRollback(self, deployment_name, error_message):
     # Print information about the failure.
-    log.warn('There was an error deploying '
-             + deployment_name + ':\n' + error_message)
+    log.warning('There was an error deploying '
+                + deployment_name + ':\n' + error_message)
 
     log.status.Print('`--automatic-rollback-on-error` flag was supplied; '
                      'deleting failed deployment...')

@@ -107,4 +107,4 @@ class List(base.ListCommand):
     if self._upgrade_hint:
       log.status.Print(self._upgrade_hint)
     if self._expire_warning:
-      log.warn(self._expire_warning)
+      log.warning(self._expire_warning)

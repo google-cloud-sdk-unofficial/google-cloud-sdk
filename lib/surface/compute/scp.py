@@ -86,7 +86,6 @@ class Scp(base.Command):
   def Run(self, args):
     """See scp_utils.BaseScpCommand.Run."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
 
     scp_helper = scp_utils.BaseScpHelper()
 
@@ -96,11 +95,9 @@ class Scp(base.Command):
       extra_flags.extend(args.scp_flag)
     return scp_helper.RunScp(
         holder,
-        cua_holder,
         args,
         port=args.port,
         recursive=args.recurse,
         compress=args.compress,
         extra_flags=extra_flags,
-        use_account_service=False,
         release_track=self.ReleaseTrack())

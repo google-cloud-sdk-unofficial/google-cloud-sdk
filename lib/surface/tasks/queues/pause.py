@@ -36,6 +36,6 @@ class Pause(base.Command):
   def Run(self, args):
     queues_client = queues.Queues()
     queue_ref = parsers.ParseQueue(args.queue, args.location)
-    log.warn(constants.QUEUE_MANAGEMENT_WARNING)
+    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     queues_client.Pause(queue_ref)
     log.status.Print('Paused queue [{}].'.format(queue_ref.Name()))

@@ -73,7 +73,7 @@ class GenRepoInfoFile(base.Command):
     output_file = os.path.join(output_directory, output_file)
 
     if context_util.HasPendingChanges(args.source_directory):
-      log.warn(
+      log.warning(
           'There are uncommitted changes in directory [{0}].\n'
           'The generated source context files will not reflect the current '
           'state of your source code.\n'

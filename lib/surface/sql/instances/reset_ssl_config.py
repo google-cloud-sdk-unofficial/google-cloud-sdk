@@ -52,11 +52,6 @@ class ResetSslConfig(base.Command):
     Returns:
       A dict object representing the operations resource describing the
       resetSslConfig operation if the reset was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client

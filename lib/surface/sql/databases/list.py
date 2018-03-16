@@ -53,11 +53,6 @@ class List(base.ListCommand):
     Returns:
       A dict object that has the list of database resources if the api request
       was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occurred while executing the
-          command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client

@@ -11,26 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Common utilities for the Cloud Datapol API."""
+"""Common utilities for the Category Manager API."""
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
-_CATMAN_API_NAME = 'categorymanager'
-_CATMAN_API_VERSION = 'v1alpha1'
+
+API_NAME = 'categorymanager'
+API_VERSION = 'v1alpha2'
 
 
 def GetMessagesModule():
-  return apis.GetMessagesModule(_CATMAN_API_NAME, _CATMAN_API_VERSION)
+  return apis.GetMessagesModule(API_NAME, API_VERSION)
 
 
 def GetClientInstance():
-  return apis.GetClientInstance(_CATMAN_API_NAME, _CATMAN_API_VERSION)
+  return apis.GetClientInstance(API_NAME, API_VERSION)
 
 
-def GetProjectRef():
-  """Gets the Id of the current project."""
+def GetProjectResource():
+  """Gets the full resource path of the current project."""
   return resources.REGISTRY.Create(
       'cloudresourcemanager.projects',
-      projectId=properties.VALUES.core.project.GetOrFail)
+      projectId=properties.VALUES.core.project.GetOrFail())

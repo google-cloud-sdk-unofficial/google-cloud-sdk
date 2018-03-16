@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List pending Cloud Datastore admin operations and their status.
 

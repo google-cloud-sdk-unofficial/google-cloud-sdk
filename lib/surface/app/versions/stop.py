@@ -83,7 +83,7 @@ class Stop(base.Command):
       resource_printer.Print(versions, fmt, out=log.status)
       console_io.PromptContinue(cancel_on_no=True)
     else:
-      log.warn('No matching versions found.')
+      log.warning('No matching versions found.')
 
     errors = []
     for version in sorted(versions):

@@ -124,7 +124,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
   flags.AddBasicAuthFlags(mutex_group, None, None)
 
 
-def _AddAdditionalZonesArg(mutex_group, deprecated=False):
+def _AddAdditionalZonesArg(mutex_group, deprecated=True):
   action = None
   if deprecated:
     action = actions.DeprecationAction(
@@ -364,7 +364,7 @@ class UpdateBeta(Update):
     flags.AddNetworkPolicyFlags(group)
     flags.AddLoggingServiceFlag(group)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddPodSecurityPolicyFlag(group, hidden=True)
+    flags.AddPodSecurityPolicyFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -395,7 +395,7 @@ class UpdateAlpha(Update):
     flags.AddLoggingServiceFlag(group)
     flags.AddAutoprovisioningFlags(group, hidden=False)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddPodSecurityPolicyFlag(group, hidden=True)
+    flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):

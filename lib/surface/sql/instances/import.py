@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib import deprecation_utils
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -29,6 +30,8 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@deprecation_utils.DeprecateCommandAtVersion(
+    remove_version='205.0.0', remove=False, alt_command='gcloud sql import sql')
 class Import(base.Command):
   """Imports data into a Cloud SQL instance from Google Cloud Storage.
 
@@ -82,11 +85,6 @@ class Import(base.Command):
     Returns:
       A dict object representing the operations resource describing the import
       operation if the import was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occured while executing the
-          command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client

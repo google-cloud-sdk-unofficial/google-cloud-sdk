@@ -115,7 +115,7 @@ class Docker(base.Command):
     force_refresh = True
     for server in args.server:
       if server not in _DEFAULT_REGISTRIES:
-        log.warn('Authenticating to a non-default server: {server}.'.format(
+        log.warning('Authenticating to a non-default server: {server}.'.format(
             server=server))
       docker.UpdateDockerCredentials(server, refresh=force_refresh)
       # Only force a refresh for the first server we authorize

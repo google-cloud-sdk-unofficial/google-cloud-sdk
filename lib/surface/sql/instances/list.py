@@ -53,11 +53,6 @@ class List(base.ListCommand):
 
     Returns:
       SQL instance resource iterator.
-    Raises:
-      HttpException: An http error response was received while executing api
-          request.
-      ToolException: An error other than an http error occurred while executing
-          the command.
     """
     return instances.InstancesV1Beta4.GetDatabaseInstances(
         limit=args.limit, batch_size=args.page_size)

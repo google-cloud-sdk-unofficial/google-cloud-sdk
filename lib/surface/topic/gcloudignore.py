@@ -34,6 +34,7 @@ class GcloudignoreHelp(base.TopicCommand):
 
   * `gcloud beta functions deploy`
   * `gcloud container builds submit`
+  * `gcloud beta debug source upload`
 
   To globally disable `.gcloudignore` parsing (including default file-ignore
   behavior), run:

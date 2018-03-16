@@ -80,14 +80,14 @@ class GenRepoInfoFile(base.Command):
             'includes a directory path.'))
 
   def Run(self, args):
-    log.warn('This command is deprecated. Please use '
-             '`gcloud beta source debug gen-repo-info-file` instead.')
+    log.warning('This command is deprecated. Please use '
+                '`gcloud beta source debug gen-repo-info-file` instead.')
     contexts = context_util.CalculateExtendedSourceContexts(
         args.source_directory)
 
     # First create the old-style source-context.json file
     if args.output_file:
-      log.warn(
+      log.warning(
           'The --output-file option is deprecated and will soon be removed.')
       output_directory = os.path.dirname(args.output_file)
       output_file = args.output_file

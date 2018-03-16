@@ -92,5 +92,5 @@ class GetCredentials(base.Command):
           'get-credentials requires edit permission on {0}'.format(
               cluster_ref.projectId))
     if not adapter.IsRunning(cluster):
-      log.warn(NOT_RUNNING_MSG.format(cluster_ref.clusterId))
+      log.warning(NOT_RUNNING_MSG.format(cluster_ref.clusterId))
     util.ClusterConfig.Persist(cluster, cluster_ref.projectId)

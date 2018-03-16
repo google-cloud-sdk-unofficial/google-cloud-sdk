@@ -44,7 +44,7 @@ class UpdatePull(base.UpdateCommand):
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.PULL_QUEUE, queues_client.api.messages, is_update=True)
-    log.warn(constants.QUEUE_MANAGEMENT_WARNING)
+    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
         queue_ref, retry_config=queue_config.retryConfig)
     log.status.Print('Updated queue [{}].'.format(queue_ref.Name()))

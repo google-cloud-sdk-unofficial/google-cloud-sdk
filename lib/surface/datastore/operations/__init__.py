@@ -16,7 +16,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Operations(base.Group):
   """Manage Long Running Operations for Cloud Datastore."""
   pass

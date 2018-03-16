@@ -24,12 +24,15 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib import deprecation_utils
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@deprecation_utils.DeprecateCommandAtVersion(
+    remove_version='205.0.0', remove=False, alt_command='gcloud sql export sql')
 class Export(base.Command):
   """Exports data from a Cloud SQL instance.
 
@@ -85,11 +88,6 @@ class Export(base.Command):
     Returns:
       A dict object representing the operations resource describing the export
       operation if the export was successful.
-    Raises:
-      HttpException: A http error response was received while executing api
-          request.
-      ToolException: An error other than http error occurred while executing the
-          command.
     """
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
