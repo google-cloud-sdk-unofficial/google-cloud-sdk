@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""shell completion."""
+"""The gcloud interactive shell completion."""
 
 from __future__ import unicode_literals
 
 import time
 
 from googlecloudsdk.calliope import parser_completer
+from googlecloudsdk.command_lib.interactive import parser
 from googlecloudsdk.command_lib.meta import generate_cli_trees
-from googlecloudsdk.command_lib.shell import parser
 from googlecloudsdk.core import module_util
 from prompt_toolkit import completion
 from prompt_toolkit import document
@@ -72,17 +72,17 @@ class CompleterCache(object):
     self.timeout = CompleterCache._TIMEOUT
 
 
-class ShellCliCompleter(completion.Completer):
-  """A prompt_toolkit shell CLI completer."""
+class InteractiveCliCompleter(completion.Completer):
+  """A prompt_toolkit interactive CLI completer."""
 
-  def __init__(self, shell_parser, args=None, hidden=False,
+  def __init__(self, interactive_parser, args=None, hidden=False,
                manpage_generator=True, cosh=None):
     self.parsed_args = args
     self.hidden = hidden
     self.coshell = cosh
     self.completer_cache = {}
     self.manpage_generator = manpage_generator
-    self.parser = shell_parser
+    self.parser = interactive_parser
     self.path_completer = completers.PathCompleter(expanduser=True)
     self.empty = False
     generate_cli_trees.CliTreeGenerator.MemoizeFailures(True)
@@ -96,7 +96,8 @@ class ShellCliCompleter(completion.Completer):
     """Yields the completions for doc.
 
     Args:
-      doc: A Document instance containing the shell command line to complete.
+      doc: A Document instance containing the interactive command line to
+           complete.
       event: The CompleteEvent that triggered this completion.
 
     Yields:
@@ -112,7 +113,7 @@ class ShellCliCompleter(completion.Completer):
         self.CommandCompleter,
         self.FlagCompleter,
         self.PositionalCompleter,
-        self.ShellCompleter,
+        self.InteractiveCompleter,
     ):
       choices, offset = completer(args)
       if choices is not None:
@@ -274,8 +275,8 @@ class ShellCliCompleter(completion.Completer):
 
     return None, 0
 
-  def ShellCompleter(self, args):
-    """Returns the shell completion choices for args or None.
+  def InteractiveCompleter(self, args):
+    """Returns the interactive completion choices for args or None.
 
     Args:
       args: The CLI tree parsed command args.

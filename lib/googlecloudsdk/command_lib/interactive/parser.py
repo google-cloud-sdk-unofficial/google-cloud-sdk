@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import enum
 
 from googlecloudsdk.calliope import cli_tree
-from googlecloudsdk.command_lib.shell import lexer
+from googlecloudsdk.command_lib.interactive import lexer
 
 
 LOOKUP_COMMANDS = cli_tree.LOOKUP_COMMANDS

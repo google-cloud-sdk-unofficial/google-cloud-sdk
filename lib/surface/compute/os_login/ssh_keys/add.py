@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.oslogin import oslogin_utils
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Add(base.Command):
   """SSH into a virtual machine instance."""
 

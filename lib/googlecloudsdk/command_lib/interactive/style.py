@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""gcloud shell static styles."""
+"""gcloud interactive static styles."""
 
 from prompt_toolkit import styles
 from prompt_toolkit import token

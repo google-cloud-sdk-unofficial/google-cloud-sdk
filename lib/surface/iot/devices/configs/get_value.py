@@ -16,7 +16,6 @@ from googlecloudsdk.api_lib.cloudiot import devices
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.command_lib.iot import util
-from googlecloudsdk.core import log
 
 
 class GetValue(base.Command):
@@ -24,7 +23,7 @@ class GetValue(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('none')
+    parser.display_info.AddFormat('get[terminator=""](.)')
     resource_args.AddDeviceResourceArg(
         parser,
         'for the configuration to get the value of',
@@ -43,6 +42,4 @@ class GetValue(base.Command):
       raise util.BadDeviceError(
           'Device [{}] is missing configuration data.'.format(
               device_ref.Name()))
-    # Don't use --format=value(.) because we don't want the \n at the end.
-    log.out.write(data)
     return data

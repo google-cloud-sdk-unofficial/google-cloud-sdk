@@ -30,6 +30,7 @@ from containerregistry.client.v2_2 import docker_session
 from containerregistry.client.v2_2 import oci_compat
 from containerregistry.tools import logging_setup
 from containerregistry.tools import patched
+from containerregistry.transport import retry
 from containerregistry.transport import transport_pool
 
 import httplib2
@@ -121,7 +122,9 @@ def main():
   if len(args.digest or []) != len(args.layer or []):
     raise Exception('--digest and --layer must have matching lengths.')
 
-  transport = transport_pool.Http(httplib2.Http, size=_THREADS)
+  retry_factory = retry.Factory()
+  retry_factory = retry_factory.WithSourceTransportCallable(httplib2.Http)
+  transport = transport_pool.Http(retry_factory.Build, size=_THREADS)
 
   # Resolve the appropriate credential to use based on the standard Docker
   # client logic.

@@ -43,6 +43,7 @@ from prediction_lib import SessionClient
 from prediction_lib import SklearnModel
 from prediction_lib import Stats
 from prediction_lib import TENSORFLOW_FRAMEWORK_NAME
+from prediction_lib import TensorFlowClient
 from prediction_lib import TensorFlowModel
 from prediction_lib import Timer
 from prediction_lib import XGBOOST_FRAMEWORK_NAME

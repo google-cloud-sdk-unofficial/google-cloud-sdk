@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.SilentCommand):
   """Update a target SSL proxy.
 
@@ -155,8 +155,8 @@ class UpdateGA(base.SilentCommand):
     return self._SendRequests(args, ssl_certificate_refs)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateGA):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(UpdateGA):
   """Update a target SSL proxy.
 
   *{command}* is used to replace the SSL certificate, backend service, proxy
@@ -172,7 +172,7 @@ class UpdateAlpha(UpdateGA):
 
   @classmethod
   def Args(cls, parser):
-    super(UpdateAlpha, cls).Args(parser)
+    super(UpdateAlphaBeta, cls).Args(parser)
     group = parser.add_mutually_exclusive_group()
     cls.SSL_POLICY_ARG = (
         ssl_policies_flags.GetSslPolicyArgumentForOtherResource(

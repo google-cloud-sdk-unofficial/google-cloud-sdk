@@ -46,12 +46,6 @@ class InvalidPasswordError(util.Error):
     super(InvalidPasswordError, self).__init__(message)
 
 
-def _ValidatePassword(val):
-  if len(val) < 16:
-    raise InvalidPasswordError(val, 'Password must be at least length 16')
-  return
-
-
 def _ParseAddonDisabled(val):
   if val == 'ENABLED':
     return False
@@ -248,7 +242,6 @@ class Update(base.UpdateCommand):
         password = args.password
         if args.password is None:
           password = raw_input('Please enter the new password:')
-        _ValidatePassword(password)
         options = api_adapter.SetMasterAuthOptions(
             action=api_adapter.SetMasterAuthOptions.SET_PASSWORD,
             password=password)
@@ -341,6 +334,9 @@ class Update(base.UpdateCommand):
                                'Updating {0}'.format(cluster_ref.clusterId))
 
       log.UpdatedResource(cluster_ref)
+      cluster_url = util.GenerateClusterUrl(cluster_ref)
+      log.status.Print(
+          'To inspect the contents of your cluster, go to: ' + cluster_url)
 
       if args.start_ip_rotation or args.complete_ip_rotation:
         cluster = adapter.GetCluster(cluster_ref)

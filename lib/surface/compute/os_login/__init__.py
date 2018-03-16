@@ -27,7 +27,6 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Oslogin(base.Group):
   """Create and manipulate Google Compute Engine OS Login resources."""
   detailed_help = DETAILED_HELP

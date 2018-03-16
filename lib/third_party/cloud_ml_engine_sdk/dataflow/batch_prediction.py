@@ -33,7 +33,6 @@ from google.cloud.ml import prediction as mlprediction
 from google.cloud.ml.dataflow import _aggregators as aggregators
 from google.cloud.ml.dataflow import _cloud_logging_client as cloud_logging_client
 from google.cloud.ml.dataflow import _error_filter as error_filter
-from tensorflow.python.saved_model import signature_constants
 from tensorflow.python.saved_model import tag_constants
 
 DEFAULT_BATCH_SIZE = 1000  # 1K instances per batch when evaluating models.
@@ -123,8 +122,7 @@ class PredictionDoFn(beam.DoFn):
                user_project_id="",
                user_job_id="",
                tags=tag_constants.SERVING,
-               signature_name=(
-                   signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY),
+               signature_name="",
                skip_preprocessing=False,
                target="",
                config=None,
@@ -226,25 +224,23 @@ class PredictionDoFn(beam.DoFn):
       start = datetime.datetime.now()
       # Try to load it.
       if framework == mlprediction.TENSORFLOW_FRAMEWORK_NAME:
-        if self._signature_name in self._model_state.model.signature_map:
-          # Even though predict() checks the signature in TensorFlowModel,
-          # we need to duplicate this check here to determine the single string
-          # input case.
-          signature = self._model_state.model.signature_map[
-              self._signature_name]
-          if self._model_state.model.is_single_string_input(signature):
-            loaded_data = element
-          else:
-            loaded_data = [json.loads(d) for d in element]
+        # Even though predict() checks the signature in TensorFlowModel,
+        # we need to duplicate this check here to determine the single string
+        # input case.
+        signature = self._model_state.model.get_signature(self._signature_name)
+        if self._model_state.model.is_single_string_input(signature):
+          loaded_data = element
         else:
-          raise mlprediction.PredictionError(
-              mlprediction.PredictionError.INVALID_INPUTS,
-              "No signature found for signature key %s." % self._signature_name)
+          loaded_data = [json.loads(d) for d in element]
       else:
         loaded_data = [json.loads(d) for d in element]
       instances = mlprediction.decode_base64(loaded_data)
-      inputs, predictions = self._model_state.model.predict(
-          instances, signature_name=self._signature_name)
+      # Actual prediction occurs.
+      kwargs = {}
+      if self._signature_name:
+        kwargs = {"signature_name": self._signature_name}
+      inputs, predictions = self._model_state.model.predict(instances, **kwargs)
+
       predictions = list(predictions)
       if self._aggregator_dict:
         aggr = self._aggregator_dict.get(
@@ -302,8 +298,7 @@ class BatchPredict(beam.PTransform):
   def __init__(self,
                model_dir,
                tags=tag_constants.SERVING,
-               signature_name=(
-                   signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY),
+               signature_name="",
                batch_size=DEFAULT_BATCH_SIZE,
                aggregator_dict=None,
                user_project_id="",

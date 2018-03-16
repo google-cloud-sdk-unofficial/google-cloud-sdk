@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.oslogin import oslogin_utils
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.Command):
   """Describe an SSH Public Key from an OS Login Profile."""
 

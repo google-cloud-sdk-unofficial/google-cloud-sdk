@@ -51,7 +51,7 @@ class Init(base.Command):
   reinitialize gcloud configurations. More information can be found by
   running `gcloud topic configurations`.
 
-  Properties set by {command} are local and persistend, and are not affected by
+  Properties set by {command} are local and persistent, and are not affected by
   remote changes to the project. For example, the default Compute Engine zone in
   your configuration remains stable, even if you or another user changes the
   project-level default zone in the Cloud Platform Console.

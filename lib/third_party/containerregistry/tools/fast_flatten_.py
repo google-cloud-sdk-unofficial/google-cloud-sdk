@@ -26,16 +26,7 @@ parser = argparse.ArgumentParser(description='Flatten container images.')
 
 # The name of this flag was chosen for compatibility with docker_pusher.py
 parser.add_argument('--tarball', action='store',
-                    help='An optional legacy base image tarball.')
-
-parser.add_argument('--config', action='store',
-                    help='The path to the file storing the image config.')
-
-parser.add_argument('--digest', action='append',
-                    help='The list of layer digest filenames in order.')
-
-parser.add_argument('--layer', action='append',
-                    help='The list of layer filenames in order.')
+                    help='The image path in "docker save" tarball format.')
 
 # Output arguments.
 parser.add_argument('--filesystem', action='store',
@@ -45,44 +36,18 @@ parser.add_argument('--metadata', action='store',
                     help=('The name of where to write the container '
                           'startup metadata.'))
 
-_THREADS = 8
-
 
 def main():
   logging_setup.DefineCommandLineArgs(parser)
   args = parser.parse_args()
   logging_setup.Init(args=args)
 
-  if not args.config and (args.layer or args.digest):
+  if not args.filesystem or not args.metadata or not args.tarball:
     raise Exception(
-        'Using --layer or --digest requires --config to be specified.')
+        '--filesystem, --tarball and --metadata are required flags.')
 
-  if not args.filesystem or not args.metadata:
-    raise Exception(
-        '--filesystem and --metadata are required flags.')
-
-  if not args.config and not args.tarball:
-    raise Exception('Either --config or --tarball must be specified.')
-
-  # If config is specified, use that.  Otherwise, fall back on reading
-  # the config from the tarball.
-  if args.config:
-    logging.info('Reading config from %r', args.config)
-    with open(args.config, 'r') as reader:
-      config = reader.read()
-  elif args.tarball:
-    logging.info('Reading config from tarball %r', args.tarball)
-    with v2_2_image.FromTarball(args.tarball) as base:
-      config = base.config_file()
-  else:
-    config = args.config
-
-  if len(args.digest or []) != len(args.layer or []):
-    raise Exception('--digest and --layer must have matching lengths.')
-
-  logging.info('Loading v2.2 image from disk ...')
-  with v2_2_image.FromDisk(config, zip(args.digest or [], args.layer or []),
-                           legacy_base=args.tarball) as v2_2_img:
+  logging.info('Loading v2.2 image from tarball ...')
+  with v2_2_image.FromTarball(args.tarball) as v2_2_img:
     with tarfile.open(args.filesystem, 'w') as tar:
       v2_2_image.extract(v2_2_img, tar)
 

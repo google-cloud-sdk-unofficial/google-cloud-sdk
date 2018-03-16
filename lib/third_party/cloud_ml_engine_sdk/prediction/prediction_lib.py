@@ -496,29 +496,48 @@ def _update_dtypes(graph, interface):
 
 
 # (TODO:b/68775232): Move this to a Tensorflow specific library.
-class SessionClient(object):
+class TensorFlowClient(PredictionClient):
   """A client for Prediction that uses Session.run."""
 
-  def __init__(self, session, signature_map):
-    self._session = session
+  def __init__(self, signature_map, *args, **kwargs):
     self._signature_map = signature_map
-
-    # TensorFlow requires a list of tensor names for the fetches. To avoid
-    # regenerating the list every prediction, we cache the list of output
-    # tensor names.
-    self._output_tensors_map = {
-        signature_name:
-        [v.name for v in signature_map[signature_name].outputs.values()]
-        for signature_name in signature_map}
+    super(TensorFlowClient, self).__init__(*args, **kwargs)
 
   @property
   def signature_map(self):
     return self._signature_map
 
+  def get_signature(self, signature_name=None):
+    """Gets tensorflow signature for the given signature_name."""
+    # The way to find signature is:
+    # 1) if signature_name is specified, try to find it in the signature_map. If
+    # not found, raise an exception.
+    # 2) if signature_name is not specified, check if signature_map only
+    # contains one entry. If so, return the only signature.
+    # 3) Otherwise, use the default signature_name and do 1).
+    if not signature_name and len(self.signature_map) == 1:
+      return self.signature_map.values()[0]
+
+    key = (signature_name or
+           signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY)
+    if key in self.signature_map:
+      return self.signature_map[key]
+    else:
+      raise PredictionError(
+          PredictionError.INVALID_INPUTS,
+          "No signature found for signature key %s." % signature_name)
+
+
+# (TODO:b/68775232): Move this to a Tensorflow specific library.
+class SessionClient(TensorFlowClient):
+  """A client for Prediction that uses Session.run."""
+
+  def __init__(self, session, signature_map):
+    self._session = session
+    super(SessionClient, self).__init__(signature_map)
+
   def predict(self, inputs, stats=None,
-              signature_name=(signature_constants.
-                              DEFAULT_SERVING_SIGNATURE_DEF_KEY),
-              **unused_kwargs):
+              signature_name=None, **unused_kwargs):
     """Produces predictions for the given inputs.
 
     Args:
@@ -536,8 +555,9 @@ class SessionClient(object):
     stats[FRAMEWORK] = TENSORFLOW_FRAMEWORK_NAME
 
     with stats.time(UNALIAS_TIME):
+      signature = self.get_signature(signature_name)
+      fetches = [output.name for output in signature.outputs.values()]
       try:
-        signature = self._signature_map[signature_name]
         unaliased = {signature.inputs[key].name: val
                      for key, val in inputs.iteritems()}
       except Exception as e:
@@ -548,9 +568,7 @@ class SessionClient(object):
       try:
         # TODO(b/33849399): measure the actual session.run() time, even in the
         # case of ModelServer.
-        outputs = self._session.run(
-            fetches=self._output_tensors_map[signature_name],
-            feed_dict=unaliased)
+        outputs = self._session.run(fetches=fetches, feed_dict=unaliased)
       except Exception as e:
         logging.error("Exception during running the graph: " + str(e))
         raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
@@ -715,26 +733,12 @@ class TensorFlowModel(BaseModel):
       client: An instance of ModelServerClient or SessionClient.
     """
     super(TensorFlowModel, self).__init__(client)
-    self._default_signature_key = self._get_default_signature()
     self._preprocess_fn = None
     self._postprocess_fn = None
     processor_cls = _new_processor_class()
     if processor_cls:
       self._preprocess_fn = getattr(processor_cls, PREPROCESS_KEY, None)
       self._postprocess_fn = getattr(processor_cls, POSTPROCESS_KEY, None)
-
-  def _get_default_signature(self):
-    """If the graph contains only single signature, returns the key of that.
-
-    Otherwise, returns signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY.
-
-    Returns:
-      The default signature key.
-    """
-    if len(self._client.signature_map) == 1:
-      return self._client.signature_map.keys()[0]
-    else:
-      return signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY
 
   def _get_columns(self, instances, stats, signature):
     """Columnarize the instances, appending input_name, if necessary.
@@ -786,11 +790,11 @@ class TensorFlowModel(BaseModel):
       return dtype == dtypes.string.as_datatype_enum
     return False
 
-  def preprocess(self, instances, stats=None,
-                 **kwargs):
-    # We already validate that kwargs has SIGNATURE_KEY.
-    signature_name = kwargs[SIGNATURE_KEY]
-    signature = self._client.signature_map[signature_name]
+  def get_signature(self, signature_name=None):
+    return self._client.get_signature(signature_name)
+
+  def preprocess(self, instances, stats=None, signature_name=None, **kwargs):
+    signature = self.get_signature(signature_name)
     preprocessed = self._canonicalize_input(instances, signature)
     if self._preprocess_fn:
       try:
@@ -811,7 +815,7 @@ class TensorFlowModel(BaseModel):
     return canonicalize_single_tensor_input(instances, tensor_name)
 
   def postprocess(self, predicted_output, original_input=None, stats=None,
-                  **kwargs):
+                  signature_name=None, **kwargs):
     """Performs the necessary transformations on the prediction results.
 
     The transformations include rowifying the predicted results, and also
@@ -823,14 +827,13 @@ class TensorFlowModel(BaseModel):
         preprocessed instances.
       original_input: List of instances, before any pre-processing was applied.
       stats: Stats object for recording timing information.
+      signature_name: the signature name to find out the signature.
       **kwargs: Additional keyword arguments for postprocessing
 
     Returns:
       A list which is a dict mapping output alias to the output.
     """
-    # We already validate that kwargs has SIGNATURE_KEY.
-    signature_name = kwargs[SIGNATURE_KEY]
-    signature = self._client.signature_map[signature_name]
+    signature = self.get_signature(signature_name)
     with stats.time(ROWIFY_TIME):
       # When returned element only contains one result (batch size == 1),
       # tensorflow's session.run() will return a scalar directly instead of a
@@ -892,23 +895,6 @@ class TensorFlowModel(BaseModel):
   @property
   def signature_map(self):
     return self._client.signature_map
-
-  def _validate_kwargs(self, kwargs):
-    """Validates and sets defaults for extra client keyword arguments.
-
-    Args:
-      kwargs: Dictionary of keyword args to check. Will guarantee valid:
-        "signature_name": selects TF signature for inputs/outputs
-
-    Raises:
-      PredictionError: if any keyword args are invalid
-    """
-    if SIGNATURE_KEY not in kwargs or kwargs[SIGNATURE_KEY] is None:
-      kwargs[SIGNATURE_KEY] = self._default_signature_key
-    if kwargs[SIGNATURE_KEY] not in self._client.signature_map:
-      raise PredictionError(
-          PredictionError.INVALID_INPUTS,
-          "No signature found for signature key %s." % kwargs[SIGNATURE_KEY])
 
 
 # This class is specific to Scikit-learn, and should be moved to a separate

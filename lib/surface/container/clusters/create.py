@@ -237,8 +237,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(parser)
     _AddAdditionalZonesFlag(parser)
-    flags.AddAddonsFlags(
-        parser, hide_addons_flag=True, deprecate_disable_addons_flag=False)
+    flags.AddAddonsFlags(parser, add_disable_addons_flag=True)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddEnableAutoRepairFlag(parser, suppressed=True)
     flags.AddEnableKubernetesAlphaFlag(parser, suppressed=True)
@@ -322,6 +321,9 @@ class Create(base.CreateCommand):
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
     log.CreatedResource(cluster_ref)
+    cluster_url = util.GenerateClusterUrl(cluster_ref)
+    log.status.Print(
+        'To inspect the contents of your cluster, go to: ' + cluster_url)
     if operation.detail:
       # Non-empty detail on a DONE create operation should be surfaced as
       # a warning to end user.

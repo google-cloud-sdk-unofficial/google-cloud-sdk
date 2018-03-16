@@ -18,6 +18,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
+from googlecloudsdk.api_lib.deployment_manager import exceptions as dm_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
@@ -67,7 +68,8 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
       HttpException: An http error response was received while executing api
           request.
     """
-    if not args.manifest:
+    manifest = args.manifest
+    if not manifest:
       try:
         deployment = self.client.deployments.Get(
             self.messages.DeploymentmanagerDeploymentsGetRequest(
@@ -79,15 +81,17 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
         raise exceptions.HttpException(error)
 
       manifest = dm_api_util.ExtractManifestName(deployment)
-      if manifest:
-        args.manifest = manifest
+      if not manifest:
+        raise dm_exceptions.ManifestError(
+            'The deployment [%s] does not have a current manifest. '
+            'Please specify the manifest name.' % args.deployment)
 
     try:
       return self.client.manifests.Get(
           self.messages.DeploymentmanagerManifestsGetRequest(
               project=dm_base.GetProject(),
               deployment=args.deployment,
-              manifest=args.manifest,
+              manifest=manifest,
           )
       )
     except apitools_exceptions.HttpError as error:

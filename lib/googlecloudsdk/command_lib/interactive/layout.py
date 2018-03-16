@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""gcloud shell layout.
+"""gcloud interactive layout.
 
   This is the prompt toolkit layout for the shell prompt. It determines the
   positioning and layout of the prompt, toolbars, autocomplete, etc.
 """
 
-from googlecloudsdk.command_lib.shell import help_window
+from googlecloudsdk.command_lib.interactive import help_window
 from prompt_toolkit import enums
 from prompt_toolkit import filters
 from prompt_toolkit import layout

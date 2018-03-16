@@ -17,7 +17,7 @@
 import StringIO
 
 from googlecloudsdk.calliope import cli_tree_markdown as markdown
-from googlecloudsdk.command_lib.shell import parser
+from googlecloudsdk.command_lib.interactive import parser
 from googlecloudsdk.core.document_renderers import render_document
 from googlecloudsdk.core.document_renderers import token_renderer
 from prompt_toolkit.layout import controls

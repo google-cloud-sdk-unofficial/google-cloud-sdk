@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.compute.ssl_policies import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Google Compute Engine SSL policies."""
 

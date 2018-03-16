@@ -76,6 +76,9 @@ class PredictionClient(object):
   Session.run's feed_dict parameter. The return value is the same format.
   """
 
+  def __init__(self, *args, **kwargs):
+    pass
+
   def predict(self, inputs, **kwargs):
     """Produces predictions for the given inputs.
 

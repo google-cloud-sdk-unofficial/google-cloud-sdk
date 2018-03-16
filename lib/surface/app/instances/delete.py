@@ -61,3 +61,4 @@ class Delete(base.DeleteCommand):
         },
         collection='appengine.apps.services.versions.instances')
     client.DeleteInstance(res)
+    log.DeletedResource(res)

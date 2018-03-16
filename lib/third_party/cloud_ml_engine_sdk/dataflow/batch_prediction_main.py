@@ -72,7 +72,6 @@ try:
 except ImportError:
   from apache_beam.utils.options import PipelineOptions
 
-from tensorflow.python.saved_model import signature_constants
 from tensorflow.python.saved_model import tag_constants
 from google.cloud.ml import prediction as mlprediction
 from google.cloud.ml.dataflow import _aggregators as aggregators
@@ -136,7 +135,7 @@ class BatchPredictionOptions(PipelineOptions):
     parser.add_value_provider_argument(
         "--signature_name",
         dest="signature_name",
-        default=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY,
+        default=None,
         help="The key of the signature map for serving signature.")
 
     parser.add_value_provider_argument(

@@ -19,10 +19,10 @@ from __future__ import unicode_literals
 import StringIO
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.interactive import application
+from googlecloudsdk.command_lib.interactive import bindings
+from googlecloudsdk.command_lib.interactive import config as configuration
 from googlecloudsdk.command_lib.meta import generate_cli_trees
-from googlecloudsdk.command_lib.shell import application
-from googlecloudsdk.command_lib.shell import bindings
-from googlecloudsdk.command_lib.shell import config as configuration
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.document_renderers import render_document
 

@@ -25,7 +25,6 @@ from googlecloudsdk.third_party.appengine.tools import context_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class Upload(base.CreateCommand):
   """Upload a directory tree.
 

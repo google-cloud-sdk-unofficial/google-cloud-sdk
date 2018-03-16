@@ -16,6 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SslPolicies(base.Group):
   """List, create, delete and update Google Compute Engine SSL policies."""

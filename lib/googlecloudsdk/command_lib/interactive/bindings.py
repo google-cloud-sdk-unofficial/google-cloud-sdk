@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The gcloud shell key bindings."""
+"""The gcloud interactive key bindings."""
 
 from __future__ import unicode_literals
 
 import re
 import sys
 
-from googlecloudsdk.command_lib.shell import browser
+from googlecloudsdk.command_lib.interactive import browser
 from prompt_toolkit import enums
 from prompt_toolkit import keys
 from prompt_toolkit.key_binding import manager

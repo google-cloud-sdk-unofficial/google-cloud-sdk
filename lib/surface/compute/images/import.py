@@ -13,10 +13,15 @@
 # limitations under the License.
 """Import image command."""
 
+import os.path
+import uuid
+
 from googlecloudsdk.api_lib.compute import daisy_utils
+from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 _WORKFLOW = '../workflows/image_import/import_image.wf.json'
 
@@ -40,11 +45,29 @@ class Import(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    variables = """source_disk_file={0},disk_size=50g,image_name={1}""".format(
-        args.source_uri, args.image_name)
-
     log.warn('Importing image, this may take up to 1 hour.')
-    return daisy_utils.RunDaisyBuild(args, _WORKFLOW, variables)
+
+    storage_client = storage_api.StorageClient()
+    daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(
+        storage_client=storage_client)
+
+    # Copy image from source-uri to daisy scratch bucket
+    image_file = os.path.basename(args.source_uri)
+    dest_name = '{0}-{1}'.format(uuid.uuid4(), image_file)
+    dest_path = 'gs://{0}/tmpimage/{1}'.format(daisy_bucket, dest_name)
+    src_object = resources.REGISTRY.Parse(args.source_uri,
+                                          collection='storage.objects')
+    dest_object = resources.REGISTRY.Parse(dest_path,
+                                           collection='storage.objects')
+    log.status.write('\nCopying [{0}] to [{1}]\n'
+                     .format(args.source_uri, dest_path))
+    storage_client.Rewrite(src_object, dest_object)
+
+    variables = """source_disk_file={0},disk_size=50g,image_name={1}""".format(
+        dest_path, args.image_name)
+
+    return daisy_utils.RunDaisyBuild(args, _WORKFLOW, variables,
+                                     daisy_bucket=daisy_bucket)
 
 Import.detailed_help = {
     'brief': 'Import a Google Compute Engine image',

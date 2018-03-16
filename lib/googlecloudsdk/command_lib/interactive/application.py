@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The gcloud interactive shell application."""
+"""The gcloud interactive application."""
 
 from __future__ import unicode_literals
 
@@ -21,14 +21,14 @@ import sys
 
 from googlecloudsdk.calliope import cli_tree
 
-from googlecloudsdk.command_lib.meta import generate_cli_trees
+from googlecloudsdk.command_lib.interactive import bindings
+from googlecloudsdk.command_lib.interactive import completer
+from googlecloudsdk.command_lib.interactive import coshell
+from googlecloudsdk.command_lib.interactive import layout
+from googlecloudsdk.command_lib.interactive import parser
+from googlecloudsdk.command_lib.interactive import style as interactive_style
 
-from googlecloudsdk.command_lib.shell import bindings
-from googlecloudsdk.command_lib.shell import completer
-from googlecloudsdk.command_lib.shell import coshell
-from googlecloudsdk.command_lib.shell import layout
-from googlecloudsdk.command_lib.shell import parser
-from googlecloudsdk.command_lib.shell import style as shell_style
+from googlecloudsdk.command_lib.meta import generate_cli_trees
 
 from googlecloudsdk.core import config as core_config
 from googlecloudsdk.core import properties
@@ -54,7 +54,7 @@ class CLI(interface.CommandLineInterface):
       positionals and help doc snippets.
   """
 
-  def __init__(self, config=None, cosh=None, root=None, shell_parser=None,
+  def __init__(self, config=None, cosh=None, root=None, interactive_parser=None,
                application=None, eventloop=None, output=None):
     super(CLI, self).__init__(
         application=application,
@@ -62,7 +62,7 @@ class CLI(interface.CommandLineInterface):
         output=output)
     self.config = config
     self.coshell = cosh
-    self.parser = shell_parser
+    self.parser = interactive_parser
     self.root = root
 
   def Run(self, text, alternate_screen=False):
@@ -186,12 +186,12 @@ class Application(object):
     )
 
     # Create the parser and completer.
-    shell_parser = parser.Parser(
+    interactive_parser = parser.Parser(
         self.root,
         context=config.context,
         hidden=config.hidden)
-    shell_completer = completer.ShellCliCompleter(
-        shell_parser=shell_parser,
+    interactive_completer = completer.InteractiveCliCompleter(
+        interactive_parser=interactive_parser,
         args=args,
         cosh=self.coshell,
         hidden=config.hidden,
@@ -215,7 +215,7 @@ class Application(object):
         is_multiline=multiline,
         history=pt_history.FileHistory(history_file),
         validator=None,
-        completer=shell_completer,
+        completer=interactive_completer,
         auto_suggest=(auto_suggest.AutoSuggestFromHistory()
                       if config.suggest else None),
         accept_action=pt_buffer.AcceptAction.RETURN_DOCUMENT,
@@ -226,7 +226,7 @@ class Application(object):
         config=config,
         cosh=cosh,
         root=self.root,
-        shell_parser=shell_parser,
+        interactive_parser=interactive_parser,
         application=self._CreatePromptApplication(config=config,
                                                   multiline=multiline),
         eventloop=shortcuts.create_eventloop(),
@@ -259,7 +259,7 @@ class Application(object):
         key_bindings_registry=self.key_bindings.MakeRegistry(),
         mouse_support=False,
         reverse_vi_search_direction=True,
-        style=shell_style.GetDocumentStyle(),
+        style=interactive_style.GetDocumentStyle(),
     )
 
   def _GetProjectAndAccount(self):
@@ -323,7 +323,7 @@ class Application(object):
 
 
 def main(args=None, config=None):
-  """The shell application loop."""
+  """The interactive application loop."""
   cosh = coshell.Coshell()
   try:
     Application(

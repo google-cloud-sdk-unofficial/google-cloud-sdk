@@ -20,7 +20,7 @@ import subprocess
 import sys
 import webbrowser
 
-from googlecloudsdk.command_lib.shell import parser
+from googlecloudsdk.command_lib.interactive import parser
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 

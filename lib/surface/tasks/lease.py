@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud tasks pull` command."""
+"""`gcloud tasks lease` command."""
 
 from googlecloudsdk.api_lib.tasks import tasks
 from googlecloudsdk.calliope import base
@@ -20,8 +20,8 @@ from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
 
 
-class Pull(base.ListCommand):
-  """Pulls a list of tasks and leases them.
+class Lease(base.ListCommand):
+  """Leases a list of tasks and displays them.
 
   Each task returned from this command will have its schedule time changed
   based on the lease duration specified. A task that has been returned by
@@ -39,10 +39,10 @@ class Pull(base.ListCommand):
     flags.AddLocationFlag(parser)
     flags.AddTaskLeaseDurationFlag(parser, helptext="""\
         The number of seconds for the desired new lease duration for all tasks
-        pulled, starting from now. The maximum lease duration is 1 week.
+        leased, starting from now. The maximum lease duration is 1 week.
         """)
-    flags.AddFilterPulledTasksFlag(parser)
-    flags.AddMaxTasksToPullFlag(parser)
+    flags.AddFilterLeasedTasksFlag(parser)
+    flags.AddMaxTasksToLeaseFlag(parser)
 
     list_formats.AddListTasksFormats(parser)
 
@@ -50,6 +50,6 @@ class Pull(base.ListCommand):
     tasks_client = tasks.Tasks()
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     duration = parsers.FormatLeaseDuration(args.lease_duration)
-    filter_string = parsers.ParseTasksPullFilterFlags(args)
-    return tasks_client.Pull(queue_ref, duration, filter_string=filter_string,
-                             max_tasks=args.limit).tasks
+    filter_string = parsers.ParseTasksLeaseFilterFlags(args)
+    return tasks_client.Lease(queue_ref, duration, filter_string=filter_string,
+                              max_tasks=args.limit).tasks

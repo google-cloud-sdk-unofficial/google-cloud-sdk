@@ -28,6 +28,7 @@ from containerregistry.client.v2_2 import save
 from containerregistry.client.v2_2 import v2_compat
 from containerregistry.tools import logging_setup
 from containerregistry.tools import patched
+from containerregistry.transport import retry
 from containerregistry.transport import transport_pool
 
 import httplib2
@@ -74,7 +75,9 @@ def main():
   if not args.name or not args.tarball:
     raise Exception('--name and --tarball are required arguments.')
 
-  transport = transport_pool.Http(httplib2.Http, size=8)
+  retry_factory = retry.Factory()
+  retry_factory = retry_factory.WithSourceTransportCallable(httplib2.Http)
+  transport = transport_pool.Http(retry_factory.Build, size=8)
 
   if '@' in args.name:
     name = docker_name.Digest(args.name)

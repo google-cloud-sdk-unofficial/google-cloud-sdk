@@ -21,7 +21,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveProfile(base.Command):
   """Remove the posix account information for the current user."""
 

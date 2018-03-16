@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.oslogin import oslogin_utils
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Remove(base.Command):
   """Remove an SSH public key from an OS Login profile."""
 

@@ -30,7 +30,6 @@ def _TransformExpiry(resource, undefined=None):
   return display or undefined
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List the SSH public keys from an OS Login profile."""
 

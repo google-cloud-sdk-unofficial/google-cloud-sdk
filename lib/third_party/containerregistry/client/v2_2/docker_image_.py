@@ -700,16 +700,16 @@ def extract(image, tar):
   fs = {}
 
   # Walk the layers, topmost first and add files.  If we've seen them in a
-  # higher layer then we skip them.
-  for layer in image.fs_layers():
-    buf = cStringIO.StringIO(image.blob(layer))
-    with tarfile.open(mode='r:gz', fileobj=buf) as layer_tar:
-      for member in layer_tar.getmembers():
+  # higher layer then we skip them
+  for layer in image.diff_ids():
+    buf = cStringIO.StringIO(image.uncompressed_layer(layer))
+    with tarfile.open(mode='r:', fileobj=buf) as layer_tar:
+      for tarinfo in layer_tar:
         # If we see a whiteout file, then don't add anything to the tarball
         # but ensure that any lower layers don't add a file with the whited
         # out name.
-        basename = os.path.basename(member.name)
-        dirname = os.path.dirname(member.name)
+        basename = os.path.basename(tarinfo.name)
+        dirname = os.path.dirname(tarinfo.name)
         tombstone = basename.startswith(_WHITEOUT_PREFIX)
         if tombstone:
           basename = basename[len(_WHITEOUT_PREFIX):]
@@ -727,9 +727,9 @@ def extract(image, tar):
         # Mark this file as handled by adding its name.
         # A non-directory implicitly tombstones any entries with
         # a matching (or child) name.
-        fs[name] = tombstone or not member.isdir()
+        fs[name] = tombstone or not tarinfo.isdir()
         if not tombstone:
-          if member.isfile():
-            tar.addfile(member, fileobj=layer_tar.extractfile(member.name))
+          if tarinfo.isfile():
+            tar.addfile(tarinfo, fileobj=layer_tar.extractfile(tarinfo))
           else:
-            tar.addfile(member, fileobj=None)
+            tar.addfile(tarinfo, fileobj=None)

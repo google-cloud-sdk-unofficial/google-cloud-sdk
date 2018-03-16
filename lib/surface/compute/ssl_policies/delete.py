@@ -37,7 +37,7 @@ class DeleteBatchPoller(poller.BatchPoller):
     return
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine SSL policies.
 

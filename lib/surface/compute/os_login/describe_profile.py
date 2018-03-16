@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeProfile(base.Command):
   """Describe the OS Login profile for the current user."""
 

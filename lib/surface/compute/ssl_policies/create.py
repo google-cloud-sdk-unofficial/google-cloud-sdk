@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.ssl_policies import flags
 _SSL_POLICY_ARG = flags.GetSslPolicyArgument()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new Google Compute Engine SSL policy.
 

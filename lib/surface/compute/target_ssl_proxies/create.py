@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create a target SSL proxy.
 
@@ -125,8 +125,8 @@ class CreateGA(base.CreateCommand):
     return self._CreateResource(args, ssl_certificate_refs)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(CreateGA):
   """Create a target SSL proxy.
 
   *{command}* is used to create target SSL proxies. A target SSL proxy is

@@ -44,6 +44,7 @@ args:
       0s:23.554048s,24s:29.528064s
 
       0:1m40s,3m50s:5m10.232265s
+    type: str
     processor: googlecloudsdk.api_lib.ml.video.video_client:ValidateAndParseSegments
 
   - api_field: locationId
