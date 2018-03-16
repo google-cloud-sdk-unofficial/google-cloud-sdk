@@ -24,6 +24,12 @@ class Unlink(base.Command):
       'DESCRIPTION': """\
           This command unlinks a project from its linked billing
           account. This disables billing on the project.
+          """,
+      'EXAMPLES': """\
+          To unlink the project `my-project` from its linked billing account,
+          run:
+
+            $ {command} my-project
           """
   }
 

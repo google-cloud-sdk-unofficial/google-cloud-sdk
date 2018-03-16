@@ -53,9 +53,7 @@ class Wait(base.Command):
                                       util.MAX_WAITER_TIMEOUT)),
         help="""\
         The maximum amount of time to wait for a waiter to finish.
-        Timeout values can be specified as seconds, minutes, or hours, using the
-        's', 'm', and 'h' suffixes respectively. If no suffix is specified, the
-        unit is assumed to be seconds.
+        See $ gcloud topic datetimes for information on duration formats.
         """)
 
     parser.add_argument('name', help='The waiter name.')

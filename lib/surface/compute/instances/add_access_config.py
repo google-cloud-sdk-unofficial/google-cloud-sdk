@@ -22,8 +22,20 @@ from googlecloudsdk.command_lib.compute.instances import flags
 DETAILED_HELP = {
     'DESCRIPTION': """\
         *{command}* is used to create access configurations for network
-        interfaces of Google Compute Engine virtual machines.
+        interfaces of Google Compute Engine virtual machines. This allows you
+        to assign a public, external IP to a virtual machine.
         """,
+    'EXAMPLES': """\
+        To assign an public, externally accessible IP to a virtual machine named
+        ``example-instance'' in zone ``us-central1-a'', run:
+
+          $ {command} example-instance --zone us-central1-a
+
+        To assign the specific, reserved public IP address ``123.456.789.123''
+        to the virtual machine, run:
+
+          $ {command} example-instance --zone us-central1-a --address=123.456.789.123
+    """,
 }
 
 
@@ -35,7 +47,9 @@ def _Args(parser, support_public_dns, support_public_ptr, support_network_tier):
       default=constants.DEFAULT_ACCESS_CONFIG_NAME,
       help="""\
       Specifies the name of the new access configuration. ``{0}''
-      is used as the default if this flag is not provided.
+      is used as the default if this flag is not provided. Since ONE_TO_ONE_NAT
+      is currently the only access-config type, it is not recommended that you
+      change this value.
       """.format(constants.DEFAULT_ACCESS_CONFIG_NAME))
 
   parser.add_argument(

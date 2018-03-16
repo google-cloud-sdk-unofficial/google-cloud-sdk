@@ -118,10 +118,10 @@ class DateTimes(base.TopicCommand):
 
   ### Relative duration date/time formats
 
+  A relative duration specifies a date/time relative to the current time.
   Relative durations are based on
   [ISO 8601 durations](https://en.wikipedia.org/wiki/ISO_8601#Durations).
-  Relative durations are case-insensitive and must be prefixed with +P or -P.
-  They denote offsets from the current time.
+  They are case-insensitive and must be prefixed with +P or -P.
 
   A fully qualified duration string contains year, month, day, hour, minute,
   second, and fractional second parts. Each part is a number followed by a
@@ -149,4 +149,16 @@ class DateTimes(base.TopicCommand):
   * 1 month ago: -p1m
   * 30 minutes from now: +pt30m
   * 2 hours and 30 minutes ago: -p2h30m
+
+  ### Absolute duration formats
+
+  An absolute duration specifies a period of time. It has the same syntax as
+  a relative duration except that there is no leading *+* or *-*, and the
+  leading *P* is optional.
+
+  For example:
+
+  * 1 month: 1m
+  * 1 hour 30 minutes: 1h30m
+  * 30 minutes: t30m
   """

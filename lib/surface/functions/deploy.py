@@ -60,7 +60,8 @@ def _FunctionArgs(parser):
       help="""\
       The function execution timeout, e.g. 30s for 30 seconds. Defaults to
       original value for existing function or 60 seconds for new functions.
-      Cannot be more than 540s.""",
+      Cannot be more than 540s.
+      See $ gcloud topic datetimes for information on duration formats.""",
       type=arg_parsers.Duration(lower_bound='1s', upper_bound='540s'))
   parser.add_argument(
       '--retry',
@@ -158,21 +159,22 @@ def _TriggerArgs(parser):
   one_trigger_mandatory_for_new_deployment = (
       ' If you don\'t specify a trigger when deploying an update to an '
       'existing function it will keep its current trigger. You must specify '
-      '`--trigger-topic`, `--trigger-bucket`, or `--trigger-http` when '
-      'deploying a new function.'
+      '`--trigger-topic`, `--trigger-bucket`, `--trigger-http` or '
+      '(`--trigger-event` AND `--trigger-resource`) when deploying a '
+      'new function.'
   )
-  trigger_group = parser.add_mutually_exclusive_group()
+  trigger_group = parser.add_mutually_exclusive_group(
+      help=one_trigger_mandatory_for_new_deployment)
   trigger_group.add_argument(
       '--trigger-topic',
       help=('Name of Pub/Sub topic. Every message published in this topic '
             'will trigger function execution with message contents passed as '
-            'input data.' + one_trigger_mandatory_for_new_deployment),
+            'input data.'),
       type=util.ValidatePubsubTopicNameOrRaise)
   trigger_group.add_argument(
       '--trigger-bucket',
       help=('Google Cloud Storage bucket name. Every change in files in this '
-            'bucket will trigger function execution.' +
-            one_trigger_mandatory_for_new_deployment),
+            'bucket will trigger function execution.'),
       type=util.ValidateAndStandarizeBucketUriOrRaise)
   trigger_group.add_argument(
       '--trigger-http', action='store_true',
@@ -180,41 +182,25 @@ def _TriggerArgs(parser):
       Function will be assigned an endpoint, which you can view by using
       the `describe` command. Any HTTP request (of a supported type) to the
       endpoint will trigger function execution. Supported HTTP request
-      types are: POST, PUT, GET, DELETE, and OPTIONS."""
-      + one_trigger_mandatory_for_new_deployment)
-  trigger_group.add_argument(
-      '--trigger-provider',
-      metavar='PROVIDER',
-      choices=sorted(util.input_trigger_provider_registry.ProvidersLabels()),
-      help=('Trigger this function in response to an event in another '
-            'service. For a list of acceptable values, call `gcloud '
-            'functions event-types list`.' +
-            one_trigger_mandatory_for_new_deployment),
-      hidden=True,
-      )
-  trigger_provider_spec_group = parser.add_argument_group()
-  # The validation performed by argparse is incomplete, as the set of valid
-  # provider/event combinations is limited. This should be more thoroughly
-  # validated at runtime.
+      types are: POST, PUT, GET, DELETE, and OPTIONS.""")
+
+  trigger_provider_spec_group = trigger_group.add_argument_group()
+  # check later as type of applicable input depends on options above
   trigger_provider_spec_group.add_argument(
       '--trigger-event',
       metavar='EVENT_TYPE',
-      choices=['topic.publish', 'object.change', 'user.create', 'user.delete',
-               'data.write'],
-      help=('Specifies which action should trigger the function. If omitted, '
-            'a default EVENT_TYPE for --trigger-provider will be used. For a '
-            'list of acceptable values, call functions event_types list.'),
-      hidden=True,
+      choices=sorted(util.input_trigger_provider_registry.AllEventLabels()),
+      help=('Specifies which action should trigger the function. For a '
+            'list of acceptable values, call `functions event_types list`.')
   )
-  # check later as type of applicable input depends on options above
   trigger_provider_spec_group.add_argument(
       '--trigger-resource',
       metavar='RESOURCE',
-      help=('Specifies which resource from --trigger-provider is being '
-            'observed. E.g. if --trigger-provider is cloud.storage, '
-            '--trigger-resource must be a bucket name. For a list of '
-            'expected resources, call functions event_types list.'),
-      hidden=True,
+      help=('Specifies which resource from `--trigger-event` is being '
+            'observed. E.g. if `--trigger-event` is  '
+            '`providers/cloud.storage/eventTypes/object.change`, '
+            '`--trigger-resource` must be a bucket name. For a list of '
+            'expected resources, call `functions event_types list`.'),
   )
 
 
@@ -251,15 +237,7 @@ class Deploy(base.Command):
                     trigger_resource):
     messages = util.GetApiMessagesModule()
     event_trigger = messages.EventTrigger()
-    event_type_ref = resources.REGISTRY.Parse(
-        None,
-        params={
-            'triggerProvider': trigger_provider,
-            'triggerEvent': trigger_event
-        },
-        collection='cloudfunctions.providers.event_types'
-    )
-    event_trigger.eventType = event_type_ref.RelativeName()
+    event_trigger.eventType = trigger_event
     event_trigger.resource = (
         deploy_util.ConvertTriggerArgsToRelativeName(
             trigger_provider,
@@ -358,10 +336,11 @@ class Deploy(base.Command):
       if (not args.IsSpecified('trigger_topic') and
           not args.IsSpecified('trigger_bucket') and
           not args.IsSpecified('trigger_http') and
-          not args.IsSpecified('trigger_provider')):
+          not args.IsSpecified('trigger_event')):
         # --trigger-provider is hidden for now so not mentioning it.
         raise calliope_exceptions.OneOfArgumentsRequiredException(
-            ['--trigger-topic', '--trigger-bucket', '--trigger-http'],
+            ['--trigger-topic', '--trigger-bucket', '--trigger-http',
+             '--trigger-event'],
             'You must specify a trigger when deploying a new function.'
         )
 

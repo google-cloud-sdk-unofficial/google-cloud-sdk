@@ -138,21 +138,23 @@ class Delete(base.DeleteCommand):
     requests = list(self._CreateDeleteRequests(
         holder.client.apitools_client, igm_refs))
 
+    resources = []
     # Delete autoscalers first.
     errors = []
     autoscaler_delete_requests = self._GenerateAutoscalerDeleteRequests(
         holder, project, mig_requests=requests)
-    with progress_tracker.ProgressTracker(
-        'Deleting ' + text.Pluralize(
-            len(autoscaler_delete_requests), 'autoscaler'),
-        autotick=False,
-    ) as tracker:
-      resources = holder.client.MakeRequests(
-          autoscaler_delete_requests,
-          errors,
-          progress_tracker=tracker)
-    if errors:
-      utils.RaiseToolException(errors)
+    if autoscaler_delete_requests:
+      with progress_tracker.ProgressTracker(
+          'Deleting ' + text.Pluralize(
+              len(autoscaler_delete_requests), 'autoscaler'),
+          autotick=False,
+      ) as tracker:
+        resources = holder.client.MakeRequests(
+            autoscaler_delete_requests,
+            errors,
+            progress_tracker=tracker)
+      if errors:
+        utils.RaiseToolException(errors)
 
     # Now delete instance group managers.
     errors = []

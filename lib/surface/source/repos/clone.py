@@ -22,27 +22,33 @@ from googlecloudsdk.core.credentials import store as c_store
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CloneGA(base.Command):
-  """Clone a cloud source repository.
+  """Clone a cloud source repository."""
 
-  This command clones a git repository for the currently active
-  Google Cloud Platform project into the specified directory or into
-  the current directory if no target directory is specified.  This command
-  gives a warning if the cloud source repository is a mirror.
+  detailed_help = {
+      'DESCRIPTION': """\
+        This command clones a git repository from the currently active
+        Google Cloud project into the specified directory or into the current
+        directory if no target directory is specified.
 
-  The clone operation configures the local clone to use your gcloud
-  credentials to authenticate future git operations.
+        Each Google Cloud project can have zero or more git repositories
+        associated with it. To see the available repositories, run:
 
-  ## EXAMPLES
+          $ {parent_command} list
 
-  The example commands below show a sample workflow.
+        The clone operation configures the local clone to use your gcloud
+        credentials to authenticate future git operations. This command emits a
+        warning if the cloud source repository is a mirror.
+      """,
+      'EXAMPLES': """\
+        The example commands below show a sample workflow.
 
-    $ gcloud init
-    $ {command} REPOSITORY_NAME DIRECTORY_NAME
-    $ cd DIRECTORY_NAME
-    ... create/edit files and create one or more commits ...
-    $ git push origin master
-
-  """
+          $ gcloud init
+          $ {command} REPOSITORY_NAME DIRECTORY_NAME
+          $ cd DIRECTORY_NAME
+          ... create/edit files and create one or more commits ...
+          $ git push origin master
+      """,
+  }
 
   @staticmethod
   def Args(parser):

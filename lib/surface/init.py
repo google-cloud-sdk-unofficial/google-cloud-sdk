@@ -308,8 +308,8 @@ https://console.developers.google.com/apis page.
     # zone and/or region ask user if he/she wants to do this.
     if not default_zone:
       answer = console_io.PromptContinue(
-          prompt_string=('Do you want to configure Google Compute Engine '
-                         '(https://cloud.google.com/compute) settings'))
+          prompt_string=('Do you want to configure a default Compute '
+                         'Region and Zone?'))
       if not answer:
         return
 

@@ -30,7 +30,7 @@ from googlecloudsdk.core.credentials import store as c_store
 
 
 class Login(base.Command):
-  """Authorize gcloud to access Google Cloud Platform.
+  """Authorize gcloud to access the Cloud Platform with Google user credentials.
 
   Obtains access credentials for your user account via a web-based authorization
   flow. When this command completes successfully, it sets the active account
@@ -48,6 +48,9 @@ class Login(base.Command):
   appropriate scopes using the
   [Google Cloud Platform Console](https://console.cloud.google.com) and use
   `gcloud auth activate-service-account` with the corresponding JSON key file.
+
+  For more information on authorization and credential types, see:
+  [](https://cloud.google.com/sdk/docs/authorizing).
   """
 
   @staticmethod

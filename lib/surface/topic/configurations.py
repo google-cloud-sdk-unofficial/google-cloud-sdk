@@ -83,6 +83,13 @@ class TestingArgFiles(base.TopicCommand):
 
     $ gcloud config configurations activate my-config
 
+  To display the path of the active configuration, run:
+
+    $ gcloud info --format='get(config.paths.active_config_path)'
+
+  Note that changes to your OS login, Google Cloud Platform account or project
+  could change the path.
+
   You can view and change the properties of your active configuration
   using the following commands:
 

@@ -25,7 +25,9 @@ class Create(base.CreateCommand):
   *{command}* is used to create SSL certificates which can be used to
   configure a target HTTPS proxy. An SSL certificate consists of a
   certificate and private key. The private key is encrypted before it is
-  stored.
+  stored. For more information, see:
+
+  [](https://cloud.google.com/compute/docs/load-balancing/http/ssl-certificates)
   """
 
   SSL_CERTIFICATE_ARG = None

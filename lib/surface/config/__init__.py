@@ -26,10 +26,13 @@ class Config(base.Group):
   The {command} command group lets you set, view and unset properties used by
   Cloud SDK.
 
-  A configuration is a set of properties that govern the behavior of gcloud
+  A configuration is a set of properties that govern the behavior of `gcloud`
   and other Cloud SDK tools. The initial `default` configuration is set when
   `gcloud init` is run. You can create additional named configurations using
   `gcloud init` or `{command} configurations create`.
+
+  To display the path of the active configuration along with information
+  about the current `gcloud` environment, run $ gcloud info.
 
   To switch between configurations, use `{command} configurations activate`.
 

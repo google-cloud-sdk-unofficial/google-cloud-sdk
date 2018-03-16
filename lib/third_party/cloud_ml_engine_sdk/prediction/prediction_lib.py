@@ -39,7 +39,6 @@ from _interfaces import PredictionClient
 from enum import Enum
 import numpy as np
 
-import tensorflow.contrib  # pylint: disable=unused-import
 from tensorflow.python.client import session as tf_session
 from tensorflow.python.framework import dtypes
 from tensorflow.python.saved_model import loader
@@ -435,6 +434,8 @@ def load_model(
   """
   if loader.maybe_saved_model_directory(model_path):
     try:
+      logging.info("Importing tensorflow.contrib in load_model")
+      import tensorflow.contrib  # pylint: disable=redefined-outer-name, unused-variable, g-import-not-at-top
       session = tf_session.Session(target="", graph=None, config=config)
       meta_graph = loader.load(session, tags=list(tags), export_dir=model_path)
     except Exception as e:  # pylint: disable=broad-except
@@ -1189,6 +1190,9 @@ def create_model(client,
   Returns:
     An instance of the appropriate model class.
   """
+  if framework is TENSORFLOW_FRAMEWORK_NAME:
+    logging.info("Importing tensorflow.contrib in create_model")
+    import tensorflow.contrib  # pylint: disable=redefined-outer-name, unused-variable, g-import-not-at-top
   model_cls = _FRAMEWORK_TO_MODEL_MAP[framework][0]
   return (load_model_class(client, model_path) or
           model_cls(client))

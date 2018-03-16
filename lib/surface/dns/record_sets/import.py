@@ -64,7 +64,8 @@ class Import(base.Command):
         '--zone-file-format',
         required=False,
         action='store_true',
-        help='Indicates that the records-file is in the zone file format.')
+        help=('Indicates that the input records-file is in BIND zone format. '
+              'If omitted, indicates that the records-file is in YAML format.'))
     parser.add_argument(
         '--delete-all-existing',
         required=False,

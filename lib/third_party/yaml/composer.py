@@ -1,9 +1,9 @@
 
 __all__ = ['Composer', 'ComposerError']
 
-from error import MarkedYAMLError
-from events import *
-from nodes import *
+from .error import MarkedYAMLError
+from .events import *
+from .nodes import *
 
 class ComposerError(MarkedYAMLError):
     pass

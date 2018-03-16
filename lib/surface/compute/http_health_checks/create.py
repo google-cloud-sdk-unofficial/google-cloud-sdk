@@ -71,9 +71,9 @@ class Create(base.CreateCommand):
         default='5s',
         help="""\
         How often to perform a health check for an instance. For example,
-        specifying ``10s'' will run the check every 10 seconds. Valid units
-        for this flag are ``s'' for seconds and ``m'' for minutes.
-        The default value is ``5s''.
+        specifying ``10s'' will run the check every 10 seconds. The default
+        value is ``5s''. See $ gcloud topic datetimes for information on
+        duration formats.
         """)
 
     parser.add_argument(
@@ -85,8 +85,8 @@ class Create(base.CreateCommand):
         instance by the time specified by the value of this flag, the health
         check request is considered a failure. For example, specifying ``10s''
         will cause the check to wait for 10 seconds before considering the
-        request a failure.  Valid units for this flag are ``s'' for seconds and
-        ``m'' for minutes.  The default value is ``5s''.
+        request a failure. The default value is ``5s''.
+        See $ gcloud topic datetimes for information on duration formats.
         """)
 
     parser.add_argument(

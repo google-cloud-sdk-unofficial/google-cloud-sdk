@@ -142,5 +142,8 @@ class Login(base.Command):
     log.status.Print(
         '\n'
         'These credentials will be used by any library that requests\n'
-        'Application Default Credentials.')
+        'Application Default Credentials.\n'
+        '\n'
+        'To generate an access token for other uses, run:\n'
+        '  gcloud auth application-default print-access-token')
     return creds

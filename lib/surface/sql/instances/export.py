@@ -72,7 +72,8 @@ class Export(base.Command):
         metavar='TABLE',
         required=False,
         help='Tables to export from the specified database. If you specify '
-        'tables, specify one and only one database.')
+        'tables, specify one and only one database. For Postgres instances, '
+        'only one table can be exported at a time.')
 
   def Run(self, args):
     """Exports data from a Cloud SQL instance.

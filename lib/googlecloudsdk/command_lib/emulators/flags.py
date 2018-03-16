@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,3 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Flags for gcloud emulators group."""
+
+
+def AddDataDirFlag(parser, emulator_name):
+  parser.add_argument(
+      '--data-dir',
+      required=False,
+      help='The directory to be used to store/retrieve data/config for an '
+      'emulator run. The default value is `<USER_CONFIG_DIR>/emulators/{}`. '
+      'The value of USER_CONFIG_DIR can be found by running:\n\n'
+      '  $ gcloud info --format=\'get(config.paths.global_config_dir)\''
+      .format(emulator_name))

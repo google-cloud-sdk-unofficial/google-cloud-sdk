@@ -35,11 +35,15 @@ class RecordSets(base.Group):
   To see how to make scriptable changes to your record-sets through
   transactions, run:
 
-    $ {command} transaction --zone MANAGED_ZONE
+    $ {command} transaction --help
 
-  To see change details or list of all changes, run:
+  To list all changes, run:
 
-    $ {command} changes --zone MANAGED_ZONE
+    $ {command} changes list --zone MANAGED_ZONE
+
+  To see change details, run:
+
+    $ {command} changes describe CHANGE_ID --zone MANAGED_ZONE
 
   To see the list of all record-sets, run:
 

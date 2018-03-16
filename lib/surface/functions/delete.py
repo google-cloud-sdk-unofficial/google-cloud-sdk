@@ -36,8 +36,7 @@ class Delete(base.DeleteCommand):
         help_text='The region of the function to delete.',
     )
     parser.add_argument(
-        'name', help='The name of the function to delete.',
-        type=util.ValidateFunctionNameOrRaise)
+        'name', help='The name of the function to delete.')
     parser.display_info.AddCacheUpdater(None)
 
   @util.CatchHTTPErrorRaiseHTTPException
@@ -61,6 +60,7 @@ class Delete(base.DeleteCommand):
             'projectsId': properties.VALUES.core.project.GetOrFail,
             'locationsId': properties.VALUES.functions.region.GetOrFail},
         collection='cloudfunctions.projects.locations.functions')
+    util.ValidateFunctionNameOrRaise(function_ref.Name())
     function__url = function_ref.RelativeName()
     prompt_message = 'Resource [{0}] will be deleted.'.format(function__url)
     if not console_io.PromptContinue(message=prompt_message):

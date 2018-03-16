@@ -40,7 +40,8 @@ class Start(base.Command):
         '--host-port',
         required=False,
         type=lambda arg: arg_parsers.HostPort.Parse(arg, ipv6_enabled=True),
-        help='The host:port to which the emulator should be bound.')
+        help='The host:port to which the emulator should be bound. The default '
+        'value is localhost:8086.')
 
   # Override
   def Run(self, args):

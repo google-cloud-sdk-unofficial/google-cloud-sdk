@@ -27,11 +27,16 @@ from googlecloudsdk.core.util import files
 
 
 class ActivateServiceAccount(base.SilentCommand):
-  """Authorize access to Google Cloud Platform using a service account.
+  """Authorize gcloud to access to Cloud Platform with a Google service account.
 
-  Adds service account credentials from a file that contains
-  a private authorization key to the existing set of credentials managed
-  and used by gcloud.
+  If you want gcloud (and other tools in the Cloud SDK) to use service account
+  credentials to make requests, use this command to import these credentials
+  from a file that contains a private authorization key, and activate them for
+  use in gcloud. This command serves the same function as ``gcloud auth login''
+  but for using a service account rather than your Google user credentials.
+
+  For more information on authorization and credential types, see:
+  [](https://cloud.google.com/sdk/docs/authorizing).
 
   The key file for this command can be obtained using either:
     * the [Cloud Platform console](https://console.cloud.google.com) or

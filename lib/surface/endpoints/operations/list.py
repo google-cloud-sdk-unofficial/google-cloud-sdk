@@ -16,10 +16,10 @@
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.endpoints import services_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.service_management import arg_parsers
-from googlecloudsdk.command_lib.service_management import common_flags
+from googlecloudsdk.command_lib.endpoints import arg_parsers
+from googlecloudsdk.command_lib.endpoints import common_flags
 
 
 _FILTER_HELP = '''\

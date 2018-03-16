@@ -63,7 +63,11 @@ def _AddArgs(cls, parser):
 
 
 class Create(base.CreateCommand):
-  """Define a subnet for a network in custom subnet mode."""
+  """Define a subnet for a network in custom subnet mode.
+
+  Define a subnet for a network in custom subnet mode. Subnets must be uniquely
+  named per region.
+  """
 
   NETWORK_ARG = None
   SUBNETWORK_ARG = None

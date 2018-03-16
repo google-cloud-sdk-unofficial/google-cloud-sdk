@@ -328,6 +328,18 @@ Create.detailed_help = {
         ``--target-ssl-proxy'', ``--target-tcp-proxy'', ``--target-vpn-gateway''
         or ``--backend-service'' must be specified."""
                     .format(overview=flags.FORWARDING_RULES_OVERVIEW)),
+    'EXAMPLES': """\
+        To create a global forwarding rule that will forward all traffic on port
+        8080 for IP address ADDRESS to a target http proxy PROXY, run:
+
+          $ {command} RULE_NAME --global --target-http-proxy PROXY --ports 8080 --address ADDRESS
+
+        To create a regional forwarding rule for the subnet SUBNET_NAME on the
+        default network that will forward all traffic on ports 80-82 to a
+        backend service SERVICE_NAME, run:
+
+          $ {command} RULE_NAME --load-balancing-scheme INTERNAL --backend-service SERVICE_NAME --subnet SUBNET_NAME --network default --region REGION --ports 80-82
+    """
 }
 
 

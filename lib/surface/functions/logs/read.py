@@ -44,17 +44,17 @@ class GetLogs(base.ListCommand):
     parser.add_argument(
         '--start-time', required=False, type=arg_parsers.Datetime.Parse,
         help=('Return only log entries which timestamps are not earlier than '
-              'the specified time. The timestamp must be in RFC3339 UTC "Zulu" '
-              'format. If --start-time is specified, the command returns '
-              '--limit earliest log entries which appeared after '
-              '--start-time.'))
+              'the specified time. If *--start-time* is specified, the command '
+              'returns *--limit* earliest log entries which appeared after '
+              '*--start-time*. See $ gcloud topic datetimes for information '
+              'on time formats.'))
     parser.add_argument(
         '--end-time', required=False, type=arg_parsers.Datetime.Parse,
         help=('Return only log entries which timestamps are not later than '
-              'the specified time. The timestamp must be in RFC3339 UTC "Zulu" '
-              'format. If --end-time is specified but --start-time is not, the '
-              'command returns --limit latest log entries which appeared '
-              'before --end-time.'))
+              'the specified time. If *--end-time* is specified but '
+              '*--start-time* is not, the command returns *--limit* latest '
+              'log entries which appeared before --end-time. See '
+              '$ gcloud topic datetimes for information on time formats.'))
     parser.add_argument(
         '--limit', required=False, type=arg_parsers.BoundedInt(1, 1000),
         default=20,

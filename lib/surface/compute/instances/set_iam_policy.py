@@ -29,7 +29,8 @@ class SetIamPolicy(base.Command):
   instance in a project.
   """
 
-  detailed_help = iam_util.GetDetailedHelpForSetIamPolicy('disk', 'my-disk')
+  detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(
+      'instance', 'my-instance', use_an=True)
 
   @staticmethod
   def Args(parser):

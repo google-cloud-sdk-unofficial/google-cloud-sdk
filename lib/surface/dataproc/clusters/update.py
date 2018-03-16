@@ -53,6 +53,7 @@ def _CommonArgs(parser):
             finish before forcefully removing nodes (and potentially
             interrupting jobs). Timeout defaults to 0 if not set (for forceful
             decommission), and the maximum allowed timeout is 1 day.
+            See $ gcloud topic datetimes for information on duration formats.
             """)
 
 
@@ -248,7 +249,8 @@ class UpdateBeta(Update):
         type=arg_parsers.Duration(),
         help="""\
         The duration before cluster is auto-deleted after last job finished,
-        such as "30m", "2h" or "1d".
+        such as "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
         """)
     idle_delete_group.add_argument(
         '--no-max-idle',
@@ -263,15 +265,17 @@ class UpdateBeta(Update):
         '--max-age',
         type=arg_parsers.Duration(),
         help="""\
-        The lifespan of the cluster before it is auto-deleted, such as "30m",
+        The lifespan of the cluster before it is auto-deleted, such as
         "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
         """)
     auto_delete_group.add_argument(
         '--expiration-time',
         type=arg_parsers.Datetime.Parse,
         help="""\
         The time when cluster will be auto-deleted, such as
-        "2017-08-29T18:52:51.142Z"
+        "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
+        information on time formats.
         """)
     auto_delete_group.add_argument(
         '--no-max-age',

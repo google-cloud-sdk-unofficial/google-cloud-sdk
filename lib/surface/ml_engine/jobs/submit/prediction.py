@@ -20,6 +20,23 @@ from googlecloudsdk.command_lib.ml_engine import jobs_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+def _AddAcceleratorFlags(parser):
+  """Add arguments for accelerator config."""
+  accelerator_config_group = base.ArgumentGroup(
+      help='Accelerator Configuration.')
+
+  accelerator_config_group.AddArgument(base.Argument(
+      '--accelerator-count',
+      required=True,
+      default=1,
+      type=arg_parsers.BoundedInt(lower_bound=1),
+      help=('The number of accelerators to attach to the machines.'
+            ' Must be >= 1.')))
+  accelerator_config_group.AddArgument(
+      jobs_util.AcceleratorFlagMap().choice_arg)
+  accelerator_config_group.AddToParser(parser)
+
+
 def _AddSubmitPredictionArgs(parser):
   """Add arguments for `jobs submit prediction` command."""
   parser.add_argument('job', help='Name of the batch prediction job.')
@@ -89,6 +106,8 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
   labels_util.AddCreateLabelsFlags(parser)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA)
 class Prediction(base.Command):
   """Start a Cloud ML Engine batch prediction job."""
 
@@ -101,6 +120,7 @@ class Prediction(base.Command):
     data_format = jobs_util.DataFormatFlagMap().GetEnumForChoice(
         args.data_format)
     jobs_client = jobs.JobsClient()
+
     labels = jobs_util.ParseCreateLabels(jobs_client, args)
     return jobs_util.SubmitPrediction(
         jobs_client, args.job,
@@ -115,3 +135,36 @@ class Prediction(base.Command):
         max_worker_count=args.max_worker_count,
         batch_size=args.batch_size,
         labels=labels)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class PredictionAlpha(base.Command):
+  """Start a Cloud ML Engine batch prediction job."""
+
+  @staticmethod
+  def Args(parser):
+    _AddSubmitPredictionArgs(parser)
+    _AddAcceleratorFlags(parser)
+    parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
+
+  def Run(self, args):
+    data_format = jobs_util.DataFormatFlagMap().GetEnumForChoice(
+        args.data_format)
+    jobs_client = jobs.JobsClient()
+
+    labels = jobs_util.ParseCreateLabels(jobs_client, args)
+    return jobs_util.SubmitPrediction(
+        jobs_client, args.job,
+        model_dir=args.model_dir,
+        model=args.model,
+        version=args.version,
+        input_paths=args.input_paths,
+        data_format=data_format.name,
+        output_path=args.output_path,
+        region=args.region,
+        runtime_version=args.runtime_version,
+        max_worker_count=args.max_worker_count,
+        batch_size=args.batch_size,
+        labels=labels,
+        accelerator_type=args.accelerator_type,
+        accelerator_count=args.accelerator_count)

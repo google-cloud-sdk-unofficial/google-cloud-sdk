@@ -29,6 +29,9 @@ class Auth(base.Group):
   SDK tools for use on multiple machines, using `gcloud auth
   activate-service-account` is recommended.
 
+  For more information on authorization and credential types, see:
+  [](https://cloud.google.com/sdk/docs/authorizing).
+
   While running `gcloud auth` commands, the `--account` flag can be specified
   to any command to use that account without activation.
 

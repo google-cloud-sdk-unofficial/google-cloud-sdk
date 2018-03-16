@@ -22,11 +22,22 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 
 class DeleteAccessConfig(base.SilentCommand):
-  """Delete an access configuration from a virtual machine network interface.
+  """Delete an access configuration from a virtual machine network interface."""
 
-  *{command}* is used to delete access configurations from network
-  interfaces of Google Compute Engine virtual machines.
-  """
+  detailed_help = {
+      'DESCRIPTION': """\
+        *{command}* is used to delete access configurations from network
+        interfaces of Google Compute Engine virtual machines. Access
+        configurations allow you to assign a public, external IP to a virtual
+        machine.
+      """,
+      'EXAMPLES': """\
+        To remove the externally accessible IP from a virtual machine named
+        ``example-instance'' in zone ``us-central1-a'', run:
+
+          $ {command} example-instance --zone us-central1-a
+      """,
+  }
 
   @staticmethod
   def Args(parser):

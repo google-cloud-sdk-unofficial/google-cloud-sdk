@@ -40,11 +40,16 @@ class Scp(base.Command):
   To copy a remote directory, `~/narnia`, from ``example-instance'' to the
   `~/wardrobe` directory of your local host, run:
 
-    $ {command} example-instance:~/narnia ~/wardrobe --zone us-central1-a
+    $ {command} example-instance:~/narnia ~/wardrobe
 
   Conversely, files from your local computer can be copied to a virtual machine:
 
-    $ {command} ~/localtest.txt ~/localtest2.txt example-instance:~/narnia --zone us-central1-a
+    $ {command} ~/localtest.txt ~/localtest2.txt example-instance:~/narnia
+
+  If the zone cannot be determined, you will be prompted for it.  Use the
+  `--zone` flag to avoid being prompted:
+
+    $ {command} example-instance:~/narnia ~/wardrobe --zone us-central1-a
 
   Under the covers, *scp(1)* is used to facilitate the transfer.
   """

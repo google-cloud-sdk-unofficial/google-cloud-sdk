@@ -22,7 +22,8 @@ class Resources(base.Group):
   """List and search resources accessible from your account.
 
   The {command} group allows you to list and search the Google Cloud resources
-  that you have access to.
+  that you have access to. Currently, only a limited subset of Cloud resource
+  types are supported.
   """
 
   def Filter(self, context, args):

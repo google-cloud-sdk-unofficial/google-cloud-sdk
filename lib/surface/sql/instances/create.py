@@ -40,7 +40,7 @@ def AddBaseArgs(parser):
   base.ASYNC_FLAG.AddToParser(parser)
   parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
   flags.AddActivationPolicy(parser)
-  flags.AddAssignIp(parser)
+  flags.AddAssignIp(parser, show_negated_in_help=False)
   flags.AddAuthorizedGAEApps(parser)
   flags.AddAuthorizedNetworks(parser)
   parser.add_argument(
@@ -58,7 +58,7 @@ def AddBaseArgs(parser):
       default='MYSQL_5_6',
       choices=['MYSQL_5_5', 'MYSQL_5_6', 'MYSQL_5_7', 'POSTGRES_9_6'],
       help='The database engine type and version.')
-  flags.AddEnableBinLog(parser)
+  flags.AddEnableBinLog(parser, show_negated_in_help=False)
   parser.add_argument(
       '--failover-replica-name',
       required=False,
@@ -116,7 +116,7 @@ def AddBaseArgs(parser):
       '--require-ssl',
       required=False,
       action='store_true',
-      default=None,  # Tri-valued: None => don't change the setting.
+      default=None,
       help='Specified if users connecting over IP must use SSL.')
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
@@ -125,7 +125,7 @@ def AddBaseArgs(parser):
       required=False,
       choices=['SSD', 'HDD'],
       default=None,
-      help='The storage type for the instance.')
+      help='The storage type for the instance. The default is SSD.')
   parser.add_argument(
       '--tier',
       '-t',
@@ -133,8 +133,9 @@ def AddBaseArgs(parser):
       help=('The tier for this instance. For Second Generation instances, '
             'TIER is the instance\'s machine type (e.g., db-n1-standard-1). '
             'For PostgreSQL instances, only shared-core machine types '
-            '(e.g., db-f1-micro) apply. A complete list of tiers is '
-            'available here: https://cloud.google.com/sql/pricing.'))
+            '(e.g., db-f1-micro) apply. The default tier is db-n1-standard-1. '
+            'A complete list of tiers is available here: '
+            'https://cloud.google.com/sql/pricing'))
 
 
 def RunBaseCreateCommand(args, release_track):

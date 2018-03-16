@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope.exceptions import RequiredArgumentException
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.core import log
 
 
 class Copy(base_classes.BaseIamCommand):
@@ -27,10 +28,18 @@ class Copy(base_classes.BaseIamCommand):
 
   ## EXAMPLES
 
-  To create a role from an existing role, run:
+  To create a copy of an existing role into an organization with
+  ORGANIZATION_ID.
 
-    $ {command} --source viewer --destination reader \
-        --source-organization org1 --dest-organization org1
+    ${command} --source "roles/viewer" --destination CustomViewer
+     --dest-organization ORGANIZATION_ID
+
+  To create a copy of an existing role into a project with PROJECT_ID.
+
+    ${command} --source "roles/spanner.databaseAdmin"
+     --destination CustomSpannerDbAdmin --dest-project PROJECT_ID
+
+  To modify the newly created role see the roles update command.
   """
 
   @staticmethod
@@ -83,12 +92,27 @@ class Copy(base_classes.BaseIamCommand):
         title=source_role.title,
         description=source_role.description)
 
-    valid_permissions, testing_permissions = util.GetValidAndTestingPermissions(
-        iam_client, messages,
-        iam_util.GetResourceReference(args.dest_project,
-                                      args.dest_organization),
-        source_role.includedPermissions)
+    permissions_helper = util.PermissionsHelper(iam_client, messages,
+                                                iam_util.GetResourceReference(
+                                                    args.dest_project,
+                                                    args.dest_organization),
+                                                source_role.includedPermissions)
+    not_supported_permissions = permissions_helper.GetNotSupportedPermissions()
+    if not_supported_permissions:
+      log.warn(
+          'Permissions don\'t support custom roles and won\'t be added: ['
+          + ', '.join(not_supported_permissions) + '] \n')
+    not_applicable_permissions = permissions_helper.GetNotApplicablePermissions(
+    )
+    if not_applicable_permissions:
+      log.warn(
+          'Permissions not applicable to the current resource and won\'t'
+          ' be added: [' + ', '.join(not_applicable_permissions) + '] \n')
+    api_diabled_permissions = permissions_helper.GetApiDisabledPermissons()
+    iam_util.ApiDisabledPermissionsWarning(api_diabled_permissions)
+    testing_permissions = permissions_helper.GetTestingPermissions()
     iam_util.TestingPermissionsWarning(testing_permissions)
+    valid_permissions = permissions_helper.GetValidPermissions()
     new_role.includedPermissions = valid_permissions
 
     result = iam_client.organizations_roles.Create(

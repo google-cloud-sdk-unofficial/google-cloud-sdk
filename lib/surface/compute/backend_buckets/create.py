@@ -24,7 +24,7 @@ class Create(base.CreateCommand):
   """Create a backend bucket.
 
   *{command}* is used to create backend buckets. Backend buckets
-  define a Google Cloud Storage bucket that can serve content. URL
+  define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
   """
 

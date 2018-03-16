@@ -86,9 +86,15 @@ def _Args(parser):
       help="""\
 The Kubernetes release version to which to upgrade the cluster's nodes.
 
-If provided, the --cluster-version must be no greater than the cluster
-master's minor version (x.*X*.x), and must be a latest patch version
-(x.x.*X*).
+When upgrading nodes, the minor version (*X.Y*.Z) must be no greater than the
+cluster master's minor version (i.e. if the master's version is 1.2.34, the
+nodes cannot be upgraded to 1.3.45). For any minor version, only the latest
+patch version (X.Y.*Z*) is allowed (i.e. if there exists a version 1.2.34, the
+nodes cannot be upgraded to 1.2.33). Omit to upgrade to the same version as the
+master.
+
+When upgrading master, the only valid value is the latest supported version.
+Omit to have the server automatically select the latest version.
 
 You can find the list of allowed versions for upgrades by running:
 
@@ -170,9 +176,9 @@ Upgrade.detailed_help = {
     'DESCRIPTION': """\
       Upgrades the Kubernetes version of an existing container cluster.
 
-      This command upgrades the Kubernetes version of the *nodes* of a cluster.
-      The Kubernetes version of the cluster's *master* is periodically upgraded
-      automatically as new releases are available.
+      This command upgrades the Kubernetes version of the *nodes* or *master* of
+      a cluster. Note that the Kubernetes version of the cluster's *master* is
+      also periodically upgraded automatically as new releases are available.
 
       *By running this command, all of the cluster's nodes will be deleted and*
       *recreated one at a time.* While persistent Kubernetes resources, such as
@@ -191,10 +197,14 @@ Upgrade.detailed_help = {
 
         $ {command} <cluster>
 
-      Upgrade the nodes of <cluster> to Kubernetes version x.y.z.
+      Upgrade the nodes of <cluster> to Kubernetes version x.y.z:
 
         $ {command} <cluster> --cluster-version "x.y.z"
-    """,
+
+      Upgrade the master of <cluster> to the latest supported version:
+
+        $ {command} <cluster> --master"
+""",
 }
 
 

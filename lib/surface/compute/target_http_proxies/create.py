@@ -28,6 +28,17 @@ class Create(base.CreateCommand):
   target HTTP proxy points to a URL map that defines the rules
   for routing the requests. The URL map's job is to map URLs to
   backend services which handle the actual requests.
+
+  ## EXAMPLES
+
+  If there is an already-created URL map with the name URL_MAP, create a target
+  HTTP proxy pointing to this map by running:
+
+    $ {command} PROXY_NAME --url-map URL_MAP
+
+  To create a proxy with a textual description, run:
+
+    $ {command} PROXY_NAME --url-map URL_MAP --description "default proxy"
   """
 
   TARGET_HTTP_PROXY_ARG = None

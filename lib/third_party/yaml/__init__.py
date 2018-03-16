@@ -1,12 +1,12 @@
 
-from error import *
+from .error import *
 
-from tokens import *
-from events import *
-from nodes import *
+from .tokens import *
+from .events import *
+from .nodes import *
 
-from loader import *
-from dumper import *
+from .loader import *
+from .dumper import *
 
 __version__ = '3.11'
 

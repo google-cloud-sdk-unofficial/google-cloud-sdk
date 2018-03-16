@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 
 class Transaction(base.Group):
-  """Make scriptable and transactional changes to your record-sets.
+  r"""Make scriptable and transactional changes to your record-sets.
 
   Make scriptable and transactional changes to your record-sets.
 
@@ -27,11 +27,12 @@ class Transaction(base.Group):
 
   To start a transaction, run:
 
-    $ {command} start
+    $ {command} start --zone MANAGED_ZONE
 
   To append a record-set addition to the transaction, run:
 
-    $ {command} add --name RECORD_SET_NAME --ttl TTL --type TYPE DATA
+    $ {command} add --name RECORD_SET_NAME --ttl TTL --type TYPE DATA \
+        --zone MANAGED_ZONE
 
   To append a record-set removal to the transaction, run:
 
@@ -39,15 +40,15 @@ class Transaction(base.Group):
 
   To look at the details of the transaction, run:
 
-    $ {command} describe
+    $ {command} describe --zone MANAGED_ZONE
 
   To delete the transaction, run:
 
-    $ {command} abort
+    $ {command} abort --zone MANAGED_ZONE
 
   To execute the transaction, run:
 
-    $ {command} execute
+    $ {command} execute --zone MANAGED_ZONE
   """
 
   @staticmethod

@@ -15,10 +15,11 @@
 """
 
 from googlecloudsdk.api_lib.dataflow import apis
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.command_lib.dataflow import job_utils
-from googlecloudsdk.command_lib.dataflow import time_util
+from googlecloudsdk.core.util import times
 
 
 class List(base.ListCommand):
@@ -39,6 +40,14 @@ class List(base.ListCommand):
   Retrieve all logs after some date:
 
     $ {command} --after="2016-08-12 00:00:00"
+
+  Retrieve logs from this year:
+
+    $ {command} --after=2018-01-01
+
+  Retrieve logs more than a week old:
+
+    $ {command} --before=-P1W
   """
 
   @staticmethod
@@ -52,14 +61,16 @@ class List(base.ListCommand):
 
     parser.add_argument(
         '--after',
-        type=time_util.ParseTimeArg,
-        help='Only display messages logged after the given time. Time format is'
-        ' yyyy-mm-dd hh-mm-ss')
+        type=arg_parsers.Datetime.Parse,
+        help=('Only display messages logged after the given time. '
+              'See $ gcloud topic datetimes for information on time formats. '
+              'For example, `2018-01-01` is the first day of the year, and '
+              '`-P2W` is 2 weeks ago.'))
     parser.add_argument(
         '--before',
-        type=time_util.ParseTimeArg,
-        help='Only display messages logged before the given time. Time format'
-        ' is yyyy-mm-dd hh-mm-ss')
+        type=arg_parsers.Datetime.Parse,
+        help=('Only display messages logged before the given time. '
+              'See $ gcloud topic datetimes for information on time formats.'))
     parser.add_argument(
         '--importance',
         choices=['debug', 'detailed', 'warning', 'error'],
@@ -112,8 +123,8 @@ class List(base.ListCommand):
 
         # Note: It if both are present, startTime > endTime, because we will
         # return messages with actual time [endTime, startTime).
-        startTime=args.after and time_util.Strftime(args.after),
-        endTime=args.before and time_util.Strftime(args.before))
+        startTime=args.after and times.FormatDateTime(args.after),
+        endTime=args.before and times.FormatDateTime(args.before))
 
     return dataflow_util.YieldFromList(
         job_id=job_ref.jobId,

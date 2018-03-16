@@ -165,6 +165,26 @@ class Filters(base.TopicCommand):
 
             $ gcloud compute instances list --filter='zone ~ ^us AND -machineType:f1-micro'
 
+          List resources with tag *my-tag*:
+
+            $ gcloud compute instances list --filter='tags.items=my-tag'
+
+          List resources with tag *my-tag* or *my-other-tag*:
+
+            $ gcloud compute instances list --filter='tags.items=(my-tag,my-other-tag)'
+
+          List resources with tag *my-tag* and *my-other-tag*:
+
+            $ gcloud compute instances list --filter='tags.items=my-tag AND tags.items=my-other-tag)'
+
+          List resources with tag *my-tag* but not *my-other-tag*:
+
+            $ gcloud compute instances list --filter='tags.items=my-tag AND -tags.items=my-other-tag)'
+
+          List resources with label *my-label* with any value:
+
+            $ gcloud compute instances list --filter='labels.my-label:*'
+
           List in JSON format those projects where the labels match specific
           values (e.g. label.env is 'test' and label.version is alpha):
 
@@ -172,11 +192,21 @@ class Filters(base.TopicCommand):
 
           List projects that were created on and after a specific date:
 
-            $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime.date('%Y-%m-%d', Z)>='2016-05-11'"
+            $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime>=2018-01-15"
 
-          Note that in the last example, a projection on the key was used. The
-          filter is applied on the createTime key after the date formatting is
-          set.
+          List projects that were created on and after a specific date and time,
+          and sort from oldest to newest:
+
+            $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime>=2018-01-15T12:00:00" --sort-by=createTime
+
+          List projects that were created within the last two weeks, using
+          ISO8601 durations:
+
+            $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime>-P2W"
+
+          For more about ISO8601 durations, see:
+          https://en.wikipedia.org/wiki/ISO_8601
+
 
           This table shows : operator pattern matching:
 

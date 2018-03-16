@@ -42,8 +42,12 @@ class Ack(base.Command):
   detailed_help = {
       'DESCRIPTION': """\
           Acknowledges one or more messages as having been successfully received.
-          If a delivered message is not acknowledged, Cloud Pub/Sub will attempt
-          to deliver it again."""
+          If a delivered message is not acknowledged within the Subscription's
+          ack deadline, Cloud Pub/Sub will attempt to deliver it again.
+
+          To automatically acknowledge messages when pulling from a Subscription,
+          you can use the `--auto-ack` flag on `gcloud pubsub subscriptions pull`.
+      """
   }
 
   @staticmethod

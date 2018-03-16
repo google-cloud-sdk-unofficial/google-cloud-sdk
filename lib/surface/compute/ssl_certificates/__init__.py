@@ -17,9 +17,10 @@ from googlecloudsdk.calliope import base
 
 
 class SslCertificates(base.Group):
-  """List, create, and delete Google Compute Engine SSL certificates."""
+  """List, create, and delete Google Compute Engine SSL certificates.
 
+  List, create and delete Google Compute Engine SSL certificates that can be
+  used to configure a target HTTPS proxy. For more information, see:
 
-SslCertificates.detailed_help = {
-    'brief': 'List, create, and delete Google Compute Engine SSL certificates',
-}
+  [](https://cloud.google.com/compute/docs/load-balancing/http/ssl-certificates)
+  """

@@ -47,8 +47,8 @@ class Import(base.SilentCommand):
         '--file-format',
         choices=['json', 'yaml'],
         help=(
-            'The format of the file to export the security policy config to. '
-            'Specify either yaml or json. Defaults to json if not specified.'))
+            'The format of the file to import the security policy config from. '
+            'Specify either yaml or json. Defaults to yaml if not specified.'))
 
   def Run(self, args):
     if not os.path.exists(args.file_name):
@@ -64,12 +64,12 @@ class Import(base.SilentCommand):
     # Get the imported security policy config.
     try:
       with open(args.file_name) as import_file:
-        if args.file_format == 'yaml':
-          imported = security_policies_utils.SecurityPolicyFromFile(
-              import_file, holder.client.messages, 'yaml')
-        else:
+        if args.file_format == 'json':
           imported = security_policies_utils.SecurityPolicyFromFile(
               import_file, holder.client.messages, 'json')
+        else:
+          imported = security_policies_utils.SecurityPolicyFromFile(
+              import_file, holder.client.messages, 'yaml')
     except Exception as exp:
       msg = (u'Unable to read security policy config from specified file [{0}] '
              u'because [{1}]'.format(args.file_name, exp.message))

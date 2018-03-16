@@ -6,6 +6,7 @@
     collection: accesscontextmanager.accessPolicies.accessZones
     modify_request_hooks:
       - googlecloudsdk.command_lib.accesscontextmanager.zones:AddAccessLevels
+      - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=accessZone.name
 
   async:
     collection: accesscontextmanager.operations

@@ -15,6 +15,7 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.emulators import datastore_util
+from googlecloudsdk.command_lib.emulators import flags
 from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.command_lib.util import java
 
@@ -36,11 +37,7 @@ class Datastore(base.Group):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--data-dir',
-        required=False,
-        help='The directory to be used to store/retrieve data/config for an'
-        ' emulator run.')
+    flags.AddDataDirFlag(parser, datastore_util.DATASTORE)
     parser.add_argument(
         '--legacy',
         default=False,

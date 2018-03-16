@@ -33,6 +33,15 @@ _DETAILED_HELP = {
 
           $ {command} ~/my_app/app.yaml
 
+        By default, the service is deployed the current project configured via:
+
+          $ gcloud config set core/project PROJECT
+
+        To override this value for a single deployment, use the ``--project''
+        flag:
+
+          $ {command} ~/my_app/app.yaml --project=PROJECT
+
         To deploy multiple services, run:
 
           $ {command} ~/my_app/app.yaml ~/my_app/another_service.yaml

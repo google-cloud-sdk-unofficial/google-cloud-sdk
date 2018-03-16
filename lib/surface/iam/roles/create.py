@@ -15,7 +15,6 @@
 
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
@@ -42,20 +41,22 @@ class Create(base_classes.BaseIamCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
+    roles_group = parser.add_group(mutex=True)
+    settings_flags_group = roles_group.add_group('Roles Settings')
+    settings_flags_group.add_argument(
         '--title', help='The title of the role you want to create.')
-    parser.add_argument(
+    settings_flags_group.add_argument(
         '--description', help='The description of the role you want to create.')
-    parser.add_argument(
+    settings_flags_group.add_argument(
         '--stage', help='The state of the role you want to create.')
-    parser.add_argument(
+    settings_flags_group.add_argument(
         '--permissions',
         help='The permissions of the role you want to create. '
         'Use commas to separate them.')
-    parser.add_argument(
+    roles_group.add_argument(
         '--file',
-        help='The Yaml file you want to use to create a role. '
-        'Can not be specified with other flags except role-id.')
+        help='The JSON or YAML file with the IAM Role to create. See '
+             'https://cloud.google.com/iam/reference/rest/v1/projects.roles.')
     flags.GetOrgFlag('create').AddToParser(parser)
     flags.GetCustomRoleFlag('create').AddToParser(parser)
 
@@ -64,8 +65,6 @@ class Create(base_classes.BaseIamCommand):
     messages = apis.GetMessagesModule('iam', 'v1')
     parent_name = iam_util.GetParentName(args.organization, args.project)
     if args.file:
-      if args.title or args.description or args.stage or args.permissions:
-        raise exceptions.ConflictingArgumentsException('file', 'others')
       role = iam_util.ParseYamlToRole(args.file, messages.Role)
       role.name = None
       role.etag = None
@@ -80,10 +79,14 @@ class Create(base_classes.BaseIamCommand):
       role.title = args.role
 
     if not args.quiet:
-      testing_permissions = util.GetTestingPermissions(
-          iam_client, messages,
-          iam_util.GetResourceReference(args.project, args.organization),
-          role.includedPermissions)
+      permissions_helper = util.PermissionsHelper(iam_client, messages,
+                                                  iam_util.GetResourceReference(
+                                                      args.project,
+                                                      args.organization),
+                                                  role.includedPermissions)
+      api_diabled_permissions = permissions_helper.GetApiDisabledPermissons()
+      iam_util.ApiDisabledPermissionsWarning(api_diabled_permissions)
+      testing_permissions = permissions_helper.GetTestingPermissions()
       iam_util.TestingPermissionsWarning(testing_permissions)
 
     result = iam_client.organizations_roles.Create(

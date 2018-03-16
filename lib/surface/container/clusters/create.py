@@ -418,6 +418,7 @@ class CreateAlpha(Create):
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddPrivateClusterFlags(parser, hidden=True)
     flags.AddClusterNodeIdentityFlags(parser)
+    flags.AddTpuFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -440,4 +441,6 @@ class CreateAlpha(Create):
     ops.private_cluster = args.private_cluster
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.new_scopes_behavior = True
+    ops.enable_tpu = args.enable_tpu
+    ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     return ops

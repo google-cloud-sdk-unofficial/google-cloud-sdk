@@ -69,9 +69,7 @@ class Create(base.CreateCommand):
         required=True,
         help="""\
         The amount of time to wait before failing with DEADLINE_EXCEEDED.
-        Timeout values can be specified as seconds, minutes, or hours, using the
-        's', 'm', and 'h' suffixes respectively. If no suffix is specified, the
-        unit is assumed to be seconds.
+        See $ gcloud topic datetimes for information on duration formats.
         """)
 
     parser.add_argument(

@@ -55,8 +55,8 @@ class AddKeys(base.SilentCommand):
         help="""\
         Public keys can be configured to expire after a specified amount
         of time. For example, specifying ``12h'' will cause the key to expire
-        after 12 hours. Valid units for this flag are ``s'' for seconds, ``m''
-        for minutes, ``h'' for hours, and ''d'' for days.
+        after 12 hours. See $ gcloud topic datetimes for information on
+        duration formats.
         """)
 
   def Run(self, args):

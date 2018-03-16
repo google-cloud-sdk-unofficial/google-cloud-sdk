@@ -20,13 +20,14 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.resource_manager import operations
-from googlecloudsdk.api_lib.service_management import enable_api as services_enable_api
-from googlecloudsdk.api_lib.service_management import services_util
+from googlecloudsdk.api_lib.services import enable_api as services_enable_api
+from googlecloudsdk.api_lib.services import services_util
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.projects import flags as project_flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.resource_manager import flags
 
@@ -45,7 +46,9 @@ ID_DESCRIPTION = ('Project IDs must start with a lowercase letter and can '
 class Create(base.CreateCommand):
   """Create a new project.
 
-  Creates a new project with the given project ID.
+  Creates a new project with the given project ID. By default, projects are not
+  created under a parent resource. To do so, use either the --organization or
+  --folder flag.
 
   ## EXAMPLES
 
@@ -54,8 +57,8 @@ class Create(base.CreateCommand):
 
     $ {command} example-foo-bar-1 --name="Happy project" --labels=type=happy
 
-  The following command creates a project with ID `example-2` with parent
-  `folders/12345`:
+  By default, projects are not created under a parent resource. The following
+  command creates a project with ID `example-2` with parent `folders/12345`:
 
     $ {command} example-2 --folder=12345
 
@@ -63,7 +66,13 @@ class Create(base.CreateCommand):
   `organizations/2048`:
 
     $ {command} example-3 --organization=2048
+
+  ## SEE ALSO
+
+  {see_also}
   """
+
+  detailed_help = {'see_also': project_flags.CREATE_DELETE_IN_CONSOLE_SEE_ALSO}
 
   @staticmethod
   def Args(parser):

@@ -29,13 +29,28 @@ def _GetUriFunction(resource):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListClusters(base.ListCommand):
-  """List existing Bigtable clusters."""
+  """List existing Bigtable clusters.
+
+  List existing Bigtable clusters.
+
+  ## EXAMPLES
+
+  To list all clusters in an instance, run:
+
+    $ {command} --instances INSTANCE_NAME
+
+  To list all clusters in any of several instances, run:
+
+    $ {command} --instances INSTANCE_NAME1,INSTANCE_NAME2
+  """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     arguments.ArgAdder(parser).AddInstance(
-        positional=False, required=False, multiple=True)
+        positional=False, required=False, multiple=True,
+        additional_help=('If no instances are provided, all clusters in the '
+                         'project will be listed by default.'))
     parser.display_info.AddFormat("""
           table(
             name.segment(3):sort=1:label=INSTANCE,

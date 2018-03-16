@@ -89,7 +89,7 @@ ListInstances.detailed_help = {
         'List instances present in the managed instance group',
     'DESCRIPTION':
         """\
-          *{command}* list instances in a managed instance group.
+          *{command}* lists instances in a managed instance group.
 
           The required permission to execute this command is
           `compute.instanceGroupManagers.list`. If needed, you can include this
@@ -110,6 +110,14 @@ ListInstances.detailed_help = {
           instance groups, refer to Compute Engine's access control guide :
           https://cloud.google.com/compute/docs/access/iam-permissions#instancegroupmanagers_collection.
         """,
+    'EXAMPLES':
+        """\
+        To see additional details about the instances in a managed instance
+        group `my-group`, including per-instance overrides, run:
+
+            $ {command} \\
+                  my-group --format yaml
+        """
 }
 
 

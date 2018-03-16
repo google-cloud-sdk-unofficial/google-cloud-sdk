@@ -72,8 +72,8 @@ class Update(base.UpdateCommand):
         type=arg_parsers.Duration(),
         help="""\
         How often to perform a health check for an instance. For example,
-        specifying ``10s'' will run the check every 10 seconds. Valid units
-        for this flag are ``s'' for seconds and ``m'' for minutes.
+        specifying ``10s'' will run the check every 10 seconds.
+        See $ gcloud topic datetimes for information on duration formats.
         """)
 
     parser.add_argument(
@@ -84,8 +84,8 @@ class Update(base.UpdateCommand):
         instance by the time specified by the value of this flag, the health
         check request is considered a failure. For example, specifying ``10s''
         will cause the check to wait for 10 seconds before considering the
-        request a failure.  Valid units for this flag are ``s'' for seconds and
-        ``m'' for minutes.
+        request a failure.
+        See $ gcloud topic datetimes for information on duration formats.
         """)
 
     parser.add_argument(

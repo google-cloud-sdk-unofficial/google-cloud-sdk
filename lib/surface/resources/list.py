@@ -22,7 +22,8 @@ class List(base.ListCommand):
   r"""List Google Cloud resources accessible from your account.
 
   *{command}* lists all indexed Google Cloud resources that you have access to.
-  Filter expressions apply to the specific resource type selected.
+  Filter expressions apply to the specific resource type selected. Currently,
+  only a limited subset of Cloud resource types are supported.
 
   ## EXAMPLES
 

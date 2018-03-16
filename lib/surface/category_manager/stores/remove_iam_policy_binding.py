@@ -28,7 +28,7 @@ class RemoveIamPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    iam_util.AddArgsForAddIamPolicyBinding(parser)
+    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
     flags.AddStoreResourceFlags(parser)
 
   def Run(self, args):

@@ -36,10 +36,10 @@ args:
     arg_name: encoding-type
     default: utf8
     help_text: |
-      The encoding type used by the API to calculate offsets. If NONE, those
-      offsets are not calculated. This is an optional flag only used for the
-      entity mentions in results, and does not affect how the input is read or
-      analyzed.
+      The encoding type used by the API to calculate offsets. If set to `none`,
+      encoding-dependent offsets will be set at -1. This is an optional flag
+      only used for the entity mentions in results, and does not affect how the
+      input is read or analyzed.
 
   content_group:
     group:

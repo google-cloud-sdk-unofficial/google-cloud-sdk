@@ -213,7 +213,7 @@ class UpdateAlpha(Update):
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, UpdateAlpha.ReleaseTrack())
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
-    flags.AddShieldedVMConfigArgs(parser)
+    flags.AddShieldedVMConfigArgs(parser, use_default_value=False)
 
 
 Update.detailed_help = DETAILED_HELP

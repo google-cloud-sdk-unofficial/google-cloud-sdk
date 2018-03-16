@@ -180,7 +180,6 @@ class PredictionDoFn(beam.DoFn):
     # Metrics.
     self._model_load_seconds_distribution = beam.metrics.Metrics.distribution(
         _METRICS_NAMESPACE, "model_load_seconds")
-
     self._batch_process_ms_distribution = beam.metrics.Metrics.distribution(
         _METRICS_NAMESPACE, "batch_process_milliseconds")
 
@@ -243,11 +242,10 @@ class PredictionDoFn(beam.DoFn):
       inputs, predictions = self._model_state.model.predict(instances, **kwargs)
 
       predictions = list(predictions)
+
       if self._aggregator_dict:
-        aggr = self._aggregator_dict.get(
-            aggregators.AggregatorName.ML_PREDICTIONS, None)
-        if aggr:
-          aggr.inc(len(predictions))
+        self._aggregator_dict[aggregators.AggregatorName.ML_PREDICTIONS].inc(
+            len(predictions))
 
       # For successful processing, record the time.
       td = datetime.datetime.now() - start
@@ -267,6 +265,11 @@ class PredictionDoFn(beam.DoFn):
         # also eliminates the restarting/duplicated running issue.
         self._cloud_logger.write_error_message(clean_error_detail,
                                                self._create_snippet(element))
+      # Track in the counter.
+      if self._aggregator_dict:
+        counter_name = aggregators.AggregatorName.ML_FAILED_PREDICTIONS
+        self._aggregator_dict[counter_name].inc(len(element))
+
       # reraise failure to load model as permanent exception to end dataflow job
       if e.error_code == mlprediction.PredictionError.FAILED_TO_LOAD_MODEL:
         raise beam.utils.retry.PermanentException(clean_error_detail)
@@ -282,6 +285,11 @@ class PredictionDoFn(beam.DoFn):
       if self._cloud_logger:
         self._cloud_logger.write_error_message(
             str(e), self._create_snippet(element))
+      # Track in the counter.
+      if self._aggregator_dict:
+        counter_name = aggregators.AggregatorName.ML_FAILED_PREDICTIONS
+        self._aggregator_dict[counter_name].inc(len(element))
+
       try:
         yield beam.pvalue.TaggedOutput("errors", (str(e), element))
       except AttributeError:

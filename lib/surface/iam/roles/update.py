@@ -92,9 +92,8 @@ class Update(base_classes.BaseIamCommand):
             prompt_string='Replace existing role',
             cancel_on_no=True)
       if not args.quiet:
-        self.WarnTestingPermissions(iam_client, messages,
-                                    role.includedPermissions, args.project,
-                                    args.organization)
+        self.WarnPermissions(iam_client, messages, role.includedPermissions,
+                             args.project, args.organization)
       try:
         res = iam_client.organizations_roles.Patch(
             messages.IamOrganizationsRolesPatchRequest(
@@ -147,9 +146,8 @@ class Update(base_classes.BaseIamCommand):
       if not args.permissions:
         role.includedPermissions = []
       if not args.quiet:
-        self.WarnTestingPermissions(iam_client, messages,
-                                    role.includedPermissions, args.project,
-                                    args.organization)
+        self.WarnPermissions(iam_client, messages, role.includedPermissions,
+                             args.project, args.organization)
     origin_role = iam_client.organizations_roles.Get(
         messages.IamOrganizationsRolesGetRequest(name=role_name))
     if args.add_permissions or args.remove_permissions:
@@ -173,15 +171,19 @@ class Update(base_classes.BaseIamCommand):
         changed_fields.append('includedPermissions')
       role.includedPermissions = list(sorted(permissions))
       if not args.quiet:
-        self.WarnTestingPermissions(iam_client, messages,
-                                    list(newly_added_permissions), args.project,
-                                    args.organization)
+        self.WarnPermissions(iam_client, messages,
+                             list(newly_added_permissions), args.project,
+                             args.organization)
     role.etag = origin_role.etag
     return role, changed_fields
 
-  def WarnTestingPermissions(self, iam_client, messages, permissions, project,
-                             organization):
-    testing_permissions = util.GetTestingPermissions(
-        iam_client, messages,
-        iam_util.GetResourceReference(project, organization), permissions)
+  def WarnPermissions(self, iam_client, messages, permissions, project,
+                      organization):
+    permissions_helper = util.PermissionsHelper(iam_client, messages,
+                                                iam_util.GetResourceReference(
+                                                    project, organization),
+                                                permissions)
+    api_disabled_permissions = permissions_helper.GetApiDisabledPermissons()
+    iam_util.ApiDisabledPermissionsWarning(api_disabled_permissions)
+    testing_permissions = permissions_helper.GetTestingPermissions()
     iam_util.TestingPermissionsWarning(testing_permissions)

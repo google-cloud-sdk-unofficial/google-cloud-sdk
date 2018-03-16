@@ -43,7 +43,7 @@ class Export(base.Command):
         choices=['json', 'yaml'],
         help=(
             'The format of the file to export the security policy config to. '
-            'Specify either yaml or json. Defaults to json if not specified.'))
+            'Specify either yaml or json. Defaults to yaml if not specified.'))
 
   def Run(self, args):
     # Get the security policy.
@@ -58,10 +58,10 @@ class Export(base.Command):
     # Export the security policy.
     try:
       with open(args.file_name, 'w') as export_file:
-        if args.file_format == 'yaml':
-          security_policies_utils.WriteToFile(export_file, resources[0], 'yaml')
-        else:
+        if args.file_format == 'json':
           security_policies_utils.WriteToFile(export_file, resources[0], 'json')
+        else:
+          security_policies_utils.WriteToFile(export_file, resources[0], 'yaml')
     except EnvironmentError as exp:
       msg = 'Unable to export security policy to file [{0}]: {1}'.format(
           args.file_name, exp)

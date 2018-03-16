@@ -93,9 +93,8 @@ class DeprecateImages(base.SilentCommand):
        Specifies the amount of time until the image will be marked as DELETED.
        Note: The image will not actually be deleted - this field is only for
        informational purposes (see below). For instance, specifying ``30d'' will
-       mark as DELETED in 30 days from the current system time. Valid units for
-       this flag are ``s'' for seconds, ``m'' for minutes, ``h'' for hours and
-       ``d'' for days. If no unit is specified, seconds is assumed.
+       mark the image as DELETED in 30 days from the current system time.
+       See $ gcloud topic datetimes for information on duration formats.
 
        Note that the image will not be deleted automatically. The image will
        only be marked as deleted. An explicit request to delete the image must

@@ -43,7 +43,9 @@ class Read(base.Command):
     parser.add_argument(
         '--freshness', required=False, type=arg_parsers.Duration(),
         help=('Return entries that are not older than this value. '
-              'Works only with DESC ordering and filters without a timestamp.'),
+              'Works only with DESC ordering and filters without a timestamp. '
+              'See $ gcloud topic datetimes for information on '
+              'duration formats.'),
         default='1d')
     util.AddNonProjectArgs(parser, 'Read log entries')
 

@@ -45,7 +45,8 @@ class SetManagedCluster(base.UpdateCommand):
         type=arg_parsers.Duration(),
         help="""\
         The duration before cluster is auto-deleted after last job completes,
-        such as "30m", "2h" or "1d".
+        such as "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
         """)
 
     auto_delete_group = parser.add_mutually_exclusive_group()
@@ -53,8 +54,9 @@ class SetManagedCluster(base.UpdateCommand):
         '--max-age',
         type=arg_parsers.Duration(),
         help="""\
-        The lifespan of the cluster before it is auto-deleted, such as "30m",
+        The lifespan of the cluster before it is auto-deleted, such as
         "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
         """)
 
     auto_delete_group.add_argument(
@@ -62,7 +64,8 @@ class SetManagedCluster(base.UpdateCommand):
         type=arg_parsers.Datetime.Parse,
         help="""\
         The time when cluster will be auto-deleted, such as
-        "2017-08-29T18:52:51.142Z"
+        "2017-08-29T18:52:51.142Z." See $ gcloud topic datetimes for
+        information on time formats.
         """)
 
     for instance_type in ('master', 'worker'):

@@ -2,8 +2,8 @@
 __all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
     'RepresenterError']
 
-from error import *
-from nodes import *
+from .error import *
+from .nodes import *
 
 import datetime
 
@@ -476,7 +476,7 @@ Representer.add_representer(types.BuiltinFunctionType,
 Representer.add_representer(types.ModuleType,
         Representer.represent_module)
 
-Representer.add_multi_representer(types.InstanceType,
+Representer.add_multi_representer(getattr(types, 'InstanceType', object),
         Representer.represent_instance)
 
 Representer.add_multi_representer(object,

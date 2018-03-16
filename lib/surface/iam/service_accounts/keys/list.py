@@ -46,7 +46,8 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
         type=arg_parsers.Datetime.Parse,
         help=('Return only keys created before the specified time. '
               'Common time formats are accepted. This is equivalent to '
-              '--filter="validAfterTime<DATE_TIME".'))
+              '--filter="validAfterTime<DATE_TIME". See '
+              '$ gcloud topic datetimes for information on time formats.'))
 
     parser.add_argument('--iam-account',
                         required=True,

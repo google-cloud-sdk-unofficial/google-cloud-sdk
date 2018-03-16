@@ -15,6 +15,7 @@
 """Command for setting scheduling for virtual machine instances."""
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 
@@ -30,8 +31,7 @@ class SetSchedulingInstances(base.SilentCommand):
   def Args(cls, parser):
     parser.add_argument(
         '--restart-on-failure',
-        action='store_true',
-        default=None,  # Tri-valued: None => don't change the setting.
+        action=arg_parsers.StoreTrueFalseAction,
         help="""\
         The instances will be restarted if they are terminated by Compute
         Engine.  This does not affect terminations performed by the user.

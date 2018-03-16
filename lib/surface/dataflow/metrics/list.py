@@ -17,11 +17,12 @@
 import re
 
 from googlecloudsdk.api_lib.dataflow import apis
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.command_lib.dataflow import job_utils
-from googlecloudsdk.command_lib.dataflow import time_util
+from googlecloudsdk.core.util import times
 
 
 class List(base.ListCommand):
@@ -54,6 +55,10 @@ class List(base.ListCommand):
   Filter metrics with a scalar value greater than a threshold.
 
     $ {command} --filter="scalar > 50"
+
+  List metrics that have changed in the last 2 weeks:
+
+    $ {command} --after=-P2W
   """
 
   USER_SOURCE = 'user'
@@ -70,8 +75,11 @@ class List(base.ListCommand):
 
     parser.add_argument(
         '--changed-after',
-        type=time_util.ParseTimeArg,
-        help='Only display metrics that have changed after the given time')
+        type=arg_parsers.Datetime.Parse,
+        help=('Only display metrics that have changed after the given time. '
+              'See $ gcloud topic datetimes for information on time formats. '
+              'For example, `2018-01-01` is the first day of the year, and '
+              '`-P2W` is 2 weeks ago.'))
     parser.add_argument(
         '--hide-committed',
         default=False,
@@ -106,7 +114,7 @@ class List(base.ListCommand):
     """
     job_ref = job_utils.ExtractJobRef(args)
 
-    start_time = args.changed_after and time_util.Strftime(args.changed_after)
+    start_time = args.changed_after and times.FormatDateTime(args.changed_after)
 
     preds = []
     if not args.tentative and args.hide_committed:
@@ -122,7 +130,7 @@ class List(base.ListCommand):
 
     if args.changed_after:
       preds.append(
-          lambda m: time_util.ParseTimeArg(m.updateTime) > args.changed_after)
+          lambda m: times.ParseDateTime(m.updateTime) > args.changed_after)
 
     response = apis.Metrics.Get(
         job_ref.jobId,

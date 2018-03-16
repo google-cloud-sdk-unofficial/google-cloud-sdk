@@ -82,11 +82,9 @@ class SignUrl(base.Command):
         type=arg_parsers.Duration(),
         required=True,
         help="""\
-      The duration for which the signed URL will be valid.
-
-      For example, specifying `12h` will cause the signed URL to be valid up
-      to 12 hours. Valid units for this flag are `s` for seconds, `m` for
-      minutes, `h` for hours, and `d` for days.
+      The duration for which the signed URL will be valid. For example,
+      specifying `12h` will cause the signed URL to be valid up to 12 hours.
+      See $ gcloud topic datetimes for information on duration formats.
       """)
     parser.add_argument(
         '--validate',

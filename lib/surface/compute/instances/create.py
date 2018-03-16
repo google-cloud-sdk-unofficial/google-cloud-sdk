@@ -88,7 +88,12 @@ def _CommonArgs(parser,
   instances_flags.AddMaintenancePolicyArgs(parser, deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
-  instances_flags.AddServiceAccountAndScopeArgs(parser, False)
+  instances_flags.AddServiceAccountAndScopeArgs(
+      parser, False,
+      extra_scopes_help='However, if neither `--scopes` nor `--no-scopes` are '
+                        'specified and the project has no default service '
+                        'account, then the instance will be created with no '
+                        'scopes.')
   instances_flags.AddTagsArgs(parser)
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)

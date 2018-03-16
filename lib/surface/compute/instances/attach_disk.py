@@ -35,6 +35,11 @@ DETAILED_HELP = {
 
         attaches the disk named 'DISK' to the instance named
         'example-instance' in zone ``us-central1-a''.
+
+        After you create and attach a new disk to an instance, you must
+        [format and mount](https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting)
+        the disk so that the operating system can use the available storage
+        space.
         """,
 }
 

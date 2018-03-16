@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListTestablePermissions(base_classes.BaseIamCommand):
   """List IAM testable permissions for a resource.
 

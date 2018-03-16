@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.sql import api_util as common_api_util
 from googlecloudsdk.api_lib.sql import instances as api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
@@ -88,7 +89,7 @@ def AddBaseArgs(parser):
   """Adds base args and flags to the parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   flags.AddActivationPolicy(parser)
-  flags.AddAssignIp(parser)
+  flags.AddAssignIp(parser, show_negated_in_help=True)
   parser.add_argument(
       '--async',
       action='store_true',
@@ -129,11 +130,10 @@ def AddBaseArgs(parser):
       '--diff',
       action='store_true',
       help='Show what changed as a result of the update.')
-  flags.AddEnableBinLog(parser)
+  flags.AddEnableBinLog(parser, show_negated_in_help=True)
   parser.add_argument(
       '--enable-database-replication',
-      action='store_true',
-      default=None,  # Tri-valued: None => don't change the setting.
+      action=arg_parsers.StoreTrueFalseAction,
       help=('Enable database replication. Applicable only for read replica '
             'instance(s). WARNING: Instance will be restarted.'))
   parser.add_argument(
@@ -169,8 +169,7 @@ def AddBaseArgs(parser):
   flags.AddReplication(parser)
   parser.add_argument(
       '--require-ssl',
-      action='store_true',
-      default=None,  # Tri-valued: None => don't change the setting.
+      action=arg_parsers.StoreTrueFalseAction,
       help=('mysqld should default to \'REQUIRE X509\' for users connecting '
             'over IP.'))
   flags.AddStorageAutoIncrease(parser)

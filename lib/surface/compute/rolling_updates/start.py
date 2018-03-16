@@ -63,18 +63,16 @@ class Start(base.Command):
         Specifies minimum amount of time we will spend on updating single
         instance, measuring at the start of the first update action (currently
         only 'RECREATE' call). If actual instance update takes less time we will
-        simply sleep before proceeding with next instance. Valid units for this
-        flag are ``s'' for seconds, ``m'' for minutes, ``h'' for hours and
-        ``d'' for days. If no unit is specified, seconds is assumed.
+        simply sleep before proceeding with next instance.
+        See $ gcloud topic datetimes for information on duration formats.
         """)
     parser.add_argument(
         '--instance-startup-timeout', type=arg_parsers.Duration(),
         help="""\
         Maximum amount of time we will wait after finishing all steps until
         instance is in *RUNNING* state. If this deadline is exceeded instance
-        update is considered as failed. Valid units for this flag are ``s'' for
-        seconds, ``m'' for minutes, ``h'' for hours and ``d'' for days. If no
-        unit is specified, seconds is assumed.
+        update is considered as failed.
+        See $ gcloud topic datetimes for information on duration formats.
         """)
     parser.add_argument(
         '--max-num-failed-instances', type=int,

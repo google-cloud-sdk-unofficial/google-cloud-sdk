@@ -63,8 +63,8 @@ DETAILED_HELP = {
 
 def _SourceArgs(parser, source_snapshot_arg):
   """Add mutually exclusive source args."""
-
-  source_group = parser.add_mutually_exclusive_group()
+  source_parent_group = parser.add_group()
+  source_group = source_parent_group.add_mutually_exclusive_group()
 
   def AddImageHelp():
     """Returns detailed help for `--image` argument."""
@@ -82,7 +82,7 @@ def _SourceArgs(parser, source_snapshot_arg):
       '--image',
       help=AddImageHelp)
 
-  image_utils.AddImageProjectFlag(parser)
+  image_utils.AddImageProjectFlag(source_parent_group)
 
   source_group.add_argument(
       '--image-family',

@@ -35,6 +35,10 @@ class Import(base.Command):
   Note: authorization is required. For more information on importing data
   into Google Cloud SQL see
   [](https://cloud.google.com/sql/docs/import-export/importing).
+
+  Cloud SQL supports importing CSV files and SQL dump files from both MySQL and
+  PostgreSQL. For more information on how to create these export formats, see
+  [](https://cloud.google.com/sql/docs/mysql/import-export/creating-sqldump-csv)
   """
 
   @staticmethod

@@ -17,10 +17,11 @@
 
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.api_lib.dataflow import job_display
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
-from googlecloudsdk.command_lib.dataflow import time_util
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import times
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -38,10 +39,17 @@ class List(base.ListCommand):
 
     $ {command} --filter="name=my-wordcount"
 
-  Request jobs with from a given region:
+  List jobs with from a given region:
 
     $ {command} --region="europe-west1"
 
+  List jobs created this year:
+
+    $ {command} --created-after=2018-01-01
+
+  List jobs created more than a week ago:
+
+    $ {command} --created-before=-P1W
   """
 
   @staticmethod
@@ -71,11 +79,15 @@ class List(base.ListCommand):
         },
         help='Filter the jobs to those with the selected status.')
     parser.add_argument(
-        '--created-after', type=time_util.ParseTimeArg,
-        help='Filter the jobs to those created after the given time')
+        '--created-after', type=arg_parsers.Datetime.Parse,
+        help=('Filter the jobs to those created after the given time. '
+              'See $ gcloud topic datetimes for information on time formats. '
+              'For example, `2018-01-01` is the first day of the year, and '
+              '`-P2W` is 2 weeks ago.'))
     parser.add_argument(
-        '--created-before', type=time_util.ParseTimeArg,
-        help='Filter the jobs to those created before the given time')
+        '--created-before', type=arg_parsers.Datetime.Parse,
+        help=('Filter the jobs to those created before the given time. '
+              'See $ gcloud topic datetimes for information on time formats.'))
     parser.add_argument(
         '--region',
         metavar='REGION',
@@ -196,11 +208,11 @@ class _JobFilter(object):
 
     """
     if after and (not before):
-      self.preds.append(lambda x: time_util.Strptime(x.createTime) > after)
+      self.preds.append(lambda x: times.ParseDateTime(x.createTime) > after)
     elif (not after) and before:
-      self.preds.append(lambda x: time_util.Strptime(x.createTime) <= before)
+      self.preds.append(lambda x: times.ParseDateTime(x.createTime) <= before)
     elif after and before:
       def _Predicate(x):
-        create_time = time_util.Strptime(x.createTime)
+        create_time = times.ParseDateTime(x.createTime)
         return after < create_time and create_time <= before
       self.preds.append(_Predicate)

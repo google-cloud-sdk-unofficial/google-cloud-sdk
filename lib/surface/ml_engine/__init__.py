@@ -20,6 +20,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA)
 class MlEngine(base.Group):
   """Manage Cloud ML Engine jobs and models.
 

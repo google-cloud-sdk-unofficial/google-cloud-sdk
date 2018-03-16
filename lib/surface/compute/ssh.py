@@ -255,6 +255,14 @@ def DetailedHelp(version):
         takes care of authentication and the translation of the
         instance name into an IP address.
 
+        The default network comes preconfigured to allow ssh access to
+        all VMs. If the default network was edited, or if not using the
+        default network, you may need to explicitly enable ssh access by adding
+        a firewall-rule:
+
+          $ gcloud compute firewall-rules create --network=NETWORK \
+            default-allow-ssh --allow tcp:22
+
         This command does not work for Windows VMs.
 
         This command ensures that the user's public SSH key is present
@@ -283,6 +291,14 @@ def DetailedHelp(version):
         *{command}* is a thin wrapper around the *ssh(1)* command that
         takes care of authentication and the translation of the
         instance name into an IP address.
+
+        The default network comes preconfigured to allow ssh access to
+        all VMs. If the default network was edited, or if not using the
+        default network, you may need to explicitly enable ssh access by adding
+        a firewall-rule:
+
+          $ gcloud compute firewall-rules create --network=NETWORK \
+            default-allow-ssh --allow tcp:22
 
         This command does not work for Windows VMs.
 

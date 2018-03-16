@@ -37,7 +37,13 @@ class Delete(base.DeleteCommand):
   The following command deletes the project with the ID `example-foo-bar-1`:
 
     $ {command} example-foo-bar-1
+
+  ## SEE ALSO
+
+  {see_also}
   """
+
+  detailed_help = {'see_also': flags.CREATE_DELETE_IN_CONSOLE_SEE_ALSO}
 
   @staticmethod
   def Args(parser):

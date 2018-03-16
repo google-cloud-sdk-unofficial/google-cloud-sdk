@@ -33,7 +33,7 @@ class Create(base.CreateCommand):
 
           The default lifetime of a logpoint is 24 hours from creation, and the
           output will go to the standard log for the programming language of the
-          target (java.logging for Java, logging.* for Python, etc.)
+          target (``java.logging'' for Java, ``logging'' for Python, etc.)
       """
   }
 

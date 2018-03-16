@@ -62,9 +62,4 @@ def readBase64fromText(text):
 
 
 def readBase64FromFile(fileObj):
-    if sys.version_info[0] <= 2:
-        return ''.join([base64.b64decode(x) for x in fileObj.readlines()])
-    else:
-        return ''.encode().join(
-            [base64.b64decode(x.encode()) for x in fileObj.readlines()]
-        )
+    return readBase64fromText(fileObj.read())

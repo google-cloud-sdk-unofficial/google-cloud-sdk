@@ -46,7 +46,8 @@ class Start(base.Command):
         '\n\n  ADDRESS[:PORT]\n\n'
         'In this format you must enclose IPv6 addresses in square brackets: '
         'e.g.\n\n'
-        '  [2001:db8:0:0:0:ff00:42:8329]:8080\n\n')
+        '  [2001:db8:0:0:0:ff00:42:8329]:8080\n\n'
+        'The default value is localhost:8081.')
     parser.add_argument(
         '--store-on-disk',
         default=True,

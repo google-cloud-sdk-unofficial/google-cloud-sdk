@@ -19,6 +19,6 @@ from __future__ import print_function
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SecurityPolicyRules(base.Group):
   """Read and manipulate Google Compute Engine security policies rules."""

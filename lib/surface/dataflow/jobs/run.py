@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
 
 
@@ -40,12 +39,20 @@ class Run(base.Command):
 
     parser.add_argument(
         '--gcs-location',
-        help='The location of the job template to run.',
+        help=("The Google Cloud Storage location of the job template to run. "
+              "(Must be a URL beginning with 'gs://'.)"),
+        type=arg_parsers.RegexpValidator(
+            r'^gs://.*',
+            'Must begin with \'gs://\''),
         required=True)
 
     parser.add_argument(
         '--staging-location',
-        help='The location to stage temporary files.',
+        help=("The Google Cloud Storage location to stage temporary files. "
+              "(Must be a URL beginning with 'gs://'.)"),
+        type=arg_parsers.RegexpValidator(
+            r'^gs://.*',
+            'Must begin with \'gs://\'')
     )
 
     parser.add_argument(
@@ -86,14 +93,6 @@ class Run(base.Command):
     Returns:
       A Job message.
     """
-    if not args.gcs_location.startswith('gs://'):
-      raise exceptions.ToolException("""\
---gcs-location must begin with 'gs://'.  Provided value was '{value}'.
-""".format(value=args.gcs_location))
-    if args.staging_location and not args.staging_location.startswith('gs://'):
-      raise exceptions.ToolException("""\
---staging-location must begin with 'gs://'.  Provided value was '{value}'.
-""".format(value=args.staging_location))
 
     job = apis.Templates.Create(
         project_id=properties.VALUES.core.project.Get(required=True),
