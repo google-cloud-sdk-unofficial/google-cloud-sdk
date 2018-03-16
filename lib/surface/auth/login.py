@@ -96,13 +96,11 @@ class Login(base.Command):
       scopes += (auth_util.GOOGLE_DRIVE_SCOPE,)
 
     if c_devshell.IsDevshellEnvironment():
-      message = """
+      message = textwrap.dedent("""
           You are already authenticated with gcloud when running
           inside the Cloud Shell and so do not need to run this
-          command.
-
-          Do you wish to proceed anyway?
-        """
+          command. Do you wish to proceed anyway?
+          """)
       answer = console_io.PromptContinue(message=message)
       if not answer:
         return None

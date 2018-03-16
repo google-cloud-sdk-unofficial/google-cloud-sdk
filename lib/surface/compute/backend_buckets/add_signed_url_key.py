@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
@@ -54,8 +55,8 @@ class AddSignedUrlKey(base.UpdateCommand):
     AddSignedUrlKey.BACKEND_BUCKET_ARG = flags.BackendBucketArgument()
     AddSignedUrlKey.BACKEND_BUCKET_ARG.AddArgument(
         parser, operation_type='add CDN signed URL key to')
-    flags.AddCdnSignedUrlKeyName(parser)
-    flags.AddCdnSignedUrlKeyFile(parser)
+    signed_url_flags.AddCdnSignedUrlKeyName(parser, required=True)
+    signed_url_flags.AddCdnSignedUrlKeyFile(parser, required=True)
 
   def Run(self, args):
     """Issues the request to add Signed URL key to the backend service."""

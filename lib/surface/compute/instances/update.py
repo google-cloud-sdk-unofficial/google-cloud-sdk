@@ -99,13 +99,22 @@ class Update(base.UpdateCommand):
         'Setting deletion protection of instance [{0}] to [{1}]',
         instance_ref.Name(), args.deletion_protection) or result
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      if (hasattr(args, 'shielded_vm_secure_boot') or
-          hasattr(args, 'shielded_vm_vtpm')):
+      if (args.IsSpecified('shielded_vm_secure_boot') or
+          args.IsSpecified('shielded_vm_vtpm') or
+          args.IsSpecified('shielded_vm_integrity_monitoring')):
         shielded_vm_config_ref = self._GetShieldedVMConfigRef(
             instance_ref, args, holder)
         result = self._WaitForResult(
             operation_poller, shielded_vm_config_ref,
             'Setting shieldedVMConfig  of instance [{0}]',
+            instance_ref.Name()) or result
+
+      if args.IsSpecified('shielded_vm_learn_integrity_policy'):
+        shielded_vm_integrity_policy_ref = (
+            self._GetShieldedVMIntegrityPolicyRef(instance_ref, holder))
+        result = self._WaitForResult(
+            operation_poller, shielded_vm_integrity_policy_ref,
+            'Setting shieldedVMIntegrityPolicy of instance [{0}]',
             instance_ref.Name()) or result
 
     return result
@@ -115,12 +124,14 @@ class Update(base.UpdateCommand):
     messages = holder.client.messages
 
     if (args.shielded_vm_secure_boot is None and
-        args.shielded_vm_vtpm is None):
+        args.shielded_vm_vtpm is None and
+        args.shielded_vm_integrity_monitoring is None):
       return None
     shieldedvm_config_message = instance_utils.CreateShieldedVmConfigMessage(
         messages,
         args.shielded_vm_secure_boot,
-        args.shielded_vm_vtpm)
+        args.shielded_vm_vtpm,
+        args.shielded_vm_integrity_monitoring)
 
     request = messages.ComputeInstancesUpdateShieldedVmConfigRequest(
         instance=instance_ref.Name(),
@@ -129,6 +140,23 @@ class Update(base.UpdateCommand):
         zone=instance_ref.zone)
 
     operation = client.instances.UpdateShieldedVmConfig(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
+  def _GetShieldedVMIntegrityPolicyRef(self, instance_ref, holder):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+
+    shieldedvm_integrity_policy_message = (
+        instance_utils.CreateShieldedVmIntegrityPolicyMessage(messages))
+
+    request = messages.ComputeInstancesSetShieldedVmIntegrityPolicyRequest(
+        instance=instance_ref.Name(),
+        project=instance_ref.project,
+        shieldedVmIntegrityPolicy=shieldedvm_integrity_policy_message,
+        zone=instance_ref.zone)
+
+    operation = client.instances.SetShieldedVmIntegrityPolicy(request)
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
@@ -213,7 +241,9 @@ class UpdateAlpha(Update):
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, UpdateAlpha.ReleaseTrack())
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
-    flags.AddShieldedVMConfigArgs(parser, use_default_value=False)
+    flags.AddShieldedVMConfigArgs(
+        parser, use_default_value=False, for_update=True)
+    flags.AddShieldedVMIntegrityPolicyArgs(parser)
 
 
 Update.detailed_help = DETAILED_HELP

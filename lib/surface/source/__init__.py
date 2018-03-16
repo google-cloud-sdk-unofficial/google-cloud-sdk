@@ -27,15 +27,3 @@ class Source(base.Group):
   The {command} group lets you manipulate git repositories within a Google
   Cloud project.
   """
-
-  def Filter(self, context, args):
-    """Initialize context for source commands.
-
-    Args:
-      context: The current context.
-      args: The argparse namespace that was specified on the CLI or API.
-
-    Returns:
-      The updated context.
-    """
-    base.DisableUserProjectQuota()

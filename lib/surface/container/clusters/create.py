@@ -131,6 +131,9 @@ Cannot be used with the "--create-subnetwork" option.
       'as low as 100 nodes per pool on initial create.'.format(
           nodes=api_adapter.MAX_NODES_PER_POOL))
   flags.AddImageTypeFlag(parser, 'cluster')
+  flags.AddImageFlag(parser, hidden=True)
+  flags.AddImageProjectFlag(parser, hidden=True)
+  flags.AddImageFamilyFlag(parser, hidden=True)
   flags.AddNodeLabelsFlag(parser)
   flags.AddTagsFlag(parser, """\
 Applies the given Compute Engine tags (comma separated) on all nodes in the new
@@ -207,6 +210,9 @@ def ParseCreateOptionsBase(args):
       enable_master_authorized_networks=enable_master_authorized_networks,
       enable_network_policy=args.enable_network_policy,
       image_type=args.image_type,
+      image=args.image,
+      image_project=args.image_project,
+      image_family=args.image_family,
       issue_client_certificate=args.issue_client_certificate,
       labels=args.labels,
       local_ssd_count=args.local_ssd_count,
@@ -364,14 +370,14 @@ class CreateBeta(Create):
     flags.AddMaintenanceWindowFlag(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
-    # TODO(b/64091817) Un-hide once we're ready to release.
-    flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
+    flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddClusterNodeIdentityFlags(parser)
+    flags.AddPrivateClusterFlags(parser, hidden=False)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -382,6 +388,8 @@ class CreateBeta(Create):
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
     ops.new_scopes_behavior = True
+    ops.private_cluster = args.private_cluster
+    ops.master_ipv4_cidr = args.master_ipv4_cidr
     return ops
 
 
@@ -404,12 +412,13 @@ class CreateAlpha(Create):
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser)
+    flags.AddIstioConfigFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser)
     flags.AddMaintenanceWindowFlag(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
-    flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
+    flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
     flags.AddEnableSharedNetworkFlag(parser, hidden=True)
     flags.AddAutoprovisioningFlags(parser, hidden=False)
@@ -417,7 +426,7 @@ class CreateAlpha(Create):
     flags.AddPreemptibleFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
-    flags.AddPrivateClusterFlags(parser, hidden=True)
+    flags.AddPrivateClusterFlags(parser, hidden=False)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=True)
 
@@ -444,4 +453,6 @@ class CreateAlpha(Create):
     ops.new_scopes_behavior = True
     ops.enable_tpu = args.enable_tpu
     ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
+    ops.istio_config = args.istio_config
+    flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     return ops

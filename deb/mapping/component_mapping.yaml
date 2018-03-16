@@ -1,4 +1,5 @@
 app-engine-go: google-cloud-sdk-app-engine-go
+app-engine-grpc: google-cloud-sdk-app-engine-grpc
 app-engine-java: google-cloud-sdk-app-engine-java
 app-engine-php: unavailable
 app-engine-python: google-cloud-sdk-app-engine-python

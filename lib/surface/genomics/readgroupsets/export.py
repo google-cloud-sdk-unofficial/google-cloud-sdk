@@ -15,13 +15,13 @@
 """Implementation of gcloud genomics readgroupsets export.
 """
 
-import sys
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import exceptions as core_exceptions
 
 
 class Export(base.Command):
@@ -83,5 +83,4 @@ class Export(base.Command):
       msg = (exceptions.HttpException(error).payload.status_message
              .replace('exportUri', '--export-uri')
              .replace('referenceNames', '--reference-names'))
-      unused_type, unused_value, traceback = sys.exc_info()
-      raise exceptions.HttpException, msg, traceback
+      core_exceptions.reraise(exceptions.HttpException(msg))

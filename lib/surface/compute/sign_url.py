@@ -18,6 +18,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 from googlecloudsdk.command_lib.compute import sign_url_utils
+from googlecloudsdk.command_lib.compute import signed_url_flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -48,7 +49,7 @@ class SignUrl(base.Command):
 
   The URLs to sign have the following restrictions:
 
-  - The URL scheme must be HTTPS.
+  - The URL scheme must be either HTTP or HTTPS.
   - The URLs must not contain the query parameters: `Expires`, `KeyName` or
     `Signature`, since they are used for signing.
   - The URL must not have a fragment.
@@ -61,22 +62,8 @@ class SignUrl(base.Command):
     Args:
       parser: An argparse.ArgumentParser.
     """
-    parser.add_argument(
-        '--key-name',
-        required=True,
-        help='Name of the Cloud CDN Signed URL key.')
-    parser.add_argument(
-        '--key-file',
-        required=True,
-        metavar='LOCAL_FILE_PATH',
-        help="""\
-      The file containing the base64 encoded 128-bit secret key for Cloud CDN
-      Signed URL. It is vital that the key is strongly random. One way to
-      generate such a key is with the following command:
-
-          head -c 16 /dev/random | base64 | tr +/ -_ > [KEY_FILE_NAME]
-
-      """)
+    signed_url_flags.AddCdnSignedUrlKeyName(parser, required=True)
+    signed_url_flags.AddCdnSignedUrlKeyFile(parser, required=True)
     parser.add_argument(
         '--expires-in',
         type=arg_parsers.Duration(),

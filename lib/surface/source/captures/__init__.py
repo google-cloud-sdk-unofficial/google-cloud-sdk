@@ -18,10 +18,22 @@ from googlecloudsdk.calliope import base
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=('This command group is deprecated. '
              'Please use `gcloud beta debug source upload` instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class Capture(base.Group):
   """Cloud source capture commands."""
+
+  def Filter(self, context, args):
+    """Initialize context for source capture commands.
+
+    Args:
+      context: The current context.
+      args: The argparse namespace that was specified on the CLI or API.
+
+    Returns:
+      The updated context.
+    """
+    base.DisableUserProjectQuota()

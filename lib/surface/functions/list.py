@@ -14,14 +14,14 @@
 
 """Lists Google Cloud Functions."""
 
-import sys
-from apitools.base.py import exceptions
+from apitools.base.py import exceptions as api_exceptions
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -77,10 +77,9 @@ class List(base.ListCommand):
     try:
       for item in list_generator:
         yield item
-    except exceptions.HttpError as error:
+    except api_exceptions.HttpError as error:
       msg = util.GetHttpErrorMessage(error)
-      unused_type, unused_value, traceback = sys.exc_info()
-      raise base_exceptions.HttpException, msg, traceback
+      exceptions.reraise(base_exceptions.HttpException(msg))
 
   def BuildRequest(self, location_ref, messages):
     return messages.CloudfunctionsProjectsLocationsFunctionsListRequest(

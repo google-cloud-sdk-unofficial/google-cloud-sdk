@@ -32,9 +32,9 @@ class ConfigureDockerError(exceptions.Error):
 class ConfigureDocker(base.Command):
   """Registers gcloud as a Docker credential helper.
 
-  Adds Docker `credHelper` entry to Docker configuration file which will
-  register gcloud as the credential helper for all Google supported Docker
-  registries.
+  Adds Docker `credHelper` entry to Docker's configuration file, or creates the
+  file if it doesn't exist, which will register gcloud as the credential helper
+  for all Google supported Docker registries.
 
   If Docker configuration already contains a `credHelper` entry it will be
   overwritten.

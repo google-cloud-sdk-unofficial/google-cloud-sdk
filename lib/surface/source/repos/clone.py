@@ -94,14 +94,6 @@ class CloneGA(base.Command):
     source_handler = sourcerepo.Source()
 
     repo = source_handler.GetRepo(res)
-    if not repo:
-      message = ('Repository "{src}" in project "{prj}" does not '
-                 'exist.\nList current repos with\n'
-                 '$ gcloud source repos list\n'
-                 'or create with\n'
-                 '$ gcloud source repos create {src}'.format(
-                     src=args.src, prj=res.projectsId))
-      raise c_exc.InvalidArgumentException('REPOSITORY_NAME', message)
     if hasattr(repo, 'mirrorConfig') and repo.mirrorConfig:
       mirror_url = repo.mirrorConfig.url
       self.ActionIfMirror(

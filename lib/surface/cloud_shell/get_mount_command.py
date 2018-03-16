@@ -16,6 +16,7 @@
 from argcomplete.completers import FilesCompleter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloud_shell import util
+from googlecloudsdk.core import log
 from googlecloudsdk.core.util import platforms
 
 
@@ -50,14 +51,15 @@ class SshAlpha(base.Command):
 
   def Run(self, args):
     if platforms.OperatingSystem.IsWindows():
-      return 'get-mount-command is not currently supported on Windows'
+      raise util.UnsupportedPlatform(
+          'get-mount-command is not currently supported on Windows')
     else:
       connection_info = util.PrepareEnvironment(args)
-      return ('sshfs {user}@{host}: {mount_dir} -p {port} '
-              '-oIdentityFile={key_file}').format(
-                  user=connection_info.user,
-                  host=connection_info.host,
-                  mount_dir=args.mount_dir,
-                  port=connection_info.port,
-                  key_file=connection_info.key,
-              )
+      log.Print('sshfs {user}@{host}: {mount_dir} -p {port} '
+                '-oIdentityFile={key_file} -oStrictHostKeyChecking=no'.format(
+                    user=connection_info.user,
+                    host=connection_info.host,
+                    mount_dir=args.mount_dir,
+                    port=connection_info.port,
+                    key_file=connection_info.key,
+                ))

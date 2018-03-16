@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
@@ -270,7 +271,7 @@ class CreateAlpha(CreateGA):
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False, default=False)
-    flags.AddSignedUrlCacheMaxAge(parser)
+    signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
     flags.AddConnectionDrainOnFailover(parser, default=None)
     flags.AddDropTrafficIfUnhealthy(parser, default=None)
     flags.AddFailoverRatio(parser)

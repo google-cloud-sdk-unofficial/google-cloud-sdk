@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
@@ -52,7 +53,7 @@ class DeleteSignedUrlKey(base.UpdateCommand):
   def Args(parser):
     """Set up arguments for this command."""
     flags.GLOBAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.AddCdnSignedUrlKeyName(parser)
+    signed_url_flags.AddCdnSignedUrlKeyName(parser, required=True)
 
   def Run(self, args):
     """Issues the request to delete Signed URL key from the backend bucket."""

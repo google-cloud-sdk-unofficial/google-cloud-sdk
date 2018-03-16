@@ -18,14 +18,19 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 
 
+def _Args(parser, list_format):
+  parser.display_info.AddFormat(list_format)
+  lister.AddBaseListerArgs(parser)
+  parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleter)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Google Compute Engine SSL certificates."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    lister.AddBaseListerArgs(parser)
-    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleter)
+    _Args(parser, flags.DEFAULT_LIST_FORMAT)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -40,3 +45,11 @@ class List(base.ListCommand):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('SSL certificates')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, flags.ALPHA_LIST_FORMAT)

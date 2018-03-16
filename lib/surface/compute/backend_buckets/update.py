@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 from googlecloudsdk.core import log
 
@@ -123,7 +124,8 @@ class UpdateAlpha(Update):
   def Args(cls, parser):
     """Set up arguments for this command."""
     super(UpdateAlpha, cls).Args(parser)
-    backend_buckets_flags.AddSignedUrlCacheMaxAge(parser, unspecified_help='')
+    signed_url_flags.AddSignedUrlCacheMaxAge(
+        parser, required=False, unspecified_help='')
 
   def Modify(self, args, existing):
     """Modifies and returns the updated backend bucket."""

@@ -47,6 +47,7 @@ class Deny(base.Command):
         help='The values to add to the denied_values list policy.',
     ).AddToParser(parser)
 
+  # TODO(b/73831954):consider refactoring
   def Run(self, args):
     flags.CheckResourceFlags(args)
     messages = org_policies.OrgPoliciesMessages()
@@ -54,11 +55,14 @@ class Deny(base.Command):
 
     policy = service.GetOrgPolicy(org_policies_base.GetOrgPolicyRequest(args))
 
-    if policy.booleanPolicy or (
-        policy.listPolicy and
-        (policy.listPolicy.allowedValues or policy.listPolicy.allValues)):
+    if policy.booleanPolicy or (policy.listPolicy and
+                                policy.listPolicy.allowedValues):
       raise exceptions.ResourceManagerError(
           'Cannot add values to a non-denied_values list policy.')
+
+    if policy.listPolicy and policy.listPolicy.allValues:
+      raise exceptions.ResourceManagerError(
+          'Cannot add values if all_values is already specified.')
 
     if policy.listPolicy and policy.listPolicy.deniedValues:
       for value in args.denied_value:

@@ -187,28 +187,34 @@ def BuildShieldedVMConfigMessage(messages, args):
   Returns:
       A shielded VM config message.
   """
-  # Set the default values for ShieledVmConfig parameters
+  # Set the default values for ShieldedVmConfig parameters
 
   shielded_vm_config_message = None
   enable_secure_boot = None
   enable_vtpm = None
+  enable_integrity_monitoring = None
   if not (hasattr(args, 'shielded_vm_secure_boot') or
-          hasattr(args, 'shielded_vm_vtpm')):
+          hasattr(args, 'shielded_vm_vtpm') or
+          hasattr(args, 'shielded_vm_integrity_monitoring')):
     return shielded_vm_config_message
 
   if (not args.IsSpecified('shielded_vm_secure_boot') and
-      not args.IsSpecified('shielded_vm_vtpm')):
+      not args.IsSpecified('shielded_vm_vtpm') and
+      not args.IsSpecified('shielded_vm_integrity_monitoring')):
     return shielded_vm_config_message
 
   if args.shielded_vm_secure_boot is not None:
     enable_secure_boot = args.shielded_vm_secure_boot
   if args.shielded_vm_vtpm is not None:
     enable_vtpm = args.shielded_vm_vtpm
+  if args.shielded_vm_integrity_monitoring is not None:
+    enable_integrity_monitoring = args.shielded_vm_integrity_monitoring
   # compute message for shielded VM configuration.
   shielded_vm_config_message = instance_utils.CreateShieldedVmConfigMessage(
       messages,
       enable_secure_boot,
-      enable_vtpm)
+      enable_vtpm,
+      enable_integrity_monitoring)
 
   return shielded_vm_config_message
 

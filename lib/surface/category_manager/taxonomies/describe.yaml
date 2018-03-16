@@ -1,0 +1,12 @@
+- help_text:
+    brief: Get the description of a taxonomy.
+    DESCRIPTION: |
+      Get the description of a given taxonomy.
+
+  request:
+    collection: categorymanager.taxonomyStores.taxonomies
+
+  arguments:
+    resource:
+      help_text: The taxonomy reference of the taxonomy to describe.
+      spec: !REF googlecloudsdk.command_lib.category_manager.resources:taxonomy

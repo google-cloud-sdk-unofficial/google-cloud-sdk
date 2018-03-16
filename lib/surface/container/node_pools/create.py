@@ -77,6 +77,9 @@ def _Args(parser):
       type=int,
       help='Size in GB for node VM boot disks. Defaults to 100GB.')
   flags.AddImageTypeFlag(parser, 'node pool')
+  flags.AddImageFlag(parser, hidden=True)
+  flags.AddImageProjectFlag(parser, hidden=True)
+  flags.AddImageFamilyFlag(parser, hidden=True)
   flags.AddNodeLabelsFlag(parser, for_node_pool=True)
   flags.AddTagsFlag(parser, """\
 Applies the given Compute Engine tags (comma separated) on all nodes in the new
@@ -116,6 +119,9 @@ def ParseCreateNodePoolOptionsBase(args):
       max_nodes=args.max_nodes,
       min_nodes=args.min_nodes,
       image_type=args.image_type,
+      image=args.image,
+      image_project=args.image_project,
+      image_family=args.image_family,
       preemptible=args.preemptible,
       enable_autorepair=args.enable_autorepair,
       enable_autoupgrade=args.enable_autoupgrade,
@@ -202,8 +208,7 @@ class CreateBeta(Create):
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
-    # TODO(b/64091817) Un-hide once we're ready to release.
-    flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
+    flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
 
@@ -240,7 +245,7 @@ class CreateAlpha(Create):
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
     flags.AddAcceleratorArgs(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
-    flags.AddWorkloadMetadataFromNodeFlag(parser, hidden=True)
+    flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
 

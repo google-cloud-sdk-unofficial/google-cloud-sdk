@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.compute import backend_buckets_utils
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
@@ -84,7 +85,7 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     """Set up arguments for this command."""
     super(CreateAlpha, cls).Args(parser)
-    backend_buckets_flags.AddSignedUrlCacheMaxAge(parser)
+    signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""

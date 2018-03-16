@@ -110,6 +110,8 @@ You can find the list of allowed versions for upgrades by running:
       action='store_true')
   flags.AddAsyncFlag(parser)
   flags.AddImageTypeFlag(parser, 'cluster/node pool')
+  flags.AddImageFlag(parser, hidden=True)
+  flags.AddImageProjectFlag(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -143,7 +145,9 @@ class Upgrade(base.Command):
         update_master=args.master,
         update_nodes=(not args.master),
         node_pool=args.node_pool,
-        image_type=args.image_type)
+        image_type=args.image_type,
+        image=args.image,
+        image_project=args.image_project)
 
     upgrade_message = container_command_util.ClusterUpgradeMessage(
         cluster,

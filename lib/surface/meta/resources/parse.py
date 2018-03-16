@@ -17,6 +17,7 @@
 import sys
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
@@ -68,7 +69,7 @@ class Parse(base.ListCommand):
           resource = resources.REGISTRY.Parse(uri, collection=args.collection)
         except (Exception, SystemExit) as e:  # pylint: disable=broad-except
           if args.stack_trace:
-            raise e, None, sys.exc_info()[2]
+            exceptions.reraise(e)
           log.error(unicode(e))
           parsed_resources.append({
               'error': unicode(e),
@@ -97,7 +98,7 @@ class Parse(base.ListCommand):
             collection=args.collection).AsDict()
       except (Exception, SystemExit) as e:  # pylint: disable=broad-except
         if args.stack_trace:
-          raise e, None, sys.exc_info()[2]
+          exceptions.reraise(e)
         log.error(unicode(e))
         continue
       resource_printer.Print(params, 'json')

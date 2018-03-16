@@ -15,7 +15,6 @@
 """Implementation of gcloud genomics readgroupsets import.
 """
 
-import sys
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.genomics import genomics_util
@@ -23,6 +22,7 @@ from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import exceptions as core_exceptions
 
 
 class Import(base.Command):
@@ -114,5 +114,4 @@ class Import(base.Command):
              .replace('partitionStrategy', '--partition-strategy')
              .replace('sourceUris', '--source-uris')
              .replace('referenceSetId', '--reference-set-id'))
-      unused_type, unused_value, traceback = sys.exc_info()
-      raise exceptions.HttpException, msg, traceback
+      core_exceptions.reraise(exceptions.HttpException(msg))

@@ -13,8 +13,6 @@
 # limitations under the License.
 """Command to create a new project."""
 
-import sys
-
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
@@ -32,6 +30,7 @@ from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.resource_manager import flags
 
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -133,8 +132,7 @@ class Create(base.CreateCommand):
       msg = ('Project creation failed. The project ID you specified is '
              'already in use by another project. Please try an alternative '
              'ID.')
-      unused_type, unused_value, traceback = sys.exc_info()
-      raise exceptions.HttpException, msg, traceback
+      core_exceptions.reraise(exceptions.HttpException(msg))
     log.CreatedResource(project_ref, async=True)
     create_op = operations.WaitForOperation(create_op)
 
