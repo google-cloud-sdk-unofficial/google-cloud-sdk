@@ -15,13 +15,13 @@
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.tasks import queues
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 
 
-class AddIamPolicyBinding(base_classes.BaseIamCommand):
+class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a queue's access policy."""
 
   detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(

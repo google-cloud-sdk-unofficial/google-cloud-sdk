@@ -35,7 +35,7 @@ class Create(base.CreateCommand):
   The following command creates a TPU with ID `my-tpu` with explicit values
   for all required and optional parameters:
 
-    $ {command} \
+    $ {command} my-tpu \
         --zone us-central1-a \
         --range '10.240.0.0/29' \
         --accelerator-type 'tpu-v2' \

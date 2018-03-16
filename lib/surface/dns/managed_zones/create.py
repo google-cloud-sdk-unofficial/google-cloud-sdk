@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.command_lib.dns import util as command_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -94,6 +95,7 @@ class CreateBeta(base.CreateCommand):
     flags.GetManagedZonesDescriptionArg(required=True).AddToParser(parser)
     flags.AddCommonManagedZonesDnssecArgs(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v1beta2')
@@ -119,10 +121,13 @@ class CreateBeta(base.CreateCommand):
               'DNSSEC must be enabled in order to use other DNSSEC arguments. '
               'Please set --dnssec-state to "on" or "transfer".')
 
+    labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
+
     zone = messages.ManagedZone(name=zone_ref.managedZone,
                                 dnsName=util.AppendTrailingDot(args.dns_name),
                                 description=args.description,
-                                dnssecConfig=dnssec_config)
+                                dnssecConfig=dnssec_config,
+                                labels=labels)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,

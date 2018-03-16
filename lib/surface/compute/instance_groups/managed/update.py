@@ -121,11 +121,12 @@ class Update(base.UpdateCommand):
     device_names = instance_groups_flags.GetValidatedUpdateStatefulPolicyParams(
         args, igm_resource.statefulPolicy)
 
-    if not device_names and args.IsSpecified('stateful_names'):
+    if not device_names:
       # TODO(b/70314588): Use Patch instead of manual Update.
-      if not args.GetValue('stateful_names'):
+      if args.IsSpecified(
+          'stateful_names') and not args.GetValue('stateful_names'):
         igm_resource.reset('statefulPolicy')
-      else:
+      elif igm_resource.statefulPolicy or args.GetValue('stateful_names'):
         igm_resource.statefulPolicy = self._UpdateStatefulPolicy(client, [])
       return self._MakeUpdateRequest(client, igm_ref, igm_resource)
 

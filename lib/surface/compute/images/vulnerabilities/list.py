@@ -22,7 +22,18 @@ from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
-  """List Google occurences of PACKAGE_VULNERABILITY."""
+  """List Google occurrences of PACKAGE_VULNERABILITY.
+
+  Lists occurrences with the "kind" field set to "PACKAGE_VULNERABILITY".
+
+  The default value of the `--filter` flag for this command is:
+
+      vulnerabilityDetails.packageIssue.fixedLocation.version.kind != "MAXIMUM"
+
+  so that only vulnerabilities with a known fix are shown. Passing `--filter`
+  will override this so *all* PACKAGE_VULNERABILITY occurrences are shown, with
+  any additional provided filters applied.
+  """
 
   @staticmethod
   def Args(parser):
@@ -30,7 +41,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""\
         table(
           resourceUrl.name():label=IMAGE_ID,
-          noteName:label=NOTE,
+          noteName.basename():label=NOTE,
           vulnerabilityDetails.severity,
           vulnerabilityDetails.cvssScore,
           vulnerabilityDetails.packageIssue.affectedLocation.package.join(','):label=PACKAGES
@@ -38,6 +49,12 @@ class List(base.ListCommand):
     List._image_arg = image_flags.MakeDiskImageArg(
         required=False, name='--image')
     List._image_arg.AddArgument(parser, operation_type='create')
+    # This allows the occurrence if ANY of its PackageIssues have
+    # fixedLocation.version.kind != MAXIMUM.
+    # TODO(b/72375279): Do server-side
+    parser.display_info.AddFilter(
+        'vulnerabilityDetails.packageIssue.fixedLocation.version.kind != '
+        '"MAXIMUM"')
 
   def _GetFilter(self, args, holder):
     filters = ['kind = "PACKAGE_VULNERABILITY"']  # Display only vulnerabilities

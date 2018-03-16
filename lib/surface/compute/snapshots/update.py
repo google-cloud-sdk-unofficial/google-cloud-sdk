@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.snapshots import flags as snapshots_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,

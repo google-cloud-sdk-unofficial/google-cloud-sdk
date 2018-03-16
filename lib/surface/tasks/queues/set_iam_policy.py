@@ -14,14 +14,14 @@
 """`gcloud tasks queues set-iam-policy` command."""
 
 from googlecloudsdk.api_lib.tasks import queues
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-class SetIamPolicy(base_classes.BaseIamCommand):
+class SetIamPolicy(base.Command):
   """Set the IAM policy for a queue.
 
   This command replaces the existing IAM policy for a queue, given a queue and a

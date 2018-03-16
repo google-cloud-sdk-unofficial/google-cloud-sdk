@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

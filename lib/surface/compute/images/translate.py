@@ -70,7 +70,8 @@ class Translate(base.CreateCommand):
     workflow_path = '../workflows/image_import/{0}'.format(workflow)
     variables = """source_image=global/images/{0},image_name={1}""".format(
         args.source_image, args.destination_image)
-    return daisy_utils.RunDaisyBuild(args, workflow_path, variables)
+    tags = ['gce-daisy-image-translate']
+    return daisy_utils.RunDaisyBuild(args, workflow_path, variables, tags=tags)
 
 Translate.detailed_help = {
     'brief': 'Translate an imported image to make a bootable image',

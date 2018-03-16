@@ -15,7 +15,7 @@
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import resource_args
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 

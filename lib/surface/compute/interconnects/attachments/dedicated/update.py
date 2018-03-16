@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.Hidden

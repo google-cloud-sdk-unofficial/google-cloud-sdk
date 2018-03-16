@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.maintenance_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.maintenance_policies import util as maintenance_util
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 

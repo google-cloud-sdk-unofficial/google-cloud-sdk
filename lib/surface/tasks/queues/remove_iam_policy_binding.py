@@ -14,14 +14,14 @@
 """`gcloud tasks queues remove-iam-policy-binding` command."""
 
 from googlecloudsdk.api_lib.tasks import queues
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
+class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a queue's access policy."""
 
   detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(

@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.pubsub import snapshots
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 

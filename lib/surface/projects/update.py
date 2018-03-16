@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 

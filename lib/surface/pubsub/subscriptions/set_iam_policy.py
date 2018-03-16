@@ -14,7 +14,6 @@
 """Cloud Pub/Sub subscriptions set-iam-policy command."""
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import resource_args
@@ -22,7 +21,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SetIamPolicy(base_classes.BaseIamCommand):
+class SetIamPolicy(base.Command):
   """Set the IAM policy for a Cloud Pub/Sub Subscription."""
 
   detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(

@@ -14,12 +14,11 @@
 """Cloud Pub/Sub topics get-iam-policy command."""
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.pubsub import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
+class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a Cloud Pub/Sub Topic."""
 
   detailed_help = {

@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)

@@ -14,14 +14,14 @@
 """Command for setting IAM policies for registries."""
 
 from googlecloudsdk.api_lib.cloudiot import registries
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iot import flags
 from googlecloudsdk.command_lib.iot import resource_args
 from googlecloudsdk.core import log
 
 
-class SetIamPolicy(base_classes.BaseIamCommand):
+class SetIamPolicy(base.Command):
   """Set the IAM policy for a device registry.
 
   This command replaces the existing IAM policy for a device registry, given

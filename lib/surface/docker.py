@@ -32,7 +32,7 @@ from googlecloudsdk.core.docker import docker
 # By default, we'll set up authentication for these registries.
 # If the user changes the --server argument to something not in this list,
 # we'll just give them a warning that they're using an unexpected server.
-_DEFAULT_REGISTRIES = constants.ALL_SUPPORTED_REGISTRIES
+_DEFAULT_REGISTRIES = constants.DEFAULT_REGISTRIES_TO_AUTHENTICATE
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -20,10 +20,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.vpn_tunnels import flags as vpn_tunnel_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine VPN tunnel.
 

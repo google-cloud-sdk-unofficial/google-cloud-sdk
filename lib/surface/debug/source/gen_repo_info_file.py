@@ -27,18 +27,17 @@ from googlecloudsdk.third_party.appengine.tools import context_util
 class GenRepoInfoFile(base.Command):
   """Generates repository information files for the Stackdriver Debugger.
 
-  The generated files contain opaque information representing which source
+  The generated file contains opaque information representing which source
   revision the application was built at, and which repository this revision
   will be pushed to.
   """
 
   detailed_help = {
       'DESCRIPTION': """\
-          This command generates two files, {old_name} and
-          {contexts_filename}, containing information on the source revision
-          and remote repository associated with the given source directory.
-          """.format(old_name=context_util.CONTEXT_FILENAME,
-                     contexts_filename=context_util.EXT_CONTEXT_FILENAME),
+          This command generates a file named {name} containing information on
+          the source revision and remote repository associated with the given
+          source directory.
+          """.format(name=context_util.CONTEXT_FILENAME),
       'EXAMPLES': """\
           To generate repository information files for your app,
           from your source directory run:
@@ -56,7 +55,7 @@ class GenRepoInfoFile(base.Command):
     parser.add_argument(
         '--output-directory',
         default='.',
-        help='The directory in which to create the source context files. ')
+        help='The directory in which to create the source context file. ')
 
   def Run(self, args):
     try:
@@ -67,7 +66,7 @@ class GenRepoInfoFile(base.Command):
       # it properly (i.e., as an error instead of a crash).
       raise core_exceptions.Error(e)
 
-    # First create the old-style source-context.json file
+    # Create the source-context.json file.
     output_file = context_util.CONTEXT_FILENAME
 
     output_directory = args.output_directory
@@ -85,8 +84,3 @@ class GenRepoInfoFile(base.Command):
     with open(output_file, 'w') as f:
       json.dump(best_context, f, indent=2, sort_keys=True)
 
-    # Create the new source-contexts.json file.
-    with open(
-        os.path.join(output_directory,
-                     context_util.EXT_CONTEXT_FILENAME), 'w') as f:
-      json.dump(contexts, f, indent=2, sort_keys=True)

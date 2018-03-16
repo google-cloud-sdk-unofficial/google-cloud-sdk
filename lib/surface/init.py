@@ -24,13 +24,13 @@ from googlecloudsdk.core import config
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.diagnostics import network_diagnostics
 from googlecloudsdk.core.resource import resource_projector
 from googlecloudsdk.core.util import platforms
-import yaml
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -232,8 +232,7 @@ class Init(base.Command):
     log.status.write('Settings from your current configuration [{0}] are:\n'
                      .format(active_config.name))
     log.status.flush()
-    log.status.write(yaml.dump(properties.VALUES.AllValues(),
-                               default_flow_style=False))
+    log.status.write(yaml.dump(properties.VALUES.AllValues()))
     log.out.flush()
     log.status.write('\n')
     log.status.flush()

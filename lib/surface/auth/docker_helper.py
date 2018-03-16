@@ -19,7 +19,7 @@ import sys
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.credentials import store as c_store
-from googlecloudsdk.core.docker import constants
+from googlecloudsdk.core.docker import credential_utils
 
 
 @base.Hidden
@@ -44,17 +44,16 @@ class DockerHelper(base.Command):
           # This tells Docker that the secret will be an access token, not a
           # username/password.
           # Docker normally expects a prefixed 'https://' for auth configs.
-          ('https://'+url): 'oauth2accesstoken'
-          for url in constants.ALL_SUPPORTED_REGISTRIES
+          ('https://' + url): 'oauth2accesstoken'
+          for url in credential_utils.DefaultAuthenticatedRegistries()
       }
 
     elif args.method == DockerHelper.GET:
       cred = c_store.Load()
       c_store.Refresh(cred)
       url = sys.stdin.read().strip()
-      if not (url in constants.ALL_SUPPORTED_REGISTRIES or url.replace(
-          'https://', '', 1) in constants.ALL_SUPPORTED_REGISTRIES):
-
+      if (url.replace('https://', '',
+                      1) not in credential_utils.SupportedRegistries()):
         raise exceptions.Error(
             'Repository url [{url}] is not supported'.format(url=url))
       # Putting an actual username in the response doesn't work. Docker will

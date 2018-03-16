@@ -48,6 +48,23 @@ class Binauthz(base.Group):
             --output build_key1.pgp
         ```
 
+    Or if you're creating v2 kind=ATTESTATION_AUTHORITY attestations,
+    export your key's fingerprint (note this may differ based on version and
+    implementations of gpg):
+
+        ```sh
+        gpg \
+            --with-colons \
+            --with-fingerprint \
+            --force-v4-certs \
+            --list-keys \
+            "${ATTESTING_USER}" | grep fpr | cut --delimiter=':' --fields 10
+        ```
+
+    This should produce a 40 character, hexidecimal encoded string.  See
+    https://tools.ietf.org/html/rfc4880#section-12.2 for more information on
+    key fingerprints.
+
     Create your attestation payload:
 
         ```sh
@@ -74,6 +91,16 @@ class Binauthz(base.Group):
           --public-key-file=build_key1.pgp \
           --signature-file=example_signature.pgp \
           --artifact-url="${ARTIFACT_URL}"
+        ```
+
+    Or if you're creating v2 kind=ATTESTATION_AUTHORITY attestations:
+
+        ```sh
+        {command} attestations create \
+          --pgp-key-fingerprint=${KEY_FINGERPRINT} \
+          --signature-file=example_signature.pgp \
+          --artifact-url="${ARTIFACT_URL}" \
+          --attestation-authority-note=providers/example-prj/notes/note-id
         ```
 
     List the attestation by artifact URL.  `--format` can be passed to
@@ -109,6 +136,18 @@ class Binauthz(base.Group):
 
           ---
           https://gcr.io/example-project/example-image@sha256:000000000000000000000000000000000000000000000000000000000000abcd
+          ...
+        ```
+
+    Listing also works for kind=ATTESTATION_AUTHORITY attestations, just pass
+    the attestation authority note:
+
+        ```sh
+        {command} attestations list \
+          --artifact-url="${ARTIFACT_URL}" \
+          --attestation-authority-note=providers/exmple-prj/notes/note-id \
+          --format=yaml
+
           ...
         ```
   """

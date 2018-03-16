@@ -20,16 +20,17 @@ from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 _INSTANTIATE_FROM_VALUES = [
     'attach-read-only',
     'do-not-include',
-    'image-url',
+    'custom-image',
     'source-image',
     'source-image-family',
 ]
@@ -93,6 +94,7 @@ def _CommonArgs(parser,
                 'auto-delete': arg_parsers.ArgBoolean(),
                 'device-name': str,
                 'instantiate-from': str,
+                'custom-image': str,
             },
         ),
         metavar='PROPERTY=VALUE',
@@ -112,6 +114,9 @@ def _CommonArgs(parser,
 
         *instantiate-from*::: Specifies whether to include the disk and which
         image to use. Valid values are: {}
+
+        *custom-image*::: The custom image to use if custom-image is specified
+        for instantiate-from.
         """.format(', '.join(_INSTANTIATE_FROM_VALUES)),
     )
 
@@ -148,12 +153,20 @@ def _AddSourceInstanceToTemplate(
     messages = compute_api.client.messages
     instance_template.sourceInstanceParams = messages.SourceInstanceParams()
     for disk in args.configure_disk:
+      instantiate_from = disk.get('instantiate-from')
+      custom_image = disk.get('custom-image')
+      if custom_image and instantiate_from != 'custom-image':
+        raise exceptions.InvalidArgumentException(
+            '--configure-disk',
+            'Value for `instaniate-from` must be \'custom-image\' if the key '
+            '`custom-image` is specified.')
       disk_config = messages.DiskInstantiationConfig()
       disk_config.autoDelete = disk.get('auto-delete')
       disk_config.deviceName = disk.get('device-name')
       disk_config.instantiateFrom = (
           messages.DiskInstantiationConfig.InstantiateFromValueValuesEnum(
-              disk.get('instantiate-from').upper().replace('-', '_')))
+              instantiate_from.upper().replace('-', '_')))
+      disk_config.customImage = custom_image
       instance_template.sourceInstanceParams.diskConfigs.append(disk_config)
   # `properties` and `sourceInstance` are a one of.
   instance_template.properties = None

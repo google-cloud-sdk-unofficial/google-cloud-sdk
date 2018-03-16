@@ -25,22 +25,17 @@ from googlecloudsdk.command_lib.iam import iam_util
 class SetIamPolicy(base.Command):
   """Set the IAM Policy for a Google Compute Engine instance.
 
-  *{command}* sets the Iam Policy associated with a Google Compute Engine
+  *{command}* sets the IAM Policy associated with a Google Compute Engine
   instance in a project.
   """
+
+  detailed_help = iam_util.GetDetailedHelpForSetIamPolicy('disk', 'my-disk')
 
   @staticmethod
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(
         parser, operation_type='set the IAM policy of')
-
-    parser.add_argument(
-        'policy_file',
-        metavar='POLICY_FILE',
-        help="""\
-        Path to a local JSON or YAML formatted file containing a valid policy.
-        """)
-    # TODO(b/36050881): fill in detailed help.
+    compute_flags.AddPolicyFileFlag(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

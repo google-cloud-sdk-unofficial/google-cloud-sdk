@@ -57,9 +57,7 @@ class Upload(base.CreateCommand):
     parser.add_argument(
         '--source-context-directory',
         help="""\
-            The directory to write the source context files. Two files
-            (source-context.json and source-contexts.json) will be created if
-            this is specified.
+            The directory in which to create the source context file.
         """)
     parser.display_info.AddFormat("""
           flattened(
@@ -83,11 +81,6 @@ class Upload(base.CreateCommand):
       files.MakeDir(output_dir)
       output_dir = os.path.realpath(output_dir)
       extended_contexts = result['source_contexts']
-
-      result['extended_context_file'] = os.path.join(output_dir,
-                                                     'source-contexts.json')
-      with open(result['extended_context_file'], 'w') as f:
-        json.dump(extended_contexts, f)
 
       result['context_file'] = os.path.join(output_dir, 'source-context.json')
       best_context = context_util.BestSourceContext(extended_contexts)

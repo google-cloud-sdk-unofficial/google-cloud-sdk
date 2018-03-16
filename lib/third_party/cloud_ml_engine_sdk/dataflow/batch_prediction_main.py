@@ -173,11 +173,11 @@ class BatchPredictionOptions(PipelineOptions):
         help=("User's CloudML job id. It is not the job id of the Dataflow job."
               " The logs are sent to user job project in Stackdriver with job"
               " id as its label."))
+
     parser.add_value_provider_argument(
         "--framework",
         dest="framework",
         default=mlprediction.TENSORFLOW_FRAMEWORK_NAME,
-        choices=FRAMEWORKS_SUPPORTED,
         help=("The framework used to train the model against. Supported "
               "frameworks: %s" % FRAMEWORKS_SUPPORTED))
 

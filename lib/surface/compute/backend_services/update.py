@@ -292,7 +292,10 @@ class UpdateAlpha(UpdateGA):
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser, default=None)
+    flags.AddProtocol(
+        parser,
+        default=None,
+        choices=['HTTP', 'HTTPS', 'HTTP2', 'SSL', 'TCP', 'UDP'])
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)

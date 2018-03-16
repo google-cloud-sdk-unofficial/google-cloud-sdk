@@ -27,31 +27,84 @@ class List(base.ListCommand):
   This command lists Binary Authorization attestations for your project.
   Command line flags specify which artifact to list the attestations for.
   If no artifact is specified, then this lists all URLs with associated
-  occurrences.  Note that the listed occurrences might include more than just
-  attestations, since it is listing any occurrence at all that has the provided
-  `--artifact-url`.
+  occurrences.
+
+  To list attestations with kind=ATTESTATION_AUTHORITY (v2), the
+  attestation authority note ID must be passed with the flag `--attestation-
+  authority-note-id`.  In this mode, only attestations bound to the provided
+  note will be listed.  The returned attestation occurrences can be from any
+  project, so the global `--project` flag is not required (or used) in this
+  mode.
+
+  To list attestations with kind=BUILD_DETAILS (v1, soon to be
+  deprecated), the global --project flag must be provided (or implicitly
+  provided from configuration).  In this mode, note that listed occurrences
+  might include more than just attestations, since it is listing any occurrence
+  at all that has the provided `--artifact-url`.  All listed occurrences will be
+  from the provided project.
 
   ## EXAMPLES
 
-  To attest an artifact by associating a signature to it, run:
+  List all artifact URLs for which a v2 attestation exists and is bound
+  to the passed attestation authority note:
 
       $ {command} \
+          --attestation-authority-note=providers/example-prj/notes/note-id
+
+  List the (pgp_key_fingerprint, signature) pairs for all v2
+  attestations for the passed artifact-url bound to the passed attestation
+  authority note:
+
+      $ {command} \
+          --attestation-authority-note=providers/exmple-prj/notes/note-id \
+          --artifact-url='gcr.io/example-project/example-image@sha256:abcd'
+
+  List all artifact URLs for which an v1 attestation exists in the
+  passed project:
+
+      $ {command} --project=example-project
+
+  List the (public_key, signature) pairs for all v1 attestations in the
+  passed project:
+
+      $ {command} \
+          --project=example-project \
           --artifact-url='gcr.io/example-project/example-image@sha256:abcd'
   """
 
   @staticmethod
   def Args(parser):
-    binauthz_flags.AddCommonFlags(parser)
+    binauthz_flags.AddListFlags(parser)
 
-  def Run(self, args):
+  def RunLegacy(self, normalized_artifact_url):
     project_ref = resources.REGISTRY.Parse(
         properties.VALUES.core.project.Get(required=True),
         collection='cloudresourcemanager.projects')
-    container_analysis_client = binauthz_api_util.ContainerAnalysisClient()
+    client = binauthz_api_util.ContainerAnalysisLegacyClient()
+    if normalized_artifact_url:
+      return client.YieldSignatures(
+          project_ref=project_ref, artifact_url=normalized_artifact_url)
+    else:
+      return client.YieldUrlsWithOccurrences(project_ref)
+
+  def Run(self, args):
+    normalized_artifact_url = None
     if args.artifact_url:
       normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
           args.artifact_url)
-      return container_analysis_client.YieldSignatures(
-          project_ref=project_ref, artifact_url=normalized_artifact_url)
+
+    if not args.attestation_authority_note:
+      return self.RunLegacy(normalized_artifact_url)
+
+    attestation_authority_note_ref = (
+        args.CONCEPTS.attestation_authority_note.Parse())
+
+    client = binauthz_api_util.ContainerAnalysisClient()
+
+    if normalized_artifact_url:
+      return client.YieldPgpKeyFingerprintsAndSignatures(
+          note_ref=attestation_authority_note_ref,
+          artifact_url=normalized_artifact_url,
+      )
     else:
-      return container_analysis_client.YieldUrlsWithOccurrences(project_ref)
+      return client.YieldUrlsWithOccurrences(attestation_authority_note_ref)

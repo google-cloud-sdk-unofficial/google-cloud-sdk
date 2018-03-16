@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.genomics import exceptions
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files

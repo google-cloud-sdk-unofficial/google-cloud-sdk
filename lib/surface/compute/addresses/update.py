@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.addresses import flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

@@ -1,0 +1,80 @@
+- help_text:
+    brief: Create a new access zone.
+    DESCRIPTION: Create a new access zone in a given access policy.
+
+  request:
+    collection: accesscontextmanager.accessPolicies.accessZones
+    modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.zones:AddAccessLevels
+
+  async:
+    collection: accesscontextmanager.operations
+
+  arguments:
+    resource:
+      help_text: The access zone to create.
+      spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:zone
+    params:
+      - api_field: accessZone.description
+        arg_name: description
+        required: false
+        help_text: Long-form description of access zone.
+      - api_field: accessZone.title
+        arg_name: title
+        required: true
+        help_text: Short human-readable title for the access zone.
+      - api_field: accessZone.resources
+        arg_name: resources
+        required: true
+        help_text: |
+            Comma-separated list of resources (currently only projects, in the
+            form `project/<projectnumber>`) in this zone.
+      - group:
+          mutex: True
+          params:
+            - api_field: accessZone.unrestrictedServices
+              arg_name: unrestricted-services
+              metavar: SERVICE
+              help_text: |
+                  Comma-separated list of services to which the zone boundary
+                  DOES NOT apply (for example, `storage.googleapis.com`). A
+                  wildcard (```*```) may be given to denote all services.
+            - api_field: accessZone.restrictedServices
+              arg_name: restricted-services
+              metavar: SERVICE
+              help_text: |
+                  Comma-separated list of services to which the zone boundary
+                  DOES apply (for example, `storage.googleapis.com`). A wildcard
+                  (```*```) may be given to denote all services.
+      - arg_name: access-levels
+        api_field: accessZone.accessLevels
+        metavar: LEVEL
+        # Added in AddAccessLevels hook because a type wouldn't have access to
+        # the policy of the access zone
+        type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+        help_text: |
+            Comma-separated list of IDs for access levels (in the same policy)
+            that an intra-zone request must satisfy to be allowed.
+      - api_field: accessZone.zoneType
+        arg_name: zone-type
+        help_text: |
+            Type of the zone.
+        default: regular
+        choices:
+            - arg_value: regular
+              enum_value: ZONE_TYPE_REGULAR
+              help_text: |
+                  Allows resources within this access zone to import and export
+                  data amongst themselves.
+
+                  A project may belong to at most one regular access zone.
+            - arg_value: bridge
+              enum_value: ZONE_TYPE_BRIDGE
+              help_text: |
+                  Allows resources in different regular access zones to import
+                  and export data between each other.
+
+                  A project may belong to multiple bridge access zones (only if
+                  it also belongs to a regular access zone). Both restricted and
+                  unrestricted service lists, as well as access level lists,
+                  must be empty.

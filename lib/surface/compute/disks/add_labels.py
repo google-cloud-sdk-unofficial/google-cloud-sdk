@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import labels_doc_helper
 from googlecloudsdk.command_lib.compute import labels_flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,

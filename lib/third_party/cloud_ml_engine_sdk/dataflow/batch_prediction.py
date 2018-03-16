@@ -227,7 +227,8 @@ class PredictionDoFn(beam.DoFn):
         # Even though predict() checks the signature in TensorFlowModel,
         # we need to duplicate this check here to determine the single string
         # input case.
-        signature = self._model_state.model.get_signature(self._signature_name)
+        self._signature_name, signature = self._model_state.model.get_signature(
+            self._signature_name)
         if self._model_state.model.is_single_string_input(signature):
           loaded_data = element
         else:

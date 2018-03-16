@@ -14,13 +14,12 @@
 """Cloud Pub/Sub topics remove-iam-policy-binding command."""
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.pubsub import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SetIamPolicy(base_classes.BaseIamCommand):
+class SetIamPolicy(base.Command):
   """Removes an IAM policy binding for a Cloud Pub/Sub Topic."""
 
   detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(

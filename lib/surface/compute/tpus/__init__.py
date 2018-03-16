@@ -15,8 +15,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Tpus(base.Group):
   """List, create, and delete Cloud TPUs."""
-
-

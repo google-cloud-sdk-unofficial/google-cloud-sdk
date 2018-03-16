@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -125,10 +125,32 @@ def _CommonArgs(parser, source_snapshot_arg):
   parser.display_info.AddFormat(
       'table(name, zone.basename(), sizeGb, type.basename(), status)')
 
+  parser.add_argument(
+      '--licenses',
+      type=arg_parsers.ArgList(),
+      metavar='LICENSE',
+      help=('A list of URIs to license resources. The provided licenses will '
+            'be added onto the created disks to indicate the licensing and '
+            'billing policies.'))
+
   _SourceArgs(parser, source_snapshot_arg)
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
+
+
+def _ParseGuestOsFeaturesToMessages(args, client_messages, release_track):
+  """Parse GuestOS features."""
+  guest_os_feature_messages = []
+  if (release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA] and
+      args.guest_os_features):
+    for feature in args.guest_os_features:
+      gf_type = client_messages.GuestOsFeature.TypeValueValuesEnum(feature)
+      guest_os_feature = client_messages.GuestOsFeature()
+      guest_os_feature.type = gf_type
+      guest_os_feature_messages.append(guest_os_feature)
+
+  return guest_os_feature_messages
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -139,20 +161,6 @@ class Create(base.Command):
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
-
-  def ParseGuestOsFeaturesToMessages(self, args, client_messages):
-    """Parse GuestOS features.
-
-    Subclasses may override it to customize parsing.
-
-    Args:
-      args: The argument namespace
-      client_messages: base_classes.ComputeApiHolder.client.messages instance
-
-    Returns:
-      List of guest os feature messages.
-    """
-    return []
 
   def ParseLicenses(self, args):
     """Parse license.
@@ -165,6 +173,8 @@ class Create(base.Command):
     Returns:
       List of licenses.
     """
+    if args.licenses:
+      return args.licenses
     return []
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
@@ -311,8 +321,8 @@ class Create(base.Command):
               [source_image_uri, snapshot_uri], client.apitools_client))
     # end of alpha/beta features.
 
-    guest_os_feature_messages = self.ParseGuestOsFeaturesToMessages(
-        args, client.messages)
+    guest_os_feature_messages = _ParseGuestOsFeaturesToMessages(
+        args, client.messages, self.ReleaseTrack())
 
     requests = []
     for disk_ref in disk_refs:
@@ -397,6 +407,8 @@ class CreateBeta(Create):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
+    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
@@ -413,33 +425,9 @@ class CreateAlpha(Create):
               'creating regional disk.'),
         hidden=True)
 
-    parser.add_argument(
-        '--licenses',
-        type=arg_parsers.ArgList(),
-        metavar='LICENSE',
-        help=('A list of URIs to license resources. The provided licenses will '
-              'be added onto the created disks to indicate the licensing and '
-              'billing policies.'))
-
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     kms_utils.AddKmsKeyArgs(parser, resource_type='disk')
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
-
-  def ParseGuestOsFeaturesToMessages(self, args, client_messages):
-    guest_os_feature_messages = []
-    if args.guest_os_features:
-      for feature in args.guest_os_features:
-        gf_type = client_messages.GuestOsFeature.TypeValueValuesEnum(feature)
-        guest_os_feature = client_messages.GuestOsFeature()
-        guest_os_feature.type = gf_type
-        guest_os_feature_messages.append(guest_os_feature)
-
-    return guest_os_feature_messages
-
-  def ParseLicenses(self, args):
-    if args.licenses:
-      return args.licenses
-    return []
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
     if args.replica_zones is None and args.region is not None:

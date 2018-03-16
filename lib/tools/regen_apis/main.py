@@ -20,7 +20,7 @@ import pprint
 import sys
 
 from googlecloudsdk.api_lib.regen import generate
-import yaml
+from googlecloudsdk.core import yaml
 
 
 class Error(Exception):
@@ -65,8 +65,7 @@ def main(argv=None):
         format='%(asctime)s %(filename)s:%(lineno)d %(message)s',
         level=getattr(logging, args.log_level))
 
-  with open(args.config, 'r') as stream:
-    config = yaml.load(stream)
+  config = yaml.load_path(args.config)
 
   logging.debug('Config %s', pprint.pformat(config))
 

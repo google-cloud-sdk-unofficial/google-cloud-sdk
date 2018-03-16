@@ -35,7 +35,7 @@ class CreateSignaturePayload(base.Command):
 
   @staticmethod
   def Args(parser):
-    binauthz_flags.AddCommonFlags(parser)
+    binauthz_flags.AddArtifactUrlFlag(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):

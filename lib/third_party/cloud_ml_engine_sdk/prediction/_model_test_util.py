@@ -13,7 +13,7 @@ def create_identity_model(
   _write_graph(g, signature_def_map, list(tags), model_dir)
 
 
-def _identity_string_graph(serving_signature):
+def _identity_string_graph(serving_signature_name):
   """create a testing graph."""
   with tf.Graph().as_default() as g:
     x = tf.placeholder(dtype=tf.string)
@@ -36,7 +36,7 @@ def _identity_string_graph(serving_signature):
         signature_inputs, signature_outputs,
         tf.saved_model.signature_constants.PREDICT_METHOD_NAME)
 
-    signature_def_map = {serving_signature: signature_def}
+    signature_def_map = {serving_signature_name: signature_def}
 
   return g, signature_def_map
 

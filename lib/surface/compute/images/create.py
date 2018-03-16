@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 def _Args(parser, release_track):
@@ -44,12 +44,9 @@ def _Args(parser, release_track):
 
   # Alpha and Beta Args
   if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
+    flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
-
-  # Alpha Args
-  if release_track == base.ReleaseTrack.ALPHA:
-    flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

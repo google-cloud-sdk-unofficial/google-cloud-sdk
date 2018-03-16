@@ -81,5 +81,4 @@ class SshAlpha(base.Command):
     if args.dry_run:
       log.Print(' '.join(command.Build(connection_info.ssh_env)))
     else:
-      print command
       command.Run(connection_info.ssh_env)

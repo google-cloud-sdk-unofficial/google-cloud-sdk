@@ -33,12 +33,12 @@ class GcloudignoreHelp(base.TopicCommand):
   The following `gcloud` commands respect the `.gcloudignore` file:
 
   * `gcloud beta functions deploy`
-  * `gcloud container builds submit` (alpha, beta, and GA)
+  * `gcloud container builds submit`
 
   To globally disable `.gcloudignore` parsing (including default file-ignore
   behavior), run:
 
-     $ gcloud config set gcloudignore/enable false
+     $ gcloud config set gcloudignore/enabled false
 
   ## SYNTAX
 

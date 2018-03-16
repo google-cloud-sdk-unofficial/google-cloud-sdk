@@ -14,10 +14,8 @@
 
 """The `app update` command."""
 
-from googlecloudsdk.api_lib.app.api import appengine_app_update_api_client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
-from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.command_lib.app import update_util
 
 
 _DETAILED_HELP = {
@@ -29,32 +27,41 @@ _DETAILED_HELP = {
     'EXAMPLES': """\
         To enable split health checks on an application:
 
-          $ {command} --split-health-checks=true
+          $ {command} --split-health-checks
 
         """,
 }
 
 
-class Update(base.UpdateCommand):
-  """Updates an App Engine application."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGa(base.UpdateCommand):
+  """Updates an App Engine application(GA version)."""
+
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('--split-health-checks', action='store_true',
-                        default=None,
-                        help='Enables/disables split health checks by default '
-                             'on new deployments.')
+    update_util.AddAppUpdateFlags(parser)
 
   def Run(self, args):
-    api_client = appengine_app_update_api_client.GetApiClientForTrack(
-        self.ReleaseTrack())
-
-    if args.split_health_checks is not None:
-      with progress_tracker.ProgressTracker(
-          'Updating the app [{0}]'.format(api_client.project)):
-        return api_client.PatchApplication(args.split_health_checks)
-    else:
-      log.status.Print('Nothing to update.')
+    update_util.PatchApplication(
+        self.ReleaseTrack(),
+        split_health_checks=args.split_health_checks)
 
 
-Update.detailed_help = _DETAILED_HELP
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateAlphaAndBeta(base.UpdateCommand):
+  """Updates an App Engine application(Alpha and Beta version)."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    update_util.AddAppUpdateFlags(parser,
+                                  enable_use_container_optimized_os=True)
+
+  def Run(self, args):
+    update_util.PatchApplication(
+        self.ReleaseTrack(),
+        split_health_checks=args.split_health_checks,
+        use_container_optimized_os=args.use_container_optimized_os)

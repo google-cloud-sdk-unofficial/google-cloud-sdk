@@ -49,9 +49,10 @@ class Update(base.UpdateCommand):
   """
 
   @staticmethod
-  def _CombinePerInstanceConfigMessage(holder, configs_getter, igm_ref,
-                                       instance_ref, update_stateful_disks,
-                                       remove_stateful_disks):
+  def _CombinePerInstanceConfigMessage(
+      holder, configs_getter, igm_ref, instance_ref, update_stateful_disks,
+      remove_stateful_disks, update_stateful_metadata,
+      remove_stateful_metadata):
     disk_getter = instance_disk_getter.InstanceDiskGetter(
         instance_ref=instance_ref, holder=holder)
     messages = holder.client.messages
@@ -94,6 +95,30 @@ class Update(base.UpdateCommand):
               disk_getter=disk_getter))
 
     per_instance_config.override.disks = new_stateful_disks
+
+    new_stateful_metadata = {
+        metadata.key: metadata.value
+        for metadata in per_instance_config.override.metadata
+    }
+
+    for stateful_metadata_key_to_remove in remove_stateful_metadata or []:
+      if stateful_metadata_key_to_remove in new_stateful_metadata:
+        del new_stateful_metadata[stateful_metadata_key_to_remove]
+      else:
+        raise exceptions.InvalidArgumentException(
+            parameter_name='--remove-stateful-metadata',
+            message=('stateful metadata key to remove `{0}` does not exist in'
+                     ' the given instance config'.format(
+                         stateful_metadata_key_to_remove)))
+
+    new_stateful_metadata.update(update_stateful_metadata)
+
+    per_instance_config.override.metadata = [
+        messages.ManagedInstanceOverride.MetadataValueListEntry(
+            key=metadata_key, value=metadata_value)
+        for metadata_key, metadata_value in sorted(
+            new_stateful_metadata.iteritems())
+    ]
 
     return per_instance_config
 
@@ -153,7 +178,8 @@ class Update(base.UpdateCommand):
 
     per_instance_config_message = self._CombinePerInstanceConfigMessage(
         holder, configs_getter, igm_ref, instance_ref,
-        args.update_stateful_disk, args.remove_stateful_disks)
+        args.update_stateful_disk, args.remove_stateful_disks,
+        args.update_stateful_metadata, args.remove_stateful_metadata)
 
     operation_ref = instance_configs_messages.CallPerInstanceConfigUpdate(
         holder=holder,

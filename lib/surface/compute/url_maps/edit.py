@@ -25,10 +25,9 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.core import resources
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import edit
-
-import yaml
 
 
 class InvalidResourceError(exceptions.ToolException):
@@ -139,7 +138,7 @@ class EditGA(base.Command):
             holder, url_map_ref, file_contents, original_object,
             original_record, modifiable_record, args)
         break
-      except (ValueError, yaml.error.YAMLError,
+      except (ValueError, yaml.YAMLParseError,
               messages.ValidationError,
               exceptions.ToolException) as e:
         if isinstance(e, ValueError):

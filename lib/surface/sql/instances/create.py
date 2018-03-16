@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.command_lib.sql import validate as command_validate
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io

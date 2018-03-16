@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.command_lib.dns import util as command_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
 
 
@@ -41,6 +42,7 @@ class Update(base.UpdateCommand):
         'The name of the managed-zone to be updated..').AddToParser(parser)
     flags.AddCommonManagedZonesDnssecArgs(parser)
     flags.GetManagedZonesDescriptionArg().AddToParser(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v1beta2')
@@ -60,6 +62,15 @@ class Update(base.UpdateCommand):
     if args.description is not None:
       zone_args['description'] = args.description
     zone = messages.ManagedZone(**zone_args)
+
+    def Get():
+      return dns.managedZones.Get(
+          dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
+              project=zone_ref.project,
+              managedZone=zone_ref.managedZone)).labels
+    labels_update = labels_util.ProcessUpdateArgsLazy(
+        args, messages.ManagedZone.LabelsValue, Get)
+    zone.labels = labels_update.GetOrNone()
 
     result = dns.managedZones.Patch(
         messages.DnsManagedZonesPatchRequest(managedZoneResource=zone,

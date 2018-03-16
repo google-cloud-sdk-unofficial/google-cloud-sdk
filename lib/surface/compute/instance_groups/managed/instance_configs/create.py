@@ -62,7 +62,8 @@ class Create(base.CreateCommand):
     instance_groups_flags.AddMigStatefulForceInstanceUpdateFlag(parser)
 
   @staticmethod
-  def _GetPerInstanceConfigMessage(holder, instance_ref, stateful_disks):
+  def _GetPerInstanceConfigMessage(holder, instance_ref, stateful_disks,
+                                   stateful_metadata):
     disk_getter = instance_disk_getter.InstanceDiskGetter(
         instance_ref=instance_ref, holder=holder)
     messages = holder.client.messages
@@ -72,9 +73,16 @@ class Create(base.CreateCommand):
             stateful_disk=stateful_disk,
             disk_getter=disk_getter) for stateful_disk in stateful_disks or []
     ]
+    metadata_overrides = [
+        messages.ManagedInstanceOverride.MetadataValueListEntry(
+            key=metadata_key, value=metadata_value)
+        for metadata_key, metadata_value in sorted(
+            stateful_metadata.iteritems())
+    ]
     return messages.PerInstanceConfig(
         instance=str(instance_ref),
-        override=messages.ManagedInstanceOverride(disks=disk_overrides))
+        override=messages.ManagedInstanceOverride(
+            disks=disk_overrides, metadata=metadata_overrides))
 
   @staticmethod
   def _CreateInstanceReference(holder, igm_ref, instance_name):
@@ -114,7 +122,7 @@ class Create(base.CreateCommand):
         igm_ref=igm_ref, instance_ref=instance_ref, should_exist=False)
 
     per_instance_config_message = self._GetPerInstanceConfigMessage(
-        holder, instance_ref, args.stateful_disk)
+        holder, instance_ref, args.stateful_disk, args.stateful_metadata)
 
     operation_ref = instance_configs_messages.CallPerInstanceConfigUpdate(
         holder=holder,

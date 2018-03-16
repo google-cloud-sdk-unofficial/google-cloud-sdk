@@ -17,7 +17,7 @@ from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import versions_util
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 

@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.deployment_manager import type_providers
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 

@@ -26,7 +26,22 @@ parser = argparse.ArgumentParser(description='Flatten container images.')
 
 # The name of this flag was chosen for compatibility with docker_pusher.py
 parser.add_argument('--tarball', action='store',
-                    help='The image path in "docker save" tarball format.')
+                    help='An optional legacy base image tarball.')
+
+parser.add_argument('--config', action='store',
+                    help='The path to the file storing the image config.')
+
+parser.add_argument('--digest', action='append',
+                    help='The list of layer digest filenames in order.')
+
+parser.add_argument('--layer', action='append',
+                    help='The list of compressed layer filenames in order.')
+
+parser.add_argument('--uncompressed_layer', action='append',
+                    help='The list of uncompressed layer filenames in order.')
+
+parser.add_argument('--diff_id', action='append',
+                    help='The list of diff_ids in order.')
 
 # Output arguments.
 parser.add_argument('--filesystem', action='store',
@@ -42,12 +57,26 @@ def main():
   args = parser.parse_args()
   logging_setup.Init(args=args)
 
-  if not args.filesystem or not args.metadata or not args.tarball:
-    raise Exception(
-        '--filesystem, --tarball and --metadata are required flags.')
+  # If config is specified, use that.  Otherwise, fall back on reading
+  # the config from the tarball.
+  if args.config:
+    logging.info('Reading config from %r', args.config)
+    with open(args.config, 'r') as reader:
+      config = reader.read()
+  elif args.tarball:
+    logging.info('Reading config from tarball %r', args.tarball)
+    with v2_2_image.FromTarball(args.tarball) as base:
+      config = base.config_file()
+  else:
+    config = args.config
 
-  logging.info('Loading v2.2 image from tarball ...')
-  with v2_2_image.FromTarball(args.tarball) as v2_2_img:
+  layers = zip(args.digest or [], args.layer or [])
+  uncompressed_layers = zip(args.diff_id or [], args.uncompressed_layer or [])
+  logging.info('Loading v2.2 image From Disk ...')
+  with v2_2_image.FromDisk(config_file=config,
+                           layers=layers,
+                           uncompressed_layers=uncompressed_layers,
+                           legacy_base=args.tarball) as v2_2_img:
     with tarfile.open(args.filesystem, 'w') as tar:
       v2_2_image.extract(v2_2_img, tar)
 

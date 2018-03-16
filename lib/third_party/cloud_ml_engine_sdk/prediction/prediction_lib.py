@@ -508,7 +508,21 @@ class TensorFlowClient(PredictionClient):
     return self._signature_map
 
   def get_signature(self, signature_name=None):
-    """Gets tensorflow signature for the given signature_name."""
+    """Gets tensorflow signature for the given signature_name.
+
+    Args:
+      signature_name: string The signature name to use to choose the signature
+                      from the signature map.
+
+    Returns:
+      a pair of signature_name and signature. The first element is the
+      signature name in string that is actually used. The second one is the
+      signature.
+
+    Raises:
+      PredictionError: when the signature is not found with the given signature
+      name or when there are more than one signatures in the signature map.
+    """
     # The way to find signature is:
     # 1) if signature_name is specified, try to find it in the signature_map. If
     # not found, raise an exception.
@@ -516,12 +530,12 @@ class TensorFlowClient(PredictionClient):
     # contains one entry. If so, return the only signature.
     # 3) Otherwise, use the default signature_name and do 1).
     if not signature_name and len(self.signature_map) == 1:
-      return self.signature_map.values()[0]
+      return self.signature_map.keys()[0], self.signature_map.values()[0]
 
     key = (signature_name or
            signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY)
     if key in self.signature_map:
-      return self.signature_map[key]
+      return key, self.signature_map[key]
     else:
       raise PredictionError(
           PredictionError.INVALID_INPUTS,
@@ -555,7 +569,7 @@ class SessionClient(TensorFlowClient):
     stats[FRAMEWORK] = TENSORFLOW_FRAMEWORK_NAME
 
     with stats.time(UNALIAS_TIME):
-      signature = self.get_signature(signature_name)
+      _, signature = self.get_signature(signature_name)
       fetches = [output.name for output in signature.outputs.values()]
       try:
         unaliased = {signature.inputs[key].name: val
@@ -794,7 +808,7 @@ class TensorFlowModel(BaseModel):
     return self._client.get_signature(signature_name)
 
   def preprocess(self, instances, stats=None, signature_name=None, **kwargs):
-    signature = self.get_signature(signature_name)
+    _, signature = self.get_signature(signature_name)
     preprocessed = self._canonicalize_input(instances, signature)
     if self._preprocess_fn:
       try:
@@ -833,7 +847,7 @@ class TensorFlowModel(BaseModel):
     Returns:
       A list which is a dict mapping output alias to the output.
     """
-    signature = self.get_signature(signature_name)
+    _, signature = self.get_signature(signature_name)
     with stats.time(ROWIFY_TIME):
       # When returned element only contains one result (batch size == 1),
       # tensorflow's session.run() will return a scalar directly instead of a

@@ -306,6 +306,9 @@ class Create(base.CreateCommand):
       log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
           options.enable_autoupgrade, 'autoupgrade'))
 
+    if options.accelerators is not None:
+      log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
+
     operation = None
     try:
       operation_ref = adapter.CreateCluster(cluster_ref, options)
@@ -348,6 +351,7 @@ class CreateBeta(Create):
     _AddAdditionalZonesFlag(group, deprecated=True)
     flags.AddNodeLocationsFlag(group)
 
+    flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddEnableAutoRepairFlag(parser)
@@ -370,6 +374,7 @@ class CreateBeta(Create):
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
+    ops.accelerators = args.accelerator
     ops.node_locations = args.node_locations
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node

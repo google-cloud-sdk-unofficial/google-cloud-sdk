@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import labels_doc_helper
 from googlecloudsdk.command_lib.compute import labels_flags
 from googlecloudsdk.command_lib.compute.images import flags as images_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(

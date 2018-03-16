@@ -28,7 +28,7 @@ class List(base.ListCommand):
         resource_type='tpu',
         operation_type='list',
         explanation=(
-            'List TPUs from this Region. '
+            'List TPUs from this zone. '
             'If not specified, will list TPUs in `default` compute/zone.'))
     parser.display_info.AddCacheUpdater(None)
 

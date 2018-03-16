@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
@@ -169,6 +170,9 @@ class Create(base.CreateCommand):
             messages.AutoUpdateUpgradeRepairMessage(options.enable_autoupgrade,
                                                     'autoupgrade'))
 
+      if options.accelerators is not None:
+        log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
+
       operation_ref = adapter.CreateNodePool(pool_ref, options)
 
       adapter.WaitForOperation(
@@ -190,6 +194,7 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddAcceleratorArgs(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
@@ -202,6 +207,7 @@ class CreateBeta(Create):
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
+    ops.accelerators = args.accelerator
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.new_scopes_behavior = True

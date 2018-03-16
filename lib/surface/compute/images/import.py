@@ -66,8 +66,9 @@ class Import(base.CreateCommand):
     variables = """source_disk_file={0},disk_size=50g,image_name={1}""".format(
         dest_path, args.image_name)
 
+    tags = ['gce-daisy-image-import']
     return daisy_utils.RunDaisyBuild(args, _WORKFLOW, variables,
-                                     daisy_bucket=daisy_bucket)
+                                     daisy_bucket=daisy_bucket, tags=tags)
 
 Import.detailed_help = {
     'brief': 'Import a Google Compute Engine image',

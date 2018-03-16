@@ -14,11 +14,10 @@
 """Command for getting IAM policies for device registries."""
 from googlecloudsdk.api_lib.cloudiot import registries
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iot import resource_args
 
 
-class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
+class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a device registry.
 
   This command gets the IAM policy for a device registry. If formatted as

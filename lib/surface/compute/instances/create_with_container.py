@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 

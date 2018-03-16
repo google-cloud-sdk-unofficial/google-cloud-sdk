@@ -26,10 +26,9 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import resources
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import edit
-
-import yaml
 
 
 class InvalidResourceError(exceptions.ToolException):
@@ -191,7 +190,7 @@ class Edit(base.Command):
                                                     original_record,
                                                     modifiable_record, args)
         break
-      except (ValueError, yaml.error.YAMLError,
+      except (ValueError, yaml.YAMLParseError,
               messages.ValidationError,
               calliope_exceptions.ToolException) as e:
         if isinstance(e, ValueError):

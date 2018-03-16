@@ -189,7 +189,8 @@ class SetAutoscalingBeta(SetAutoscaling):
   @staticmethod
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
-        parser=parser, autoscaling_file_enabled=True)
+        parser=parser, autoscaling_file_enabled=True,
+        stackdriver_metrics_flags=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -197,6 +198,7 @@ class SetAutoscalingBeta(SetAutoscaling):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     managed_instance_groups_utils.ValidateAutoscalerArgs(args)
+    managed_instance_groups_utils.ValidateStackdriverMetricsFlags(args)
     managed_instance_groups_utils.ValidateConflictsWithAutoscalingFile(
         args,
         (managed_instance_groups_utils.
@@ -209,6 +211,9 @@ class SetAutoscalingBeta(SetAutoscaling):
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
         client, holder.resources, igm_ref, args)
+
+    managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
+        args, autoscaler_resource)
 
     if args.IsSpecified('autoscaling_file'):
       if is_new:

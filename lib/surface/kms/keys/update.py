@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)

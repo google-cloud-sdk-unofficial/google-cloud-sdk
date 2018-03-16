@@ -28,7 +28,7 @@ from googlecloudsdk.core import log
 def _ResolvePort(args):
   if args.port:
     return args.port
-  if args.protocol in ['HTTPS', 'SSL']:
+  if args.protocol in ['HTTPS', 'HTTP2', 'SSL']:
     return 443
   # Default to port 80, which is used for HTTP and TCP.
   return 80
@@ -41,6 +41,8 @@ def _ResolvePortName(args):
 
   if args.protocol == 'HTTPS':
     return 'https'
+  if args.protocol == 'HTTP2':
+    return 'http2'
   if args.protocol == 'SSL':
     return 'ssl'
   if args.protocol == 'TCP':
@@ -262,7 +264,10 @@ class CreateAlpha(CreateGA):
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser, default=None)
+    flags.AddProtocol(
+        parser,
+        default=None,
+        choices=['HTTP', 'HTTPS', 'HTTP2', 'SSL', 'TCP', 'UDP'])
     flags.AddEnableCdn(parser, default=False)
     flags.AddCacheKeyIncludeProtocol(parser, default=True)
     flags.AddCacheKeyIncludeHost(parser, default=True)

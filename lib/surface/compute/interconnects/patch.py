@@ -18,7 +18,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 
 
 def _ArgsCommon(cls, parser, support_labels=False):
@@ -36,7 +36,7 @@ def _ArgsCommon(cls, parser, support_labels=False):
     labels_util.AddUpdateLabelsFlags(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Patch(base.UpdateCommand):
   """Patch a Google Compute Engine interconnect.
 
@@ -85,7 +85,7 @@ class Patch(base.UpdateCommand):
     self._DoRun(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class PatchLabels(Patch):
   """Patch a Google Compute Engine interconnect.
 

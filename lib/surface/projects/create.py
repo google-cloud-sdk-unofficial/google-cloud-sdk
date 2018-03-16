@@ -30,7 +30,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.resource_manager import flags
 
-from googlecloudsdk.command_lib.util import labels_util
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources

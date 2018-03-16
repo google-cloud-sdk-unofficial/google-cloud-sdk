@@ -66,9 +66,7 @@ class Upload(base.CreateCommand):
         '--output-directory',
         default='.',
         help="""\
-            The directory in which to create the source context files. Two
-            files (source-context.json and source-contexts.json) will be
-            created in that directory.
+            The directory in which to create the source context file.
         """)
     parser.display_info.AddFormat("""
           flattened(
@@ -90,11 +88,6 @@ class Upload(base.CreateCommand):
     extended_contexts = result['source_contexts']
 
     result = dict(result)
-    result['extended_context_file'] = os.path.join(output_dir,
-                                                   'source-contexts.json')
-    with open(result['extended_context_file'], 'w') as f:
-      json.dump(extended_contexts, f)
-
     result['context_file'] = os.path.join(output_dir, 'source-context.json')
     best_context = context_util.BestSourceContext(extended_contexts)
     result['best_context'] = context_util.BestSourceContext(extended_contexts)
