@@ -62,8 +62,7 @@ class Update(base.UpdateCommand):
     _Args(parser)
     node_management_group = parser.add_argument_group('Node management',
                                                       required=True)
-    flags.AddEnableAutoRepairFlag(node_management_group,
-                                  suppressed=True, for_node_pool=True)
+    flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
   def ParseUpdateNodePoolOptions(self, args):

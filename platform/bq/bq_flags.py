@@ -38,13 +38,6 @@ flags.DEFINE_string(
     'BIGQUERYRC environment variable is used. If that is not specified, the '
     'path "~/.bigqueryrc" is used.')
 flags.DEFINE_string(
-    'credential_file',
-    os.path.join(
-        os.path.expanduser('~'),
-        '.bigquery.v2.token'
-    ),
-    'Filename used for storing the BigQuery OAuth token.')
-flags.DEFINE_string(
     'discovery_file', '',
     'Filename for JSON document to read for discovery.')
 
@@ -81,6 +74,11 @@ flags.DEFINE_string(
     'Default dataset reference to use for requests (Ignored when not '
     'applicable.). Can be set as "project:dataset" or "dataset". If project '
     'is missing, the value of the project_id flag will be used.')
+flags.DEFINE_string(
+    'location', None,
+    'Default geographic location to use when creating datasets or determining '
+    'where jobs should run (Ignored when not applicable.)')
+
 # This flag is "hidden" at the global scope to avoid polluting help
 # text on individual commands for rarely used functionality.
 flags.DEFINE_string(
@@ -120,36 +118,6 @@ flags.DEFINE_multistring(
     'job_property', None,
     'Additional key-value pairs to include in the properties field of '
     'the job configuration')  # No period: Multistring adds flagspec suffix.
-flags.DEFINE_string(
-    'application_default_credential_file', '',
-    'See https://developers.google.com/identity/protocols/'
-    'application-default-credentials for more info.')
-flags.DEFINE_boolean(
-    'use_gce_service_account', False,
-    'Use this when running on a Google Compute Engine instance to use service '
-    'account credentials instead of stored credentials. For more information, '
-    'see: https://developers.google.com/compute/docs/authentication')
-flags.DEFINE_string(
-    'service_account',
-    '',
-    'Use this service account email address for authorization. '
-    'For example, 1234567890@developer.gserviceaccount.com.'
-)
-flags.DEFINE_string(
-    'service_account_private_key_file',
-    '',
-    'Filename that contains the service account private key. '
-    'Required if --service_account is specified.'
-)
-flags.DEFINE_string(
-    'service_account_private_key_password', 'notasecret',
-    'Password for private key. This password must match the password '
-    'you set on the key when you created it in the Google APIs Console. '
-    'Defaults to the default Google APIs Console private key password.')
-flags.DEFINE_string(
-    'service_account_credential_file', None,
-    'File to be used as a credential store for service accounts. '
-    'Must be set if using a service account.')
 flags.DEFINE_integer(
     'max_rows_per_request', None,
     'Specifies the max number of rows to return per read.')

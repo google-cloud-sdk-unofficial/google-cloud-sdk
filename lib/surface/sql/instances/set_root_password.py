@@ -27,7 +27,7 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @deprecation_utils.DeprecateCommandAtVersion(
-    remove_version='162.0.0', remove=False, alt_command='users set-password')
+    remove_version='189.0.0', remove=True, alt_command='users set-password')
 class SetRootPassword(base.Command):
   """Sets the password of the MySQL root user."""
 

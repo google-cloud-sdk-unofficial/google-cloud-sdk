@@ -14,6 +14,11 @@
 
 """A command that generates all DevSite and manpage documents."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
+import io
 import os
 
 from googlecloudsdk.calliope import base
@@ -176,10 +181,10 @@ class GenerateHelpDocs(base.Command):
                                                           args.restrict)
       tree = walker_util.CommandTreeGenerator(
           self._cli_power_users_only).Walk(args.hidden, args.restrict)
-      with open(os.path.join(args.html_dir, '_menu_.html'), 'w') as out:
+      with io.open(os.path.join(args.html_dir, '_menu_.html'), 'wt') as out:
         WriteHtmlMenu(tree, out)
       for file_name in _HELP_HTML_DATA_FILES:
-        with open(os.path.join(args.html_dir, file_name), 'wb') as out:
+        with io.open(os.path.join(args.html_dir, file_name), 'wb') as out:
           file_contents = pkg_resources.GetResource(
               'googlecloudsdk.api_lib.meta.help_html_data.', file_name)
           out.write(file_contents)

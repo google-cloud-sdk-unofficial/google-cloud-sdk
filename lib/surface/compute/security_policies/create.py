@@ -41,7 +41,7 @@ class Create(base.CreateCommand):
 
     group.add_argument(
         '--description',
-        help=('An optional, textual description for the security policy. '))
+        help=('An optional, textual description for the security policy.'))
 
     group.add_argument(
         '--file-name',
@@ -72,9 +72,9 @@ class Create(base.CreateCommand):
       with open(args.file_name) as import_file:
         if args.file_format == 'json':
           return security_policies_utils.SecurityPolicyFromFile(
-              import_file, messages, 'json', is_create=True)
+              import_file, messages, 'json')
         return security_policies_utils.SecurityPolicyFromFile(
-            import_file, messages, 'yaml', is_create=True)
+            import_file, messages, 'yaml')
     except Exception as exp:
       msg = (u'Unable to read security policy config from specified file '
              u'[{0}] because [{1}]'.format(args.file_name, exp.message))
@@ -87,6 +87,7 @@ class Create(base.CreateCommand):
 
     if args.file_name:
       template = self._GetTemplateFromFile(args, holder.client.messages)
+      template.name = ref.Name()
     else:
       template = holder.client.messages.SecurityPolicy(
           name=ref.Name(), description=args.description)

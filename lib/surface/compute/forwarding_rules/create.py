@@ -22,7 +22,8 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.core import log
-import ipaddr
+import ipaddress
+import six
 
 
 def _Args(parser, include_beta, include_alpha=False):
@@ -202,7 +203,8 @@ class Create(base.CreateCommand):
     address = args.address
     if address is not None:
       try:
-        ipaddr.IPAddress(args.address)
+        # ipaddress only allows unicode input
+        ipaddress.ip_address(six.text_type(args.address))
       except ValueError:
         # TODO(b/37086838): Make sure global/region settings are inherited by
         # address resource.

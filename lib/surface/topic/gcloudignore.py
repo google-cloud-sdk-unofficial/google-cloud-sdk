@@ -20,13 +20,13 @@ class GcloudignoreHelp(base.TopicCommand):
 
   Several commands in `gcloud` involve uploading the contents of a directory to
   Google Cloud Platform to host or build. In many cases, you will not want to
-  upload certain files ("ignore" them).
+  upload certain files (i.e., "ignore" them).
 
-  If there is a file called `.gcloudignore` *in the top-level directory to
-  upload*, the files that it specifies (see "SYNTAX") will be ignored.
+  If there is a file called `.gcloudignore` _in the top-level directory to
+  upload_, the files that it specifies (see "SYNTAX") will be ignored.
 
-  If no `.gcloudignore` file is present in the top-level directory to upload,
-  but a .gitignore file *is*, `gcloud` will generate a Git-compatible
+  If a `.gitignore` file is present in the top-level directory to upload and
+  there isn't a `.gcloudignore` file, `gcloud` will generate a Git-compatible
   `.gcloudignore` file that respects your `.gitignore`-ed files (see "ADVANCED
   TOPICS" for details). The global `.gitignore` is not respected.
 
@@ -43,7 +43,7 @@ class GcloudignoreHelp(base.TopicCommand):
   ## SYNTAX
 
   The syntax of `.gcloudignore` borrows heavily from that of `.gitignore`; see
-  <https://git-scm.com/docs/gitignore> or `man gitignore` for a full reference.
+  https://git-scm.com/docs/gitignore or `man gitignore` for a full reference.
 
   Each line in a `.gcloudignore` is one of the following:
 
@@ -56,44 +56,44 @@ class GcloudignoreHelp(base.TopicCommand):
   * *blank line*: A blank line is ignored and useful for readability.
 
   Some example patterns follow; see the full reference
-  (<https://git-scm.com/docs/gitignore> or `man gitignore`) for details.
+  (https://git-scm.com/docs/gitignore or `man gitignore`) for details.
 
   To ignore any file named `foo`, and any file in the root of the upload
   directory named `bar`:
 
-      foo
-      /bar
+    foo
+    /bar
 
   To ignore any file starting with `foo`, ending with `bar`, or starting with
   `baz` and ending with `qux`:
 
-      foo*
-      *bar
-      baz*qux
+    foo*
+    *bar
+    baz*qux
 
   To explicitly include any file named `foo` (useful if `foo` was excluded
   earlier in the file) and ignore a file named `!bar`:
 
-      !foo
-      \!bar
+    !foo
+    \!bar
 
   To ignore any directory `foo` and all its contents (though not a file
   `foo`), any file `baz`, and the directory `qux` and all its contents:
 
-      foo/
-      **/baz
-      qux/**
+    foo/
+    **/baz
+    qux/**
 
 
   ### ADVANCED TOPICS
 
   In order to support Git-related files, there is a special comment syntax:
 
-      #!include:.gitignore
+    #!include:.gitignore
 
   This will include the contents of a `.gitignore`-style file at that path at
-  that point in the file. It *does not* recurse (that is, the included file
-  *cannot* `#!include` another file) and *cannot* be anywhere but the top-level
+  that point in the file. It does not recurse (that is, the included file
+  *cannot* `#!include` another file) and cannot be anywhere but the top-level
   directory to be uploaded.
 
 
@@ -102,17 +102,17 @@ class GcloudignoreHelp(base.TopicCommand):
   This `.gcloudignore` would prevent the upload of the `node_modules/` directory
   and any files ending in `~`:
 
-     node_modules/
-     *~
+    node_modules/
+    *~
 
   This `.gcloudignore` (similar to the one generated when Git files are
   present) would prevent the upload of the `.gcloudignore` file, the `.git`
   directory, and any files in ignored in the `.gitignore` file:
 
-     .gcloudignore
-     # If you would like to upload your .git directory, .gitignore file or
-     # files from your .gitignore file, remove the corresponding line below:
-     .git
-     .gitignore
-     #!include:.gitignore
+    .gcloudignore
+    # If you would like to upload your .git directory, .gitignore file or
+    # files from your .gitignore file, remove the corresponding line below:
+    .git
+    .gitignore
+    #!include:.gitignore
   """

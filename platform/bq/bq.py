@@ -64,31 +64,11 @@ import gflags as flags
 
 import table_formatter
 import bigquery_client
-# pylint: disable=unused-import
+import bq_auth_flags
 import bq_flags
-# pylint: enable=unused-import
 
-try:
-  flags.DEFINE_boolean(
-      'auth_local_webserver',
-      False,
-      'Run a local web server to handle redirects during OAuth authorization.'
-  )
-  flags.DEFINE_string(
-      'auth_host_name',
-      'localhost',
-      'Host name to use when running a local web server to handle redirects '
-      'during OAuth authorization.'
-  )
-  flags.DEFINE_list(
-      'auth_host_port',
-      [8080, 8090],
-      'Port to use when running a local web server to handle redirects during '
-      'OAuth authorization.'
-  )
-except flags.DuplicateFlagError:
-  # _GetVersion() imports bq and defines the flags for the second time.
-  pass
+
+flags.ADOPT_module_key_flags(bq_flags)
 
 FLAGS = flags.FLAGS
 # These are long names.
@@ -131,7 +111,8 @@ else:
   _CLIENT_USER_AGENT = 'bq/' + _VERSION_NUMBER
 
 _GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
-_CLIENT_SCOPE = 'https://www.googleapis.com/auth/bigquery'
+_BIGQUERY_SCOPE = 'https://www.googleapis.com/auth/bigquery'
+_CLOUD_PLATFORM_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 
 
 _CLIENT_INFO = {
@@ -307,7 +288,9 @@ def _ProcessBigqueryrcSection(section_name, flag_values):
 
 
 def _UseServiceAccount():
-  return bool(FLAGS.use_gce_service_account or FLAGS.service_account)
+  return bool(
+      FLAGS.use_gce_service_account or FLAGS.service_account
+  )
 
 
 def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-argument
@@ -352,44 +335,6 @@ def _BuildOAuthFlags():
   return oauth_flags
 
 
-def _GetCredentialsFromOAuthFlow(storage):
-  print
-  print '********************************************************************'
-  print '** New OAuth2 credentials needed, beginning authorization process **'
-  print '********************************************************************'
-  print
-  if FLAGS.headless:
-    print 'Running in headless mode, exiting.'
-    sys.exit(1)
-  client_info = _CLIENT_INFO.copy()
-  client_info['scope'] = list(_GetClientScopeFromFlags())
-  while True:
-    # If authorization fails, we want to retry, rather than let this
-    # cascade up and get caught elsewhere. If users want out of the
-    # retry loop, they can ^C.
-    try:
-      flow = oauth2client_4_0.client.OAuth2WebServerFlow(**client_info)
-      credentials = oauth2client_4_0.tools.run_flow(
-          flow, storage, _BuildOAuthFlags())
-      break
-    except (oauth2client_4_0.client.FlowExchangeError, SystemExit) as e:
-      # Here SystemExit is "no credential at all", and the
-      # FlowExchangeError is "invalid" -- usually because you reused
-      # a token.
-      print 'Invalid authorization: %s' % (e,)
-      print
-    except httplib2.HttpLib2Error as e:
-      print 'Error communicating with server. Please check your internet '
-      print 'connection and try again.'
-      print
-      print 'Error is: %s' % (e,)
-      sys.exit(1)
-  print
-  print '************************************************'
-  print '** Continuing execution of BigQuery operation **'
-  print '************************************************'
-  print
-  return credentials
 
 
 def _GetApplicationDefaultCredentialFromFile(filename):
@@ -423,7 +368,7 @@ def _GetApplicationDefaultCredentialFromFile(filename):
 
 def _GetClientScopeFromFlags():
   """Returns auth scopes based on user supplied flags."""
-  client_scope = [_CLIENT_SCOPE]
+  client_scope = [_BIGQUERY_SCOPE, _CLOUD_PLATFORM_SCOPE]
   if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
     client_scope.append(_GDRIVE_SCOPE)
   return client_scope
@@ -459,8 +404,8 @@ def _GetCredentialsFromFlags():
           'The flag --credential_file must be specified if '
           '--application_default_credential_file is used.')
   else:
-    credentials_getter = _GetCredentialsFromOAuthFlow
-    credential_file = FLAGS.credential_file
+    raise app.UsageError(
+        'bq.py should not be invoked. Use bq command instead.')
 
   try:
     # Note that oauth2client.file ensures the file is created with
@@ -1193,18 +1138,23 @@ class _Load(BigqueryCmd):
         'import data.',
         flag_values=fv)
     flags.DEFINE_enum(
-        'source_format', None,
-        ['CSV',
-         'NEWLINE_DELIMITED_JSON',
-         'DATASTORE_BACKUP',
-         'AVRO',
-         'PARQUET'],
+        'source_format',
+        None,
+        [
+            'CSV',
+            'NEWLINE_DELIMITED_JSON',
+            'DATASTORE_BACKUP',
+            'AVRO',
+            'PARQUET',
+            'ORC'
+        ],
         'Format of source data. Options include:'
         '\n CSV'
         '\n NEWLINE_DELIMITED_JSON'
         '\n DATASTORE_BACKUP'
         '\n AVRO'
-        '\n PARQUET (experimental)',
+        '\n PARQUET'
+        '\n ORC (experimental)',
         flag_values=fv)
     flags.DEFINE_list(
         'projection_fields', [],
@@ -1311,7 +1261,9 @@ class _Load(BigqueryCmd):
         'job_id': _GetJobIdFromFlags(),
         'source_format': self.source_format,
         'projection_fields': self.projection_fields,
-        }
+    }
+    if FLAGS.location:
+      opts['location'] = FLAGS.location
     if self.replace:
       opts['write_disposition'] = 'WRITE_TRUNCATE'
     if self.field_delimiter:
@@ -1353,10 +1305,10 @@ def _CreateExternalTableDefinition(
   Arguments:
     source_format: Format of source data.
       For CSV files, specify 'CSV'.
-      For Google spreadsheet files, specify 'GOOGLE_SHEETS'
+      For Google spreadsheet files, specify 'GOOGLE_SHEETS'.
       For newline-delimited JSON, specify 'NEWLINE_DELIMITED_JSON'.
-      For Cloud Datastore backup, specify 'DATASTORE_BACKUP'
-      For Avro files, specify 'AVRO'
+      For Cloud Datastore backup, specify 'DATASTORE_BACKUP'.
+      For Avro files, specify 'AVRO'.
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
     autodetect: Indicates if format options, compression mode and schema be auto
@@ -1373,8 +1325,13 @@ def _CreateExternalTableDefinition(
     format with the most common options set.
   """
   try:
-    supported_formats = ['CSV', 'NEWLINE_DELIMITED_JSON', 'DATASTORE_BACKUP',
-                         'AVRO', 'GOOGLE_SHEETS']
+    supported_formats = [
+        'CSV',
+        'NEWLINE_DELIMITED_JSON',
+        'DATASTORE_BACKUP',
+        'AVRO',
+        'GOOGLE_SHEETS'
+    ]
 
     if source_format not in supported_formats:
       raise app.UsageError(('%s is not a supported format.') % source_format)
@@ -1436,8 +1393,13 @@ class _MakeExternalTableDefinition(BigqueryCmd):
     flags.DEFINE_enum(
         'source_format',
         'CSV',
-        ['CSV', 'GOOGLE_SHEETS', 'NEWLINE_DELIMITED_JSON',
-         'DATASTORE_BACKUP', 'AVRO'],
+        [
+            'CSV',
+            'GOOGLE_SHEETS',
+            'NEWLINE_DELIMITED_JSON',
+            'DATASTORE_BACKUP',
+            'AVRO'
+        ],
         'Format of source data. Options include:'
         '\n CSV'
         '\n GOOGLE_SHEETS'
@@ -1601,7 +1563,7 @@ class _Query(BigqueryCmd):
         None,
         ('Either a file containing a JSON list of query parameters, or a query '
          'parameter in the form "name:type:value". An empty name produces '
-         'a positional parameter. The type may be ommitted to assume STRING: '
+         'a positional parameter. The type may be omitted to assume STRING: '
          'name::value or ::value. The value "NULL" produces a null value.'),
         flag_values=fv)
     flags.DEFINE_string(
@@ -1679,6 +1641,8 @@ class _Query(BigqueryCmd):
     if not query:
       query = sys.stdin.read()
     client = Client.Get()
+    if FLAGS.location:
+      kwds['location'] = FLAGS.location
     kwds['use_legacy_sql'] = self.use_legacy_sql
     time_partitioning = _ParseTimePartitioning(
         self.time_partitioning_type,
@@ -1829,7 +1793,7 @@ class _Extract(BigqueryCmd):
         'compression', 'NONE',
         ['GZIP', 'NONE'],
         'The compression type to use for exported files. Possible values '
-        'include GZIP and NONE. The default value is NONE.',
+        'include GZIP and NONE. The default value is NONE.', # pylint: disable=line-too-long
         flag_values=fv)
     flags.DEFINE_boolean(
         'print_header', None, 'Whether to print header rows for formats that '
@@ -1855,6 +1819,9 @@ class _Extract(BigqueryCmd):
     kwds = {
         'job_id': _GetJobIdFromFlags(),
         }
+    if FLAGS.location:
+      kwds['location'] = FLAGS.location
+
     table_reference = client.GetTableReference(source_table)
     job = client.Extract(
         table_reference, destination_uris,
@@ -2004,6 +1971,8 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
             'write_disposition': 'WRITE_TRUNCATE',
             'job_id': current_job_id,
             }
+        if FLAGS.location:
+          kwds['location'] = FLAGS.location
         job = client.CopyTable([source_table], destination_partition, **kwds)
         if not FLAGS.sync:
           self.PrintJobStartInfo(job)
@@ -2414,6 +2383,9 @@ class _Copy(BigqueryCmd):
         'ignore_already_exists': ignore_already_exists,
         'job_id': _GetJobIdFromFlags(),
         }
+    if FLAGS.location:
+      kwds['location'] = FLAGS.location
+
     if self.destination_kms_key:
       kwds['encryption_configuration'] = {
           'kmsKeyName': self.destination_kms_key
@@ -2445,6 +2417,10 @@ def _ParseTimePartitioning(partitioning_type=None,
     partitioning_field: if not set, the table is partitioned based on the
       loading time; if set, the table is partitioned based on the value of this
       field.
+    partitioning_minimum_partition_date: lower boundary of partition date for
+      field based partitioning table.
+    partitioning_require_partition_filter: if true, queries on the table must
+      have a partition filter so not all partitions are scanned.
 
   Returns:
     Time partitioning if any of the arguments is not None, otherwise None.
@@ -2489,6 +2465,28 @@ def _ParseTimePartitioning(partitioning_type=None,
         and time_partitioning[key_expiration] < 0):
       time_partitioning[key_expiration] = None
     return time_partitioning
+  else:
+    return None
+
+
+def _ParseClustering(clustering_fields=None):
+  """Parses clustering from the arguments.
+
+  Args:
+    clustering_fields: Comma-separated field names.
+
+  Returns:
+    Clustering if any of the arguments is not None, otherwise None.
+
+  Raises:
+    UsageError: when failed to parse.
+  """
+
+  clustering = {}
+  key_field = 'fields'
+  if clustering_fields:
+    clustering[key_field] = clustering_fields.split(',')
+    return clustering
   else:
     return None
 
@@ -2747,10 +2745,14 @@ class _Make(BigqueryCmd):
       if self.default_table_expiration is not None:
         default_table_exp_ms = self.default_table_expiration * 1000
 
-      client.CreateDataset(reference, ignore_existing=True,
-                           description=self.description,
-                           default_table_expiration_ms=default_table_exp_ms,
-                           data_location=self.data_location)
+      location = self.data_location or FLAGS.location
+
+      client.CreateDataset(
+          reference,
+          ignore_existing=True,
+          description=self.description,
+          default_table_expiration_ms=default_table_exp_ms,
+          data_location=location)
       print "Dataset '%s' successfully created." % (reference,)
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -2791,20 +2793,19 @@ class _Make(BigqueryCmd):
           self.time_partitioning_expiration,
           self.time_partitioning_field
       )
-      client.CreateTable(reference,
-                         ignore_existing=True,
-                         schema=schema,
-                         description=self.description,
-                         expiration=expiration,
-                         view_query=query_arg,
-                         view_udf_resources=view_udf_resources,
-                         use_legacy_sql=self.use_legacy_sql,
-                         external_data_config=external_data_config,
-                         labels=labels,
-                         time_partitioning=time_partitioning,
-                         destination_kms_key=(
-                             self.destination_kms_key)
-                        )
+      client.CreateTable(
+          reference,
+          ignore_existing=True,
+          schema=schema,
+          description=self.description,
+          expiration=expiration,
+          view_query=query_arg,
+          view_udf_resources=view_udf_resources,
+          use_legacy_sql=self.use_legacy_sql,
+          external_data_config=external_data_config,
+          labels=labels,
+          time_partitioning=time_partitioning,
+          destination_kms_key=(self.destination_kms_key))
       print "%s '%s' successfully created." % (object_name, reference,)
 
 
@@ -2863,11 +2864,11 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_multistring(
         'set_label', None,
-        'A label to set on a dataset. The format is "key:value"',
+        'A label to set on a dataset or a table. The format is "key:value"',
         flag_values=fv)
     flags.DEFINE_multistring(
         'clear_label', None,
-        'A label key to remove from a dataset.',
+        'A label key to remove from a dataset or a table.',
         flag_values=fv)
     flags.DEFINE_integer(
         'expiration', None,
@@ -2932,6 +2933,11 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'etag', None, 'Only update if etag matches.', flag_values=fv)
+    flags.DEFINE_string(
+        'destination_kms_key',
+        None,
+        'Cloud KMS key for encryption of the destination table data.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -2944,6 +2950,9 @@ class _Update(BigqueryCmd):
       bq update --description "Dataset description" existing_dataset
       bq update --description "My table" existing_dataset.existing_table
       bq update -t existing_dataset.existing_table name:integer,value:string
+      bq update --destination_kms_key
+          projects/p/locations/l/keyRings/r/cryptoKeys/k
+          existing_dataset.existing_table
       bq update --view='select 1 as num' existing_dataset.existing_view
          (--view_udf_resource=path/to/file.js)
       bq update --transfer_config --display_name=name -p='{"param":"value"}'
@@ -3044,6 +3053,11 @@ class _Update(BigqueryCmd):
           self.time_partitioning_expiration,
           self.time_partitioning_field
       )
+
+      encryption_configuration = None
+      if self.destination_kms_key:
+        encryption_configuration = {'kmsKeyName': self.destination_kms_key}
+
       client.UpdateTable(
           reference,
           schema=schema,
@@ -3056,7 +3070,8 @@ class _Update(BigqueryCmd):
           labels_to_set=labels_to_set,
           label_keys_to_remove=label_keys_to_remove,
           time_partitioning=time_partitioning,
-          etag=self.etag)
+          etag=self.etag,
+          encryption_configuration=encryption_configuration)
 
       print "%s '%s' successfully updated." % (object_name, reference,)
     elif isinstance(reference, TransferConfigReference):
@@ -3222,7 +3237,7 @@ class _Show(BigqueryCmd):
     custom_format = 'show'
     object_info = None
     if self.j:
-      reference = client.GetJobReference(identifier)
+      reference = client.GetJobReference(identifier, FLAGS.location)
     elif self.d:
       reference = client.GetDatasetReference(identifier)
     elif self.view:
@@ -3385,7 +3400,8 @@ class _Cancel(BigqueryCmd):
       job_id: Job ID to cancel.
     """
     client = Client.Get()
-    job = client.CancelJob(job_id=job_id)
+    job = client.CancelJob(job_id=job_id,
+                           location=FLAGS.location)
     _PrintObjectInfo(job, JobReference.Create(**job['jobReference']),
                      custom_format='show')
     status = job['status']
@@ -3445,7 +3461,8 @@ class _Head(BigqueryCmd):
       raise app.UsageError('Cannot specify both -j and -t.')
 
     if self.j:
-      reference = client.GetJobReference(identifier)
+      reference = client.GetJobReference(identifier,
+                                         FLAGS.location)
     else:
       reference = client.GetTableReference(identifier)
 
@@ -3610,8 +3627,7 @@ class _Wait(BigqueryCmd):  # pylint: disable=missing-docstring
             'No job_id provided, found %d running jobs' % (len(running_jobs),))
       job_reference = running_jobs.pop()
     else:
-      job_reference = client.GetJobReference(job_id)
-
+      job_reference = client.GetJobReference(job_id, FLAGS.location)
     try:
       job = client.WaitJob(
           job_reference=job_reference, wait=secs, status=FLAGS.wait_for_status)
@@ -3902,7 +3918,7 @@ class _Init(BigqueryCmd):
 
     client = Client.Get()
     entries = {'credential_file': FLAGS.credential_file}
-    projects = client.ListProjects()
+    projects = client.ListProjects(max_results=1000)
     print 'Credential creation complete. Now we will select a default project.'
     print
     if not projects:

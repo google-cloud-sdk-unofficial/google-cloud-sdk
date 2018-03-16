@@ -46,7 +46,7 @@ class Auth(base.Group):
 
     $ gcloud auth list
 
-  To revoke credentials for a user account, run:
+  To revoke credentials for a user account (like logging out), run:
 
     $ gcloud auth revoke test@gmail.com
   """

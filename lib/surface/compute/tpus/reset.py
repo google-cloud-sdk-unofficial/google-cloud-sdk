@@ -20,6 +20,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.Hidden
 class Reset(base.UpdateCommand):
   """Resets a Cloud TPU.
 

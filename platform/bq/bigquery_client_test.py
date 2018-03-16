@@ -206,20 +206,107 @@ class BigqueryClientTest(googletest.TestCase):
       self.assertRaises(bigquery_client.BigqueryError,
                         self.client.GetProjectReference, invalid)
 
-  def testParseJobReference(self):
-    self.assertTrue(self.client.GetJobReference('proj:job_id'))
-    self.client.project_id = None
-    self.assertRaises(bigquery_client.BigqueryError,
-                      self.client.GetJobReference, 'job_id')
-    self.client.project_id = 'proj'
-    self.assertTrue(self.client.GetJobReference('job_id'))
+  # Tests parsing job references from identifier strings with project
+  # ID, location, job ID included.
+  def testParseJobReference_fullyQualified(self):
+    self.assertParsesJobReference('proj:loc.jid', None, None, 'proj', 'loc',
+                                  'jid')
+    self.assertParsesJobReference('proj:loc.jid', 'default_proj', 'default_loc',
+                                  'proj', 'loc', 'jid')
+    self.assertParsesJobReference('proj:loc.jid', None, 'default_loc', 'proj',
+                                  'loc', 'jid')
+    self.assertParsesJobReference('proj:loc.jid', 'default_proj', None, 'proj',
+                                  'loc', 'jid')
 
-    invalid_job_ids = [
-        'prj:', 'example.com:prj:ds.tbl', 'ds.tbl', 'prj:ds.tbl']
+  # Tests parsing job references from identifier strings with project
+  # ID and job ID but no location included.
+  def testParseJobReference_noLocation(self):
+    self.assertParsesJobReference('proj:jid', None, None, 'proj', None, 'jid')
+    self.assertParsesJobReference('proj:jid', 'default_proj', 'default_loc',
+                                  'proj', 'default_loc', 'jid')
+    self.assertParsesJobReference('proj:jid', None, 'default_loc', 'proj',
+                                  'default_loc', 'jid')
+    self.assertParsesJobReference('proj:jid', 'default_proj', None, 'proj',
+                                  None, 'jid')
 
+  # Tests parsing job references from identifier strings with location
+  # and job ID but no project ID included.
+  def testParseJobReference_noProject(self):
+    self.assertParseJobReferenceRaises('loc.jid', None, None)
+    self.assertParsesJobReference('loc.jid', 'default_proj', 'default_loc',
+                                  'default_proj', 'loc', 'jid')
+    self.assertParseJobReferenceRaises('loc.jid', None, 'default_loc')
+    self.assertParsesJobReference('loc.jid', 'default_proj', None,
+                                  'default_proj', 'loc', 'jid')
+
+  # Tests parsing job references from identifier strings job ID but no
+  # location or project ID included.
+  def testParseJobReference_defaultProjectAndLocation(self):
+    self.assertParseJobReferenceRaises('jid', None, None)
+    self.assertParsesJobReference('jid', 'default_proj', 'default_loc',
+                                  'default_proj', 'default_loc', 'jid')
+    self.assertParseJobReferenceRaises('jid', None, 'default_loc')
+    self.assertParsesJobReference('jid', 'default_proj', None, 'default_proj',
+                                  None, 'jid')
+
+  # Tests parsing job references from identifier strings with various
+  # forms of project IDs.
+  def testParseJobReferenceWithLocation(self):
+    valid_project_ids = [
+        'company-xx-xxx-1',
+        'company.com:foo',
+        'company.xx:foo',
+        'company.com:foo-bar-123',
+        'company-division.xx.yy:foo-bar-123',
+        'company.division.co:foo-bar-123',
+    ]
+    for project_id in valid_project_ids:
+      location = 'eu'
+      job_id = 'some-job-id'
+      identifier_with_location = '%s:%s.%s' % (project_id, location, job_id)
+      self.assertParsesJobReference(identifier_with_location, None, None,
+                                    project_id, location, job_id)
+      identifier_without_location = '%s:%s' % (project_id, job_id)
+      self.assertParsesJobReference(identifier_without_location, None, None,
+                                    project_id, None, job_id)
+
+  def testParseJobReference_projectIdFormats(self):
+    project_ids = [
+        'company-xx-xxx-1',
+        'company.com:foo',
+        'company.xx:foo',
+        'company.com:foo-bar-123',
+        'company-division.xx.yy:foo-bar-123',
+        'company.division.co:foo-bar-123',
+    ]
+    for project_id in project_ids:
+      job_id = 'some-job-id'
+      job_id_str = '%s:%s' % (project_id, job_id)
+      job_reference = self.client.GetJobReference(job_id_str)
+      self.assertIsNotNone(job_reference)
+      self.assertEqual(project_id, job_reference['projectId'])
+      self.assertEqual(job_id, job_reference['jobId'])
+
+    invalid_job_ids = ['prj:', ':job_id', 'prj.loc.jid']
     for invalid in invalid_job_ids:
       self.assertRaises(bigquery_client.BigqueryError,
                         self.client.GetJobReference, invalid)
+
+  def assertParsesJobReference(self, identifier, default_project_id,
+                               default_location, expected_project_id,
+                               expected_location, expected_job_id):
+    self.client.project_id = default_project_id
+    job_reference = self.client.GetJobReference(identifier, default_location)
+    self.assertIsNotNone(job_reference)
+    self.assertEqual(expected_project_id, job_reference['projectId'])
+    self.assertEqual(expected_location, job_reference['location'])
+    self.assertEqual(expected_job_id, job_reference['jobId'])
+
+  def assertParseJobReferenceRaises(self, identifier, default_project_id,
+                                    default_location):
+    self.client.project_id = default_project_id
+    self.assertRaises(bigquery_client.BigqueryError,
+                      self.client.GetJobReference, identifier, default_location)
 
   def testGetProjectObjectInfo(self):
     # A project that will be matched.

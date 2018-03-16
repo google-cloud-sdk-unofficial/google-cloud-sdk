@@ -284,7 +284,7 @@ class Deploy(base.Command):
       function.eventTrigger.failurePolicy = None
     if args.memory:
       function.availableMemoryMb = utils.BytesToMb(args.memory)
-      update_mask.append('memory')
+      update_mask.append('availableMemoryMb')
 
   def _ApplyArgsToFunction(
       self, function, is_new_function, trigger_params, function_ref, args,

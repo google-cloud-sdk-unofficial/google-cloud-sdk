@@ -77,6 +77,8 @@ def _AddCreateArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new Cloud ML Engine version.
 
@@ -103,3 +105,34 @@ class Create(base.CreateCommand):
                                 config_file=args.config,
                                 async_=args.async,
                                 labels=labels)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
+  """Create a new Cloud ML Engine version.
+
+  Creates a new version of a Cloud ML Engine model.
+
+  For more details on managing ML Engine models and versions see
+  https://cloud.google.com/ml-engine/docs/how-tos/managing-models-jobs
+  """
+
+  @staticmethod
+  def Args(parser):
+    _AddCreateArgs(parser)
+    flags.MACHINE_TYPE.AddToParser(parser)
+
+  def Run(self, args):
+    versions_client = versions_api.VersionsClient()
+    labels = versions_util.ParseCreateLabels(versions_client, args)
+    return versions_util.Create(versions_client,
+                                operations.OperationsClient(),
+                                args.version,
+                                model=args.model,
+                                origin=args.origin,
+                                staging_bucket=args.staging_bucket,
+                                runtime_version=args.runtime_version,
+                                config_file=args.config,
+                                async_=args.async,
+                                labels=labels,
+                                machine_type=args.machine_type)

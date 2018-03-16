@@ -33,3 +33,17 @@ class Functions(base.Group):
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class FunctionsGA(base.Group):
+  """Manage Google Cloud Functions."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddTransforms(transforms.GetTransforms())
+
+  def Filter(self, context, args):
+    del context, args
+    base.DisableUserProjectQuota()

@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import (
 from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
                                                              ssl_policies_flags)
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
-from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -39,7 +38,6 @@ class CreateGA(base.CreateCommand):
   """
 
   BACKEND_SERVICE_ARG = None
-  SSL_CERTIFICATE_ARG = None
   SSL_CERTIFICATES_ARG = None
   TARGET_SSL_PROXY_ARG = None
 
@@ -53,16 +51,10 @@ class CreateGA(base.CreateCommand):
     cls.TARGET_SSL_PROXY_ARG = flags.TargetSslProxyArgument()
     cls.TARGET_SSL_PROXY_ARG.AddArgument(parser, operation_type='create')
 
-    certs = parser.add_mutually_exclusive_group(required=True)
-    cls.SSL_CERTIFICATE_ARG = (
-        ssl_certificates_flags.SslCertificateArgumentForOtherResource(
-            'target SSL proxy', required=False))
-    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, mutex_group=certs)
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target SSL proxy', required=False))
-    cls.SSL_CERTIFICATES_ARG.AddArgument(
-        parser, mutex_group=certs, cust_metavar='SSL_CERTIFICATE')
+            'target SSL proxy'))
+    cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
 
     parser.add_argument(
         '--description',
@@ -70,13 +62,16 @@ class CreateGA(base.CreateCommand):
 
     parser.display_info.AddCacheUpdater(flags.TargetSslProxiesCompleter)
 
-  def _CreateResource(self, args, ssl_cert_refs, ssl_policy_ref=None):
+  def _CreateResource(self, args, ssl_policy_ref=None):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     backend_service_ref = self.BACKEND_SERVICE_ARG.ResolveAsResource(
         args, holder.resources)
 
     target_ssl_proxy_ref = self.TARGET_SSL_PROXY_ARG.ResolveAsResource(
+        args, holder.resources)
+
+    ssl_cert_refs = self.SSL_CERTIFICATES_ARG.ResolveAsResource(
         args, holder.resources)
 
     client = holder.client.apitools_client
@@ -108,21 +103,8 @@ class CreateGA(base.CreateCommand):
       utils.RaiseToolException(errors)
     return resources
 
-  def _GetSslCertificatesList(self, args, holder):
-    if args.ssl_certificate:
-      log.warn(
-          'The --ssl-certificate flag is deprecated and will be removed soon. '
-          'Use equivalent --ssl-certificates %s flag.', args.ssl_certificate)
-      return [
-          self.SSL_CERTIFICATE_ARG.ResolveAsResource(args, holder.resources)
-      ]
-
-    return self.SSL_CERTIFICATES_ARG.ResolveAsResource(args, holder.resources)
-
   def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ssl_certificate_refs = self._GetSslCertificatesList(args, holder)
-    return self._CreateResource(args, ssl_certificate_refs)
+    return self._CreateResource(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -153,7 +135,5 @@ class CreateAlphaBeta(CreateGA):
         args, holder.resources) if args.ssl_policy else None
 
   def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ssl_certificate_refs = self._GetSslCertificatesList(args, holder)
     ssl_policy_ref = self._GetSslPolicy(args)
-    return self._CreateResource(args, ssl_certificate_refs, ssl_policy_ref)
+    return self._CreateResource(args, ssl_policy_ref)

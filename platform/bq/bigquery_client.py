@@ -50,6 +50,7 @@ _MAX_RESULTS = 100000
 _GCS_SCHEME_PREFIX = 'gs://'
 
 
+
 def _Typecheck(obj, types, message=None, method=None):
   if not isinstance(obj, types):
     if not message:
@@ -120,6 +121,14 @@ def _FormatLabels(labels):
   return '\n'.join(result_lines)
 
 
+def _RemoveEmptyLocation(d):
+  """Remove the 'location' key from a dict if it is present without a value."""
+  if 'location' in d and not d['location']:
+    # Do not send an empty location. This avoids errors against a server that
+    # does not have job location support yet.
+    del d['location']
+
+
 def _FormatProjectIdentifierForTransfers(project_reference, location):
   """Formats a project identifier for data transfers.
 
@@ -138,6 +147,45 @@ def _FormatProjectIdentifierForTransfers(project_reference, location):
   return 'projects/' + project_reference.projectId + '/locations/' + location
 
 
+
+
+def _ParseJobIdentifier(identifier):
+  """Parses a job identifier string into its components.
+
+  Args:
+    identifier: String specifying the job identifier in the format
+      "project_id:job_id", "project_id:location.job_id", or "job_id".
+
+  Returns:
+    A tuple of three elements: containing project_id, location,
+    job_id. If an element is not found, it is represented by
+    None. If no elements are found, the tuple contains three None
+    values.
+  """
+  project_id_pattern = r'[\w:\-.]*[\w:\-]+'
+  location_pattern = r'[a-zA-Z\-]+'
+  job_id_pattern = r'[\w\-]+'
+
+  pattern = re.compile(
+      r"""
+    ^((?P<project_id>%(PROJECT_ID)s)
+    :)?
+    ((?P<location>%(LOCATION)s)
+    \.)?
+    (?P<job_id>%(JOB_ID)s)
+    $
+  """ % {
+      'PROJECT_ID': project_id_pattern,
+      'LOCATION': location_pattern,
+      'JOB_ID': job_id_pattern
+  }, re.X)
+
+  match = re.search(pattern, identifier)
+  if match:
+    return (match.groupdict().get('project_id', None),
+            match.groupdict().get('location', None),
+            match.groupdict().get('job_id', None))
+  return (None, None, None)
 
 
 def ConfigurePythonLogger(apilog=None):
@@ -929,27 +977,17 @@ class BigqueryClient(object):
       pass
     raise BigqueryError('Cannot determine reference for "%s"' % (identifier,))
 
-  # TODO(user): consider introducing job-specific and possibly
-  # dataset- and project-specific parsers for the case of knowing what
-  # type we are looking for. Reinterpreting "dataset_id" as "job_id"
-  # is rather confusing.
-  def GetJobReference(self, identifier=''):
-    """Determine a JobReference from an identifier and self."""
-    project_id, dataset_id, table_id = BigqueryClient._ParseIdentifier(
-        identifier)
-    if table_id and not project_id and not dataset_id:
-      # identifier is 'foo'
+  def GetJobReference(self, identifier='', default_location=None):
+    """Determine a JobReference from an identifier, location, and self."""
+    project_id, location, job_id = _ParseJobIdentifier(identifier)
+    if not project_id:
       project_id = self.project_id
-      job_id = table_id
-    elif project_id and dataset_id and not table_id:
-      # identifier is 'foo:bar'
-      job_id = dataset_id
-    else:
-      job_id = None
+    if not location:
+      location = default_location
     if job_id:
       try:
         return ApiClientHelper.JobReference.Create(
-            projectId=project_id, jobId=job_id)
+            projectId=project_id, jobId=job_id, location=location)
       except ValueError:
         pass
     raise BigqueryError('Cannot determine job described by %s' % (
@@ -969,7 +1007,9 @@ class BigqueryClient(object):
           'Unknown %r' % (reference,), {'reason': 'notFound'}, [])
 
     if isinstance(reference, ApiClientHelper.JobReference):
-      return self.apiclient.jobs().get(**dict(reference)).execute()
+      job_reference_dict = dict(reference)
+      _RemoveEmptyLocation(job_reference_dict)
+      return self.apiclient.jobs().get(**job_reference_dict).execute()
     elif isinstance(reference, ApiClientHelper.DatasetReference):
       return self.apiclient.datasets().get(**dict(reference)).execute()
     elif isinstance(reference, ApiClientHelper.TableReference):
@@ -1994,7 +2034,7 @@ class BigqueryClient(object):
       return False
 
   def CreateDataset(self, reference, ignore_existing=False, description=None,
-                    friendly_name=None, acl=None,
+                    display_name=None, acl=None,
                     default_table_expiration_ms=None,
                     data_location=None):
     """Create a dataset corresponding to DatasetReference.
@@ -2004,7 +2044,7 @@ class BigqueryClient(object):
       ignore_existing: (boolean, default False) If False, raise
         an exception if the dataset already exists.
       description: an optional dataset description.
-      friendly_name: an optional friendly name for the dataset.
+      display_name: an optional friendly name for the dataset.
       acl: an optional ACL for the dataset, as a list of dicts.
       default_table_expiration_ms: Default expiration time to apply to
         new tables in this dataset.
@@ -2021,8 +2061,8 @@ class BigqueryClient(object):
                method='CreateDataset')
 
     body = BigqueryClient.ConstructObjectInfo(reference)
-    if friendly_name is not None:
-      body['friendlyName'] = friendly_name
+    if display_name is not None:
+      body['friendlyName'] = display_name
     if description is not None:
       body['description'] = description
     if acl is not None:
@@ -2039,21 +2079,21 @@ class BigqueryClient(object):
       if not ignore_existing:
         raise
 
-  def CreateTable(self,
-                  reference,
-                  ignore_existing=False,
-                  schema=None,
-                  description=None,
-                  friendly_name=None,
-                  expiration=None,
-                  view_query=None,
-                  external_data_config=None,
-                  view_udf_resources=None,
-                  use_legacy_sql=None,
-                  labels=None,
-                  time_partitioning=None,
-                  destination_kms_key=None
-                 ):
+  def CreateTable(
+      self,
+      reference,
+      ignore_existing=False,
+      schema=None,
+      description=None,
+      display_name=None,
+      expiration=None,
+      view_query=None,
+      external_data_config=None,
+      view_udf_resources=None,
+      use_legacy_sql=None,
+      labels=None,
+      time_partitioning=None,
+      destination_kms_key=None):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -2062,7 +2102,7 @@ class BigqueryClient(object):
         an exception if the dataset already exists.
       schema: an optional schema for tables.
       description: an optional description for tables or views.
-      friendly_name: an optional friendly name for the table.
+      display_name: an optional friendly name for the table.
       expiration: optional expiration time in milliseconds since the epoch for
         tables or views.
       view_query: an optional Sql query for views.
@@ -2088,8 +2128,8 @@ class BigqueryClient(object):
       body = BigqueryClient.ConstructObjectInfo(reference)
       if schema is not None:
         body['schema'] = {'fields': schema}
-      if friendly_name is not None:
-        body['friendlyName'] = friendly_name
+      if display_name is not None:
+        body['friendlyName'] = display_name
       if description is not None:
         body['description'] = description
       if expiration is not None:
@@ -2337,7 +2377,7 @@ class BigqueryClient(object):
                   reference,
                   schema=None,
                   description=None,
-                  friendly_name=None,
+                  display_name=None,
                   expiration=None,
                   view_query=None,
                   external_data_config=None,
@@ -2346,14 +2386,15 @@ class BigqueryClient(object):
                   labels_to_set=None,
                   label_keys_to_remove=None,
                   time_partitioning=None,
-                  etag=None):
+                  etag=None,
+                  encryption_configuration=None):
     """Updates a table.
 
     Args:
       reference: the TableReference to update.
       schema: an optional schema for tables.
       description: an optional description for tables or views.
-      friendly_name: an optional friendly name for the table.
+      display_name: an optional friendly name for the table.
       expiration: optional expiration time in milliseconds since the epoch for
         tables or views. Specifying 0 removes expiration time.
       view_query: an optional Sql query to update a view.
@@ -2369,6 +2410,7 @@ class BigqueryClient(object):
       time_partitioning: if set, enables time based partitioning on the table
         and configures the partitioning.
       etag: if set, checks that etag in the existing table matches.
+      encryption_configuration: Updates the encryption configuration.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -2386,8 +2428,10 @@ class BigqueryClient(object):
     else:
       table['schema'] = None
 
-    if friendly_name is not None:
-      table['friendlyName'] = friendly_name
+    if encryption_configuration is not None:
+      table['encryptionConfiguration'] = encryption_configuration
+    if display_name is not None:
+      table['friendlyName'] = display_name
     if description is not None:
       table['description'] = description
     if expiration is not None:
@@ -2431,7 +2475,7 @@ class BigqueryClient(object):
       self,
       reference,
       description=None,
-      friendly_name=None,
+      display_name=None,
       acl=None,
       default_table_expiration_ms=None,
       labels_to_set=None,
@@ -2442,7 +2486,7 @@ class BigqueryClient(object):
     Args:
       reference: the DatasetReference to update.
       description: an optional dataset description.
-      friendly_name: an optional friendly name for the dataset.
+      display_name: an optional friendly name for the dataset.
       acl: an optional ACL for the dataset, as a list of dicts.
       default_table_expiration_ms: optional number of milliseconds for the
         default expiration duration for new tables created in this dataset.
@@ -2464,8 +2508,8 @@ class BigqueryClient(object):
     dataset = get_request.execute()
 
     # Merge in the changes.
-    if friendly_name is not None:
-      dataset['friendlyName'] = friendly_name
+    if display_name is not None:
+      dataset['friendlyName'] = display_name
     if description is not None:
       dataset['description'] = description
     if acl is not None:
@@ -2615,8 +2659,12 @@ class BigqueryClient(object):
     print
     return result
 
-  def StartJob(self, configuration,
-               project_id=None, upload_file=None, job_id=None):
+  def StartJob(self,
+               configuration,
+               project_id=None,
+               upload_file=None,
+               job_id=None,
+               location=None):
     """Start a job with the given configuration.
 
     Args:
@@ -2628,6 +2676,7 @@ class BigqueryClient(object):
       job_id: A unique job_id to use for this job. If a
         JobIdGenerator, a job id will be generated from the job configuration.
         If None, a unique job_id will be created for this request.
+      location: Optional. The geographic location where the job should run.
 
     Returns:
       The job resource returned from the insert job request. If there is an
@@ -2657,6 +2706,9 @@ class BigqueryClient(object):
     if job_id is not None:
       job_reference = {'jobId': job_id, 'projectId': project_id}
       job_request['jobReference'] = job_reference
+      if location:
+        job_reference['location'] = location
+
     media_upload = ''
     if upload_file:
       resumable = True
@@ -2688,6 +2740,7 @@ class BigqueryClient(object):
                      external_table_definitions_json=None,
                      udf_resources=None,
                      use_legacy_sql=None,
+                     location=None,
                      **kwds):
     """Executes the given query using the rpc-style query api.
 
@@ -2711,6 +2764,7 @@ class BigqueryClient(object):
       udf_resources: Array of inline and external UDF code resources.
       use_legacy_sql: Whether to use Legacy SQL. If not set, the default value
           is true.
+      location: Optional. The geographic location where the job should run.
       **kwds: Extra keyword arguments passed directly to jobs.Query().
 
     Returns:
@@ -2739,7 +2793,8 @@ class BigqueryClient(object):
         timeout_ms=timeout_ms,
         max_results=max_results,
         use_legacy_sql=use_legacy_sql,
-        min_completion_ratio=min_completion_ratio)
+        min_completion_ratio=min_completion_ratio,
+        location=location)
     _ApplyParameters(request, dry_run=dry_run)
     return self.apiclient.jobs().query(
         body=request, projectId=project_id, **kwds).execute()
@@ -2773,39 +2828,81 @@ class BigqueryClient(object):
                      max_results=max_results)
     return self.apiclient.jobs().getQueryResults(**kwds).execute()
 
-  def RunJobSynchronously(self, configuration, project_id=None,
-                          upload_file=None, job_id=None):
-    result = self.StartJob(configuration, project_id=project_id,
-                           upload_file=upload_file, job_id=job_id)
+  def RunJobSynchronously(self,
+                          configuration,
+                          project_id=None,
+                          upload_file=None,
+                          job_id=None,
+                          location=None):
+    """Starts a job and waits for it to complete.
+
+    Args:
+      configuration: The configuration for a job.
+      project_id: The project_id to run the job under. If None,
+        self.project_id is used.
+      upload_file: A file to include as a media upload to this request.
+        Only valid on job requests that expect a media upload file.
+      job_id: A unique job_id to use for this job. If a
+        JobIdGenerator, a job id will be generated from the job configuration.
+        If None, a unique job_id will be created for this request.
+      location: Optional. The geographic location where the job should run.
+
+    Returns:
+      job, if it did not fail.
+
+    Raises:
+      BigQueryError: if the job fails.
+    """
+    result = self.StartJob(
+        configuration,
+        project_id=project_id,
+        upload_file=upload_file,
+        job_id=job_id,
+        location=location)
     if result['status']['state'] != 'DONE':
       job_reference = BigqueryClient.ConstructObjectReference(result)
       result = self.WaitJob(job_reference)
     return self.RaiseIfJobError(result)
 
-  def ExecuteJob(self, configuration, sync=None,
-                 project_id=None, upload_file=None, job_id=None):
+  def ExecuteJob(self,
+                 configuration,
+                 sync=None,
+                 project_id=None,
+                 upload_file=None,
+                 job_id=None,
+                 location=None):
     """Execute a job, possibly waiting for results."""
     if sync is None:
       sync = self.sync
 
     if sync:
       job = self.RunJobSynchronously(
-          configuration, project_id=project_id, upload_file=upload_file,
-          job_id=job_id)
+          configuration,
+          project_id=project_id,
+          upload_file=upload_file,
+          job_id=job_id,
+          location=location)
     else:
       job = self.StartJob(
-          configuration, project_id=project_id, upload_file=upload_file,
-          job_id=job_id)
+          configuration,
+          project_id=project_id,
+          upload_file=upload_file,
+          job_id=job_id,
+          location=location)
       self.RaiseIfJobError(job)
     return job
 
-  def CancelJob(self, project_id=None, job_id=None):
+  def CancelJob(self,
+                project_id=None,
+                job_id=None,
+                location=None):
     """Attempt to cancel the specified job if it is runnning.
 
     Args:
       project_id: The project_id to the job is running under. If None,
         self.project_id is used.
       job_id: The job id for this job.
+      location: Optional. The geographic location of the job.
 
     Returns:
       The job resource returned for the job for which cancel is being requested.
@@ -2821,9 +2918,13 @@ class BigqueryClient(object):
       raise BigqueryClientConfigurationError(
           'Cannot cancel a job without a job id.')
 
-    result = self.apiclient.jobs().cancel(
+    job_reference = ApiClientHelper.JobReference.Create(
         projectId=project_id,
-        jobId=job_id).execute()['job']
+        jobId=job_id,
+        location=location)
+    job_reference_dict = dict(job_reference)
+    _RemoveEmptyLocation(job_reference_dict)
+    result = self.apiclient.jobs().cancel(**job_reference_dict).execute()['job']
     if result['status']['state'] != 'DONE' and self.sync:
       job_reference = BigqueryClient.ConstructObjectReference(result)
       result = self.WaitJob(job_reference=job_reference)
@@ -2888,8 +2989,11 @@ class BigqueryClient(object):
         super(BigqueryClient.TransitionWaitPrinter, self).Print(
             job_id, wait_time, status)
 
-  def WaitJob(self, job_reference, status='DONE',
-              wait=sys.maxint, wait_printer_factory=None):
+  def WaitJob(self,
+              job_reference,
+              status='DONE',
+              wait=sys.maxint,
+              wait_printer_factory=None):
     """Poll for a job to run until it reaches the requested status.
 
     Arguments:
@@ -2974,7 +3078,9 @@ class BigqueryClient(object):
     """
     _Typecheck(job_reference, ApiClientHelper.JobReference, method='PollJob')
     wait = BigqueryClient.NormalizeWait(wait)
-    job = self.apiclient.jobs().get(**dict(job_reference)).execute()
+    job_reference_dict = dict(job_reference)
+    _RemoveEmptyLocation(job_reference_dict)
+    job = self.apiclient.jobs().get(**job_reference_dict).execute()
     current = job['status']['state']
     return (current == status, job)
 
@@ -3010,6 +3116,7 @@ class BigqueryClient(object):
                   max_single_wait=None,
                   external_table_definitions_json=None,
                   udf_resources=None,
+                  location=None,
                   **kwds):
     """Executes the given query using the rpc-style query api.
 
@@ -3035,6 +3142,7 @@ class BigqueryClient(object):
       external_table_definitions_json: Json representation of external table
           definitions.
       udf_resources: Array of inline and remote UDF resources.
+      location: Optional. The geographic location where the job should run.
       **kwds: Passed directly to self.ExecuteSyncQuery.
 
     Raises:
@@ -3091,6 +3199,7 @@ class BigqueryClient(object):
               max_results=0,
               external_table_definitions_json=external_table_definitions_json,
               udf_resources=udf_resources,
+              location=location,
               **kwds)
           if dry_run:
             execution = dict(statistics=dict(query=dict(
@@ -3192,6 +3301,8 @@ class BigqueryClient(object):
           destination table or truncating a table partition.
       labels: an optional dict of labels to set on the query job.
       query_parameters: parameter values for use_legacy_sql=False queries.
+      time_partitioning: Optional. Provides time based partitioning
+          specification for the destination table.
       destination_encryption_configuration: Optional. Allows user to encrypt the
           table created from a query job with a Cloud KMS key.
       **kwds: Passed on to self.ExecuteJob.
@@ -3219,8 +3330,6 @@ class BigqueryClient(object):
         raise BigqueryError('Invalid value %s for destination_table: %s' % (
             destination_table, e))
       query_config['destinationTable'] = dict(reference)
-    if time_partitioning:
-      query_config['timePartitioning'] = dict(time_partitioning)
     if destination_encryption_configuration:
       query_config['destinationEncryptionConfiguration'] = (
           destination_encryption_configuration)
@@ -3238,6 +3347,7 @@ class BigqueryClient(object):
         use_legacy_sql=use_legacy_sql,
         schema_update_options=schema_update_options,
         query_parameters=query_parameters,
+        time_partitioning=time_partitioning,
         min_completion_ratio=min_completion_ratio)
     request = {'query': query_config}
     _ApplyParameters(request, dry_run=dry_run,
@@ -3305,6 +3415,8 @@ class BigqueryClient(object):
       schema_update_options: schema update options when appending to the
           destination table or truncating a table partition.
       null_marker: Optional. String that will be interpreted as a NULL value.
+      time_partitioning: Optional. Provides time based partitioning
+          specification for the destination table.
       destination_encryption_configuration: Optional. Allows user to encrypt the
           table created from a load job with Cloud KMS key.
       **kwds: Passed on to self.ExecuteJob.
@@ -3322,8 +3434,6 @@ class BigqueryClient(object):
       upload_file = sources[0]
     if schema is not None:
       load_config['schema'] = {'fields': BigqueryClient.ReadSchema(schema)}
-    if time_partitioning:
-      load_config['timePartitioning'] = dict(time_partitioning)
     if destination_encryption_configuration:
       load_config['destinationEncryptionConfiguration'] = (
           destination_encryption_configuration)
@@ -3343,6 +3453,7 @@ class BigqueryClient(object):
         projection_fields=projection_fields,
         schema_update_options=schema_update_options,
         null_marker=null_marker,
+        time_partitioning=time_partitioning,
         autodetect=autodetect)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
@@ -3569,6 +3680,7 @@ class _JobTableReader(_TableReader):
       kwds['pageToken'] = page_token
     else:
       kwds['startIndex'] = start_row
+    _RemoveEmptyLocation(kwds)
     data = self._apiclient.jobs().getQueryResults(**kwds).execute()
     if not data['jobComplete']:
       raise BigqueryError('Job %s is not done' % (self,))
@@ -3587,6 +3699,7 @@ class ApiClientHelper(object):
   class Reference(collections.Mapping):
     """Base class for Reference objects returned by apiclient."""
     _required_fields = frozenset()
+    _optional_fields = frozenset()
     _format_str = ''
 
     def __init__(self, **kwds):
@@ -3598,18 +3711,27 @@ class ApiClientHelper(object):
           raise ValueError('Missing required argument %s to %s' % (
               name, self.__class__.__name__))
         setattr(self, name, kwds[name])
+      for name in self._optional_fields:
+        if kwds.get(name, ''):
+          setattr(self, name, kwds[name])
 
     @classmethod
     def Create(cls, **kwds):
       """Factory method for this class."""
-      args = dict((k, v) for k, v in kwds.iteritems()
-                  if k in cls._required_fields)
+      args = dict((k, v)
+                  for k, v in kwds.iteritems()
+                  if k in cls._required_fields.union(cls._optional_fields))
       return cls(**args)
 
     def __iter__(self):
-      return iter(self._required_fields)
+      return iter(self._required_fields.union(self._optional_fields))
 
     def __getitem__(self, key):
+      if key in self._optional_fields:
+        if key in self.__dict__:
+          return self.__dict__[key]
+        else:
+          return None
       if key in self._required_fields:
         return self.__dict__[key]
       raise KeyError(key)
@@ -3618,7 +3740,7 @@ class ApiClientHelper(object):
       return hash(str(self))
 
     def __len__(self):
-      return len(self._required_fields)
+      return len(self._required_fields.union(self._optional_fields))
 
     def __str__(self):
       return self._format_str % dict(self)
@@ -3628,11 +3750,13 @@ class ApiClientHelper(object):
 
     def __eq__(self, other):
       d = dict(other)
-      return all(getattr(self, name) == d.get(name, '')
-                 for name in self._required_fields)
+      return all(
+          getattr(self, name, None) == d.get(name, None)
+          for name in self._required_fields.union(self._optional_fields))
 
   class JobReference(Reference):
     _required_fields = frozenset(('projectId', 'jobId'))
+    _optional_fields = frozenset(('location',))
     _format_str = '%(projectId)s:%(jobId)s'
     typename = 'job'
 

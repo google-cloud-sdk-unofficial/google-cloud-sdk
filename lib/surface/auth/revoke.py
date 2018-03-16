@@ -29,7 +29,7 @@ class Revoke(base.Command):
   Revokes credentials for the specified user accounts or service accounts.
   When you revoke the credentials, they are removed from the local machine. If
   no account is specified, this command revokes credentials for the currently
-  active account.
+  active account, effectively logging out of that account.
 
   You can revoke credentials when you want to disallow access by gcloud and
   other Cloud SDK tools using a specified account. You don't need to revoke

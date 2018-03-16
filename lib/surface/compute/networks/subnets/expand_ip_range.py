@@ -18,7 +18,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as exceptions
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 from googlecloudsdk.core.console import console_io
-import ipaddr
+import ipaddress
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -82,8 +83,10 @@ class ExpandIpRange(base.SilentCommand):
     unmasked_new_ip_range = '{0}/{1}'.format(
         original_ip_cidr_range.split('/')[0],
         new_prefix_length)
-    network = ipaddr.IPv4Network(unmasked_new_ip_range)
-    return str(network.masked())
+    # ipaddress only allows unicode input
+    network = ipaddress.IPv4Network(six.text_type(unmasked_new_ip_range),
+                                    strict=False)
+    return str(network)
 
   def _PromptToConfirm(
       self, subnetwork_name, original_ip_cidr_range, new_ip_cidr_range):

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
                                                              ssl_policies_flags)
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
-from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -41,23 +40,16 @@ class UpdateGA(base.SilentCommand):
   server-side authentication.
   """
 
-  SSL_CERTIFICATE_ARG = None
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    certs = parser.add_mutually_exclusive_group()
-    cls.SSL_CERTIFICATE_ARG = (
-        ssl_certificates_flags.SslCertificateArgumentForOtherResource(
-            'target HTTPS proxy', required=False))
-    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, mutex_group=certs)
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
             'target HTTPS proxy', required=False))
-    cls.SSL_CERTIFICATES_ARG.AddArgument(
-        parser, mutex_group=certs, cust_metavar='SSL_CERTIFICATE')
+    cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
 
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='update')
@@ -79,7 +71,6 @@ class UpdateGA(base.SilentCommand):
 
   def _SendRequests(self,
                     args,
-                    ssl_cert_refs,
                     quic_override=None,
                     ssl_policy=None,
                     clear_ssl_policy=False):
@@ -90,7 +81,9 @@ class UpdateGA(base.SilentCommand):
     target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
         args, holder.resources)
 
-    if ssl_cert_refs:
+    if args.ssl_certificates:
+      ssl_cert_refs = self.SSL_CERTIFICATES_ARG.ResolveAsResource(
+          args, holder.resources)
       requests.append(
           (client.apitools_client.targetHttpsProxies, 'SetSslCertificates',
            client.messages.ComputeTargetHttpsProxiesSetSslCertificatesRequest(
@@ -132,33 +125,16 @@ class UpdateGA(base.SilentCommand):
 
     return client.MakeRequests(requests)
 
-  def _GetSslCertificatesList(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    if args.ssl_certificate:
-      log.warn(
-          'The --ssl-certificate flag is deprecated and will be removed soon. '
-          'Use equivalent --ssl-certificates %s flag.', args.ssl_certificate)
-      return [
-          self.SSL_CERTIFICATE_ARG.ResolveAsResource(args, holder.resources)
-      ]
-
-    if args.ssl_certificates:
-      return self.SSL_CERTIFICATES_ARG.ResolveAsResource(args, holder.resources)
-
-    return []
-
   def _CheckMissingArgument(self, args):
     if not (args.IsSpecified('ssl_certificates') or
-            args.IsSpecified('ssl_certificate') or args.IsSpecified('url_map')):
+            args.IsSpecified('url_map')):
       raise exceptions.ToolException(
           'You must specify at least one of [--ssl-certificates] or '
           '[--url-map].')
 
   def Run(self, args):
     self._CheckMissingArgument(args)
-
-    ssl_certificate_refs = self._GetSslCertificatesList(args)
-    return self._SendRequests(args, ssl_certificate_refs)
+    return self._SendRequests(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -192,11 +168,8 @@ class UpdateBeta(UpdateGA):
 
   def _CheckMissingArgument(self, args):
     if not sum(
-        args.IsSpecified(arg)
-        for arg in [
-            'ssl_certificates', 'ssl_certificate', 'url_map', 'ssl_policy',
-            'clear_ssl_policy'
-        ]):
+        args.IsSpecified(arg) for arg in
+        ['ssl_certificates', 'url_map', 'ssl_policy', 'clear_ssl_policy']):
       raise exceptions.ToolException(
           'You must specify at least one of [--ssl-certificates], '
           '[--url-map], [--ssl-policy] or [--clear-ssl-policy].')
@@ -207,13 +180,11 @@ class UpdateBeta(UpdateGA):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
 
-    ssl_certificate_refs = self._GetSslCertificatesList(args)
     ssl_policy = messages.SslPolicyReference(
         sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
         .SelfLink()) if args.IsSpecified('ssl_policy') else None
     return self._SendRequests(
         args,
-        ssl_certificate_refs,
         quic_override=None,
         ssl_policy=ssl_policy,
         clear_ssl_policy=args.IsSpecified('clear_ssl_policy'))
@@ -244,10 +215,9 @@ class UpdateAlpha(UpdateBeta):
 
   def _CheckMissingArgument(self, args):
     if not sum(
-        args.IsSpecified(arg)
-        for arg in [
-            'ssl_certificates', 'ssl_certificate', 'url_map', 'quic_override',
-            'ssl_policy', 'clear_ssl_policy'
+        args.IsSpecified(arg) for arg in [
+            'ssl_certificates', 'url_map', 'quic_override', 'ssl_policy',
+            'clear_ssl_policy'
         ]):
       raise exceptions.ToolException(
           'You must specify at least one of [--ssl-certificates], '
@@ -263,13 +233,11 @@ class UpdateAlpha(UpdateBeta):
                      QuicOverrideValueValuesEnum(args.quic_override)
                     ) if args.IsSpecified('quic_override') else None
 
-    ssl_certificate_refs = self._GetSslCertificatesList(args)
     ssl_policy = messages.SslPolicyReference(
         sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
         .SelfLink()) if args.IsSpecified('ssl_policy') else None
     return self._SendRequests(
         args,
-        ssl_certificate_refs,
         quic_override=quic_override,
         ssl_policy=ssl_policy,
         clear_ssl_policy=args.IsSpecified('clear_ssl_policy'))

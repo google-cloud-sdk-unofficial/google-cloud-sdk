@@ -69,10 +69,10 @@ class _BaseRun(object):
 
             $ {command} --app APP_APK --device model=NexusLowRes,orientation=landscape
 
-          To invoke an instrumentation test against a physical Nexus 4 device
-          (MODEL_ID: mako) which is running Android API level 19 in French, run:
+          To invoke an instrumentation test against a physical Nexus 6 device
+          (MODEL_ID: shamu) which is running Android API level 21 in French, run:
 
-            $ {command} --app APP_APK --test TEST_APK --device model=mako,version=19,locale=fr
+            $ {command} --app APP_APK --test TEST_APK --device model=shamu,version=21,locale=fr
 
           To test against multiple devices, specify --device more than once:
 
@@ -89,7 +89,7 @@ class _BaseRun(object):
           comprehensive matrix of virtual and physical devices, OS versions,
           locales and orientations, run:
 
-            $ {command} --app APP_APK --timeout 5m --device-ids=mako,NexusLowRes,Nexus5,g3,zeroflte --os-version-ids=19,21,22,23,24,25 --locales=en_GB,es,fr,ru,zh --orientations=portrait,landscape
+            $ {command} --app APP_APK --timeout 5m --device-ids=shamu,NexusLowRes,Nexus5,g3,zeroflte --os-version-ids=19,21,22,23,24,25 --locales=en_GB,es,fr,ru,zh --orientations=portrait,landscape
 
           The above command will generate a test matrix with a total of 300 test
           executions, but only the subset of executions with valid dimension
