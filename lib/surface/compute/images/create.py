@@ -41,10 +41,10 @@ def _Args(parser, release_track):
   labels_util.AddCreateLabelsFlags(parser)
   flags.MakeForceArg().AddToParser(parser)
   flags.AddCloningImagesArgs(parser, sources_group)
+  flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
 
   # Alpha and Beta Args
   if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
-    flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
 

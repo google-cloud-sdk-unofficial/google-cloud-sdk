@@ -175,11 +175,11 @@ class Filters(base.TopicCommand):
 
           List resources with tag *my-tag* and *my-other-tag*:
 
-            $ gcloud compute instances list --filter='tags.items=my-tag AND tags.items=my-other-tag)'
+            $ gcloud compute instances list --filter='tags.items=my-tag AND tags.items=my-other-tag'
 
-          List resources with tag *my-tag* but not *my-other-tag*:
+          List resources which either have tag *my-tag* but not *my-other-tag* or have tag *alternative-tag*:
 
-            $ gcloud compute instances list --filter='tags.items=my-tag AND -tags.items=my-other-tag)'
+            $ gcloud compute instances list --filter='(tags.items=my-tag AND -tags.items=my-other-tag) OR tags.items=alternative-tag'
 
           List resources with label *my-label* with any value:
 

@@ -13,9 +13,11 @@
 # limitations under the License.
 
 """Delete operation command."""
+
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -34,7 +36,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('operation', help='The ID of the operation to delete.')
+    flags.AddOperationFlag(parser, 'delete')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())

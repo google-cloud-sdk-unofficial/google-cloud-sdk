@@ -102,7 +102,8 @@ class Create(base.CreateCommand):
         dataproc.messages.DataprocProjectsRegionsClustersCreateRequest(
             projectId=cluster_ref.projectId,
             region=cluster_ref.region,
-            cluster=cluster))
+            cluster=cluster,
+            requestId=util.GetUniqueId()))
 
     if args.async:
       log.status.write(

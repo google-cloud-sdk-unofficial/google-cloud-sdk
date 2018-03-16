@@ -19,6 +19,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import exceptions as dm_exceptions
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import alpha_flags
@@ -26,6 +27,7 @@ from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.command_lib.deployment_manager import importer
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -71,6 +73,13 @@ class Create(base.CreateCommand, dm_base.DmCommand):
           More information is available at https://cloud.google.com/deployment-manager/docs/configuration/.
           """,
   }
+
+  _create_policy_flag_map = arg_utils.ChoiceEnumMapper(
+      '--create-policy',
+      (apis.GetMessagesModule('deploymentmanager', 'v2beta')
+       .DeploymentmanagerDeploymentsUpdateRequest.CreatePolicyValueValuesEnum),
+      help_str='Create policy for resources that have changed in the update',
+      default='create-or-acquire')
 
   @staticmethod
   def Args(parser, version=base.ReleaseTrack.GA):
@@ -165,12 +174,8 @@ class Create(base.CreateCommand, dm_base.DmCommand):
 
     try:
       operation = self.client.deployments.Insert(
-          self.messages.DeploymentmanagerDeploymentsInsertRequest(
-              project=dm_base.GetProject(),
-              deployment=deployment,
-              preview=args.preview,
-          )
-      )
+          self._BuildRequest(
+              args=args, project=dm_base.GetProject(), deployment=deployment))
 
       # Fetch and print the latest fingerprint of the deployment.
       fingerprint = dm_api_util.FetchDeploymentFingerprint(
@@ -212,6 +217,21 @@ class Create(base.CreateCommand, dm_base.DmCommand):
           self.client, self.messages, dm_base.GetProject(),
           deployment_ref.deployment,
           self.ReleaseTrack() is base.ReleaseTrack.ALPHA)
+
+  def _BuildRequest(self,
+                    args,
+                    project,
+                    deployment,
+                    supports_create_policy=False):
+    request = self.messages.DeploymentmanagerDeploymentsInsertRequest(
+        project=project, deployment=deployment, preview=args.preview)
+    if supports_create_policy and args.create_policy:
+      parsed_create_flag = Create._create_policy_flag_map.GetEnumForChoice(
+          args.create_policy).name
+      request.createPolicy = (
+          self.messages.DeploymentmanagerDeploymentsInsertRequest.
+          CreatePolicyValueValuesEnum(parsed_create_flag))
+    return request
 
   def _HandleOperationError(
       self, error, args, operation, project, deployment_ref):
@@ -284,6 +304,7 @@ class CreateAlpha(Create):
     Create.Args(parser, version=base.ReleaseTrack.ALPHA)
     alpha_flags.AddCredentialFlag(parser)
     parser.display_info.AddFormat(alpha_flags.RESOURCES_AND_OUTPUTS_FORMAT)
+    Create._create_policy_flag_map.choice_arg.AddToParser(parser)
 
   def _SetMetadata(self, args, deployment):
     if args.credential:
@@ -291,9 +312,17 @@ class CreateAlpha(Create):
                                                      args.credential)
     super(CreateAlpha, self)._SetMetadata(args, deployment)
 
+  def _BuildRequest(self, args, project, deployment):
+    return super(CreateAlpha, self)._BuildRequest(
+        args=args,
+        project=project,
+        deployment=deployment,
+        supports_create_policy=True)
+
 
 @base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@dm_base.UseDmApi(dm_base.DmApiVersion.V2BETA)
 class CreateBeta(Create):
   """Create a deployment.
 
@@ -304,3 +333,11 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser, version=base.ReleaseTrack.BETA)
+    Create._create_policy_flag_map.choice_arg.AddToParser(parser)
+
+  def _BuildRequest(self, args, project, deployment):
+    return super(CreateBeta, self)._BuildRequest(
+        args=args,
+        project=project,
+        deployment=deployment,
+        supports_create_policy=True)

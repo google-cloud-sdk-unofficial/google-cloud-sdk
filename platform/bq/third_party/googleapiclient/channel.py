@@ -69,7 +69,10 @@ import six
 try:
   from oauth2client import util
 except ImportError:
-  from oauth2client import _helpers as util
+  try:
+    from oauth2client import _helpers as util
+  except ImportError:
+    from oauth2client_4_0 import _helpers as util
 
 
 # The unix time epoch starts at midnight 1970.

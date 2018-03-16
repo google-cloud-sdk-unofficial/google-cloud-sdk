@@ -16,6 +16,7 @@
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -34,7 +35,7 @@ class Cancel(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('operation', help='The ID of the operation to cancel.')
+    flags.AddOperationFlag(parser, 'cancel')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())

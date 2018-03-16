@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
@@ -43,10 +44,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'id',
-        metavar='JOB_ID',
-        help='The ID of the job to describe.')
+    flags.AddJobFlag(parser, 'update')
     changes = parser.add_argument_group(required=True)
     # Allow the user to specify new labels as well as update/remove existing
     labels_util.AddUpdateLabelsFlags(changes)
@@ -54,7 +52,7 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    job_ref = util.ParseJob(args.id, dataproc)
+    job_ref = util.ParseJob(args.job, dataproc)
 
     changed_fields = []
 

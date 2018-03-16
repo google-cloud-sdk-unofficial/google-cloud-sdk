@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""OpenSSL Crypto-related routines for oauth2client."""
+"""OpenSSL Crypto-related routines for oauth2client_4_0."""
 
 from OpenSSL import crypto
 

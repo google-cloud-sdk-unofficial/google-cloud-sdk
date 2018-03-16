@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 
 
@@ -34,15 +35,12 @@ class Wait(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'id',
-        metavar='JOB_ID',
-        help='The ID of the job to wait.')
+    flags.AddJobFlag(parser, 'wait for')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    job_ref = util.ParseJob(args.id, dataproc)
+    job_ref = util.ParseJob(args.job, dataproc)
 
     job = dataproc.client.projects_regions_jobs.Get(
         dataproc.messages.DataprocProjectsRegionsJobsGetRequest(
@@ -59,6 +57,6 @@ class Wait(base.Command):
         goal_state=dataproc.messages.JobStatus.StateValueValuesEnum.DONE,
         stream_driver_log=True)
 
-    log.status.Print('Job [{0}] finished successfully.'.format(args.id))
+    log.status.Print('Job [{0}] finished successfully.'.format(args.job))
 
     return job

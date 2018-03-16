@@ -21,7 +21,7 @@ This tool expects as input a file or file pattern. Currently it supports two
 kinds of inputs.
 1) Input file(s) in TFRecord format. Each record contains a string that can
    be consumed by the graph.
-2) Input files(s) in Text format. Each line contains either
+2) Input files(s) in Text/JSON format. Each line contains either
    a) numbers, or (possibly nested) lists of numbers.
    b) a string that can be consumed by the graph.
 
@@ -30,53 +30,23 @@ names should be logical names that are specified when constructing the graph
 where the map of logical tensor names to physical tensor names are provided
 by user code.
 
-One should also specify the model location where the model and checkpoint files
+One should also specify the model location where the model in SavedModel format
 are saved. The location can be on local disk (when running locally) or on GCS.
 
 Another mandatory flag is the output location, which is a directory on local
 disk or on GCS.
 
-google.cloud.ml must be installed or present when executing this pipeline
-
-To execute this pipeline locally, specify:
-  --input_file_patterns YOUR_DATA_FILES_ON_LOCAL_DIR_OR_ON_GCS
-  --input_file_format YOUR_FILES_FORMAT_POSSIBLY_COMPRESSED_TFRECORD_OR_TEXT
-  --input_data_format YOUR_DATA_FORMAT_STRING_OR_NUMPY_JSON
-  --model_dir YOUR_MODEL_DIR_ON_LOCAL_DIR_OR_ON_GCS
-  --output_location YOUR_OUTPUT_DIR_ON_LOCAL_DIR_OR_ON_GCS
-  --runner BlockingDataflowRunner
-
-To execute this pipeline on the cloud using the Dataflow service and non-default
-options, specify the pipeline configuration on the command line:
-  --runner DataflowRunner or BlockingDataflowRunner
-  --input_file_patterns YOUR_DATA_FILES_ON_LOCAL_DIR_OR_ON_GCS
-  --input_file_format YOUR_FILES_FORMAT_POSSIBLY_COMPRESSED_TFRECORD_OR_TEXT
-  --model_dir YOUR_MODEL_DIR_ON_LOCAL_DIR_OR_ON_GCS
-  --output_location YOUR_OUTPUT_DIR_ON_LOCAL_DIR_OR_ON_GCS
-  --extra_package /local/path/to/cloudml.tar.gz
-  --model_dir gs://YOUR_MODEL_DIR_ON_GCS
-  --output_location gs://YOUR_OUTPUT_DIR_ON_GCS
-  --job_name NAME_FOR_YOUR_JOB
-  --project YOUR_PROJECT_NAME
-  --staging_location gs://YOUR_STAGING_DIRECTORY
-  --temp_location gs://YOUR_TEMPORARY_DIRECTORY
-  --num_workers NUM_WORKERS_TO_USE
+This program can be used to run the pipeline or to generate a Dataflow template
+for later use.
 """
 import logging
 
 import apache_beam as beam
-# pylint: disable=g-import-not-at-top
-# TODO(user): Remove after Dataflow 0.4.5 SDK is released.
-try:
-  from apache_beam.options.pipeline_options import PipelineOptions
-except ImportError:
-  from apache_beam.utils.options import PipelineOptions
-
+from apache_beam.options.pipeline_options import PipelineOptions
 from tensorflow.python.saved_model import tag_constants
 from google.cloud.ml import prediction as mlprediction
 from google.cloud.ml.dataflow import _aggregators as aggregators
 from google.cloud.ml.dataflow import batch_prediction_pipeline
-# pylint: enable=g-import-not-at-top
 
 FILE_FORMAT_SUPPORTED = ["json", "tfrecord", "tfrecord_gzip"]
 OUTPUT_FORMAT_SUPPORTED = ["json", "csv"]
@@ -86,6 +56,10 @@ FRAMEWORKS_SUPPORTED = [
     mlprediction.XGBOOST_FRAMEWORK_NAME
 ]
 FILE_LIST_SEPARATOR = ","
+
+
+# The default values for the pipeline options we want to customize.
+DEFAULT_DATFLOW_PIPELINE_OPTIONS = {"disk_size_gb": 250}
 
 
 class BatchPredictionOptions(PipelineOptions):
@@ -184,7 +158,8 @@ class BatchPredictionOptions(PipelineOptions):
 
 if __name__ == "__main__":
   logging.getLogger().setLevel(logging.INFO)
-  dataflow_pipeline_options = PipelineOptions()
+  dataflow_pipeline_options = PipelineOptions(
+      **DEFAULT_DATFLOW_PIPELINE_OPTIONS)
   logging.info("Dataflow option: %s",
                dataflow_pipeline_options.get_all_options())
   # Create the pipeline

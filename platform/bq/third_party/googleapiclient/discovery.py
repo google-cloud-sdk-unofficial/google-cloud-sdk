@@ -73,7 +73,6 @@ from googleapiclient.model import JsonModel
 from googleapiclient.model import MediaModel
 from googleapiclient.model import RawModel
 from googleapiclient.schema import Schemas
-from oauth2client.client import GoogleCredentials
 
 # Oauth2client < 3 has the positional helper in 'util', >= 3 has it
 # in '_helpers'.
@@ -81,9 +80,12 @@ try:
   from oauth2client.util import _add_query_parameter
   from oauth2client.util import positional
 except ImportError:
-  from oauth2client._helpers import _add_query_parameter
-  from oauth2client._helpers import positional
-
+  try:
+    from oauth2client._helpers import _add_query_parameter
+    from oauth2client._helpers import positional
+  except ImportError:
+    from oauth2client_4_0._helpers import _add_query_parameter
+    from oauth2client_4_0._helpers import positional
 
 # The client library requires a version of httplib2 that supports RETRIES.
 httplib2.RETRIES = 1

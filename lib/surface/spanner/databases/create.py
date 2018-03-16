@@ -17,6 +17,7 @@ from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 class Create(base.CreateCommand):
@@ -24,17 +25,8 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.Instance(positional=False).AddToParser(parser)
-    flags.Database().AddToParser(parser)
+    """See base class."""
+    resource_args.AddDatabaseResourceArg(parser, 'to create')
     flags.Ddl(help_text='Semi-colon separated DDL (data definition language) '
               'statements to run inside the '
               'newly created database. If there is an error in any statement, '
@@ -54,7 +46,9 @@ class Create(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    op = databases.Create(args.instance, args.database,
+    database_ref = args.CONCEPTS.database.Parse()
+    instance_ref = database_ref.Parent()
+    op = databases.Create(instance_ref, args.database,
                           flags.SplitDdlIntoStatements(args.ddl or []))
     if args.async:
       return op

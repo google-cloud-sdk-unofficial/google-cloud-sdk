@@ -38,6 +38,7 @@ class GetIamPolicy(base.ListCommand):
     parser.add_argument(
         'name',
         help='The name of the cluster to retrieve the policy for.')
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())

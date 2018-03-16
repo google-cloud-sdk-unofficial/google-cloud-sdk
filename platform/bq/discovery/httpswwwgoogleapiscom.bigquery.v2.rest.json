@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20180201",
+ "revision": "20180307",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -380,6 +380,20 @@
     }
    }
   },
+  "DestinationTableProperties": {
+   "id": "DestinationTableProperties",
+   "type": "object",
+   "properties": {
+    "description": {
+     "type": "string",
+     "description": "[Optional] The description for the destination table. This will only be used if the destination table is newly created. If the table already exists and a value different than the current description is provided, the job will fail."
+    },
+    "friendlyName": {
+     "type": "string",
+     "description": "[Optional] The friendly name for the destination table. This will only be used if the destination table is newly created. If the table already exists and a value different than the current friendly name is provided, the job will fail."
+    }
+   }
+  },
   "EncryptionConfiguration": {
    "id": "EncryptionConfiguration",
    "type": "object",
@@ -441,10 +455,23 @@
      "description": "Relative amount of time the slowest shard spent on CPU-bound tasks.",
      "format": "double"
     },
+    "endMs": {
+     "type": "string",
+     "description": "Stage end time in milliseconds.",
+     "format": "int64"
+    },
     "id": {
      "type": "string",
      "description": "Unique ID for stage within plan.",
      "format": "int64"
+    },
+    "inputStages": {
+     "type": "array",
+     "description": "IDs for stages that are inputs to this stage.",
+     "items": {
+      "type": "string",
+      "format": "int64"
+     }
     },
     "name": {
      "type": "string",
@@ -493,6 +520,11 @@
     "shuffleOutputBytesSpilled": {
      "type": "string",
      "description": "Total number of bytes written to shuffle and spilled to disk.",
+     "format": "int64"
+    },
+    "startMs": {
+     "type": "string",
+     "description": "Stage start time in milliseconds.",
      "format": "int64"
     },
     "status": {
@@ -807,7 +839,7 @@
    "properties": {
     "compression": {
      "type": "string",
-     "description": "[Optional] The compression type to use for exported files. Possible values include GZIP and NONE. The default value is NONE."
+     "description": "[Optional] The compression type to use for exported files. Possible values include GZIP, DEFLATE, SNAPPY, and NONE. The default value is NONE. DEFLATE and SNAPPY are only supported for Avro."
     },
     "destinationFormat": {
      "type": "string",
@@ -861,11 +893,15 @@
     },
     "destinationEncryptionConfiguration": {
      "$ref": "EncryptionConfiguration",
-     "description": "[Experimental] Custom encryption configuration (e.g., Cloud KMS keys)."
+     "description": "Custom encryption configuration (e.g., Cloud KMS keys)."
     },
     "destinationTable": {
      "$ref": "TableReference",
      "description": "[Required] The destination table to load the data into."
+    },
+    "destinationTableProperties": {
+     "$ref": "DestinationTableProperties",
+     "description": "[Experimental] [Optional] Properties with which to create the destination table if it is new."
     },
     "encoding": {
      "type": "string",
@@ -965,7 +1001,7 @@
     },
     "destinationEncryptionConfiguration": {
      "$ref": "EncryptionConfiguration",
-     "description": "[Experimental] Custom encryption configuration (e.g., Cloud KMS keys)."
+     "description": "Custom encryption configuration (e.g., Cloud KMS keys)."
     },
     "destinationTable": {
      "$ref": "TableReference",
@@ -1060,7 +1096,7 @@
     },
     "destinationEncryptionConfiguration": {
      "$ref": "EncryptionConfiguration",
-     "description": "[Experimental] Custom encryption configuration (e.g., Cloud KMS keys)."
+     "description": "Custom encryption configuration (e.g., Cloud KMS keys)."
     },
     "destinationTable": {
      "$ref": "TableReference",
@@ -1162,7 +1198,7 @@
      }
     },
     "location": {
-     "$ref": "Location",
+     "type": "string",
      "description": "[Experimental] The geographic location of the job. Required except for US and EU."
     },
     "projectId": {
@@ -1289,6 +1325,11 @@
      "description": "[Output-only] Total bytes processed for the job.",
      "format": "int64"
     },
+    "totalPartitionsProcessed": {
+     "type": "string",
+     "description": "[Output-only] Total number of partitions processed from all partitioned tables referenced in the job.",
+     "format": "int64"
+    },
     "totalSlotMs": {
      "type": "string",
      "description": "[Output-only] Slot-milliseconds for the job.",
@@ -1380,10 +1421,6 @@
   "JsonValue": {
    "id": "JsonValue",
    "type": "any"
-  },
-  "Location": {
-   "id": "Location",
-   "type": "string"
   },
   "ProjectList": {
    "id": "ProjectList",
@@ -1545,7 +1582,7 @@
      "default": "bigquery#queryRequest"
     },
     "location": {
-     "$ref": "Location",
+     "type": "string",
      "description": "[Experimental] The geographic location where the job should run. Required except for US and EU."
     },
     "maxResults": {
@@ -1659,14 +1696,14 @@
    "type": "object",
    "properties": {
     "activeInputs": {
-     "type": "integer",
+     "type": "string",
      "description": "Total number of active workers. This does not correspond directly to slot usage. This is the largest value observed since the last sample.",
-     "format": "int32"
+     "format": "int64"
     },
     "completedInputs": {
-     "type": "integer",
+     "type": "string",
      "description": "Total parallel units of work completed by this query.",
-     "format": "int32"
+     "format": "int64"
     },
     "elapsedMs": {
      "type": "string",
@@ -1721,7 +1758,7 @@
     },
     "encryptionConfiguration": {
      "$ref": "EncryptionConfiguration",
-     "description": "[Experimental] Custom encryption configuration (e.g., Cloud KMS keys)."
+     "description": "Custom encryption configuration (e.g., Cloud KMS keys)."
     },
     "etag": {
      "type": "string",
@@ -2558,10 +2595,22 @@
        "description": "Whether to display jobs owned by all users in the project. Default false",
        "location": "query"
       },
+      "maxCreationTime": {
+       "type": "string",
+       "description": "Max value for job creation time, in milliseconds since the POSIX epoch. If set, only jobs created before or at this timestamp are returned",
+       "format": "uint64",
+       "location": "query"
+      },
       "maxResults": {
        "type": "integer",
        "description": "Maximum number of results to return",
        "format": "uint32",
+       "location": "query"
+      },
+      "minCreationTime": {
+       "type": "string",
+       "description": "Min value for job creation time, in milliseconds since the POSIX epoch. If set, only jobs created after or at this timestamp are returned",
+       "format": "uint64",
        "location": "query"
       },
       "pageToken": {

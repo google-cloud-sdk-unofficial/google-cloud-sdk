@@ -15,10 +15,8 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
-from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import iam
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 class SetIamPolicy(base.Command):
@@ -26,17 +24,9 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.Instance(positional=False).AddToParser(parser)
-    flags.Database().AddToParser(parser)
+    """See base class."""
+    resource_args.AddDatabaseResourceArg(parser,
+                                         'to set IAM policy binding for')
     parser.add_argument(
         'policy_file', help='Name of JSON or YAML file with the IAM policy.')
 
@@ -50,13 +40,7 @@ class SetIamPolicy(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    database_ref = resources.REGISTRY.Parse(
-        args.database,
-        params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-            'instancesId': args.instance
-        },
-        collection='spanner.projects.instances.databases')
+    database_ref = args.CONCEPTS.database.Parse()
     result = iam.SetDatabaseIamPolicy(database_ref, args.policy_file)
     iam_util.LogSetIamPolicy(database_ref.Name(), 'database')
     return result

@@ -180,7 +180,8 @@ class Update(base.UpdateCommand):
         region=cluster_ref.region,
         projectId=cluster_ref.projectId,
         cluster=cluster,
-        updateMask=','.join(changed_fields))
+        updateMask=','.join(changed_fields),
+        requestId=util.GetUniqueId())
 
     if args.graceful_decommission_timeout is not None:
       request.gracefulDecommissionTimeout = (

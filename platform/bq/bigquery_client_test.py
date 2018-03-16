@@ -249,6 +249,18 @@ class BigqueryClientTest(googletest.TestCase):
     self.assertParsesJobReference('jid', 'default_proj', None, 'default_proj',
                                   None, 'jid')
 
+  # Regression test for b/74085458.
+  def testParseJobReference_locationWithNumber(self):
+    identifier = ('google.com:shollyman-bq-experiments:'
+                  'asia-northeast1.'
+                  'bquijob_583f1593_161e40b3acd')
+    self.assertParsesJobReference(identifier,
+                                  None,
+                                  None,
+                                  'google.com:shollyman-bq-experiments',
+                                  'asia-northeast1',
+                                  'bquijob_583f1593_161e40b3acd')
+
   # Tests parsing job references from identifier strings with various
   # forms of project IDs.
   def testParseJobReferenceWithLocation(self):

@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -35,15 +36,12 @@ class Kill(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'id',
-        metavar='JOB_ID',
-        help='The ID of the job to kill.')
+    flags.AddJobFlag(parser, 'kill')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    job_ref = util.ParseJob(args.id, dataproc)
+    job_ref = util.ParseJob(args.job, dataproc)
     request = dataproc.messages.DataprocProjectsRegionsJobsCancelRequest(
         projectId=job_ref.projectId,
         region=job_ref.region,
@@ -53,7 +51,7 @@ class Kill(base.Command):
     # TODO(b/36049788) Check if Job is still running and fail or handle 401.
 
     console_io.PromptContinue(
-        message="The job '{0}' will be killed.".format(args.id),
+        message="The job '{0}' will be killed.".format(args.job),
         cancel_on_no=True,
         cancel_string='Cancellation aborted by user.')
 

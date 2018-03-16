@@ -16,4 +16,4 @@
 
 """Utils used internally in the Cloud ML."""
 
-import _decoders  # pylint: disable=relative-import
+from . import _decoders  # pylint: disable=relative-import

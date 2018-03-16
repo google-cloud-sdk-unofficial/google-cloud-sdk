@@ -61,7 +61,10 @@ from email.parser import FeedParser
 try:
   from oauth2client import util
 except ImportError:
-  from oauth2client import _helpers as util
+  try:
+    from oauth2client import _helpers as util
+  except ImportError:
+    from oauth2client_4_0 import _helpers as util
 
 from googleapiclient import _auth
 from googleapiclient import mimeparse

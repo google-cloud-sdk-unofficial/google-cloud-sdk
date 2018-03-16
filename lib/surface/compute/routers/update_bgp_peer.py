@@ -24,53 +24,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateBgpPeer(base.UpdateCommand):
-  """Update a BGP peer on a Google Compute Engine router."""
-
-  ROUTER_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls.ROUTER_ARG = flags.RouterArgument()
-    cls.ROUTER_ARG.AddArgument(parser)
-    flags.AddBgpPeerArgs(parser)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    api_client = holder.client.apitools_client
-    messages = holder.client.messages
-    service = api_client.routers
-
-    ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
-
-    request_type = messages.ComputeRoutersGetRequest
-    replacement = service.Get(request_type(**ref.AsDict()))
-
-    _UpdateBgpPeer(replacement, args)
-
-    request_type = messages.ComputeRoutersPatchRequest
-    resource = service.Patch(
-        request_type(
-            project=ref.project,
-            region=ref.region,
-            router=ref.Name(),
-            routerResource=replacement))
-
-    return resource
-
-
-UpdateBgpPeer.detailed_help = {
-    'DESCRIPTION':
-        """
-        *{command}* is used to update a BGP peer on a Google Compute Engine
-        router.
-        """,
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateBgpPeerBeta(base.UpdateCommand):
   """Update a BGP peer on a Google Compute Engine router."""
 
   ROUTER_ARG = None
@@ -81,7 +35,7 @@ class UpdateBgpPeerBeta(base.UpdateCommand):
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddBgpPeerArgs(parser, for_add_bgp_peer=False)
-    flags.AddCustomAdvertisementArgs(parser, 'peer')
+    flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
 
   def Run(self, args):
     # Manually ensure replace/incremental flags are mutually exclusive.
@@ -97,7 +51,7 @@ class UpdateBgpPeerBeta(base.UpdateCommand):
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
     # Retrieve specified peer and update base fields.
-    peer = _UpdateBgpPeer(replacement, args)
+    peer = _UpdateBgpPeerMessage(replacement, args)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -195,10 +149,10 @@ class UpdateBgpPeerBeta(base.UpdateCommand):
                               peer.name, router_ref.Name()))
 
 
-def _UpdateBgpPeer(resource, args):
+def _UpdateBgpPeerMessage(router_message, args):
   """Updates base attributes of a BGP peer based on flag arguments."""
 
-  peer = router_utils.FindBgpPeerOrRaise(resource, args.peer_name)
+  peer = router_utils.FindBgpPeerOrRaise(router_message, args.peer_name)
 
   attrs = {
       'interfaceName': args.interface,
@@ -215,7 +169,7 @@ def _UpdateBgpPeer(resource, args):
   return peer
 
 
-UpdateBgpPeerBeta.detailed_help = {
+UpdateBgpPeer.detailed_help = {
     'DESCRIPTION':
         """
         *{command}* is used to update a BGP peer on a Google Compute Engine

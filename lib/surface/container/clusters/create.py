@@ -428,7 +428,7 @@ class CreateAlpha(Create):
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddPrivateClusterFlags(parser, hidden=False)
     flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddTpuFlags(parser, hidden=True)
+    flags.AddTpuFlags(parser, hidden=False)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)

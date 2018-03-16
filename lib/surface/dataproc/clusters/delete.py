@@ -47,7 +47,8 @@ class Delete(base.DeleteCommand):
     request = dataproc.messages.DataprocProjectsRegionsClustersDeleteRequest(
         clusterName=cluster_ref.clusterName,
         region=cluster_ref.region,
-        projectId=cluster_ref.projectId)
+        projectId=cluster_ref.projectId,
+        requestId=util.GetUniqueId())
 
     console_io.PromptContinue(
         message="The cluster '{0}' and all attached disks will be "

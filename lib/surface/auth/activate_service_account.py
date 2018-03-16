@@ -27,7 +27,7 @@ from googlecloudsdk.core.credentials import store as c_store
 
 
 class ActivateServiceAccount(base.SilentCommand):
-  """Authorize gcloud to access to Cloud Platform with a Google service account.
+  """Authorize gcloud to access Cloud Platform with a Google service account.
 
   If you want gcloud (and other tools in the Cloud SDK) to use service account
   credentials to make requests, use this command to import these credentials

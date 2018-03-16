@@ -60,7 +60,7 @@ def _UploadToGcs(async, local_path, daisy_bucket, image_uuid):
   if async:
     log.status.Print('Once completed, your image will be imported from Cloud'
                      ' Storage asynchronously.')
-  storage_util.RunGsutilCommand('cp', '"{0}" {1}'.format(local_path, dest_path))
+  storage_util.RunGsutilCommand('cp', [local_path, dest_path])
   return dest_path
 
 

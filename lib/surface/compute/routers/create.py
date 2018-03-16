@@ -24,46 +24,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base.CreateCommand):
-  """Create a Google Compute Engine router."""
-
-  NETWORK_ARG = None
-  ROUTER_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
-        'The network for this router')
-    cls.NETWORK_ARG.AddArgument(parser)
-    cls.ROUTER_ARG = flags.RouterArgument()
-    cls.ROUTER_ARG.AddArgument(parser, operation_type='create')
-    flags.AddCreateRouterArgs(parser)
-    parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
-
-  def Run(self, args):
-    """Issues requests necessary for adding a router."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
-
-    request = client.messages.ComputeRoutersInsertRequest(
-        router=client.messages.Router(
-            description=args.description,
-            network=network_ref.SelfLink(),
-            bgp=client.messages.RouterBgp(asn=args.asn),
-            name=router_ref.Name()),
-        region=router_ref.region,
-        project=router_ref.project)
-
-    return client.MakeRequests([(client.apitools_client.routers, 'Insert',
-                                 request)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateWithCustomAdvertisements(base.CreateCommand):
   """Create a Google Compute Engine router.
 

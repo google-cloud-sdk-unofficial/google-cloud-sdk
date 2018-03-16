@@ -29,7 +29,10 @@ import json
 try:
   from oauth2client import util
 except ImportError:
-  from oauth2client import _helpers as util
+  try:
+    from oauth2client import _helpers as util
+  except ImportError:
+    from oauth2client_4_0 import _helpers as util
 
 
 class Error(Exception):

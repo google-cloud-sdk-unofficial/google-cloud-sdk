@@ -4,9 +4,9 @@
       Get the description of a given taxonomy.
 
   request:
-    collection: categorymanager.taxonomyStores.taxonomies
+    collection: categorymanager.projects.taxonomies
 
   arguments:
     resource:
-      help_text: The taxonomy reference of the taxonomy to describe.
-      spec: !REF googlecloudsdk.command_lib.category_manager.resources:taxonomy
+      help_text: The taxonomy to describe.
+      spec: !REF googlecloudsdk.command_lib.category_manager.resources:project_scoped_taxonomy

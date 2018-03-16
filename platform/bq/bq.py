@@ -47,8 +47,7 @@ if 'google' in sys.modules:
 import googleapiclient
 import httplib2
 
-from oauth2client_4_0 import GOOGLE_REVOKE_URI
-from oauth2client_4_0 import GOOGLE_TOKEN_URI
+import oauth2client_4_0
 import oauth2client_4_0.client
 import oauth2client_4_0.contrib.devshell
 import oauth2client_4_0.contrib.gce
@@ -310,7 +309,9 @@ def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-a
               service_account_email=FLAGS.service_account,
               filename=FLAGS.service_account_private_key_file,
               scopes=_GetClientScopeFromFlags(),
-              private_key_password=key_password))
+              private_key_password=key_password,
+              token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
+              revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI))
     except IOError as e:
       raise app.UsageError(
           'Service account specified, but private key in file "%s" '
@@ -350,7 +351,7 @@ def _GetApplicationDefaultCredentialFromFile(filename):
         client_secret=credentials['client_secret'],
         refresh_token=credentials['refresh_token'],
         token_expiry=None,
-        token_uri=GOOGLE_TOKEN_URI,
+        token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
         user_agent=_CLIENT_USER_AGENT,
         scopes=client_scope)
   else:  # Service account
@@ -360,8 +361,8 @@ def _GetApplicationDefaultCredentialFromFile(filename):
         .from_json_keyfile_dict(
             keyfile_dict=credentials,
             scopes=client_scope,
-            token_uri=GOOGLE_TOKEN_URI,
-            revoke_uri=GOOGLE_REVOKE_URI))
+            token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
+            revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI))
     service_account_credentials._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
     return service_account_credentials
 
@@ -376,6 +377,8 @@ def _GetClientScopeFromFlags():
 
 def _GetCredentialsFromFlags():
   """Returns credentials based on user supplied flags."""
+
+
   try:
     return oauth2client_4_0.contrib.devshell.DevshellCredentials()
   except:  # pylint: disable=bare-except
@@ -408,29 +411,60 @@ def _GetCredentialsFromFlags():
         'bq.py should not be invoked. Use bq command instead.')
 
   try:
-    # Note that oauth2client.file ensures the file is created with
-    # the correct permissions.
     storage = oauth2client_4_0.file.Storage(credential_file)
   except OSError as e:
     raise bigquery_client.BigqueryError(
         'Cannot create credential file %s: %s' % (FLAGS.credential_file, e))
-  try:
-    credentials = storage.get()
-  except BaseException as e:
-    BigqueryCmd.ProcessError(
-        e, name='GetCredentialsFromFlags',
-        message_prefix=(
-            'Credentials appear corrupt. Please delete the credential file '
-            'and try your command again. You can delete your credential '
-            'file using "bq init --delete_credentials".\n\nIf that does '
-            'not work, you may have encountered a bug in the BigQuery CLI.'))
-    sys.exit(1)
+
+  credentials = None
+  verify_storage = False
+  if os.path.exists(credential_file):
+    try:
+      credentials = storage.get()
+    except ImportError as e:
+      # This is a workaround for switching between oauth2client versions.
+      is_v2_storage = False
+      if str(e).startswith('No module named oauth2client.'):
+        is_v2_storage = True
+      if is_v2_storage and (FLAGS.application_default_credential_file or
+                            FLAGS.service_account):
+        os.remove(credential_file)
+        storage = oauth2client_4_0.file.Storage(credential_file)
+        storage._create_file_if_needed()  # pylint: disable=protected-access
+        # Verify credentials storage is ok now. We don't want to silently
+        # recreate credentials every time, if this didn't work for some reason.
+        verify_storage = True
+    except BaseException as e:  # pylint: disable=broad-except
+      _RaiseCredentialsCorrupt(e)
 
   if (credentials is None or credentials.invalid or
       FLAGS.enable_gdrive is not None):
+    # Note that oauth2client.file ensures the file is created with
+    # the correct permissions.
     credentials = credentials_getter(storage)
     credentials.set_store(storage)
+
+
+  if verify_storage:
+    # Verify credentials storage is ok now.
+    try:
+      storage.locked_put(credentials)
+      storage.locked_get()
+    except BaseException as e:  # pylint: disable=broad-except
+      _RaiseCredentialsCorrupt(e)
+
   return credentials
+
+
+def _RaiseCredentialsCorrupt(e):
+  BigqueryCmd.ProcessError(
+      e, name='GetCredentialsFromFlags',
+      message_prefix=(
+          'Credentials appear corrupt. Please delete the credential file '
+          'and try your command again. You can delete your credential '
+          'file using "bq init --delete_credentials".\n\nIf that does '
+          'not work, you may have encountered a bug in the BigQuery CLI.'))
+  sys.exit(1)
 
 
 def _GetFormatterFromFlags(secondary_format='sparse'):
@@ -1192,9 +1226,9 @@ class _Load(BigqueryCmd):
         'time_partitioning_expiration',
         None,
         'Enables time based partitioning on the table and set the number of '
-        'seconds for which to keep the storage for a partition. The storage '
-        'will have an expiration time of its creation time plus this value. '
-        'A negative number means no expiration.',
+        'seconds for which to keep the storage for a partition relative to its'
+        'partition key. The storage will have an expiration time of its '
+        'partition key plus this value. A negative number means no expiration.',
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_field',
@@ -1207,6 +1241,12 @@ class _Load(BigqueryCmd):
     flags.DEFINE_string(
         'destination_kms_key', None,
         'Cloud KMS key for encryption of the destination table data.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'require_partition_filter',
+        None,
+        'Whether to require partition filter for queries over this table. '
+        'Only apply to partitioned table.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -1283,8 +1323,9 @@ class _Load(BigqueryCmd):
     time_partitioning = _ParseTimePartitioning(
         self.time_partitioning_type,
         self.time_partitioning_expiration,
-        self.time_partitioning_field
-    )
+        self.time_partitioning_field,
+        None,
+        self.require_partition_filter)
     if time_partitioning is not None:
       opts['time_partitioning'] = time_partitioning
     if self.destination_kms_key is not None:
@@ -1588,6 +1629,12 @@ class _Query(BigqueryCmd):
         'partitioning is enabled without this value, the table will be '
         'partitioned based on the loading time.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'require_partition_filter',
+        None,
+        'Whether to require partition filter for queries over this table. '
+        'Only apply to partitioned table.',
+        flag_values=fv)
     flags.DEFINE_string(
         'destination_kms_key', None,
         'Cloud KMS key for encryption of the destination table data.',
@@ -1647,8 +1694,9 @@ class _Query(BigqueryCmd):
     time_partitioning = _ParseTimePartitioning(
         self.time_partitioning_type,
         self.time_partitioning_expiration,
-        self.time_partitioning_field
-    )
+        self.time_partitioning_field,
+        None,
+        self.require_partition_filter)
     if time_partitioning is not None:
       kwds['time_partitioning'] = time_partitioning
     if self.destination_schema and not self.destination_table:
@@ -1791,9 +1839,9 @@ class _Extract(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'compression', 'NONE',
-        ['GZIP', 'NONE'],
+        ['GZIP', 'DEFLATE', 'SNAPPY', 'NONE'],
         'The compression type to use for exported files. Possible values '
-        'include GZIP and NONE. The default value is NONE.', # pylint: disable=line-too-long
+        'include GZIP, DEFLATE, SNAPPY and NONE. The default value is NONE.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'print_header', None, 'Whether to print header rows for formats that '
@@ -2006,6 +2054,16 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'max_results', None,
         'Maximum number to list.',
         short_name='n', flag_values=fv)
+    flags.DEFINE_integer(
+        'min_creation_time',
+        None,
+        'Timestamp in milliseconds. Return jobs created after this timestamp.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'max_creation_time',
+        None,
+        'Timestamp in milliseconds. Return jobs created before this timestamp.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'projects', False,
         'Show all projects.',
@@ -2051,6 +2109,12 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'page_token', None,
         'Start listing from this page token.',
         short_name='k', flag_values=fv)
+    flags.DEFINE_boolean(
+        'print_last_token',
+        False,
+        'If true and format in [json, prettyjson], also print the next page '
+        'token for the jobs list.',
+        flag_values=fv)
     flags.DEFINE_string(
         'filter',
         None,
@@ -2145,9 +2209,24 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       reference = client.GetProjectReference(identifier)
       _Typecheck(reference, ProjectReference,
                  'Cannot determine job(s) associated with "%s"' % (identifier,))
-      results = client.ListJobs(reference=reference,
-                                max_results=self.max_results,
-                                all_users=self.a, page_token=page_token)
+      if self.print_last_token:
+        results = client.ListJobsAndToken(
+            reference=reference,
+            max_results=self.max_results,
+            all_users=self.a,
+            min_creation_time=self.min_creation_time,
+            max_creation_time=self.max_creation_time,
+            page_token=page_token)
+        assert object_type is not None
+        _PrintObjectsArrayWithToken(results, object_type)
+        return
+      results = client.ListJobs(
+          reference=reference,
+          max_results=self.max_results,
+          all_users=self.a,
+          min_creation_time=self.min_creation_time,
+          max_creation_time=self.max_creation_time,
+          page_token=page_token)
     elif self.transfer_config:
       object_type = TransferConfigReference
       reference = client.GetProjectReference(
@@ -2636,6 +2715,12 @@ class _Make(BigqueryCmd):
         'label', None,
         'A label to set on the table. The format is "key:value"',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'require_partition_filter',
+        None,
+        'Whether to require partition filter for queries over this table. '
+        'Only apply to partitioned table.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -2791,8 +2876,9 @@ class _Make(BigqueryCmd):
       time_partitioning = _ParseTimePartitioning(
           self.time_partitioning_type,
           self.time_partitioning_expiration,
-          self.time_partitioning_field
-      )
+          self.time_partitioning_field,
+          None,
+          self.require_partition_filter)
       client.CreateTable(
           reference,
           ignore_existing=True,
@@ -2938,6 +3024,12 @@ class _Update(BigqueryCmd):
         None,
         'Cloud KMS key for encryption of the destination table data.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'require_partition_filter',
+        None,
+        'Whether to require partition filter for queries over this table. '
+        'Only apply to partitioned table.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -3051,7 +3143,9 @@ class _Update(BigqueryCmd):
       time_partitioning = _ParseTimePartitioning(
           self.time_partitioning_type,
           self.time_partitioning_expiration,
-          self.time_partitioning_field
+          self.time_partitioning_field,
+          None,
+          self.require_partition_filter
       )
 
       encryption_configuration = None
@@ -3368,6 +3462,13 @@ def _PrintObjectsArray(object_infos, objects_type):
     for info in object_infos:
       formatter.AddDict(info)
     formatter.Print()
+
+
+def _PrintObjectsArrayWithToken(object_infos, objects_type):
+  if FLAGS.format in ['prettyjson', 'json']:
+    _PrintFormattedJsonObject(object_infos)
+  elif FLAGS.format in [None, 'sparse', 'pretty']:
+    _PrintObjectsArray(object_infos['list'], objects_type)
 
 
 

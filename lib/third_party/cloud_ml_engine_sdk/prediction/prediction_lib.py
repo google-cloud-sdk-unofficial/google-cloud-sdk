@@ -20,24 +20,22 @@ Important changes:
 - Remove interfaces for TensorFlowModel (they don't change behavior).
 - Set from_client(skip_preprocessing=True) and remove the pre-processing code.
 """
-import __builtin__
 import base64
 import collections
 from contextlib import contextmanager
-import importlib
 import inspect
 import json
 import logging
 import os
 import pickle
 import pydoc  # used for importing python classes from their FQN
-import StringIO
 import timeit
 
-from _interfaces import Model
-from _interfaces import PredictionClient
+from ._interfaces import Model
+from ._interfaces import PredictionClient
 from enum import Enum
 import numpy as np
+import six
 
 from tensorflow.python.client import session as tf_session
 from tensorflow.python.framework import dtypes
@@ -239,7 +237,7 @@ def columnarize(instances):
   """
   columns = collections.defaultdict(list)
   for instance in instances:
-    for k, v in instance.iteritems():
+    for k, v in six.iteritems(instance):
       columns[k].append(v)
   return columns
 
@@ -276,12 +274,12 @@ def rowify(columns):
     A map with a single instance, as described above. Note: instances
     is not a numpy array.
   """
-  sizes_set = {e.shape[0] for e in columns.itervalues()}
+  sizes_set = {e.shape[0] for e in six.itervalues(columns)}
 
   # All the elements in the length array should be identical. Otherwise,
   # raise an exception.
   if len(sizes_set) != 1:
-    sizes_dict = {name: e.shape[0] for name, e in columns.iteritems()}
+    sizes_dict = {name: e.shape[0] for name, e in six.iteritems(columns)}
     raise PredictionError(
         PredictionError.INVALID_OUTPUTS,
         "Bad output from running tensorflow session: outputs had differing "
@@ -289,10 +287,12 @@ def rowify(columns):
         "size: %s. Check your model for bugs that effect the size of the "
         "outputs." % sizes_dict)
   # Pick an arbitrary value in the map to get it's size.
-  num_instances = len(next(columns.itervalues()))
-  for row in xrange(num_instances):
-    yield {name: output[row, ...].tolist()
-           for name, output in columns.iteritems()}
+  num_instances = len(next(six.itervalues(columns)))
+  for row in six.moves.xrange(num_instances):
+    yield {
+        name: output[row, ...].tolist()
+        for name, output in six.iteritems(columns)
+    }
 
 
 def canonicalize_single_tensor_input(instances, tensor_name):
@@ -486,7 +486,7 @@ def _update_dtypes(graph, interface):
     ValueError: if the data type in the TensorInfo does not match the type
       found in graph.
   """
-  for alias, info in interface.iteritems():
+  for alias, info in six.iteritems(interface):
     # Postpone conversion to enum for better error messages.
     dtype = graph.get_tensor_by_name(info.name).dtype
     if not info.dtype:
@@ -532,7 +532,8 @@ class TensorFlowClient(PredictionClient):
     # contains one entry. If so, return the only signature.
     # 3) Otherwise, use the default signature_name and do 1).
     if not signature_name and len(self.signature_map) == 1:
-      return self.signature_map.keys()[0], self.signature_map.values()[0]
+      return (list(self.signature_map.keys())[0],
+              list(self.signature_map.values())[0])
 
     key = (signature_name or
            signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY)
@@ -574,8 +575,10 @@ class SessionClient(TensorFlowClient):
       _, signature = self.get_signature(signature_name)
       fetches = [output.name for output in signature.outputs.values()]
       try:
-        unaliased = {signature.inputs[key].name: val
-                     for key, val in inputs.iteritems()}
+        unaliased = {
+            signature.inputs[key].name: val
+            for key, val in six.iteritems(inputs)
+        }
       except Exception as e:
         raise PredictionError(PredictionError.INVALID_INPUTS,
                               "Input mismatch: " + str(e))
@@ -591,7 +594,7 @@ class SessionClient(TensorFlowClient):
                               "Exception during running the graph: " + str(e))
 
     with stats.time(ALIAS_TIME):
-      return dict(zip(signature.outputs.iterkeys(), outputs))
+      return dict(zip(six.iterkeys(signature.outputs), outputs))
 
 
 def load_model_class(client, model_path):
@@ -780,7 +783,7 @@ class TensorFlowModel(BaseModel):
     """
     with stats.time(COLUMNARIZE_TIME):
       columns = columnarize(instances)
-      for k, v in columns.iteritems():
+      for k, v in six.iteritems(columns):
         if k not in signature.inputs.keys():
           raise PredictionError(
               PredictionError.INVALID_INPUTS,
@@ -868,7 +871,7 @@ class TensorFlowModel(BaseModel):
 
       postprocessed_outputs = {
           alias: listify(val)
-          for alias, val in predicted_output.iteritems()
+          for alias, val in six.iteritems(predicted_output)
       }
       postprocessed_outputs = rowify(postprocessed_outputs)
 
@@ -1030,6 +1033,16 @@ def create_sklearn_client(model_path, unused_tags):
         MODEL_FILE_NAME_JOBLIB, MODEL_FILE_NAME_PICKLE, model_path)
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+  # Check if the loaded python object is an sklearn model/pipeline.
+  # Ex. type(sklearn_predictor).__module__ -> 'sklearn.svm.classes'
+  #     type(pipeline).__module__ -> 'sklearn.pipeline'
+  if "sklearn" not in type(sklearn_predictor).__module__:
+    error_msg = ("Invalid model type detected: {}.{}. Please make sure the "
+                 "model file is an exported sklearn model or pipeline.").format(
+                     type(sklearn_predictor).__module__,
+                     type(sklearn_predictor).__name__)
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
 
   return SklearnClient(sklearn_predictor)
 
@@ -1048,6 +1061,15 @@ def create_xgboost_client(model_path, unused_tags):
     error_msg = "Could not find {}, {}, or {} in {}".format(
         MODEL_FILE_NAME_JOBLIB, MODEL_FILE_NAME_PICKLE, MODEL_FILE_NAME_BST,
         model_path)
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+  # Check if the loaded python object is an xgboost model.
+  # Expect type(booster).__module__ -> 'xgboost.core'
+  if "xgboost" not in type(booster).__module__:
+    error_msg = ("Invalid model type detected: {}.{}. Please make sure the "
+                 "model file is an exported xgboost model.").format(
+                     type(booster).__module__,
+                     type(booster).__name__)
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
 
@@ -1101,60 +1123,6 @@ def create_xgboost_model(model_path, unused_flags):
 def create_tf_session_client(model_dir, tags):
   return SessionClient(*load_model(model_dir, tags))
 
-# (TODO:b/68775232): Move this to a separate utils library.
-_PICKLE_MODULE_WHITELIST = [
-    "sklearn", "copy_reg", "xgboost", "numpy", "scipy", "pandas"
-]
-_PICKLE_CLASS_WHITELIST = {
-    "__builtin__": (__builtin__, [
-        "basestring",
-        "bool",
-        "buffer",
-        "bytearray",
-        "bytes",
-        "complex",
-        "dict",
-        "enumerate",
-        "float",
-        "frozenset",
-        "int",
-        "list",
-        "long",
-        "reversed",
-        "set",
-        "slice",
-        "str",
-        "tuple",
-        "unicode",
-        "xrange",
-        "object",
-    ],),
-}
-
-
-class _RestrictedUnpickler(pickle.Unpickler):
-  """Restricted Unpickler implementation.
-
-  Prevents execution of code from pickled data by allowing only importing
-  whitelisted modules.
-  """
-
-  def find_class(self, module_name, name):
-    if module_name.split(".")[0] in _PICKLE_MODULE_WHITELIST:
-      module = importlib.import_module(module_name)
-      return getattr(module, name)
-
-    (module, safe_names) = _PICKLE_CLASS_WHITELIST.get(module_name, (None, []))
-    if name in safe_names:
-      return getattr(module, name)
-    # Forbid everything else.
-    raise pickle.UnpicklingError("Importing global module: %s.%s is forbidden" %
-                                 (module_name, name))
-
-  @classmethod
-  def load_string(class_, pickle_string):
-    return class_(StringIO.StringIO(pickle_string)).load()
-
 
 def _load_joblib_or_pickle_model(model_path):
   """Loads either a .joblib or .pkl file from GCS or from local.
@@ -1192,12 +1160,13 @@ def _load_joblib_or_pickle_model(model_path):
       model_file_name = os.path.join(model_path, MODEL_FILE_NAME_PICKLE)
       logging.info("Loading model %s using pickle.", model_file_name)
       with file_io.FileIO(model_file_name, "rb") as f:
-        return _RestrictedUnpickler.load_string(f.read())
+        return pickle.loads(f.read())
 
     return None
   except Exception as e:
-    error_msg = "Could not load the model: {}. {}.".format(
-        model_file_name, str(e))
+    error_msg = ("Could not load the model: {}. {}. Please make sure the model"
+                 " was exported using python 2 as python 3 is not currently"
+                 " supported.").format(model_file_name, str(e))
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
 
@@ -1246,10 +1215,10 @@ def decode_base64(data):
   if isinstance(data, list):
     return [decode_base64(val) for val in data]
   elif isinstance(data, dict):
-    if data.viewkeys() == {"b64"}:
+    if six.viewkeys(data) == {"b64"}:
       return base64.b64decode(data["b64"])
     else:
-      return {k: decode_base64(v) for k, v in data.iteritems()}
+      return {k: decode_base64(v) for k, v in six.iteritems(data)}
   else:
     return data
 
@@ -1277,7 +1246,7 @@ def encode_base64(instances, outputs_map):
   encoded_data = []
   for instance in instances:
     encoded_instance = {}
-    for tensor_name, tensor_info in outputs_map.iteritems():
+    for tensor_name, tensor_info in six.iteritems(outputs_map):
       tensor_type = tensor_info.dtype
       tensor_data = instance[tensor_name]
       if tensor_type == dtypes.string and tensor_name.endswith("_bytes"):

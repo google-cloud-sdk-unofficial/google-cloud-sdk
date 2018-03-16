@@ -89,15 +89,17 @@ class DeployBeta(base.SilentCommand):
     deploy_util.ArgsDeploy(parser)
 
   def Run(self, args):
-    api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
     runtime_builder_strategy = deploy_util.GetRuntimeBuilderStrategy(
         base.ReleaseTrack.BETA)
+    api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
+
     return deploy_util.RunDeploy(
         args,
         api_client,
         use_beta_stager=True,
         runtime_builder_strategy=runtime_builder_strategy,
-        parallel_build=True)
+        parallel_build=True,
+        flex_image_build_option=deploy_util.GetFlexImageBuildOption())
 
 
 DeployGA.detailed_help = _DETAILED_HELP

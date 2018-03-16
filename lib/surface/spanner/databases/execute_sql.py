@@ -15,28 +15,34 @@
 
 from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.command_lib.spanner import sql
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
+
+
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To execute a SQL SELECT statement against example-database under
+       example-instance, run:
+
+        $ {command} example-database --instance=example-instance
+        --sql='SELECT * FROM MyTable WHERE MyKey = 1'
+    """,
+}
 
 
 @base.UnicodeIsSupported
 class Query(base.Command):
   """Executes a read-only SQL query against a Cloud Spanner database."""
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.Instance(positional=False).AddToParser(parser)
-    flags.Database().AddToParser(parser)
+    """See base class."""
+    resource_args.AddDatabaseResourceArg(parser,
+                                         'to execute the SQL query against')
     parser.add_argument(
         '--sql',
         required=True,
@@ -71,13 +77,14 @@ class Query(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    session = database_sessions.Create(args.instance, args.database)
-    # Session id would be the string after the last /.
-    session_id = session.name.split('/')[-1]
+    session_name = database_sessions.Create(args.CONCEPTS.database.Parse())
+    session = resources.REGISTRY.ParseRelativeName(
+        relative_name=session_name.name,
+        collection='spanner.projects.instances.databases.sessions')
     try:
       return database_sessions.ExecuteSql(session, args.sql, args.query_mode)
     finally:
-      database_sessions.Delete(args.instance, args.database, session_id)
+      database_sessions.Delete(session)
 
   def Display(self, args, result):
     """Displays the server response to a query.

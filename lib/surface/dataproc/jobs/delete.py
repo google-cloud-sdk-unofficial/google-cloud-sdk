@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -35,22 +36,19 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'id',
-        metavar='JOB_ID',
-        help='The ID of the job to delete.')
+    flags.AddJobFlag(parser, 'delete')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    job_ref = util.ParseJob(args.id, dataproc)
+    job_ref = util.ParseJob(args.job, dataproc)
     request = dataproc.messages.DataprocProjectsRegionsJobsDeleteRequest(
         projectId=job_ref.projectId,
         region=job_ref.region,
         jobId=job_ref.jobId)
 
     console_io.PromptContinue(
-        message="The job '{0}' will be deleted.".format(args.id),
+        message="The job '{0}' will be deleted.".format(args.job),
         cancel_on_no=True,
         cancel_string='Deletion aborted by user.')
 

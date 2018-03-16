@@ -19,13 +19,23 @@ from googlecloudsdk.command_lib.emulators import util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class EnvInit(base.Command):
-  """Print the commands required to export pubsub emulator's env variables."""
+  """Print the commands required to export pubsub emulator's env variables.
+
+  After starting the emulator, you need to set environment variables so that
+  your application connects to the emulator instead of the production
+  environment. Environment variables need to be set each time you start the
+  emulator. The environment variables depend on dynamically assigned port
+  numbers that could change when you restart the emulator.
+  """
 
   detailed_help = {
       'EXAMPLES': """\
           To print the env variables exports for a pubsub emulator, run:
 
             $ {command} --data-dir DATA-DIR
+
+          For a detailed walkthrough of setting Pub/Sub emulator environment
+          variables, see https://cloud.google.com/pubsub/docs/emulator#env.
           """,
   }
 

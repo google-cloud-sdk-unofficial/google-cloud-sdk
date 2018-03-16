@@ -15,7 +15,7 @@
 
 from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 class Delete(base.DeleteCommand):
@@ -23,19 +23,8 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.Instance(positional=False).AddToParser(parser)
-    flags.Database(positional=False).AddToParser(parser)
-    flags.Session().AddToParser(parser)
-    parser.display_info.AddCacheUpdater(flags.DatabaseSessionCompleter)
+    """See base class."""
+    resource_args.AddSessionResourceArg(parser, 'to delete')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -47,4 +36,4 @@ class Delete(base.DeleteCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return database_sessions.Delete(args.instance, args.database, args.session)
+    return database_sessions.Delete(args.CONCEPTS.session.Parse())

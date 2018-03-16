@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pure Python crypto-related routines for oauth2client.
+"""Pure Python crypto-related routines for oauth2client_4_0.
 
 Uses the ``rsa``, ``pyasn1`` and ``pyasn1_modules`` packages
 to parse PEM files storing PKCS#1 or PKCS#8 keys as well as

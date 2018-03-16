@@ -98,6 +98,13 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       help_str='Create policy for resources that have changed in the update',
       default='create-or-acquire')
 
+  _create_policy_v2beta_flag_map = arg_utils.ChoiceEnumMapper(
+      '--create-policy',
+      (apis.GetMessagesModule('deploymentmanager', 'v2beta')
+       .DeploymentmanagerDeploymentsUpdateRequest.CreatePolicyValueValuesEnum),
+      help_str='Create policy for resources that have changed in the update',
+      default='create-or-acquire')
+
   @staticmethod
   def Args(parser, version=base.ReleaseTrack.GA):
     """Args is called by calliope to gather arguments for this command.
@@ -139,7 +146,11 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
         default=False,
         action='store_true')
 
-    Update._create_policy_flag_map.choice_arg.AddToParser(parser)
+    if version in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      Update._create_policy_v2beta_flag_map.choice_arg.AddToParser(parser)
+    else:
+      Update._create_policy_flag_map.choice_arg.AddToParser(parser)
+
     Update._delete_policy_flag_map.choice_arg.AddToParser(parser)
     flags.AddFingerprintFlag(parser)
 
@@ -246,8 +257,16 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       # Necessary to handle API Version abstraction below
       parsed_delete_flag = Update._delete_policy_flag_map.GetEnumForChoice(
           args.delete_policy).name
-      parsed_create_flag = Update._create_policy_flag_map.GetEnumForChoice(
-          args.create_policy).name
+      if self.ReleaseTrack() in [
+          base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+      ]:
+        parsed_create_flag = (
+            Update._create_policy_v2beta_flag_map.GetEnumForChoice(
+                args.create_policy).name)
+      else:
+        parsed_create_flag = (
+            Update._create_policy_flag_map.GetEnumForChoice(
+                args.create_policy).name)
       request = self.messages.DeploymentmanagerDeploymentsUpdateRequest(
           deploymentResource=deployment,
           project=dm_base.GetProject(),
@@ -323,6 +342,7 @@ class UpdateAlpha(Update):
 
 @base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@dm_base.UseDmApi(dm_base.DmApiVersion.V2BETA)
 class UpdateBeta(Update):
   """Update a deployment based on a provided config file.
 

@@ -37,7 +37,7 @@ class Storage(client.Storage):
         """Retrieve Credential from file.
 
         Returns:
-            oauth2client.client.Credentials
+            oauth2client_4_0.client.Credentials
 
         Raises:
             IOError if the file is a symbolic link.

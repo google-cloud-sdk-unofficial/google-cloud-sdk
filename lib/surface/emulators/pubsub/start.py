@@ -24,6 +24,16 @@ class Start(base.Command):
   """Start a local pubsub emulator.
 
   This command starts a local pubsub emulator.
+
+  On successful start up, you should expect to see:
+
+  ```
+  ...
+  [pubsub] This is the Google Pub/Sub fake.
+  [pubsub] Implementation may be incomplete or differ from the real system.
+  ...
+  [pubsub] INFO: Server started, listening on 8538
+  ```
   """
 
   detailed_help = {

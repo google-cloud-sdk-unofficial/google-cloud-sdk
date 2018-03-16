@@ -15,7 +15,7 @@
 
 from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 class List(base.ListCommand):
@@ -23,18 +23,9 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.Instance(positional=False).AddToParser(parser)
-    flags.Database(positional=False).AddToParser(parser)
-    parser.display_info.AddCacheUpdater(flags.DatabaseSessionCompleter)
+    """See base class."""
+    resource_args.AddDatabaseResourceArg(
+        parser, 'in which to list sessions', positional=False)
 
     parser.add_argument(
         '--server-filter',
@@ -54,5 +45,5 @@ class List(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return database_sessions.List(args.instance, args.database,
+    return database_sessions.List(args.CONCEPTS.database.Parse(),
                                   args.server_filter)

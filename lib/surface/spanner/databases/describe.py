@@ -15,7 +15,7 @@
 
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 class Describe(base.DescribeCommand):
@@ -23,17 +23,8 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.Instance(positional=False).AddToParser(parser)
-    flags.Database().AddToParser(parser)
+    """See base class."""
+    resource_args.AddDatabaseResourceArg(parser, 'to describe')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -45,4 +36,4 @@ class Describe(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return databases.Get(args.instance, args.database)
+    return databases.Get(args.CONCEPTS.database.Parse())

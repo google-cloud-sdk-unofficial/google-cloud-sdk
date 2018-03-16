@@ -15,9 +15,7 @@
 
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.spanner import flags
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 class GetIamPolicy(base.ListCommand):
@@ -25,17 +23,9 @@ class GetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.Instance(positional=False).AddToParser(parser)
-    flags.Database().AddToParser(parser)
+    """See base class."""
+    resource_args.AddDatabaseResourceArg(parser,
+                                         'to get IAM policy binding for')
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
@@ -48,11 +38,4 @@ class GetIamPolicy(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    database_ref = resources.REGISTRY.Parse(
-        args.database,
-        params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-            'instancesId': args.instance
-        },
-        collection='spanner.projects.instances.databases')
-    return databases.GetIamPolicy(database_ref)
+    return databases.GetIamPolicy(args.CONCEPTS.database.Parse())

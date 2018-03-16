@@ -178,6 +178,8 @@ class _BaseRun(object):
       bucket_ops.UploadFileToGcs(args.test)
     for obb_file in (args.obb_files or []):
       bucket_ops.UploadFileToGcs(obb_file)
+    if hasattr(args, u'robo_script') and args.robo_script:
+      bucket_ops.UploadFileToGcs(args.robo_script)
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(

@@ -33,7 +33,7 @@ import six
 from six.moves import http_client
 from six.moves import urllib
 
-import oauth2client_4_0 as oauth2client
+import oauth2client_4_0
 from oauth2client_4_0 import _helpers
 from oauth2client_4_0 import _pkce
 from oauth2client_4_0 import clientsecrets
@@ -119,7 +119,7 @@ _GCE_HEADERS = {_METADATA_FLAVOR_HEADER: _DESIRED_METADATA_FLAVOR}
 _UTCNOW = datetime.datetime.utcnow
 
 # NOTE: These names were previously defined in this module but have been
-#       moved into `oauth2client.transport`,
+#       moved into `oauth2client_4_0.transport`,
 clean_headers = transport.clean_headers
 MemoryCache = transport.MemoryCache
 REFRESH_STATUS_CODES = transport.REFRESH_STATUS_CODES
@@ -374,7 +374,7 @@ class Storage(object):
         The Storage lock must be held when this is called.
 
         Returns:
-            oauth2client.client.Credentials
+            oauth2client_4_0.client.Credentials
         """
         raise NotImplementedError
 
@@ -401,7 +401,7 @@ class Storage(object):
         The Storage lock must *not* be held when this is called.
 
         Returns:
-            oauth2client.client.Credentials
+            oauth2client_4_0.client.Credentials
         """
         self.acquire_lock()
         try:
@@ -1078,7 +1078,7 @@ class GoogleCredentials(OAuth2Credentials):
 
     def __init__(self, access_token, client_id, client_secret, refresh_token,
                  token_expiry, token_uri, user_agent,
-                 revoke_uri=oauth2client.GOOGLE_REVOKE_URI):
+                 revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI):
         """Create an instance of GoogleCredentials.
 
         This constructor is not usually called by the user, instead
@@ -1096,7 +1096,7 @@ class GoogleCredentials(OAuth2Credentials):
             user_agent: string, The HTTP User-Agent to provide for this
                         application.
             revoke_uri: string, URI for revoke endpoint. Defaults to
-                        oauth2client.GOOGLE_REVOKE_URI; a token can't be
+                        oauth2client_4_0.GOOGLE_REVOKE_URI; a token can't be
                         revoked if this is None.
         """
         super(GoogleCredentials, self).__init__(
@@ -1127,10 +1127,10 @@ class GoogleCredentials(OAuth2Credentials):
 
         # We handle service_account.ServiceAccountCredentials since it is a
         # possible return type of GoogleCredentials.get_application_default()
-        if (data['_module'] == 'oauth2client.service_account' and
+        if (data['_module'] == 'oauth2client_4_0.service_account' and
                 data['_class'] == 'ServiceAccountCredentials'):
             return service_account.ServiceAccountCredentials.from_json(data)
-        elif (data['_module'] == 'oauth2client.service_account' and
+        elif (data['_module'] == 'oauth2client_4_0.service_account' and
                 data['_class'] == '_JWTAccessCredentials'):
             return service_account._JWTAccessCredentials.from_json(data)
 
@@ -1409,7 +1409,7 @@ def _get_application_default_credential_from_file(filename):
             client_secret=client_credentials['client_secret'],
             refresh_token=client_credentials['refresh_token'],
             token_expiry=None,
-            token_uri=oauth2client.GOOGLE_TOKEN_URI,
+            token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
             user_agent='Python client library')
     else:  # client_credentials['type'] == SERVICE_ACCOUNT
         from oauth2client_4_0 import service_account
@@ -1455,8 +1455,8 @@ class AssertionCredentials(GoogleCredentials):
 
     @_helpers.positional(2)
     def __init__(self, assertion_type, user_agent=None,
-                 token_uri=oauth2client.GOOGLE_TOKEN_URI,
-                 revoke_uri=oauth2client.GOOGLE_REVOKE_URI,
+                 token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
+                 revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI,
                  **unused_kwargs):
         """Constructor for AssertionFlowCredentials.
 
@@ -1519,7 +1519,7 @@ class AssertionCredentials(GoogleCredentials):
 def _require_crypto_or_die():
     """Ensure we have a crypto library, or throw CryptoUnavailableError.
 
-    The oauth2client.crypt module requires either PyCrypto or PyOpenSSL
+    The oauth2client_4_0.crypt module requires either PyCrypto or PyOpenSSL
     to be available in order to function, but these are optional
     dependencies.
     """
@@ -1547,7 +1547,7 @@ def verify_id_token(id_token, audience, http=None,
         The deserialized JSON in the JWT.
 
     Raises:
-        oauth2client.crypt.AppIdentityError: if the JWT fails to verify.
+        oauth2client_4_0.crypt.AppIdentityError: if the JWT fails to verify.
         CryptoUnavailableError: if no crypto library is available.
     """
     _require_crypto_or_die()
@@ -1619,11 +1619,11 @@ def _parse_exchange_token_response(content):
 def credentials_from_code(client_id, client_secret, scope, code,
                           redirect_uri='postmessage', http=None,
                           user_agent=None,
-                          token_uri=oauth2client.GOOGLE_TOKEN_URI,
-                          auth_uri=oauth2client.GOOGLE_AUTH_URI,
-                          revoke_uri=oauth2client.GOOGLE_REVOKE_URI,
-                          device_uri=oauth2client.GOOGLE_DEVICE_URI,
-                          token_info_uri=oauth2client.GOOGLE_TOKEN_INFO_URI,
+                          token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
+                          auth_uri=oauth2client_4_0.GOOGLE_AUTH_URI,
+                          revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI,
+                          device_uri=oauth2client_4_0.GOOGLE_DEVICE_URI,
+                          token_info_uri=oauth2client_4_0.GOOGLE_TOKEN_INFO_URI,
                           pkce=False,
                           code_verifier=None):
     """Exchanges an authorization code for an OAuth2Credentials object.
@@ -1815,12 +1815,12 @@ class OAuth2WebServerFlow(Flow):
                  scope=None,
                  redirect_uri=None,
                  user_agent=None,
-                 auth_uri=oauth2client.GOOGLE_AUTH_URI,
-                 token_uri=oauth2client.GOOGLE_TOKEN_URI,
-                 revoke_uri=oauth2client.GOOGLE_REVOKE_URI,
+                 auth_uri=oauth2client_4_0.GOOGLE_AUTH_URI,
+                 token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
+                 revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI,
                  login_hint=None,
-                 device_uri=oauth2client.GOOGLE_DEVICE_URI,
-                 token_info_uri=oauth2client.GOOGLE_TOKEN_INFO_URI,
+                 device_uri=oauth2client_4_0.GOOGLE_DEVICE_URI,
+                 token_info_uri=oauth2client_4_0.GOOGLE_TOKEN_INFO_URI,
                  authorization_header=None,
                  pkce=False,
                  code_verifier=None,

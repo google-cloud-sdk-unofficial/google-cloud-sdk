@@ -24,14 +24,42 @@ from googlecloudsdk.command_lib.util import java
 class PubSub(base.Group):
   """Manage your local pubsub emulator.
 
-  This set of commands allows you to start and use a local pubsub emulator.
+  This set of commands allows you to start and use a local Pub/Sub emulator to
+  produce a local emulation of your production Google Pub/Sub environment. In
+  addition to having Java JRE (of version 7 or higher) installed and an
+  application built with Google Cloud Client libraries, you must have your
+  emulator configured (have it started with environment variables set) for
+  it to run successfully. The underlying commands help to set up this
+  configuration.
+
+  To stop the emulator, press Ctrl+C.
+
+  For a more comprehensive overview of Pub/Sub, see
+  https://cloud.google.com/pubsub/docs/overview. For Pub/Sub emulator specific
+  documentation, see https://cloud.google.com/pubsub/docs/emulator
   """
 
   detailed_help = {
       'EXAMPLES': """\
-          To start a local pubsub emulator, run:
+          To start a local pubsub emulator with the default directory for
+          configuration data, run:
 
             $ {command} start
+
+          After starting the emulator, if your application and
+          emulator run on the same machine, set environment variables
+          automatically by running:
+
+            $ {command} env-init
+
+          If you're running your emulator on a different machine, run the above
+          command and use its resulting output to set the environment variables
+          on the machine that runs your application. This might look like:
+
+            $ export PUBSUB_EMULATOR_HOST=localhost:8538
+            $ export PUBSUB_PROJECT_ID=my-project-id
+
+          Your emulator is now ready for use.
           """,
   }
 

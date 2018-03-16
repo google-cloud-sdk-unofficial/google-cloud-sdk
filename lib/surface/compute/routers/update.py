@@ -24,8 +24,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+class Update(base.UpdateCommand):
   """Update a Google Compute Engine router."""
 
   ROUTER_ARG = None
@@ -35,7 +34,7 @@ class UpdateBeta(base.UpdateCommand):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddCustomAdvertisementArgs(parser, 'router')
+    flags.AddUpdateCustomAdvertisementArgs(parser, 'router')
 
   def Run(self, args):
     # Manually ensure replace/incremental flags are mutually exclusive.
@@ -153,7 +152,7 @@ class UpdateBeta(base.UpdateCommand):
                           'Updating router [{0}]'.format(router_ref.Name()))
 
 
-UpdateBeta.detailed_help = {
+Update.detailed_help = {
     'DESCRIPTION':
         """
         *{command}* is used to update a Google Compute Engine router.

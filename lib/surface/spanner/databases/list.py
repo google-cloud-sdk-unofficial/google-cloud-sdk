@@ -15,7 +15,7 @@
 
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.spanner import flags
+from googlecloudsdk.command_lib.spanner import resource_args
 
 
 class List(base.ListCommand):
@@ -23,32 +23,16 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Please add arguments in alphabetical order except for no- or a clear-
-    pair for that argument which can follow the argument itself.
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    flags.Instance(positional=False).AddToParser(parser)
+    """See base class."""
+    resource_args.AddInstanceResourceArg(
+        parser, 'in which to list databases', positional=False)
     parser.display_info.AddFormat("""
           table(
             name.basename(),
             state
           )
         """)
-    parser.display_info.AddCacheUpdater(flags.DatabaseCompleter)
 
   def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    return databases.List(args.instance)
+    """This is what gets called when the user runs this command."""
+    return databases.List(args.CONCEPTS.instance.Parse())

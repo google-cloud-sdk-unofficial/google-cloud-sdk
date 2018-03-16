@@ -29,18 +29,18 @@ from containerregistry.transport import transport_pool
 
 import httplib2
 
-
 parser = argparse.ArgumentParser(
     description='Append tarballs to an image in a Docker Registry.')
 
-parser.add_argument('--src-image', action='store',
-                    help=('The name of the docker image to append to.'))
+parser.add_argument(
+    '--src-image',
+    action='store',
+    help=('The name of the docker image to append to.'))
 
-parser.add_argument('--tarball', action='store',
-                    help='The tarball to append.')
+parser.add_argument('--tarball', action='store', help='The tarball to append.')
 
-parser.add_argument('--dst-image', action='store',
-                    help='The name of the new image.')
+parser.add_argument(
+    '--dst-image', action='store', help='The name of the new image.')
 
 _THREADS = 8
 
@@ -71,7 +71,8 @@ def main():
       new_img = append.Layer(src_image, f.read())
 
   creds = docker_creds.DefaultKeychain.Resolve(dst)
-  with docker_session.Push(dst, creds, transport, threads=_THREADS) as session:
+  with docker_session.Push(dst, creds, transport, threads=_THREADS,
+                           mount=[src.as_repository()]) as session:
     logging.info('Starting upload ...')
     session.upload(new_img)
     digest = new_img.digest()

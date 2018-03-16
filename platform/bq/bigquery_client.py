@@ -163,7 +163,7 @@ def _ParseJobIdentifier(identifier):
     values.
   """
   project_id_pattern = r'[\w:\-.]*[\w:\-]+'
-  location_pattern = r'[a-zA-Z\-]+'
+  location_pattern = r'[a-zA-Z\-0-9]+'
   job_id_pattern = r'[\w\-]+'
 
   pattern = re.compile(
@@ -738,7 +738,8 @@ class BigqueryClient(object):
     return insert_client
 
 
-  def GetTransferV1ApiClient(self, transferserver_address=None):
+  def GetTransferV1ApiClient(
+       self, transferserver_address=None):
     """Return the apiclient that supports Transfer v1 operation."""
     path = transferserver_address
     if path is None:
@@ -1204,7 +1205,8 @@ class BigqueryClient(object):
                                 'Total Rows', 'Total Bytes',
                                 'Expiration', 'Time Partitioning'))
         formatter.AddColumns(('Labels',))
-        formatter.AddColumns(('kmsKeyName',))
+        if 'encryptionConfiguration' in object_info:
+          formatter.AddColumns(('kmsKeyName',))
       if print_format == 'view':
         formatter.AddColumns(('Query',))
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
@@ -1695,9 +1697,14 @@ class BigqueryClient(object):
     return map(  # pylint: disable=g-long-lambda
         BigqueryClient.ConstructObjectReference, self.ListJobs(**kwds))
 
-  def ListJobs(self, reference=None,
-               max_results=None, page_token=None,
-               state_filter=None, all_users=None):
+  def ListJobs(self,
+               reference=None,
+               max_results=None,
+               page_token=None,
+               state_filter=None,
+               min_creation_time=None,
+               max_creation_time=None,
+               all_users=None):
     """Return a list of jobs.
 
     Args:
@@ -1706,11 +1713,47 @@ class BigqueryClient(object):
       page_token: Current page token (optional).
       state_filter: A single state filter or a list of filters to
         apply. If not specified, no filtering is applied.
+      min_creation_time: Timestamp in milliseconds. Only return jobs created
+        after or at this timestamp.
+      max_creation_time: Timestamp in milliseconds. Only return jobs created
+        before or at this timestamp.
       all_users: Whether to list jobs for all users of the project. Requesting
         user must be an owner of the project to list all jobs.
 
     Returns:
       A list of jobs.
+    """
+    return self.ListJobsAndToken(reference, max_results, page_token,
+                                 state_filter, min_creation_time,
+                                 max_creation_time, all_users)['results']
+
+  def ListJobsAndToken(self,
+                       reference=None,
+                       max_results=None,
+                       page_token=None,
+                       state_filter=None,
+                       min_creation_time=None,
+                       max_creation_time=None,
+                       all_users=None):
+    """Return a list of jobs.
+
+    Args:
+      reference: The ProjectReference to list jobs for.
+      max_results: The maximum number of jobs to return.
+      page_token: Current page token (optional).
+      state_filter: A single state filter or a list of filters to
+        apply. If not specified, no filtering is applied.
+      min_creation_time: Timestamp in milliseconds. Only return jobs created
+        after or at this timestamp.
+      max_creation_time: Timestamp in milliseconds. Only return jobs created
+        before or at this timestamp.
+      all_users: Whether to list jobs for all users of the project. Requesting
+        user must be an owner of the project to list all jobs.
+
+    Returns:
+      A dict that contains enytries:
+        'results': a list of jobs
+        'token': nextPageToken for the last page, if present.
     """
     reference = self._NormalizeProjectReference(reference)
     _Typecheck(reference, ApiClientHelper.ProjectReference, method='ListJobs')
@@ -1725,6 +1768,10 @@ class BigqueryClient(object):
         state_filter = [s.lower() for s in state_filter]
     _ApplyParameters(request, projection='full',
                      state_filter=state_filter, all_users=all_users)
+    if min_creation_time is not None:
+      request['minCreationTime'] = min_creation_time
+    if max_creation_time is not None:
+      request['maxCreationTime'] = max_creation_time
     result = self.apiclient.jobs().list(**request).execute()
     results = result.get('jobs', [])
     if max_results is not None:
@@ -1735,7 +1782,9 @@ class BigqueryClient(object):
                          state_filter=state_filter, all_users=all_users)
         result = self.apiclient.jobs().list(**request).execute()
         results.extend(result.get('jobs', []))
-    return results
+    if 'nextPageToken' in result:
+      return dict(results=results, token=result['nextPageToken'])
+    return dict(results=results)
 
   def ListTransferConfigs(self,
                           reference=None,
@@ -1792,7 +1841,9 @@ class BigqueryClient(object):
 
     Args:
       reference: The ProjectReference to list transfer runs for.
-      run_attempt: Which runs should be pulled.
+      run_attempt: Which runs should be pulled. The default value is 'LATEST',
+          which only returns the latest run per day. To return all runs,
+          please specify 'RUN_ATTEMPT_UNSPECIFIED'.
       max_results: The maximum number of transfer runs to return (optional).
       page_token: Current page token (optional).
       states: States to filter transfer runs (optional).
@@ -3573,6 +3624,9 @@ class _TableReader(object):
     values = [entry.get('v', '') for entry in row.get('f', [])]
     result = []
     for field, v in zip(schema, values):
+      if 'type' not in field:
+        raise BigqueryCommunicationError(
+            'Invalid response: missing type property')
       if field['type'].upper() == 'RECORD':
         # Nested field.
         subfields = field.get('fields', [])
