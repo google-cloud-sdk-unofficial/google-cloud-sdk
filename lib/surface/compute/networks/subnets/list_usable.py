@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListUsableSubnets(base.ListCommand):
   """List subnetworks which the current user has permission to use."""
 

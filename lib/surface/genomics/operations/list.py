@@ -14,6 +14,8 @@
 """Implementation of the gcloud genomics operations list command.
 """
 
+from itertools import chain
+
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.genomics import genomics_util
@@ -37,12 +39,41 @@ class List(base.Command):
     """
     base.LIMIT_FLAG.AddToParser(parser)
     parser.add_argument(
+        '--filter',
+        default='',
+        type=str,
+        help="""\
+        A string for filtering operations created with the v2alpha1 API. In
+        addition to typical operators (AND, OR, =, >, etc.) the following
+        filter fields are supported:
+
+            createTime - The time the operation was created as a timestamp
+                         YYYY-MM-DD HH:MM:SS<time zone>.  T can also be used as
+                         a separator between the date and time.  The time zone
+                         is optional and can be specified as an offset from
+                         UTC, a name, or 'Z' for UTC.
+                             ex. 2018-02-15T16:53:38
+                                 2018-02-15 16:53:38-5:00
+                                 2018-02-15T16:53:38Z
+                                 2018-02-15 16:53:38 America/Los_Angeles
+                  done - A boolean for whether the operation has completed.
+                 error - A google.rpc.Code for a completed operation.
+                events - A set of strings for all events on the operation.
+                             ex. events:WorkerStartedEvent
+                labels - A map of string key and value for the operation.
+                             ex. labels.key = value
+                                 labels."key with space" = "value with space"
+                         For the existence of a key with any value.
+                             ex. labels.key:*
+        """)
+
+    parser.add_argument(
         '--where',
         default='',
         type=str,
         help="""\
-        A string for filtering operations. The following filter fields are
-        supported:
+        A string for filtering operations created with the v1alpha2 API. The
+        following filter fields are supported:
 
             createTime - The time this job was created, in seconds from the
                          epoch. Can use '>=' and/or '<=' operators.
@@ -81,21 +112,41 @@ class List(base.Command):
     Returns:
       The list of operations for this project.
     """
-    apitools_client = genomics_util.GetGenomicsClient()
-    genomics_messages = genomics_util.GetGenomicsMessages()
+    both = not args.filter and not args.where
+    outputs = []
+    if both or args.filter:
+      apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
+      genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
 
-    if args.where:
-      args.where += ' AND '
+      request = genomics_messages.GenomicsProjectsOperationsListRequest(
+          name='projects/%s/operations' % (genomics_util.GetProjectId(),),
+          filter=args.filter)
 
-    args.where += 'projectId=%s' % genomics_util.GetProjectId()
+      outputs.append(list_pager.YieldFromList(
+          apitools_client.projects_operations, request,
+          limit=args.limit,
+          batch_size_attribute='pageSize',
+          batch_size=args.limit,  # Use limit if any, else server default.
+          field='operations'))
 
-    request = genomics_messages.GenomicsOperationsListRequest(
-        name='operations',
-        filter=args.where)
+    if both or args.where:
+      apitools_client = genomics_util.GetGenomicsClient()
+      genomics_messages = genomics_util.GetGenomicsMessages()
 
-    return list_pager.YieldFromList(
-        apitools_client.operations, request,
-        limit=args.limit,
-        batch_size_attribute='pageSize',
-        batch_size=args.limit,  # Use limit if any, else server default.
-        field='operations')
+      if args.where:
+        args.where += ' AND '
+
+      args.where += 'projectId=%s' % genomics_util.GetProjectId()
+
+      request = genomics_messages.GenomicsOperationsListRequest(
+          name='operations',
+          filter=args.where)
+
+      outputs.append(list_pager.YieldFromList(
+          apitools_client.operations, request,
+          limit=args.limit,
+          batch_size_attribute='pageSize',
+          batch_size=args.limit,  # Use limit if any, else server default.
+          field='operations'))
+
+    return chain.from_iterable(outputs)

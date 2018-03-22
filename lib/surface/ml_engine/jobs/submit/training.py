@@ -34,6 +34,7 @@ def _AddSubmitTrainingArgs(parser):
   flags.GetUserArgs(local=False).AddToParser(parser)
   jobs_util.ScaleTierFlagMap().choice_arg.AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
+  flags.PYTHON_VERSION.AddToParser(parser)
 
   sync_group = parser.add_mutually_exclusive_group()
   # TODO(b/36195821): Use the flag deprecation machinery when it supports the
@@ -78,6 +79,7 @@ class Train(base.Command):
         config=args.config,
         module_name=args.module_name,
         runtime_version=args.runtime_version,
+        python_version=args.python_version,
         labels=labels,
         stream_logs=stream_logs,
         user_args=args.user_args)

@@ -196,7 +196,6 @@ def ParseCreateOptionsBase(args):
       cluster_version=args.cluster_version,
       node_version=args.node_version,
       create_subnetwork=args.create_subnetwork,
-      disable_addons=args.disable_addons,
       disk_type=args.disk_type,
       enable_autorepair=args.enable_autorepair,
       enable_autoscaling=args.enable_autoscaling,
@@ -247,7 +246,7 @@ class Create(base.CreateCommand):
     _Args(parser)
     _AddAdditionalZonesFlag(parser, deprecated=True)
     flags.AddNodeLocationsFlag(parser)
-    flags.AddAddonsFlags(parser, add_disable_addons_flag=True)
+    flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)

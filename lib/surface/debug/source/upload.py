@@ -46,7 +46,13 @@ class Upload(base.CreateCommand):
     parser.add_argument(
         'directory',
         help="""\
-            The directory tree to upload.
+            The directory tree to upload. If there is a file called
+            .gcloudignore in the directory to upload, the files that it
+            specifies will be ignored. If a .gitignore file is present in the
+            top-level directory to upload and there isn't a .gcloudignore file,
+            gcloud will generate a Git-compatible .gcloudignore file that
+            respects your .gitignore-ed files. The global .gitignore is not
+            respected.
         """)
     parser.add_argument(
         '--branch',

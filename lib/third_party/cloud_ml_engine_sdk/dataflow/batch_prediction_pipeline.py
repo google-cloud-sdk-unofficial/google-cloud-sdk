@@ -23,10 +23,6 @@ from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesText
 from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesTFRecord
 from google.cloud.ml.dataflow.io.multifiles_source import ReadFromMultiFilesTFRecordGZip
 
-FILE_LIST_SEPARATOR = ","
-OUTPUT_RESULTS_FILES_BASENAME_ = "prediction.results"
-OUTPUT_ERRORS_FILES_BASENAME_ = "prediction.errors_stats"
-
 
 def keys_to_csv(keys):
   output = cStringIO.StringIO()

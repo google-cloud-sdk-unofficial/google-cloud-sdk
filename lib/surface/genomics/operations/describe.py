@@ -17,8 +17,6 @@
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
 
-_OPERATIONS_PREFIX = 'operations/'
-
 
 class Describe(base.DescribeCommand):
   """Returns details about an operation.
@@ -29,9 +27,7 @@ class Describe(base.DescribeCommand):
     """Register flags for this command."""
     parser.add_argument('name',
                         type=str,
-                        help=('The name of the operation to be described. The '
-                              '"{0}" prefix for the name is optional.'
-                              .format(_OPERATIONS_PREFIX)))
+                        help=('The name of the operation to be described.'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -43,11 +39,14 @@ class Describe(base.DescribeCommand):
     Returns:
       a Operation message
     """
+    name, v2 = genomics_util.CanonicalizeOperationName(args.name)
+    if v2:
+      apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
+      genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
+      return apitools_client.projects_operations.Get(
+          genomics_messages.GenomicsProjectsOperationsGetRequest(name=name))
+
     apitools_client = genomics_util.GetGenomicsClient()
     genomics_messages = genomics_util.GetGenomicsMessages()
-
-    name = args.name
-    if not name.startswith(_OPERATIONS_PREFIX):
-      name = _OPERATIONS_PREFIX + name
     return apitools_client.operations.Get(
         genomics_messages.GenomicsOperationsGetRequest(name=name))

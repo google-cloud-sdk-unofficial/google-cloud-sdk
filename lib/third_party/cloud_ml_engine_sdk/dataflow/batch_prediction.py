@@ -152,20 +152,6 @@ class PredictionDoFn(beam.DoFn):
                  checkpoint files to restore the session.
     """
     self._target = target
-
-    # TODO(user): Remove the "if" section when the direct use of
-    # PredictionDoFn() is retired from ml_transform.
-    if isinstance(user_project_id, basestring):
-      user_project_id = StaticValueProvider(str, user_project_id)
-    if isinstance(user_job_id, basestring):
-      user_job_id = StaticValueProvider(str, user_job_id)
-    if isinstance(tags, basestring):
-      tags = StaticValueProvider(str, tags)
-    if isinstance(signature_name, basestring):
-      signature_name = StaticValueProvider(str, signature_name)
-    if isinstance(framework, basestring):
-      framework = StaticValueProvider(str, framework)
-
     self._user_project_id = user_project_id
     self._user_job_id = user_job_id
     self._tags = tags
@@ -352,45 +338,47 @@ class BatchPredict(beam.PTransform):
       raise TypeError("%s: batch_size must be of type int"
                       " or ValueProvider; got %r instead"
                       % (self.__class__.__name__, batch_size))
-    if isinstance(batch_size, int):
-      batch_size = StaticValueProvider(int, batch_size)
-    if framework == mlprediction.TENSORFLOW_FRAMEWORK_NAME:
-      if not isinstance(tags, (basestring, ValueProvider)):
-        raise TypeError("%s: tags must be of type string"
-                        " or ValueProvider; got %r instead" %
-                        (self.__class__.__name__, tags))
-      if isinstance(tags, basestring):
-        tags = StaticValueProvider(str, tags)
-
-      if not isinstance(signature_name, (basestring, ValueProvider)):
-        raise TypeError("%s: signature_name must be of type string"
-                        " or ValueProvider; got %r instead"
-                        % (self.__class__.__name__, signature_name))
-      if isinstance(signature_name, basestring):
-        signature_name = StaticValueProvider(str, signature_name)
-
     self._batch_size = batch_size
-    self._framework = framework
-    self._aggregator_dict = aggregator_dict
-    self._tags = tags
-    self._signature_name = signature_name
+    if isinstance(batch_size, int):
+      self._batch_size = StaticValueProvider(int, batch_size)
 
+    self._framework = framework
+    if isinstance(framework, basestring):
+      self._framework = StaticValueProvider(str, framework)
+
+    # Tags
+    self._tags = tags
+    if isinstance(tags, basestring):
+      self._tags = StaticValueProvider(str, tags)
+    # Signature name
+    if not isinstance(signature_name, (basestring, ValueProvider)):
+      raise TypeError("%s: signature_name must be of type string"
+                      " or ValueProvider; got %r instead"
+                      % (self.__class__.__name__, signature_name))
+    self._signature_name = signature_name
+    if isinstance(signature_name, basestring):
+      self._signature_name = StaticValueProvider(str, signature_name)
+
+    # user_project_id
     if not isinstance(user_project_id, (basestring, ValueProvider)):
       raise TypeError("%s: user_project_id must be of type string"
                       " or ValueProvider; got %r instead"
                       % (self.__class__.__name__, user_project_id))
-    if isinstance(user_project_id, basestring):
-      user_project_id = StaticValueProvider(str, user_project_id)
     self._user_project_id = user_project_id
+    if isinstance(user_project_id, basestring):
+      self._user_project_id = StaticValueProvider(str, user_project_id)
 
+    # user_job_id
     if not isinstance(user_job_id, (basestring, ValueProvider)):
       raise TypeError("%s: user_job_id must be of type string"
                       " or ValueProvider; got %r instead"
                       % (self.__class__.__name__, user_job_id))
-    if isinstance(user_job_id, basestring):
-      user_job_id = StaticValueProvider(str, user_job_id)
     self._user_job_id = user_job_id
+    if isinstance(user_job_id, basestring):
+      self._user_job_id = StaticValueProvider(str, user_job_id)
 
+    # None-value-provider variable.
+    self._aggregator_dict = aggregator_dict
     self._target = target
     self._config = config
     self._model_dir = model_dir

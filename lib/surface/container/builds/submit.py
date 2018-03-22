@@ -94,7 +94,10 @@ class Submit(base.CreateCommand):
              'Storage or disk to use for this build. If source is a local '
              'directory this command skips files specified in the '
              '`.gcloudignore` file (see `$ gcloud topic gcloudignore` for more '
-             'information).'
+             'information). If a .gitignore file is present in the local '
+             'source directory, gcloud will use a Git-compatible '
+             '.gcloudignore file that respects your .gitignore-ed files. The '
+             'global .gitignore is not respected.'
     )
     source.add_argument(
         '--no-source',

@@ -27,7 +27,9 @@ _DETAILED_HELP = {
         Engine server.  As an input it takes one or more ``DEPLOYABLES'' that
         should be uploaded.  A ``DEPLOYABLE'' can be a service's .yaml file or a
         configuration's .yaml file. For Java Standard apps, add the path to the
-        `appengine-web.xml` file, inside the WEB-INF directory.
+        `appengine-web.xml` file, inside the WEB-INF directory. This command
+        skips files specified in the .gcloudignore file (see gcloud topic
+        gcloudignore for more information).
         """,
     'EXAMPLES': """\
         To deploy a single service, run:

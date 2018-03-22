@@ -35,9 +35,7 @@ _DEPRECATION_ERROR = (
 
 # TODO(b/64980447): Clean up this command flag after 3 months of deprecation.
 @base.Deprecate(
-    is_removed=False, warning=_DEPRECATION_WARNING, error=_DEPRECATION_ERROR)
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+    is_removed=True, warning=_DEPRECATION_WARNING, error=_DEPRECATION_ERROR)
 class SwitchMode(base.SilentCommand):
   """Switch network mode."""
 

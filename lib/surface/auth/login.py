@@ -96,14 +96,15 @@ class Login(base.Command):
       scopes += (auth_util.GOOGLE_DRIVE_SCOPE,)
 
     if c_devshell.IsDevshellEnvironment():
-      message = textwrap.dedent("""
-          You are already authenticated with gcloud when running
-          inside the Cloud Shell and so do not need to run this
-          command. Do you wish to proceed anyway?
-          """)
-      answer = console_io.PromptContinue(message=message)
-      if not answer:
-        return None
+      if c_devshell.HasDevshellAuth():
+        message = textwrap.dedent("""
+            You are already authenticated with gcloud when running
+            inside the Cloud Shell and so do not need to run this
+            command. Do you wish to proceed anyway?
+            """)
+        answer = console_io.PromptContinue(message=message)
+        if not answer:
+          return None
     elif c_gce.Metadata().connected:
       message = textwrap.dedent("""
           You are running on a Google Compute Engine virtual machine.

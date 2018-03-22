@@ -68,7 +68,6 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
       'are: "monitoring.googleapis.com" (the Google Cloud Monitoring '
       'service),  "none" (no metrics will be exported from the cluster)')
 
-  # Network policy is only for alpha/beta
   if release_track in [base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA]:
     mutex_group.add_argument(
         '--update-addons',
@@ -100,16 +99,19 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
             api_adapter.INGRESS: _ParseAddonDisabled,
             api_adapter.HPA: _ParseAddonDisabled,
             api_adapter.DASHBOARD: _ParseAddonDisabled,
+            api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
         }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED
-{dashboard}=ENABLED|DISABLED""".format(
+{dashboard}=ENABLED|DISABLED
+{network_policy}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
-    dashboard=api_adapter.DASHBOARD))
+    dashboard=api_adapter.DASHBOARD,
+    network_policy=api_adapter.NETWORK_POLICY,))
 
   mutex_group.add_argument(
       '--generate-password',

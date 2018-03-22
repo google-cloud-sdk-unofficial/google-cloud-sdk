@@ -139,11 +139,10 @@ def _CommonArgs(parser, source_snapshot_arg):
   labels_util.AddCreateLabelsFlags(parser)
 
 
-def _ParseGuestOsFeaturesToMessages(args, client_messages, release_track):
+def _ParseGuestOsFeaturesToMessages(args, client_messages):
   """Parse GuestOS features."""
   guest_os_feature_messages = []
-  if (release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA] and
-      args.guest_os_features):
+  if args.guest_os_features:
     for feature in args.guest_os_features:
       gf_type = client_messages.GuestOsFeature.TypeValueValuesEnum(feature)
       guest_os_feature = client_messages.GuestOsFeature()
@@ -161,6 +160,7 @@ class Create(base.Command):
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.GA)
 
   def ParseLicenses(self, args):
     """Parse license.
@@ -322,7 +322,7 @@ class Create(base.Command):
     # end of alpha/beta features.
 
     guest_os_feature_messages = _ParseGuestOsFeaturesToMessages(
-        args, client.messages, self.ReleaseTrack())
+        args, client.messages)
 
     requests = []
     for disk_ref in disk_refs:

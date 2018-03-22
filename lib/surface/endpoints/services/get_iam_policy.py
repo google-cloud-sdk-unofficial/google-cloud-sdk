@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.endpoints import arg_parsers
 from googlecloudsdk.command_lib.endpoints import common_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
   """Describes the IAM policy for a service.
 

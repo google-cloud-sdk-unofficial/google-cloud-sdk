@@ -17,12 +17,15 @@
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class DetachDisk(base.UpdateCommand):
   """Detach disks from Compute Engine virtual machine instances.
 
@@ -80,16 +83,31 @@ class DetachDisk(base.UpdateCommand):
                 deviceName=removed_disk,
                 **instance_ref.AsDict()))
 
+  def ParseDiskRef(self, resources, args, instance_ref):
+    """Parses disk reference.
+
+    Could be overridden by subclasses to customize disk resource parsing as
+    necessary for alpha release track.
+
+    Args:
+      resources: resources.Registry, The resource registry.
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+      instance_ref: resources.Resource, The instance reference.
+
+    Returns:
+      Disk reference.
+    """
+    return instance_utils.ParseDiskResource(resources, args.disk,
+                                            instance_ref.project,
+                                            instance_ref.zone,
+                                            compute_scopes.ScopeEnum.ZONE)
+
   def Modify(self, resources, args, instance_ref, existing):
     replacement = encoding.CopyProtoMessage(existing)
 
     if args.disk:
-      disk_ref = resources.Parse(
-          args.disk, collection='compute.disks',
-          params={
-              'project': instance_ref.project,
-              'zone': instance_ref.zone
-          })
+      disk_ref = self.ParseDiskRef(resources, args, instance_ref)
       replacement.disks = [disk for disk in existing.disks
                            if disk.source != disk_ref.SelfLink()]
 
@@ -132,3 +150,24 @@ class DetachDisk(base.UpdateCommand):
 
     return client.MakeRequests(
         [self.GetSetRequest(client, instance_ref, new_object, objects[0])])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DetachDiskAlpha(DetachDisk):
+
+  @staticmethod
+  def Args(parser):
+    DetachDisk.Args(parser)
+    flags.AddDiskScopeFlag(parser)
+
+  def ParseDiskRef(self, resources, args, instance_ref):
+    if args.disk_scope == 'regional':
+      scope = compute_scopes.ScopeEnum.REGION
+    else:
+      scope = compute_scopes.ScopeEnum.ZONE
+    return instance_utils.ParseDiskResource(resources, args.disk,
+                                            instance_ref.project,
+                                            instance_ref.zone,
+                                            scope)
+
+DetachDiskAlpha.__doc__ = DetachDisk.__doc__

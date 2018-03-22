@@ -24,7 +24,16 @@ def _AddDeleteArgs(parser):
 
 
 class Delete(base.DeleteCommand):
-  """Delete an existing Cloud ML Engine model."""
+  r"""Delete an existing Cloud ML Engine model.
+
+  ## EXAMPLES
+
+  To delete all models matching the regular expression `vision[0-9]+`, run:
+
+      $ {parent_command} list --uri \
+            --filter 'name ~ vision[0-9]+' |
+            xargs -n 1 {command}
+  """
 
   @staticmethod
   def Args(parser):

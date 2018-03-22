@@ -25,13 +25,12 @@ class GcloudignoreHelp(base.TopicCommand):
   If there is a file called `.gcloudignore` _in the top-level directory to
   upload_, the files that it specifies (see "SYNTAX") will be ignored.
 
-  If a `.gitignore` file is present in the top-level directory to upload and
-  there isn't a `.gcloudignore` file, `gcloud` will generate a Git-compatible
-  `.gcloudignore` file that respects your `.gitignore`-ed files (see "ADVANCED
-  TOPICS" for details). The global `.gitignore` is not respected.
+  Gcloud commands may generate a .gcloudignore file; see the individual
+  command help page for details.
 
   The following `gcloud` commands respect the `.gcloudignore` file:
 
+  * `gcloud app deploy`
   * `gcloud beta functions deploy`
   * `gcloud container builds submit`
   * `gcloud beta debug source upload`

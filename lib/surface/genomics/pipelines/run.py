@@ -24,6 +24,20 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
+CLOUD_SDK_IMAGE = 'google/cloud-sdk'
+SHARED_DISK = 'gcloud-shared'
+
+
+class _SharedPathGenerator(object):
+
+  def __init__(self, root):
+    self.root = root
+    self.index = -1
+
+  def Generate(self):
+    self.index += 1
+    return '/%s/%s%d' % (SHARED_DISK, self.root, self.index)
+
 
 def _ValidateAndMergeArgInputs(args):
   """Turn args.inputs and args.inputs_from_file dicts into a single dict.
@@ -81,35 +95,23 @@ class Run(base.SilentCommand):
     """
     parser.add_argument(
         '--pipeline-file',
-        required=True,
-        help='''A YAML or JSON file containing a Pipeline object. See
-          [](https://cloud.google.com/genomics/reference/rest/v1alpha2/pipelines#Pipeline)
+        help='''A YAML or JSON file containing a v2alpha1 or v1alpha2 Pipeline
+          object. See
+[](https://cloud.google.com/genomics/reference/rest/v2alpha1/pipelines#Pipeline)
+''')
 
-          YAML Example:
-            name: hello world
+    parser.add_argument(
+        '--docker-image',
+        category=base.COMMONLY_USED_FLAGS,
+        default=CLOUD_SDK_IMAGE,
+        help='''v2alpha1 only. A docker image to run. Requires --command-line to
+            be specified and cannot be used with --pipeline-file.''')
 
-            inputParameters:
-            - name: greeting
-              defaultValue: Hello
-            - name: object
-              defaultValue: World
-
-            outputParameters:
-            - name: outputFile
-              localCopy:
-                path: /data/output/greeting.txt
-                disk: boot
-
-            resources:
-              minimumCpuCores: 1
-              minimumRamGb: 1
-              preemptible: true
-
-            docker:
-              imageName: ubuntu
-              cmd: >
-                echo "${greeting} ${object}" > /data/output/greeting.txt
-        ''')
+    parser.add_argument(
+        '--command-line',
+        category=base.COMMONLY_USED_FLAGS,
+        help='''v2alpha1 only. Command line to run with /bin/sh in the specified
+            docker image. Cannot be used with --pipeline-file.''')
 
     parser.add_argument(
         '--inputs',
@@ -168,6 +170,13 @@ class Run(base.SilentCommand):
              any value specified in the pipeline-file.''')
 
     parser.add_argument(
+        '--cpus',
+        category=base.COMMONLY_USED_FLAGS,
+        type=int,
+        help='''The minimum number of CPUs to run the pipeline. Overrides
+             any value specified in the pipeline-file.''')
+
+    parser.add_argument(
         '--disk-size',
         category=base.COMMONLY_USED_FLAGS,
         default=None,
@@ -201,13 +210,20 @@ class Run(base.SilentCommand):
         type=arg_parsers.ArgList(),
         default=[],
         help='''List of additional scopes to be made available for this service
-             account. The following scopes are always requested:
+             account. The following scopes are always requested for v1alpha2
+             requests:
 
              https://www.googleapis.com/auth/compute
              https://www.googleapis.com/auth/devstorage.full_control
              https://www.googleapis.com/auth/genomics
              https://www.googleapis.com/auth/logging.write
-             https://www.googleapis.com/auth/monitoring.write''')
+             https://www.googleapis.com/auth/monitoring.write
+
+             For v2alpha1 requests, only the following scopes are always
+             requested:
+
+             https://www.googleapis.com/auth/devstorage.read_write
+             https://www.googleapis.com/auth/genomics''')
 
     parser.add_argument(
         '--zones',
@@ -221,9 +237,28 @@ pipeline definition file will be used.
 If no zones are specified in the pipeline definition, then the
 default zone in your local client configuration is used.
 
-If you have no default zone, then the pipeline may run in any zone.
+If you have no default zone, then v1alpha2 pipelines may run in any zone.  For
+v2alpha1 pipelines at least one zone or region must be specified.
 
 For more information on default zones, see
+https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client''')
+
+    parser.add_argument(
+        '--regions',
+        metavar='REGION',
+        type=arg_parsers.ArgList(),
+        help='''v2alpha1 only. List of Compute Engine regions the pipeline can
+            run in.
+
+If no regions are specified with the regions flag, then regions in the
+pipeline definition file will be used.
+
+If no regions are specified in the pipeline definition, then the
+default region in your local client configuration is used.
+
+At least one region or region must be specified.
+
+For more information on default regions, see
 https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client''')
 
   def Run(self, args):
@@ -241,69 +276,219 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
     Returns:
       Operation representing the running pipeline.
     """
+    v2 = False
+    pipeline = None
     apitools_client = genomics_util.GetGenomicsClient('v1alpha2')
     genomics_messages = genomics_util.GetGenomicsMessages('v1alpha2')
+    if args.pipeline_file:
+      if args.command_line:
+        raise exceptions.GenomicsError(
+            '--command_line cannot be used with --pipeline-file.')
 
-    pipeline = genomics_util.GetFileAsMessage(
-        args.pipeline_file,
-        genomics_messages.Pipeline,
-        self.context[lib.STORAGE_V1_CLIENT_KEY])
-    pipeline.projectId = genomics_util.GetProjectId()
+      pipeline = genomics_util.GetFileAsMessage(
+          args.pipeline_file,
+          genomics_messages.Pipeline,
+          self.context[lib.STORAGE_V1_CLIENT_KEY])
+      pipeline.projectId = genomics_util.GetProjectId()
+
+      if not pipeline.docker:
+        v2 = True
+        apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
+        genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
+        pipeline = genomics_util.GetFileAsMessage(
+            args.pipeline_file,
+            genomics_messages.Pipeline,
+            self.context[lib.STORAGE_V1_CLIENT_KEY])
+    elif args.command_line:
+      v2 = True
+      apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
+      genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
+      pipeline = genomics_messages.Pipeline(
+          actions=[genomics_messages.Action(
+              imageUri=args.docker_image,
+              commands=['/bin/sh', '-c', args.command_line])])
+    else:
+      raise exceptions.GenomicsError(
+          'Either --pipeline-file or --command_line is required.')
 
     arg_inputs = _ValidateAndMergeArgInputs(args)
 
-    inputs = genomics_util.ArgDictToAdditionalPropertiesList(
-        arg_inputs,
-        genomics_messages.RunPipelineArgs.InputsValue.AdditionalProperty)
-    outputs = genomics_util.ArgDictToAdditionalPropertiesList(
-        args.outputs,
-        genomics_messages.RunPipelineArgs.OutputsValue.AdditionalProperty)
+    request = None
+    if v2:
+      # Create messages up front to avoid checking for None everywhere.
+      if not pipeline.resources:
+        pipeline.resources = genomics_messages.Resources()
+      resources = pipeline.resources
 
-    # Set "overrides" on the resources. If the user did not pass anything on
-    # the command line, do not set anything in the resource: preserve the
-    # user-intent "did not set" vs. "set an empty value/list"
+      if not resources.virtualMachine:
+        resources.virtualMachine = genomics_messages.VirtualMachine(
+            machineType='n1-standard-1')
+      virtual_machine = resources.virtualMachine
 
-    resources = genomics_messages.PipelineResources(
-        preemptible=args.preemptible)
-    if args.memory:
-      resources.minimumRamGb = args.memory
-    if args.disk_size:
-      resources.disks = []
-      for disk_encoding in args.disk_size.split(','):
-        disk_args = disk_encoding.split(':', 1)
-        resources.disks.append(genomics_messages.Disk(
-            name=disk_args[0],
-            sizeGb=int(disk_args[1])
-        ))
+      if not virtual_machine.serviceAccount:
+        virtual_machine.serviceAccount = genomics_messages.ServiceAccount()
 
-    # Progression for picking the right zones...
-    #   If specified on the command line, use them.
-    #   If specified in the Pipeline definition, use them.
-    #   If there is a GCE default zone in the local configuration, use it.
-    #   Else let the API select a zone
-    if args.zones:
-      resources.zones = args.zones
-    elif pipeline.resources and pipeline.resources.zones:
-      pass
-    elif properties.VALUES.compute.zone.Get():
-      resources.zones = [properties.VALUES.compute.zone.Get()]
+      # Always set the project id.
+      resources.projectId = genomics_util.GetProjectId()
 
-    request = genomics_messages.RunPipelineRequest(
-        ephemeralPipeline=pipeline,
-        pipelineArgs=genomics_messages.RunPipelineArgs(
-            inputs=genomics_messages.RunPipelineArgs.InputsValue(
-                additionalProperties=inputs),
-            outputs=genomics_messages.RunPipelineArgs.OutputsValue(
-                additionalProperties=outputs),
-            clientId=args.run_id,
-            logging=genomics_messages.LoggingOptions(gcsPath=args.logging),
-            labels=labels_util.ParseCreateArgs(
-                args, genomics_messages.RunPipelineArgs.LabelsValue),
-            projectId=genomics_util.GetProjectId(),
-            serviceAccount=genomics_messages.ServiceAccount(
-                email=args.service_account_email,
-                scopes=args.service_account_scopes),
-            resources=resources))
+      # Update the pipeline based on arguments.
+      if args.memory or args.cpus:
+        # Default to n1-standard1 sizes.
+        virtual_machine.machineType = 'custom-%d-%d' % (
+            args.cpus or 1, (args.memory or 3.84) * 1000)
+
+      if args.preemptible:
+        virtual_machine.preemptible = args.preemptible
+
+      if args.zones:
+        resources.zones = args.zones
+      elif not resources.zones and properties.VALUES.compute.zone.Get():
+        resources.zones = [properties.VALUES.compute.zone.Get()]
+
+      if args.regions:
+        resources.regions = args.regions
+      elif not resources.regions and properties.VALUES.compute.region.Get():
+        resources.regions = [properties.VALUES.compute.region.Get()]
+
+      if args.service_account_email != 'default':
+        virtual_machine.serviceAccount.email = args.service_account_email
+
+      if args.service_account_scopes:
+        virtual_machine.serviceAccount.scopes = args.service_account_scopes
+
+      # Always add a scope for GCS in case any arguments need it.
+      virtual_machine.serviceAccount.scopes.append(
+          'https://www.googleapis.com/auth/devstorage.read_write')
+
+      # Generate paths for inputs and outputs in a shared location and put them
+      # into the environment for actions based on their name.
+      env = {}
+      if arg_inputs:
+        input_generator = _SharedPathGenerator('input')
+        for name, value in arg_inputs.items():
+          if genomics_util.IsGcsPath(value):
+            env[name] = input_generator.Generate()
+            pipeline.actions.insert(0, genomics_messages.Action(
+                imageUri=CLOUD_SDK_IMAGE,
+                commands=['/bin/sh', '-c', 'gsutil -q cp %s ${%s}' % (value,
+                                                                      name)]))
+          else:
+            env[name] = value
+
+      if args.outputs:
+        output_generator = _SharedPathGenerator('output')
+        for name, value in args.outputs.items():
+          env[name] = output_generator.Generate()
+          pipeline.actions.append(genomics_messages.Action(
+              imageUri=CLOUD_SDK_IMAGE,
+              commands=['/bin/sh', '-c', 'gsutil -q cp ${%s} %s' % (name,
+                                                                    value)]))
+
+      # Merge any existing pipeline arguments into the generated environment and
+      # update the pipeline.
+      if pipeline.environment:
+        for val in pipeline.environment.additionalProperties:
+          if val.key not in env:
+            env[val.key] = val.value
+
+      pipeline.environment = genomics_messages.Pipeline.EnvironmentValue(
+          additionalProperties=genomics_util.ArgDictToAdditionalPropertiesList(
+              env,
+              genomics_messages.Pipeline.EnvironmentValue.AdditionalProperty))
+
+      if arg_inputs or args.outputs:
+        virtual_machine.disks.append(genomics_messages.Disk(
+            name=SHARED_DISK))
+
+        for action in pipeline.actions:
+          action.mounts.append(genomics_messages.Mount(
+              disk=SHARED_DISK,
+              path='/' + SHARED_DISK))
+
+      if args.logging:
+        for name, value in args.outputs.items():
+          pipeline.actions.append(genomics_messages.Action(
+              imageUri=CLOUD_SDK_IMAGE,
+              commands=['/bin/sh', '-c',
+                        'gsutil -q cp /google/logs/output ' + args.logging],
+              flags=[(genomics_messages.Action
+                      .FlagsValueListEntryValuesEnum.ALWAYS_RUN)]))
+
+      # Update disk sizes if specified, potentially including the shared disk.
+      if args.disk_size:
+        disk_sizes = {}
+        for disk_encoding in args.disk_size.split(','):
+          parts = disk_encoding.split(':', 1)
+          try:
+            disk_sizes[parts[0]] = int(parts[1])
+          except:
+            raise exceptions.GenomicsError('Invalid --disk-size.')
+
+        for disk in virtual_machine.disks:
+          size = disk_sizes[disk.name]
+          if size:
+            disk.sizeGb = size
+
+      request = genomics_messages.RunPipelineRequest(
+          pipeline=pipeline,
+          labels=labels_util.ParseCreateArgs(
+              args, genomics_messages.RunPipelineRequest.LabelsValue))
+    else:
+      inputs = genomics_util.ArgDictToAdditionalPropertiesList(
+          arg_inputs,
+          genomics_messages.RunPipelineArgs.InputsValue.AdditionalProperty)
+      outputs = genomics_util.ArgDictToAdditionalPropertiesList(
+          args.outputs,
+          genomics_messages.RunPipelineArgs.OutputsValue.AdditionalProperty)
+
+      # Set "overrides" on the resources. If the user did not pass anything on
+      # the command line, do not set anything in the resource: preserve the
+      # user-intent "did not set" vs. "set an empty value/list"
+
+      resources = genomics_messages.PipelineResources(
+          preemptible=args.preemptible)
+      if args.memory:
+        resources.minimumRamGb = args.memory
+      if args.cpus:
+        resources.minimumCpuCores = args.cpus
+      if args.disk_size:
+        resources.disks = []
+        for disk_encoding in args.disk_size.split(','):
+          disk_args = disk_encoding.split(':', 1)
+          resources.disks.append(genomics_messages.Disk(
+              name=disk_args[0],
+              sizeGb=int(disk_args[1])
+          ))
+
+      # Progression for picking the right zones...
+      #   If specified on the command line, use them.
+      #   If specified in the Pipeline definition, use them.
+      #   If there is a GCE default zone in the local configuration, use it.
+      #   Else let the API select a zone
+      if args.zones:
+        resources.zones = args.zones
+      elif pipeline.resources and pipeline.resources.zones:
+        pass
+      elif properties.VALUES.compute.zone.Get():
+        resources.zones = [properties.VALUES.compute.zone.Get()]
+
+      request = genomics_messages.RunPipelineRequest(
+          ephemeralPipeline=pipeline,
+          pipelineArgs=genomics_messages.RunPipelineArgs(
+              inputs=genomics_messages.RunPipelineArgs.InputsValue(
+                  additionalProperties=inputs),
+              outputs=genomics_messages.RunPipelineArgs.OutputsValue(
+                  additionalProperties=outputs),
+              clientId=args.run_id,
+              logging=genomics_messages.LoggingOptions(gcsPath=args.logging),
+              labels=labels_util.ParseCreateArgs(
+                  args, genomics_messages.RunPipelineArgs.LabelsValue),
+              projectId=genomics_util.GetProjectId(),
+              serviceAccount=genomics_messages.ServiceAccount(
+                  email=args.service_account_email,
+                  scopes=args.service_account_scopes),
+              resources=resources))
+
     result = apitools_client.pipelines.Run(request)
     log.status.Print('Running [{0}].'.format(result.name))
     return result

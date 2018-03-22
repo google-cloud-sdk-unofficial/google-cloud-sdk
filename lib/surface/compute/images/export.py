@@ -15,22 +15,34 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import daisy_utils
+from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
+from googlecloudsdk.core import properties
 
 _DEFAULT_WORKFLOW = '../workflows/export/image_export.wf.json'
 _EXTERNAL_WORKFLOW = '../workflows/export/image_export_ext.wf.json'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Export(base.CreateCommand):
   """Export a Google Compute Engine image."""
 
   @staticmethod
   def Args(parser):
-    Export.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
-    Export.DISK_IMAGE_ARG.AddArgument(parser, operation_type='export')
+    image_group = parser.add_mutually_exclusive_group(required=True)
+
+    image_group.add_argument(
+        '--image',
+        help=('The name of the disk image to export.'),
+    )
+    image_group.add_argument(
+        '--image-family',
+        help=('The family of the disk image to be exported. When a family '
+              'is used instead of an image, the latest non-deprecated image '
+              'associated with that family is used.'),
+    )
+    image_utils.AddImageProjectFlag(parser)
 
     parser.add_argument(
         '--destination-uri',
@@ -53,11 +65,17 @@ class Export(base.CreateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    resources = holder.resources
+    project = properties.VALUES.core.project.GetOrFail()
 
-    image_ref = Export.DISK_IMAGE_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    image_expander = image_utils.ImageExpander(client, resources)
+    image = image_expander.ExpandImageFlag(
+        user_project=project,
+        image=args.image,
+        image_family=args.image_family,
+        image_project=args.image_project,
+        return_image_resource=False)
+    image_ref = resources.Parse(image[0], collection='compute.images')
 
     variables = """source_image={0},destination={1}""".format(
         image_ref.RelativeName(), args.destination_uri)

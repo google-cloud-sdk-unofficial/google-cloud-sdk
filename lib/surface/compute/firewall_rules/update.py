@@ -27,7 +27,9 @@ class UpdateFirewall(base.UpdateCommand):
   *{command}* is used to update firewall rules that allow/deny
   incoming/outgoing traffic. The firewall rule will only be updated for
   arguments that are specifically passed. Other attributes will remain
-  unaffected.
+  unaffected. The `action` flag (whether to allow or deny matching traffic)
+  cannot be defined when updating a firewall rule; use
+  `gcloud compute firewall-rules delete` to remove the rule instead.
   """
   with_egress_firewall = True
   with_service_account = True
@@ -231,7 +233,9 @@ class AlphaUpdateFirewall(UpdateFirewall):
   *{command}* is used to update firewall rules that allow/deny
   incoming/outgoing traffic. The firewall rule will only be updated for
   arguments that are specifically passed. Other attributes will remain
-  unaffected.
+  unaffected. The `action` flag (whether to allow or deny matching traffic)
+  cannot be defined when updating a firewall rule; use
+  `gcloud compute firewall-rules delete` to remove the rule instead.
   """
   with_disabled = True
   with_logging = True

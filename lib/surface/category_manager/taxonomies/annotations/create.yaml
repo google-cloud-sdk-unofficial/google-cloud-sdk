@@ -1,0 +1,33 @@
+- help_text:
+    brief: Create an annotation in the specified taxonomy.
+    DESCRIPTION: |
+      Create an annotation in the specified taxonomy. By default the annotation
+      is created as a root annotation, but an annotation can also be created as
+      a child of another annotation by specifying the --parent_annotation flag.
+
+  request:
+    collection: categorymanager.projects.taxonomies.annotations
+
+  arguments:
+    resource:
+      help_text: The taxonomy ID of the parent taxonomy for this new annotation.
+      is_parent_resource: true
+      spec: !REF googlecloudsdk.command_lib.category_manager.resources:project_scoped_taxonomy
+
+    params:
+      - api_field: annotation.displayName
+        arg_name: display_name
+        help_text: A human-readable name for the annotation.
+        required: true
+
+      - api_field: annotation.description
+        arg_name: description
+        help_text: The description of this annotation
+        required: false
+
+      - api_field: annotation.parentAnnotationId
+        arg_name: parent_annotation
+        help_text: |
+          The ID of the parent annotation for this annotation. If not given,
+          this annotation will be at the root of the hierarchy.
+        required: false

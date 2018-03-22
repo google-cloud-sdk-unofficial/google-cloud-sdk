@@ -153,6 +153,11 @@ class Import(base.CreateCommand):
       source_name = ref.RelativeName()[len(ref.Parent().RelativeName() + '/'):]
       variables.append('source_image={}'.format(source_name))
     else:
+      # If the file is an OVA file, print a warning.
+      if args.source_file.endswith('.ova'):
+        log.warning('The specified input file may contain more than one '
+                    'virtual disk. Only the first vmdk disk will be '
+                    'imported. ')
       # Get the image into the scratch bucket, wherever it is now.
       if _IsLocalFile(args.source_file):
         gcs_uri = _UploadToGcs(args.async, args.source_file,

@@ -1,0 +1,25 @@
+- help_text:
+    brief: Create a taxonomy in a project
+    DESCRIPTION: |
+      Create a taxonomy in a project. By default the taxonomy is created for the
+      current project but this can be overridden with the --project flag.
+
+  request:
+    collection: categorymanager.projects.taxonomies
+
+  arguments:
+    resource:
+      help_text: The taxonomy's project.
+      is_parent_resource: true
+      spec: !REF googlecloudsdk.command_lib.category_manager.resources:project
+
+    params:
+      - api_field: taxonomy.displayName
+        arg_name: display_name
+        help_text: A human-readable name for the taxonomy.
+        required: true
+
+      - api_field: taxonomy.description
+        arg_name: description
+        help_text: The description of this taxonomy
+        required: false
