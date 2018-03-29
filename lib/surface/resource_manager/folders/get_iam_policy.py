@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a folder.
 

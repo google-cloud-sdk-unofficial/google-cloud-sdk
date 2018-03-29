@@ -122,6 +122,7 @@ class CreateBeta(base.CreateCommand):
   def Args(parser):
     _AddCreateArgs(parser)
     flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
+    flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
@@ -138,7 +139,8 @@ class CreateBeta(base.CreateCommand):
                                 async_=args.async,
                                 description=args.description,
                                 labels=labels,
-                                framework=framework)
+                                framework=framework,
+                                python_version=args.python_version)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -156,6 +158,7 @@ class CreateAlpha(base.CreateCommand):
     _AddCreateArgs(parser)
     flags.MACHINE_TYPE.AddToParser(parser)
     flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
+    flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
@@ -173,4 +176,5 @@ class CreateAlpha(base.CreateCommand):
                                 labels=labels,
                                 description=args.description,
                                 machine_type=args.machine_type,
-                                framework=framework)
+                                framework=framework,
+                                python_version=args.python_version)

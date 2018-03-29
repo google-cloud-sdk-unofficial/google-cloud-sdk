@@ -18,9 +18,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iot import flags
 from googlecloudsdk.command_lib.iot import resource_args
-from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a device registry.
 
@@ -52,6 +52,5 @@ class SetIamPolicy(base.Command):
     response = client.SetIamPolicy(
         registry_ref,
         set_iam_policy_request=messages.SetIamPolicyRequest(policy=policy))
-    log.status.Print(
-        'Set IAM policy for registry [{}].'.format(registry_ref.Name()))
+    iam_util.LogSetIamPolicy(registry_ref.Name(), 'registry')
     return response

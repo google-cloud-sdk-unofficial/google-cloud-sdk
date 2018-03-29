@@ -67,6 +67,7 @@ class List(base.ListCommand):
           table(
             clusterName:label=NAME,
             config.workerConfig.numInstances:label=WORKER_COUNT,
+            config.secondaryWorkerConfig.numInstances:label=PREEMPTIBLE_WORKER_COUNT,
             status.state:label=STATUS,
             config.gceClusterConfig.zoneUri.scope(zone):label=ZONE
           )

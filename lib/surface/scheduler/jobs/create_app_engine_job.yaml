@@ -94,14 +94,14 @@
       - group:
           mutex: True
           params:
-            - api_field: job.appEngineHttpTarget.payload
+            - api_field: job.appEngineHttpTarget.body
               arg_name: payload
               help_text: |
                 String, a data payload to be included as the body of the HTTP
                 request. May only be given with compatible HTTP methods (PUT
                 or POST).
 
-            - api_field: job.appEngineHttpTarget.payload
+            - api_field: job.appEngineHttpTarget.body
               arg_name: payload-from-file
               type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
               help_text: |

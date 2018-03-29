@@ -42,7 +42,7 @@ class Start(base.Command):
     parser.add_argument(
         '--emulators',
         required=False,
-        type=arg_parsers.ArgList(element_type=str.lower),
+        type=arg_parsers.ArgList(element_type=lambda val: val.lower()),
         metavar='EMULATORS',
         help='list of local emulators to start. \'all\' will attempt to start '
         'all of the emulators. Valid options: ' + emulator_options)

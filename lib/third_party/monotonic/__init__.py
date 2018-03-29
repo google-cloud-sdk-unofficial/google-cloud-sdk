@@ -46,6 +46,9 @@ import threading
 import time
 
 
+__all__ = ('monotonic',)
+
+
 try:
     monotonic = time.monotonic
 except AttributeError:
@@ -130,7 +133,7 @@ except AttributeError:
             try:
                 clock_gettime = ctypes.CDLL(ctypes.util.find_library('c'),
                                             use_errno=True).clock_gettime
-            except AttributeError:
+            except Exception:
                 clock_gettime = ctypes.CDLL(ctypes.util.find_library('rt'),
                                             use_errno=True).clock_gettime
 
@@ -147,6 +150,8 @@ except AttributeError:
                 CLOCK_MONOTONIC = 4
             elif 'bsd' in sys.platform:
                 CLOCK_MONOTONIC = 3
+            elif sys.platform.startswith('aix'):
+                CLOCK_MONOTONIC = ctypes.c_longlong(10)
 
             def monotonic():
                 """Monotonic clock, cannot go backward."""
@@ -160,5 +165,5 @@ except AttributeError:
         if monotonic() - monotonic() > 0:
             raise ValueError('monotonic() is not monotonic!')
 
-    except Exception:
-        raise RuntimeError('no suitable implementation for this system')
+    except Exception as e:
+        raise RuntimeError('no suitable implementation for this system: ' + repr(e))

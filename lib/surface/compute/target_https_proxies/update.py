@@ -137,7 +137,7 @@ class UpdateGA(base.SilentCommand):
     return self._SendRequests(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateBeta(UpdateGA):
   """Update a target HTTPS proxy.
 
@@ -165,52 +165,6 @@ class UpdateBeta(UpdateGA):
     cls.SSL_POLICY_ARG.AddArgument(group)
     ssl_policies_flags.GetClearSslPolicyArgumentForOtherResource(
         'HTTPS', required=False).AddToParser(group)
-
-  def _CheckMissingArgument(self, args):
-    if not sum(
-        args.IsSpecified(arg) for arg in
-        ['ssl_certificates', 'url_map', 'ssl_policy', 'clear_ssl_policy']):
-      raise exceptions.ToolException(
-          'You must specify at least one of [--ssl-certificates], '
-          '[--url-map], [--ssl-policy] or [--clear-ssl-policy].')
-
-  def Run(self, args):
-    self._CheckMissingArgument(args)
-
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    messages = holder.client.messages
-
-    ssl_policy = messages.SslPolicyReference(
-        sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
-        .SelfLink()) if args.IsSpecified('ssl_policy') else None
-    return self._SendRequests(
-        args,
-        quic_override=None,
-        ssl_policy=ssl_policy,
-        clear_ssl_policy=args.IsSpecified('clear_ssl_policy'))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a target HTTPS proxy.
-
-  *{command}* is used to change the SSL certificate and/or URL map of
-  existing target HTTPS proxies. A target HTTPS proxy is referenced
-  by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTPS proxy in turn points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests. The target
-  HTTPS proxy also points to at most 10 SSL certificates used for
-  server-side authentication. The target HTTPS proxy can be associated with
-  at most one SSL policy.
-  """
-
-  SSL_POLICY_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    super(UpdateAlpha, cls).Args(parser)
     target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
 
   def _CheckMissingArgument(self, args):

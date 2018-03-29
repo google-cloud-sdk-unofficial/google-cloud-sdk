@@ -19,8 +19,7 @@ from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class GetIamPolicy(orgs_base.OrganizationCommand, base.ListCommand):
   """Get IAM policy for an organization.
 
@@ -45,6 +44,5 @@ class GetIamPolicy(orgs_base.OrganizationCommand, base.ListCommand):
     messages = self.OrganizationsMessages()
     policy_request = (
         messages.CloudresourcemanagerOrganizationsGetIamPolicyRequest(
-            organizationsId=args.id,
-            getIamPolicyRequest=messages.GetIamPolicyRequest()))
+            organizationsId=args.id))
     return self.OrganizationsClient().GetIamPolicy(policy_request)

@@ -20,6 +20,7 @@ from googlecloudsdk.api_lib.compute import daisy_utils
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -60,7 +61,12 @@ def _UploadToGcs(async, local_path, daisy_bucket, image_uuid):
   if async:
     log.status.Print('Once completed, your image will be imported from Cloud'
                      ' Storage asynchronously.')
-  storage_util.RunGsutilCommand('cp', [local_path, dest_path])
+  retcode = storage_util.RunGsutilCommand('cp', [local_path, dest_path])
+  if retcode != 0:
+    log.err.Print('Failed to upload file. See {} for details.'.format(
+        log.GetLogFilePath()))
+    raise exceptions.FailedSubCommand(
+        ['gsutil', 'cp', local_path, dest_path], retcode)
   return dest_path
 
 
@@ -97,6 +103,10 @@ class Import(base.CreateCommand):
   def Args(parser):
     Import.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
     Import.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
+
+    flags.compute_flags.AddZoneFlag(
+        parser, 'image', 'import',
+        explanation='The zone in which to do the work of importing the image.')
 
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument(
@@ -177,7 +187,8 @@ class Import(base.CreateCommand):
         workflow = _IMPORT_WORKFLOW
 
     return daisy_utils.RunDaisyBuild(args, workflow, ','.join(variables),
-                                     daisy_bucket=daisy_bucket)
+                                     daisy_bucket=daisy_bucket,
+                                     user_zone=args.zone)
 
 Import.detailed_help = {
     'brief': 'Import a Google Compute Engine image',

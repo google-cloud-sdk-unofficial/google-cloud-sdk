@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """Lists the locations where Cloud Tasks is available."""
 

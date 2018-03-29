@@ -33,7 +33,6 @@ class SetManagedCluster(base.UpdateCommand):
     parser.add_argument(
         '--cluster-name', help='The name of the managed dataproc cluster.')
     clusters.ArgsForClusterRef(parser, beta=True)
-    flags.AddZoneFlag(parser)
     flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
     # TODO(b/70164645): Consolidate these arguments with the other beta args

@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAppEngine(base.UpdateCommand):
   """Update an App Engine queue.
 

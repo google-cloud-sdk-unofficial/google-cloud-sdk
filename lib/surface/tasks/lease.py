@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Lease(base.ListCommand):
   """Leases a list of tasks and displays them.
 

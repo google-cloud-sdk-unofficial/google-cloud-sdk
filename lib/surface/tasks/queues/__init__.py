@@ -15,6 +15,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Queues(base.Group):
   """Manage Cloud Tasks queues.
 

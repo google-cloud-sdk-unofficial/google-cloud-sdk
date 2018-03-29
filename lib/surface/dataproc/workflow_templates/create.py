@@ -27,7 +27,6 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     labels_util.AddCreateLabelsFlags(parser)
-    flags.AddZoneFlag(parser)
     flags.AddTemplateFlag(parser, 'create')
 
   def Run(self, args):

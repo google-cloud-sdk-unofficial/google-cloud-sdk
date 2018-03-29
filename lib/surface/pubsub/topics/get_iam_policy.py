@@ -17,7 +17,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a Cloud Pub/Sub Topic."""
 

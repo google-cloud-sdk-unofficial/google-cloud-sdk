@@ -57,15 +57,10 @@ def AddFlags(parser, is_ga):
         action='store_true',
         help='If provided, all global resources are shown.',
         default=False)
-    parser.add_argument(
-        '--accounts',
-        action='store_true',
-        help='If provided, all accounts resources are shown.',
-        default=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class ListGA(base.ListCommand):
+class List(base.ListCommand):
   """List Google Compute Engine operations."""
 
   @staticmethod
@@ -76,17 +71,12 @@ class ListGA(base.ListCommand):
     """Determine if the user provided any flags indicating scope."""
     no_compute_args = (args.zones is None and args.regions is None and
                        not getattr(args, 'global'))
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      return no_compute_args
-    else:
-      return no_compute_args and not args.accounts
+    return no_compute_args
 
   def Run(self, args):
     """Yields zonal, regional, and/or global resources."""
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    cua_holder = base_classes.ComputeUserAccountsApiHolder(self.ReleaseTrack())
     compute_client = compute_holder.client
-    cua_client = cua_holder.client
 
     # This is True if the user provided no flags indicating scope.
     no_scope_flags = self.NoArguments(args)
@@ -105,15 +95,6 @@ class ListGA(base.ListCommand):
                    filter=request_data.filter,
                    maxResults=request_data.max_results,
                    project=list(request_data.scope_set)[0].project)))
-      if self.ReleaseTrack() != base.ReleaseTrack.GA:
-        # Add a request to get all Compute Account operations.
-        requests.append(
-            (cua_client.globalAccountsOperations,
-             'List',
-             cua_client.globalAccountsOperations.GetRequestType('List')(
-                 filter=request_data.filter,
-                 maxResults=request_data.max_results,
-                 project=list(request_data.scope_set)[0].project)))
     else:
       if getattr(args, 'global'):
         requests.append(
@@ -187,15 +168,6 @@ class ListGA(base.ListCommand):
                        maxResults=request_data.max_results,
                        zone=zone_name,
                        project=list(request_data.scope_set)[0].project)))
-      if self.ReleaseTrack() != base.ReleaseTrack.GA and args.accounts:
-        requests.append(
-            (cua_client.globalAccountsOperations,
-             'List',
-             cua_client.globalAccountsOperations.GetRequestType('List')(
-                 filter=request_data.filter,
-                 maxResults=request_data.max_results,
-                 project=list(request_data.scope_set)[0].project)))
-
     errors = []
     results = list(
         request_helper.ListJson(
@@ -211,24 +183,23 @@ class ListGA(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListBeta(ListGA):
+class ListBeta(List):
   """List Google Compute Engine operations."""
 
   @staticmethod
   def Args(parser):
     AddFlags(parser, False)
 
-
-ListGA.detailed_help = base_classes.GetGlobalRegionalListerHelp('operations')
+List.detailed_help = base_classes.GetGlobalRegionalListerHelp('operations')
 ListBeta.detailed_help = {
     'brief': 'List Google Compute Engine operations',
     'DESCRIPTION': """\
         *{command}* displays all Google Compute Engine operations in a
         project.
 
-        By default, all global, regional, zonal and Compute Accounts operations
-        are listed. The results can be narrowed by providing combinations of
-        the --zones, --regions, --global and --accounts flags.
+        By default, all global, regional, and zonal operations are listed. The
+        results can be narrowed by providing combinations of the --zones,
+        --regions, and --global flags.
 
         Note: *{command}* displays operations fewer than 14 days old, up to a
         maximum of 5000.
@@ -259,9 +230,5 @@ ListBeta.detailed_help = {
         regions and all operations in the us-central1-a zone, run:
 
            $ {command} --zones us-central1-a --regions us-central1,europe-west1
-
-        To list all Compute Accounts operations, run:
-
-           $ {command} --accounts
         """,
 }

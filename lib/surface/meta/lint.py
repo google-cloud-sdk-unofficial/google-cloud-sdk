@@ -23,6 +23,8 @@ from googlecloudsdk.calliope import usage_text
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
+import six
+
 
 class UnknownCheckException(Exception):
   """An exception when unknown lint check is requested."""
@@ -141,7 +143,7 @@ class BadListsChecker(Checker):
             error_message=(
                 'flag [{flg}] has nargs={nargs}'.format(
                     flg=flag.option_strings[0],
-                    nargs=repr(flag.nargs)))))
+                    nargs="'{}'".format(six.text_type(flag.nargs))))))
       if isinstance(flag.type, arg_parsers.ArgDict):
         if not (flag.metavar or flag.type.spec):
           self._issues.append(

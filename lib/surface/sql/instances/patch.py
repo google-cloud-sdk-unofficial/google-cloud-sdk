@@ -110,6 +110,7 @@ def AddBaseArgs(parser):
       action='store_true',
       help=('Clear the list of external networks that are allowed to connect '
             'to the instance.'))
+  flags.AddAvailabilityType(parser)
   backups_group = parser.add_mutually_exclusive_group()
   flags.AddBackupStartTime(backups_group)
   backups_group.add_argument(
@@ -289,6 +290,5 @@ class PatchBeta(base.UpdateCommand):
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
-    flags.AddAvailabilityType(parser)
     flags.AddInstanceResizeLimit(parser)
     labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)

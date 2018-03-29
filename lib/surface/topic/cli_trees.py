@@ -73,14 +73,4 @@ class CliTrees(base.TopicCommand):
   ### CLI Tree Schema
 
   TBD (`gcloud interactive` is still in ALPHA).
-
-  ## EXAMPLES
-
-  To list the CLI trees in your project:
-
-      $ gcloud meta cli-trees list
-
-  To update the non-READONLY CLI trees in your project:
-
-      $ gcloud meta cli-trees update
   """

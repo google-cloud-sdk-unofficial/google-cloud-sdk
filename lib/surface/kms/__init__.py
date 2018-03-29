@@ -16,7 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CloudKms(base.Group):
   """Manage cryptographic keys in the cloud.
 

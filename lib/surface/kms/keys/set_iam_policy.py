@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.kms import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a key.
 

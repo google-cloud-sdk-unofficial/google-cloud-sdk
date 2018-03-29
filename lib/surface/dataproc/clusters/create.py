@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -26,7 +25,6 @@ from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 def _CommonArgs(parser, beta=False):
@@ -51,11 +49,6 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, beta=False)
-    parser.add_argument(
-        '--zone',
-        '-z',
-        help='The compute zone (e.g. us-central1-a) for the cluster.',
-        action=actions.StoreProperty(properties.VALUES.compute.zone))
 
   @staticmethod
   def ValidateArgs(args):
@@ -155,15 +148,6 @@ class CreateBeta(Create):
   def Args(parser):
     _CommonArgs(parser, beta=True)
     flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
-    parser.add_argument(
-        '--zone',
-        '-z',
-        help="""
-            The compute zone (e.g. us-central1-a) for the cluster. If empty,
-            and --region is set to a value other than 'global', the server will
-            pick a zone in the region.
-            """,
-        action=actions.StoreProperty(properties.VALUES.compute.zone))
 
     parser.add_argument(
         '--max-idle',

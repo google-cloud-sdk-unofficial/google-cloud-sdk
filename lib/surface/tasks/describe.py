@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Show details about a task."""
 

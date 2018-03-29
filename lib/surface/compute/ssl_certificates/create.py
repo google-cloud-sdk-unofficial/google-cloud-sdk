@@ -87,6 +87,7 @@ class Create(base.CreateCommand):
                                  'Insert', request)])
 
 
+@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.CreateCommand):
   """Create a Google Compute Engine SSL certificate.

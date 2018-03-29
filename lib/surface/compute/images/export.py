@@ -24,7 +24,6 @@ _DEFAULT_WORKFLOW = '../workflows/export/image_export.wf.json'
 _EXTERNAL_WORKFLOW = '../workflows/export/image_export_ext.wf.json'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Export(base.CreateCommand):
   """Export a Google Compute Engine image."""
 

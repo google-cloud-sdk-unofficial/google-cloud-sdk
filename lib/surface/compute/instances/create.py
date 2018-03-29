@@ -143,13 +143,19 @@ class Create(base.CreateCommand):
         support_network_tier=cls._support_network_tier,
         enable_kms=cls._support_kms,
     )
+    cls.SOURCE_INSTANCE_TEMPLATE = (
+        instances_flags.MakeSourceInstanceTemplateArg())
+    cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
 
   def Collection(self):
     return 'compute.instances'
 
   def GetSourceInstanceTemplate(self, args, resources):
     """Get sourceInstanceTemplate value as required by API."""
-    return None
+    if not args.IsSpecified('source_instance_template'):
+      return None
+    ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
+    return ref.SelfLink()
 
   def BuildShieldedVMConfigMessage(self, messages, args):
     # Set the default values for ShieledVmConfig parameters
@@ -523,12 +529,6 @@ class CreateBeta(Create):
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
-
-  def GetSourceInstanceTemplate(self, args, resources):
-    if not args.IsSpecified('source_instance_template'):
-      return None
-    ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
-    return ref.SelfLink()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

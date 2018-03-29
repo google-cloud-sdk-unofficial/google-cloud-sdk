@@ -22,6 +22,7 @@ from googlecloudsdk.core import log
 
 
 # TODO(b/64460484): Add descriptions of App Engine vs. pull queues.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreatePull(base.CreateCommand):
   """Create and add a task to a pull queue."""
 

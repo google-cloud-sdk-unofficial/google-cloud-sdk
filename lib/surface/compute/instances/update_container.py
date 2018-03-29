@@ -228,7 +228,7 @@ class UpdateContainer(base.UpdateCommand):
         '--container-restart-policy',
         choices=['never', 'on-failure', 'always'],
         metavar='POLICY',
-        type=str.lower,
+        type=lambda val: val.lower(),
         help="""\
         Sets container restart policy to the specified value.
         """)

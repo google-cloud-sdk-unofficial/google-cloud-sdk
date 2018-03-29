@@ -34,7 +34,7 @@ def _AddSubmitTrainingArgs(parser):
   flags.GetUserArgs(local=False).AddToParser(parser)
   jobs_util.ScaleTierFlagMap().choice_arg.AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
-  flags.PYTHON_VERSION.AddToParser(parser)
+  flags.AddPythonVersionFlag(parser, 'during training')
 
   sync_group = parser.add_mutually_exclusive_group()
   # TODO(b/36195821): Use the flag deprecation machinery when it supports the

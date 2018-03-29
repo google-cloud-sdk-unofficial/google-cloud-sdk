@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Resume(base.Command):
   """Request to resume a paused or disabled queue."""
 

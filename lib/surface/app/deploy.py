@@ -101,7 +101,8 @@ class DeployBeta(base.SilentCommand):
         use_beta_stager=True,
         runtime_builder_strategy=runtime_builder_strategy,
         parallel_build=True,
-        flex_image_build_option=deploy_util.GetFlexImageBuildOption())
+        flex_image_build_option=deploy_util.GetFlexImageBuildOption(
+            default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER))
 
 
 DeployGA.detailed_help = _DETAILED_HELP

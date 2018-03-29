@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a queue.
 

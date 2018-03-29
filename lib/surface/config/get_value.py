@@ -13,12 +13,17 @@
 # limitations under the License.
 """Command to set properties."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
+
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -78,7 +83,7 @@ class GetValue(base.Command):
         log.err.Print('(unset)')
     except properties.InvalidValueError as e:
       # Writing warning to stderr but returning invalid value as is
-      log.warning(str(e))
+      log.warning(six.text_type(e))
       value = properties.VALUES.Section(section).Property(prop).Get(
           validate=False)
     return value

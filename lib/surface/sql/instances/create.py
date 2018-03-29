@@ -43,6 +43,7 @@ def AddBaseArgs(parser):
   flags.AddAssignIp(parser, show_negated_in_help=False)
   flags.AddAuthorizedGAEApps(parser)
   flags.AddAuthorizedNetworks(parser)
+  flags.AddAvailabilityType(parser)
   parser.add_argument(
       '--backup',
       required=False,
@@ -271,6 +272,5 @@ class CreateBeta(base.Command):
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
-    flags.AddAvailabilityType(parser)
     flags.AddInstanceResizeLimit(parser)
     labels_util.AddCreateLabelsFlags(parser)

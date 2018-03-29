@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a task from a queue."""
 

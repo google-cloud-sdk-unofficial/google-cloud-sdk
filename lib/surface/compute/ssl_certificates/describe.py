@@ -18,6 +18,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 
 
+@base.UnicodeIsSupported
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine SSL certificate.
 
