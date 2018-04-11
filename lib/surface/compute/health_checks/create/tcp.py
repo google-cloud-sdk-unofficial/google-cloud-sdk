@@ -18,6 +18,42 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
+def _Run(args, holder, supports_port_specification=False):
+  """Issues the request necessary for adding the health check."""
+  client = holder.client
+  messages = client.messages
+
+  health_check_ref = flags.HealthCheckArgument('TCP').ResolveAsResource(
+      args, holder.resources)
+  proxy_header = messages.TCPHealthCheck.ProxyHeaderValueValuesEnum(
+      args.proxy_header)
+  tcp_health_check = messages.TCPHealthCheck(
+      request=args.request,
+      response=args.response,
+      port=args.port,
+      portName=args.port_name,
+      proxyHeader=proxy_header)
+
+  if supports_port_specification:
+    health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
+        args, tcp_health_check)
+
+  request = messages.ComputeHealthChecksInsertRequest(
+      healthCheck=messages.HealthCheck(
+          name=health_check_ref.Name(),
+          description=args.description,
+          type=messages.HealthCheck.TypeValueValuesEnum.TCP,
+          tcpHealthCheck=tcp_health_check,
+          checkIntervalSec=args.check_interval,
+          timeoutSec=args.timeout,
+          healthyThreshold=args.healthy_threshold,
+          unhealthyThreshold=args.unhealthy_threshold),
+      project=health_check_ref.project)
+  return client.MakeRequests(
+      [(client.apitools_client.healthChecks, 'Insert', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a TCP health check to monitor load balanced instances.
 
@@ -28,42 +64,42 @@ class Create(base.CreateCommand):
   [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
   """
 
-  HEALTH_CHECK_ARG = None
-
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('TCP')
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='create')
+    flags.HealthCheckArgument('TCP').AddArgument(parser,
+                                                 operation_type='create')
     health_checks_utils.AddTcpRelatedCreationArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'TCP')
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    return _Run(args, holder)
 
-    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, holder.resources)
-    proxy_header = client.messages.TCPHealthCheck.ProxyHeaderValueValuesEnum(
-        args.proxy_header)
-    request = client.messages.ComputeHealthChecksInsertRequest(
-        healthCheck=client.messages.HealthCheck(
-            name=health_check_ref.Name(),
-            description=args.description,
-            type=client.messages.HealthCheck.TypeValueValuesEnum.TCP,
-            tcpHealthCheck=client.messages.TCPHealthCheck(
-                request=args.request,
-                response=args.response,
-                port=args.port,
-                portName=args.port_name,
-                proxyHeader=proxy_header),
-            checkIntervalSec=args.check_interval,
-            timeoutSec=args.timeout,
-            healthyThreshold=args.healthy_threshold,
-            unhealthyThreshold=args.unhealthy_threshold,
-        ),
-        project=health_check_ref.project)
 
-    return client.MakeRequests([(client.apitools_client.healthChecks, 'Insert',
-                                 request)])
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a TCP health check to monitor load balanced instances."""
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    health_checks_utils.AddPortSpecificationFlag(parser)
+
+  def Run(self, args):
+    """Issues the request necessary for adding the health check."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return _Run(args, holder, supports_port_specification=True)
+
+
+Create.detailed_help = {
+    'brief': 'Create a TCP health check to monitor load balanced instances.',
+    'DESCRIPTION': """\
+        *{command}* is used to create a TCP health check. TCP health checks
+        monitor instances in a load balancer controlled by a target pool. All
+        arguments to the command are optional except for the name of the health
+        check. For more information on load balancing, see
+        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+        """,
+}

@@ -9,7 +9,7 @@ request:
   collection: language.documents
   api_version: v1
   modify_request_hooks:
-    - googlecloudsdk.command_lib.ml.language.language_command_util:AddContentToRequest
+    - googlecloudsdk.command_lib.ml.language.util:UpdateRequestWithInput
 
 args:
   content:

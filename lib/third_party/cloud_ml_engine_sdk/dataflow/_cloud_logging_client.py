@@ -70,8 +70,14 @@ class MLCloudLoggingClient(object):
     self._logger_name = logger_name
 
   def write_error_message(self, error_message, input_snippet):
-    """Create an error mess and input snippet to cloud logging."""
-    error_message = unicode(error_message, errors="replace")
+    """Create an error message and input snippet to cloud logging."""
+    if not isinstance(error_message, unicode):
+      try:
+        error_message = unicode(error_message)
+      except UnicodeDecodeError as e:
+        error_message = "Cannot decode error messages."
+        logging.warning("%s %s", error_message, str(e))
+
     log_entry = {
         _MESSAGE_KEY: error_message,
         _ERROR_MESSAGE_KEY: {

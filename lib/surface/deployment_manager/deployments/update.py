@@ -299,14 +299,14 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
     else:
       op_name = operation.name
       try:
-        dm_write.WaitForOperation(self.client,
-                                  self.messages,
-                                  op_name,
-                                  'update',
-                                  dm_base.GetProject(),
-                                  timeout=OPERATION_TIMEOUT)
-        log.status.Print('Update operation ' + op_name
-                         + ' completed successfully.')
+        operation = dm_write.WaitForOperation(
+            self.client,
+            self.messages,
+            op_name,
+            'update',
+            dm_base.GetProject(),
+            timeout=OPERATION_TIMEOUT)
+        dm_util.LogOperationStatus(operation, 'Update')
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, dm_api_util.HTTP_ERROR_FORMAT)
 

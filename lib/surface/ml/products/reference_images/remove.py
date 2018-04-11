@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """gcloud ml products reference-images remove command."""
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.ml.products import product_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml.products import flags

@@ -13,6 +13,9 @@
 # limitations under the License.
 """Command for spanner databases query."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
@@ -63,7 +66,7 @@ class Query(base.Command):
     parser.add_argument(
         '--query-mode',
         default='NORMAL',
-        type=str.upper,
+        type=lambda x: x.upper(),
         choices=query_mode_choices,
         help='Mode in which the query must be processed.')
 

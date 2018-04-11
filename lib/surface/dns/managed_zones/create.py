@@ -31,6 +31,7 @@ def _AddArgsCommon(parser, messages):
   flags.GetManagedZonesDnsNameArg().AddToParser(parser)
   flags.GetManagedZonesDescriptionArg(required=True).AddToParser(parser)
   flags.AddCommonManagedZonesDnssecArgs(parser, messages)
+  labels_util.AddCreateLabelsFlags(parser)
 
 
 def _MakeDnssecConfig(args, messages):
@@ -82,10 +83,13 @@ class Create(base.CreateCommand):
 
     dnssec_config = _MakeDnssecConfig(args, messages)
 
+    labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
+
     zone = messages.ManagedZone(name=zone_ref.managedZone,
                                 dnsName=util.AppendTrailingDot(args.dns_name),
                                 description=args.description,
-                                dnssecConfig=dnssec_config)
+                                dnssecConfig=dnssec_config,
+                                labels=labels)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
@@ -118,7 +122,6 @@ class CreateBeta(base.CreateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     dns = apis.GetClientInstance('dns', 'v1beta2')

@@ -1,12 +1,28 @@
-args:
+args_v1:
   - api_field: audio
     arg_name: audio
     help_text: |
       The location of the audio file to transcribe. Must be a local path or a
       Google Cloud Storage URL (in the format gs://bucket/object).
     is_positional: True
-    processor: googlecloudsdk.api_lib.ml.speech.speech_api_client:GetAudio
+    processor: googlecloudsdk.command_lib.ml.speech.util:GetAudioHook:version=v1
 
+args_v1p1beta1:
+  - api_field: audio
+    arg_name: audio
+    help_text: |
+      The location of the audio file to transcribe. Must be a local path or a
+      Google Cloud Storage URL (in the format gs://bucket/object).
+    is_positional: True
+    processor: googlecloudsdk.command_lib.ml.speech.util:GetAudioHook:version=v1p1beta1
+
+  - api_field: config.enableWordConfidence
+    arg_name: include-word-confidence
+    help_text: |
+        Include a list of words and the confidence for those words in the top
+        result.
+
+args:
   - group:
       mutex: True
       required: True

@@ -192,14 +192,14 @@ class Create(base.CreateCommand, dm_base.DmCommand):
     else:
       op_name = operation.name
       try:
-        dm_write.WaitForOperation(self.client,
-                                  self.messages,
-                                  op_name,
-                                  operation_description='create',
-                                  project=dm_base.GetProject(),
-                                  timeout=OPERATION_TIMEOUT)
-        log.status.Print('Create operation ' + op_name
-                         + ' completed successfully.')
+        operation = dm_write.WaitForOperation(
+            self.client,
+            self.messages,
+            op_name,
+            operation_description='create',
+            project=dm_base.GetProject(),
+            timeout=OPERATION_TIMEOUT)
+        dm_util.LogOperationStatus(operation, 'Create')
       except apitools_exceptions.HttpError as error:
         # TODO(b/37911296): Use gcloud default error handling.
         raise exceptions.HttpException(error, dm_api_util.HTTP_ERROR_FORMAT)

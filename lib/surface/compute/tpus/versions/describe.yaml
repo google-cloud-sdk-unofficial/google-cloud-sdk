@@ -14,4 +14,4 @@
   arguments:
     resource:
       help_text: The Tensorflow version you want to describe.
-      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:tesnorflow_version
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:tensorflowversion

@@ -19,55 +19,62 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
+def _Run(args, holder, supports_response=False,
+         supports_port_specification=False):
+  """Issues the request necessary for adding the health check."""
+  client = holder.client
+  messages = client.messages
+
+  health_check_ref = flags.HealthCheckArgument('HTTPS').ResolveAsResource(
+      args, holder.resources)
+  proxy_header = messages.HTTPSHealthCheck.ProxyHeaderValueValuesEnum(
+      args.proxy_header)
+
+  https_health_check = messages.HTTPSHealthCheck(
+      host=args.host,
+      port=args.port,
+      portName=args.port_name,
+      requestPath=args.request_path,
+      proxyHeader=proxy_header)
+
+  if supports_response:
+    https_health_check.response = args.response
+  if supports_port_specification:
+    health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
+        args, https_health_check)
+
+  request = messages.ComputeHealthChecksInsertRequest(
+      healthCheck=messages.HealthCheck(
+          name=health_check_ref.Name(),
+          description=args.description,
+          type=messages.HealthCheck.TypeValueValuesEnum.HTTPS,
+          httpsHealthCheck=https_health_check,
+          checkIntervalSec=args.check_interval,
+          timeoutSec=args.timeout,
+          healthyThreshold=args.healthy_threshold,
+          unhealthyThreshold=args.unhealthy_threshold),
+      project=health_check_ref.project)
+  return client.MakeRequests(
+      [(client.apitools_client.healthChecks, 'Insert', request)])
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a HTTPS health check to monitor load balanced instances."""
 
-  HEALTH_CHECK_ARG = None
-
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTPS')
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='create')
+    flags.HealthCheckArgument('HTTPS').AddArgument(parser,
+                                                   operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTPS')
     parser.display_info.AddCacheUpdater(completers.HttpsHealthChecksCompleter)
 
-  def CustomizeRequest(self, args, request):
-    """Allow subclasses to customize request just before executing it."""
-    _ = args
-    return request
-
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, holder.resources)
-    proxy_header = client.messages.HTTPSHealthCheck.ProxyHeaderValueValuesEnum(
-        args.proxy_header)
-    request = client.messages.ComputeHealthChecksInsertRequest(
-        healthCheck=client.messages.HealthCheck(
-            name=health_check_ref.Name(),
-            description=args.description,
-            type=client.messages.HealthCheck.TypeValueValuesEnum.HTTPS,
-            httpsHealthCheck=client.messages.HTTPSHealthCheck(
-                host=args.host,
-                port=args.port,
-                portName=args.port_name,
-                requestPath=args.request_path,
-                proxyHeader=proxy_header),
-            checkIntervalSec=args.check_interval,
-            timeoutSec=args.timeout,
-            healthyThreshold=args.healthy_threshold,
-            unhealthyThreshold=args.unhealthy_threshold,
-        ),
-        project=health_check_ref.project)
-
-    return client.MakeRequests([(client.apitools_client.healthChecks, 'Insert',
-                                 self.CustomizeRequest(args, request))])
+    return _Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -78,13 +85,14 @@ class CreateAlpha(Create):
   def Args(parser):
     Create.Args(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
+    health_checks_utils.AddPortSpecificationFlag(parser)
     parser.display_info.AddCacheUpdater(completers.HttpsHealthChecksCompleter)
 
-  def CustomizeRequest(self, args, request):
-    """Initialize httpsHealthCheck response field."""
-
-    request.healthCheck.httpsHealthCheck.response = args.response
-    return request
+  def Run(self, args):
+    """Issues the request necessary for adding the health check."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return _Run(
+        args, holder, supports_response=True, supports_port_specification=True)
 
 
 Create.detailed_help = {

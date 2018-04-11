@@ -67,7 +67,7 @@ class List(base.ListCommand):
 
     parser.display_info.AddFormat("""
           table(
-            serviceName:label=NAME,
+            serviceName:label=NAME:sort=1,
             serviceConfig.title
           )
         """)

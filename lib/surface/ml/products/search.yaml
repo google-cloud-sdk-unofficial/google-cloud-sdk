@@ -33,7 +33,7 @@
           directly to Google Cloud Vision. If you provide a URL, it must be in
           Google Cloud Storage format (gs://bucket/object) or an HTTP URL
           (http://... or https://...)
-        processor: googlecloudsdk.api_lib.ml.products.product_util:GetImageFromPath
+        processor: googlecloudsdk.command_lib.ml.products.util:GetImageFromPath
 
       - api_field: requests.imageContext.productSearchParams.productCategory
         arg_name: category

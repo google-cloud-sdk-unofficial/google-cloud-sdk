@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Cloud Pub/Sub topics publish command."""
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import flags
@@ -19,6 +24,7 @@ from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projector
+from googlecloudsdk.core.util import http_encoding
 
 
 def _Run(args, message_body, legacy_output=False):
@@ -28,7 +34,8 @@ def _Run(args, message_body, legacy_output=False):
   attributes = util.ParseAttributes(args.attribute, messages=client.messages)
   topic_ref = args.CONCEPTS.topic.Parse()
 
-  result = client.Publish(topic_ref, message_body, attributes)
+  result = client.Publish(
+      topic_ref, http_encoding.Encode(message_body), attributes)
 
   if legacy_output:
     # We only allow to publish one message at a time, so do not return a

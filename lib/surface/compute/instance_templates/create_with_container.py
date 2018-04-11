@@ -74,6 +74,7 @@ class CreateWithContainer(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser, base.ReleaseTrack.BETA)
+    instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   def _ValidateBetaArgs(self, args):
     instances_flags.ValidateKonletArgs(args)
@@ -112,9 +113,8 @@ class CreateWithContainer(base.CreateCommand):
         region=args.region,
         subnet=args.subnet,
         address=(instance_template_utils.EPHEMERAL_ADDRESS
-                 if not args.no_address and not args.address
-                 else args.address),
-    )
+                 if not args.no_address and not args.address else args.address),
+        network_tier=getattr(args, 'network_tier', None))
 
   def _GetScheduling(self, args, client):
     return instance_utils.CreateSchedulingMessage(
@@ -174,6 +174,7 @@ class CreateWithContainer(base.CreateCommand):
       an InstanceTemplate message object
     """
     self._ValidateBetaArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -251,19 +252,6 @@ class CreateWithContainerAlpha(CreateWithContainer):
   def Args(parser):
     _Args(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
-
-  def _GetNetworkInterface(self, args, client, holder):
-    return instance_template_utils.CreateNetworkInterfaceMessage(
-        resources=holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(client),
-        messages=client.messages,
-        network=args.network,
-        region=args.region,
-        subnet=args.subnet,
-        address=(instance_template_utils.EPHEMERAL_ADDRESS
-                 if not args.no_address and not args.address
-                 else args.address),
-        network_tier=getattr(args, 'network_tier', None))
 
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.

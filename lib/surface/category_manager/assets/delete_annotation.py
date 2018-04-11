@@ -31,7 +31,7 @@ class DeleteAnnotation(base.Command):
   def Args(parser):
     """Register flags for this command."""
     concept_parsers.ConceptParser(
-        [flags.CreateAssetResourceArg(),
+        [flags.CreateAssetResourceArg(positional=True),
          flags.CreateAnnotationResourceArg()]).AddToParser(parser)
     flags.AddSubAssetFlag(parser)
 

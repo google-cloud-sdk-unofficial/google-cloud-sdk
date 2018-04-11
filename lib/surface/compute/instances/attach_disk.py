@@ -69,7 +69,7 @@ def _CommonArgs(parser):
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AttachDisk(base.SilentCommand):
   """Attach a disk to an instance."""
 
@@ -118,15 +118,15 @@ class AttachDisk(base.SilentCommand):
             diskEncryptionKey=disk_key_or_none),
         zone=instance_ref.zone)
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if self.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
       request.forceAttach = args.force_attach
 
     return client.MakeRequests([(client.apitools_client.instances, 'AttachDisk',
                                  request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AttachDiskAlpha(AttachDisk):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class AttachDiskAlphaBeta(AttachDisk):
   """Attach a disk to an instance."""
 
   @staticmethod
@@ -136,13 +136,11 @@ class AttachDiskAlpha(AttachDisk):
         '--force-attach',
         default=False,
         action='store_true',
-        hidden=True,
         help="""\
-Attach the disk to the instance even if there is another instance currently
-attached to it. The server will attempt to detach the disk cleanly from the
-existing instance but will force attach to the new instance if that's not
-possible and will continue to try to detach from the previous instance in the
-background.""")
+Attach the disk to the instance even if it is currently attached to another
+instance. The attachment will succeed even if detaching from the previous
+instance fails at first. The server will continue trying to detach the disk from
+the previous instance in the background.""")
     _CommonArgs(parser)
 
   def ParseDiskRef(self, resources, args, instance_ref):
@@ -157,4 +155,3 @@ background.""")
 
 
 AttachDisk.detailed_help = DETAILED_HELP
-AttachDiskAlpha.detailed_help = DETAILED_HELP

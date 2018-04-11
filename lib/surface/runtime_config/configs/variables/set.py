@@ -14,13 +14,18 @@
 
 """The configs variables set command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import sys
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.runtime_config import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.runtime_config import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import http_encoding
 
 
 class Set(base.CreateCommand):
@@ -155,7 +160,7 @@ class Set(base.CreateCommand):
             parent=util.ConfigPath(project, config),
             variable=messages.Variable(
                 name=var_resource.RelativeName(),
-                value=value if not args.is_text else None,
+                value=http_encoding.Encode(value) if not args.is_text else None,
                 text=value if args.is_text else None,
             )
         )
@@ -171,7 +176,7 @@ class Set(base.CreateCommand):
     result = variable_client.Update(
         messages.Variable(
             name=var_resource.RelativeName(),
-            value=value if not args.is_text else None,
+            value=http_encoding.Encode(value) if not args.is_text else None,
             text=value if args.is_text else None,
         )
     )

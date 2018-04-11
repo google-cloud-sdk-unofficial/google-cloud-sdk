@@ -25,6 +25,8 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
+from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
 _INSTANTIATE_FROM_VALUES = [
@@ -42,7 +44,8 @@ def _CommonArgs(parser,
                 support_create_disk=False,
                 support_network_tier=False,
                 support_local_ssd_size=False,
-                support_shielded_vms=False
+                support_shielded_vms=False,
+                support_sole_tenancy=False
                ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -72,9 +75,10 @@ def _CommonArgs(parser,
   if support_shielded_vms:
     instances_flags.AddShieldedVMConfigArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
-
   if support_network_tier:
     instances_flags.AddNetworkTierArgs(parser, instance=True)
+  if support_sole_tenancy:
+    sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
   flags.AddRegionFlag(
       parser,
@@ -223,7 +227,8 @@ def _RunCreate(compute_api,
                args,
                support_source_instance,
                support_network_tier=False,
-               support_shielded_vms=False):
+               support_shielded_vms=False,
+               support_node_affinity=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -236,6 +241,7 @@ def _RunCreate(compute_api,
       support_network_tier: Indicates whether network tier is supported or not.
       support_shielded_vms: Indicate whether a shielded vm config is supported
       or not.
+      support_node_affinity: Indicate whether node affinity is supported or not.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -289,11 +295,17 @@ def _RunCreate(compute_api,
         messages=client.messages,
         args=args)
 
+  node_affinities = None
+  if support_node_affinity:
+    node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
+        args, client.messages)
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
       preemptible=args.preemptible,
-      restart_on_failure=args.restart_on_failure)
+      restart_on_failure=args.restart_on_failure,
+      node_affinities=node_affinities)
 
   if args.no_service_account:
     service_account = None
@@ -478,7 +490,7 @@ class CreateBeta(Create):
         parser,
         release_track=base.ReleaseTrack.BETA,
         support_create_disk=True,
-        support_network_tier=False,
+        support_network_tier=True,
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
     )
@@ -497,7 +509,7 @@ class CreateBeta(Create):
     return _RunCreate(
         base_classes.ComputeApiHolder(base.ReleaseTrack.BETA),
         args=args,
-        support_network_tier=False,
+        support_network_tier=True,
         support_source_instance=self._support_source_instance,
     )
 
@@ -529,6 +541,7 @@ class CreateAlpha(Create):
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
         support_shielded_vms=cls._support_shielded_vms,
+        support_sole_tenancy=True,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
@@ -548,4 +561,5 @@ class CreateAlpha(Create):
         support_network_tier=True,
         support_source_instance=self._support_source_instance,
         support_shielded_vms=self._support_shielded_vms,
+        support_node_affinity=True
     )

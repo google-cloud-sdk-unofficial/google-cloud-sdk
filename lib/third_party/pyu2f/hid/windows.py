@@ -14,7 +14,6 @@
 
 """Implements raw HID device communication on Windows."""
 
-from builtins import map
 import ctypes
 from ctypes import wintypes
 
@@ -48,7 +47,6 @@ elif platform.architecture()[0] == "32bit":
   SETUPAPI_PACK = 1
 else:
   raise errors.HidError("Unknown architecture: %s" % platform.architecture()[0])
-
 
 class DeviceInterfaceData(ctypes.Structure):
   _fields_ = [("cbSize", wintypes.DWORD),
@@ -86,19 +84,19 @@ HANDLE = ctypes.c_void_p
 PHIDP_PREPARSED_DATA = ctypes.c_void_p  # pylint: disable=invalid-name
 
 # This is a HANDLE.
-INVALID_HANDLE_VALUE = 0xffffffff
+INVALID_HANDLE_VALUE = 0xffffffffL
 
 # Status codes
 NTSTATUS = ctypes.c_long
-HIDP_STATUS_SUCCESS = 0x00110000
-FILE_SHARE_READ = 0x00000001
-FILE_SHARE_WRITE = 0x00000002
+HIDP_STATUS_SUCCESS = 0x00110000L
+FILE_SHARE_READ = 0x00000001L
+FILE_SHARE_WRITE = 0x00000002L
 OPEN_EXISTING = 0x03
 ERROR_ACCESS_DENIED = 0x05
 
 # CreateFile Flags
-GENERIC_WRITE = 0x40000000
-GENERIC_READ = 0x80000000
+GENERIC_WRITE = 0x40000000L
+GENERIC_READ = 0x80000000L
 
 # Function signatures
 hid.HidD_GetHidGuid.restype = None
@@ -337,8 +335,7 @@ class WindowsHidDevice(base.HidDevice):
     if len(packet) != self.GetOutReportDataLength():
       raise errors.HidError("Packet length must match report data length.")
 
-    packet_data = [0] + packet  # Prepend the zero-byte (report ID)
-    out = bytes(bytearray(packet_data))
+    out = "".join(map(chr, [0] + packet))  # Prepend the zero-byte (report ID)
     num_written = wintypes.DWORD()
     ret = (
         kernel32.WriteFile(
@@ -366,9 +363,4 @@ class WindowsHidDevice(base.HidDevice):
 
     # Convert the string buffer to a list of numbers.  Throw away the first
     # byte, which is the report id (which we don't care about).
-    return list(bytearray(buf[1:]))
-
-  def __del__(self):
-    """Closes the file handle when object is GC-ed."""
-    if hasattr(self, 'dev'):
-      kernel32.CloseHandle(self.dev)
+    return map(ord, buf)[1:]

@@ -12,7 +12,7 @@
     static_fields:
       features: [LABEL_DETECTION]
     modify_request_hooks:
-      - googlecloudsdk.api_lib.ml.video.video_client:_UpdateRequestWithInput
+      - googlecloudsdk.command_lib.ml.video.util:UpdateRequestWithInput
 
   async:
     _COMMON_: async

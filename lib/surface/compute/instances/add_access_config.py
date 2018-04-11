@@ -142,7 +142,7 @@ class AddAccessConfigInstancesBeta(AddAccessConfigInstances):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
-  _support_network_tier = False
+  _support_network_tier = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

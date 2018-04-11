@@ -182,7 +182,10 @@ class PredictionDoFn(beam.DoFn):
     """Truncate the input data to create a snippet."""
     try:
       input_snippet = "\n".join(str(x) for x in input_data)
-      return unicode(input_snippet[:LOG_SIZE_LIMIT], errors="replace")
+      if isinstance(input_snippet, unicode):
+        return input_snippet[:LOG_SIZE_LIMIT]
+      else:
+        return unicode(input_snippet[:LOG_SIZE_LIMIT], errors="replace")
     except Exception:  # pylint: disable=broad-except
       logging.warning("Failed to create snippet from input: [%s].",
                       traceback.format_exc())

@@ -32,7 +32,7 @@ args:
       directly to Google Cloud Vision. If you provide a URL, it must be in
       Google Cloud Storage format (gs://bucket/object) or an HTTP URL
       (http://... or https://...)
-    processor: googlecloudsdk.api_lib.ml.vision.util:GetImageFromPath
+    processor: googlecloudsdk.command_lib.ml.vision.util:GetImageFromPath
 
   language_hints_field:
     api_field: requests.imageContext.languageHints
@@ -43,3 +43,11 @@ args:
     api_field: requests.features.maxResults
     arg_name: max-results
     help_text: The maximum number of results to be provided.
+
+  model_field:
+    api_field: requests.features.model
+    arg_name: model-version
+    default: builtin/stable
+    help_text: >
+      The model version to use for the feature. Supported values include
+      "builtin/stable" and "builtin/latest".

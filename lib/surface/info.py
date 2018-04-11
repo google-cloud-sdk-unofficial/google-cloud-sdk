@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib import info_holder
 from googlecloudsdk.core import log
 from googlecloudsdk.core.diagnostics import network_diagnostics
-from googlecloudsdk.core.util import platforms
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -59,12 +58,6 @@ class Info(base.Command):
     holder = info_holder.InfoHolder(
         anonymizer=info_holder.Anonymizer()
         if args.anonymize else info_holder.NoopAnonymizer())
-    python_version = platforms.PythonVersion()
-    if not python_version.IsSupported():
-      log.warning(
-          'Only Python version {0} is supported for the Cloud SDK. Many '
-          'commands will work with a previous version, but not all.'.format(
-              python_version.MinSupportedVersionString()))
     return holder
 
   def Display(self, args, info):

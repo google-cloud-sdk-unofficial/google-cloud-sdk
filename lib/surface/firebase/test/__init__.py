@@ -49,7 +49,9 @@ class Test(base.Group):
     endpoints.ValidateTestServiceEndpoints()
 
     # Create the client for the Testing service.
-    context['testing_client'] = apis.GetClientInstance('testing', 'v1')
+    testing_client = apis.GetClientInstance('testing', 'v1')
+    testing_client.num_retries = 9  # Add extra retries due to b/76429898.
+    context['testing_client'] = testing_client
     context['testing_messages'] = apis.GetMessagesModule('testing', 'v1')
 
     # Create the client for the Tool Results service.

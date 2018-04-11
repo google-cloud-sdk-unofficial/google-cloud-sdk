@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.compute.flags import GetDefaultScopeLister
 from googlecloudsdk.command_lib.compute.scope import ScopeEnum
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine disk type."""
 
@@ -50,6 +50,15 @@ class Describe(base.DescribeCommand):
         **disk_type.AsDict()))])[0]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+
+  @staticmethod
+  def Args(parser):
+    Describe.DiskTypeArg = flags.MakeDiskTypeArg(regional=True)
+    Describe.DiskTypeArg.AddArgument(parser, operation_type='describe')
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
 
@@ -65,4 +74,3 @@ Describe.detailed_help = {
         Engine disk type.
         """,
 }
-DescribeAlpha.detailed_help = Describe.detailed_help

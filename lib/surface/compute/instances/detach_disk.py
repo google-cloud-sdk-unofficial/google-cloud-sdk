@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class DetachDisk(base.UpdateCommand):
   """Detach disks from Compute Engine virtual machine instances.
 
@@ -152,8 +152,8 @@ class DetachDisk(base.UpdateCommand):
         [self.GetSetRequest(client, instance_ref, new_object, objects[0])])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DetachDiskAlpha(DetachDisk):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DetachDiskAlphaBeta(DetachDisk):
 
   @staticmethod
   def Args(parser):
@@ -170,4 +170,4 @@ class DetachDiskAlpha(DetachDisk):
                                             instance_ref.zone,
                                             scope)
 
-DetachDiskAlpha.__doc__ = DetachDisk.__doc__
+DetachDiskAlphaBeta.__doc__ = DetachDisk.__doc__

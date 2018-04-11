@@ -17,5 +17,9 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command group is deprecated. Please use '
+             '`gcloud alpha compute sole-tenancy node-groups` instead.'))
 class SoleTenancyHosts(base.Group):
   """Read and manage Google Compute Engine sole-tenancy hosts."""

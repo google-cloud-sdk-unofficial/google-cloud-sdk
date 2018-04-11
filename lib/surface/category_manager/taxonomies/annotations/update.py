@@ -19,8 +19,7 @@ from __future__ import print_function
 from googlecloudsdk.api_lib.category_manager import annotations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.category_manager import flags
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 class Update(base.Command):
@@ -29,9 +28,11 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddAnnotationAnnotation(parser)
-    flags.AddTaxonomyResourceArg(parser, positional=False)
-    flags.AddDescriptionFlag(parser, required=True)
+    concept_parsers.ConceptParser(
+        [flags.CreateAnnotationResourceArg(positional=True)]
+    ).AddToParser(parser)
+    update_group = parser.add_group(required=True)
+    flags.AddDescriptionFlag(update_group, required=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -43,10 +44,5 @@ class Update(base.Command):
     Returns:
       Status of command execution.
     """
-    annotation_resource = resources.REGISTRY.Create(
-        collection='categorymanager.projects.taxonomies.annotations',
-        projectsId=properties.VALUES.core.project.GetOrFail(),
-        taxonomiesId=args.taxonomy,
-        annotationsId=args.annotation)
-    description = args.description
-    return annotations.UpdateAnnotation(annotation_resource, description)
+    annotation_ref = args.CONCEPTS.annotation.Parse()
+    return annotations.UpdateAnnotation(annotation_ref, args.description)

@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
-from googlecloudsdk.core import log
 
 
 # Number of seconds (approximately) to wait for cancel operation to complete.
@@ -125,14 +124,14 @@ class CancelPreview(base.Command, dm_base.DmCommand):
     else:
       op_name = operation.name
       try:
-        dm_write.WaitForOperation(self.client,
-                                  self.messages,
-                                  op_name,
-                                  'cancel-preview',
-                                  dm_base.GetProject(),
-                                  timeout=OPERATION_TIMEOUT)
-        log.status.Print('Cancel preview operation ' + op_name
-                         + ' completed successfully.')
+        operation = dm_write.WaitForOperation(
+            self.client,
+            self.messages,
+            op_name,
+            'cancel-preview',
+            dm_base.GetProject(),
+            timeout=OPERATION_TIMEOUT)
+        dm_util.LogOperationStatus(operation, 'Cancel preview')
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, dm_api_util.HTTP_ERROR_FORMAT)
       try:

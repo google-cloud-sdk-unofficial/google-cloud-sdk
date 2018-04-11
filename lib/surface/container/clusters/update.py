@@ -178,7 +178,8 @@ class Update(base.UpdateCommand):
     _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.GA)
     flags.AddNodeLocationsFlag(group_locations)
     flags.AddClusterAutoscalingFlags(parser, group)
-    flags.AddMasterAuthorizedNetworksFlags(parser, group)
+    flags.AddMasterAuthorizedNetworksFlags(parser,
+                                           enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
@@ -360,7 +361,8 @@ class UpdateBeta(Update):
     group_locations = group.add_mutually_exclusive_group()
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
-    flags.AddMasterAuthorizedNetworksFlags(parser, group)
+    flags.AddMasterAuthorizedNetworksFlags(parser,
+                                           enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
@@ -390,7 +392,8 @@ class UpdateAlpha(Update):
     group_locations = group.add_mutually_exclusive_group()
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
-    flags.AddMasterAuthorizedNetworksFlags(parser, group)
+    flags.AddMasterAuthorizedNetworksFlags(parser,
+                                           enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)

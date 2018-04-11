@@ -22,10 +22,10 @@ from googlecloudsdk.api_lib.deployment_manager import exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.deployment_manager import dm_util
 from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.command_lib.deployment_manager import flags
 from googlecloudsdk.core import exceptions as core_exceptions
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
@@ -121,14 +121,14 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
           op_name = operation.name
           try:
             # TODO(b/62720778): Refactor to use waiter.CloudOperationPoller
-            dm_write.WaitForOperation(self.client,
-                                      self.messages,
-                                      op_name,
-                                      'delete',
-                                      dm_base.GetProject(),
-                                      timeout=OPERATION_TIMEOUT)
-            log.status.Print('Delete operation ' + op_name
-                             + ' completed successfully.')
+            operation = dm_write.WaitForOperation(
+                self.client,
+                self.messages,
+                op_name,
+                'delete',
+                dm_base.GetProject(),
+                timeout=OPERATION_TIMEOUT)
+            dm_util.LogOperationStatus(operation, 'Delete')
           except exceptions.OperationError as e:
             errors.append(exceptions.OperationError(
                 u'Delete operation {0} failed.\n{1}'.format(op_name, e)))

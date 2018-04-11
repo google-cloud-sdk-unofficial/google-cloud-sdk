@@ -74,7 +74,9 @@ class Set(base.UpdateCommand):
         resources,
         args,
         forwarding_rule_ref=forwarding_rule_ref,
-        include_alpha=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
+        allow_global_target=(self.ReleaseTrack() in [
+            base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+        ]))
 
     request = client.messages.ComputeForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),

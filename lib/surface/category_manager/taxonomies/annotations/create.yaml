@@ -12,6 +12,7 @@
     resource:
       help_text: The taxonomy ID of the parent taxonomy for this new annotation.
       is_parent_resource: true
+      is_positional: false
       spec: !REF googlecloudsdk.command_lib.category_manager.resources:project_scoped_taxonomy
 
     params:

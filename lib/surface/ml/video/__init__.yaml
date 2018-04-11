@@ -21,7 +21,7 @@ args:
     help_text: |
       The location to which the results should be written. Must be a Google
       Cloud Storage URI.
-    processor: googlecloudsdk.api_lib.ml.video.video_client:_ValidateOutputUri
+    processor: googlecloudsdk.command_lib.ml.video.util:ValidateOutputUri
 
   - api_field: videoContext.segments
     arg_name: segments
@@ -45,7 +45,7 @@ args:
 
       0:1m40s,3m50s:5m10.232265s
     type: str
-    processor: googlecloudsdk.api_lib.ml.video.video_client:ValidateAndParseSegments
+    processor: googlecloudsdk.command_lib.ml.video.util:ValidateAndParseSegments
 
   - api_field: locationId
     arg_name: region

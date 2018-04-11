@@ -13,7 +13,9 @@
 # limitations under the License.
 """gcloud dns record-sets import command."""
 
+import io
 import os
+
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import import_util
@@ -124,7 +126,7 @@ class Import(base.Command):
 
     # Get the imported record-sets.
     try:
-      with open(args.records_file) as import_file:
+      with io.open(args.records_file, 'rt') as import_file:
         if args.zone_file_format:
           imported = import_util.RecordSetsFromZoneFile(
               import_file, zone.dnsName, api_version=api_version)

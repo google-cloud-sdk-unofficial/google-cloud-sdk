@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from oauth2client import client
@@ -62,7 +63,7 @@ class PrintAccessToken(base.Command):
       else:
         creds = creds.create_scoped([auth_util.CLOUD_PLATFORM_SCOPE])
 
-    access_token_info = creds.get_access_token()
+    access_token_info = creds.get_access_token(http.Http())
     if not access_token_info:
       raise c_exc.ToolException(
           'No access token could be obtained from the current credentials.')

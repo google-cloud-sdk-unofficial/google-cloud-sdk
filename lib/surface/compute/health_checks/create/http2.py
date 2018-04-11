@@ -30,39 +30,44 @@ class Create(base.CreateCommand):
   [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
   """
 
-  HEALTH_CHECK_ARG = None
-
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTP2')
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='create')
+    flags.HealthCheckArgument('HTTP2').AddArgument(parser,
+                                                   operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP2')
+    health_checks_utils.AddPortSpecificationFlag(parser)
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleter)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    messages = client.messages
 
-    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
+    health_check_ref = flags.HealthCheckArgument('HTTP2').ResolveAsResource(
         args, holder.resources)
-    proxy_header = client.messages.HTTP2HealthCheck.ProxyHeaderValueValuesEnum(
+    proxy_header = messages.HTTP2HealthCheck.ProxyHeaderValueValuesEnum(
         args.proxy_header)
-    request = client.messages.ComputeHealthChecksInsertRequest(
-        healthCheck=client.messages.HealthCheck(
+
+    http2_health_check = messages.HTTP2HealthCheck(
+        host=args.host,
+        port=args.port,
+        portName=args.port_name,
+        requestPath=args.request_path,
+        proxyHeader=proxy_header,
+        response=args.response)
+    health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
+        args, http2_health_check)
+
+    request = messages.ComputeHealthChecksInsertRequest(
+        healthCheck=messages.HealthCheck(
             name=health_check_ref.Name(),
             description=args.description,
-            type=client.messages.HealthCheck.TypeValueValuesEnum.HTTP2,
-            http2HealthCheck=client.messages.HTTP2HealthCheck(
-                host=args.host,
-                port=args.port,
-                portName=args.port_name,
-                requestPath=args.request_path,
-                proxyHeader=proxy_header,
-                response=args.response),
+            type=messages.HealthCheck.TypeValueValuesEnum.HTTP2,
+            http2HealthCheck=http2_health_check,
             checkIntervalSec=args.check_interval,
             timeoutSec=args.timeout,
             healthyThreshold=args.healthy_threshold,

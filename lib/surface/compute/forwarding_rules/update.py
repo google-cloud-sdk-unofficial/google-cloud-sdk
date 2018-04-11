@@ -160,7 +160,8 @@ class UpdateAlpha(Update):
   @classmethod
   def Args(cls, parser):
     _Args(cls, parser)
-    flags.AddNetworkTier(parser, include_alpha=True, for_update=True)
+    flags.AddNetworkTier(
+        parser, supports_network_tier_flag=True, for_update=True)
 
   def ConstructNetworkTier(self, messages, network_tier):
     if network_tier:

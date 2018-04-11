@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Cloud Pub/Sub topics delete command."""
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as api_ex
 
 from googlecloudsdk.api_lib.pubsub import topics

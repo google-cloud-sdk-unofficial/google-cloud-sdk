@@ -13,6 +13,9 @@
 # limitations under the License.
 """bigtable instances create command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.bigtable import util as bigtable_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
@@ -45,9 +48,6 @@ class CreateInstance(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    # TODO(b/73365914) remove after deprecation period
-    display_name = args.display_name or args.description
-
     cli = bigtable_util.GetAdminClient()
     ref = resources.REGISTRY.Parse(
         args.instance,
@@ -62,11 +62,9 @@ class CreateInstance(base.CreateCommand):
         instanceId=ref.Name(),
         parent=parent_ref.RelativeName(),
         instance=msgs.Instance(
-            # TODO(b/73365914) replace with args.display_name after deprecation
-            displayName=display_name,
+            displayName=args.display_name,
             type=msgs.Instance.TypeValueValuesEnum(args.instance_type)),
-        clusters=msgs.CreateInstanceRequest.
-        ClustersValue(additionalProperties=[
+        clusters=msgs.CreateInstanceRequest.ClustersValue(additionalProperties=[
             msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
                 key=args.cluster,
                 value=msgs.Cluster(

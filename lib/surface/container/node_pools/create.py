@@ -104,6 +104,7 @@ def ParseCreateNodePoolOptionsBase(args):
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
                      'property container/ new_scopes_behavior is set to true.')
+  flags.WarnForUnspecifiedAutorepair(args)
   return api_adapter.CreateNodePoolOptions(
       machine_type=args.machine_type,
       disk_size_gb=args.disk_size,

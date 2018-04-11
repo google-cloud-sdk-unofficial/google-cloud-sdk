@@ -18,8 +18,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   r"""Update a Google Compute Engine project resource.
 
   *{command}* is used to update a Google Compute Engine project resource.
@@ -50,3 +50,11 @@ class Update(base.UpdateCommand):
       requests.append((client.projects, 'SetDefaultNetworkTier', request))
 
     return holder.client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  r"""Update a Google Compute Engine project resource.
+
+  *{command}* is used to update a Google Compute Engine project resource.
+  """

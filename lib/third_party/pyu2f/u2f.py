@@ -35,8 +35,7 @@ def GetLocalU2FInterface(origin=socket.gethostname()):
   hid_transports = hidtransport.DiscoverLocalHIDU2FDevices()
   for t in hid_transports:
     try:
-      return U2FInterface(security_key=hardware.SecurityKey(transport=t),
-                          origin=origin)
+      return U2FInterface(security_key=hardware.SecurityKey(transport=t), origin=origin)
     except errors.UnsupportedVersionException:
       # Skip over devices that don't speak the proper version of the protocol.
       pass
@@ -68,7 +67,7 @@ class U2FInterface(object):
     self.origin = origin
     self.security_key = security_key
 
-    if self.security_key.CmdVersion() != b'U2F_V2':
+    if self.security_key.CmdVersion() != 'U2F_V2':
       raise errors.UnsupportedVersionException()
 
   def Register(self, app_id, challenge, registered_keys):
@@ -98,7 +97,7 @@ class U2FInterface(object):
     for key in registered_keys:
       try:
         # skip non U2F_V2 keys
-        if key.version != u'U2F_V2':
+        if key.version != 'U2F_V2':
           continue
         resp = self.security_key.CmdAuthenticate(challenge_param, app_param,
                                                  key.key_handle, True)
@@ -135,7 +134,7 @@ class U2FInterface(object):
 
     Args:
       app_id: The app_id to register the security key against.
-      challenge: Server challenge passed to the security key as a bytes object.
+      challenge: Server challenge passed to the security key.
       registered_keys: List of keys already registered for this app_id+user.
 
     Returns:
@@ -154,7 +153,7 @@ class U2FInterface(object):
     num_invalid_keys = 0
     for key in registered_keys:
       try:
-        if key.version != u'U2F_V2':
+        if key.version != 'U2F_V2':
           continue
         for _ in range(30):
           try:
@@ -179,5 +178,5 @@ class U2FInterface(object):
 
   def InternalSHA256(self, string):
     md = hashlib.sha256()
-    md.update(string.encode())
+    md.update(string)
     return md.digest()
