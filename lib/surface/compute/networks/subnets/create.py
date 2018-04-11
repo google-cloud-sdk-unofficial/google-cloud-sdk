@@ -62,7 +62,7 @@ def _AddArgs(cls, parser):
       """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Define a subnet for a network in custom subnet mode.
 
@@ -119,8 +119,8 @@ class Create(base.CreateCommand):
                                  'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Define a subnet for a network in custom subnet mode.
 
   Define a subnet for a network in custom subnet mode. Subnets must be uniquely

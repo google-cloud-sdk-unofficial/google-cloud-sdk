@@ -26,20 +26,21 @@ from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a target SSL proxy.
 
   *{command}* is used to create target SSL proxies. A target SSL proxy is
   referenced by one or more forwarding rules which define which packets the
   proxy is responsible for routing. The target SSL proxy points to a backend
   service which handle the actual requests. The target SSL proxy also points
-  to at most 10 SSL certificates used for server-side authentication.
+  to at most 10 SSL certificates used for server-side authentication. The
+  target SSL proxy can be associated with at most one SSL policy.
   """
 
   BACKEND_SERVICE_ARG = None
   SSL_CERTIFICATES_ARG = None
   TARGET_SSL_PROXY_ARG = None
+  SSL_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
@@ -56,13 +57,18 @@ class CreateGA(base.CreateCommand):
             'target SSL proxy'))
     cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
 
+    cls.SSL_POLICY_ARG = (
+        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
+            'SSL', required=False))
+    cls.SSL_POLICY_ARG.AddArgument(parser)
+
     parser.add_argument(
         '--description',
         help='An optional, textual description for the target SSL proxy.')
 
     parser.display_info.AddCacheUpdater(flags.TargetSslProxiesCompleter)
 
-  def _CreateResource(self, args, ssl_policy_ref=None):
+  def _CreateResource(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     backend_service_ref = self.BACKEND_SERVICE_ARG.ResolveAsResource(
@@ -89,8 +95,9 @@ class CreateGA(base.CreateCommand):
         service=backend_service_ref.SelfLink(),
         sslCertificates=[ref.SelfLink() for ref in ssl_cert_refs])
 
-    if ssl_policy_ref:
-      target_ssl_proxy.sslPolicy = ssl_policy_ref.SelfLink()
+    if args.ssl_policy:
+      target_ssl_proxy.sslPolicy = self.SSL_POLICY_ARG.ResolveAsResource(
+          args, holder.resources).SelfLink()
 
     request = messages.ComputeTargetSslProxiesInsertRequest(
         project=target_ssl_proxy_ref.project, targetSslProxy=target_ssl_proxy)
@@ -105,35 +112,3 @@ class CreateGA(base.CreateCommand):
 
   def Run(self, args):
     return self._CreateResource(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(CreateGA):
-  """Create a target SSL proxy.
-
-  *{command}* is used to create target SSL proxies. A target SSL proxy is
-  referenced by one or more forwarding rules which define which packets the
-  proxy is responsible for routing. The target SSL proxy points to a backend
-  service which handle the actual requests. The target SSL proxy also points
-  to at most 10 SSL certificates used for server-side authentication. The
-  target SSL proxy can be associated with at most one SSL policy.
-  """
-
-  SSL_POLICY_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    CreateGA.Args(parser)
-    cls.SSL_POLICY_ARG = (
-        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-            'SSL', required=False))
-    cls.SSL_POLICY_ARG.AddArgument(parser)
-
-  def _GetSslPolicy(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return self.SSL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources) if args.ssl_policy else None
-
-  def Run(self, args):
-    ssl_policy_ref = self._GetSslPolicy(args)
-    return self._CreateResource(args, ssl_policy_ref)

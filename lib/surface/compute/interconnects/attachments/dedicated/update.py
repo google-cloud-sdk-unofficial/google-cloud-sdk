@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine dedicated interconnect attachment.
 

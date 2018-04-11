@@ -23,7 +23,7 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SimulateMaintenanceEvent(base.UpdateCommand):
   """Simulate maintenance of virtual machine instances."""
 

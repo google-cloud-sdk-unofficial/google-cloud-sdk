@@ -25,6 +25,31 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+def _AddArgsCommon(parser, messages):
+  flags.GetDnsZoneArg(
+      'The name of the managed-zone to be created.').AddToParser(parser)
+  flags.GetManagedZonesDnsNameArg().AddToParser(parser)
+  flags.GetManagedZonesDescriptionArg(required=True).AddToParser(parser)
+  flags.AddCommonManagedZonesDnssecArgs(parser, messages)
+
+
+def _MakeDnssecConfig(args, messages):
+  """Parse user-specified args into a DnssecConfig message."""
+  dnssec_config = None
+  if args.dnssec_state is not None:
+    dnssec_config = command_util.ParseDnssecConfigArgs(args, messages)
+  else:
+    bad_args = ['denial_of_existence', 'ksk_algorithm', 'zsk_algorithm',
+                'ksk_key_length', 'zsk_key_length']
+    for bad_arg in bad_args:
+      if getattr(args, bad_arg, None) is not None:
+        raise exceptions.InvalidArgumentException(
+            bad_arg,
+            'DNSSEC must be enabled in order to use other DNSSEC arguments. '
+            'Please set --dnssec-state to "on" or "transfer".')
+  return dnssec_config
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud DNS managed-zone.
@@ -40,10 +65,8 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetDnsZoneArg(
-        'The name of the managed-zone to be created.').AddToParser(parser)
-    flags.GetManagedZonesDnsNameArg().AddToParser(parser)
-    flags.GetManagedZonesDescriptionArg(required=True).AddToParser(parser)
+    messages = apis.GetMessagesModule('dns', 'v1')
+    _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
@@ -57,9 +80,12 @@ class Create(base.CreateCommand):
         },
         collection='dns.managedZones')
 
+    dnssec_config = _MakeDnssecConfig(args, messages)
+
     zone = messages.ManagedZone(name=zone_ref.managedZone,
                                 dnsName=util.AppendTrailingDot(args.dns_name),
-                                description=args.description)
+                                description=args.description,
+                                dnssecConfig=dnssec_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
@@ -89,11 +115,8 @@ class CreateBeta(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetDnsZoneArg(
-        'The name of the managed-zone to be created.').AddToParser(parser)
-    flags.GetManagedZonesDnsNameArg().AddToParser(parser)
-    flags.GetManagedZonesDescriptionArg(required=True).AddToParser(parser)
-    flags.AddCommonManagedZonesDnssecArgs(parser)
+    messages = apis.GetMessagesModule('dns', 'v1beta2')
+    _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -108,18 +131,7 @@ class CreateBeta(base.CreateCommand):
         },
         collection='dns.managedZones')
 
-    dnssec_config = None
-    if args.dnssec_state is not None:
-      dnssec_config = command_util.ParseDnssecConfigArgs(args, messages)
-    else:
-      bad_args = ['denial_of_existence', 'ksk_algorithm', 'zsk_algorithm',
-                  'ksk_key_length', 'zsk_key_length']
-      for bad_arg in bad_args:
-        if getattr(args, bad_arg, None) is not None:
-          raise exceptions.InvalidArgumentException(
-              bad_arg,
-              'DNSSEC must be enabled in order to use other DNSSEC arguments. '
-              'Please set --dnssec-state to "on" or "transfer".')
+    dnssec_config = _MakeDnssecConfig(args, messages)
 
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
 

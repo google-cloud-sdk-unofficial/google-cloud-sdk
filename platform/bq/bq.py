@@ -445,11 +445,14 @@ def _GetCredentialsFromFlags():
     credentials.set_store(storage)
 
 
+  # Save credentials to storage now to reuse and also avoid a warning message.
+  if not os.path.exists(credential_file):
+    storage.put(credentials)
+
   if verify_storage:
     # Verify credentials storage is ok now.
     try:
-      storage.locked_put(credentials)
-      storage.locked_get()
+      storage.get()
     except BaseException as e:  # pylint: disable=broad-except
       _RaiseCredentialsCorrupt(e)
 
@@ -2648,8 +2651,7 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'data_location', None,
-        'Location of the data. Either US or EU. Requires that the project '
-        'has data location enabled',
+        'Geographic location of the data.',
         flag_values=fv)
     flags.DEFINE_integer(
         'expiration', None,

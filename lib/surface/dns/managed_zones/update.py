@@ -40,7 +40,8 @@ class Update(base.UpdateCommand):
   def Args(parser):
     flags.GetDnsZoneArg(
         'The name of the managed-zone to be updated..').AddToParser(parser)
-    flags.AddCommonManagedZonesDnssecArgs(parser)
+    messages = apis.GetMessagesModule('dns', 'v1beta2')
+    flags.AddCommonManagedZonesDnssecArgs(parser, messages)
     flags.GetManagedZonesDescriptionArg().AddToParser(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 

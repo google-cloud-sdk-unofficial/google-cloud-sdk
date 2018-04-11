@@ -42,9 +42,9 @@ class DeleteAnnotation(base.Command):
       args: an argparse namespace. All the arguments that were provided to this
       command invocation.
     """
-    asset_ref = args.CONCEPTS.asset.Parse()
-    annotation_ref = args.CONCEPTS.annotation.Parse()
+    asset_resource = args.CONCEPTS.asset.Parse()
+    annotation_resource = args.CONCEPTS.annotation.Parse()
     sub_asset = args.sub_asset
     if console_io.PromptContinue(cancel_on_no=True):
-      assets.DeleteAnnotationTag(asset_ref, annotation_ref, sub_asset)
-      log.DeletedResource(annotation_ref.RelativeName(), 'annotation tag')
+      assets.DeleteAnnotationTag(asset_resource, annotation_resource, sub_asset)
+      log.DeletedResource(annotation_resource.RelativeName(), 'annotation tag')

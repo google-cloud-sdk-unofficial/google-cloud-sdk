@@ -13,6 +13,8 @@
 # limitations under the License.
 """The `gcloud meta test` command."""
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import signal
 import sys
@@ -108,7 +110,7 @@ class Test(base.Command):
     completer_class = module_util.ImportModule(args.prompt_completer)
     choices = parser_completer.ArgumentCompleter(completer_class, args)
     response = console_io.PromptResponse('Complete this: ', choices=choices)
-    print response
+    print(response)
 
   def _RunSleep(self, args):
     time.sleep(args.sleep)

@@ -766,12 +766,7 @@ class BigqueryClient(object):
   @staticmethod
   def FormatAcl(acl):
     """Format a server-returned ACL for printing."""
-    acl_entries = {
-        'OWNER': [],
-        'WRITER': [],
-        'READER': [],
-        'VIEW': [],
-        }
+    acl_entries = collections.defaultdict(list)
     for entry in acl:
       entry = entry.copy()
       view = entry.pop('view', None)
@@ -782,24 +777,25 @@ class BigqueryClient(object):
       else:
         role = entry.pop('role', None)
         if not role or len(entry.values()) != 1:
-          raise BigqueryServiceError(
-              'Invalid ACL returned by server: %s' % (acl,))
-        for _, value in entry.iteritems():
-          acl_entries[role].append(value)
+          raise BigqueryInterfaceError(
+              'Invalid ACL returned by server: %s' % acl, {}, [])
+        acl_entries[role].extend(entry.itervalues())
+    # Show a couple things first.
+    original_roles = [
+        ('OWNER', 'Owners'),
+        ('WRITER', 'Writers'),
+        ('READER', 'Readers'),
+        ('VIEW', 'Authorized Views')]
     result_lines = []
-    if acl_entries['OWNER']:
-      result_lines.extend([
-          'Owners:', ',\n'.join('  %s' % (o,) for o in acl_entries['OWNER'])])
-    if acl_entries['WRITER']:
-      result_lines.extend([
-          'Writers:', ',\n'.join('  %s' % (o,) for o in acl_entries['WRITER'])])
-    if acl_entries['READER']:
-      result_lines.extend([
-          'Readers:', ',\n'.join('  %s' % (o,) for o in acl_entries['READER'])])
-    if acl_entries['VIEW']:
-      result_lines.extend([
-          'Authorized Views:', ',\n'.join('  %s' % (o,) for o in
-                                          acl_entries['VIEW'])])
+    for role, name in original_roles:
+      members = acl_entries.pop(role, None)
+      if members:
+        result_lines.append('%s:' % name)
+        result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
+    # Show everything else.
+    for role, members in sorted(acl_entries.iteritems()):
+      result_lines.append('%s:' % role)
+      result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
     return '\n'.join(result_lines)
 
   @staticmethod
@@ -2850,8 +2846,12 @@ class BigqueryClient(object):
     return self.apiclient.jobs().query(
         body=request, projectId=project_id, **kwds).execute()
 
-  def GetQueryResults(self, job_id=None, project_id=None,
-                      max_results=None, timeout_ms=None):
+  def GetQueryResults(self,
+                      job_id=None,
+                      project_id=None,
+                      max_results=None,
+                      timeout_ms=None,
+                      location=None):
     """Waits for a query to complete, once.
 
     Args:
@@ -2859,6 +2859,7 @@ class BigqueryClient(object):
       project_id: The project id of the query job.
       max_results: The maximum number of results.
       timeout_ms: The number of milliseconds to wait for the query to complete.
+      location: Optional. The geographic location of the job.
 
     Returns:
       The getQueryResults() result.
@@ -2876,7 +2877,8 @@ class BigqueryClient(object):
                      job_id=job_id,
                      project_id=project_id,
                      timeout_ms=timeout_ms,
-                     max_results=max_results)
+                     max_results=max_results,
+                     location=location)
     return self.apiclient.jobs().getQueryResults(**kwds).execute()
 
   def RunJobSynchronously(self,
@@ -3266,7 +3268,8 @@ class BigqueryClient(object):
           result = self.GetQueryResults(
               job_reference.jobId,
               max_results=0,
-              timeout_ms=current_wait_ms)
+              timeout_ms=current_wait_ms,
+              location=location)
         if result['jobComplete']:
           (schema, rows) = self.ReadSchemaAndJobRows(dict(job_reference),
                                                      start_row=0,

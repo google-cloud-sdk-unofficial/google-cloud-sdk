@@ -38,5 +38,5 @@ class GetIamPolicy(base.ListCommand):
     Returns:
       Status of command execution.
     """
-    org_ref = args.CONCEPTS.organization_id.Parse()
-    return iam_lib.GetOrgIamPolicy(org_ref)
+    org_resource = args.CONCEPTS.organization_id.Parse()
+    return iam_lib.GetOrgIamPolicy(org_resource)

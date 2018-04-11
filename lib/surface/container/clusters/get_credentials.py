@@ -82,6 +82,14 @@ class GetCredentials(base.Command):
     log.status.Print('Fetching cluster endpoint and auth data.')
     # Call DescribeCluster to get auth info and cache for next time
     cluster = adapter.GetCluster(cluster_ref)
+    auth = cluster.masterAuth
+    # TODO(b/70856999) Make this consistent with the checks in
+    # api_lib/container/kubeconfig.py.
+    missing_creds = not (auth and auth.clientCertificate and auth.clientKey)
+    if missing_creds and not util.ClusterConfig.UseGCPAuthProvider():
+      raise util.Error(
+          'get-credentials requires edit permission on {0}'.format(
+              cluster_ref.projectId))
     if not adapter.IsRunning(cluster):
       log.warning(NOT_RUNNING_MSG.format(cluster_ref.clusterId))
     util.ClusterConfig.Persist(cluster, cluster_ref.projectId)

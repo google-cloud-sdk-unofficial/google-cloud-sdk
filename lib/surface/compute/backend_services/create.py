@@ -410,6 +410,7 @@ class CreateBeta(CreateGA):
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
+    flags.AddCustomRequestHeaders(parser, remove_all_flag=False)
     flags.AddCacheKeyIncludeProtocol(parser, default=True)
     flags.AddCacheKeyIncludeHost(parser, default=True)
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
@@ -434,6 +435,8 @@ class CreateBeta(CreateGA):
               args.session_affinity))
     if args.session_affinity is not None:
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+    if args.IsSpecified('custom_request_header'):
+      backend_service.customRequestHeaders = args.custom_request_header
 
     backend_services_utils.ApplyCdnPolicyArgs(
         client, args, backend_service, is_update=False)
@@ -454,6 +457,8 @@ class CreateBeta(CreateGA):
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
+    if args.IsSpecified('custom_request_header'):
+      backend_service.customRequestHeaders = args.custom_request_header
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,

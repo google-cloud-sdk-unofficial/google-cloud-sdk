@@ -37,6 +37,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     flags.AddIdOptions(parser, 'snapshot', 'snapshots', 'displayed')
     parser.add_argument(
         '--all-users', action='store_true', default=False,

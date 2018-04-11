@@ -4,6 +4,7 @@
       Get details on a Tensorflow version.
 
       To get a list of available Tesnorflow versions for your location run:
+
         $ {parent} list
 
   request:

@@ -25,8 +25,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
-from googlecloudsdk.command_lib.compute.maintenance_policies import flags as maintenance_flags
-from googlecloudsdk.command_lib.compute.maintenance_policies import util as maintenance_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -65,8 +63,7 @@ def _CommonArgs(parser,
                 support_network_tier,
                 enable_regional=False,
                 support_local_ssd_size=False,
-                enable_kms=False,
-                enable_maintenance_policies=False):
+                enable_kms=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -105,8 +102,6 @@ def _CommonArgs(parser,
     instances_flags.AddPublicDnsArgs(parser, instance=True)
   if support_network_tier:
     instances_flags.AddNetworkTierArgs(parser, instance=True)
-  if enable_maintenance_policies:
-    maintenance_flags.AddResourceMaintenancePolicyArgs(parser, 'added to')
 
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddMinCpuPlatformArgs(parser, release_track)
@@ -423,16 +418,6 @@ class Create(base.CreateCommand):
       if sole_tenancy_host:
         instance.host = sole_tenancy_host
 
-      resource_maintenance_policies = getattr(
-          args, 'resource_maintenance_policies', None)
-      if resource_maintenance_policies:
-        maintenance_policy_ref = maintenance_util.ParseMaintenancePolicy(
-            resource_parser,
-            args.resource_maintenance_policies,
-            project=instance_ref.project,
-            region=maintenance_util.GetRegionFromZone(instance_ref.zone))
-        instance.maintenancePolicies = [maintenance_policy_ref.SelfLink()]
-
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
           project=instance_ref.project,
@@ -557,8 +542,7 @@ class CreateAlpha(CreateBeta):
         support_network_tier=cls._support_network_tier,
         enable_regional=True,
         support_local_ssd_size=True,
-        enable_kms=cls._support_kms,
-        enable_maintenance_policies=True)
+        enable_kms=cls._support_kms)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

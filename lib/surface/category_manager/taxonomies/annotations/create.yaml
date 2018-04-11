@@ -16,17 +16,17 @@
 
     params:
       - api_field: annotation.displayName
-        arg_name: display_name
+        arg_name: display-name
         help_text: A human-readable name for the annotation.
         required: true
 
       - api_field: annotation.description
         arg_name: description
-        help_text: The description of this annotation
+        help_text: The description of this annotation.
         required: false
 
       - api_field: annotation.parentAnnotationId
-        arg_name: parent_annotation
+        arg_name: parent-annotation
         help_text: |
           The ID of the parent annotation for this annotation. If not given,
           this annotation will be at the root of the hierarchy.

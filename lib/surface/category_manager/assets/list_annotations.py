@@ -41,5 +41,5 @@ class ListAnnotations(base.ListCommand):
     Returns:
       Status of command execution.
     """
-    asset_ref = args.CONCEPTS.asset.Parse()
-    return assets.ListAssetAnnotationTags(asset_ref)
+    asset_resource = args.CONCEPTS.asset.Parse()
+    return assets.ListAssetAnnotationTags(asset_resource)

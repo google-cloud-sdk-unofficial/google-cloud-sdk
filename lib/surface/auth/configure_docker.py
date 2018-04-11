@@ -28,7 +28,8 @@ class ConfigureDockerError(exceptions.Error):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class ConfigureDocker(base.Command):
   """Registers gcloud as a Docker credential helper.
 

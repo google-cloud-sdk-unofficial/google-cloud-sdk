@@ -35,10 +35,10 @@ class Create(base.CreateCommand):
   detailed_help = {
       'DESCRIPTION':
           """\
-          The container images add-tag command adds the tag specified in
-          the second tag parameter to the image referenced in the first
-          tag parameter. Repositories must be hosted by the Google Container
-          Registry.
+          The container images add-tag command adds the tag(s) specified in
+          the second (and following) tag parameter(s) to the image referenced
+          in the first tag parameter. Repositories must be hosted by the
+          Google Container Registry.
       """,
       'EXAMPLES':
           """\
@@ -68,32 +68,38 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     flags.AddTagOrDigestPositional(parser, arg_name='src_image',
-                                   verb='add a tag for', repeated=False)
+                                   verb='add tags for', repeated=False)
     flags.AddTagOrDigestPositional(parser, arg_name='dest_image',
-                                   verb='be the new tag', repeated=False,
+                                   verb='be the new tags', repeated=True,
                                    tags_only=True)
 
   def Run(self, args):
     # pylint: disable=missing-docstring
-    def Push(image, dest_name, creds, http_obj, src_name, session_push_type):
-      with session_push_type(dest_name, creds, http_obj) as push:
-        push.upload(image)
-        log.CreatedResource(dest_name)
+    def Push(image, dest_names, creds, http_obj, src_name, session_push_type):
+      for dest_name in dest_names:
+        with session_push_type(dest_name, creds, http_obj) as push:
+          push.upload(image)
+          log.CreatedResource(dest_name)
       log.UpdatedResource(src_name)
 
     http_obj = http.Http()
 
     src_name = util.GetDockerImageFromTagOrDigest(args.src_image)
-    dest_name = docker_name.Tag(args.dest_image)
 
-    if '/' not in dest_name.repository:
-      raise exceptions.Error(
-          'Pushing to project root-level images is disabled. '
-          'Please designate an image within a project, '
-          'e.g. gcr.io/project-id/my-image:tag')
+    dest_names = []
+    for dest_image in args.dest_image:
+      dest_name = docker_name.Tag(dest_image)
+
+      if '/' not in dest_name.repository:
+        raise exceptions.Error(
+            'Pushing to project root-level images is disabled. '
+            'Please designate an image within a project, '
+            'e.g. gcr.io/project-id/my-image:tag')
+      dest_names.append(dest_name)
 
     console_io.PromptContinue(
-        'This will tag {0} with {1}'.format(src_name, dest_name),
+        'This will tag {} with:\n{}'.format(
+            src_name, '\n'.join(str(dest_name) for dest_name in dest_names)),
         default=True,
         cancel_on_no=True)
     creds = util.CredentialProvider()
@@ -101,7 +107,7 @@ class Create(base.CreateCommand):
       with docker_image_list.FromRegistry(
           src_name, creds, http_obj) as manifest_list:
         if manifest_list.exists():
-          Push(manifest_list, dest_name, creds, http_obj, src_name,
+          Push(manifest_list, dest_names, creds, http_obj, src_name,
                v2_2_session.Push)
           return
 
@@ -109,9 +115,9 @@ class Create(base.CreateCommand):
           src_name, creds, http_obj,
           accepted_mimes=docker_http.SUPPORTED_MANIFEST_MIMES) as v2_2_img:
         if v2_2_img.exists():
-          Push(v2_2_img, dest_name, creds, http_obj, src_name,
+          Push(v2_2_img, dest_names, creds, http_obj, src_name,
                v2_2_session.Push)
           return
 
       with v2_image.FromRegistry(src_name, creds, http_obj) as v2_img:
-        Push(v2_img, dest_name, creds, http_obj, src_name, v2_session.Push)
+        Push(v2_img, dest_names, creds, http_obj, src_name, v2_session.Push)

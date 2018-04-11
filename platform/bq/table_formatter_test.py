@@ -19,6 +19,7 @@
 
 __author__ = 'craigcitro@google.com (Craig Citro)'
 
+import StringIO
 
 from google.apputils import googletest
 import table_formatter
@@ -57,6 +58,13 @@ class TableFormatterTest(googletest.TestCase):
       formatter.Print()
       self.assertTrue(all(ord(c) <= 127 for c in str(formatter)))
       self.assertTrue(any(ord(c) > 127 for c in unicode(formatter)))
+
+  def wrap_print(self, formatter):
+    stringio = StringIO.StringIO()
+    formatter.Print(stringio)
+    printed = stringio.getvalue().rstrip('\n')
+    stringio.close()
+    return printed
 
 
 class PrettyFormatterTest(TableFormatterTest):
@@ -224,15 +232,19 @@ class PrettyFormatterTest(TableFormatterTest):
         '| a | b |',
         '+---+---+',
         '+---+---+'))
-    self.assertEquals(table_repr, str(formatter))
+
+    self.assertEqual(table_repr, str(formatter))
+    self.assertEqual('', self.wrap_print(formatter))
 
     formatter = table_formatter.PrettyFormatter()
     formatter.AddColumns(('a', 'b'))
-    self.assertEquals(table_repr, str(formatter))
+    self.assertEqual(table_repr, str(formatter))
+    self.assertEqual('', self.wrap_print(formatter))
 
     formatter = table_formatter.PrettyFormatter(skip_header_when_empty=True)
     formatter.AddColumns(('a', 'b'))
-    self.assertEquals('', str(formatter))
+    self.assertEqual('', str(formatter))
+    self.assertEqual('', self.wrap_print(formatter))
 
 
 class SparsePrettyFormatterTest(TableFormatterTest):
@@ -266,16 +278,19 @@ class SparsePrettyFormatterTest(TableFormatterTest):
     table_repr = '\n'.join((
         '  a   b  ',
         ' --- --- '))
-    self.assertEquals(table_repr, str(formatter))
+    self.assertEqual(table_repr, str(formatter))
+    self.assertEqual('', self.wrap_print(formatter))
 
     formatter = table_formatter.SparsePrettyFormatter()
     formatter.AddColumns(('a', 'b'))
-    self.assertEquals(table_repr, str(formatter))
+    self.assertEqual(table_repr, str(formatter))
+    self.assertEqual('', self.wrap_print(formatter))
 
     formatter = table_formatter.SparsePrettyFormatter(
         skip_header_when_empty=True)
     formatter.AddColumns(('a', 'b'))
-    self.assertEquals('', str(formatter))
+    self.assertEqual('', str(formatter))
+    self.assertEqual('', self.wrap_print(formatter))
 
 
 class PrettyJsonFormatterTest(TableFormatterTest):
@@ -298,6 +313,12 @@ class PrettyJsonFormatterTest(TableFormatterTest):
         ']'))
     self.assertEquals(table_repr, str(self.formatter))
 
+  def testEmptyStr(self):
+    formatter = self.format_class()
+    formatter.AddColumns(('a', 'b'))
+
+    self.assertEqual('[]', self.wrap_print(formatter))
+
 
 class JsonFormatterTest(TableFormatterTest):
 
@@ -309,6 +330,12 @@ class JsonFormatterTest(TableFormatterTest):
     table_repr = ('[{"longer header":3,"foo":"a"},'
                   '{"longer header":123,"foo":"abc"}]')
     self.assertEquals(table_repr, str(self.formatter))
+
+  def testEmptyStr(self):
+    formatter = self.format_class()
+    formatter.AddColumns(('a', 'b'))
+
+    self.assertEqual('[]', self.wrap_print(formatter))
 
 
 class CsvFormatterTest(TableFormatterTest):

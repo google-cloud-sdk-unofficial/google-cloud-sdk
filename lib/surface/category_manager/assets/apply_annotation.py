@@ -43,7 +43,8 @@ class ApplyAnnotation(base.Command):
     Returns:
       Status of command execution.
     """
-    asset_ref = args.CONCEPTS.asset.Parse()
-    annotation_ref = args.CONCEPTS.annotation.Parse()
+    asset_resource = args.CONCEPTS.asset.Parse()
+    annotation_resource = args.CONCEPTS.annotation.Parse()
     sub_asset = args.sub_asset
-    return assets.ApplyAnnotationTag(asset_ref, annotation_ref, sub_asset)
+    return assets.ApplyAnnotationTag(asset_resource, annotation_resource,
+                                     sub_asset)

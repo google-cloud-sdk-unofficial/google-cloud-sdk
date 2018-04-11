@@ -27,21 +27,22 @@ from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateGA(base.SilentCommand):
+class Update(base.SilentCommand):
   """Update a target SSL proxy.
 
-  *{command}* is used to replace the SSL certificate, backend service or proxy
-  header of existing target SSL proxies. A target SSL proxy is referenced by
-  one or more forwarding rules which define which packets the proxy is
-  responsible for routing. The target SSL proxy in turn points to a backend
-  service which will handle the requests. The target SSL proxy also points to
-  at most 10 SSL certificates used for server-side authentication.
+  *{command}* is used to replace the SSL certificate, backend service, proxy
+  header or SSL policy of existing target SSL proxies. A target SSL proxy is
+  referenced by one or more forwarding rules which define which packets the
+  proxy is responsible for routing. The target SSL proxy in turn points to a
+  backend service which will handle the requests. The target SSL proxy also
+  points to at most 10 SSL certificates used for server-side authentication.
+  The target SSL proxy can be associated with at most one SSL policy.
   """
 
   BACKEND_SERVICE_ARG = None
   SSL_CERTIFICATES_ARG = None
   TARGET_SSL_PROXY_ARG = None
+  SSL_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
@@ -57,6 +58,14 @@ class UpdateGA(base.SilentCommand):
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
             'target SSL proxy', required=False))
     cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
+
+    group = parser.add_mutually_exclusive_group()
+    cls.SSL_POLICY_ARG = (
+        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
+            'SSL', required=False))
+    cls.SSL_POLICY_ARG.AddArgument(group)
+    ssl_policies_flags.GetClearSslPolicyArgumentForOtherResource(
+        'SSL', required=False).AddToParser(group)
 
   def _SendRequests(self,
                     args,
@@ -107,6 +116,11 @@ class UpdateGA(base.SilentCommand):
                                messages.TargetSslProxiesSetProxyHeaderRequest(
                                    proxyHeader=proxy_header)))))
 
+    ssl_policy = messages.SslPolicyReference(
+        sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
+        .SelfLink()) if args.IsSpecified('ssl_policy') else None
+    clear_ssl_policy = args.clear_ssl_policy
+
     if ssl_policy or clear_ssl_policy:
       requests.append((client.targetSslProxies, 'SetSslPolicy',
                        messages.ComputeTargetSslProxiesSetSslPolicyRequest(
@@ -121,41 +135,6 @@ class UpdateGA(base.SilentCommand):
       utils.RaiseToolException(errors)
     return resources
 
-  def Run(self, args):
-    if not (args.ssl_certificates or args.proxy_header or args.backend_service):
-      raise exceptions.ToolException(
-          'You must specify at least one of [--ssl-certificates], '
-          '[--backend-service] or [--proxy-header].')
-
-    return self._SendRequests(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(UpdateGA):
-  """Update a target SSL proxy.
-
-  *{command}* is used to replace the SSL certificate, backend service, proxy
-  header or SSL policy of existing target SSL proxies. A target SSL proxy is
-  referenced by one or more forwarding rules which define which packets the
-  proxy is responsible for routing. The target SSL proxy in turn points to a
-  backend service which will handle the requests. The target SSL proxy also
-  points to at most 10 SSL certificates used for server-side authentication.
-  The target SSL proxy can be associated with at most one SSL policy.
-  """
-
-  SSL_POLICY_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    super(UpdateAlphaBeta, cls).Args(parser)
-    group = parser.add_mutually_exclusive_group()
-    cls.SSL_POLICY_ARG = (
-        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-            'SSL', required=False))
-    cls.SSL_POLICY_ARG.AddArgument(group)
-    ssl_policies_flags.GetClearSslPolicyArgumentForOtherResource(
-        'SSL', required=False).AddToParser(group)
-
   def _CheckMissingArgument(self, args):
     if not sum(
         args.IsSpecified(arg) for arg in [
@@ -169,14 +148,4 @@ class UpdateAlphaBeta(UpdateGA):
 
   def Run(self, args):
     self._CheckMissingArgument(args)
-
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    messages = holder.client.messages
-    ssl_policy = messages.SslPolicyReference(
-        sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
-        .SelfLink()) if args.IsSpecified('ssl_policy') else None
-
-    return self._SendRequests(
-        args,
-        ssl_policy=ssl_policy,
-        clear_ssl_policy=args.clear_ssl_policy)
+    return self._SendRequests(args)

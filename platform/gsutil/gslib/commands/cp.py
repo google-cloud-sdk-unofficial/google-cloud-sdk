@@ -298,7 +298,8 @@ _CHECKSUM_VALIDATION_TEXT = """
       MD5 computed by your content pipeline when you run gsutil cp will ensure
       that the checksums match all the way through the process (e.g., detecting
       if data gets corrupted on your local disk between the time it was written
-      by your content pipeline and the time it was uploaded to GCS).
+      by your content pipeline and the time it was uploaded to Google Cloud
+      Storage).
 
   Note: The Content-MD5 header is ignored for composite objects, because such
   objects only have a CRC32C checksum.
@@ -592,6 +593,18 @@ _OPTIONS_TEXT = """
                  objects retain the Content-Type and name of the original
                  files.
 
+                 Note that if you want to use the top-level -m option to
+                 parallelize copies along with the -j/-J options, you should
+                 prefer using multiple processes instead of multiple threads;
+                 when using -j/-J, multiple threads in the same process are
+                 bottlenecked by Python's GIL. Thread and process count can be
+                 set using the "parallel_thread_count" and
+                 "parallel_process_count" boto config options, e.g.:
+
+                   gsutil -o "GSUtil:parallel_process_count=8" \\
+                     -o "GSUtil:parallel_thread_count=1" \\
+                     -m cp -r /local/source/dir gs://bucket/path
+
   -J             Applies gzip transport encoding to file uploads. This option
                  works like the -j option described above, but it applies to
                  all uploaded files, regardless of extension.
@@ -763,7 +776,6 @@ _DETAILED_HELP_TEXT = '\n\n'.join([_SYNOPSIS_TEXT,
                                    _CHANGING_TEMP_DIRECTORIES_TEXT,
                                    _COPYING_SPECIAL_FILES_TEXT,
                                    _OPTIONS_TEXT])
-
 
 CP_SUB_ARGS = 'a:AcDeIL:MNnpPrRs:tUvz:Zj:J'
 
@@ -1287,9 +1299,11 @@ class CpCommand(Command):
         elif o == '-Z':
           gzip_local = True
           gzip_arg_all = GZIP_ALL_FILES
+
     if preserve_acl and canned_acl:
       raise CommandException(
           'Specifying both the -p and -a options together is invalid.')
+
     if self.all_versions and self.parallel_operations:
       raise CommandException(
           'The gsutil -m option is not supported with the cp -A flag, to '

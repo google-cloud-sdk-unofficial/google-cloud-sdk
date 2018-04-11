@@ -34,7 +34,7 @@ class NodePools(base.Group):
         which you can register arguments.  See the public argparse documentation
         for its capabilities.
     """
-    flags.AddZoneFlag(parser)
+    flags.AddZoneAndRegionFlags(parser, region_hidden=True)
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.
@@ -48,7 +48,7 @@ class NodePools(base.Group):
     Returns:
       The refined command context.
     """
-    context['location_get'] = container_command_util.GetZone
+    context['location_get'] = container_command_util.GetZoneOrRegion
     return context
 
 

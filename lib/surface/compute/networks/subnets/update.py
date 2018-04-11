@@ -45,33 +45,6 @@ class Update(base.UpdateCommand):
     subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, holder.resources)
 
     return subnets_utils.MakeSubnetworkUpdateRequest(
-        client, subnet_ref, args.enable_private_ip_google_access)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Updates properties of an existing Google Compute Engine subnetwork."""
-
-  @classmethod
-  def Args(cls, parser):
-    """The command arguments handler.
-
-    Args:
-      parser: An argparse.ArgumentParser instance.
-    """
-    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
-    cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
-
-    flags.AddUpdateArgs(parser, include_secondary_ranges=True)
-
-  def Run(self, args):
-    """Issues requests necessary to update Subnetworks."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, holder.resources)
-
-    return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
         subnet_ref,
         enable_private_ip_google_access=args.enable_private_ip_google_access,
@@ -79,8 +52,8 @@ class UpdateBeta(Update):
         remove_secondary_ranges=args.remove_secondary_ranges)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
   @classmethod
@@ -93,8 +66,7 @@ class UpdateAlpha(Update):
     cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
     cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
 
-    flags.AddUpdateArgs(
-        parser, include_secondary_ranges=True, include_enable_flow_logs=True)
+    flags.AddUpdateArgs(parser, include_enable_flow_logs=True)
 
   def Run(self, args):
     """Issues requests necessary to update Subnetworks."""

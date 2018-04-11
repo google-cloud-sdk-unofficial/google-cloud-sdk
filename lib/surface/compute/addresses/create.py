@@ -230,18 +230,36 @@ class CreateAlpha(Create):
 
     $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
 
+  To reserve an IP range 10.110.0.0/16 from the network ``default'' for
+  VPC_PEERING, run:
+
+    $ {command} IP-RANGE-1 --global --addresses 10.110.0.0 --prefix-length 16
+    --purpose VPC_PEERING --network default
+
+  To reserve any IP range with prefix length 16 from the network ``default'' for
+  VPC_PEERING, run:
+
+    $ {command} IP-RANGE-1 --global --prefix-length 16 --purpose VPC_PEERING
+    --network default
+
   """
 
   SUBNETWORK_ARG = None
+  NETWORK_ARG = None
 
   @classmethod
   def Args(cls, parser):
     _Args(cls, parser)
     flags.AddAddressesAndIPVersions(parser, required=False)
     flags.AddNetworkTier(parser)
+    flags.AddPrefixLength(parser)
+    flags.AddPurpose(parser)
 
     cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
     cls.SUBNETWORK_ARG.AddArgument(parser)
+
+    cls.NETWORK_ARG = flags.NetworkArgument()
+    cls.NETWORK_ARG.AddArgument(parser)
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
@@ -270,6 +288,14 @@ class CreateAlpha(Create):
       # allocated.
       ip_version = None
 
+    if args.subnet and args.network:
+      raise exceptions.ConflictingArgumentsException('--network', '--subnet')
+
+    purpose = None
+    if args.purpose and not args.network and not args.subnet:
+      raise exceptions.MinimumArgumentException(['--network', '--subnet'],
+                                                ' if --purpose is specified')
+
     # TODO(b/36862747): get rid of args.subnet check
     if args.subnet:
       if address_ref.Collection() == 'compute.globalAddresses':
@@ -279,16 +305,46 @@ class CreateAlpha(Create):
         args.subnet_region = address_ref.region
       subnetwork_url = flags.SubnetworkArgument().ResolveAsResource(
           args, resource_parser).SelfLink()
+      purpose = messages.Address.PurposeValueValuesEnum(args.purpose or
+                                                        'GCE_ENDPOINT')
+      if purpose != messages.Address.PurposeValueValuesEnum.GCE_ENDPOINT:
+        raise exceptions.InvalidArgumentException(
+            '--purpose',
+            'must be GCE_ENDPOINT for regional internal addresses.')
     else:
       subnetwork_url = None
 
+    network_url = None
+    if args.network:
+      if address_ref.Collection() == 'compute.addresses':
+        raise exceptions.InvalidArgumentException(
+            '--network', 'network may not be specified for regional addresses.')
+      network_url = flags.NetworkArgument().ResolveAsResource(
+          args, resource_parser).SelfLink()
+      purpose = messages.Address.PurposeValueValuesEnum(args.purpose or
+                                                        'VPC_PEERING')
+      if purpose != messages.Address.PurposeValueValuesEnum.VPC_PEERING:
+        raise exceptions.InvalidArgumentException(
+            '--purpose', 'must be VPC_PEERING for global internal addresses.')
+      if not args.prefix_length:
+        raise exceptions.RequiredArgumentException(
+            '--prefix-length',
+            'prefix length is needed for reserving IP ranges.')
+
+    if args.prefix_length:
+      if purpose != messages.Address.PurposeValueValuesEnum.VPC_PEERING:
+        raise exceptions.InvalidArgumentException(
+            '--prefix-length', 'can only be used with [--purpose VPC_PEERING].')
+
     return messages.Address(
         address=address,
+        prefixLength=args.prefix_length,
         description=args.description,
         networkTier=network_tier,
         ipVersion=ip_version,
         name=address_ref.Name(),
-        addressType=(
-            messages.Address.AddressTypeValueValuesEnum.INTERNAL
-            if subnetwork_url else None),
-        subnetwork=subnetwork_url)
+        addressType=(messages.Address.AddressTypeValueValuesEnum.INTERNAL
+                     if subnetwork_url or network_url else None),
+        purpose=purpose,
+        subnetwork=subnetwork_url,
+        network=network_url)

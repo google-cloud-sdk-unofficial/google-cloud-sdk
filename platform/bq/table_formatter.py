@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Table formatting library.
+r"""Table formatting library.
 
 We define a TableFormatter interface, and create subclasses for
 several different print formats, including formats intended for both
@@ -77,6 +77,10 @@ Machine Consumption
 Additional formatters can be added by subclassing TableFormatter and
 overriding the following methods:
   __len__, __unicode__, AddRow, column_names, AddColumn
+
+Formatters that require non-empty output to be valid should override
+`_empty_output_meaningful`
+For example JsonFormatter must emit '[]' to produce valid json.
 """
 
 __author__ = 'craigcitro@google.com (Craig Citro)'
@@ -94,6 +98,7 @@ class FormatterException(Exception):
 
 class TableFormatter(object):
   """Interface for table formatters."""
+  _empty_output_meaningful = False
 
   def __init__(self, **kwds):
     """Initializes the base class.
@@ -101,7 +106,10 @@ class TableFormatter(object):
     Keyword arguments:
       skip_header_when_empty: If true, does not print the table's header
         if there are zero rows. This argument has no effect on
-        PrettyJsonFormatter.
+        PrettyJsonFormatter. Ignored by the Print method, but respected if
+        calling str or unicode on the formatter itself. Print will emit nothing
+        if there are zero rows, unless the format being emitted requires text
+        to be valid (eg json).
     """
     if self.__class__ == TableFormatter:
       raise NotImplementedError(
@@ -120,12 +128,12 @@ class TableFormatter(object):
   def __unicode__(self):
     raise NotImplementedError('__unicode__ must be implemented by subclass')
 
-  def Print(self):
-    if self:
+  def Print(self, output=sys.stdout):
+    if self or self._empty_output_meaningful:
       # TODO(user): Make encoding a customizable attribute on
       # the TableFormatter.
       encoding = sys.stdout.encoding or 'utf8'
-      print unicode(self).encode(encoding, 'backslashreplace')
+      print >> output, unicode(self).encode(encoding, 'backslashreplace')
 
   def AddRow(self, row):
     """Add a new row (an iterable) to this formatter."""
@@ -478,6 +486,7 @@ class CsvFormatter(TableFormatter):
 
 class JsonFormatter(TableFormatter):
   """Formats output in maximally compact JSON."""
+  _empty_output_meaningful = True
 
   def __init__(self, **kwds):
     super(JsonFormatter, self).__init__(**kwds)

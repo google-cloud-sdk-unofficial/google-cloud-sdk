@@ -61,8 +61,8 @@ class SetIamPolicy(base.UpdateCommand):
     """
     res = sourcerepo.ParseRepo(args.name)
     source = sourcerepo.Source()
-    policy = iam_util.ParseYamlorJsonPolicyFile(args.policy_file,
-                                                source.messages.Policy)
+    policy, unused_mask = iam_util.ParseYamlOrJsonPolicyFile(
+        args.policy_file, source.messages.Policy)
     result = source.SetIamPolicy(res, policy)
     iam_util.LogSetIamPolicy(res.Name(), 'repo')
     return result

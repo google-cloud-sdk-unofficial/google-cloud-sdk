@@ -15,11 +15,11 @@
 
     params:
       - api_field: taxonomy.displayName
-        arg_name: display_name
+        arg_name: display-name
         help_text: A human-readable name for the taxonomy.
         required: true
 
       - api_field: taxonomy.description
         arg_name: description
-        help_text: The description of this taxonomy
+        help_text: The description of this taxonomy.
         required: false

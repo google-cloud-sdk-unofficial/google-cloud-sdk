@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.compute.ssl_policies import flags
 _SSL_POLICY_ARG = flags.GetSslPolicyArgument()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine ssl policy.
 

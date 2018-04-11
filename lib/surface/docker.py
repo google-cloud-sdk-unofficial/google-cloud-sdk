@@ -33,9 +33,20 @@ from googlecloudsdk.core.docker import docker
 # If the user changes the --server argument to something not in this list,
 # we'll just give them a warning that they're using an unexpected server.
 _DEFAULT_REGISTRIES = constants.DEFAULT_REGISTRIES_TO_AUTHENTICATE
+_DEPRECATION_WARNING = ('`gcloud docker` will not be supported for Docker '
+                        'client versions above 18.03. Please use `gcloud auth '
+                        'configure-docker` to configure `docker` to use '
+                        '`gcloud` as a credential helper, then use `docker` as '
+                        'you would for non-GCR registries, e.g. `docker pull '
+                        'gcr.io/project-id/my-image`. Add `--verbosity=error` '
+                        'to silence this warning, e.g. `gcloud docker '
+                        '--verbosity=error -- pull gcr.io/project-id/my-image`.'
+                        ' See: https://cloud.google.com/container-registry/'
+                        'docs/support/deprecation-notices#gcloud-docker')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 class Docker(base.Command):
   """Provides the docker CLI access to the Google Container Registry.
 
