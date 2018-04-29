@@ -13,6 +13,7 @@
 # limitations under the License.
 """`gcloud app versions list` command."""
 
+from __future__ import absolute_import
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.calliope import base

@@ -13,17 +13,40 @@
 # limitations under the License.
 """gcloud dns managed-zone update command."""
 
-from googlecloudsdk.api_lib.dns import util
+from googlecloudsdk.api_lib.dns import managed_zones
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.command_lib.dns import util as command_util
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.core import properties
+
+
+def _CommonArgs(parser, messages):
+  flags.GetZoneResourceArg(
+      'The name of the managed-zone to be updated.').AddToParser(parser)
+  flags.AddCommonManagedZonesDnssecArgs(parser, messages)
+  flags.GetManagedZonesDescriptionArg().AddToParser(parser)
+  labels_util.AddUpdateLabelsFlags(parser)
+
+
+def _Update(zones_client, args):
+  zone_ref = args.CONCEPTS.zone.Parse()
+
+  dnssec_config = command_util.ParseDnssecConfigArgs(args,
+                                                     zones_client.messages)
+  labels_update = labels_util.ProcessUpdateArgsLazy(
+      args, zones_client.messages.ManagedZone.LabelsValue,
+      lambda: zones_client.Get(zone_ref).labels)
+
+  return zones_client.Patch(
+      zone_ref,
+      dnssec_config=dnssec_config,
+      description=args.description,
+      labels=labels_update.GetOrNone())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+class UpdateBeta(base.UpdateCommand):
   """Update an existing Cloud DNS managed-zone.
 
   Update an existing Cloud DNS managed-zone.
@@ -38,43 +61,33 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetDnsZoneArg(
-        'The name of the managed-zone to be updated..').AddToParser(parser)
     messages = apis.GetMessagesModule('dns', 'v1beta2')
-    flags.AddCommonManagedZonesDnssecArgs(parser, messages)
-    flags.GetManagedZonesDescriptionArg().AddToParser(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
+    _CommonArgs(parser, messages)
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1beta2')
+    zones_client = managed_zones.Client.FromApiVersion('v1beta2')
+    return _Update(zones_client, args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
+  """Update an existing Cloud DNS managed-zone.
+
+  Update an existing Cloud DNS managed-zone.
+
+  ## EXAMPLES
+
+  To change the description of a managed-zone, run:
+
+    $ {command} my_zone --description="Hello, world!"
+
+  """
+
+  @staticmethod
+  def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
+    _CommonArgs(parser, messages)
 
-    zone_ref = util.GetRegistry('v1beta2').Parse(
-        args.dns_zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
-
-    dnssec_config = command_util.ParseDnssecConfigArgs(args, messages)
-    zone_args = {'name': args.dns_zone}
-    if dnssec_config is not None:
-      zone_args['dnssecConfig'] = dnssec_config
-    if args.description is not None:
-      zone_args['description'] = args.description
-    zone = messages.ManagedZone(**zone_args)
-
-    def Get():
-      return dns.managedZones.Get(
-          dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
-              project=zone_ref.project,
-              managedZone=zone_ref.managedZone)).labels
-    labels_update = labels_util.ProcessUpdateArgsLazy(
-        args, messages.ManagedZone.LabelsValue, Get)
-    zone.labels = labels_update.GetOrNone()
-
-    result = dns.managedZones.Patch(
-        messages.DnsManagedZonesPatchRequest(managedZoneResource=zone,
-                                             project=zone_ref.project,
-                                             managedZone=args.dns_zone))
-    return result
+  def Run(self, args):
+    zones_client = managed_zones.Client.FromApiVersion('v1')
+    return _Update(zones_client, args)

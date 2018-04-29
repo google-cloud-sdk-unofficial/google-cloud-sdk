@@ -13,14 +13,15 @@
 # limitations under the License.
 """Command for signing jwts for service accounts."""
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SignJwt(base_classes.BaseIamCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class SignJwt(base.Command):
   """Sign a JWT with a managed service account key.
 
   This command signs a JWT using a system-managed service account key.
@@ -55,11 +56,12 @@ class SignJwt(base_classes.BaseIamCommand):
         'written to.')
 
   def Run(self, args):
-    response = self.iam_client.projects_serviceAccounts.SignJwt(
-        self.messages.IamProjectsServiceAccountsSignJwtRequest(
+    client, messages = util.GetClientAndMessages()
+    response = client.projects_serviceAccounts.SignJwt(
+        messages.IamProjectsServiceAccountsSignJwtRequest(
             name=iam_util.EmailToAccountResourceName(args.iam_account),
-            signJwtRequest=self.messages.SignJwtRequest(payload=self.ReadFile(
-                args.input))))
+            signJwtRequest=messages.SignJwtRequest(
+                payload=files.GetFileContents(args.input, binary=False))))
 
     log.WriteToFileOrStdout(
         args.output, content=response.signedJwt, binary=True)

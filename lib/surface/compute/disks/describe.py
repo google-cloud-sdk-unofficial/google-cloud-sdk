@@ -23,7 +23,7 @@ def _CommonArgs(parser):
   Describe.disk_arg.AddArgument(parser, operation_type='describe')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine disk."""
 
@@ -52,6 +52,16 @@ class Describe(base.DescribeCommand):
     return service.Get(request_type(**disk_ref.AsDict()))
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describe a Google Compute Engine disk."""
+
+  @staticmethod
+  def Args(parser):
+    Describe.disk_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=False)
+    _CommonArgs(parser)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
   """Describe a Google Compute Engine disk."""
@@ -69,5 +79,3 @@ Describe.detailed_help = {
         Engine disk in a project.
         """,
 }
-
-DescribeAlpha.detailed_help = Describe.detailed_help

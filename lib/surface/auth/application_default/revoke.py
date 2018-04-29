@@ -14,6 +14,9 @@
 
 """Revoke credentials being used by Application Default Credentials."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import os
 
 from googlecloudsdk.api_lib.auth import util as auth_util
@@ -22,6 +25,7 @@ from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
+
 from oauth2client import client
 
 

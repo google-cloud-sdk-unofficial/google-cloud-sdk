@@ -146,8 +146,9 @@ class SnapshotDisks(base.SilentCommand):
                 sourceDiskEncryptionKey=disk_key_or_none
             ),
             project=disk_ref.project,
-            region=disk_ref.region,
-            guestFlush=args.guest_flush)
+            region=disk_ref.region)
+        if hasattr(request, 'guestFlush'):
+          request.guestFlush = args.guest_flush
         requests.append((client.regionDisks, 'CreateSnapshot', request))
 
     errors_to_collect = []
@@ -185,7 +186,8 @@ class SnapshotDisksBeta(SnapshotDisks):
 
   @staticmethod
   def Args(parser):
-    SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
+    SnapshotDisks.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(
+        plural=True)
     _CommonArgs(parser)
 
 
@@ -201,4 +203,3 @@ class SnapshotDisksAlpha(SnapshotDisks):
 
 
 SnapshotDisks.detailed_help = DETAILED_HELP
-SnapshotDisksBeta.detailed_help = DETAILED_HELP

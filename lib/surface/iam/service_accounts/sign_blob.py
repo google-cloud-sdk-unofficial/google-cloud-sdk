@@ -15,12 +15,14 @@
 
 import textwrap
 
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.api_lib.iam import util
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
-class SignBlob(base_classes.BaseIamCommand):
+class SignBlob(base.Command):
   """Sign a blob with a managed service account key.
 
   This command signs a file containing arbitrary binary data (a blob) using a
@@ -57,11 +59,12 @@ class SignBlob(base_classes.BaseIamCommand):
                         'written to.')
 
   def Run(self, args):
-    response = self.iam_client.projects_serviceAccounts.SignBlob(
-        self.messages.IamProjectsServiceAccountsSignBlobRequest(
+    client, messages = util.GetClientAndMessages()
+    response = client.projects_serviceAccounts.SignBlob(
+        messages.IamProjectsServiceAccountsSignBlobRequest(
             name=iam_util.EmailToAccountResourceName(args.iam_account),
-            signBlobRequest=self.messages.SignBlobRequest(
-                bytesToSign=self.ReadFile(args.input))))
+            signBlobRequest=messages.SignBlobRequest(
+                bytesToSign=files.GetFileContents(args.input, binary=True))))
 
     log.WriteToFileOrStdout(
         args.output, content=response.signature, binary=True)

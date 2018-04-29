@@ -16,12 +16,12 @@
 
 import textwrap
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Show metadata for a service account from a project."""
 
   detailed_help = {
@@ -47,6 +47,7 @@ class Describe(base_classes.BaseIamCommand, base.DescribeCommand):
 
   def Run(self, args):
     # TODO(b/25212870): use resource parsing.
-    return self.iam_client.projects_serviceAccounts.Get(
-        self.messages.IamProjectsServiceAccountsGetRequest(
+    client, messages = util.GetClientAndMessages()
+    return client.projects_serviceAccounts.Get(
+        messages.IamProjectsServiceAccountsGetRequest(
             name=iam_util.EmailToAccountResourceName(args.service_account)))

@@ -14,6 +14,9 @@
 
 """Command return config and auth context for use by external tools."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import config_helper
 from googlecloudsdk.core import properties

@@ -11,21 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for updating a custom role."""
+
 import httplib
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.iam import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import http_retry
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core.console import console_io
 
 
-class Update(base_classes.BaseIamCommand):
+class Update(base.Command):
   """Update an IAM custom role.
 
   This command updates an IAM custom role.
@@ -73,8 +74,7 @@ class Update(base_classes.BaseIamCommand):
     flags.GetCustomRoleFlag('update').AddToParser(parser)
 
   def Run(self, args):
-    iam_client = apis.GetClientInstance('iam', 'v1')
-    messages = apis.GetMessagesModule('iam', 'v1')
+    client, messages = util.GetClientAndMessages()
     role_name = iam_util.GetRoleName(args.organization, args.project, args.role)
     role = messages.Role()
     if args.file:
@@ -92,10 +92,10 @@ class Update(base_classes.BaseIamCommand):
             prompt_string='Replace existing role',
             cancel_on_no=True)
       if not args.quiet:
-        self.WarnPermissions(iam_client, messages, role.includedPermissions,
+        self.WarnPermissions(client, messages, role.includedPermissions,
                              args.project, args.organization)
       try:
-        res = iam_client.organizations_roles.Patch(
+        res = client.organizations_roles.Patch(
             messages.IamOrganizationsRolesPatchRequest(
                 name=role_name, role=role))
         iam_util.SetRoleStageIfAlpha(res)
@@ -112,7 +112,7 @@ class Update(base_classes.BaseIamCommand):
       except apitools_exceptions.HttpError as e:
         raise exceptions.HttpException(e)
 
-    res = self.UpdateWithFlags(args, role_name, role, iam_client, messages)
+    res = self.UpdateWithFlags(args, role_name, role, client, messages)
     iam_util.SetRoleStageIfAlpha(res)
     return res
 

@@ -21,12 +21,12 @@ from googlecloudsdk.command_lib.compute import sign_url_utils
 from googlecloudsdk.command_lib.compute import signed_url_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SignUrl(base.Command):
   """Sign specified URL for use with Cloud CDN Signed URLs.
 
-  *{command}* is used to generate a signed URL for the specified URL and
-  optionally validate the response by sending a request to the signed URL.
+  *{command}* generates a signed URL for the specified URL and
+  optionally validates the response by sending a request to the signed URL.
 
   Cloud CDN Signed URLs give you a way to serve responses from the
   globally distributed CDN cache, even if the request needs to be

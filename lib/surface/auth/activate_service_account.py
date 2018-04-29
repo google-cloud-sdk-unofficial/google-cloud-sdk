@@ -14,6 +14,9 @@
 
 """A simple auth command to bootstrap authentication with oauth2."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import getpass
 import json
 

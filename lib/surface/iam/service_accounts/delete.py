@@ -16,14 +16,14 @@
 
 import textwrap
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base_classes.BaseIamCommand, base.DeleteCommand):
+class Delete(base.DeleteCommand):
   """Delete a service account from a project."""
 
   detailed_help = {
@@ -44,8 +44,9 @@ class Delete(base_classes.BaseIamCommand, base.DeleteCommand):
         message='You are about to delete service '
         'account [{0}].'.format(args.service_account),
         cancel_on_no=True)
-    self.iam_client.projects_serviceAccounts.Delete(
-        self.messages.IamProjectsServiceAccountsDeleteRequest(
+    client, messages = util.GetClientAndMessages()
+    client.projects_serviceAccounts.Delete(
+        messages.IamProjectsServiceAccountsDeleteRequest(
             name=iam_util.EmailToAccountResourceName(args.service_account)))
 
     log.status.Print('deleted service account [{0}]'.format(

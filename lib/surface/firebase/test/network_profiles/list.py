@@ -46,6 +46,7 @@ class List(base.ListCommand):
               )"
           )
     """)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """Run the 'gcloud firebase test network-profiles list' command.

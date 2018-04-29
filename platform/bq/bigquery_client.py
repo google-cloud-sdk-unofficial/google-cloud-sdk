@@ -121,14 +121,6 @@ def _FormatLabels(labels):
   return '\n'.join(result_lines)
 
 
-def _RemoveEmptyLocation(d):
-  """Remove the 'location' key from a dict if it is present without a value."""
-  if 'location' in d and not d['location']:
-    # Do not send an empty location. This avoids errors against a server that
-    # does not have job location support yet.
-    del d['location']
-
-
 def _FormatProjectIdentifierForTransfers(project_reference, location):
   """Formats a project identifier for data transfers.
 
@@ -1004,9 +996,7 @@ class BigqueryClient(object):
           'Unknown %r' % (reference,), {'reason': 'notFound'}, [])
 
     if isinstance(reference, ApiClientHelper.JobReference):
-      job_reference_dict = dict(reference)
-      _RemoveEmptyLocation(job_reference_dict)
-      return self.apiclient.jobs().get(**job_reference_dict).execute()
+      return self.apiclient.jobs().get(**dict(reference)).execute()
     elif isinstance(reference, ApiClientHelper.DatasetReference):
       return self.apiclient.datasets().get(**dict(reference)).execute()
     elif isinstance(reference, ApiClientHelper.TableReference):
@@ -2975,9 +2965,7 @@ class BigqueryClient(object):
         projectId=project_id,
         jobId=job_id,
         location=location)
-    job_reference_dict = dict(job_reference)
-    _RemoveEmptyLocation(job_reference_dict)
-    result = self.apiclient.jobs().cancel(**job_reference_dict).execute()['job']
+    result = self.apiclient.jobs().cancel(**dict(job_reference)).execute()['job']
     if result['status']['state'] != 'DONE' and self.sync:
       job_reference = BigqueryClient.ConstructObjectReference(result)
       result = self.WaitJob(job_reference=job_reference)
@@ -3131,9 +3119,7 @@ class BigqueryClient(object):
     """
     _Typecheck(job_reference, ApiClientHelper.JobReference, method='PollJob')
     wait = BigqueryClient.NormalizeWait(wait)
-    job_reference_dict = dict(job_reference)
-    _RemoveEmptyLocation(job_reference_dict)
-    job = self.apiclient.jobs().get(**job_reference_dict).execute()
+    job = self.apiclient.jobs().get(**dict(job_reference)).execute()
     current = job['status']['state']
     return (current == status, job)
 
@@ -3737,7 +3723,6 @@ class _JobTableReader(_TableReader):
       kwds['pageToken'] = page_token
     else:
       kwds['startIndex'] = start_row
-    _RemoveEmptyLocation(kwds)
     data = self._apiclient.jobs().getQueryResults(**kwds).execute()
     if not data['jobComplete']:
       raise BigqueryError('Job %s is not done' % (self,))

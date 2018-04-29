@@ -23,6 +23,8 @@ for this command tree.  You can implement methods in this class to override some
 of the default behavior.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 

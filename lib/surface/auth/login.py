@@ -14,6 +14,9 @@
 
 """The auth command gets tokens via oauth2."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import textwrap
 
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions

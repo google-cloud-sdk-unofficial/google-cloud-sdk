@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine persistent disk.
 
@@ -93,8 +93,8 @@ class Update(base.UpdateCommand):
             disk_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(base.UpdateCommand):
   r"""Update a Google Compute Engine persistent disk.
 
   *{command}* updates a Google Compute Engine persistent disk.

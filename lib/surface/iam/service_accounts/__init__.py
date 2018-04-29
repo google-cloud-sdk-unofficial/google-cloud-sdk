@@ -15,7 +15,6 @@
 
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import resources
 
 
 class ServiceAccounts(base.Group):

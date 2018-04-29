@@ -21,6 +21,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Reset(base.UpdateCommand):
   """Resets a Cloud TPU.
 
@@ -41,11 +42,11 @@ class Reset(base.UpdateCommand):
   def Run(self, args):
     tpu = args.tpu_id
     console_io.PromptContinue(
-        'Your TPU [{}] will be reset.'.format(tpu),
+        'You are about to reset tpu [{}].'.format(tpu),
         default=True,
         cancel_on_no=True,
-        cancel_string='Reset aborted by user.')
+        cancel_string='Aborted by user.')
 
     result = cli_util.Reset(args.tpu_id, args.zone)
-    log.err.Print('Reset [{0}].'.format(args.tpu_id))
+    log.err.Print('Reset tpu [{0}].'.format(args.tpu_id))
     return result

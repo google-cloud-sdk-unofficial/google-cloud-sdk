@@ -49,9 +49,7 @@ def _CommonArgs(parser):
       help=('The service configuration file (or files) containing the API '
             'specification to upload. Proto Descriptors, Open API (Swagger) '
             'specifications, and Google Service Configuration files in JSON '
-            'and YAML formats are acceptable. When uploading proto '
-            'descriptors, you can optionally pass the uncompiled proto '
-            'files as well.'))
+            'and YAML formats are acceptable.'))
   base.ASYNC_FLAG.AddToParser(parser)
 
 
@@ -176,6 +174,9 @@ class _BaseDeploy(object):
 
     self.validate_only = args.validate_only
 
+    # TODO(b/77867100): remove .proto support and deprecation warning.
+    give_proto_deprecate_warning = False
+
     # If we're not doing a validate-only run, we don't want to output the
     # resource directly unless the user specifically requests it using the
     # --format flag. The Epilog will show useful information after deployment
@@ -250,14 +251,20 @@ class _BaseDeploy(object):
             self.MakeConfigFileMessage(config_contents, service_config_file,
                                        file_types.FILE_DESCRIPTOR_SET_PROTO))
       elif services_util.IsRawProto(service_config_file):
+        give_proto_deprecate_warning = True
         config_files.append(
             self.MakeConfigFileMessage(config_contents, service_config_file,
                                        file_types.PROTO_FILE))
       else:
         raise calliope_exceptions.BadFileException((
             'Could not determine the content type of file [{0}]. Supported '
-            'extensions are .json .yaml .yml .pb .proto and '
-            '.descriptor').format(service_config_file))
+            'extensions are .json .yaml .yml .pb and .descriptor').format(
+                service_config_file))
+
+    if give_proto_deprecate_warning:
+      log.warning(
+          'Support for uploading uncompiled .proto files is deprecated and '
+          'will soon be removed. Use compiled descriptor sets (.pb) instead.')
 
     # Check to see if the Endpoints meta service needs to be enabled.
     enable_api.EnableServiceIfDisabled(
@@ -340,10 +347,7 @@ class Deploy(_BaseDeploy, base.Command):
      to Google Service Management. As input, it takes one or more paths
      to service configurations that should be uploaded. These configuration
      files can be Proto Descriptors, Open API (Swagger) specifications,
-     or Google Service Configuration files in JSON or YAML formats. When
-     specifying Proto Descriptors, you can optionally pass in the uncompiled
-     proto files as well to enable documentation for your API in the Endpoints
-     Developer Portal.
+     or Google Service Configuration files in JSON or YAML formats.
 
      If a service name is present in multiple configuration files (given
      in the `host` field in OpenAPI specifications or the `name` field in

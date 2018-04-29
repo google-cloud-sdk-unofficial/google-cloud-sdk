@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
-
 _SSL_POLICY_ARG = flags.GetSslPolicyArgument()
 
 
@@ -47,10 +46,9 @@ class Update(base.UpdateCommand):
     """Issues the request to update a SSL policy."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     helper = ssl_policies_utils.SslPolicyHelper(holder)
-    ssl_policy_ref = _SSL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources)
+    ssl_policy_ref = _SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
 
-    custom_features = Update._GetCustomFeatures(args)
+    include_custom_features, custom_features = Update._GetCustomFeatures(args)
     existing_ssl_policy = helper.Describe(ssl_policy_ref)
 
     patch_ssl_policy = helper.GetSslPolicyForPatch(
@@ -58,13 +56,24 @@ class Update(base.UpdateCommand):
         profile=args.profile,
         min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
         custom_features=custom_features)
-    operation_ref = helper.Patch(ssl_policy_ref, patch_ssl_policy,
-                                 custom_features is not None)
+    operation_ref = helper.Patch(
+        ssl_policy_ref, patch_ssl_policy, include_custom_features and
+        not custom_features)
     return helper.WaitForOperation(ssl_policy_ref, operation_ref,
                                    'Updating SSL policy')
 
   @staticmethod
   def _GetCustomFeatures(args):
+    """Returns the custom features specified on the command line.
+
+    Args:
+      args: The arguments passed to this command from the command line.
+
+    Returns:
+      A tuple. The first element in the tuple indicates whether custom
+      features must be included in the request or not. The second element in
+      the tuple specifies the list of custom features.
+    """
     # Clear custom_features if profile is not CUSTOM
     if args.IsSpecified('profile') and args.profile != 'CUSTOM':
       # pylint: disable=g-explicit-length-test
@@ -76,10 +85,10 @@ class Update(base.UpdateCommand):
             'when using non-CUSTOM profiles.')
       # When switching to non-CUSTOM profile, always clear the custom_features
       # explicitly in the patch request.
-      return []
+      return (True, [])
     elif args.IsSpecified('custom_features'):
       # User specified custom features will be part of the patch request.
-      return args.custom_features
+      return (True, args.custom_features)
     else:
       # Custom features will not be sent as part of the patch request.
-      return None
+      return (False, [])

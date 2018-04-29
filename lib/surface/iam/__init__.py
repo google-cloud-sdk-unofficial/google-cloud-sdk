@@ -11,19 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """The super-group for the IAM CLI."""
-import argparse
-import sys
 
-from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Iam(base.Group):
   """Manage IAM service accounts and keys.
 
@@ -44,6 +39,3 @@ class Iam(base.Group):
 
   def Filter(self, context, args):
     base.DisableUserProjectQuota()
-    context['iam-client'] = apis.GetClientInstance('iam', 'v1')
-    context['iam-messages'] = apis.GetMessagesModule('iam', 'v1')
-    context['iam-resources'] = resources

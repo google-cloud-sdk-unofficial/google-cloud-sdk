@@ -42,8 +42,7 @@ def _CommonArgs(parser):
         """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resize(base.Command):
   """Set size of a persistent disk."""
 
@@ -108,6 +107,15 @@ Resize.detailed_help = {
 
         This assumes that original size of each of these disks is 6TB or less.
         """}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ResizeBeta(Resize):
+
+  @classmethod
+  def Args(cls, parser):
+    Resize.DISKS_ARG = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    _CommonArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

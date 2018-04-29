@@ -33,11 +33,11 @@ class AddLabels(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    # Regional disk is in Alpha only.
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      cls.DISK_ARG = disks_flags.MakeDiskArgZonalOrRegional(plural=False)
-    else:
+    # Regional disk is in Alpha and Beta only.
+    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
       cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
+    else:
+      cls.DISK_ARG = disks_flags.MakeDiskArgZonalOrRegional(plural=False)
     cls.DISK_ARG.AddArgument(parser)
     labels_flags.AddArgsForAddLabels(parser)
 

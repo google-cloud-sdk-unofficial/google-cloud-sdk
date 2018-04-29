@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a model.
 

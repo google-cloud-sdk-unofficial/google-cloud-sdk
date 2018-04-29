@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.compute.tpus import util as cli_util
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Create a new Cloud TPU.
 
@@ -72,5 +73,5 @@ class Create(base.CreateCommand):
         version=args.version,
         zone=args.zone)
 
-    log.CreatedResource(tpu)
+    log.CreatedResource(tpu, 'tpu')
     return operation_result.response

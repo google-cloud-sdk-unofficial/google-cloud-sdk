@@ -20,6 +20,9 @@ from googlecloudsdk.command_lib.compute import scope
 from googlecloudsdk.command_lib.compute.sole_tenancy.hosts import flags as hosts_flags
 
 
+@base.Deprecate(
+    error=('New host creation is disabled. Please use '
+           '`gcloud alpha compute sole-tenancy node-groups` instead.'))
 class Create(base.CreateCommand):
   """Create Google Compute Engine sole-tenancy hosts."""
 

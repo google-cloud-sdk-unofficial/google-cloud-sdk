@@ -13,6 +13,8 @@
 # limitations under the License.
 """Upload a directory tree."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 import os
 

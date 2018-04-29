@@ -35,4 +35,5 @@ class Describe(base_commands.VariableRetrieverCommand):
 
   def Run(self, args):
     result = super(Describe, self).Run(args)
-    return util.FormatVariable(result)
+    # Describe always returns the value.
+    return util.FormatVariable(result, True)

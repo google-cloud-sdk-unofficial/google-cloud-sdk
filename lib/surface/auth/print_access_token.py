@@ -15,6 +15,9 @@
 """A hidden command that prints access tokens.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc

@@ -5,7 +5,7 @@
 
       To get a list of available Tesnorflow versions for your location run:
 
-        $ {parent} list
+        $ {parent_command} list
 
   request:
     collection:  tpu.projects.locations.tensorflowVersions

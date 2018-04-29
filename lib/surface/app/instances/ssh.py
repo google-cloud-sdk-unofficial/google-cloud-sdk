@@ -14,6 +14,7 @@
 
 """The `app instances ssh` command."""
 
+from __future__ import absolute_import
 import argparse
 import textwrap
 

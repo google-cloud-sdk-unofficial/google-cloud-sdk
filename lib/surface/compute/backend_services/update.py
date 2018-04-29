@@ -418,6 +418,8 @@ class UpdateBeta(UpdateGA):
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
+    signed_url_flags.AddSignedUrlCacheMaxAge(
+        parser, required=False, unspecified_help='')
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -431,6 +433,13 @@ class UpdateBeta(UpdateGA):
       replacement.customRequestHeaders = []
     if args.custom_request_header is not None:
       replacement.customRequestHeaders = args.custom_request_header
+
+    backend_services_utils.ApplyCdnPolicyArgs(
+        client,
+        args,
+        replacement,
+        is_update=True,
+        apply_signed_url_cache_max_age=True)
 
     return replacement
 
@@ -456,6 +465,7 @@ class UpdateBeta(UpdateGA):
         args.protocol,
         args.security_policy is not None,
         args.session_affinity is not None,
+        args.IsSpecified('signed_url_cache_max_age'),
         args.timeout is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')

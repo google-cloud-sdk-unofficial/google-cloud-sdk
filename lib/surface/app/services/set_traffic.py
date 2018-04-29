@@ -13,6 +13,7 @@
 # limitations under the License.
 """`gcloud app services set-traffic` command."""
 
+from __future__ import absolute_import
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import service_util
@@ -22,6 +23,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
+import six
 
 
 class TrafficSplitError(exceptions.Error):
@@ -96,7 +98,7 @@ for more information.""")
 
     display_allocations = []
     for service in services:
-      for version, split in allocations.iteritems():
+      for version, split in six.iteritems(allocations):
         display_allocations.append('{0}/{1}/{2}: {3}'.format(
             api_client.project,
             service.id,

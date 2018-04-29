@@ -10,13 +10,11 @@
 
   arguments:
     resource:
-      help_text: The ID of the job to create.
-      spec: !REF googlecloudsdk.command_lib.scheduler.resources:location
-      is_parent_resource: True
+      help_text: The job to create.
+      spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
       removed_flags: [ location ]
     params:
-      - _COMMON_: args.schedule
-      - _COMMON_: args.timezone
+      - _COMMON_args
       - api_field: job.pubsubTarget.topicName
         arg_name: topic
         required: True
@@ -25,13 +23,20 @@
         help_text: |
           The name of the Google Cloud Pub/Sub topic to publish to when the job
           runs.
-      - arg_name: message-body
-        required: True
-        type: googlecloudsdk.command_lib.scheduler.util:ParseMessageBody
-        help_text: |
-          The body of the message to publish to the given topic name.
-          Information on message formatting and size limits can be found at:
-          https://cloud.google.com/pubsub/docs/publisher#publish
+      - group:
+          mutex: True
+          required: True
+          help_text: |
+            The body of the message to publish to the given topic name.
+            Information on message formatting and size limits can be found at:
+            https://cloud.google.com/pubsub/docs/publisher#publish
+          params:
+          - arg_name: message-body
+            type: googlecloudsdk.command_lib.scheduler.util:ParseMessageBody
+            help_text: The body of the message.
+          - arg_name: message-body-from-file
+            type: googlecloudsdk.command_lib.scheduler.util:ParseMessageBodyFromFile
+            help_text: Path to a file containing the body of the message.
       - arg_name: attributes
         type: googlecloudsdk.command_lib.scheduler.util:ParseAttributes
         help_text: |

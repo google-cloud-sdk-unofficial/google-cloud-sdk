@@ -14,12 +14,9 @@
 
 """gcloud dns managed-zone describe command."""
 
-from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.dns import managed_zones
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -37,22 +34,13 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetDnsZoneArg(
+    flags.GetZoneResourceArg(
         'The name of the managed-zone to be described.').AddToParser(parser)
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1')
-    zone_ref = resources.REGISTRY.Parse(
-        args.dns_zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
-
-    return dns.managedZones.Get(
-        dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.managedZone))
+    zones_client = managed_zones.Client.FromApiVersion('v1')
+    zone_ref = args.CONCEPTS.zone.Parse()
+    return zones_client.Get(zone_ref)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -70,19 +58,10 @@ class DescribeBeta(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetDnsZoneArg(
+    flags.GetZoneResourceArg(
         'The name of the managed-zone to be described.').AddToParser(parser)
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1beta2')
-    zone_ref = util.GetRegistry('v1beta2').Parse(
-        args.dns_zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
-
-    return dns.managedZones.Get(
-        dns.MESSAGES_MODULE.DnsManagedZonesGetRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.managedZone))
+    zones_client = managed_zones.Client.FromApiVersion('v1beta2')
+    zone_ref = args.CONCEPTS.zone.Parse()
+    return zones_client.Get(zone_ref)

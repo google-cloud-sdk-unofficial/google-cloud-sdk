@@ -13,14 +13,15 @@
 # limitations under the License.
 """Command for deleting user-managed service account keys."""
 
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.api_lib.iam import util
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base_classes.BaseIamCommand):
+class Delete(base.Command):
   """Delete a user-managed key from a service account."""
 
   @staticmethod
@@ -48,8 +49,10 @@ class Delete(base_classes.BaseIamCommand):
         message='You are about to delete key [{0}] for service '
         'account [{1}].'.format(args.key, args.account),
         cancel_on_no=True)
-    self.iam_client.projects_serviceAccounts_keys.Delete(
-        self.messages.IamProjectsServiceAccountsKeysDeleteRequest(
+
+    client, messages = util.GetClientAndMessages()
+    client.projects_serviceAccounts_keys.Delete(
+        messages.IamProjectsServiceAccountsKeysDeleteRequest(
             name=key_ref.RelativeName()))
 
     log.status.Print('deleted key [{1}] for service account [{0}]'.format(

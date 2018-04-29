@@ -28,7 +28,3 @@ class Spanner(base.Group):
   @staticmethod
   def Args(parser):
     parser.display_info.AddUriFunc(_GetUri)
-
-  def Filter(self, context, args):
-    del context, args
-    base.DisableUserProjectQuota()

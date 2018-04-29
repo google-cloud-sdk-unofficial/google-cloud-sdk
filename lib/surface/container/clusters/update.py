@@ -182,7 +182,9 @@ class Update(base.UpdateCommand):
                                            enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
+    flags.AddStartCredentialRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
+    flags.AddCompleteCredentialRotationFlag(group)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
@@ -270,30 +272,52 @@ class Update(base.UpdateCommand):
         op_ref = adapter.SetNetworkPolicy(cluster_ref, options)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif args.start_ip_rotation:
+    elif args.start_ip_rotation or args.start_credential_rotation:
+      if args.start_ip_rotation:
+        msg_tmpl = """This will start an IP Rotation on cluster [{name}]. The \
+master will be updated to serve on a new IP address in addition to the current \
+IP address. Kubernetes Engine will then recreate all nodes ({num_nodes} nodes) \
+to point to the new IP address. This operation is long-running and will block \
+other operations on the cluster (including delete) until it has run to \
+completion."""
+        rotate_credentials = False
+      elif args.start_credential_rotation:
+        msg_tmpl = """This will start an IP and Credentials Rotation on cluster\
+ [{name}]. The master will be updated to serve on a new IP address in addition \
+to the current IP address, and cluster credentials will be rotated. Kubernetes \
+Engine will then recreate all nodes ({num_nodes} nodes) to point to the new IP \
+address. This operation is long-running and will block other operations on the \
+cluster (including delete) until it has run to completion."""
+        rotate_credentials = True
       console_io.PromptContinue(
-          message='This will start an IP Rotation on cluster [{name}]. The '
-          'master will be updated to serve on a new IP address in addition to '
-          'the current IP address. Kubernetes Engine will then recreate all '
-          'nodes ({num_nodes} nodes) to point to the new IP address. This '
-          'operation is long-running and will block other operations on the '
-          'cluster (including delete) until it has run to completion.'.format(
+          message=msg_tmpl.format(
               name=cluster.name, num_nodes=cluster.currentNodeCount),
           cancel_on_no=True)
       try:
-        op_ref = adapter.StartIpRotation(cluster_ref)
+        op_ref = adapter.StartIpRotation(
+            cluster_ref, rotate_credentials=rotate_credentials)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif args.complete_ip_rotation:
+    elif args.complete_ip_rotation or args.complete_credential_rotation:
+      if args.complete_ip_rotation:
+        msg_tmpl = """This will complete the in-progress IP Rotation on \
+cluster [{name}]. The master will be updated to stop serving on the old IP \
+address and only serve on the new IP address. Make sure all API clients have \
+been updated to communicate with the new IP address (e.g. by running `gcloud \
+container clusters get-credentials --project {project} --zone {zone} {name}`). \
+This operation is long-running and will block other operations on the cluster \
+(including delete) until it has run to completion."""
+      elif args.complete_credential_rotation:
+        msg_tmpl = """This will complete the in-progress Credential Rotation on\
+ cluster [{name}]. The master will be updated to stop serving on the old IP \
+address and only serve on the new IP address. Old cluster credentials will be \
+invalidated. Make sure all API clients have been updated to communicate with \
+the new IP address (e.g. by running `gcloud container clusters get-credentials \
+--project {project} --zone {zone} {name}`). This operation is long-running and \
+will block other operations on the cluster (including delete) until it has run \
+to completion."""
       console_io.PromptContinue(
-          message='This will complete the in-progress IP Rotation on cluster '
-          '[{name}]. The master will be updated to stop serving on the old IP '
-          'address and only serve on the new IP address. Make sure all API '
-          'clients have been updated to communicate with the new IP address '
-          '(e.g. by running `gcloud container clusters get-credentials '
-          '--project {project} --zone {zone} {name}`). This operation is long-'
-          'running and will block other operations on the cluster (including '
-          'delete) until it has run to completion.'.format(
+          message=msg_tmpl.format(
               name=cluster.name,
               project=cluster_ref.projectId,
               zone=cluster.zone),
@@ -340,7 +364,8 @@ class Update(base.UpdateCommand):
       log.status.Print(
           'To inspect the contents of your cluster, go to: ' + cluster_url)
 
-      if args.start_ip_rotation or args.complete_ip_rotation:
+      if (args.start_ip_rotation or args.complete_ip_rotation or
+          args.start_credential_rotation or args.complete_credential_rotation):
         cluster = adapter.GetCluster(cluster_ref)
         try:
           util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
@@ -365,7 +390,9 @@ class UpdateBeta(Update):
                                            enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
+    flags.AddStartCredentialRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
+    flags.AddCompleteCredentialRotationFlag(group)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
@@ -396,7 +423,9 @@ class UpdateAlpha(Update):
                                            enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
+    flags.AddStartCredentialRotationFlag(group)
     flags.AddCompleteIpRotationFlag(group)
+    flags.AddCompleteCredentialRotationFlag(group)
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)

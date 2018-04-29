@@ -415,6 +415,7 @@ class CreateBeta(CreateGA):
     flags.AddCacheKeyIncludeHost(parser, default=True)
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
     flags.AddCacheKeyQueryStringList(parser)
+    signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
     AddIapFlag(parser)
 
   def CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -439,7 +440,11 @@ class CreateBeta(CreateGA):
       backend_service.customRequestHeaders = args.custom_request_header
 
     backend_services_utils.ApplyCdnPolicyArgs(
-        client, args, backend_service, is_update=False)
+        client,
+        args,
+        backend_service,
+        is_update=False,
+        apply_signed_url_cache_max_age=True)
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 

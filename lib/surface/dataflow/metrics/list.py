@@ -14,6 +14,8 @@
 """Implementation of gcloud dataflow metrics list command.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import re
 
 from googlecloudsdk.api_lib.dataflow import apis

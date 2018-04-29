@@ -11,17 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for creating a role from an existing role."""
 
 from googlecloudsdk.api_lib.iam import util
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.exceptions import RequiredArgumentException
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 
 
-class Copy(base_classes.BaseIamCommand):
+class Copy(base.Command):
   r"""Create a role from an existing role.
 
   This command creates a role from an existing role.
@@ -67,8 +67,7 @@ class Copy(base_classes.BaseIamCommand):
         '--dest-project', help='The project of the destination role.')
 
   def Run(self, args):
-    iam_client = apis.GetClientInstance('iam', 'v1')
-    messages = apis.GetMessagesModule('iam', 'v1')
+    client, messages = util.GetClientAndMessages()
     if args.source is None:
       raise RequiredArgumentException('source', 'the source role is required.')
     if args.destination is None:
@@ -85,14 +84,14 @@ class Copy(base_classes.BaseIamCommand):
         args.dest_project,
         attribute='the destination custom role')
 
-    source_role = iam_client.organizations_roles.Get(
+    source_role = client.organizations_roles.Get(
         messages.IamOrganizationsRolesGetRequest(name=source_role_name))
 
     new_role = messages.Role(
         title=source_role.title,
         description=source_role.description)
 
-    permissions_helper = util.PermissionsHelper(iam_client, messages,
+    permissions_helper = util.PermissionsHelper(client, messages,
                                                 iam_util.GetResourceReference(
                                                     args.dest_project,
                                                     args.dest_organization),
@@ -115,7 +114,7 @@ class Copy(base_classes.BaseIamCommand):
     valid_permissions = permissions_helper.GetValidPermissions()
     new_role.includedPermissions = valid_permissions
 
-    result = iam_client.organizations_roles.Create(
+    result = client.organizations_roles.Create(
         messages.IamOrganizationsRolesCreateRequest(
             createRoleRequest=messages.CreateRoleRequest(
                 role=new_role, roleId=args.destination),

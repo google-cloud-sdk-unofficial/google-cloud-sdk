@@ -14,6 +14,8 @@
 
 """List command for gcloud debug snapshots command group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import datetime
 
 from googlecloudsdk.api_lib.debug import debug
@@ -67,7 +69,7 @@ class List(base.ListCommand):
     # Filter any results more than include_inactive seconds old.
     # include_inactive may be None, which means we do not want to filter the
     # results.
-    if args.include_inactive > 0:
+    if args.include_inactive:
       cutoff_time = (times.Now(times.UTC) -
                      datetime.timedelta(seconds=args.include_inactive))
       snapshots = [s for s in snapshots if _ShouldInclude(s, cutoff_time)]

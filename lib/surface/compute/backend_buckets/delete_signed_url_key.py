@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeleteSignedUrlKey(base.UpdateCommand):
   """Delete Cloud CDN Signed URL key from a backend bucket.
 

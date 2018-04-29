@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a backend bucket.
 
@@ -72,8 +72,8 @@ class Create(base.CreateCommand):
                                  'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Create a backend bucket.
 
   *{command}* is used to create backend buckets. Backend buckets
@@ -84,12 +84,12 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
-    super(CreateAlpha, cls).Args(parser)
+    super(CreateAlphaBeta, cls).Args(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
-    backend_bucket = super(CreateAlpha, self).CreateBackendBucket(args)
+    backend_bucket = super(CreateAlphaBeta, self).CreateBackendBucket(args)
     if args.IsSpecified('signed_url_cache_max_age'):
       holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
       client = holder.client

@@ -139,6 +139,18 @@ def _CommonArgs(parser, source_snapshot_arg):
   labels_util.AddCreateLabelsFlags(parser)
 
 
+def _AddReplicaZonesArg(parser):
+  parser.add_argument(
+      '--replica-zones',
+      type=arg_parsers.ArgList(min_length=2, max_length=2),
+      metavar='ZONE',
+      help=('A comma-separated list of exactly 2 zones that a regional disk '
+            'will be replicated to. Required when creating regional disk. '
+            'The zones must be in the same region as specified in the '
+            '`--region` flag. See available zones with '
+            '`gcloud compute zones list`.'))
+
+
 def _ParseGuestOsFeaturesToMessages(args, client_messages):
   """Parse GuestOS features."""
   guest_os_feature_messages = []
@@ -404,10 +416,16 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
+    Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
+
+    _AddReplicaZonesArg(parser)
+
+  def ValidateAndParseDiskRefs(self, args, compute_holder):
+    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -417,45 +435,52 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
-    parser.add_argument(
-        '--replica-zones',
-        type=arg_parsers.ArgList(),
-        metavar='ZONE1, ZONE2',
-        help=('The zones regional disk will be replicated to. Required when '
-              'creating regional disk.'),
-        hidden=True)
 
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     kms_utils.AddKmsKeyArgs(parser, resource_type='disk')
+    _AddReplicaZonesArg(parser)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
-    if args.replica_zones is None and args.region is not None:
+    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
+
+
+def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):
+  """Validate flags and parse disks references.
+
+  Subclasses may override it to customize parsing.
+
+  Args:
+    args: The argument namespace
+    compute_holder: base_classes.ComputeApiHolder instance
+
+  Returns:
+    List of compute.regionDisks resources.
+  """
+  if not args.IsSpecified('replica_zones') and args.IsSpecified('region'):
+    raise exceptions.RequiredArgumentException(
+        '--replica-zones',
+        '--replica-zones is required for regional disk creation')
+  if args.replica_zones is not None:
+    return create.ParseRegionDisksResources(
+        compute_holder.resources, args.DISK_NAME, args.replica_zones,
+        args.project, args.region)
+
+  disk_refs = Create.disks_arg.ResolveAsResource(
+      args,
+      compute_holder.resources,
+      scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
+
+  # --replica-zones is required for regional disks always - also when region
+  # is selected in prompt.
+  for disk_ref in disk_refs:
+    if disk_ref.Collection() == 'compute.regionDisks':
       raise exceptions.RequiredArgumentException(
           '--replica-zones',
-          '--replica-zones is required for regional disk creation')
-    if args.replica_zones is not None:
-      if len(args.replica_zones) != 2:
-        raise exceptions.InvalidArgumentException(
-            '--replica-zones', 'Exactly two zones are required.')
-      return create.ParseRegionDisksResources(
-          compute_holder.resources, args.DISK_NAME, args.replica_zones,
-          args.project, args.region)
-    disk_refs = Create.disks_arg.ResolveAsResource(
-        args,
-        compute_holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
+          '--replica-zones is required for regional disk creation [{}]'.
+          format(disk_ref.SelfLink()))
 
-    # --replica-zones is required for regional disks always - also when region
-    # is selected in prompt.
-    for disk_ref in disk_refs:
-      if disk_ref.Collection() == 'compute.regionDisks':
-        raise exceptions.RequiredArgumentException(
-            '--replica-zones',
-            '--replica-zones is required for regional disk creation [{}]'.
-            format(disk_ref.SelfLink()))
-
-    return disk_refs
+  return disk_refs
 
 
 Create.detailed_help = DETAILED_HELP

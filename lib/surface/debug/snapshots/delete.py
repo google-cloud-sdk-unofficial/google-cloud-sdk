@@ -14,7 +14,10 @@
 
 """Delete command for gcloud debug snapshots command group."""
 
-import StringIO
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+import io
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
@@ -60,7 +63,7 @@ class Delete(base.DeleteCommand):
         include_inactive=args.include_inactive,
         restrict_to_type=debugger.SNAPSHOT_TYPE)
     if snapshots:
-      snapshot_list = StringIO.StringIO()
+      snapshot_list = io.StringIO()
       resource_printer.Print(
           snapshots, 'table(location, condition, id)', snapshot_list)
       console_io.PromptContinue(

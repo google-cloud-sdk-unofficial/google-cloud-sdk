@@ -19,4 +19,4 @@
   arguments:
     resource:
       help_text: The Cloud TPU to stop.
-      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:node
+      spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:tpu

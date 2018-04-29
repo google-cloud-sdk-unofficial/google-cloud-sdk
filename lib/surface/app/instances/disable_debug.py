@@ -14,6 +14,7 @@
 
 """The `app instances disable-debug` command."""
 
+from __future__ import absolute_import
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.api_lib.app import util

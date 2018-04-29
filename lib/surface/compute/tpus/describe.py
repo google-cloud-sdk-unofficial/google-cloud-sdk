@@ -18,6 +18,7 @@ from googlecloudsdk.command_lib.compute.tpus import flags
 from googlecloudsdk.command_lib.compute.tpus import util as cli_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud TPU."""
 

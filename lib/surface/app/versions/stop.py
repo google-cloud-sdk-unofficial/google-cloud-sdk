@@ -14,6 +14,7 @@
 
 """The Stop command."""
 
+from __future__ import absolute_import
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import version_util

@@ -11,19 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for to list all the roles of a parent organization or a project."""
 
 from apitools.base.py import list_pager
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class List(base_classes.BaseIamCommand, base.ListCommand):
+class List(base.ListCommand):
   """List the roles defined at a parent organization or a project.
 
   This command lists the roles with given parent organization or project.
@@ -55,11 +55,10 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    iam_client = apis.GetClientInstance('iam', 'v1')
-    messages = apis.GetMessagesModule('iam', 'v1')
+    client, messages = util.GetClientAndMessages()
     if args.project is None and args.organization is None:
       return list_pager.YieldFromList(
-          iam_client.roles,
+          client.roles,
           messages.IamRolesListRequest(showDeleted=args.show_deleted),
           field='roles',
           limit=args.limit,
@@ -70,7 +69,7 @@ class List(base_classes.BaseIamCommand, base.ListCommand):
       raise exceptions.ToolException('Limit size must be >=1')
 
     return list_pager.YieldFromList(
-        iam_client.organizations_roles,
+        client.organizations_roles,
         messages.IamOrganizationsRolesListRequest(
             parent=parent_name, showDeleted=args.show_deleted),
         field='roles',

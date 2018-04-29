@@ -138,10 +138,12 @@ class UpdateGA(base.SilentCommand):
 
   def _CheckMissingArgument(self, args):
     if not (args.IsSpecified('ssl_certificates') or
-            args.IsSpecified('url_map')):
+            args.IsSpecified('url_map') or
+            args.IsSpecified('ssl_policy') or
+            args.IsSpecified('clear_ssl_policy')):
       raise exceptions.ToolException(
-          'You must specify at least one of [--ssl-certificates] or '
-          '[--url-map].')
+          'You must specify at least one of [--ssl-certificates], '
+          '[--url-map], [--ssl-policy] or [--clear-ssl-policy].')
 
   def Run(self, args):
     self._CheckMissingArgument(args)

@@ -16,12 +16,13 @@
 
 import textwrap
 
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.api_lib.iam import util
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 
 
-class Create(base_classes.BaseIamCommand):
+class Create(base.Command):
   """Create a private key for a service account."""
 
   detailed_help = {
@@ -56,11 +57,12 @@ class Create(base_classes.BaseIamCommand):
                         'be written.')
 
   def Run(self, args):
-    result = self.iam_client.projects_serviceAccounts_keys.Create(
-        self.messages.IamProjectsServiceAccountsKeysCreateRequest(
+    client, messages = util.GetClientAndMessages()
+    result = client.projects_serviceAccounts_keys.Create(
+        messages.IamProjectsServiceAccountsKeysCreateRequest(
             name=iam_util.EmailToAccountResourceName(args.iam_account),
             createServiceAccountKeyRequest=
-            self.messages.CreateServiceAccountKeyRequest(
+            messages.CreateServiceAccountKeyRequest(
                 privateKeyType=iam_util.KeyTypeToCreateKeyType(
                     iam_util.KeyTypeFromString(args.key_file_type)))))
 

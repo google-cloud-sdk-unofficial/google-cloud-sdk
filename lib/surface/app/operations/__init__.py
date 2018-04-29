@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """The gcloud app operations group."""
+from __future__ import absolute_import
 from googlecloudsdk.calliope import base
 
 

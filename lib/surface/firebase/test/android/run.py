@@ -183,6 +183,8 @@ class _BaseRun(object):
     additional_apks = getattr(args, 'additional_apks', None) or []
     for additional_apk in additional_apks:
       bucket_ops.UploadFileToGcs(additional_apk)
+    for other_files in getattr(args, 'other-files', None) or {}:
+      bucket_ops.UploadFileToGcs(other_files)
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(
@@ -233,6 +235,7 @@ class RunGA(_BaseRun, base.ListCommand):
     arg_util.AddMatrixArgs(parser)
     arg_util.AddAndroidTestArgs(parser)
     arg_util.AddGaArgs(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(util.OUTCOMES_FORMAT)
 
 
@@ -246,6 +249,7 @@ class RunBeta(_BaseRun, base.ListCommand):
     arg_util.AddMatrixArgs(parser)
     arg_util.AddAndroidTestArgs(parser)
     arg_util.AddBetaArgs(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(util.OUTCOMES_FORMAT)
 
 

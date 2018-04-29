@@ -224,6 +224,7 @@ def ParseCreateOptionsBase(args):
       network=args.network,
       node_disk_size_gb=args.disk_size,
       node_labels=args.node_labels,
+      node_locations=args.node_locations,
       node_machine_type=args.machine_type,
       node_taints=args.node_taints,
       num_nodes=args.num_nodes,
@@ -382,7 +383,6 @@ class CreateBeta(Create):
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.accelerators = args.accelerator
-    ops.node_locations = args.node_locations
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
@@ -433,7 +433,6 @@ class CreateAlpha(Create):
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.accelerators = args.accelerator
-    ops.node_locations = args.node_locations
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.min_cpu = args.min_cpu
     ops.max_cpu = args.max_cpu

@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine persistent disks.
 
@@ -91,6 +91,21 @@ class Delete(base.DeleteCommand):
         holder.client.apitools_client, disk_refs))
 
     return holder.client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaDelete(Delete):
+  """Delete Google Compute Engine persistent disks.
+
+  *{command}* deletes one or more Google Compute Engine
+  persistent disks. Disks can be deleted only if they are not
+  being used by any virtual machine instances.
+  """
+
+  @staticmethod
+  def Args(parser):
+    Delete.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    Delete.disks_arg.AddArgument(parser, operation_type='delete')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

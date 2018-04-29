@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A hidden command that prints access tokens.
-"""
+"""A hidden command that prints access tokens."""
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.auth import refresh_token
 from googlecloudsdk.calliope import base

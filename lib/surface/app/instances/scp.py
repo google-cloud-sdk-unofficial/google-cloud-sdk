@@ -14,6 +14,7 @@
 
 """The `app instances ssh` command."""
 
+from __future__ import absolute_import
 import textwrap
 
 from googlecloudsdk.api_lib.app import appengine_api_client
@@ -96,7 +97,7 @@ class Scp(base.Command):
 
     # Make sure we have a unique remote
     dst = ssh.FileReference.FromPath(args.destination)
-    srcs = map(ssh.FileReference.FromPath, args.sources)
+    srcs = [ssh.FileReference.FromPath(source) for source in args.sources]
     ssh.SCPCommand.Verify(srcs, dst, single_remote=True)
 
     remote = dst.remote or srcs[0].remote

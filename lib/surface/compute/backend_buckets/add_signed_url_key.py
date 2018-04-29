@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddSignedUrlKey(base.UpdateCommand):
   """Add Cloud CDN Signed URL key to a backend bucket.
 

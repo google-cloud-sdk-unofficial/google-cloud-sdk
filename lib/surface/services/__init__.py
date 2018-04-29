@@ -14,6 +14,8 @@
 
 """The command group for the Services V1 CLI."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 

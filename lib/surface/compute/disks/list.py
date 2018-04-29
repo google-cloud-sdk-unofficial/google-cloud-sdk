@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.disks import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Compute Engine persistent disks."""
 
@@ -44,20 +44,39 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """List Google Compute Engine persistent disks."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.MULTISCOPE_LIST_FORMAT)
+    parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
+    lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
+    parser.display_info.AddCacheUpdater(completers.DisksCompleter)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+    list_implementation = lister.MultiScopeLister(
+        client,
+        zonal_service=client.apitools_client.disks,
+        regional_service=client.apitools_client.regionDisks,
+        aggregation_service=client.apitools_client.disks)
+
+    return lister.Invoke(request_data, list_implementation)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(base.ListCommand):
   """List Google Compute Engine persistent disks."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""
-        table(name,
-              location(),
-              location_scope(),
-              sizeGb,
-              type.basename(),
-              status)
-    """)
+    parser.display_info.AddFormat(flags.MULTISCOPE_LIST_FORMAT)
     lister.AddMultiScopeListerFlags(parser, zonal=True, regional=True)
     parser.display_info.AddCacheUpdater(completers.DisksCompleter)
 
@@ -77,6 +96,10 @@ class ListAlpha(base.ListCommand):
 
 
 List.detailed_help = base_classes.GetZonalListerHelp('disks')
+ListBeta.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'disks',
+    scopes=[base_classes.ScopeType.zonal_scope,
+            base_classes.ScopeType.regional_scope])
 ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
     'disks',
     scopes=[base_classes.ScopeType.zonal_scope,

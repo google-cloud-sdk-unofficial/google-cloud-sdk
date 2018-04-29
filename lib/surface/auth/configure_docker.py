@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Register gcloud as a Docker credential helper."""
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import json
 
@@ -60,7 +64,7 @@ class ConfigureDocker(base.Command):
             'Invalid Docker version: The version of your Docker client is '
             '[{}]; version [{}] or higher is required to support Docker '
             'credential helpers.'.format(
-                current_config.version,
+                current_config.DockerVersion(),
                 cred_utils.MIN_DOCKER_CONFIG_HELPER_VERSION))
     else:
       log.warning(

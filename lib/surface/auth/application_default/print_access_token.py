@@ -15,12 +15,16 @@
 """A command that prints an access token for Application Default Credentials.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+
 from oauth2client import client
 
 

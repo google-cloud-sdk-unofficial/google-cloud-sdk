@@ -20,6 +20,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Deletes a Cloud TPU."""
 
@@ -38,11 +39,11 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     tpu = args.tpu_id
     console_io.PromptContinue(
-        'Your TPU [{}] will be deleted.'.format(tpu),
+        'You are about to delete tpu [{}]'.format(tpu),
         default=True,
         cancel_on_no=True,
-        cancel_string='Deletion aborted by user.')
+        cancel_string='Aborted by user.')
 
     result = cli_util.Delete(tpu, args.zone)
-    log.DeletedResource(args.tpu_id)
+    log.DeletedResource(args.tpu_id, kind='tpu')
     return result

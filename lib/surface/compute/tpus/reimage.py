@@ -17,6 +17,7 @@ from googlecloudsdk.command_lib.compute.tpus import util as cli_util
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Reimage(base.UpdateCommand):
   """Reimages the OS on a Cloud TPU."""
 
@@ -27,5 +28,5 @@ class Reimage(base.UpdateCommand):
   def Run(self, args):
     tpu_ref = args.CONCEPTS.tpu_id.Parse()
     result = cli_util.Reimage(tpu_ref, args.version, args.zone)
-    log.err.Print('Reimaged [{0}].'.format(tpu_ref.Name()))
+    log.err.Print('Reimaged tpu [{0}].'.format(tpu_ref.Name()))
     return result

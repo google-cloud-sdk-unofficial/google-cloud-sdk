@@ -39,6 +39,7 @@ class List(base.ListCommand):
             tags.list().color(green=default,red=deprecated,yellow=preview)
           )
     """)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """Run the 'gcloud firebase test android versions list' command.

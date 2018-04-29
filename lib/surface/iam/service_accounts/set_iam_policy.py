@@ -13,11 +13,12 @@
 # limitations under the License.
 """Command for setting IAM policies for service accounts."""
 
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.api_lib.iam import util
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class SetIamPolicy(base_classes.BaseIamCommand):
+class SetIamPolicy(base.Command):
   """Set the IAM policy for a service account.
 
   This command replaces the existing IAM policy for a service account, given
@@ -48,12 +49,13 @@ class SetIamPolicy(base_classes.BaseIamCommand):
         'containing a valid policy.')
 
   def Run(self, args):
-    policy = iam_util.ParsePolicyFile(args.policy_file, self.messages.Policy)
+    client, messages = util.GetClientAndMessages()
+    policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
 
-    result = self.iam_client.projects_serviceAccounts.SetIamPolicy(
-        self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
+    result = client.projects_serviceAccounts.SetIamPolicy(
+        messages.IamProjectsServiceAccountsSetIamPolicyRequest(
             resource=iam_util.EmailToAccountResourceName(args.service_account),
-            setIamPolicyRequest=self.messages.SetIamPolicyRequest(
+            setIamPolicyRequest=messages.SetIamPolicyRequest(
                 policy=policy)))
     iam_util.LogSetIamPolicy(args.service_account, 'service account')
     return result

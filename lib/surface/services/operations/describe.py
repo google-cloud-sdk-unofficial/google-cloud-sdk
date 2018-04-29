@@ -14,6 +14,8 @@
 
 """services operations describe command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import sys
 
 from googlecloudsdk.api_lib.services import services_util

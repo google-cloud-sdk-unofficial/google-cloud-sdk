@@ -15,12 +15,13 @@
 
 import httplib
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.util import http_retry
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
+class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a service account.
 
   This command removes a policy binding to the IAM policy of a service account,
@@ -42,14 +43,15 @@ class RemoveIamPolicyBinding(base_classes.BaseIamCommand):
 
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
-    policy = self.iam_client.projects_serviceAccounts.GetIamPolicy(
-        self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
+    client, messages = util.GetClientAndMessages()
+    policy = client.projects_serviceAccounts.GetIamPolicy(
+        messages.IamProjectsServiceAccountsGetIamPolicyRequest(
             resource=iam_util.EmailToAccountResourceName(args.service_account)))
 
     iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
 
-    return self.iam_client.projects_serviceAccounts.SetIamPolicy(
-        self.messages.IamProjectsServiceAccountsSetIamPolicyRequest(
+    return client.projects_serviceAccounts.SetIamPolicy(
+        messages.IamProjectsServiceAccountsSetIamPolicyRequest(
             resource=iam_util.EmailToAccountResourceName(args.service_account),
-            setIamPolicyRequest=self.messages.SetIamPolicyRequest(
+            setIamPolicyRequest=messages.SetIamPolicyRequest(
                 policy=policy)))

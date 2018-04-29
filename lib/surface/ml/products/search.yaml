@@ -39,7 +39,7 @@
         arg_name: category
         help_text: String specifying the product category to search in.
 
-      - api_field: requests.imageContext.productSearchParams.boundingPoly.vertices
+      - api_field: requests.imageContext.productSearchParams.normalizedBoundingPoly.vertices
         arg_name: bounds
         metavar: 'x:y'
         type: googlecloudsdk.command_lib.ml.products.flags:VertexType

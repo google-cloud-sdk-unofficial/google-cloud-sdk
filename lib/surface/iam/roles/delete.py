@@ -11,17 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for deleting a role."""
 
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class Delete(base_classes.BaseIamCommand, base.DescribeCommand):
+class Delete(base.DescribeCommand):
   """Delete a custom role from an organization or a project.
 
   This command deletes a role.
@@ -47,12 +47,11 @@ class Delete(base_classes.BaseIamCommand, base.DescribeCommand):
     flags.GetCustomRoleFlag('delete').AddToParser(parser)
 
   def Run(self, args):
-    iam_client = apis.GetClientInstance('iam', 'v1')
-    messages = apis.GetMessagesModule('iam', 'v1')
     role_name = iam_util.GetRoleName(args.organization, args.project, args.role)
+    client, messages = util.GetClientAndMessages()
     if args.organization is None and args.project is None:
       raise exceptions.InvalidArgumentException(
           'ROLE_ID',
           'You can not delete a curated/predefined role.')
-    return iam_client.organizations_roles.Delete(
+    return client.organizations_roles.Delete(
         messages.IamOrganizationsRolesDeleteRequest(name=role_name))

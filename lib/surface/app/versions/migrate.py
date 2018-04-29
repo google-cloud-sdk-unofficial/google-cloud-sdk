@@ -14,6 +14,7 @@
 
 """The Migrate command."""
 
+from __future__ import absolute_import
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import service_util
@@ -21,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+import six.moves
 
 
 class VersionsMigrateError(exceptions.Error):
@@ -79,7 +81,7 @@ class Migrate(base.Command):
               v.traffic_split > 0 and v.id != args.version)
 
     # All versions that will stop receiving traffic.
-    versions_to_migrate = filter(WillBeMigrated, all_versions)
+    versions_to_migrate = list(six.moves.filter(WillBeMigrated, all_versions))
 
     for version in versions_to_migrate:
       short_name = '{0}/{1}'.format(version.service, version.id)

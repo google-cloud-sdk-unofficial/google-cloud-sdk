@@ -14,7 +14,10 @@
 
 """Delete command for gcloud debug logpoints command group."""
 
-import StringIO
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+import io
 
 from googlecloudsdk.api_lib.debug import debug
 from googlecloudsdk.calliope import base
@@ -63,7 +66,7 @@ class Delete(base.DeleteCommand):
         include_inactive=args.include_inactive,
         restrict_to_type=debugger.LOGPOINT_TYPE)
     if logpoints:
-      logpoint_list = StringIO.StringIO()
+      logpoint_list = io.StringIO()
       resource_printer.Print(
           logpoints,
           'table(location, condition, logLevel, logMessageFormat, id)',

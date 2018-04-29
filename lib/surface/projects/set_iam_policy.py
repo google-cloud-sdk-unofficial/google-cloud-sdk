@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Set IAM policy for a project.
 

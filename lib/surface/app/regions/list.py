@@ -13,6 +13,7 @@
 # limitations under the License.
 """The `app regions list` command."""
 
+from __future__ import absolute_import
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.calliope import base
 

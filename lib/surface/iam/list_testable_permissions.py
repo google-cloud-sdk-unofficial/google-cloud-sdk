@@ -16,13 +16,13 @@
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.iam import exceptions
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.core import resources
 
 
-class ListTestablePermissions(base_classes.BaseIamCommand):
+class ListTestablePermissions(base.Command):
   """List IAM testable permissions for a resource.
 
   Testable permissions mean the permissions that user can add or remove in
@@ -48,20 +48,19 @@ class ListTestablePermissions(base_classes.BaseIamCommand):
     base.FILTER_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    iam_client = apis.GetClientInstance('iam', 'v1')
-    messages = apis.GetMessagesModule('iam', 'v1')
     resource = None
     if args.resource.startswith('//'):
       resource = args.resource
     elif args.resource.startswith('http'):
       resource = iam_util.GetResourceName(
-          self.resources.REGISTRY.Parse(args.resource))
+          resources.REGISTRY.Parse(args.resource))
     if not resource:
       raise exceptions.InvalidResourceException(
           'The given resource is not a valid full resource name or URL.')
 
+    client, messages = util.GetClientAndMessages()
     return list_pager.YieldFromList(
-        iam_client.permissions,
+        client.permissions,
         messages.QueryTestablePermissionsRequest(fullResourceName=resource),
         field='permissions',
         method='QueryTestablePermissions',

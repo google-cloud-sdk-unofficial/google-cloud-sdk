@@ -16,12 +16,12 @@
 
 import textwrap
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
+class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a service account.
 
   This command gets the IAM policy for a service account. If formatted as
@@ -50,6 +50,7 @@ class GetIamPolicy(base_classes.BaseIamCommand, base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    return self.iam_client.projects_serviceAccounts.GetIamPolicy(
-        self.messages.IamProjectsServiceAccountsGetIamPolicyRequest(
+    client, messages = util.GetClientAndMessages()
+    return client.projects_serviceAccounts.GetIamPolicy(
+        messages.IamProjectsServiceAccountsGetIamPolicyRequest(
             resource=iam_util.EmailToAccountResourceName(args.service_account)))

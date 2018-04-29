@@ -17,12 +17,13 @@ import textwrap
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.iam import exceptions
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.core import resources
 
 
-class ListGrantableRoles(base_classes.BaseIamCommand):
+class ListGrantableRoles(base.Command):
   """List IAM grantable roles for a resource.
 
   This command displays the list of grantable roles for a resource.
@@ -62,16 +63,17 @@ class ListGrantableRoles(base_classes.BaseIamCommand):
       resource = args.resource
     if args.resource.startswith('http'):
       # This is a full resource URL that needs to be converted to an atomic path
-      resource_ref = self.resources.REGISTRY.Parse(args.resource)
+      resource_ref = resources.REGISTRY.Parse(args.resource)
       resource = iam_util.GetResourceName(resource_ref)
 
     if not resource:
       raise exceptions.InvalidResourceException(
           'The given resource is not a valid full resource name or URL.')
 
+    client, messages = util.GetClientAndMessages()
     return list_pager.YieldFromList(
-        self.iam_client.roles,
-        self.messages.QueryGrantableRolesRequest(fullResourceName=resource),
+        client.roles,
+        messages.QueryGrantableRolesRequest(fullResourceName=resource),
         field='roles',
         method='QueryGrantableRoles',
         batch_size=args.page_size,

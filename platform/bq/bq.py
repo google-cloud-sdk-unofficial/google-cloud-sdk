@@ -43,6 +43,7 @@ if 'google' in sys.modules:
     import imp
     imp.reload(google)
 
+from google_reauth.reauth_creds import Oauth2WithReauthCredentials
 
 import googleapiclient
 import httplib2
@@ -112,6 +113,7 @@ else:
 _GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
 _BIGQUERY_SCOPE = 'https://www.googleapis.com/auth/bigquery'
 _CLOUD_PLATFORM_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
+_REAUTH_SCOPE = 'https://www.googleapis.com/auth/accounts.reauth'
 
 
 _CLIENT_INFO = {
@@ -345,7 +347,7 @@ def _GetApplicationDefaultCredentialFromFile(filename):
 
   client_scope = _GetClientScopeFromFlags()
   if credentials['type'] == oauth2client_4_0.client.AUTHORIZED_USER:
-    return oauth2client_4_0.client.OAuth2Credentials(
+    return Oauth2WithReauthCredentials(
         access_token=None,
         client_id=credentials['client_id'],
         client_secret=credentials['client_secret'],
@@ -372,6 +374,7 @@ def _GetClientScopeFromFlags():
   client_scope = [_BIGQUERY_SCOPE, _CLOUD_PLATFORM_SCOPE]
   if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
     client_scope.append(_GDRIVE_SCOPE)
+  client_scope.append(_REAUTH_SCOPE)
   return client_scope
 
 
@@ -442,7 +445,6 @@ def _GetCredentialsFromFlags():
     # Note that oauth2client.file ensures the file is created with
     # the correct permissions.
     credentials = credentials_getter(storage)
-    credentials.set_store(storage)
 
 
   # Save credentials to storage now to reuse and also avoid a warning message.
@@ -456,6 +458,11 @@ def _GetCredentialsFromFlags():
     except BaseException as e:  # pylint: disable=broad-except
       _RaiseCredentialsCorrupt(e)
 
+  if type(credentials) == oauth2client_4_0.client.OAuth2Credentials:  # pylint: disable=unidiomatic-typecheck
+    credentials = Oauth2WithReauthCredentials.from_OAuth2Credentials(
+        credentials)
+
+  credentials.set_store(storage)
   return credentials
 
 

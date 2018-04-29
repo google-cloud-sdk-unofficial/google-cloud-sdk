@@ -13,6 +13,10 @@
 # limitations under the License.
 """The List command for Binary Authorization signatures."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.container import binauthz_util as binauthz_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
@@ -74,7 +78,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    binauthz_flags.AddListFlags(parser)
+    binauthz_flags.AddListAttestationsFlags(parser)
 
   def RunLegacy(self, normalized_artifact_url):
     project_ref = resources.REGISTRY.Parse(

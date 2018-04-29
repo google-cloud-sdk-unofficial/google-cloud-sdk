@@ -42,6 +42,7 @@ class Formats(base.TopicCommand):
           _ATTRIBUTES_:: *[* [no-]_attribute-name_[=_value_] [, ... ] *]*
           _PROJECTION_:: *(* _resource-key_ [, ...] *)*
 
+
           _NAME_ is required, _ATTRIBUTES_ are optional, and _PROJECTIONS_
           may be required for some formats. Unknown attribute names are
           silently ignored.

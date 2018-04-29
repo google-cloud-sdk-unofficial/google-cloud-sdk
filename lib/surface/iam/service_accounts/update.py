@@ -15,13 +15,14 @@
 
 import httplib
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.util import http_retry
-from googlecloudsdk.command_lib.iam import base_classes
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 
 
-class Update(base_classes.BaseIamCommand):
+class Update(base.Command):
   """Update the metadata of an IAM service account."""
 
   @staticmethod
@@ -35,11 +36,12 @@ class Update(base_classes.BaseIamCommand):
   @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
   def Run(self, args):
     resource_name = iam_util.EmailToAccountResourceName(args.service_account)
-    current = self.iam_client.projects_serviceAccounts.Get(
-        self.messages.IamProjectsServiceAccountsGetRequest(name=resource_name))
+    client, messages = util.GetClientAndMessages()
+    current = client.projects_serviceAccounts.Get(
+        messages.IamProjectsServiceAccountsGetRequest(name=resource_name))
 
-    result = self.iam_client.projects_serviceAccounts.Update(
-        self.messages.ServiceAccount(
+    result = client.projects_serviceAccounts.Update(
+        messages.ServiceAccount(
             name=resource_name,
             etag=current.etag,
             displayName=args.display_name))

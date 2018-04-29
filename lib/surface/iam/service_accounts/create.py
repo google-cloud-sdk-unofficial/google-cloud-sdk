@@ -16,14 +16,14 @@
 
 import textwrap
 
+from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.iam import base_classes
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-class Create(base_classes.BaseIamCommand, base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a service account for a project.
 
   This command creates a service account with the provided name. For
@@ -58,14 +58,15 @@ class Create(base_classes.BaseIamCommand, base.CreateCommand):
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
+    client, messages = util.GetClientAndMessages()
 
-    result = self.iam_client.projects_serviceAccounts.Create(
-        self.messages.IamProjectsServiceAccountsCreateRequest(
+    result = client.projects_serviceAccounts.Create(
+        messages.IamProjectsServiceAccountsCreateRequest(
             name=iam_util.ProjectToProjectResourceName(project),
             createServiceAccountRequest=
-            self.messages.CreateServiceAccountRequest(
+            messages.CreateServiceAccountRequest(
                 accountId=args.name,
-                serviceAccount=self.messages.ServiceAccount(
+                serviceAccount=messages.ServiceAccount(
                     displayName=args.display_name))))
     log.CreatedResource(args.name, kind='service account')
     return result

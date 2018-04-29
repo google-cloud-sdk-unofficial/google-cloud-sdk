@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a backend bucket.
 
@@ -113,8 +113,8 @@ class Update(base.UpdateCommand):
     return self.MakeRequests(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(Update):
   """Update a backend bucket.
 
   *{command}* is used to update backend buckets.
@@ -123,13 +123,13 @@ class UpdateAlpha(Update):
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
-    super(UpdateAlpha, cls).Args(parser)
+    super(UpdateAlphaBeta, cls).Args(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
 
   def Modify(self, args, existing):
     """Modifies and returns the updated backend bucket."""
-    replacement = super(UpdateAlpha, self).Modify(args, existing)
+    replacement = super(UpdateAlphaBeta, self).Modify(args, existing)
 
     if args.IsSpecified('signed_url_cache_max_age'):
       holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -145,4 +145,4 @@ class UpdateAlpha(Update):
         'signed_url_cache_max_age'):
       raise exceptions.ToolException('At least one property must be modified.')
 
-    return super(UpdateAlpha, self).MakeRequests(args)
+    return super(UpdateAlphaBeta, self).MakeRequests(args)

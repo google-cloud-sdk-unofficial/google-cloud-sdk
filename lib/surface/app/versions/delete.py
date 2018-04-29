@@ -14,6 +14,7 @@
 
 """The Delete command."""
 
+from __future__ import absolute_import
 import copy
 
 from googlecloudsdk.api_lib.app import appengine_api_client
