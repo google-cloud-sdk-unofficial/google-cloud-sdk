@@ -38,7 +38,7 @@ class Enable(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyVersionArgument(parser, 'to enable')
+    flags.AddKeyVersionResourceArgument(parser, 'to enable')
 
   def Run(self, args):
     messages = cloudkms_base.GetMessagesModule()

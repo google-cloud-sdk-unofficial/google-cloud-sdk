@@ -30,6 +30,5 @@ class Versions(base.Group):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyFlag(parser)
     parser.display_info.AddUriFunc(
         cloudkms_base.MakeGetUriFunc(flags.CRYPTO_KEY_VERSION_COLLECTION))

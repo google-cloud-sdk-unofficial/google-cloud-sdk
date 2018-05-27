@@ -13,7 +13,8 @@
 # limitations under the License.
 """Retrieves information about a Cloud SQL instance."""
 
-import httplib
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -23,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
+import six.moves.http_client
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -84,9 +86,8 @@ class Get(base.DescribeCommand):
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project, instance=instance_ref.instance))
     except apitools_exceptions.HttpError as error:
-      if error.status_code == httplib.FORBIDDEN:
+      if error.status_code == six.moves.http_client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(
             'There was no instance found at {} or you are not authorized to '
             'access it.'.format(instance_ref.RelativeName()))
       raise calliope_exceptions.HttpException(error)
-

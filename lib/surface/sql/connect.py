@@ -14,7 +14,8 @@
 
 """Connects to a Cloud SQL instance."""
 
-import httplib
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -34,6 +35,7 @@ from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import retry
 from googlecloudsdk.core.util import text
+import six.moves.http_client
 
 DETAILED_HELP = {
     'EXAMPLES':
@@ -88,7 +90,7 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
             project=instance_ref.project,
             instance=instance_ref.instance))
   except apitools_exceptions.HttpError as error:
-    if error.status_code == httplib.FORBIDDEN:
+    if error.status_code == six.moves.http_client.FORBIDDEN:
       raise exceptions.ResourceNotFoundError(
           'There was no instance found at {} or you are not authorized to '
           'connect to it.'.format(instance_ref.RelativeName()))

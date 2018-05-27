@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.forwarding_rules import flags as ilb_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.routes import flags
@@ -58,7 +59,7 @@ def _AddGaHops(next_hop_group):
       help=('The target VPN tunnel that will receive forwarded traffic.'))
 
 
-def _Args(parser):
+def _Args(parser, support_next_hop_ilb=False):
   """Add arguments for route creation."""
 
   parser.add_argument(
@@ -113,9 +114,24 @@ def _Args(parser):
       help=('The region of the next hop vpn tunnel. ' +
             compute_flags.REGION_PROPERTY_EXPLANATION))
 
+  if support_next_hop_ilb:
+    next_hop.add_argument(
+        '--next-hop-ilb',
+        help="""\
+        The target forwarding rule that will receive forwarded traffic. This
+        can only be used when the destination_range is a public (non-RFC 1918)
+        IP CIDR range. Requires --load-balancing-scheme=INTERNAL on the
+        corresponding forwarding rule.
+        """)
+    parser.add_argument(
+        '--next-hop-ilb-region',
+        help=('The region of the next hop forwarding rule. ' +
+              compute_flags.REGION_PROPERTY_EXPLANATION))
+
   parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new route.
 
@@ -131,7 +147,7 @@ class Create(base.CreateCommand):
   smaller or more specific ranges over larger ones (see
   ``--destination-range''). If there is a tie, the system selects
   the route with the smallest priority value. If there is still
-  a tie, it uses the layer three and four packet headers to
+  a tie, it uses the layer 3 and 4 packet headers to
   select just one of the remaining matching routes. The packet
   is then forwarded as specified by ``--next-hop-address'',
   ``--next-hop-instance'', ``--next-hop-vpn-tunnel'', or
@@ -144,9 +160,12 @@ class Create(base.CreateCommand):
   provided with this command.
   """
 
+  _support_next_hop_ilb = False
+
   NETWORK_ARG = None
   INSTANCE_ARG = None
   VPN_TUNNEL_ARG = None
+  ILB_ARG = None
   ROUTE_ARG = None
 
   @classmethod
@@ -157,9 +176,11 @@ class Create(base.CreateCommand):
         required=False)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRoute(required=False)
     cls.VPN_TUNNEL_ARG = vpn_flags.VpnTunnelArgumentForRoute(required=False)
+    if cls._support_next_hop_ilb:
+      cls.ILB_ARG = ilb_flags.ForwardingRuleArgumentForRoute(required=False)
     cls.ROUTE_ARG = flags.RouteArgument()
     cls.ROUTE_ARG.AddArgument(parser, operation_type='create')
-    _Args(parser)
+    _Args(parser, support_next_hop_ilb=cls._support_next_hop_ilb)
 
   def Run(self, args):
     """Issue API requests for route creation, callable from multiple tracks."""
@@ -203,6 +224,20 @@ class Create(base.CreateCommand):
           '[--next-hop-vpn-tunnel-region] can only be specified in '
           'conjunction with [--next-hop-vpn-tunnel].')
 
+    next_hop_ilb_uri = None
+
+    if self._support_next_hop_ilb:
+      if args.next_hop_ilb:
+        next_hop_ilb_uri = self.ILB_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(
+                client)).SelfLink()
+      elif args.next_hop_ilb_region:
+        raise exceptions.ToolException(
+            '[--next-hop-ilb-region] can only be specified in '
+            'conjunction with [--next-hop-ilb].')
+
     request = client.messages.ComputeRoutesInsertRequest(
         project=route_ref.project,
         route=client.messages.Route(
@@ -215,6 +250,42 @@ class Create(base.CreateCommand):
             nextHopGateway=next_hop_gateway_uri,
             nextHopVpnTunnel=next_hop_vpn_tunnel_uri,
             priority=args.priority,
-            tags=args.tags,))
+            tags=args.tags,
+        ))
+    if self._support_next_hop_ilb:
+      request.route.nextHopIlb = next_hop_ilb_uri
+
     return client.MakeRequests([(client.apitools_client.routes, 'Insert',
                                  request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a new route.
+
+    *{command}* is used to create routes. A route is a rule that
+  specifies how certain packets should be handled by the virtual
+  network. Routes are associated with virtual machine instances
+  by tag, and the set of routes for a particular VM is called
+  its routing table. For each packet leaving a virtual machine,
+  the system searches that machine's routing table for a single
+  best matching route.
+
+  Routes match packets by destination IP address, preferring
+  smaller or more specific ranges over larger ones (see
+  ``--destination-range''). If there is a tie, the system selects
+  the route with the smallest priority value. If there is still
+  a tie, it uses the layer 3 and 4 packet headers to
+  select just one of the remaining matching routes. The packet
+  is then forwarded as specified by ``--next-hop-address'',
+  ``--next-hop-instance'', ``--next-hop-vpn-tunnel'', ``--next-hop-gateway'',
+  or ``--next-hop-ilb'' of the winning route. Packets that do
+  not match any route in the sending virtual machine routing
+  table will be dropped.
+
+  Exactly one of ``--next-hop-address'', ``--next-hop-gateway'',
+  ``--next-hop-vpn-tunnel'', ``--next-hop-instance'', or ``--next-hop-ilb''
+  must be provided with this command.
+  """
+
+  _support_next_hop_ilb = True

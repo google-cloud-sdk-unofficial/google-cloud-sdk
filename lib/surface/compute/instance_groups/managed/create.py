@@ -247,6 +247,11 @@ class CreateBeta(CreateGA):
         args, holder.resources)
     health_check = managed_instance_groups_utils.GetHealthCheckUri(
         holder.resources, args, self.HEALTH_CHECK_ARG)
+    auto_healing_policies = (
+        managed_instance_groups_utils.CreateAutohealingPolicies(
+            client.messages, health_check, args.initial_delay))
+    managed_instance_groups_utils.ValidateAutohealingPolicies(
+        auto_healing_policies)
     return client.messages.InstanceGroupManager(
         name=group_ref.Name(),
         description=args.description,
@@ -256,9 +261,7 @@ class CreateBeta(CreateGA):
         targetPools=self._GetInstanceGroupManagerTargetPools(
             args.target_pool, group_ref, holder),
         targetSize=int(args.size),
-        autoHealingPolicies=(
-            managed_instance_groups_utils.CreateAutohealingPolicies(
-                client.messages, health_check, args.initial_delay)),
+        autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
             args.zones, holder.resources, client.messages),
     )
@@ -307,6 +310,11 @@ class CreateAlpha(CreateBeta):
     instance_groups_flags.ValidateManagedInstanceGroupStatefulProperties(args)
     health_check = managed_instance_groups_utils.GetHealthCheckUri(
         holder.resources, args, self.HEALTH_CHECK_ARG)
+    auto_healing_policies = (
+        managed_instance_groups_utils.CreateAutohealingPolicies(
+            client.messages, health_check, args.initial_delay))
+    managed_instance_groups_utils.ValidateAutohealingPolicies(
+        auto_healing_policies)
     return client.messages.InstanceGroupManager(
         name=group_ref.Name(),
         description=args.description,
@@ -316,9 +324,7 @@ class CreateAlpha(CreateBeta):
         targetPools=self._GetInstanceGroupManagerTargetPools(
             args.target_pool, group_ref, holder),
         targetSize=int(args.size),
-        autoHealingPolicies=(
-            managed_instance_groups_utils.CreateAutohealingPolicies(
-                client.messages, health_check, args.initial_delay)),
+        autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
             args.zones, holder.resources, client.messages),
         statefulPolicy=self._GetStatefulPolicy(args, client),

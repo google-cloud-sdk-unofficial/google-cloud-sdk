@@ -38,7 +38,7 @@ class GetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'whose IAM policy to fetch')
+    flags.AddKeyResourceArgument(parser, 'whose IAM policy to fetch')
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):

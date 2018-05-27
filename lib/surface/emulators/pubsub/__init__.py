@@ -13,6 +13,9 @@
 # limitations under the License.
 """The gcloud pubsub emulator group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.emulators import flags
 from googlecloudsdk.command_lib.emulators import pubsub_util

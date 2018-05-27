@@ -20,7 +20,7 @@ from googlecloudsdk.api_lib.compute.interconnects import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
 from googlecloudsdk.command_lib.compute.interconnects.locations import flags as location_flags
-
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -44,6 +44,8 @@ _LOCATION_FLAG_MSG = (
     'The location for the interconnect. The locations can be listed by using '
     'the `{parent_command} locations list` command to find '
     'the appropriate location to use when creating an interconnect.')
+
+_DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicated/retrieving-loas'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -91,6 +93,12 @@ class Create(base.CreateCommand):
         noc_contact_email=args.noc_contact_email,
         location=location_ref.SelfLink(),
         customer_name=args.customer_name)
+
+  def Epilog(self, resources_were_displayed):
+    message = ('Please check the provided contact email for further '
+               'instructions on how to activate your Interconnect. See also '
+               '{} for more detailed help.'.format(_DOCUMENTATION_LINK))
+    log.status.Print(message)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)

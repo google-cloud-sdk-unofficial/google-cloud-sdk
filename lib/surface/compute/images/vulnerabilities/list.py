@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing images."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.containeranalysis import util as containeranalysis_util
@@ -57,7 +59,11 @@ class List(base.ListCommand):
         '"MAXIMUM"')
 
   def _GetFilter(self, args, holder):
-    filters = ['kind = "PACKAGE_VULNERABILITY"']  # Display only vulnerabilities
+    filters = [
+        'kind = "PACKAGE_VULNERABILITY"',  # Display only vulnerabilities
+        # Display only compute metadata
+        'has_prefix(resource_url,"https://www.googleapis.com/compute/")',
+    ]
     if args.image:
       image_ref = self._image_arg.ResolveAsResource(
           args,
@@ -66,7 +72,7 @@ class List(base.ListCommand):
               holder.client))
       image_url = image_ref.SelfLink()
 
-      filters.append('resourceUrl = "{}"'.format(image_url))
+      filters.append('has_prefix(resource_url, "{}")'.format(image_url))
     return ' AND '.join(filters)
 
   def Run(self, args):

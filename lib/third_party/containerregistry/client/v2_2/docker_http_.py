@@ -13,18 +13,21 @@
 # limitations under the License.
 """This package facilitates HTTP/REST requests to the registry."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
-import httplib
 import json
 import re
 import threading
-import urllib
 
 from containerregistry.client import docker_creds
 from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_creds as v2_2_creds
 import httplib2
+import six.moves.http_client
+import six.moves.urllib.parse
 
 # Options for docker_http.Transport actions
 PULL = 'pull'
@@ -213,12 +216,14 @@ class Transport(object):
         headers=headers)
 
     # We expect a www-authenticate challenge.
-    _CheckState(resp.status in [httplib.OK, httplib.UNAUTHORIZED],
-                'Unexpected response pinging the registry: {}\nBody: {}'.format(
-                    resp.status, content or '<empty>'))
+    _CheckState(
+        resp.status in [
+            six.moves.http_client.OK, six.moves.http_client.UNAUTHORIZED
+        ], 'Unexpected response pinging the registry: {}\nBody: {}'.format(
+            resp.status, content or '<empty>'))
 
     # The registry is authenticated iff we have an authentication challenge.
-    if resp.status == httplib.OK:
+    if resp.status == six.moves.http_client.OK:
       self._authentication = _ANONYMOUS
       self._service = 'none'
       self._realm = 'none'
@@ -283,12 +288,13 @@ class Transport(object):
     resp, content = self._transport.request(
         # 'realm' includes scheme and path
         '{realm}?{query}'.format(
-            realm=self._realm, query=urllib.urlencode(parameters)),
+            realm=self._realm,
+            query=six.moves.urllib.parse.urlencode(parameters)),
         'GET',
         body=None,
         headers=headers)
 
-    if resp.status != httplib.OK:
+    if resp.status != six.moves.http_client.OK:
       raise TokenRefreshException('Bad status during token exchange: %d\n%s' %
                                   (resp.status, content))
 
@@ -358,7 +364,7 @@ class Transport(object):
       resp, content = self._transport.request(
           url, method, body=body, headers=headers)
 
-      if resp.status != httplib.UNAUTHORIZED:
+      if resp.status != six.moves.http_client.UNAUTHORIZED:
         break
       elif retry:
         # On Unauthorized, refresh the credential and retry.

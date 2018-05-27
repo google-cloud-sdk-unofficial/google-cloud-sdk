@@ -23,6 +23,9 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects import flags as interconnect_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
 from googlecloudsdk.command_lib.compute.routers import flags as router_flags
+from googlecloudsdk.core import log
+
+_DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicated/creating-vlan-attachments'
 
 
 class Create(base.CreateCommand):
@@ -89,3 +92,9 @@ class Create(base.CreateCommand):
         vlan_tag_802_1q=args.vlan,
         admin_enabled=args.admin_enabled,
         candidate_subnets=args.candidate_subnets)
+
+  def Epilog(self, resources_were_displayed):
+    message = ('You must configure your Google Cloud Router with an interface '
+               'and BGP peer for your created VLAN attachment. See also {} for '
+               'more detailed help.'.format(_DOCUMENTATION_LINK))
+    log.status.Print(message)

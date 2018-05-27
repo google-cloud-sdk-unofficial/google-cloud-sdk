@@ -56,9 +56,7 @@ class Encrypt(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser)
-    flags.AddKeyRingFlag(parser)
-    flags.AddCryptoKeyFlag(parser, 'The key to use for encryption.')
+    flags.AddKeyResourceFlags(parser, 'The key to use for encryption.')
     flags.AddCryptoKeyVersionFlag(parser, 'to use for encryption')
     flags.AddPlaintextFileFlag(parser, 'to encrypt')
     flags.AddCiphertextFileFlag(parser, 'to output')

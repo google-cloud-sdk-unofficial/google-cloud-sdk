@@ -53,9 +53,7 @@ class Decrypt(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser)
-    flags.AddKeyRingFlag(parser)
-    flags.AddCryptoKeyFlag(parser, 'The key to use for decryption.')
+    flags.AddKeyResourceFlags(parser, 'The key to use for decryption.')
     flags.AddCiphertextFileFlag(parser, 'to decrypt')
     flags.AddPlaintextFileFlag(parser, 'to output')
     flags.AddAadFileFlag(parser)

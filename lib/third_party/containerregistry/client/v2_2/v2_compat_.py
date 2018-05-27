@@ -13,7 +13,10 @@
 # limitations under the License.
 """This package provides compatibility interfaces for v1/v2."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import hashlib
 import json
@@ -29,12 +32,8 @@ class BadDigestException(Exception):
   """Exceptions when a bad digest is supplied."""
 
 
-EMPTY_TAR_DIGEST = (
-    'sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4')
-
-EMPTY_TAR_BYTES = (
-    b'\x1f\x8b\x08\x00\x00\tn\x88\x00\xffb\x18\x05\xa3`\x14\x8cX\x00'
-    '\x08\x00\x00\xff\xff.\xaf\xb5\xef\x00\x04\x00\x00')
+EMPTY_TAR_DIGEST = 'sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4'
+EMPTY_TAR_BYTES = b'\x1f\x8b\x08\x00\x00\tn\x88\x00\xffb\x18\x05\xa3`\x14\x8cX\x00\x08\x00\x00\xff\xff.\xaf\xb5\xef\x00\x04\x00\x00'  # pylint: disable=line-too-long
 
 
 

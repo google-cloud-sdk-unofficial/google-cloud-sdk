@@ -13,7 +13,10 @@
 # limitations under the License.
 """This package provides DockerImage for examining docker_build outputs."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import binascii
 import hashlib
@@ -22,6 +25,7 @@ import os
 
 from containerregistry.client.v2 import docker_image
 from containerregistry.client.v2 import util
+import six
 
 # _EMPTY_LAYER_TAR_ID is the sha256 of an empty tarball.
 _EMPTY_LAYER_TAR_ID = (
@@ -57,7 +61,10 @@ class Layer(docker_image.DockerImage):
     v1_compat = json.loads(manifest['history'][0]['v1Compatibility'])
 
     if tar_gz:
-      self._blob = tar_gz
+      if isinstance(tar_gz, six.text_type):
+        self._blob = tar_gz.encode()
+      else:
+        self._blob = tar_gz
       self._blob_sum = 'sha256:' + hashlib.sha256(self._blob).hexdigest()
       v1_compat['throwaway'] = False
     else:
@@ -67,7 +74,7 @@ class Layer(docker_image.DockerImage):
 
     manifest['fsLayers'].insert(0, {'blobSum': self._blob_sum})
     v1_compat['parent'] = v1_compat['id']
-    v1_compat['id'] = binascii.hexlify(os.urandom(32))
+    v1_compat['id'] = binascii.hexlify(os.urandom(32)).decode('ascii')
 
     config = v1_compat.get('config', {}) or {}
     envs = list(envs)

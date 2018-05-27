@@ -30,10 +30,5 @@ class Keys(base.Group):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() != base.ReleaseTrack.ALPHA:
-      # These flags are automatically added in declarative commands and
-      # currently all declarative commands are ALPHA.
-      flags.AddKeyRingFlag(parser)
-      flags.AddLocationFlag(parser)
     parser.display_info.AddUriFunc(
         cloudkms_base.MakeGetUriFunc(flags.CRYPTO_KEY_COLLECTION))

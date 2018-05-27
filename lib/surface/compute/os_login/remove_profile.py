@@ -23,6 +23,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class RemoveProfile(base.Command):
   """Remove the posix account information for the current user."""
 
@@ -44,12 +45,27 @@ class RemoveProfile(base.Command):
           .format(project),
           default=True,
           cancel_on_no=True)
-      res = oslogin_client.DeletePosixAccounts(project_ref)
+      operating_system = getattr(args, 'operating_system', None)
+      res = oslogin_client.DeletePosixAccounts(project_ref, operating_system)
       log.DeletedResource(account_id, details='posix account(s)')
       return res
     else:
       log.warning('No profile found with accountId [{0}]'.format(project))
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveProfileAlpha(RemoveProfile):
+  """Remove the posix account information for the current user."""
+
+  @staticmethod
+  def Args(parser):
+    os_arg = base.ChoiceArgument(
+        '--operating-system',
+        choices=('linux', 'windows'),
+        required=False,
+        default='linux',
+        help_str='Specifies the profile type to remove.')
+    os_arg.AddToParser(parser)
 
 RemoveProfile.detailed_help = {
     'brief': 'Remove the posix account information for the current user.',

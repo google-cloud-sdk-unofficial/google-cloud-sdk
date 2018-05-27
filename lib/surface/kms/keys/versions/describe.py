@@ -36,7 +36,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyVersionArgument(parser, 'to describe')
+    flags.AddKeyVersionResourceArgument(parser, 'to describe')
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

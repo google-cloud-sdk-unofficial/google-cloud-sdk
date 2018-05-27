@@ -39,6 +39,8 @@ class List(base.ListCommand):
     # The format of a CryptoKeyVersion name is:
     # 'projects/*/locations/*/keyRings/*/cryptoKeys/*/cryptoKeyVersions/*'
     # The CryptoKeyVersionId is captured by segment(9).
+    flags.AddKeyRingFlag(parser, 'key')
+    flags.AddLocationFlag(parser, 'key')
     parser.display_info.AddFormat("""
         table(
           name,

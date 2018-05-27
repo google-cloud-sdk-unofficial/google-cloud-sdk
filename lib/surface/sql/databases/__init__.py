@@ -13,6 +13,8 @@
 # limitations under the License.
 """Provide commands for managing databases of Cloud SQL instances."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 

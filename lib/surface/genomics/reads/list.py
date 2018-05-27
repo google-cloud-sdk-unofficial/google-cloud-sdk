@@ -15,6 +15,8 @@
 """Implementation of gcloud genomics reads list.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.genomics import genomics_util
@@ -43,13 +45,13 @@ class List(base.ListCommand):
                               'reference. Pass * to list unmapped reads '
                               'only.'))
     parser.add_argument('--start',
-                        type=long,
+                        type=int,
                         help=('The beginning of the window (0-based '
                               'inclusive) for which overlapping reads '
                               'should be returned. If unspecified, defaults '
                               'to 0.'))
     parser.add_argument('--end',
-                        type=long,
+                        type=int,
                         help=('The end of the window (0-based exclusive) for '
                               'which overlapping reads should be returned. If '
                               'unspecified or 0, defaults to the length of '

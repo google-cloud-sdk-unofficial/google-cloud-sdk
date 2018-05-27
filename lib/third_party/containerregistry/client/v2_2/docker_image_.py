@@ -13,12 +13,14 @@
 # limitations under the License.
 """This package provides DockerImage for examining docker_build outputs."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import abc
-import cStringIO
 import gzip
-import httplib
+import io
 import json
 import os
 import tarfile
@@ -29,16 +31,17 @@ from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_digest
 from containerregistry.client.v2_2 import docker_http
 import httplib2
+import six
+from six.moves import zip  # pylint: disable=redefined-builtin
+import six.moves.http_client
 
 
 class DigestMismatchedError(Exception):
   """Exception raised when a digest mismatch is encountered."""
 
 
-class DockerImage(object):
+class DockerImage(six.with_metaclass(abc.ABCMeta, object)):
   """Interface for implementations that interact with Docker images."""
-
-  __metaclass__ = abc.ABCMeta  # For enforcing that methods are overridden.
 
   def fs_layers(self):
     """The ordered collection of filesystem layers that comprise this image."""
@@ -104,13 +107,14 @@ class DockerImage(object):
   def uncompressed_blob(self, digest):
     """Same as blob() but uncompressed."""
     zipped = self.blob(digest)
-    buf = cStringIO.StringIO(zipped)
+    buf = io.BytesIO(zipped)
     f = gzip.GzipFile(mode='rb', fileobj=buf)
     unzipped = f.read()
     return unzipped
 
   def _diff_id_to_digest(self, diff_id):
-    for (this_digest, this_diff_id) in zip(self.fs_layers(), self.diff_ids()):
+    for (this_digest, this_diff_id) in six.moves.zip(self.fs_layers(),
+                                                     self.diff_ids()):
       if this_diff_id == diff_id:
         return this_digest
     raise ValueError('Unmatched "diff_id": "%s"' % diff_id)
@@ -241,7 +245,7 @@ class FromRegistry(DockerImage):
             scheme=docker_http.Scheme(self._name.registry),
             registry=self._name.registry,
             suffix=suffix),
-        accepted_codes=[httplib.OK],
+        accepted_codes=[six.moves.http_client.OK],
         accepted_mimes=accepted_mimes)
     if cache:
       self._response[suffix] = content
@@ -275,7 +279,7 @@ class FromRegistry(DockerImage):
       return (manifest['schemaVersion'] == 2 and 'layers' in manifest and
               self.media_type() in self._accepted_mimes)
     except docker_http.V2DiagnosticException as err:
-      if err.status == httplib.NOT_FOUND:
+      if err.status == six.moves.http_client.NOT_FOUND:
         return False
       raise
 
@@ -312,7 +316,7 @@ class FromRegistry(DockerImage):
             registry=self._name.registry,
             suffix=suffix),
         method='HEAD',
-        accepted_codes=[httplib.OK])
+        accepted_codes=[six.moves.http_client.OK])
 
     return int(resp['content-length'])
 
@@ -339,7 +343,7 @@ class FromRegistry(DockerImage):
         page_size=page_size)
 
     for _, content in self._transport.PaginatedRequest(
-        url, accepted_codes=[httplib.OK]):
+        url, accepted_codes=[six.moves.http_client.OK]):
       wrapper_object = json.loads(content)
 
       if 'repositories' not in wrapper_object:
@@ -431,7 +435,7 @@ class FromTarball(DockerImage):
         content = tar.extractfile('./' + name).read()  # pytype: disable=attribute-error
       # We need to compress before returning. Use gzip.
       if should_be_compressed and not is_compressed(content):
-        buf = cStringIO.StringIO()
+        buf = io.BytesIO()
         zipped = gzip.GzipFile(
             mode='wb', compresslevel=self._compresslevel, fileobj=buf)
         try:
@@ -442,7 +446,7 @@ class FromTarball(DockerImage):
       # The layer is gzipped but we need to return the uncompressed content
       # Open up the gzip and read the contents after.
       elif not should_be_compressed and is_compressed(content):
-        buf = cStringIO.StringIO(content)
+        buf = io.BytesIO(content)
         raw = gzip.GzipFile(mode='rb', fileobj=buf)
         content = raw.read()
       # Populate our cache.
@@ -504,7 +508,7 @@ class FromTarball(DockerImage):
     if not self._blob_names:
       self._populate_manifest_and_blobs()
     return self._content(
-        self._blob_names[digest],  # pytype: disable=none-attr
+        self._blob_names[digest],
         memoize=False,
         should_be_compressed=False)
 
@@ -516,7 +520,7 @@ class FromTarball(DockerImage):
     if digest == self._config_blob:
       return self.config_file()
     return self._gzipped_content(
-        self._blob_names[digest])  # pytype: disable=none-attr
+        self._blob_names[digest])
 
   # Could be large, do not memoize
   def uncompressed_layer(self, diff_id):
@@ -533,11 +537,11 @@ class FromTarball(DockerImage):
       raise ValueError('Tarball must contain a single repository, '
                        'or a name must be specified to FromTarball.')
 
-    for (repo, tags) in repositories.iteritems():
+    for (repo, tags) in six.iteritems(repositories):
       if len(tags) != 1:
         raise ValueError('Tarball must contain a single tag, '
                          'or a name must be specified to FromTarball.')
-      for (tag, unused_layer) in tags.iteritems():
+      for (tag, unused_layer) in six.iteritems(tags):
         return '{repository}:{tag}'.format(repository=repo, tag=tag)
 
     raise Exception('unreachable')
@@ -742,7 +746,7 @@ def extract(image, tar):
   # Walk the layers, topmost first and add files.  If we've seen them in a
   # higher layer then we skip them
   for layer in image.diff_ids():
-    buf = cStringIO.StringIO(image.uncompressed_layer(layer))
+    buf = io.BytesIO(image.uncompressed_layer(layer))
     with tarfile.open(mode='r:', fileobj=buf) as layer_tar:
       for tarinfo in layer_tar:
         # If we see a whiteout file, then don't add anything to the tarball

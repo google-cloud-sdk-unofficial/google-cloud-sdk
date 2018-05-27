@@ -36,6 +36,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser, 'keyring')
     parser.display_info.AddFormat('table(name)')
 
   def Run(self, args):

@@ -43,5 +43,4 @@ class Update(base.UpdateCommand):
         node_group_ref,
         node_template=args.node_template,
         additional_node_count=args.add_nodes,
-        delete_node_indexes=args.delete_nodes)
-
+        delete_nodes=args.delete_nodes)

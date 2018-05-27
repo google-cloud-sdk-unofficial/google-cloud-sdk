@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for describing images."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.containeranalysis import util as containeranalysis_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties

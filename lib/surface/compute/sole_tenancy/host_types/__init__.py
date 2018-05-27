@@ -23,5 +23,6 @@ from googlecloudsdk.calliope import base
     is_removed=False,
     warning=('This command group is deprecated. Please use '
              '`gcloud alpha compute sole-tenancy node-types` instead.'))
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SoleTenancyHostTypes(base.Group):
   """Read Google Compute Engine sole-tenancy host types."""

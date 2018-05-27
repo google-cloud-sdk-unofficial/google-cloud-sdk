@@ -35,19 +35,21 @@ class ConfigureDockerError(exceptions.Error):
                     base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class ConfigureDocker(base.Command):
-  """Registers gcloud as a Docker credential helper.
+  # pylint: disable=line-too-long
+  r"""Register `gcloud` as a Docker credential helper.
 
-  Adds Docker `credHelper` entry to Docker's configuration file, or creates the
-  file if it doesn't exist, which will register gcloud as the credential helper
-  for all Google supported Docker registries.
+  {command} adds the Docker `credHelper` entry to Docker's configuration file,
+  or creates the file if it doesn't exist. This will register `gcloud` as the
+  credential helper for all Google-supported Docker registries. If the Docker
+  configuration already contains a `credHelper` entry, it will be overwritten.
 
-  If Docker configuration already contains a `credHelper` entry it will be
-  overwritten.
+  Note, `docker` and `gcloud` need to be on the same system `PATH` to work
+  correctly.
 
-  See
-  https://docs.docker.com/engine/reference/commandline/login/#credential-helpers
-  for more details on Docker credential helpers.
+  For more details on Docker credential helpers, see
+  [](https://docs.docker.com/engine/reference/commandline/login/#credential-helpers).
   """
+  # pylint: enable=line-too-long
 
   def Run(self, args):
     """Run the configure-docker command."""

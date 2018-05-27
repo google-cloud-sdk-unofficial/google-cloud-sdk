@@ -38,7 +38,7 @@ class Disable(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyVersionArgument(parser, 'to disable')
+    flags.AddKeyVersionResourceArgument(parser, 'to disable')
 
   def Run(self, args):
     messages = cloudkms_base.GetMessagesModule()

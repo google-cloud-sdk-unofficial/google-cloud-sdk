@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides the docker CLI access to the Google Container Registry.
+"""Enable Docker CLI access to Google Container Registry.
 
-Sets docker up to authenticate with the Google Container Registry,
-and passes all flags after -- to the docker CLI.
+Sets Docker up to authenticate with Container Registry,
+and passes all flags after `--` to the Docker CLI.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 
 from googlecloudsdk.calliope import arg_parsers
@@ -33,54 +35,59 @@ from googlecloudsdk.core.docker import docker
 # If the user changes the --server argument to something not in this list,
 # we'll just give them a warning that they're using an unexpected server.
 _DEFAULT_REGISTRIES = constants.DEFAULT_REGISTRIES_TO_AUTHENTICATE
-_DEPRECATION_WARNING = ('`gcloud docker` will not be supported for Docker '
-                        'client versions above 18.03. Please use `gcloud auth '
-                        'configure-docker` to configure `docker` to use '
-                        '`gcloud` as a credential helper, then use `docker` as '
-                        'you would for non-GCR registries, e.g. `docker pull '
-                        'gcr.io/project-id/my-image`. Add `--verbosity=error` '
-                        'to silence this warning, e.g. `gcloud docker '
-                        '--verbosity=error -- pull gcr.io/project-id/my-image`.'
-                        ' See: https://cloud.google.com/container-registry/'
-                        'docs/support/deprecation-notices#gcloud-docker')
+_DEPRECATION_WARNING = """\
+`gcloud docker` will not be supported for Docker client versions above 18.03.
+
+As an alternative, use `gcloud auth configure-docker` to configure `docker` to
+use `gcloud` as a credential helper, then use `docker` as you would for non-GCR
+registries, e.g. `docker pull gcr.io/project-id/my-image`. Add
+`--verbosity=error` to silence this warning: `gcloud docker
+--verbosity=error -- pull gcr.io/project-id/my-image`.
+
+See: https://cloud.google.com/container-registry/docs/support/deprecation-notices#gcloud-docker
+"""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 class Docker(base.Command):
-  """Provides the docker CLI access to the Google Container Registry.
+  """Enable Docker CLI access to Google Container Registry.
 
-  The {command} command group wraps docker commands, so that gcloud can
+  {command} wraps Docker commands so that `gcloud` can
   inject the appropriate fresh authentication token into requests that interact
-  with the docker registry.
+  with the Docker registry.
 
-  All docker-specific flags are passed through to the underlying docker command.
-  A full reference of docker's command line options available after -- can be
-  found here: [](https://docs.docker.com/engine/reference/commandline/cli/).
+  All Docker-specific flags are passed through to the underlying `docker`
+  command. A full reference of Docker's command line options available after
+  `--` can be found here:
+  [](https://docs.docker.com/engine/reference/commandline/cli/). You may also
+  run `{command} -- --help` to view the Docker CLI's help directly.
 
-  You may also run `{command} -- --help` to view the docker CLI's help directly.
-
-  More information on Google Container Registry can be found here:
-  https://cloud.google.com/container-registry/ and detailed documentation can be
-  found here: https://cloud.google.com/container-registry/docs/
+  Detailed documentation on Container Registry can be found here:
+  [](https://cloud.google.com/container-registry/docs/)
 
   ## EXAMPLES
 
-  Pull the image '{registry}/google-containers/pause:1.0' from the docker
-  registry:
+  To pull the image '{registry}/google-containers/pause:1.0' from the docker
+  registry, run:
 
-    $ {command} -- pull {registry}/google-containers/pause:1.0
+  ```
+  {command} -- pull {registry}/google-containers/pause:1.0
+  ```
 
   Push the image '{registry}/example-org/example-image:latest' to our private
   docker registry.
 
-    $ {command} -- push {registry}/example-org/example-image:latest
+  ```
+  {command} -- push {registry}/example-org/example-image:latest
+  ```
 
   Configure authentication, then simply use docker:
 
-    $ {command} --authorize-only
-
-    $ docker push {registry}/example-org/example-image:latest
+  ```
+  {command} --authorize-only
+  docker push {registry}/example-org/example-image:latest
+  ```
 
   """
 
@@ -94,23 +101,23 @@ class Docker(base.Command):
         '--server', '-s',
         type=arg_parsers.ArgList(min_length=1),
         metavar='SERVER',
-        help='The address of the Google Cloud Registry.',
+        help='Address of the Google Cloud Registry.',
         required=False,
         default=_DEFAULT_REGISTRIES)
     parser.add_argument(
         '--authorize-only', '-a',
-        help='Configure docker authorization only, do not launch the '
-        'docker command-line.',
+        help='Configure Docker authorization only; do not launch the '
+        'Docker command-line.',
         action='store_true')
 
     parser.add_argument(
         '--docker-host',
-        help='The URL to connect to Docker Daemon. Format: tcp://host:port or '
+        help='URL to connect to Docker Daemon. Format: tcp://host:port or '
         'unix:///path/to/socket.')
 
     parser.add_argument(
         'docker_args', nargs=argparse.REMAINDER, default=[],
-        help='Arguments to pass to docker.')
+        help='Arguments to pass to Docker.')
 
   def Run(self, args):
     """Executes the given docker command, after refreshing our credentials.

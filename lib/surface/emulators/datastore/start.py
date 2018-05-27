@@ -13,6 +13,9 @@
 # limitations under the License.
 """gcloud datastore emulator start command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import socket
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base

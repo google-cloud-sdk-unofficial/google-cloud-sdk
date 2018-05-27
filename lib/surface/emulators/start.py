@@ -13,8 +13,11 @@
 # limitations under the License.
 """Facilitates managing multiple emulators at once."""
 
-import contextlib
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import tempfile
+import contextlib2 as contextlib
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -24,6 +27,7 @@ from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.command_lib.util import java
 from googlecloudsdk.core import log
 import portpicker
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -77,7 +81,7 @@ class Start(base.Command):
 
     util.EnsureComponentIsInstalled('emulator-reverse-proxy',
                                     'gcloud emulators start')
-    for flag, emulator in config.EMULATORS.iteritems():
+    for flag, emulator in six.iteritems(config.EMULATORS):
       title = emulator.emulator_title
       component = emulator.emulator_component
       if (args.emulators is not None and
@@ -85,15 +89,14 @@ class Start(base.Command):
         java.RequireJavaInstalled(title)
         util.EnsureComponentIsInstalled(component, title)
 
-    local_emulator_ports = {}
-    contexts = []
-    for emulator in args.emulators:
-      port = portpicker.pick_unused_port()
-      local_emulator_ports[emulator] = port
-      contexts.append(config.EMULATORS[emulator].Start(port))
+    with contextlib.ExitStack() as stack:  # pytype: disable=module-attr
 
-    # Once we're in python3, can use contextlib.ExitStack()
-    with contextlib.nested(*contexts):
+      local_emulator_ports = {}
+      for emulator in args.emulators:
+        port = portpicker.pick_unused_port()
+        local_emulator_ports[emulator] = port
+        stack.enter_context(config.EMULATORS[emulator].Start(port))
+
       _, routes_config_file = tempfile.mkstemp()
       config.WriteRoutesConfig(config.EMULATORS, routes_config_file)
       log.status.Print(

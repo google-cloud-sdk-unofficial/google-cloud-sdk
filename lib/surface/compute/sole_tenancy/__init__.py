@@ -19,7 +19,12 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SoleTenancyBeta(base.Group):
+  """Read and manage Google Compute Engine sole-tenancy resources."""
+
+
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SoleTenancy(base.Group):
+class SoleTenancyAlpha(base.Group):
   """Read and manage Google Compute Engine sole-tenancy resources."""

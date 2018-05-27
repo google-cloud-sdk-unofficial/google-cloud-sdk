@@ -39,6 +39,7 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser, 'keyring')
     flags.AddKeyRingArgument(parser, 'whose IAM policy to update')
     parser.add_argument('policy_file', help=('JSON or YAML file with '
                                              'the IAM policy'))

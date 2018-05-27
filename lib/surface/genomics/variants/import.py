@@ -13,6 +13,8 @@
 # limitations under the License.
 """Implementation of gcloud genomics variants import.
 """
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base

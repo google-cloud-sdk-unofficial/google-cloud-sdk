@@ -42,7 +42,7 @@ class Destroy(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyVersionArgument(parser, 'to destroy')
+    flags.AddKeyVersionResourceArgument(parser, 'to destroy')
 
   def Run(self, args):
     # pylint: disable=line-too-long

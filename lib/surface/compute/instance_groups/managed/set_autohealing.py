@@ -71,6 +71,9 @@ class SetAutohealing(base.Command):
         managed_instance_groups_utils.CreateAutohealingPolicies(
             client.messages, health_check, args.initial_delay))
 
+    managed_instance_groups_utils.ValidateAutohealingPolicies(
+        auto_healing_policies)
+
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = client.apitools_client.instanceGroupManagers
       request = (

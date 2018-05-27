@@ -13,6 +13,8 @@
 # limitations under the License.
 """Add a Pig job to the workflow template."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import workflow_templates

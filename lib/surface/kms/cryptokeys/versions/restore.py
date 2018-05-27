@@ -39,7 +39,7 @@ class Restore(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyVersionArgument(parser, 'to restore')
+    flags.AddKeyVersionResourceArgument(parser, 'to restore')
 
   def Run(self, args):
     # pylint: disable=line-too-long

@@ -38,6 +38,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddKeyResourceFlags(parser)
     parser.display_info.AddFormat('table(name, state)')
 
   def Run(self, args):

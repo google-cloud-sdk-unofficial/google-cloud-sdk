@@ -36,7 +36,7 @@ class SetPrimaryVersion(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'to modify')
+    flags.AddKeyResourceArgument(parser, 'to modify')
     flags.AddCryptoKeyVersionFlag(parser, 'to make primary', required=True)
 
   def Run(self, args):

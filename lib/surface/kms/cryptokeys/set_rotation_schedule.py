@@ -50,7 +50,7 @@ class SetRotationSchedule(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'to update the schedule of')
+    flags.AddKeyResourceArgument(parser, 'to update the schedule of')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
 

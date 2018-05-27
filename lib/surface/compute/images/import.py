@@ -13,6 +13,8 @@
 # limitations under the License.
 """Import image command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os.path
 import uuid
 
@@ -25,6 +27,7 @@ from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import progress_tracker
 
 _OS_CHOICES = {'debian-8': 'debian/translate_debian_8.wf.json',
                'debian-9': 'debian/translate_debian_9.wf.json',
@@ -58,11 +61,12 @@ def _UploadToGcs(is_async, local_path, daisy_bucket, image_uuid):
   file_name = os.path.basename(local_path).replace(' ', '-')
   dest_path = 'gs://{0}/tmpimage/{1}-{2}'.format(
       daisy_bucket, image_uuid, file_name)
-  log.status.Print('\nCopying [{0}] to [{1}]'.format(local_path, dest_path))
   if is_async:
-    log.status.Print('Once completed, your image will be imported from Cloud'
-                     ' Storage asynchronously.')
-  retcode = storage_util.RunGsutilCommand('cp', [local_path, dest_path])
+    log.status.Print('Async: Once upload is complete, your image will be '
+                     'imported from Cloud Storage asynchronously.')
+  with progress_tracker.ProgressTracker(
+      'Copying [{0}] to [{1}]'.format(local_path, dest_path)):
+    retcode = storage_util.RunGsutilCommand('cp', [local_path, dest_path])
   if retcode != 0:
     log.err.Print('Failed to upload file. See {} for details.'.format(
         log.GetLogFilePath()))
@@ -80,8 +84,9 @@ def _CopyToScratchBucket(source_uri, image_uuid, storage_client, daisy_bucket):
                                         collection='storage.objects')
   dest_object = resources.REGISTRY.Parse(dest_uri,
                                          collection='storage.objects')
-  log.status.Print('\nCopying [{0}] to [{1}]'.format(source_uri, dest_uri))
-  storage_client.Rewrite(src_object, dest_object)
+  with progress_tracker.ProgressTracker(
+      'Copying [{0}] to [{1}]'.format(source_uri, dest_uri)):
+    storage_client.Rewrite(src_object, dest_object)
   return dest_uri
 
 
@@ -144,8 +149,6 @@ class Import(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    log.warning('Importing image, this may take up to 1 hour.')
-
     storage_client = storage_api.StorageClient()
     daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(
         storage_client=storage_client)
@@ -170,6 +173,15 @@ class Import(base.CreateCommand):
         log.warning('The specified input file may contain more than one '
                     'virtual disk. Only the first vmdk disk will be '
                     'imported. ')
+      elif (args.source_file.endswith('.tar.gz')
+            or args.source_file.endswith('.tgz')):
+        raise exceptions.BadFileException(
+            '"gcloud compute images import" does not support compressed '
+            'archives. Please extract your image and try again.\n If you got '
+            'this file by exporting an image from Compute Engine (e.g. by '
+            'using "gcloud compute images export") then you can instead use '
+            '"gcloud compute images create" to create your image from your '
+            '.tar.gz file.')
 
       # Get the image into the scratch bucket, wherever it is now.
       if _IsLocalFile(args.source_file):
@@ -189,6 +201,9 @@ class Import(base.CreateCommand):
         daisy_vars.append(
             'translate_workflow={}'.format(_GetTranslateWorkflow(args)))
 
+    # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
+    # warning message with a ProgressTracker spinner.
+    log.warning('Importing image. This may take up to 2 hours.')
     return daisy_utils.RunDaisyBuild(args, workflow, ','.join(daisy_vars),
                                      daisy_bucket=daisy_bucket,
                                      user_zone=args.zone)

@@ -147,8 +147,6 @@ See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
   flags.AddClusterVersionFlag(parser)
-  # TODO(b/36071127): unhide this flag after we have enough ssd.
-  flags.AddDiskTypeFlag(parser, suppressed=True)
   flags.AddEnableAutoUpgradeFlag(parser)
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
   flags.AddNodeVersionFlag(parser)
@@ -250,6 +248,7 @@ class Create(base.CreateCommand):
     flags.AddNodeLocationsFlag(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
@@ -362,6 +361,7 @@ class CreateBeta(Create):
     flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
@@ -409,6 +409,7 @@ class CreateAlpha(Create):
     flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)

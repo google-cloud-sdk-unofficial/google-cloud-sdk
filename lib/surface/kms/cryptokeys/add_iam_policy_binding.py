@@ -49,7 +49,7 @@ class AddIamPolicyBinding(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'whose IAM policy to modify')
+    flags.AddKeyResourceArgument(parser, 'whose IAM policy to modify')
     iam_util.AddArgsForAddIamPolicyBinding(
         parser, completer=completers.CryptoKeysIamRolesCompleter)
 

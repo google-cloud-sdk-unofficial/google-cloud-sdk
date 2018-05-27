@@ -37,6 +37,7 @@ class GetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser, 'keyring')
     flags.AddKeyRingArgument(parser, 'whose IAM policy to fetch')
     base.URI_FLAG.RemoveFromParser(parser)
 

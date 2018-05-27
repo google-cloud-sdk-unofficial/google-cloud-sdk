@@ -13,7 +13,10 @@
 # limitations under the License.
 """This package exposes credentials for talking to a Docker registry."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import abc
 import base64
@@ -27,11 +30,11 @@ from containerregistry.client import docker_name
 import httplib2
 from oauth2client import client as oauth2client
 
+import six
 
-class Provider(object):
+
+class Provider(six.with_metaclass(abc.ABCMeta, object)):
   """Interface for providing User Credentials for use with a Docker Registry."""
-
-  __metaclass__ = abc.ABCMeta  # For enforcing that methods are overridden.
 
   # pytype: disable=bad-return-type
   @abc.abstractmethod
@@ -63,7 +66,17 @@ class SchemeProvider(Provider):
 
   def Get(self):
     """Gets the credential in a form suitable for an Authorization header."""
-    return '%s %s' % (self._scheme, self.suffix)
+    if isinstance(self._scheme, six.binary_type):
+      s = self._scheme.decode()
+    else:
+      s = self._scheme
+
+    if isinstance(self.suffix, six.binary_type):
+      x = self.suffix.decode()
+    else:
+      x = self.suffix
+
+    return u'%s %s' % (s, x)
 
 
 class Basic(SchemeProvider):
@@ -84,7 +97,17 @@ class Basic(SchemeProvider):
 
   @property
   def suffix(self):
-    return base64.b64encode(self.username + ':' + self.password)
+    if isinstance(self.username, six.binary_type):
+      u = self.username
+    else:
+      u = self.username.encode()
+
+    if isinstance(self.password, six.binary_type):
+      p = self.password
+    else:
+      p = self.password.encode()
+
+    return base64.b64encode(u + b':' + p).decode()
 
 
 _USERNAME = '_token'
@@ -160,7 +183,9 @@ class Helper(Basic):
     # https://github.com/bazelbuild/rules_docker/issues/111
     stdout = p.communicate(input='https://' + self._registry)[0]
 
-    output = stdout.decode()
+    output = stdout
+    if isinstance(output, six.binary_type):
+      output = stdout.decode()
     if output.strip() == _MAGIC_NOT_FOUND_MESSAGE:
       # Use empty auth when no auth is found.
       logging.info('Credentials not found, falling back to anonymous auth.')
@@ -175,10 +200,8 @@ class Helper(Basic):
     return Basic(blob['Username'], blob['Secret']).Get()
 
 
-class Keychain(object):
+class Keychain(six.with_metaclass(abc.ABCMeta, object)):
   """Interface for resolving an image reference to a credential."""
-
-  __metaclass__ = abc.ABCMeta  # For enforcing that methods are overridden.
 
   # pytype: disable=bad-return-type
   @abc.abstractmethod
@@ -257,7 +280,8 @@ class _DefaultKeychain(Keychain):
       if form % name.registry in auths:
         entry = auths[form % name.registry]
         if 'auth' in entry:
-          username, password = base64.b64decode(entry['auth']).split(':', 1)
+          decoded = base64.b64decode(entry['auth']).decode()
+          username, password = decoded.split(':', 1)
           return Basic(username, password)
         elif 'username' in entry and 'password' in entry:
           return Basic(entry['username'], entry['password'])

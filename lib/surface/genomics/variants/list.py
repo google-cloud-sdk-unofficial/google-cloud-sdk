@@ -15,6 +15,8 @@
 """Implementation of gcloud genomics variants list.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import sys
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -35,7 +37,7 @@ class List(base.ListCommand):
     """Register flags for this command."""
     parser.add_argument('--limit-calls',
                         type=arg_parsers.BoundedInt(
-                            1, sys.maxint, unlimited=True),
+                            1, sys.maxsize, unlimited=True),
                         help=('The maximum number of calls to return.'
                               'At least one variant will be returned even '
                               'if it exceeds this limit.'))
@@ -55,13 +57,13 @@ class List(base.ListCommand):
                         required=True,
                         help='Only return variants in this reference sequence.')
     parser.add_argument('--start',
-                        type=long,
+                        type=int,
                         help=('The beginning of the window (0-based '
                               'inclusive) for which overlapping variants '
                               'should be returned. If unspecified, defaults '
                               'to 0.'))
     parser.add_argument('--end',
-                        type=long,
+                        type=int,
                         help=('The end of the window (0-based exclusive) for '
                               'which variants should be returned. If '
                               'unspecified or 0, defaults to the length of the '

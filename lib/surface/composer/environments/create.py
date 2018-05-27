@@ -58,11 +58,11 @@ class Create(base.Command):
         '--disk-size',
         default='100GB',
         type=arg_parsers.BinarySize(
-            lower_bound='10GB',
+            lower_bound='20GB',
             upper_bound='64TB',
             suggested_binary_size_scales=['GB', 'TB']),
         help='The disk size for each VM node in the environment. The minimum '
-        'size is 10GB, and the maximum is 64TB. Specified value must be an '
+        'size is 20GB, and the maximum is 64TB. Specified value must be an '
         'integer multiple of gigabytes. Cannot be updated after the '
         'environment has been created. If units are not provided, defaults to '
         'GB.')

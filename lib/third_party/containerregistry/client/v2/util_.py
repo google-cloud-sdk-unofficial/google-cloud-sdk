@@ -13,7 +13,10 @@
 # limitations under the License.
 """This package holds a handful of utilities for manipulating manifests."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import base64
 import json
@@ -21,6 +24,7 @@ import os
 import subprocess
 
 from containerregistry.client import docker_name
+import six
 
 
 class BadManifestException(Exception):
@@ -41,19 +45,20 @@ def _JoseBase64UrlDecode(message):
   Returns:
     The decoded message.
   """
-  l = len(message)
+  bytes_msg = message
+  if isinstance(bytes_msg, six.text_type):
+    bytes_msg = message.encode()
+  l = len(bytes_msg)
   if l % 4 == 0:
     pass
   elif l % 4 == 2:
-    message += '=='
+    bytes_msg += b'=='
   elif l % 4 == 3:
-    message += '='
+    bytes_msg += b'='
   else:
     raise BadManifestException('Malformed JOSE Base64 encoding.')
 
-  # Explicitly encode as ascii to work around issues passing unicode
-  # to base64 decoding.
-  return base64.urlsafe_b64decode(message.encode('ascii'))
+  return base64.urlsafe_b64decode(bytes_msg)
 
 
 def _ExtractProtectedRegion(
@@ -84,8 +89,12 @@ def DetachSignatures(manifest):
     a pair consisting of the manifest with the signature removed and a list of
     the removed signatures.
   """
+  bytes_manifest = manifest
+  if isinstance(bytes_manifest, six.text_type):
+    bytes_manifest = manifest.encode('ascii')
+
   # First, decode the manifest to extract the list of signatures.
-  json_manifest = json.loads(manifest)
+  json_manifest = json.loads(bytes_manifest.decode('ascii'))
 
   # Next, extract the signatures that have signed a portion of the manifest.
   signatures = json_manifest['signatures']
@@ -100,7 +109,7 @@ def DetachSignatures(manifest):
   # Establish the protected region and extract it from our original string.
   (format_length, format_tail) = _ExtractCommonProtectedRegion(signatures)
   suffix = _JoseBase64UrlDecode(format_tail)
-  unsigned_manifest = manifest[0:format_length] + suffix
+  unsigned_manifest = bytes_manifest[0:format_length] + suffix
 
   return (unsigned_manifest, signatures)
 
@@ -116,12 +125,12 @@ def _AttachSignatures(manifest,
                       signatures):
   """Attach the provided signatures to the provided naked manifest."""
   (format_length, format_tail) = _ExtractCommonProtectedRegion(signatures)
-  prefix = manifest[0:format_length]
-  suffix = _JoseBase64UrlDecode(format_tail)
+  prefix = manifest[0:format_length].decode()
+  suffix = _JoseBase64UrlDecode(format_tail).decode()
   return '{prefix},"signatures":{signatures}{suffix}'.format(
       prefix=prefix,
       signatures=json.dumps(signatures, sort_keys=True),
-      suffix=suffix)
+      suffix=suffix).encode()
 
 
 def Rename(manifest, name):
@@ -135,7 +144,7 @@ def Rename(manifest, name):
 
   # Reserialize the json to a string.
   updated_unsigned_manifest = json.dumps(
-      json_manifest, sort_keys=True, indent=2)
+      json_manifest, sort_keys=True, indent=2).encode()
 
   # Sign the updated manifest
   return Sign(updated_unsigned_manifest)

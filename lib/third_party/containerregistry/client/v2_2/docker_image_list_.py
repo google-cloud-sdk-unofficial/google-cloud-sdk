@@ -13,10 +13,12 @@
 # limitations under the License.
 """This package provides DockerImageList for examining Manifest Lists."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import abc
-import httplib
 import json
 
 from containerregistry.client import docker_creds
@@ -24,7 +26,10 @@ from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_digest
 from containerregistry.client.v2_2 import docker_http
 from containerregistry.client.v2_2 import docker_image as v2_2_image
+
 import httplib2
+import six
+import six.moves.http_client
 
 
 class DigestMismatchedError(Exception):
@@ -99,13 +104,11 @@ class Platform(object):
     self._content['architecture'] = self.architecture()
     self._content['os'] = self.os()
 
-    return iter(self._content.iteritems())
+    return iter(six.iteritems(self._content))
 
 
-class DockerImageList(object):
+class DockerImageList(six.with_metaclass(abc.ABCMeta, object)):
   """Interface for implementations that interact with Docker manifest lists."""
-
-  __metaclass__ = abc.ABCMeta  # For enforcing that methods are overridden.
 
   def digest(self):
     """The digest of the manifest."""
@@ -248,7 +251,7 @@ class FromRegistry(DockerImageList):
             scheme=docker_http.Scheme(self._name.registry),
             registry=self._name.registry,
             suffix=suffix),
-        accepted_codes=[httplib.OK],
+        accepted_codes=[six.moves.http_client.OK],
         accepted_mimes=accepted_mimes)
     if cache:
       self._response[suffix] = content
@@ -283,14 +286,14 @@ class FromRegistry(DockerImageList):
 
   def resolve_all(
       self, target = None):
-    results = self.resolve_all_unordered(target).items()
+    results = list(self.resolve_all_unordered(target).items())
     # Sort by name (which is equivalent as by digest) for deterministic output.
     # We could let resolve_all_unordered() to return only a list of image, then
     # use image.digest() as the sort key, but FromRegistry.digest() will
     # eventually leads to another round trip call to registry. This inefficiency
     # becomes worse as the image list has more children images. So we let
     # resolve_all_unordered() to return both image names and images.
-    results.sort(key=lambda (name, image): str(name))
+    results.sort(key=lambda name_image: str(name_image[0]))
     return [image for (_, image) in results]
 
   def resolve_all_unordered(
@@ -322,7 +325,7 @@ class FromRegistry(DockerImageList):
       manifest = json.loads(self.manifest(validate=False))
       return manifest['schemaVersion'] == 2 and 'manifests' in manifest
     except docker_http.V2DiagnosticException as err:
-      if err.status == httplib.NOT_FOUND:
+      if err.status == six.moves.http_client.NOT_FOUND:
         return False
       raise
 

@@ -81,9 +81,6 @@ class Delete(base.DeleteCommand):
     # Issue all deletes first
     for cluster_ref in cluster_refs:
       try:
-        # Make sure it exists (will raise appropriate error if not)
-        adapter.GetCluster(cluster_ref)
-
         op_ref = adapter.DeleteCluster(cluster_ref)
         operations.append((op_ref, cluster_ref))
       except apitools_exceptions.HttpError as error:

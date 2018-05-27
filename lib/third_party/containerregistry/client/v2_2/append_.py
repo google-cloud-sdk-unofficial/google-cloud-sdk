@@ -13,7 +13,10 @@
 # limitations under the License.
 """This package provides tools for appending layers to docker images."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import hashlib
 import json

@@ -17,7 +17,7 @@
 
 import os
 import sys
-import urlparse
+import six.moves.urllib.parse
 
 
 
@@ -86,7 +86,7 @@ def _check_digest(digest):
 
 def _check_registry(registry):
   # Per RFC 3986, netlocs (authorities) are required to be prefixed with '//'
-  parsed_hostname = urlparse.urlparse('//' + registry)
+  parsed_hostname = six.moves.urllib.parse.urlparse('//' + registry)
 
   # If urlparse doesn't recognize the given registry as a netloc, fail
   # validation.

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Promotes Cloud SQL read replica to a stand-alone instance."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate

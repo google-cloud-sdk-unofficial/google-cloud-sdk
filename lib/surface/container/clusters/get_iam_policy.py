@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetIAMPolicy(base.Command):
+class GetIamPolicy(base.Command):
   """Get the IAM policy for a cluster."""
 
   @staticmethod

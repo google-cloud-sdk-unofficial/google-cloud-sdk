@@ -44,7 +44,7 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'whose IAM policy to update')
+    flags.AddKeyResourceArgument(parser, 'whose IAM policy to update')
     parser.add_argument('policy_file', help=('JSON or YAML '
                                              'file with the IAM policy'))
 

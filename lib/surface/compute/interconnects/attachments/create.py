@@ -24,7 +24,18 @@ from googlecloudsdk.command_lib.compute.interconnects import flags as interconne
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
 from googlecloudsdk.command_lib.compute.routers import flags as router_flags
 
+_DEPRECATION_WARNING = """\
+    `create` is deprecated. Please use `gcloud compute interconnects attachments dedicated create` instead.
+    """
 
+_DEPRECATION_ERROR = """\
+    `create` has been removed. Please use `gcloud compute interconnects attachments dedicated create` instead.
+    """
+
+
+# TODO(b/79153388): Clean up this command flag after 3 months of deprecation.
+@base.Deprecate(
+    is_removed=False, warning=_DEPRECATION_WARNING, error=_DEPRECATION_ERROR)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine interconnect attachment.
 

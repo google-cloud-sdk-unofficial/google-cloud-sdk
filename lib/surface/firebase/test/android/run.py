@@ -13,6 +13,8 @@
 # limitations under the License.
 """The 'gcloud firebase test android run' command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.firebase.test import arg_util
 from googlecloudsdk.api_lib.firebase.test import ctrl_c_handler
 from googlecloudsdk.api_lib.firebase.test import exit_code

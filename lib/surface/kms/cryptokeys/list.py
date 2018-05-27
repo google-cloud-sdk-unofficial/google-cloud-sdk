@@ -38,6 +38,11 @@ class List(base.ListCommand):
   def GetUriFunc(self):
     return cloudkms_base.MakeGetUriFunc(self)
 
+  @staticmethod
+  def Args(parser):
+    flags.AddKeyRingFlag(parser, 'key')
+    flags.AddLocationFlag(parser, 'key')
+
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()

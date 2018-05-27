@@ -14,6 +14,8 @@
 
 """'logging read' command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import datetime
 from googlecloudsdk.api_lib.logging import common
 from googlecloudsdk.api_lib.logging import util

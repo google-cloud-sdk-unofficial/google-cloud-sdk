@@ -42,6 +42,7 @@ class RemoveIamPolicyBinding(base.Command):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser, 'keyring')
     flags.AddKeyRingArgument(parser,
                              'from which to remove an IAM policy binding')
     iam_util.AddArgsForRemoveIamPolicyBinding(

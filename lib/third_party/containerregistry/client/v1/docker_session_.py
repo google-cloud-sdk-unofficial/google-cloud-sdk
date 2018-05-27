@@ -17,9 +17,11 @@
 'Pull' is not implemented (go/docker:pull).
 """
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
-import httplib
 import logging
 
 from containerregistry.client import docker_creds
@@ -29,6 +31,7 @@ from containerregistry.client.v1 import docker_http
 from containerregistry.client.v1 import docker_image
 
 import httplib2
+import six.moves.http_client
 
 
 class Push(object):
@@ -66,7 +69,9 @@ class Push(object):
             registry=self._name.registry,
             repository=self._name.repository),
         self._basic_creds,
-        accepted_codes=[httplib.OK, httplib.CREATED],
+        accepted_codes=[
+            six.moves.http_client.OK, six.moves.http_client.CREATED
+        ],
         body='[]')
 
     # The response should have an X-Docker-Token header, which
@@ -90,8 +95,10 @@ class Push(object):
             endpoint=self._endpoint,
             layer=layer_id),
         self._token_creds,
-        accepted_codes=[httplib.OK, httplib.NOT_FOUND])
-    return resp.status == httplib.OK
+        accepted_codes=[
+            six.moves.http_client.OK, six.moves.http_client.NOT_FOUND
+        ])
+    return resp.status == six.moves.http_client.OK
 
   def _put_json(self, image,
                 layer_id):
@@ -103,7 +110,7 @@ class Push(object):
             endpoint=self._endpoint,
             layer=layer_id),
         self._token_creds,
-        accepted_codes=[httplib.OK],
+        accepted_codes=[six.moves.http_client.OK],
         body=image.json(layer_id))
 
   def _put_layer(self, image,
@@ -118,7 +125,7 @@ class Push(object):
             endpoint=self._endpoint,
             layer=layer_id),
         self._token_creds,
-        accepted_codes=[httplib.OK],
+        accepted_codes=[six.moves.http_client.OK],
         body=image.layer(layer_id),
         content_type='application/octet-stream')
 
@@ -165,7 +172,7 @@ class Push(object):
             repository=self._name.repository,
             tag=self._name.tag),
         self._token_creds,
-        accepted_codes=[httplib.OK],
+        accepted_codes=[six.moves.http_client.OK],
         body='"%s"' % self._top)
 
   def _put_images(self):
@@ -177,7 +184,7 @@ class Push(object):
             registry=self._name.registry,
             repository=self._name.repository),
         self._basic_creds,
-        accepted_codes=[httplib.NO_CONTENT],
+        accepted_codes=[six.moves.http_client.NO_CONTENT],
         body='[]')
 
   def __exit__(self, exception_type, unused_value, unused_traceback):

@@ -37,8 +37,8 @@ class RemoveRotationSchedule(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser,
-                               'from which to clear the rotation schedule')
+    flags.AddKeyResourceArgument(parser,
+                                 'from which to clear the rotation schedule')
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

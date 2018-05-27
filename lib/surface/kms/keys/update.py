@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update a key.
 
@@ -96,7 +95,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'to update')
+    flags.AddKeyResourceArgument(parser, 'to update')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
     flags.AddRemoveRotationScheduleFlag(parser)

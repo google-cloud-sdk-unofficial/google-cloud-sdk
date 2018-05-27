@@ -15,11 +15,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import iam_util
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetIAMPolicy(base.Command):
+class SetIamPolicy(base.Command):
   """Set the IAM policy for a cluster."""
 
   @staticmethod
@@ -50,6 +51,7 @@ class SetIAMPolicy(base.Command):
     adapter = self.context['api_adapter']
     location_get = self.context['location_get']
     location = location_get(args)
-
+    policy = iam_util.ParsePolicyFile(args.policy_file,
+                                      adapter.messages.GoogleIamV1Policy)
     return adapter.SetIamPolicy(
-        adapter.ParseCluster(args.name, location), args.policy_file)
+        adapter.ParseCluster(args.name, location), policy)

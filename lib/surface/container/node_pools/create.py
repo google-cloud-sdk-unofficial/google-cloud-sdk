@@ -91,8 +91,6 @@ on the Compute Engine API instance object and can be used in firewall rules.
 See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
-  # TODO(b/36071127): unhide this flag after we have enough ssd.
-  flags.AddDiskTypeFlag(parser, suppressed=True)
   flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
   flags.AddNodeVersionFlag(parser)
@@ -137,6 +135,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
@@ -204,6 +203,7 @@ class CreateBeta(Create):
     _Args(parser)
     flags.AddAcceleratorArgs(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
@@ -239,6 +239,7 @@ class CreateAlpha(Create):
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
     flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser, for_node_pool=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)

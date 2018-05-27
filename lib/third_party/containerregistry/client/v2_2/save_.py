@@ -13,10 +13,13 @@
 # limitations under the License.
 """This package provides tools for saving docker images."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
-import cStringIO
 import hashlib
+import io
 import json
 import os
 import tarfile
@@ -28,6 +31,8 @@ from containerregistry.client.v1 import save as v1_save
 from containerregistry.client.v2 import v1_compat
 from containerregistry.client.v2_2 import docker_image as v2_2_image
 from containerregistry.client.v2_2 import v2_compat
+
+import six
 
 
 
@@ -53,7 +58,7 @@ def multi_image_tarball(
   def add_file(filename, contents):
     info = tarfile.TarInfo(filename)
     info.size = len(contents)
-    tar.addfile(tarinfo=info, fileobj=cStringIO.StringIO(contents))
+    tar.addfile(tarinfo=info, fileobj=io.BytesIO(contents))
 
   tag_to_v1_image = tag_to_v1_image or {}
 
@@ -68,7 +73,7 @@ def multi_image_tarball(
   #             is loaded.
   manifests = []
 
-  for (tag, image) in tag_to_image.iteritems():
+  for (tag, image) in six.iteritems(tag_to_image):
     # The config file is stored in a blob file named with its digest.
     digest = hashlib.sha256(image.config_file()).hexdigest()
     add_file(digest + '.json', image.config_file())
@@ -178,7 +183,7 @@ def fast(image, directory,
     for future in concurrent.futures.as_completed(future_to_params):
       future.result()
 
-  return (config_file, layers)
+  return (config_file, layers)  # pytype: disable=bad-return-type
 
 
 def uncompressed(image,
@@ -247,4 +252,4 @@ def uncompressed(image,
     for future in concurrent.futures.as_completed(future_to_params):
       future.result()
 
-  return (config_file, layers)
+  return (config_file, layers)  # pytype: disable=bad-return-type

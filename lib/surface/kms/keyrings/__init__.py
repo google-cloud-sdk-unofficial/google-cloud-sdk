@@ -29,6 +29,5 @@ class KeyRings(base.Group):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser)
     parser.display_info.AddUriFunc(
         cloudkms_base.MakeGetUriFunc(flags.KEY_RING_COLLECTION))

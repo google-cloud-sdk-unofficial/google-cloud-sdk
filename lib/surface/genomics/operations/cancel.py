@@ -14,7 +14,9 @@
 """Implementation of gcloud genomics operations cancel.
 """
 
-from StringIO import StringIO
+from __future__ import absolute_import
+from __future__ import unicode_literals
+import io
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
@@ -63,7 +65,7 @@ class Cancel(base.Command):
       op = apitools_client.operations.Get(
           genomics_messages.GenomicsOperationsGetRequest(name=name))
 
-    operation_string = StringIO()
+    operation_string = io.StringIO()
     print_format = display.Displayer(self, args).GetFormat()
     resource_printer.Print(op, print_format, out=operation_string)
 

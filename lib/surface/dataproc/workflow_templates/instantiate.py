@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Instantiate a workflow template."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import uuid
+
+from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
@@ -29,6 +33,7 @@ class Instantiate(base.CreateCommand):
   def Args(parser):
     flags.AddTemplateFlag(parser, 'run')
     flags.AddTimeoutFlag(parser, default='35m')
+    flags.AddParametersFlag(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -38,6 +43,10 @@ class Instantiate(base.CreateCommand):
 
     instantiate_request = dataproc.messages.InstantiateWorkflowTemplateRequest()
     instantiate_request.instanceId = uuid.uuid4().hex  # request UUID
+    if args.parameters:
+      instantiate_request.parameters = encoding.DictToMessage(
+          args.parameters,
+          msgs.InstantiateWorkflowTemplateRequest.ParametersValue)
 
     request = msgs.DataprocProjectsRegionsWorkflowTemplatesInstantiateRequest(
         instantiateWorkflowTemplateRequest=instantiate_request,

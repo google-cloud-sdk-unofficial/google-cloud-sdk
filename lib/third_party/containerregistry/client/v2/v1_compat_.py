@@ -13,7 +13,10 @@
 # limitations under the License.
 """This package provides compatibility interfaces for v1/v2."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import hashlib
 import json
@@ -21,6 +24,8 @@ import json
 from containerregistry.client.v1 import docker_image as v1_image
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import util
+
+from six.moves import zip  # pylint: disable=redefined-builtin
 
 
 class V1FromV2(v1_image.DockerImage):
@@ -140,7 +145,6 @@ class V2FromV1(v2_image.DockerImage):
       digest = 'sha256:' + hashlib.sha256(blob).hexdigest()
       fs_layers += [{'blobSum': digest}]
       self._layer_map[digest] = layer_id
-
     self._manifest = util.Sign(
         json.dumps(
             {
@@ -155,7 +159,7 @@ class V2FromV1(v2_image.DockerImage):
                 'fsLayers':
                     fs_layers,
                 'history': [{
-                    'v1Compatibility': self._v1_image.json(layer_id)
+                    'v1Compatibility': self._v1_image.json(layer_id).decode()
                 } for layer_id in self._v1_image.ancestry(self._v1_image.top())
                            ],
             },

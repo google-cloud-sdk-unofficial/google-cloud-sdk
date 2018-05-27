@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util.semver import SemVer
 
@@ -140,8 +141,25 @@ class Upgrade(base.Command):
     cluster_ref = adapter.ParseCluster(args.name, location)
     concurrent_node_count = getattr(args, 'concurrent_node_count', None)
 
-    # Make sure it exists (will raise appropriate error if not)
-    cluster = adapter.GetCluster(cluster_ref)
+    try:
+      cluster = adapter.GetCluster(cluster_ref)
+    except apitools_exceptions.HttpError as error:
+      log.warning('Problem loading details of cluster to upgrade: {}'
+                  .format(console_attr.SafeText(error)))
+      cluster = None
+
+    upgrade_message = container_command_util.ClusterUpgradeMessage(
+        name=args.name,
+        cluster=cluster,
+        master=args.master,
+        node_pool_name=args.node_pool,
+        new_version=args.cluster_version,
+        concurrent_node_count=concurrent_node_count)
+
+    console_io.PromptContinue(
+        message=upgrade_message,
+        throw_if_unattended=True,
+        cancel_on_no=True)
 
     options = api_adapter.UpdateClusterOptions(
         version=args.cluster_version,
@@ -152,18 +170,6 @@ class Upgrade(base.Command):
         image=args.image,
         image_project=args.image_project,
         concurrent_node_count=concurrent_node_count)
-
-    upgrade_message = container_command_util.ClusterUpgradeMessage(
-        cluster,
-        master=args.master,
-        node_pool=args.node_pool,
-        new_version=options.version,
-        concurrent_node_count=concurrent_node_count)
-
-    console_io.PromptContinue(
-        message=upgrade_message,
-        throw_if_unattended=True,
-        cancel_on_no=True)
 
     try:
       op_ref = adapter.UpdateCluster(cluster_ref, options)

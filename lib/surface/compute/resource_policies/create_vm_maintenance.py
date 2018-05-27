@@ -39,7 +39,8 @@ class CreateVmMaintenance(base.CreateCommand):
         flag_suffix='window',
         start_time_help=('Start time of a four-hour window in which '
                          'maintenance activity should start in given cadence.'),
-        cadence_help='Maintenance activity window')
+        cadence_help='Maintenance activity window',
+        has_restricted_start_times=True)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):

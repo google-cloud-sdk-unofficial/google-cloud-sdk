@@ -40,6 +40,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddKeyResourceFlags(parser)
     parser.add_argument(
         '--primary',
         action='store_true',

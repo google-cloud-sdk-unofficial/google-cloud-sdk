@@ -14,6 +14,8 @@
 
 """Implementation of gcloud genomics pipelines run.
 """
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import exceptions
 from googlecloudsdk.api_lib.genomics import genomics_util
@@ -23,6 +25,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+import six
 
 CLOUD_SDK_IMAGE = 'google/cloud-sdk:alpine'
 SHARED_DISK = 'gcloud-shared'
@@ -71,7 +74,7 @@ def _ValidateAndMergeArgInputs(args):
     arg_inputs.update(args.inputs)
 
   # Read up the inputs-from-file and add the values from the file
-  for key, value in args.inputs_from_file.iteritems():
+  for key, value in six.iteritems(args.inputs_from_file):
     arg_inputs[key] = files.GetFileContents(value)
 
   return arg_inputs

@@ -16,6 +16,8 @@
 Changes a user's password in a given instance with specified username and host.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import getpass
 
 from googlecloudsdk.api_lib.sql import api_util

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Retrieves information about a backup."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import sys
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -40,7 +42,7 @@ class Describe(base.DescribeCommand):
     """
     parser.add_argument(
         'id',
-        type=arg_parsers.BoundedInt(1, sys.maxint),
+        type=arg_parsers.BoundedInt(1, sys.maxsize),
         help='The ID of the Backup Run.')
     flags.AddInstance(parser)
 

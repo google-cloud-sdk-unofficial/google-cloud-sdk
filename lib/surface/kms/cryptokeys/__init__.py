@@ -30,8 +30,3 @@ class CryptoKeys(base.Group):
   A CryptoKey represents a logical key that can be used for cryptographic
   operations.
   """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddKeyRingFlag(parser)
-    flags.AddLocationFlag(parser)

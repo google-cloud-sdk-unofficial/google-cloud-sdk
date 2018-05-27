@@ -71,7 +71,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'to create')
+    flags.AddKeyResourceArgument(parser, 'to create')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)

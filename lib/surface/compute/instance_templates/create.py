@@ -33,8 +33,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 _INSTANTIATE_FROM_VALUES = [
     'attach-read-only',
-    'do-not-include',
+    'blank',
     'custom-image',
+    'do-not-include',
     'source-image',
     'source-image-family',
 ]

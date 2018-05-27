@@ -36,6 +36,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser, 'keyring')
     flags.AddKeyRingArgument(parser, 'to describe')
 
   def Run(self, args):

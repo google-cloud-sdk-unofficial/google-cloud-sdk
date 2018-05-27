@@ -35,6 +35,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser, 'keyring')
     flags.AddKeyRingArgument(parser, 'to create')
     parser.display_info.AddCacheUpdater(flags.KeyRingCompleter)
 
