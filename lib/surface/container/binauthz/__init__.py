@@ -14,6 +14,7 @@
 """The base surface for Binary Authorization signatures."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -151,3 +152,9 @@ class Binauthz(base.Group):
           ...
         ```
   """
+
+  def Filter(self, context, args):
+    # Explicitly override container group's LEGACY billing configuration.
+    properties.VALUES.billing.quota_project.Set(
+        properties.VALUES.billing.CURRENT_PROJECT)
+    return context

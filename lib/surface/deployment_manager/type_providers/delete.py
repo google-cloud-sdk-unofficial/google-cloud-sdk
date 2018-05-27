@@ -14,6 +14,8 @@
 
 """type-providers delete command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import exceptions
 from googlecloudsdk.calliope import base
@@ -24,10 +26,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-def LogResource(request, async):
+def LogResource(request, is_async):
   log.DeletedResource(request.typeProvider,
                       kind='type_provider',
-                      async=async)
+                      is_async=is_async)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)

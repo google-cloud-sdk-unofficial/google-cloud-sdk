@@ -20,8 +20,8 @@ from googlecloudsdk.core import resources
 class List(base.ListCommand):
   """List all active billing accounts.
 
-  `{command}` lists all billing accounts owned by the currently
-  authenticated user.
+  `{command}` lists all billing accounts and subaccounts owned by the currently
+  authenticated user. Subaccounts have a non-empty MASTER_ACCOUNT_ID value.
 
   ## EXAMPLES
 
@@ -39,9 +39,10 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat("""
           table(
-            name.basename():label=ID,
+            name.basename():label=ACCOUNT_ID,
             displayName:label=NAME,
-            open
+            open,
+            masterBillingAccount.basename():label=MASTER_ACCOUNT_ID
           )
     """)
     parser.display_info.AddUriFunc(List.ToSelfLink)

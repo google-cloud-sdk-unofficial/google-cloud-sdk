@@ -13,6 +13,8 @@
 # limitations under the License.
 """Submit build command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os.path
 import uuid
 
@@ -390,7 +392,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       disk_size = compute_utils.BytesToGb(args.disk_size)
       if not build_config.options:
         build_config.options = messages.BuildOptions()
-      build_config.options.diskSizeGb = disk_size
+      build_config.options.diskSizeGb = int(disk_size)
 
     log.debug('submitting build: '+repr(build_config))
 

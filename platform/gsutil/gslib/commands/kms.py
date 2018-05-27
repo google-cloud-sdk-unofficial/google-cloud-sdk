@@ -22,10 +22,8 @@ import textwrap
 
 from gslib import metrics
 from gslib.command import Command
-from gslib.command import NO_MAX
 from gslib.command_argument import CommandArgument
 from gslib.cs_api_map import ApiSelector
-from gslib.encryption_helper import ValidateCMEK
 from gslib.exception import CommandException
 from gslib.exception import NO_URLS_MATCHED_TARGET
 from gslib.help_provider import CreateHelpText
@@ -33,13 +31,15 @@ from gslib.kms_api import KmsApi
 from gslib.project_id import PopulateProjectId
 from gslib.third_party.kms_apitools.cloudkms_v1_messages import Binding
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
+from gslib.utils.constants import NO_MAX
+from gslib.utils.encryption_helper import ValidateCMEK
 
 _AUTHORIZE_SYNOPSIS = """
   gsutil kms authorize [-p proj_id] -k kms_key
 """
 
 _ENCRYPTION_SYNOPSIS = """
-  gsutil kms encryption [(-d|[-k kms_key])] bucket_url
+  gsutil kms encryption [(-d|[-k kms_key])] bucket_url...
 """
 
 _SERVICEACCOUNT_SYNOPSIS = """
@@ -52,7 +52,7 @@ _SYNOPSIS = (_AUTHORIZE_SYNOPSIS + _ENCRYPTION_SYNOPSIS.lstrip('\n') +
 # pylint: disable=line-too-long
 _AUTHORIZE_DESCRIPTION = """
 <B>AUTHORIZE</B>
-  The authorize sub-command ensures that the default (or supplied) project has a
+  The authorize sub-command checks that the default (or supplied) project has a
   GCS-owned service account created for it, and if not, it creates one. It then
   adds appropriate encrypt/decrypt permissions to Cloud KMS resources such that
   the GCS service account can write and read Cloud KMS-encrypted objects in

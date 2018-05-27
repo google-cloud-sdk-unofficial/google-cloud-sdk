@@ -78,7 +78,7 @@ class Move(base.SilentCommand):
       log.UpdatedResource(
           operation_ref,
           kind='disk {0}'.format(target_disk.Name()),
-          async=True,
+          is_async=True,
           details='Run the [gcloud compute operations describe] command '
                   'to check the status of this operation.'
       )

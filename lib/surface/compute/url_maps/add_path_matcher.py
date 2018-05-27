@@ -14,6 +14,8 @@
 
 """Command for adding a path matcher to a URL map."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import collections
 from apitools.base.py import encoding
 
@@ -27,6 +29,7 @@ from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.core import properties
+import six
 
 
 def _Args(parser):
@@ -246,14 +249,14 @@ class AddPathMatcher(base.UpdateCommand):
     # and --backend-bucket-path-rules.
     service_map = collections.defaultdict(set)
     bucket_map = collections.defaultdict(set)
-    for path, service in args.path_rules.iteritems():
+    for path, service in six.iteritems(args.path_rules):
       service_map[service].add(path)
-    for path, service in args.backend_service_path_rules.iteritems():
+    for path, service in six.iteritems(args.backend_service_path_rules):
       service_map[service].add(path)
-    for path, bucket in args.backend_bucket_path_rules.iteritems():
+    for path, bucket in six.iteritems(args.backend_bucket_path_rules):
       bucket_map[bucket].add(path)
     path_rules = []
-    for service, paths in sorted(service_map.iteritems()):
+    for service, paths in sorted(six.iteritems(service_map)):
       path_rules.append(
           client.messages.PathRule(
               paths=sorted(paths),
@@ -263,7 +266,7 @@ class AddPathMatcher(base.UpdateCommand):
                       'project': properties.VALUES.core.project.GetOrFail,
                   },
                   collection='compute.backendServices').SelfLink()))
-    for bucket, paths in sorted(bucket_map.iteritems()):
+    for bucket, paths in sorted(six.iteritems(bucket_map)):
       path_rules.append(
           client.messages.PathRule(
               paths=sorted(paths),

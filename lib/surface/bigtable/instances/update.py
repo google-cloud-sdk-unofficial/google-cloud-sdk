@@ -13,13 +13,13 @@
 # limitations under the License.
 """bigtable instances update command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bigtable import util as bigtable_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class UpdateInstance(base.UpdateCommand):
@@ -55,12 +55,7 @@ class UpdateInstance(base.UpdateCommand):
       Some value that we want to have printed later.
     """
     cli = bigtable_util.GetAdminClient()
-    ref = resources.REGISTRY.Parse(
-        args.instance,
-        params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='bigtableadmin.projects.instances')
+    ref = bigtable_util.GetInstanceRef(args.instance)
     msgs = bigtable_util.GetAdminMessages()
     instance = cli.projects_instances.Get(
         msgs.BigtableadminProjectsInstancesGetRequest(name=ref.RelativeName()))

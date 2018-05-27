@@ -2130,6 +2130,7 @@ class BigqueryClient(object):
       use_legacy_sql=None,
       labels=None,
       time_partitioning=None,
+      clustering=None,
       destination_kms_key=None):
     """Create a table corresponding to TableReference.
 
@@ -2152,6 +2153,7 @@ class BigqueryClient(object):
       labels: an optional dict of labels to set on the table.
       time_partitioning: if set, enables time based partitioning on the table
         and configures the partitioning.
+      clustering: if set, enables and configures clustering on the table.
       destination_kms_key: User specified KMS key for encryption.
 
     Raises:
@@ -2184,6 +2186,8 @@ class BigqueryClient(object):
         body['labels'] = labels
       if time_partitioning is not None:
         body['timePartitioning'] = time_partitioning
+      if clustering is not None:
+        body['clustering'] = clustering
       if destination_kms_key is not None:
         body['encryptionConfiguration'] = {'kmsKeyName': destination_kms_key}
       self.apiclient.tables().insert(
@@ -3299,6 +3303,7 @@ class BigqueryClient(object):
       query_parameters=None,
       time_partitioning=None,
       destination_encryption_configuration=None,
+      clustering=None,
       **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -3343,6 +3348,8 @@ class BigqueryClient(object):
       query_parameters: parameter values for use_legacy_sql=False queries.
       time_partitioning: Optional. Provides time based partitioning
           specification for the destination table.
+      clustering: Optional. Provides clustering specification for the
+          destination table.
       destination_encryption_configuration: Optional. Allows user to encrypt the
           table created from a query job with a Cloud KMS key.
       **kwds: Passed on to self.ExecuteJob.
@@ -3388,6 +3395,7 @@ class BigqueryClient(object):
         schema_update_options=schema_update_options,
         query_parameters=query_parameters,
         time_partitioning=time_partitioning,
+        clustering=clustering,
         min_completion_ratio=min_completion_ratio)
     request = {'query': query_config}
     _ApplyParameters(request, dry_run=dry_run,
@@ -3415,6 +3423,7 @@ class BigqueryClient(object):
       schema_update_options=None,
       null_marker=None,
       time_partitioning=None,
+      clustering=None,
       destination_encryption_configuration=None,
       **kwds):
     """Load the given data into BigQuery.
@@ -3457,6 +3466,8 @@ class BigqueryClient(object):
       null_marker: Optional. String that will be interpreted as a NULL value.
       time_partitioning: Optional. Provides time based partitioning
           specification for the destination table.
+      clustering: Optional. Provides clustering specification for the
+          destination table.
       destination_encryption_configuration: Optional. Allows user to encrypt the
           table created from a load job with Cloud KMS key.
       **kwds: Passed on to self.ExecuteJob.
@@ -3494,6 +3505,7 @@ class BigqueryClient(object):
         schema_update_options=schema_update_options,
         null_marker=null_marker,
         time_partitioning=time_partitioning,
+        clustering=clustering,
         autodetect=autodetect)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
@@ -3595,7 +3607,7 @@ class _TableReader(object):
         rows_to_read = min(self.max_rows_per_request, rows_to_read)
       (more_rows, page_token, current_schema) = self._ReadOnePage(
           None if page_token else start_row,
-          max_rows=None if page_token else rows_to_read,
+          max_rows=rows_to_read,
           page_token=page_token, selected_fields=selected_fields)
       if not schema and current_schema:
         schema = current_schema.get('fields', [])

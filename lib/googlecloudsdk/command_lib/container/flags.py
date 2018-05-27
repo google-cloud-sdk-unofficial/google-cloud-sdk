@@ -14,6 +14,8 @@
 
 """Flags and helpers for the container related commands."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import constants as compute_constants
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
@@ -663,8 +665,7 @@ def AddTagsFlag(parser, help_text):
       help=help_text)
 
 
-def AddMasterAuthorizedNetworksFlags(parser, enable_group_for_update=None,
-                                     hidden=False):
+def AddMasterAuthorizedNetworksFlags(parser, enable_group_for_update=None):
   """Adds Master Authorized Networks related flags to parser.
 
   Master Authorized Networks related flags are:
@@ -676,7 +677,6 @@ def AddMasterAuthorizedNetworksFlags(parser, enable_group_for_update=None,
         options to which an --enable-master-authorized-networks flag is added
         in an update command. If given, the flag will default to None instead
         of False.
-    hidden: If true, suppress help text for added options.
   """
   if enable_group_for_update is None:
     # Flags are being added to the same group.
@@ -693,22 +693,29 @@ def AddMasterAuthorizedNetworksFlags(parser, enable_group_for_update=None,
   enable_flag_group.add_argument(
       '--enable-master-authorized-networks',
       default=enable_default,
-      help='Allow only Authorized Networks (specified by the '
-      '`--master-authorized-networks` flag) and Google Compute Engine Public '
-      'IPs to connect to Kubernetes master through HTTPS. By default public  '
-      'internet (0.0.0.0/0) is allowed to connect to Kubernetes master through '
-      'HTTPS.',
-      hidden=hidden,
+      help="""\
+Allow only specified set of CIDR blocks (specified by the
+`--master-authorized-networks` flag) to connect to Kubernetes master through
+HTTPS. Besides these blocks, the following have access as well:\n
+  1) The private network the cluster connects to if
+  `--private-cluster` is specified.
+  2) Google Compute Engine Public IPs if `--private-cluster` is not
+  specified.\n
+When disabled, public internet (0.0.0.0/0) is allowed to connect to Kubernetes
+master through HTTPS.
+""",
       action='store_true')
   master_flag_group.add_argument(
       '--master-authorized-networks',
-      type=arg_parsers.ArgList(min_length=1, max_length=10),
+      type=arg_parsers.ArgList(
+          min_length=1,
+          max_length=api_adapter.MAX_AUTHORIZED_NETWORKS_CIDRS),
       metavar='NETWORK',
-      help='The list of external networks (up to 10) that are allowed to '
-      'connect to Kubernetes master through HTTPS. Specified in CIDR notation '
-      '(e.g. 1.2.3.4/30). Can not be specified unless '
-      '`--enable-master-authorized-networks` is also specified.',
-      hidden=hidden)
+      help='The list of CIDR blocks (up to {max}) that are allowed to connect '
+      'to Kubernetes master through HTTPS. Specified in CIDR notation (e.g. '
+      '1.2.3.4/30). Can not be specified unless '
+      '`--enable-master-authorized-networks` is also specified.'.format(
+          max=api_adapter.MAX_AUTHORIZED_NETWORKS_CIDRS))
 
 
 def AddNetworkPolicyFlags(parser, hidden=False):
@@ -978,9 +985,8 @@ def AddIPAliasFlags(parser):
       default=None,
       help="""\
 Enable use of alias IPs (https://cloud.google.com/compute/docs/alias-ip/)
-for pod IPs. This will create two new subnetworks, one for the
-instance and pod IPs, and another to reserve space for the services
-range.
+for pod IPs. This will create two secondary ranges, one for the pod IPs
+and another to reserve space for the services range.
 """)
   parser.add_argument(
       '--services-ipv4-cidr',
@@ -992,7 +998,8 @@ Can be specified as a netmask size (e.g. '/20') or as in CIDR notion
 (e.g. '10.100.0.0/20'). If given as a netmask size, the IP range will
 be chosen automatically from the available space in the network.
 
-If unspecified, the services CIDR range will use automatic defaults.
+If unspecified, the services CIDR range will be chosen with a default
+mask size.
 
 Can not be specified unless '--enable-ip-alias' is also specified.
 """)
@@ -1009,8 +1016,8 @@ pairs.
 
 'range' specifies the IP range for the new subnetwork. This can either
 be a netmask size (e.g. '/20') or a CIDR range (e.g. '10.0.0.0/20').
-If a netmask size is specified, the IP is automatically taken from
-the free space in the cluster's network.
+If a netmask size is specified, the IP is automatically taken from the
+free space in the cluster's network.
 
 Examples:
 
@@ -1049,9 +1056,9 @@ with --create-subnetwork.
       '--services-secondary-range-name',
       metavar='NAME',
       help="""\
-Set the secondary range to be used for services
-(e.g. ClusterIPs). NAME must be the name of an existing secondary
-range in the cluster subnetwork.
+Set the secondary range to be used for services (e.g. ClusterIPs).
+NAME must be the name of an existing secondary range in the cluster
+subnetwork.
 
 Must be used in conjunction with '--enable-ip-alias'. Cannot be used
 with --create-subnetwork.
@@ -1547,3 +1554,31 @@ def WarnForUnspecifiedAutorepair(args):
         'Currently node auto repairs are disabled by default. In the future '
         'this will change and they will be enabled by default. Use '
         '`--[no-]enable-autorepair` flag  to suppress this warning.')
+
+
+def AddMachineTypeFlag(parser):
+  """Adds --machine-type flag to the parser.
+
+  Args:
+    parser: A given parser.
+  """
+
+  help_text = """\
+The type of machine to use for nodes. Defaults to n1-standard-1.
+The list of predefined machine types is available using the following command:
+
+  $ gcloud compute machine-types list
+
+You can also specify custom machine types with the string "custom-CPUS-RAM"
+where ``CPUS`` is the number of virtual CPUs and ``RAM`` is the amount of RAM in
+MiB.
+
+For example, to create a node pool using custom machines with 2 vCPUs and 12 GiB
+of RAM:
+
+  $ {command} high-mem-pool --machine-type=custom-2-12288
+"""
+
+  parser.add_argument(
+      '--machine-type', '-m',
+      help=help_text)

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating firewall rules."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewalls_utils
 from googlecloudsdk.calliope import base
@@ -21,36 +23,10 @@ from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  r"""Create a Google Compute Engine firewall rule.
+  """Create a Google Compute Engine firewall rule."""
 
-  *{command}* is used to create firewall rules to allow/deny
-  incoming/outgoing traffic.
-
-  ## EXAMPLES
-
-  To create a firewall rule allowing incoming TCP traffic on port 8080, run:
-
-    $ {command} FooService --allow tcp:8080 \
-      --description "Allow incoming traffic on TCP port 8080"
-      --direction INGRESS
-
-  To create a firewall rule that allows TCP traffic through port 80 and
-  determines a list of specific IP address blocks that are allowed to make
-  inbound connections, run:
-
-    $ {command} "tcp-rule" --allow tcp:80 \
-      --source-ranges="10.0.0.0/22,10.0.0.0/14" \
-      --description="Narrowing TCP traffic"
-
-  To list existing firewall rules, run:
-
-    $ gcloud compute firewall-rules list
-
-  For more detailed examples see
-  [](https://cloud.google.com/vpc/docs/using-firewalls)
-  """
   with_disabled = False
 
   FIREWALL_RULE_ARG = None
@@ -141,41 +117,42 @@ class Create(base.CreateCommand):
                                    request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreate(Create):
-  r"""Create a Google Compute Engine firewall rule.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaCreate(Create):
+  """Create a Google Compute Engine firewall rule."""
 
-  *{command}* is used to create firewall rules to allow/deny
-  incoming/outgoing traffic.
-
-  ## EXAMPLES
-
-  To create a firewall rule allowing incoming TCP traffic on port 8080, run:
-
-    $ {command} FooService --allow tcp:8080 \
-      --description "Allow incoming traffic on TCP port 8080" \
-      --direction INGRESS
-
-  To create a firewall rule that allows TCP traffic through port 80 and
-  determines a list of specific IP address blocks that are allowed to make
-  inbound connections, run:
-
-    $ {command} "tcp-rule" --allow tcp:80 \
-      --source-ranges="10.0.0.0/22,10.0.0.0/14" \
-      --description="Narrowing TCP traffic"
-
-  To list existing firewall rules, run:
-
-    $ gcloud compute firewall-rules list
-
-  For more detailed examples see
-  [](https://cloud.google.com/vpc/docs/using-firewalls)
-  """
   with_disabled = True
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_ALPHA)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_BETA)
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='create')
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        'The network to which this rule is attached.', required=False)
+    firewalls_utils.AddCommonArgs(
+        parser,
+        for_update=False,
+        with_egress_support=True,
+        with_service_account=True,
+        with_disabled=cls.with_disabled)
+    firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
+
+  def _CreateFirewall(self, holder, args):
+    firewall, project = super(BetaCreate, self)._CreateFirewall(holder, args)
+    if args.disabled is not None:
+      firewall.disabled = args.disabled
+
+    return firewall, project
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(BetaCreate):
+  """Create a Google Compute Engine firewall rule."""
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_BETA)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='create')
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
@@ -191,8 +168,37 @@ class AlphaCreate(Create):
 
   def _CreateFirewall(self, holder, args):
     firewall, project = super(AlphaCreate, self)._CreateFirewall(holder, args)
-    if args.disabled is not None:
-      firewall.disabled = args.disabled
     firewall.enableLogging = args.enable_logging
 
     return firewall, project
+
+
+Create.detailed_help = {
+    'brief': 'Create a Google Compute Engine firewall rule.',
+    'DESCRIPTION':
+        """\
+        *{command}* is used to create firewall rules to allow/deny
+        incoming/outgoing traffic.
+        """,
+    'EXAMPLES':
+        """\
+      To create a firewall rule allowing incoming TCP traffic on port 8080, run:
+
+        $ {command} FooService --allow tcp:8080 \
+--description "Allow incoming traffic on TCP port 8080" --direction INGRESS
+
+      To create a firewall rule that allows TCP traffic through port 80 and
+      determines a list of specific IP address blocks that are allowed to make
+      inbound connections, run:
+
+        $ {command} "tcp-rule" --allow tcp:80 \
+--source-ranges="10.0.0.0/22,10.0.0.0/14" --description="Narrowing TCP traffic"
+
+      To list existing firewall rules, run:
+
+        $ gcloud compute firewall-rules list
+
+      For more detailed examples see
+      [](https://cloud.google.com/vpc/docs/using-firewalls)
+        """,
+}

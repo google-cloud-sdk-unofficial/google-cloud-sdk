@@ -134,7 +134,7 @@ class Update(base.UpdateCommand):
       log.UpdatedResource(
           operation_ref,
           kind='router [{0}]'.format(router_ref.Name()),
-          async=True,
+          is_async=True,
           details='Run the [gcloud compute operations describe] command '
           'to check the status of this operation.')
       return result

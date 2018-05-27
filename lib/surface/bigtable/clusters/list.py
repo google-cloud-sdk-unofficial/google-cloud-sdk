@@ -13,11 +13,12 @@
 # limitations under the License.
 """bigtable clusters list command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -47,10 +48,7 @@ class ListClusters(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.ArgAdder(parser).AddInstance(
-        positional=False, required=False, multiple=True,
-        additional_help=('If no instances are provided, all clusters in the '
-                         'project will be listed by default.'))
+    arguments.AddInstancesResourceArg(parser, 'to list clusters for')
     parser.display_info.AddFormat("""
           table(
             name.segment(3):sort=1:label=INSTANCE,
@@ -75,17 +73,14 @@ class ListClusters(base.ListCommand):
       Some value that we want to have printed later.
     """
     cli = util.GetAdminClient()
-    instances = args.instances or ['-']
-    for instance in instances:
-      ref = resources.REGISTRY.Parse(
-          instance,
-          params={
-              'projectsId': properties.VALUES.core.project.GetOrFail,
-          },
-          collection='bigtableadmin.projects.instances')
-      msg = (util.GetAdminMessages()
-             .BigtableadminProjectsInstancesClustersListRequest(
-                 parent=ref.RelativeName()))
+    instance_refs = args.CONCEPTS.instances.Parse()
+    if not args.IsSpecified('instances'):
+      instance_refs = [util.GetInstanceRef('-')]
+    for instance_ref in instance_refs:
+      msg = (
+          util.GetAdminMessages()
+          .BigtableadminProjectsInstancesClustersListRequest(
+              parent=instance_ref.RelativeName()))
       for cluster in list_pager.YieldFromList(
           cli.projects_instances_clusters,
           msg,

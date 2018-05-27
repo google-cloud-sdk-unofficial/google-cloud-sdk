@@ -23,7 +23,9 @@ import time
 import webbrowser
 
 from gcs_oauth2_boto_plugin import oauth2_client
-from oauth2client.client import OAuth2WebServerFlow
+import oauth2client.client
+
+from six.moves import input  # pylint: disable=redefined-builtin
 
 CLIENT_ID = None
 CLIENT_SECRET = None
@@ -39,6 +41,7 @@ OOB_REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
 def OAuth2ClientFromBotoConfig(
     config, cred_type=oauth2_client.CredTypes.OAUTH2_USER_ACCOUNT):
+  """Create a client type based on credentials supplied in boto config."""
   token_cache = None
   token_cache_type = config.get('OAuth2', 'token_cache', 'file_system')
   if token_cache_type == 'file_system':
@@ -148,7 +151,8 @@ def OAuth2ClientFromBotoConfig(
 
 
 def OAuth2ApprovalFlow(client, scopes, launch_browser=False):
-  flow = OAuth2WebServerFlow(
+  """Run the OAuth2 flow to fetch a refresh token. Returns the refresh token."""
+  flow = oauth2client.client.OAuth2WebServerFlow(
       client.client_id, client.client_secret, scopes, auth_uri=client.auth_uri,
       token_uri=client.token_uri, redirect_uri=OOB_REDIRECT_URI)
   approval_url = flow.step1_get_authorize_url()
@@ -177,7 +181,7 @@ def OAuth2ApprovalFlow(client, scopes, launch_browser=False):
   # Short delay; webbrowser.open on linux insists on printing out a message
   # which we don't want to run into the prompt for the auth code.
   time.sleep(2)
-  code = raw_input('Enter the authorization code: ')
+  code = input('Enter the authorization code: ')
   credentials = flow.step2_exchange(code, http=client.CreateHttpRequest())
   return credentials.refresh_token
 

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Delete cluster command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
@@ -103,7 +105,7 @@ class Delete(base.DeleteCommand):
                                      adapter.Zone(cluster_ref),
                                      cluster_ref.projectId)
           except kconfig.MissingEnvVarError as error:
-            log.warning(error.message)
+            log.warning(error)
 
           if properties.VALUES.container.cluster.Get() == cluster_ref.clusterId:
             properties.PersistProperty(

@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Api client adapter containers commands."""
-import httplib
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from os import linesep
 import time
 
@@ -28,6 +29,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources as cloud_resources
 from googlecloudsdk.core.console import progress_tracker
+import six
+from six.moves import range  # pylint: disable=redefined-builtin
+import six.moves.http_client
 
 WRONG_ZONE_ERROR_MSG = """\
 {error}
@@ -77,15 +81,6 @@ CREATE_SUBNETWORK_WITH_SUBNETWORK_ERROR_MSG = """\
 Cannot specify both --subnetwork and --create-subnetwork at the same time.
 """
 
-CREATE_SUBNETWORK_WITH_EXPLICIT_SECONDARY_RANGES_ERROR_MSG = """\
-Cannot use --create-subnetwork with explicit secondary range options
-(--cluster-secondary-range-name, --services-secondary-range-name).
-"""
-
-MISSING_EXPLICIT_SECONDARY_RANGE_ERROR_MSG = """\
-Must specify both --cluster-secondary-range-name and --services-secondary-range-name.
-"""
-
 NODE_TAINT_INCORRECT_FORMAT_ERROR_MSG = """\
 Invalid value [{key}={value}] for argument --node-taints. Node taint is of format key=value:effect
 """
@@ -114,9 +109,15 @@ PREREQUISITE_OPTION_ERROR_MSG = """\
 Cannot specify --{opt} without --{prerequisite}.
 """
 
+CLOUD_LOGGING_OR_MONITORING_DISABLED_ERROR_MSG = """\
+Flag --enable-stackdriver-kubernetes requires Cloud Logging and Cloud Monitoring enabled with --enable-cloud-logging and --enable-cloud-monitoring.
+"""
+
 MAX_NODES_PER_POOL = 1000
 
 MAX_CONCURRENT_NODE_COUNT = 20
+
+MAX_AUTHORIZED_NETWORKS_CIDRS = 20
 
 INGRESS = 'HttpLoadBalancing'
 HPA = 'HorizontalPodAutoscaling'
@@ -139,9 +140,9 @@ def CheckResponse(response):
 
 
 def NewAPIAdapter(api_version):
-  if api_version is 'v1alpha1':
+  if api_version == 'v1alpha1':
     return NewV1Alpha1APIAdapter()
-  elif api_version is 'v1beta1':
+  elif api_version == 'v1beta1':
     return NewV1Beta1APIAdapter()
   else:
     return NewV1APIAdapter()
@@ -700,7 +701,7 @@ class APIAdapter(object):
           detail_message = operation.detail
         except apitools_exceptions.HttpError as error:
           log.debug('GetOperation failed: %s', error)
-          if error.status_code == httplib.FORBIDDEN:
+          if error.status_code == six.moves.http_client.FORBIDDEN:
             raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
           # Keep trying until we timeout in case error is transient.
         time.sleep(poll_period_s)
@@ -774,7 +775,7 @@ class APIAdapter(object):
     _AddWorkloadMetadataToNodeConfig(node_config, options, self.messages)
 
     max_nodes_per_pool = options.max_nodes_per_pool or MAX_NODES_PER_POOL
-    pools = (options.num_nodes + max_nodes_per_pool - 1) / max_nodes_per_pool
+    pools = (options.num_nodes + max_nodes_per_pool - 1) // max_nodes_per_pool
     if pools == 1:
       pool_names = ['default-pool']  # pool consistency with server default
     else:
@@ -782,7 +783,7 @@ class APIAdapter(object):
       pool_names = ['default-pool-{0}'.format(i) for i in range(0, pools)]
 
     pools = []
-    per_pool = (options.num_nodes + len(pool_names) - 1) / len(pool_names)
+    per_pool = (options.num_nodes + len(pool_names) - 1) // len(pool_names)
     to_add = options.num_nodes
     for name in pool_names:
       nodes = per_pool if (to_add > per_pool) else to_add
@@ -871,7 +872,7 @@ class APIAdapter(object):
     if options.labels is not None:
       labels = self.messages.Cluster.ResourceLabelsValue()
       props = []
-      for k, v in sorted(options.labels.iteritems()):
+      for k, v in sorted(six.iteritems(options.labels)):
         props.append(labels.AdditionalProperty(key=k, value=v))
       labels.additionalProperties = props
       cluster.resourceLabels = labels
@@ -932,16 +933,6 @@ class APIAdapter(object):
 
     if options.subnetwork and options.create_subnetwork is not None:
       raise util.Error(CREATE_SUBNETWORK_WITH_SUBNETWORK_ERROR_MSG)
-    if options.create_subnetwork is not None and (
-        options.cluster_secondary_range_name or
-        options.services_secondary_range_name):
-      raise util.Error(
-          CREATE_SUBNETWORK_WITH_EXPLICIT_SECONDARY_RANGES_ERROR_MSG)
-    if ((options.cluster_secondary_range_name and
-         not options.services_secondary_range_name) or
-        (not options.cluster_secondary_range_name and
-         options.services_secondary_range_name)):
-      raise util.Error(MISSING_EXPLICIT_SECONDARY_RANGE_ERROR_MSG)
 
     if options.enable_ip_alias:
       subnetwork_name = None
@@ -1186,7 +1177,7 @@ class APIAdapter(object):
       return
     taints = []
     effect_enum = self.messages.NodeTaint.EffectValueValuesEnum
-    for key, value in sorted(options.node_taints.iteritems()):
+    for key, value in sorted(six.iteritems(options.node_taints)):
       strs = value.split(':')
       if len(strs) != 2:
         raise util.Error(
@@ -1551,7 +1542,7 @@ class APIAdapter(object):
 
     labels = self.messages.SetLabelsRequest.ResourceLabelsValue()
     props = []
-    for k, v in sorted(update_labels.iteritems()):
+    for k, v in sorted(six.iteritems(update_labels)):
       props.append(labels.AdditionalProperty(key=k, value=v))
     labels.additionalProperties = props
     return labels, clus.labelFingerprint
@@ -1604,7 +1595,7 @@ class APIAdapter(object):
             NO_SUCH_LABEL_ERROR_MSG.format(cluster=clus.name, name=k))
 
     labels = self.messages.SetLabelsRequest.ResourceLabelsValue()
-    for k, v in sorted(clus_labels.iteritems()):
+    for k, v in sorted(six.iteritems(clus_labels)):
       labels.additionalProperties.append(
           labels.AdditionalProperty(key=k, value=v))
     return labels, clus.labelFingerprint
@@ -1647,6 +1638,12 @@ class V1Alpha1Adapter(V1Beta1Adapter):
     if options.local_ssd_volume_configs:
       for pool in cluster.nodePools:
         self._AddLocalSSDVolumeConfigsToNodeConfig(pool.config, options)
+    if options.enable_stackdriver_kubernetes:
+      if options.enable_cloud_logging and options.enable_cloud_monitoring:
+        cluster.loggingService = 'logging.googleapis.com/kubernetes'
+        cluster.monitoringService = 'monitoring.googleapis.com/kubernetes'
+      else:
+        raise util.Error(CLOUD_LOGGING_OR_MONITORING_DISABLED_ERROR_MSG)
     if options.addons:
       # Istio is disabled by default
       if ISTIO in options.addons:
@@ -1817,7 +1814,7 @@ def _AddNodeLabelsToNodeConfig(node_config, options):
     return
   labels = node_config.LabelsValue()
   props = []
-  for key, value in options.node_labels.iteritems():
+  for key, value in six.iteritems(options.node_labels):
     props.append(labels.AdditionalProperty(key=key, value=value))
   labels.additionalProperties = props
   node_config.labels = labels

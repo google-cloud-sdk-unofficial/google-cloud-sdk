@@ -10,19 +10,4 @@
       help_text: The job you want to show details for.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
       removed_flags: [ location ]
-    params:
-      - api_field: responseView
-        arg_name: view
-        help_text: |
-          The response_view specifies which subset of the Job will be returned.
-          By default ListJobsRequest.response_view is Job.View.BASIC; not all
-          information is retrieved by default because some data, such as
-          payloads, might be desirable to return only when needed because of its
-          large size or because of the sensitivity of data that it contains.
-        default: basic
-        choices:
-          - arg_value: full
-            enum_value: FULL
-          - arg_value: basic
-            enum_value: BASIC
 

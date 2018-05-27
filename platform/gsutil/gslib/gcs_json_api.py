@@ -31,8 +31,9 @@ from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import http_wrapper as apitools_http_wrapper
 from apitools.base.py import transfer as apitools_transfer
 from apitools.base.py.util import CalculateWaitForRetry
-
 from boto import config
+import httplib2
+import oauth2client
 
 from gslib.cloud_api import AccessDeniedException
 from gslib.cloud_api import ArgumentException
@@ -49,14 +50,7 @@ from gslib.cloud_api import ResumableUploadAbortException
 from gslib.cloud_api import ResumableUploadException
 from gslib.cloud_api import ResumableUploadStartOverException
 from gslib.cloud_api import ServiceException
-from gslib.cloud_api_helper import ListToGetFields
-from gslib.cloud_api_helper import ValidateDstObjectMetadata
-from gslib.encryption_helper import Base64Sha256FromBase64EncryptionKey
-from gslib.encryption_helper import CryptoKeyType
-from gslib.encryption_helper import CryptoKeyWrapperFromKey
-from gslib.encryption_helper import FindMatchingCSEKInBotoConfig
-from gslib.gcs_json_credentials import CheckAndGetCredentials
-from gslib.gcs_json_credentials import GetCredentialStoreKey
+from gslib.gcs_json_credentials import SetUpJsonCredentialsAndCache
 from gslib.gcs_json_media import BytesTransferredContainer
 from gslib.gcs_json_media import DownloadCallbackConnectionClassFactory
 from gslib.gcs_json_media import HttpWithDownloadStream
@@ -74,28 +68,29 @@ from gslib.tracker_file import GetRewriteTrackerFilePath
 from gslib.tracker_file import HashRewriteParameters
 from gslib.tracker_file import ReadRewriteTrackerFile
 from gslib.tracker_file import WriteRewriteTrackerFile
-from gslib.translation_helper import CreateBucketNotFoundException
-from gslib.translation_helper import CreateNotFoundExceptionForObjectWrite
-from gslib.translation_helper import CreateObjectNotFoundException
-from gslib.translation_helper import DEFAULT_CONTENT_TYPE
-from gslib.translation_helper import PRIVATE_DEFAULT_OBJ_ACL
-from gslib.translation_helper import REMOVE_CORS_CONFIG
-from gslib.util import AddAcceptEncodingGzipIfNeeded
-from gslib.util import GetCertsFile
-from gslib.util import GetCredentialStoreFilename
-from gslib.util import GetJsonResumableChunkSize
-from gslib.util import GetMaxRetryDelay
-from gslib.util import GetNewHttp
-from gslib.util import GetNumRetries
-from gslib.util import GetPrintableExceptionString
-from gslib.util import JsonResumableChunkSizeDefined
-from gslib.util import LogAndHandleRetries
-from gslib.util import NUM_OBJECTS_PER_LIST_PAGE
-
-import httplib2
-import oauth2client
-from oauth2client.contrib import multiprocess_file_storage
-
+from gslib.utils.boto_util import GetCertsFile
+from gslib.utils.boto_util import GetGcsJsonApiVersion
+from gslib.utils.boto_util import GetJsonResumableChunkSize
+from gslib.utils.boto_util import GetMaxRetryDelay
+from gslib.utils.boto_util import GetNewHttp
+from gslib.utils.boto_util import GetNumRetries
+from gslib.utils.boto_util import JsonResumableChunkSizeDefined
+from gslib.utils.cloud_api_helper import ListToGetFields
+from gslib.utils.cloud_api_helper import ValidateDstObjectMetadata
+from gslib.utils.constants import NUM_OBJECTS_PER_LIST_PAGE
+from gslib.utils.encryption_helper import Base64Sha256FromBase64EncryptionKey
+from gslib.utils.encryption_helper import CryptoKeyType
+from gslib.utils.encryption_helper import CryptoKeyWrapperFromKey
+from gslib.utils.encryption_helper import FindMatchingCSEKInBotoConfig
+from gslib.utils.metadata_util import AddAcceptEncodingGzipIfNeeded
+from gslib.utils.retry_util import LogAndHandleRetries
+from gslib.utils.text_util import GetPrintableExceptionString
+from gslib.utils.translation_helper import CreateBucketNotFoundException
+from gslib.utils.translation_helper import CreateNotFoundExceptionForObjectWrite
+from gslib.utils.translation_helper import CreateObjectNotFoundException
+from gslib.utils.translation_helper import DEFAULT_CONTENT_TYPE
+from gslib.utils.translation_helper import PRIVATE_DEFAULT_OBJ_ACL
+from gslib.utils.translation_helper import REMOVE_CORS_CONFIG
 
 # pylint: disable=invalid-name
 Notification = apitools_messages.Notification
@@ -103,11 +98,8 @@ NotificationCustomAttributesValue = Notification.CustomAttributesValue
 NotificationAdditionalProperty = (NotificationCustomAttributesValue
                                   .AdditionalProperty)
 
-
 # Implementation supports only 'gs' URLs, so provider is unused.
 # pylint: disable=unused-argument
-
-DEFAULT_GCS_JSON_VERSION = 'v1'
 
 NUM_BUCKETS_PER_LIST_PAGE = 1000
 
@@ -145,11 +137,9 @@ _ACL_FIELDS_SET = set(['acl', 'defaultObjectAcl', 'items/acl',
 # Fields that may be encrypted.
 _ENCRYPTED_HASHES_SET = set(['crc32c', 'md5Hash'])
 
-
 # During listing, if we attempt to decrypt an object but it has been removed,
 # we skip including the object in the listing.
 _SKIP_LISTING_OBJECT = 'skip'
-
 
 _INSUFFICIENT_OAUTH2_SCOPE_MESSAGE = (
     'Insufficient OAuth2 scope to perform this operation.')
@@ -181,22 +171,10 @@ class GcsJsonApi(CloudApi):
         bucket_storage_uri_class, logger, status_queue, provider='gs',
         debug=debug, trace_token=trace_token, perf_trace_token=perf_trace_token,
         user_project=user_project)
-    no_op_credentials = False
-    if not credentials:
-      loaded_credentials = CheckAndGetCredentials(logger)
-
-      if not loaded_credentials:
-        loaded_credentials = NoOpCredentials()
-        no_op_credentials = True
-    else:
-      if isinstance(credentials, NoOpCredentials):
-        no_op_credentials = True
-
-    self.credentials = credentials or loaded_credentials
 
     self.certs_file = GetCertsFile()
-
     self.http = GetNewHttp()
+    SetUpJsonCredentialsAndCache(self, logger, credentials=credentials)
 
     # Re-use download and upload connections. This class is only called
     # sequentially, but we can share TCP warmed-up connections across calls.
@@ -209,7 +187,6 @@ class GcsJsonApi(CloudApi):
     else:
       self.authorized_download_http = self.download_http
       self.authorized_upload_http = self.upload_http
-
     WrapDownloadHttpRequest(self.authorized_download_http)
     WrapUploadHttpRequest(self.authorized_upload_http)
 
@@ -240,28 +217,17 @@ class GcsJsonApi(CloudApi):
     else:
       self.host_port = ':' + config.get('Credentials', 'gs_json_port')
 
-    self.api_version = config.get('GSUtil', 'json_api_version',
-                                  DEFAULT_GCS_JSON_VERSION)
+    self.api_version = GetGcsJsonApiVersion()
     self.url_base = (self.http_base + self.host_base + self.host_port + '/' +
                      'storage/' + self.api_version + '/')
-
-    credential_store_key = GetCredentialStoreKey(self.credentials,
-                                                 self.api_version)
-
-    self.credentials.set_store(
-        multiprocess_file_storage.MultiprocessFileStorage(
-            GetCredentialStoreFilename(), credential_store_key))
-
-    self.num_retries = GetNumRetries()
-    self.max_retry_wait = GetMaxRetryDelay()
-
-    log_request = (debug >= 3)
-    log_response = (debug >= 3)
 
     self.global_params = apitools_messages.StandardQueryParameters(
         trace='token:%s' % trace_token) if trace_token else None
     additional_http_headers = {}
     self._AddPerfTraceTokenToHeaders(additional_http_headers)
+
+    log_request = (debug >= 3)
+    log_response = (debug >= 3)
 
     self.api_client = apitools_client.StorageV1(
         url=self.url_base, http=self.http, log_request=log_request,
@@ -269,12 +235,16 @@ class GcsJsonApi(CloudApi):
         version=self.api_version, default_global_params=self.global_params,
         additional_http_headers=additional_http_headers)
 
+    self.max_retry_wait = GetMaxRetryDelay()
     self.api_client.max_retry_wait = self.max_retry_wait
+
+    self.num_retries = GetNumRetries()
     self.api_client.num_retries = self.num_retries
+
     self.api_client.retry_func = LogAndHandleRetries(
         status_queue=self.status_queue)
 
-    if no_op_credentials:
+    if isinstance(self.credentials, NoOpCredentials):
       # This API key is not secret and is used to identify gsutil during
       # anonymous requests.
       self.api_client.AddGlobalParam('key',
@@ -765,7 +735,7 @@ class GcsJsonApi(CloudApi):
       generation: (int) Generation of the object to retrieve.
       fields: (list<str>) If present, return only these Object metadata fields,
           for example: ['acl', 'updated'].
-      decryption_tuple: (gslib.encryption_helper.CryptoKeyWrapper) The
+      decryption_tuple: (gslib.utils.encryption_helper.CryptoKeyWrapper) The
           CryptoKeyWrapper for the desired decryption key.
 
     Raises:

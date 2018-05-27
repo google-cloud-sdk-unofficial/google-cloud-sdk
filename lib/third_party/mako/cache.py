@@ -1,10 +1,10 @@
 # mako/cache.py
-# Copyright (C) 2006-2012 the Mako authors and contributors <see AUTHORS file>
+# Copyright (C) 2006-2016 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from mako import exceptions, util
+from mako import compat, util
 
 _cache_plugins = util.PluginLoader("mako.cache")
 
@@ -13,6 +13,7 @@ register_plugin("beaker", "mako.ext.beaker_cache", "BeakerCacheImpl")
 
 
 class Cache(object):
+
     """Represents a data content cache made available to the module
     space of a specific :class:`.Template` object.
 
@@ -64,7 +65,7 @@ class Cache(object):
     def __init__(self, template, *args):
         # check for a stale template calling the
         # constructor
-        if isinstance(template, basestring) and args:
+        if isinstance(template, compat.string_types) and args:
             return
         self.template = template
         self.id = template.module.__name__
@@ -88,12 +89,13 @@ class Cache(object):
         if not self.template.cache_enabled:
             return creation_function()
 
-        return self.impl.get_or_create(key,
-                        creation_function,
-                        **self._get_cache_kw(kw, context))
+        return self.impl.get_or_create(
+            key,
+            creation_function,
+            **self._get_cache_kw(kw, context))
 
     def set(self, key, value, **kw):
-        """Place a value in the cache.
+        r"""Place a value in the cache.
 
         :param key: the value's key.
         :param value: the value.
@@ -111,7 +113,7 @@ class Cache(object):
     """
 
     def get(self, key, **kw):
-        """Retrieve a value from the cache.
+        r"""Retrieve a value from the cache.
 
         :param key: the value's key.
         :param \**kw: cache configuration arguments.  The
@@ -123,7 +125,7 @@ class Cache(object):
         return self.impl.get(key, **self._get_cache_kw(kw, None))
 
     def invalidate(self, key, **kw):
-        """Invalidate a value in the cache.
+        r"""Invalidate a value in the cache.
 
         :param key: the value's key.
         :param \**kw: cache configuration arguments.  The
@@ -178,7 +180,9 @@ class Cache(object):
             tmpl_kw.setdefault('context', context)
         return tmpl_kw
 
+
 class CacheImpl(object):
+
     """Provide a cache implementation for use by :class:`.Cache`."""
 
     def __init__(self, cache):
@@ -190,7 +194,7 @@ class CacheImpl(object):
     """
 
     def get_or_create(self, key, creation_function, **kw):
-        """Retrieve a value from the cache, using the given creation function
+        r"""Retrieve a value from the cache, using the given creation function
         to generate a new value.
 
         This function *must* return a value, either from
@@ -208,7 +212,7 @@ class CacheImpl(object):
         raise NotImplementedError()
 
     def set(self, key, value, **kw):
-        """Place a value in the cache.
+        r"""Place a value in the cache.
 
         :param key: the value's key.
         :param value: the value.
@@ -218,7 +222,7 @@ class CacheImpl(object):
         raise NotImplementedError()
 
     def get(self, key, **kw):
-        """Retrieve a value from the cache.
+        r"""Retrieve a value from the cache.
 
         :param key: the value's key.
         :param \**kw: cache configuration arguments.
@@ -227,7 +231,7 @@ class CacheImpl(object):
         raise NotImplementedError()
 
     def invalidate(self, key, **kw):
-        """Invalidate a value in the cache.
+        r"""Invalidate a value in the cache.
 
         :param key: the value's key.
         :param \**kw: cache configuration arguments.

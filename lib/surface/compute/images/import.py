@@ -53,13 +53,13 @@ def _IsLocalFile(file_name):
               file_name.startswith('https://'))
 
 
-def _UploadToGcs(async, local_path, daisy_bucket, image_uuid):
+def _UploadToGcs(is_async, local_path, daisy_bucket, image_uuid):
   """Uploads a local file to GCS. Returns the gs:// URI to that file."""
   file_name = os.path.basename(local_path).replace(' ', '-')
   dest_path = 'gs://{0}/tmpimage/{1}-{2}'.format(
       daisy_bucket, image_uuid, file_name)
   log.status.Print('\nCopying [{0}] to [{1}]'.format(local_path, dest_path))
-  if async:
+  if is_async:
     log.status.Print('Once completed, your image will be imported from Cloud'
                      ' Storage asynchronously.')
   retcode = storage_util.RunGsutilCommand('cp', [local_path, dest_path])

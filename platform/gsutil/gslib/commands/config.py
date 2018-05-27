@@ -32,6 +32,8 @@ import webbrowser
 
 import boto
 from boto.provider import Provider
+from httplib2 import ServerNotFoundError
+from oauth2client.client import HAS_CRYPTO
 
 import gslib
 from gslib.command import Command
@@ -40,18 +42,14 @@ from gslib.commands.compose import MAX_COMPONENT_COUNT
 from gslib.cred_types import CredTypes
 from gslib.exception import AbortException
 from gslib.exception import CommandException
-from gslib.hashing_helper import CHECK_HASH_ALWAYS
-from gslib.hashing_helper import CHECK_HASH_IF_FAST_ELSE_FAIL
-from gslib.hashing_helper import CHECK_HASH_IF_FAST_ELSE_SKIP
-from gslib.hashing_helper import CHECK_HASH_NEVER
 from gslib.metrics import CheckAndMaybePromptForAnalyticsEnabling
 from gslib.sig_handling import RegisterSignalHandler
-from gslib.util import IS_WINDOWS
-from gslib.util import RESUMABLE_THRESHOLD_B
-
-from httplib2 import ServerNotFoundError
-from oauth2client.client import HAS_CRYPTO
-
+from gslib.utils import constants
+from gslib.utils.hashing_helper import CHECK_HASH_ALWAYS
+from gslib.utils.hashing_helper import CHECK_HASH_IF_FAST_ELSE_FAIL
+from gslib.utils.hashing_helper import CHECK_HASH_IF_FAST_ELSE_SKIP
+from gslib.utils.hashing_helper import CHECK_HASH_NEVER
+from gslib.utils.system_util import IS_WINDOWS
 
 _SYNOPSIS = """
   gsutil [-D] config [-a] [-b] [-e] [-f] [-n] [-o <file>] [-r] [-s <scope>] [-w]
@@ -261,7 +259,10 @@ _DETAILED_HELP_TEXT = ("""
   -e          Prompt for service account credentials. This option requires that
               -a is not set.
 
-  -f          Request token with full-control access (default).
+  -f          Request token with full control (devstorage.full_control scope).
+              Note that this does not provide non-storage scopes, such as those
+              needed to edit Pub/Sub and KMS resources (used with the
+              'notification' and 'kms' commands).
 
   -n          Write the configuration file without authentication configured.
               This flag is mutually exlusive with all flags other than -o.
@@ -269,11 +270,16 @@ _DETAILED_HELP_TEXT = ("""
   -o <file>   Write the configuration to <file> instead of ~/.boto.
               Use '-' for stdout.
 
-  -r          Request token restricted to read-only access.
+  -r          Request token with read-only access (devstorage.read_only scope).
 
-  -s <scope>  Request additional OAuth2 <scope>.
+  --reauth    Request token with reauth access (accounts.reauth scope).
 
-  -w          Request token restricted to read-write access.
+  -s <scope>  Request a specific OAuth2 <scope> instead of the default(s). This
+              option may be repeated to request multiple scopes, and may be used
+              in conjuction with other flags that request a specific scope.
+
+  -w          Request token with read-write access
+              (devstorage.read_write scope).
 """)
 
 
@@ -283,11 +289,6 @@ except ImportError:
   pass
 
 GOOG_CLOUD_CONSOLE_URI = 'https://cloud.google.com/console#/project'
-
-SCOPE_CLOUD_PLATFORM = 'https://www.googleapis.com/auth/cloud-platform'
-SCOPE_FULL_CONTROL = 'https://www.googleapis.com/auth/devstorage.full_control'
-SCOPE_READ_WRITE = 'https://www.googleapis.com/auth/devstorage.read_write'
-SCOPE_READ_ONLY = 'https://www.googleapis.com/auth/devstorage.read_only'
 
 CONFIG_PRELUDE_CONTENT = """
 # This file contains credentials and other configuration information needed
@@ -592,7 +593,7 @@ content_language = en
        'hash_fast_else_skip': CHECK_HASH_IF_FAST_ELSE_SKIP,
        'hash_always': CHECK_HASH_ALWAYS,
        'hash_never': CHECK_HASH_NEVER,
-       'resumable_threshold': RESUMABLE_THRESHOLD_B,
+       'resumable_threshold': constants.RESUMABLE_THRESHOLD_B,
        'parallel_process_count': DEFAULT_PARALLEL_PROCESS_COUNT,
        'parallel_thread_count': DEFAULT_PARALLEL_THREAD_COUNT,
        'parallel_composite_upload_threshold': (
@@ -668,7 +669,8 @@ class ConfigCommand(Command):
       usage_synopsis=_SYNOPSIS,
       min_args=0,
       max_args=0,
-      supported_sub_args='habefnwrs:o:',
+      supported_sub_args='abefhno:rs:w',
+      supported_private_args=['reauth'],
       file_url_ok=False,
       provider_url_ok=False,
       urls_start_arg=0,
@@ -851,7 +853,7 @@ class ConfigCommand(Command):
 
   # pylint: disable=dangerous-default-value,too-many-statements
   def _WriteBotoConfigFile(self, config_file, launch_browser=True,
-                           oauth2_scopes=[SCOPE_CLOUD_PLATFORM],
+                           oauth2_scopes=[constants.Scopes.CLOUD_PLATFORM],
                            cred_type=CredTypes.OAUTH2_USER_ACCOUNT,
                            configure_auth=True):
     """Creates a boto config file interactively.
@@ -1137,17 +1139,19 @@ class ConfigCommand(Command):
         cred_type = CredTypes.OAUTH2_SERVICE_ACCOUNT
         has_e = True
       elif opt == '-f':
-        scopes.append(SCOPE_FULL_CONTROL)
+        scopes.append(constants.Scopes.FULL_CONTROL)
       elif opt == '-n':
         configure_auth = False
       elif opt == '-o':
         output_file_name = opt_arg
       elif opt == '-r':
-        scopes.append(SCOPE_READ_ONLY)
+        scopes.append(constants.Scopes.READ_ONLY)
+      elif opt == '--reauth':
+        scopes.append(constants.Scopes.REAUTH)
       elif opt == '-s':
         scopes.append(opt_arg)
       elif opt == '-w':
-        scopes.append(SCOPE_READ_WRITE)
+        scopes.append(constants.Scopes.READ_WRITE)
       else:
         self.RaiseInvalidArgumentException()
 
@@ -1156,9 +1160,10 @@ class ConfigCommand(Command):
                              '"gsutil help config" for more information.')
 
     if not configure_auth and (has_a or has_e or scopes or launch_browser):
-      raise CommandException('The -a, -b, -e, -f, -s, and -w flags cannot be '
-                             'specified with the -n flag. Please see '
-                             '"gsutil help config" for more information.')
+      raise CommandException(
+          'The -a, -b, -e, -f, -r, --reauth, -s, and -w flags cannot be '
+          'specified with the -n flag. Please see "gsutil help config" for '
+          'more information.')
 
     # Don't allow users to configure Oauth2 (any option other than -a and -n)
     # when running in the Cloud SDK, unless they have the Cloud SDK configured
@@ -1190,7 +1195,8 @@ class ConfigCommand(Command):
           'pass_credentials_to_gsutil false".')) + '\n\n')
 
     if not scopes:
-      scopes.append(SCOPE_CLOUD_PLATFORM)
+      scopes.append(constants.Scopes.CLOUD_PLATFORM)
+      scopes.append(constants.Scopes.REAUTH)
 
     default_config_path_bak = None
     if not output_file_name:

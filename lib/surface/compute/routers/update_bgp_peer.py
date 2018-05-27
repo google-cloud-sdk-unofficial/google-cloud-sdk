@@ -130,7 +130,7 @@ class UpdateBgpPeer(base.UpdateCommand):
           operation_ref,
           kind='peer [{0}] in router [{1}]'.format(peer.name,
                                                    router_ref.Name()),
-          async=True,
+          is_async=True,
           details='Run the [gcloud compute operations describe] command '
           'to check the status of this operation.')
       return result

@@ -185,7 +185,7 @@ class ReauthManager(object):
 
     def InternalStart(self, requested_scopes):
         """Does initial request to reauth API and initialize the challenges."""
-        body = {'supportedChallengeTypes': self.challenges.keys()}
+        body = {'supportedChallengeTypes': list(self.challenges.keys())}
         if requested_scopes:
             body['oauthScopesForDomainPolicyLookup'] = requested_scopes
         _, content = self.http_request(

@@ -13,79 +13,42 @@
 # limitations under the License.
 """gcloud dns dnskeys describe command."""
 
-from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.dns import flags
+from googlecloudsdk.command_lib.dns import dns_keys
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.resource import resource_projector
 
 
-ALGORITHM_NUMBERS = {
-    'rsamd5': 1,
-    'dh': 2,
-    'dsa': 3,
-    'rsasha1': 5,
-    'dsansec3sha1': 6,
-    'rsasha1nsec3sha1': 7,
-    'rsasha256': 8,
-    'rsasha512': 10,
-    'eccgost': 12,
-    'ecdsap256sha256': 13,
-    'ecdsap384sha384': 14,
-}
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  """Show details about a DNSKEY."""
 
-
-DIGEST_TYPE_NUMBERS = {
-    'sha1': 1,
-    'sha256': 2,
-    'sha384': 4,
-}
-
-
-def _GenerateDSRecord(key):
-  key_tag = str(key.keyTag)
-  key_algorithm = str(ALGORITHM_NUMBERS[key.algorithm.name])
-  digest_algorithm = str(DIGEST_TYPE_NUMBERS[key.digests[0].type.name])
-  digest = key.digests[0].digest
-  return ' '.join([key_tag, key_algorithm, digest_algorithm, digest])
-
-
-class Describe(base.DescribeCommand):
-  """Get a DnsKey.
-
-  This command displays the details of a single DnsKey.
-
-  ## EXAMPLES
-
-  To get a DnsKey from a managed-zone, run:
-
-    $ {command} my_zone --key_id my_key
-  """
+  detailed_help = dns_keys.DESCRIBE_HELP
 
   @staticmethod
   def Args(parser):
-    flags.GetZoneArg(
-        'The name of the managed-zone the DnsKey belongs to'
-    ).AddToParser(parser)
-    flags.GetKeyArg().AddToParser(parser)
+    dns_keys.AddDescribeFlags(parser)
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1beta2')
+    keys = dns_keys.Keys.FromApiVersion('v1beta2')
+    return keys.Describe(
+        args.key_id,
+        zone=args.zone,
+        project=properties.VALUES.core.project.GetOrFail)
 
-    zone_ref = util.GetRegistry('v1beta2').Parse(
-        args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
 
-    result_object = dns_client.dnsKeys.Get(
-        dns_client.MESSAGES_MODULE.DnsDnsKeysGetRequest(
-            dnsKeyId=args.key_id,
-            managedZone=zone_ref.Name(),
-            project=zone_ref.project))
-    result_dict = resource_projector.MakeSerializable(result_object)
-    if result_object.type.name == 'keySigning':
-      result_dict['dsRecord'] = _GenerateDSRecord(result_object)
-    return result_dict
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Show details about a DNSKEY."""
+
+  detailed_help = dns_keys.DESCRIBE_HELP
+
+  @staticmethod
+  def Args(parser):
+    dns_keys.AddDescribeFlags(parser, hide_short_zone_flag=True)
+
+  def Run(self, args):
+    keys = dns_keys.Keys.FromApiVersion('v1')
+    return keys.Describe(
+        args.key_id,
+        zone=args.zone,
+        project=properties.VALUES.core.project.GetOrFail)

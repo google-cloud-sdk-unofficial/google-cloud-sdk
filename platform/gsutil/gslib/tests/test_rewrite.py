@@ -23,7 +23,7 @@ import re
 from boto.storage_uri import BucketStorageUri
 
 from gslib.cs_api_map import ApiSelector
-from gslib.encryption_helper import CryptoKeyWrapperFromKey
+from gslib.discard_messages_queue import DiscardMessagesQueue
 from gslib.gcs_json_api import GcsJsonApi
 from gslib.project_id import PopulateProjectId
 from gslib.tests.rewrite_helper import EnsureRewriteRestartCallbackHandler
@@ -42,8 +42,8 @@ from gslib.tests.util import TEST_ENCRYPTION_KEY4
 from gslib.tests.util import unittest
 from gslib.tracker_file import DeleteTrackerFile
 from gslib.tracker_file import GetRewriteTrackerFilePath
-from gslib.util import DiscardMessagesQueue
-from gslib.util import ONE_MIB
+from gslib.utils.encryption_helper import CryptoKeyWrapperFromKey
+from gslib.utils.unit_util import ONE_MIB
 
 
 @SkipForS3('gsutil doesn\'t support S3 customer-supplied encryption keys.')
@@ -495,6 +495,35 @@ class TestRewrite(testcase.GsUtilIntegrationTestCase):
       stderr = self.RunGsUtil(
           ['rewrite', '-k', suri(object_uri)], return_stderr=True)
     self.assertIn('Rotating', stderr)
+    self.AssertObjectUsesCMEK(suri(object_uri), key_fqn)
+
+  def test_rewrite_with_no_encryption_key_operates_on_unencrypted_objects(self):
+    if self.test_api == ApiSelector.XML:
+      return unittest.skip('Rewrite API is only supported in JSON.')
+    # Since the introduction of default KMS keys for GCS buckets, rewriting
+    # with no explicitly specified CSEK/CMEK can still result in the rewritten
+    # objects being encrypted. Before KMS support, this would always result in
+    # decrypted objects. With this new possibility, we want to always rewrite
+    # every specified object when no encryption_key was set in the boto config,
+    # since we don't know if the operation will end up decrypting the object or
+    # implicitly encrypting it with the bucket's default KMS key.
+
+    key_fqn = self.authorize_project_to_use_testing_kms_key()
+
+    # Create an unencrypted object.
+    bucket_uri = self.CreateBucket()
+    object_uri = self.CreateObject(
+        bucket_uri=bucket_uri, object_name='foo', contents='foo')
+
+    # Set the bucket's default KMS key.
+    self.RunGsUtil(['kms', 'encryption', '-k', key_fqn, suri(bucket_uri)])
+
+    # Rewriting with no encryption_key should rewrite the object, resulting in
+    # the bucket's default KMS key being used to encrypt it.
+    with SetBotoConfigForTest([('GSUtil', 'encryption_key', None)]):
+      stderr = self.RunGsUtil(
+          ['rewrite', '-k', suri(object_uri)], return_stderr=True)
+    self.assertIn('Rewriting', stderr)
     self.AssertObjectUsesCMEK(suri(object_uri), key_fqn)
 
   def _test_rewrite_resume_or_restart(self, initial_dec_key, initial_enc_key,

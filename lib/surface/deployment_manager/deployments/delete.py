@@ -14,6 +14,8 @@
 
 """deployments delete command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
@@ -131,7 +133,7 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
             dm_util.LogOperationStatus(operation, 'Delete')
           except exceptions.OperationError as e:
             errors.append(exceptions.OperationError(
-                u'Delete operation {0} failed.\n{1}'.format(op_name, e)))
+                'Delete operation {0} failed.\n{1}'.format(op_name, e)))
           completed_operation = self.client.operations.Get(
               self.messages.DeploymentmanagerOperationsGetRequest(
                   project=dm_base.GetProject(),

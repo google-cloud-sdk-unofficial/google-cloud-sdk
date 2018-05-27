@@ -14,6 +14,8 @@
 
 """Command for listing Cloud CDN cache invalidations."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import sys
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -39,7 +41,7 @@ which have completed.
   def _Flags(parser):
     parser.add_argument(
         '--limit',
-        type=arg_parsers.BoundedInt(1, sys.maxint, unlimited=True),
+        type=arg_parsers.BoundedInt(1, sys.maxsize, unlimited=True),
         help='The maximum number of invalidations to list.')
 
   @staticmethod

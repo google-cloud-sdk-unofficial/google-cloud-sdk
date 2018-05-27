@@ -86,7 +86,7 @@ class AddBgpPeer(base.UpdateCommand):
           operation_ref,
           kind='router [{0}] to add peer [{1}]'.format(router_ref.Name(),
                                                        peer.name),
-          async=True,
+          is_async=True,
           details='Run the [gcloud compute operations describe] command '
           'to check the status of this operation.')
       return result

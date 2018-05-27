@@ -35,7 +35,7 @@ class Create(base.CreateCommand):
           flags will override the given channel's settings.
 
           For information about the JSON/YAML format of a notification channel:
-          https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects/projects.notificationChannels
+          https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.notificationChannels
        """
   }
 

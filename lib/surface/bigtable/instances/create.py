@@ -20,7 +20,6 @@ from googlecloudsdk.api_lib.bigtable import util as bigtable_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -32,8 +31,8 @@ class CreateInstance(base.CreateCommand):
     """Register flags for this command."""
     (arguments.ArgAdder(parser).AddInstance()
      .AddInstanceDisplayName(required=True)
-     .AddCluster(positional=False).AddClusterNodes(in_instance=True)
-     .AddClusterStorage(in_instance=True).AddClusterZone(in_instance=True)
+     .AddCluster().AddClusterNodes(in_instance=True)
+     .AddClusterStorage().AddClusterZone(in_instance=True)
      .AddAsync().AddInstanceType(
          default='PRODUCTION', help_text='The type of instance to create.'))
     parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
@@ -49,15 +48,14 @@ class CreateInstance(base.CreateCommand):
       Some value that we want to have printed later.
     """
     cli = bigtable_util.GetAdminClient()
-    ref = resources.REGISTRY.Parse(
-        args.instance,
-        params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='bigtableadmin.projects.instances')
+    ref = bigtable_util.GetInstanceRef(args.instance)
     parent_ref = resources.REGISTRY.Create(
         'bigtableadmin.projects', projectId=ref.projectsId)
     msgs = bigtable_util.GetAdminMessages()
+
+    instance_type = msgs.Instance.TypeValueValuesEnum(args.instance_type)
+    num_nodes = arguments.ProcessInstanceTypeAndNodes(args, instance_type)
+
     msg = msgs.CreateInstanceRequest(
         instanceId=ref.Name(),
         parent=parent_ref.RelativeName(),
@@ -68,7 +66,7 @@ class CreateInstance(base.CreateCommand):
             msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
                 key=args.cluster,
                 value=msgs.Cluster(
-                    serveNodes=args.cluster_num_nodes,
+                    serveNodes=num_nodes,
                     defaultStorageType=(
                         msgs.Cluster.DefaultStorageTypeValueValuesEnum(
                             args.cluster_storage_type.upper())),
@@ -77,15 +75,14 @@ class CreateInstance(base.CreateCommand):
                     location=bigtable_util.LocationUrl(args.cluster_zone)))
         ]))
     result = cli.projects_instances.Create(msg)
-    operation_ref = resources.REGISTRY.ParseRelativeName(
-        result.name, 'bigtableadmin.operations')
+    operation_ref = bigtable_util.GetOperationRef(result)
 
     if args.async:
       log.CreatedResource(
           operation_ref,
           kind='bigtable instance {0}'.format(ref.Name()),
-          async=True)
+          is_async=True)
       return result
 
-    return bigtable_util.WaitForInstance(
-        cli, operation_ref, 'Creating bigtable instance {0}'.format(ref.Name()))
+    return bigtable_util.AwaitInstance(
+        operation_ref, 'Creating bigtable instance {0}'.format(ref.Name()))

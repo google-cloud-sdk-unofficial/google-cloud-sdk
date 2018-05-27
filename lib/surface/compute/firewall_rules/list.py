@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing firewall rules."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
@@ -44,7 +46,7 @@ EXAMPLE_FORMAT = """\
     """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Compute Engine firewall rules."""
 
@@ -76,16 +78,16 @@ List.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
     RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaList(List):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class BetaList(List):
   """List Google Compute Engine firewall rules."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_ALPHA)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_BETA)
     lister.AddBaseListerArgs(parser)
 
 
-AlphaList.detailed_help = DETAILED_HELP.copy()
-AlphaList.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
-    RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT_ALPHA)
+BetaList.detailed_help = DETAILED_HELP.copy()
+BetaList.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
+    RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT_BETA)

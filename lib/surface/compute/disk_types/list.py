@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Compute Engine disk types."""
 
@@ -50,8 +50,53 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+def _AddAlphaBetaCommonArgs(parser):
+  """Add args and flags that are common to ALPHA and BETA tracks."""
+
+  parser.add_argument(
+      'names',
+      metavar='NAME',
+      nargs='*',
+      default=[],
+      completer=completers.DiskTypesCompleter,
+      help=('If provided, show details for the specified names and/or URIs '
+            'of resources.'))
+  parser.add_argument(
+      '--regexp', '-r',
+      help="""\
+      A regular expression to filter the names of the results on. Any names
+      that do not match the entire regular expression will be filtered out.
+      """)
+  parser.display_info.AddCacheUpdater(completers.DiskTypesCompleter)
+
+  scope = parser.add_mutually_exclusive_group()
+  scope.add_argument(
+      '--zones',
+      metavar='ZONE',
+      help=('If provided, only zonal resources are shown. '
+            'If arguments are provided, only resources from the given '
+            'zones are shown.'),
+      type=arg_parsers.ArgList())
+  scope.add_argument(
+      '--regions',
+      metavar='REGION',
+      help=('If provided, only regional resources are shown. '
+            'If arguments are provided, only resources from the given '
+            'regions are shown.'),
+      type=arg_parsers.ArgList())
+
+  parser.display_info.AddFormat("""
+        table(
+          name,
+          location():label=LOCATION,
+          location_scope():label=SCOPE,
+          validDiskSize:label=VALID_DISK_SIZES
+        )
+  """)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """List Google Compute Engine disk types."""
 
   SCOPES = (base_classes.ScopeType.regional_scope,
@@ -59,46 +104,7 @@ class ListAlpha(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'names',
-        metavar='NAME',
-        nargs='*',
-        default=[],
-        completer=completers.DiskTypesCompleter,
-        help=('If provided, show details for the specified names and/or URIs '
-              'of resources.'))
-    parser.add_argument(
-        '--regexp', '-r',
-        help="""\
-        A regular expression to filter the names of the results on. Any names
-        that do not match the entire regular expression will be filtered out.
-        """)
-    parser.display_info.AddCacheUpdater(completers.DiskTypesCompleter)
-
-    scope = parser.add_mutually_exclusive_group()
-    scope.add_argument(
-        '--zones',
-        metavar='ZONE',
-        help=('If provided, only zonal resources are shown. '
-              'If arguments are provided, only resources from the given '
-              'zones are shown.'),
-        type=arg_parsers.ArgList())
-    scope.add_argument(
-        '--regions',
-        metavar='REGION',
-        help=('If provided, only regional resources are shown. '
-              'If arguments are provided, only resources from the given '
-              'regions are shown.'),
-        type=arg_parsers.ArgList())
-
-    parser.display_info.AddFormat("""
-          table(
-            name,
-            location():label=LOCATION,
-            location_scope():label=SCOPE,
-            validDiskSize:label=VALID_DISK_SIZES
-          )
-    """)
+    _AddAlphaBetaCommonArgs(parser)
 
   def _GetFilter(self, names, name_regex, zones, regions):
     result = []
@@ -113,8 +119,10 @@ class ListAlpha(base.ListCommand):
     return ''.join(result) or None
 
   def Run(self, args):
-    compute_disk_types = apis.GetClientInstance('compute', 'alpha').diskTypes
-    messages = apis.GetMessagesModule('compute', 'alpha')
+    api_version = self.ReleaseTrack().prefix
+    compute_disk_types = apis.GetClientInstance('compute',
+                                                api_version).diskTypes
+    messages = apis.GetMessagesModule('compute', api_version)
 
     request = messages.ComputeDiskTypesAggregatedListRequest(
         filter=self._GetFilter(
@@ -127,6 +135,16 @@ class ListAlpha(base.ListCommand):
         compute_disk_types, request, lambda r: r.value.diskTypes)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+
+  @staticmethod
+  def Args(parser):
+    _AddAlphaBetaCommonArgs(parser)
+    parser.display_info.AddCacheUpdater(completers.DiskTypesCompleter)
+
 List.detailed_help = base_classes.GetZonalListerHelp('disk types')
+ListBeta.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'disk types', ListBeta.SCOPES)
 ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
     'disk types', ListAlpha.SCOPES)

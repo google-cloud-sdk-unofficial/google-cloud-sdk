@@ -13,49 +13,36 @@
 # limitations under the License.
 """gcloud dns dnskeys list command."""
 
-from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.dns import flags
+from googlecloudsdk.command_lib.dns import dns_keys
 from googlecloudsdk.core import properties
 
 
-class List(base.ListCommand):
-  """View the list of all your DnsKeys.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """View the list of all your DNSKEY records."""
 
-  View the list of all your DnsKeys.
-
-  ## EXAMPLES
-
-  To see the list of all DnsKeys for a managed-zone, run:
-
-    $ {command} my_zone
-  """
+  detailed_help = dns_keys.LIST_HELP
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('table(id,keyTag,type,isActive,description)')
-    base.URI_FLAG.RemoveFromParser(parser)
-    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
-    flags.GetZoneArg(
-        'The name of the managed-zone you want to list DnsKeys for.'
-    ).AddToParser(parser)
-    parser.display_info.AddCacheUpdater(None)
+    dns_keys.AddListFlags(parser)
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1beta2')
+    keys = dns_keys.Keys.FromApiVersion('v1beta2')
+    return keys.List(args.zone, properties.VALUES.core.project.GetOrFail)
 
-    zone_ref = util.GetRegistry('v1beta2').Parse(
-        args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
 
-    return list_pager.YieldFromList(
-        dns_client.dnsKeys,
-        dns_client.MESSAGES_MODULE.DnsDnsKeysListRequest(
-            project=zone_ref.project,
-            managedZone=zone_ref.Name()),
-        field='dnsKeys')
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """View the list of all your DNSKEY records."""
+
+  detailed_help = dns_keys.LIST_HELP
+
+  @staticmethod
+  def Args(parser):
+    dns_keys.AddListFlags(parser, hide_short_zone_flag=True)
+
+  def Run(self, args):
+    keys = dns_keys.Keys.FromApiVersion('v1')
+    return keys.List(args.zone, properties.VALUES.core.project.GetOrFail)

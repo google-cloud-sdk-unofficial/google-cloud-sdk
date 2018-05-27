@@ -16,7 +16,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DnsOperations(base.Group):
   """Manage your Cloud DNS operations."""
   pass

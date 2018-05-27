@@ -13,6 +13,8 @@
 # limitations under the License.
 """The command group for CryptoKeys."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import resources

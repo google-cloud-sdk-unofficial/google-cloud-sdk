@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for bigtable instances set-iam-policy."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
@@ -27,7 +29,8 @@ class SetIamPolicy(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.AddInstanceResourceArg(parser, 'to set the IAM policy for')
+    arguments.AddInstanceResourceArg(
+        parser, 'to set the IAM policy for', positional=True)
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):

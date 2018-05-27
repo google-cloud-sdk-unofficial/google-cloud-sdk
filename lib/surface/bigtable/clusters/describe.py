@@ -13,11 +13,11 @@
 # limitations under the License.
 """bigtable clusters describe command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class DescribeCluster(base.DescribeCommand):
@@ -26,8 +26,7 @@ class DescribeCluster(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.ArgAdder(parser).AddCluster().AddInstance(
-        positional=False, required=False)
+    arguments.AddClusterResourceArg(parser, 'to describe')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -40,14 +39,8 @@ class DescribeCluster(base.DescribeCommand):
       Some value that we want to have printed later.
     """
     cli = util.GetAdminClient()
-    ref = resources.REGISTRY.Parse(
-        args.cluster,
-        params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-            'instancesId': args.MakeGetOrRaise('--instance'),
-        },
-        collection='bigtableadmin.projects.instances.clusters')
+    cluster_ref = args.CONCEPTS.cluster.Parse()
     msg = util.GetAdminMessages(
-    ).BigtableadminProjectsInstancesClustersGetRequest(name=ref.RelativeName())
-    cluster = cli.projects_instances_clusters.Get(msg)
-    return cluster
+    ).BigtableadminProjectsInstancesClustersGetRequest(
+        name=cluster_ref.RelativeName())
+    return cli.projects_instances_clusters.Get(msg)

@@ -23,7 +23,6 @@ import time
 import uuid
 
 from gslib import metrics
-from gslib import copy_helper
 from gslib.cloud_api import AccessDeniedException
 from gslib.cloud_api import NotFoundException
 from gslib.cloud_api import PublishPermissionDeniedException
@@ -37,7 +36,7 @@ from gslib.project_id import PopulateProjectId
 from gslib.pubsub_api import PubsubApi
 from gslib.storage_url import StorageUrlFromString
 from gslib.third_party.pubsub_apitools.pubsub_v1_messages import Binding
-
+from gslib.utils import copy_helper
 
 # Cloud Pub/Sub commands
 
@@ -142,7 +141,7 @@ _CREATE_DESCRIPTION = """
   You can create multiple notification configurations for a bucket, but their
   triggers cannot overlap such that a single event could send multiple
   notifications. Attempting to create a notification configuration that
-  overlaps with an exisitng notification configuration results in an error.
+  overlaps with an existing notification configuration results in an error.
 
 <B>CREATE EXAMPLES</B>
   Begin sending notifications of all changes to the bucket example-bucket
@@ -226,9 +225,9 @@ _CREATE_DESCRIPTION = """
 <B>NEXT STEPS</B>
   Once the create command has succeeded, Cloud Storage will publish a message to
   the specified Cloud Pub/Sub topic when eligible changes occur. In order to
-  receive these message, you will need to create a Pub/Sub subscription for your
-  Pub/Sub topic. To learn more about creating Pub/Sub subscriptions, see `the
-  Pub/Sub Subscriber Overview <https://cloud.google.com/pubsub/docs/subscriber>`_.
+  receive these message, you must create a Pub/Sub subscription for your Pub/Sub
+  topic. To learn more about creating Pub/Sub subscriptions, see `the Pub/Sub
+  Subscriber Overview <https://cloud.google.com/pubsub/docs/subscriber>`_.
 
   You can create a simple Pub/Sub subscription using the `gcloud` command-line
   tool. For example, to create a new subscription on the topic "myNewTopic" and

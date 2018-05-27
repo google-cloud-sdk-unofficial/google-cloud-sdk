@@ -13,6 +13,8 @@
 # limitations under the License.
 """Update cluster command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -26,6 +28,7 @@ from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from six.moves import input  # pylint: disable=redefined-builtin
 
 
 class InvalidAddonValueError(util.Error):
@@ -245,7 +248,7 @@ class Update(base.UpdateCommand):
       else:
         password = args.password
         if args.password is None:
-          password = raw_input('Please enter the new password:')
+          password = input('Please enter the new password:')
         options = api_adapter.SetMasterAuthOptions(
             action=api_adapter.SetMasterAuthOptions.SET_PASSWORD,
             password=password)
@@ -370,7 +373,7 @@ to completion."""
         try:
           util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
         except kconfig.MissingEnvVarError as error:
-          log.warning(error.message)
+          log.warning(error)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

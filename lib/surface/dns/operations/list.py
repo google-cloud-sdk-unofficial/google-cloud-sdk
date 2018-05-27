@@ -14,19 +14,45 @@
 """gcloud dns operations list command."""
 
 import itertools
-from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.api_lib.dns import operations
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.dns import flags
 
 
-class List(base.ListCommand):
-  """View the list of all your operations.
+def _CommonArgs(parser):
+  """Add arguments to the parser for `operations list` command."""
+  # The operations describe command needs both the zone name and the ID.
+  # We need the zone name in the list output otherwise it gets confusing
+  # when listing multiple zones. Since the zone name doesn't change, it
+  # doesn't matter if we get it from oldValue or newValue.
+  parser.display_info.AddFormat("""
+      table(
+        zoneContext.oldValue.name:label=ZONE_NAME:sort=1,
+        id,
+        startTime,
+        user,
+        type
+      )
+  """)
+  base.URI_FLAG.RemoveFromParser(parser)
+  base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+  flags.GetZoneResourceArg(
+      'Name of one or more zones to read.',
+      positional=False, plural=True).AddToParser(parser)
 
-  This command displays the list of your operations for one or more
-  managed-zones.
+
+def _List(operations_client, args):
+  zone_refs = args.CONCEPTS.zones.Parse()
+  return itertools.chain.from_iterable(
+      operations_client.List(z, limit=args.limit) for z in zone_refs)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """List Cloud DNS operations.
+
+  This command displays Cloud DNS operations for one or more Cloud DNS
+  managed-zones (see `$ gcloud dns managed-zones --help`).
 
   ## EXAMPLES
 
@@ -41,48 +67,35 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('table({fields})'.format(
-        # The operations describe command needs both the zone name and the ID.
-        # We need the zone name in the list output otherwise it gets confusing
-        # when listing multiple zones. Since the zone name doesn't change, it
-        # doesn't matter if we get it from oldValue or newValue.
-        fields=','.join([
-            'zoneContext.oldValue.name:label=ZONE_NAME:sort=1',
-            'id',
-            'startTime',
-            'user',
-            'type',
-        ])))
-    base.URI_FLAG.RemoveFromParser(parser)
-    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
-    parser.add_argument(
-        '--zones',
-        help='Names of one or more zones to read.',
-        metavar='ZONES',
-        type=arg_parsers.ArgList(),
-        required=True)
+    _CommonArgs(parser)
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1beta2')
+    operations_client = operations.Client.FromApiVersion('v1beta2')
+    return _List(operations_client, args)
 
-    zone_refs = [
-        util.GetRegistry('v1beta2').Parse(
-            zone,
-            params={
-                'project': properties.VALUES.core.project.GetOrFail,
-            },
-            collection='dns.managedZones')
-        for zone in args.zones]
-    requests = [
-        dns_client.MESSAGES_MODULE.DnsManagedZoneOperationsListRequest(
-            managedZone=zone_ref.Name(),
-            project=zone_ref.project)
-        for zone_ref in zone_refs]
-    responses = [
-        list_pager.YieldFromList(dns_client.managedZoneOperations,
-                                 request,
-                                 limit=args.limit,
-                                 field='operations')
-        for request in requests]
 
-    return itertools.chain.from_iterable(responses)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """List Cloud DNS operations.
+
+  This command displays Cloud DNS operations for one or more Cloud DNS
+  managed-zones (see `$ gcloud dns managed-zones --help`).
+
+  ## EXAMPLES
+
+  To see the list of all operations for two managed-zones, run:
+
+    $ {command} --zones zone1,zone2
+
+  To see the last 5 operations for two managed-zones, run:
+
+    $ {command} --zones zone1,zone2 --sort-by ~start_time --limit 5
+  """
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    operations_client = operations.Client.FromApiVersion('v1')
+    return _List(operations_client, args)

@@ -13,7 +13,7 @@ package = 'speech'
 
 
 class GoogleDataCollectionConfig(_messages.Message):
-  """Google data collection opt-in settings.
+  r"""Google data collection opt-in settings.
 
   Enums:
     LoggingConsentStateValueValuesEnum:
@@ -23,7 +23,7 @@ class GoogleDataCollectionConfig(_messages.Message):
   """
 
   class LoggingConsentStateValueValuesEnum(_messages.Enum):
-    """LoggingConsentStateValueValuesEnum enum type.
+    r"""LoggingConsentStateValueValuesEnum enum type.
 
     Values:
       ENABLED: <no description>
@@ -36,7 +36,7 @@ class GoogleDataCollectionConfig(_messages.Message):
 
 
 class LongRunningRecognizeRequest(_messages.Message):
-  """The top-level message sent by the client for the `LongRunningRecognize`
+  r"""The top-level message sent by the client for the `LongRunningRecognize`
   method.
 
   Fields:
@@ -50,8 +50,8 @@ class LongRunningRecognizeRequest(_messages.Message):
 
 
 class Operation(_messages.Message):
-  """This resource represents a long-running operation that is the result of a
-  network API call.
+  r"""This resource represents a long-running operation that is the result of
+  a network API call.
 
   Messages:
     MetadataValue: Service-specific metadata associated with the operation.
@@ -92,7 +92,7 @@ class Operation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class MetadataValue(_messages.Message):
-    """Service-specific metadata associated with the operation.  It typically
+    r"""Service-specific metadata associated with the operation.  It typically
     contains progress information and common metadata such as create time.
     Some services might not provide such metadata.  Any method that returns a
     long-running operation should document the metadata type, if any.
@@ -106,7 +106,7 @@ class Operation(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a MetadataValue object.
+      r"""An additional property for a MetadataValue object.
 
       Fields:
         key: Name of the additional property.
@@ -120,7 +120,7 @@ class Operation(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ResponseValue(_messages.Message):
-    """The normal response of the operation in case of success.  If the
+    r"""The normal response of the operation in case of success.  If the
     original method returns no data on success, such as `Delete`, the response
     is `google.protobuf.Empty`.  If the original method is standard
     `Get`/`Create`/`Update`, the response should be the resource.  For other
@@ -137,7 +137,7 @@ class Operation(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a ResponseValue object.
+      r"""An additional property for a ResponseValue object.
 
       Fields:
         key: Name of the additional property.
@@ -157,9 +157,9 @@ class Operation(_messages.Message):
 
 
 class RecognitionAudio(_messages.Message):
-  """Contains audio data in the encoding specified in the `RecognitionConfig`.
-  Either `content` or `uri` must be supplied. Supplying both or neither
-  returns google.rpc.Code.INVALID_ARGUMENT. See [audio
+  r"""Contains audio data in the encoding specified in the
+  `RecognitionConfig`. Either `content` or `uri` must be supplied. Supplying
+  both or neither returns google.rpc.Code.INVALID_ARGUMENT. See [audio
   limits](https://cloud.google.com/speech/limits#content).
 
   Fields:
@@ -179,7 +179,7 @@ class RecognitionAudio(_messages.Message):
 
 
 class RecognitionConfig(_messages.Message):
-  """Provides information to the recognizer that specifies how to process the
+  r"""Provides information to the recognizer that specifies how to process the
   request.
 
   Enums:
@@ -189,6 +189,9 @@ class RecognitionConfig(_messages.Message):
       AudioEncoding.
 
   Fields:
+    diarizationSpeakerCount: *Optional* If set, specifies the estimated number
+      of speakers in the conversation. If not set, defaults to '2'. Ignored
+      unless enable_speaker_diarization is set to true."
     enableAutomaticPunctuation: *Optional* If 'true', adds punctuation to
       recognition result hypotheses. This feature is only available in select
       languages. Setting this for requests in other languages has no effect at
@@ -196,6 +199,13 @@ class RecognitionConfig(_messages.Message):
       hypotheses. NOTE: "This is currently offered as an experimental service,
       complimentary to all users. In the future this may be exclusively
       available as a premium feature."
+    enableSpeakerDiarization: *Optional* If 'true', enables speaker detection
+      for each recognized word in the top alternative of the recognition
+      result using a speaker_tag provided in the WordInfo. Note: When this is
+      true, we send all the words from the beginning of the audio for the top
+      alternative in every consecutive responses. This is done in order to
+      improve our speaker tags as our models learn to identify the speakers in
+      the conversation over time.
     enableWordConfidence: *Optional* If `true`, the top result includes a list
       of words and the confidence for those words. If `false`, no word-level
       confidence information is returned. The default is `false`.
@@ -267,7 +277,7 @@ class RecognitionConfig(_messages.Message):
   """
 
   class EncodingValueValuesEnum(_messages.Enum):
-    """Encoding of audio data sent in all `RecognitionAudio` messages. This
+    r"""Encoding of audio data sent in all `RecognitionAudio` messages. This
     field is optional for `FLAC` and `WAV` audio files and required for all
     other audio formats. For details, see AudioEncoding.
 
@@ -311,23 +321,25 @@ class RecognitionConfig(_messages.Message):
     OGG_OPUS = 6
     SPEEX_WITH_HEADER_BYTE = 7
 
-  enableAutomaticPunctuation = _messages.BooleanField(1)
-  enableWordConfidence = _messages.BooleanField(2)
-  enableWordTimeOffsets = _messages.BooleanField(3)
-  encoding = _messages.EnumField('EncodingValueValuesEnum', 4)
-  googleDataCollectionOptIn = _messages.MessageField('GoogleDataCollectionConfig', 5)
-  languageCode = _messages.StringField(6)
-  maxAlternatives = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  metadata = _messages.MessageField('RecognitionMetadata', 8)
-  model = _messages.StringField(9)
-  profanityFilter = _messages.BooleanField(10)
-  sampleRateHertz = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  speechContexts = _messages.MessageField('SpeechContext', 12, repeated=True)
-  useEnhanced = _messages.BooleanField(13)
+  diarizationSpeakerCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  enableAutomaticPunctuation = _messages.BooleanField(2)
+  enableSpeakerDiarization = _messages.BooleanField(3)
+  enableWordConfidence = _messages.BooleanField(4)
+  enableWordTimeOffsets = _messages.BooleanField(5)
+  encoding = _messages.EnumField('EncodingValueValuesEnum', 6)
+  googleDataCollectionOptIn = _messages.MessageField('GoogleDataCollectionConfig', 7)
+  languageCode = _messages.StringField(8)
+  maxAlternatives = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  metadata = _messages.MessageField('RecognitionMetadata', 10)
+  model = _messages.StringField(11)
+  profanityFilter = _messages.BooleanField(12)
+  sampleRateHertz = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  speechContexts = _messages.MessageField('SpeechContext', 14, repeated=True)
+  useEnhanced = _messages.BooleanField(15)
 
 
 class RecognitionMetadata(_messages.Message):
-  """Description of audio data to be recognized.
+  r"""Description of audio data to be recognized.
 
   Enums:
     InteractionTypeValueValuesEnum: The use case most closely describing the
@@ -364,7 +376,7 @@ class RecognitionMetadata(_messages.Message):
   """
 
   class InteractionTypeValueValuesEnum(_messages.Enum):
-    """The use case most closely describing the audio content to be
+    r"""The use case most closely describing the audio content to be
     recognized.
 
     Values:
@@ -398,7 +410,7 @@ class RecognitionMetadata(_messages.Message):
     DICTATION = 8
 
   class MicrophoneDistanceValueValuesEnum(_messages.Enum):
-    """The audio type that most closely describes the audio being recognized.
+    r"""The audio type that most closely describes the audio being recognized.
 
     Values:
       MICROPHONE_DISTANCE_UNSPECIFIED: Audio type is not known.
@@ -414,7 +426,7 @@ class RecognitionMetadata(_messages.Message):
     FARFIELD = 3
 
   class OriginalMediaTypeValueValuesEnum(_messages.Enum):
-    """The original media the speech was recorded on.
+    r"""The original media the speech was recorded on.
 
     Values:
       ORIGINAL_MEDIA_TYPE_UNSPECIFIED: Unknown original media type.
@@ -426,7 +438,7 @@ class RecognitionMetadata(_messages.Message):
     VIDEO = 2
 
   class RecordingDeviceTypeValueValuesEnum(_messages.Enum):
-    """The type of device the speech was recorded with.
+    r"""The type of device the speech was recorded with.
 
     Values:
       RECORDING_DEVICE_TYPE_UNSPECIFIED: The recording device is unknown.
@@ -457,7 +469,7 @@ class RecognitionMetadata(_messages.Message):
 
 
 class RecognizeRequest(_messages.Message):
-  """The top-level message sent by the client for the `Recognize` method.
+  r"""The top-level message sent by the client for the `Recognize` method.
 
   Fields:
     audio: *Required* The audio data to be recognized.
@@ -470,7 +482,7 @@ class RecognizeRequest(_messages.Message):
 
 
 class RecognizeResponse(_messages.Message):
-  """The only message returned to the client by the `Recognize` method. It
+  r"""The only message returned to the client by the `Recognize` method. It
   contains the result as zero or more sequential `SpeechRecognitionResult`
   messages.
 
@@ -483,7 +495,7 @@ class RecognizeResponse(_messages.Message):
 
 
 class SpeechContext(_messages.Message):
-  """Provides "hints" to the speech recognizer to favor specific words and
+  r"""Provides "hints" to the speech recognizer to favor specific words and
   phrases in the results.
 
   Fields:
@@ -500,7 +512,7 @@ class SpeechContext(_messages.Message):
 
 
 class SpeechOperationsGetRequest(_messages.Message):
-  """A SpeechOperationsGetRequest object.
+  r"""A SpeechOperationsGetRequest object.
 
   Fields:
     name: The name of the operation resource.
@@ -510,7 +522,7 @@ class SpeechOperationsGetRequest(_messages.Message):
 
 
 class SpeechRecognitionAlternative(_messages.Message):
-  """Alternative hypotheses (a.k.a. n-best list).
+  r"""Alternative hypotheses (a.k.a. n-best list).
 
   Fields:
     confidence: Output only. The confidence estimate between 0.0 and 1.0. A
@@ -523,7 +535,8 @@ class SpeechRecognitionAlternative(_messages.Message):
     transcript: Output only. Transcript text representing the words that the
       user spoke.
     words: Output only. A list of word-specific information for each
-      recognized word.
+      recognized word. Note: When enable_speaker_diarization is true, you will
+      see all the words from the beginning of the audio.
   """
 
   confidence = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
@@ -532,7 +545,7 @@ class SpeechRecognitionAlternative(_messages.Message):
 
 
 class SpeechRecognitionResult(_messages.Message):
-  """A speech recognition result corresponding to a portion of the audio.
+  r"""A speech recognition result corresponding to a portion of the audio.
 
   Fields:
     alternatives: Output only. May contain one or more recognition hypotheses
@@ -545,7 +558,7 @@ class SpeechRecognitionResult(_messages.Message):
 
 
 class StandardQueryParameters(_messages.Message):
-  """Query parameters accepted by all methods.
+  r"""Query parameters accepted by all methods.
 
   Enums:
     FXgafvValueValuesEnum: V1 error format.
@@ -574,7 +587,7 @@ class StandardQueryParameters(_messages.Message):
   """
 
   class AltValueValuesEnum(_messages.Enum):
-    """Data format for response.
+    r"""Data format for response.
 
     Values:
       json: Responses with Content-Type of application/json
@@ -586,7 +599,7 @@ class StandardQueryParameters(_messages.Message):
     proto = 2
 
   class FXgafvValueValuesEnum(_messages.Enum):
-    """V1 error format.
+    r"""V1 error format.
 
     Values:
       _1: v1 error format
@@ -612,7 +625,7 @@ class StandardQueryParameters(_messages.Message):
 
 
 class Status(_messages.Message):
-  """The `Status` type defines a logical error model that is suitable for
+  r"""The `Status` type defines a logical error model that is suitable for
   different programming environments, including REST APIs and RPC APIs. It is
   used by [gRPC](https://github.com/grpc). The error model is designed to be:
   - Simple to use and understand for most users - Flexible enough to meet
@@ -660,7 +673,7 @@ class Status(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class DetailsValueListEntry(_messages.Message):
-    """A DetailsValueListEntry object.
+    r"""A DetailsValueListEntry object.
 
     Messages:
       AdditionalProperty: An additional property for a DetailsValueListEntry
@@ -672,7 +685,7 @@ class Status(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a DetailsValueListEntry object.
+      r"""An additional property for a DetailsValueListEntry object.
 
       Fields:
         key: Name of the additional property.
@@ -690,7 +703,7 @@ class Status(_messages.Message):
 
 
 class WordInfo(_messages.Message):
-  """Word-specific information for recognized words.
+  r"""Word-specific information for recognized words.
 
   Fields:
     confidence: Output only. The confidence estimate between 0.0 and 1.0. A
@@ -704,6 +717,11 @@ class WordInfo(_messages.Message):
       and corresponding to the end of the spoken word. This field is only set
       if `enable_word_time_offsets=true` and only in the top hypothesis. This
       is an experimental feature and the accuracy of the time offset can vary.
+    speakerTag: Output only. A distinct integer value is assigned for every
+      speaker within the audio. This field specifies which one of those
+      speakers was detected to have spoken this word. Value ranges from '1' to
+      diarization_speaker_count. speaker_tag is set if
+      enable_speaker_diarization = 'true' and only in the top alternative.
     startTime: Output only. Time offset relative to the beginning of the
       audio, and corresponding to the start of the spoken word. This field is
       only set if `enable_word_time_offsets=true` and only in the top
@@ -714,8 +732,9 @@ class WordInfo(_messages.Message):
 
   confidence = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
   endTime = _messages.StringField(2)
-  startTime = _messages.StringField(3)
-  word = _messages.StringField(4)
+  speakerTag = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  startTime = _messages.StringField(4)
+  word = _messages.StringField(5)
 
 
 encoding.AddCustomJsonFieldMapping(

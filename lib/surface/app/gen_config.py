@@ -24,11 +24,22 @@ from gae_ext_runtime import ext_runtime
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.app import deployables
 from googlecloudsdk.command_lib.app import output_helpers
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.third_party.appengine.api import appinfo
 from ruamel import yaml
+
+
+_DEPRECATION_MSG = """\
+This command is deprecated and will soon be removed.
+
+{fingerprinting}
+
+To create a custom runtime, please follow the instructions at
+https://cloud.google.com/appengine/docs/flexible/custom-runtimes/
+""".format(fingerprinting=deployables.FINGERPRINTING_WARNING)
 
 
 # TODO(b/28509217): Move back into command class when `preview` is gone.
@@ -108,6 +119,7 @@ def _Run(args):
                        'field to custom.'.format(config_filename))
 
 
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_MSG)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GenConfig(base.Command):
   """Generate missing configuration files for a source directory."""
@@ -148,8 +160,6 @@ def _AlterRuntime(config_filename, runtime):
 
 _DETAILED_HELP = {
     'DESCRIPTION': """\
-    {description}
-
     This command generates all relevant config files (app.yaml, Dockerfile and a
     build Dockerfile) for your application in the current directory or emits an
     error message if the source directory contents are not recognized.

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for updating firewall rules."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewalls_utils
 from googlecloudsdk.calliope import base
@@ -20,17 +22,10 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateFirewall(base.UpdateCommand):
-  """Update a firewall rule.
+  """Update a firewall rule."""
 
-  *{command}* is used to update firewall rules that allow/deny
-  incoming/outgoing traffic. The firewall rule will only be updated for
-  arguments that are specifically passed. Other attributes will remain
-  unaffected. The `action` flag (whether to allow or deny matching traffic)
-  cannot be defined when updating a firewall rule; use
-  `gcloud compute firewall-rules delete` to remove the rule instead.
-  """
   with_egress_firewall = True
   with_service_account = True
   with_disabled = False
@@ -226,18 +221,37 @@ class UpdateFirewall(base.UpdateCommand):
     return new_firewall
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdateFirewall(UpdateFirewall):
-  """Update a firewall rule.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaUpdateFirewall(UpdateFirewall):
+  """Update a firewall rule."""
 
-  *{command}* is used to update firewall rules that allow/deny
-  incoming/outgoing traffic. The firewall rule will only be updated for
-  arguments that are specifically passed. Other attributes will remain
-  unaffected. The `action` flag (whether to allow or deny matching traffic)
-  cannot be defined when updating a firewall rule; use
-  `gcloud compute firewall-rules delete` to remove the rule instead.
-  """
   with_disabled = True
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
+    firewalls_utils.AddCommonArgs(
+        parser,
+        for_update=True,
+        with_egress_support=cls.with_egress_firewall,
+        with_service_account=cls.with_service_account,
+        with_disabled=cls.with_disabled)
+    firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
+
+  def Modify(self, client, args, existing, cleared_fields):
+    new_firewall = super(BetaUpdateFirewall, self).Modify(
+        client, args, existing, cleared_fields)
+
+    if args.disabled is not None:
+      new_firewall.disabled = args.disabled
+    return new_firewall
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdateFirewall(BetaUpdateFirewall):
+  """Update a firewall rule."""
+
   with_logging = True
 
   @classmethod
@@ -257,10 +271,23 @@ class AlphaUpdateFirewall(UpdateFirewall):
     new_firewall = super(AlphaUpdateFirewall, self).Modify(
         client, args, existing, cleared_fields)
 
-    if args.disabled is not None:
-      new_firewall.disabled = args.disabled
     if args.enable_logging is None:
       new_firewall.enableLogging = existing.enableLogging
     else:
       new_firewall.enableLogging = args.enable_logging
     return new_firewall
+
+
+UpdateFirewall.detailed_help = {
+    'brief':
+        'Update a firewall rule.',
+    'DESCRIPTION':
+        """\
+        *{command}* is used to update firewall rules that allow/deny
+        incoming/outgoing traffic. The firewall rule will only be updated for
+        arguments that are specifically passed. Other attributes will remain
+        unaffected. The `action` flag (whether to allow or deny matching
+        traffic) cannot be defined when updating a firewall rule; use
+        `gcloud compute firewall-rules delete` to remove the rule instead.
+        """,
+}

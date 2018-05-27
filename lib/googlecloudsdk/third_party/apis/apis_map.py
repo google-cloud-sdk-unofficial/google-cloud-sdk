@@ -280,6 +280,14 @@ MAP = {
             default_version=True
         ),
     },
+    'composer': {
+        'v1beta1': APIDef(
+            class_path='googlecloudsdk.third_party.apis.composer.v1beta1',
+            client_classpath='composer_v1beta1_client.ComposerV1beta1',
+            messages_modulepath='composer_v1beta1_messages',
+            default_version=True
+        ),
+    },
     'compute': {
         'alpha': APIDef(
             class_path='googlecloudsdk.third_party.apis.compute.alpha',
@@ -389,6 +397,14 @@ MAP = {
             class_path='googlecloudsdk.third_party.apis.discovery.v1',
             client_classpath='discovery_v1_client.DiscoveryV1',
             messages_modulepath='discovery_v1_messages',
+            default_version=True
+        ),
+    },
+    'dlp': {
+        'v2': APIDef(
+            class_path='googlecloudsdk.third_party.apis.dlp.v2',
+            client_classpath='dlp_v2_client.DlpV2',
+            messages_modulepath='dlp_v2_messages',
             default_version=True
         ),
     },
@@ -561,6 +577,14 @@ MAP = {
             class_path='googlecloudsdk.third_party.apis.servicenetworking.v1alpha',
             client_classpath='servicenetworking_v1alpha_client.ServicenetworkingV1alpha',
             messages_modulepath='servicenetworking_v1alpha_messages',
+            default_version=True
+        ),
+    },
+    'serviceusage': {
+        'v1beta1': APIDef(
+            class_path='googlecloudsdk.third_party.apis.serviceusage.v1beta1',
+            client_classpath='serviceusage_v1beta1_client.ServiceusageV1beta1',
+            messages_modulepath='serviceusage_v1beta1_messages',
             default_version=True
         ),
     },

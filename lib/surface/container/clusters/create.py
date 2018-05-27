@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Create cluster command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -78,9 +80,7 @@ def _Args(parser):
       type=arg_parsers.BoundedInt(1),
       help='The number of nodes to be created in each of the cluster\'s zones.',
       default=3)
-  parser.add_argument(
-      '--machine-type', '-m',
-      help='The type of machine to use for nodes. Defaults to n1-standard-1.')
+  flags.AddMachineTypeFlag(parser)
   parser.add_argument(
       '--subnetwork',
       help="""\
@@ -343,7 +343,7 @@ class Create(base.CreateCommand):
     try:
       util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
     except kconfig.MissingEnvVarError as error:
-      log.warning(error.message)
+      log.warning(error)
 
     return [cluster]
 
@@ -429,6 +429,13 @@ class CreateAlpha(Create):
     flags.AddPrivateClusterFlags(parser, hidden=False)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False)
+    parser.add_argument(
+        '--enable-stackdriver-kubernetes',
+        action='store_true',
+        default=False,
+        hidden=True,
+        help='Enable logging and monitoring beta experience. Cloud Logging '
+        'and Cloud Monitoring are both required.')
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -453,5 +460,6 @@ class CreateAlpha(Create):
     ops.enable_tpu = args.enable_tpu
     ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     ops.istio_config = args.istio_config
+    ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     return ops

@@ -94,6 +94,6 @@ class AddDatabase(base.Command):
         raise
       result = new_database
 
-    log.CreatedResource(args.database, kind='database', async=args.async)
+    log.CreatedResource(args.database, kind='database', is_async=args.async)
 
     return result

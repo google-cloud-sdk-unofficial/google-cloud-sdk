@@ -14,6 +14,8 @@
 
 """deployments cancel command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
@@ -96,7 +98,7 @@ class CancelPreview(base.Command, dm_base.DmCommand):
           self.client,
           self.messages,
           dm_base.GetProject(),
-          args.deployment_name,) or ''
+          args.deployment_name,) or b''
 
     try:
       operation = self.client.deployments.CancelPreview(

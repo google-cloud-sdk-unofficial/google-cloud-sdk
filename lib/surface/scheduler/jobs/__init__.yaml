@@ -7,7 +7,7 @@ args:
     should be run. See
     https://cloud.google.com/appengine/docs/standard/python/config/cronref#schedule_format
     for details.
-- api_field: job.schedule.timezone
+- api_field: job.schedule.timeZone
   arg_name: time-zone
   default: Etc/UTC
   help_text: |
@@ -24,7 +24,7 @@ retry_args:
   help_text: |
     Int, the number of times to retry the request if it fails or times
     out. Must be in range 0-5 inclusive.
-- api_field: job.retryConfig.jobAgeLimit
+- api_field: job.retryConfig.maxRetryDuration
   arg_name: max-retry-duration
   type: googlecloudsdk.core.util.times:ParseDuration
   processor: googlecloudsdk.core.util.times:FormatDurationForJson
@@ -33,7 +33,7 @@ retry_args:
     was first run. If specified with `--max-attempts`, the task will be
     retried until both limits are reached. Default is 0 (which means
     unlimited)
-- api_field: job.retryConfig.minBackoffSeconds
+- api_field: job.retryConfig.minBackoffDuration
   arg_name: min-backoff
   type: googlecloudsdk.core.util.times:ParseDuration
   processor: googlecloudsdk.core.util.times:FormatDurationForJson
@@ -41,7 +41,7 @@ retry_args:
   help_text: |
     Duration, the minimum amount of time to wait before retrying a task
     after it fails. Ex. `10s` (default is `5s`).
-- api_field: job.retryConfig.maxBackoffSeconds
+- api_field: job.retryConfig.maxBackoffDuration
   arg_name: max-backoff
   default: 1h
   type: googlecloudsdk.core.util.times:ParseDuration

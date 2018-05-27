@@ -1,5 +1,5 @@
 # mako/runtime.py
-# Copyright (C) 2006-2012 the Mako authors and contributors <see AUTHORS file>
+# Copyright (C) 2006-2016 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -7,11 +7,13 @@
 """provides runtime services for templates, including Context,
 Namespace, and various helper functions."""
 
-from mako import exceptions, util
-import __builtin__, inspect, sys
+from mako import exceptions, util, compat
+from mako.compat import compat_builtins
+import sys
 
 
 class Context(object):
+
     """Provides runtime namespace, output buffer, and various
     callstacks for templates.
 
@@ -32,7 +34,7 @@ class Context(object):
 
         # "capture" function which proxies to the
         # generic "capture" function
-        self._data['capture'] = util.partial(capture, self)
+        self._data['capture'] = compat.partial(capture, self)
 
         # "caller" stack used by def calls with content
         self.caller_stack = self._data['caller'] = CallerStack()
@@ -55,8 +57,22 @@ class Context(object):
 
     @property
     def kwargs(self):
-        """Return the dictionary of keyword arguments associated with this
-        :class:`.Context`.
+        """Return the dictionary of top level keyword arguments associated
+        with this :class:`.Context`.
+
+        This dictionary only includes the top-level arguments passed to
+        :meth:`.Template.render`.  It does not include names produced within
+        the template execution such as local variable names or special names
+        such as ``self``, ``next``, etc.
+
+        The purpose of this dictionary is primarily for the case that
+        a :class:`.Template` accepts arguments via its ``<%page>`` tag,
+        which are normally expected to be passed via :meth:`.Template.render`,
+        except the template is being called in an inheritance context,
+        using the ``body()`` method.   :attr:`.Context.kwargs` can then be
+        used to propagate these arguments to the inheriting template::
+
+            ${next.body(**context.kwargs)}
 
         """
         return self._kwargs.copy()
@@ -64,7 +80,6 @@ class Context(object):
     def push_caller(self, caller):
         """Push a ``caller`` callable onto the callstack for
         this :class:`.Context`."""
-
 
         self.caller_stack.append(caller)
 
@@ -77,13 +92,13 @@ class Context(object):
     def keys(self):
         """Return a list of all names established in this :class:`.Context`."""
 
-        return self._data.keys()
+        return list(self._data.keys())
 
     def __getitem__(self, key):
         if key in self._data:
             return self._data[key]
         else:
-            return __builtin__.__dict__[key]
+            return compat_builtins.__dict__[key]
 
     def _push_writer(self):
         """push a capturing buffer onto this Context and return
@@ -115,9 +130,7 @@ class Context(object):
     def get(self, key, default=None):
         """Return a value from this :class:`.Context`."""
 
-        return self._data.get(key,
-                __builtin__.__dict__.get(key, default)
-                )
+        return self._data.get(key, compat_builtins.__dict__.get(key, default))
 
     def write(self, string):
         """Write a string to this :class:`.Context` object's
@@ -141,11 +154,18 @@ class Context(object):
         c.caller_stack = self.caller_stack
         return c
 
-    def locals_(self, d):
+    def _locals(self, d):
         """Create a new :class:`.Context` with a copy of this
-        :class:`.Context`'s current state, updated with the given dictionary."""
+        :class:`.Context`'s current state,
+        updated with the given dictionary.
 
-        if len(d) == 0:
+        The :attr:`.Context.kwargs` collection remains
+        unaffected.
+
+
+        """
+
+        if not d:
             return self
         c = self._copy()
         c._data.update(d)
@@ -162,27 +182,38 @@ class Context(object):
         x.pop('next', None)
         return c
 
+
 class CallerStack(list):
+
     def __init__(self):
         self.nextcaller = None
+
     def __nonzero__(self):
-        return self._get_caller() and True or False
+        return self.__bool__()
+
+    def __bool__(self):
+        return len(self) and self._get_caller() and True or False
+
     def _get_caller(self):
         # this method can be removed once
         # codegen MAGIC_NUMBER moves past 7
         return self[-1]
+
     def __getattr__(self, key):
         return getattr(self._get_caller(), key)
+
     def _push_frame(self):
         frame = self.nextcaller or None
         self.append(frame)
         self.nextcaller = None
         return frame
+
     def _pop_frame(self):
         self.nextcaller = self.pop()
 
 
 class Undefined(object):
+
     """Represents an undefined value in a template.
 
     All template modules have a constant value
@@ -190,14 +221,22 @@ class Undefined(object):
     object.
 
     """
+
     def __str__(self):
         raise NameError("Undefined")
+
     def __nonzero__(self):
+        return self.__bool__()
+
+    def __bool__(self):
         return False
 
 UNDEFINED = Undefined()
+STOP_RENDERING = ""
+
 
 class LoopStack(object):
+
     """a stack for LoopContexts that implements the context manager protocol
     to automatically pop off the top of the stack on context exit
     """
@@ -237,6 +276,7 @@ class LoopStack(object):
 
 
 class LoopContext(object):
+
     """A magic loop variable.
     Automatically accessible in any ``% for`` block.
 
@@ -302,8 +342,10 @@ class LoopContext(object):
 
 
 class _NSAttr(object):
+
     def __init__(self, parent):
         self.__parent = parent
+
     def __getattr__(self, key):
         ns = self.__parent
         while ns:
@@ -313,7 +355,9 @@ class _NSAttr(object):
                 ns = ns.inherits
         raise AttributeError(key)
 
+
 class Namespace(object):
+
     """Provides access to collections of rendering methods, which
       can be local, from other templates, or from imported modules.
 
@@ -330,13 +374,13 @@ class Namespace(object):
       """
 
     def __init__(self, name, context,
-                            callables=None, inherits=None,
-                            populate_self=True, calling_uri=None):
+                 callables=None, inherits=None,
+                 populate_self=True, calling_uri=None):
         self.name = name
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.func_name, c) for c in callables])
+            self.callables = dict([(c.__name__, c) for c in callables])
 
     callables = ()
 
@@ -394,8 +438,13 @@ class Namespace(object):
 
         This accessor allows templates to supply "scalar"
         attributes which are particularly handy in inheritance
-        relationships. See the example in
-        :ref:`inheritance_toplevel`.
+        relationships.
+
+        .. seealso::
+
+            :ref:`inheritance_attr`
+
+            :ref:`namespace_attr_for_includes`
 
         """
         return _NSAttr(self)
@@ -425,16 +474,16 @@ class Namespace(object):
             return self.context.namespaces[key]
         else:
             ns = TemplateNamespace(uri, self.context._copy(),
-                                templateuri=uri,
-                                calling_uri=self._templateuri)
+                                   templateuri=uri,
+                                   calling_uri=self._templateuri)
             self.context.namespaces[key] = ns
             return ns
 
     def get_template(self, uri):
         """Return a :class:`.Template` from the given ``uri``.
 
-        The ``uri`` resolution is relative to the ``uri`` of this :class:`.Namespace`
-        object's :class:`.Template`.
+        The ``uri`` resolution is relative to the ``uri`` of this
+        :class:`.Namespace` object's :class:`.Template`.
 
         """
         return _lookup_template(self.context, uri, self._templateuri)
@@ -487,26 +536,28 @@ class Namespace(object):
             val = getattr(self.inherits, key)
         else:
             raise AttributeError(
-                    "Namespace '%s' has no member '%s'" %
-                    (self.name, key))
+                "Namespace '%s' has no member '%s'" %
+                (self.name, key))
         setattr(self, key, val)
         return val
 
+
 class TemplateNamespace(Namespace):
+
     """A :class:`.Namespace` specific to a :class:`.Template` instance."""
 
     def __init__(self, name, context, template=None, templateuri=None,
-                            callables=None, inherits=None,
-                            populate_self=True, calling_uri=None):
+                 callables=None, inherits=None,
+                 populate_self=True, calling_uri=None):
         self.name = name
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.func_name, c) for c in callables])
+            self.callables = dict([(c.__name__, c) for c in callables])
 
         if templateuri is not None:
             self.template = _lookup_template(context, templateuri,
-                                                calling_uri)
+                                             calling_uri)
             self._templateuri = self.template.module._template_uri
         elif template is not None:
             self.template = template
@@ -516,8 +567,8 @@ class TemplateNamespace(Namespace):
 
         if populate_self:
             lclcallable, lclcontext = \
-                        _populate_self_namespace(context, self.template,
-                                                    self_ns=self)
+                _populate_self_namespace(context, self.template,
+                                         self_ns=self)
 
     @property
     def module(self):
@@ -552,9 +603,10 @@ class TemplateNamespace(Namespace):
         if self.callables:
             for key in self.callables:
                 yield (key, self.callables[key])
+
         def get(key):
             callable_ = self.template._get_def_callable(key)
-            return util.partial(callable_, self.context)
+            return compat.partial(callable_, self.context)
         for k in self.template.module._exports:
             yield (k, get(k))
 
@@ -563,28 +615,30 @@ class TemplateNamespace(Namespace):
             val = self.callables[key]
         elif self.template.has_def(key):
             callable_ = self.template._get_def_callable(key)
-            val = util.partial(callable_, self.context)
+            val = compat.partial(callable_, self.context)
         elif self.inherits:
             val = getattr(self.inherits, key)
 
         else:
             raise AttributeError(
-                    "Namespace '%s' has no member '%s'" %
-                    (self.name, key))
+                "Namespace '%s' has no member '%s'" %
+                (self.name, key))
         setattr(self, key, val)
         return val
 
+
 class ModuleNamespace(Namespace):
+
     """A :class:`.Namespace` specific to a Python module instance."""
 
     def __init__(self, name, context, module,
-                            callables=None, inherits=None,
-                            populate_self=True, calling_uri=None):
+                 callables=None, inherits=None,
+                 populate_self=True, calling_uri=None):
         self.name = name
         self.context = context
         self.inherits = inherits
         if callables is not None:
-            self.callables = dict([(c.func_name, c) for c in callables])
+            self.callables = dict([(c.__name__, c) for c in callables])
 
         mod = __import__(module)
         for token in module.split('.')[1:]:
@@ -602,27 +656,27 @@ class ModuleNamespace(Namespace):
         if self.callables:
             for key in self.callables:
                 yield (key, self.callables[key])
-        def get(key):
-            callable_ = getattr(self.module, key)
-            return util.partial(callable_, self.context)
-        for k in dir(self.module):
-            if k[0] != '_':
-                yield (k, get(k))
+        for key in dir(self.module):
+            if key[0] != '_':
+                callable_ = getattr(self.module, key)
+                if compat.callable(callable_):
+                    yield key, compat.partial(callable_, self.context)
 
     def __getattr__(self, key):
         if key in self.callables:
             val = self.callables[key]
         elif hasattr(self.module, key):
             callable_ = getattr(self.module, key)
-            val = util.partial(callable_, self.context)
+            val = compat.partial(callable_, self.context)
         elif self.inherits:
             val = getattr(self.inherits, key)
         else:
             raise AttributeError(
-                    "Namespace '%s' has no member '%s'" %
-                    (self.name, key))
+                "Namespace '%s' has no member '%s'" %
+                (self.name, key))
         setattr(self, key, val)
         return val
+
 
 def supports_caller(func):
     """Apply a caller_stack compatibility decorator to a plain
@@ -632,13 +686,14 @@ def supports_caller(func):
 
     """
 
-    def wrap_stackframe(context,  *args, **kwargs):
+    def wrap_stackframe(context, *args, **kwargs):
         context.caller_stack._push_frame()
         try:
             return func(context, *args, **kwargs)
         finally:
             context.caller_stack._pop_frame()
     return wrap_stackframe
+
 
 def capture(context, callable_, *args, **kwargs):
     """Execute the given template def, capturing the output into
@@ -648,17 +703,18 @@ def capture(context, callable_, *args, **kwargs):
 
     """
 
-    if not callable(callable_):
+    if not compat.callable(callable_):
         raise exceptions.RuntimeException(
-                           "capture() function expects a callable as "
-                           "its argument (i.e. capture(func, *args, **kwargs))"
-                        )
+            "capture() function expects a callable as "
+            "its argument (i.e. capture(func, *args, **kwargs))"
+        )
     context._push_buffer()
     try:
         callable_(*args, **kwargs)
     finally:
         buf = context._pop_buffer()
     return buf.getvalue()
+
 
 def _decorate_toplevel(fn):
     def decorate_render(render_fn):
@@ -674,13 +730,16 @@ def _decorate_toplevel(fn):
         return go
     return decorate_render
 
+
 def _decorate_inline(context, fn):
     def decorate_render(render_fn):
         dec = fn(render_fn)
+
         def go(*args, **kw):
             return dec(context, *args, **kw)
         return go
     return decorate_render
+
 
 def _include_file(context, uri, calling_uri, **kwargs):
     """locate the template from the given uri and include it in
@@ -688,9 +747,19 @@ def _include_file(context, uri, calling_uri, **kwargs):
 
     template = _lookup_template(context, uri, calling_uri)
     (callable_, ctx) = _populate_self_namespace(
-                                context._clean_inheritance_tokens(),
-                                template)
-    callable_(ctx, **_kwargs_for_include(callable_, context._data, **kwargs))
+        context._clean_inheritance_tokens(),
+        template)
+    kwargs = _kwargs_for_include(callable_, context._data, **kwargs)
+    if template.include_error_handler:
+        try:
+            callable_(ctx, **kwargs)
+        except Exception:
+            result = template.include_error_handler(ctx, compat.exception_as())
+            if not result:
+                compat.reraise(*sys.exc_info())
+    else:
+        callable_(ctx, **kwargs)
+
 
 def _inherit_from(context, uri, calling_uri):
     """called by the _inherit method in template modules to set
@@ -704,11 +773,11 @@ def _inherit_from(context, uri, calling_uri):
     ih = self_ns
     while ih.inherits is not None:
         ih = ih.inherits
-    lclcontext = context.locals_({'next':ih})
+    lclcontext = context._locals({'next': ih})
     ih.inherits = TemplateNamespace("self:%s" % template.uri,
-                                lclcontext,
-                                template = template,
-                                populate_self=False)
+                                    lclcontext,
+                                    template=template,
+                                    populate_self=False)
     context._data['parent'] = lclcontext._data['local'] = ih.inherits
     callable_ = getattr(template.module, '_mako_inherit', None)
     if callable_ is not None:
@@ -721,23 +790,25 @@ def _inherit_from(context, uri, calling_uri):
         gen_ns(context)
     return (template.callable_, lclcontext)
 
+
 def _lookup_template(context, uri, relativeto):
     lookup = context._with_template.lookup
     if lookup is None:
         raise exceptions.TemplateLookupException(
-                            "Template '%s' has no TemplateLookup associated" %
-                            context._with_template.uri)
+            "Template '%s' has no TemplateLookup associated" %
+            context._with_template.uri)
     uri = lookup.adjust_uri(uri, relativeto)
     try:
         return lookup.get_template(uri)
-    except exceptions.TopLevelLookupException, e:
-        raise exceptions.TemplateLookupException(str(e))
+    except exceptions.TopLevelLookupException:
+        raise exceptions.TemplateLookupException(str(compat.exception_as()))
+
 
 def _populate_self_namespace(context, template, self_ns=None):
     if self_ns is None:
         self_ns = TemplateNamespace('self:%s' % template.uri,
-                                context, template=template,
-                                populate_self=False)
+                                    context, template=template,
+                                    populate_self=False)
     context._data['self'] = context._data['local'] = self_ns
     if hasattr(template.module, '_mako_inherit'):
         ret = template.module._mako_inherit(template, context)
@@ -745,29 +816,31 @@ def _populate_self_namespace(context, template, self_ns=None):
             return ret
     return (template.callable_, context)
 
+
 def _render(template, callable_, args, data, as_unicode=False):
     """create a Context and return the string
     output of the given template and template callable."""
 
     if as_unicode:
-        buf = util.FastEncodingBuffer(unicode=True)
+        buf = util.FastEncodingBuffer(as_unicode=True)
     elif template.bytestring_passthrough:
-        buf = util.StringIO()
+        buf = compat.StringIO()
     else:
         buf = util.FastEncodingBuffer(
-                        unicode=as_unicode,
-                        encoding=template.output_encoding,
-                        errors=template.encoding_errors)
+            as_unicode=as_unicode,
+            encoding=template.output_encoding,
+            errors=template.encoding_errors)
     context = Context(buf, **data)
     context._outputting_as_unicode = as_unicode
     context._set_with_template(template)
 
     _render_context(template, callable_, context, *args,
-                            **_kwargs_for_callable(callable_, data))
+                    **_kwargs_for_callable(callable_, data))
     return context._pop_buffer().getvalue()
 
+
 def _kwargs_for_callable(callable_, data):
-    argspec = util.inspect_func_args(callable_)
+    argspec = compat.inspect_func_args(callable_)
     # for normal pages, **pageargs is usually present
     if argspec[2]:
         return data
@@ -780,13 +853,15 @@ def _kwargs_for_callable(callable_, data):
             kwargs[arg] = data[arg]
     return kwargs
 
+
 def _kwargs_for_include(callable_, data, **kwargs):
-    argspec = util.inspect_func_args(callable_)
+    argspec = compat.inspect_func_args(callable_)
     namedargs = argspec[0] + [v for v in argspec[1:3] if v is not None]
     for arg in namedargs:
         if arg != 'context' and arg in data and arg not in kwargs:
             kwargs[arg] = data[arg]
     return kwargs
+
 
 def _render_context(tmpl, callable_, context, *args, **kwargs):
     import mako.template as template
@@ -801,6 +876,7 @@ def _render_context(tmpl, callable_, context, *args, **kwargs):
         (inherit, lclcontext) = _populate_self_namespace(context, tmpl.parent)
         _exec_template(callable_, context, args=args, kwargs=kwargs)
 
+
 def _exec_template(callable_, context, args=None, kwargs=None):
     """execute a rendering callable given the callable, a
     Context, and optional explicit arguments
@@ -812,30 +888,31 @@ def _exec_template(callable_, context, args=None, kwargs=None):
     template = context._with_template
     if template is not None and \
             (template.format_exceptions or template.error_handler):
-        error = None
         try:
             callable_(context, *args, **kwargs)
-        except Exception, e:
-            _render_error(template, context, e)
+        except Exception:
+            _render_error(template, context, compat.exception_as())
         except:
             e = sys.exc_info()[0]
             _render_error(template, context, e)
     else:
         callable_(context, *args, **kwargs)
 
+
 def _render_error(template, context, error):
     if template.error_handler:
         result = template.error_handler(context, error)
         if not result:
-            raise error
+            compat.reraise(*sys.exc_info())
     else:
         error_template = exceptions.html_error_template()
         if context._outputting_as_unicode:
-            context._buffer_stack[:] = [util.FastEncodingBuffer(unicode=True)]
+            context._buffer_stack[:] = [
+                util.FastEncodingBuffer(as_unicode=True)]
         else:
             context._buffer_stack[:] = [util.FastEncodingBuffer(
-                                            error_template.output_encoding,
-                                            error_template.encoding_errors)]
+                error_template.output_encoding,
+                error_template.encoding_errors)]
 
         context._set_with_template(error_template)
         error_template.render_context(context, error=error)

@@ -22,6 +22,8 @@ from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
+SIMULATE_MAINTENANCE_EVENT_TIMEOUT_MS = 7200000
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SimulateMaintenanceEvent(base.UpdateCommand):
@@ -65,7 +67,7 @@ class SimulateMaintenanceEvent(base.UpdateCommand):
         log.UpdatedResource(
             operation_ref,
             kind='gce instance [{0}]'.format(instance_refs[i].Name()),
-            async=True,
+            is_async=True,
             details='Use [gcloud compute operations describe] command '
             'to check the status of this operation.')
       return responses
@@ -76,7 +78,9 @@ class SimulateMaintenanceEvent(base.UpdateCommand):
         operation_poller,
         poller.OperationBatch(operation_refs),
         'Simulating maintenance on instance(s) [{0}]'
-        .format(', '.join(i.SelfLink() for i in instance_refs)))
+        .format(', '.join(i.SelfLink() for i in instance_refs)),
+        max_wait_ms=SIMULATE_MAINTENANCE_EVENT_TIMEOUT_MS,
+        wait_ceiling_ms=SIMULATE_MAINTENANCE_EVENT_TIMEOUT_MS)
 
 
 SimulateMaintenanceEvent.detailed_help = {

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Flags and helpers for the compute node templates commands."""
+from __future__ import absolute_import
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -29,11 +30,23 @@ def _BinarySizeOrAny(default_unit):
   # pylint: disable=protected-access
   bytes_per_unit = arg_parsers._BINARY_SIZE_SCALES[default_unit]
   def _Parse(value):
+    value = value.lower()
     if value == 'any':
       return value
     size = arg_parsers.BinarySize(default_unit=default_unit)(value)
     converted_size = size // bytes_per_unit
     return str(converted_size)
+  return _Parse
+
+
+def _IntOrAny():
+  def _Parse(value):
+    value = value.lower()
+    if value == 'any':
+      return value
+    # Validate that an integer is passed.
+    value = int(value)
+    return str(value)
   return _Parse
 
 
@@ -67,7 +80,7 @@ def AddCreateArgsToParser(parser):
   node_type_group.add_argument(
       '--node-requirements',
       type=arg_parsers.ArgDict(spec={
-          'vCPU': int,
+          'vCPU': _IntOrAny(),
           'memory': _BinarySizeOrAny('MB'),
           'localSSD': _BinarySizeOrAny('GB'),
       }),

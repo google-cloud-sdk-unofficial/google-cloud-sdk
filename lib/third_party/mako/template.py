@@ -1,5 +1,5 @@
 # mako/template.py
-# Copyright (C) 2006-2012 the Mako authors and contributors <see AUTHORS file>
+# Copyright (C) 2006-2016 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,12 +8,20 @@
 template strings, as well as template runtime operations."""
 
 from mako.lexer import Lexer
-from mako import runtime, util, exceptions, codegen, cache
-import os, re, shutil, stat, sys, tempfile, types, weakref
+from mako import runtime, util, exceptions, codegen, cache, compat
+import os
+import re
+import shutil
+import stat
+import sys
+import tempfile
+import types
+import weakref
 
 
 class Template(object):
-    """Represents a compiled template.
+
+    r"""Represents a compiled template.
 
     :class:`.Template` includes a reference to the original
     template source (via the :attr:`.source` attribute)
@@ -101,6 +109,11 @@ class Template(object):
      completes. Is used to provide custom error-rendering
      functions.
 
+     .. seealso::
+
+        :paramref:`.Template.include_error_handler` - include-specific
+        error handler function
+
     :param format_exceptions: if ``True``, exceptions which occur during
      the render phase of this template will be caught and
      formatted into an HTML error page, which then becomes the
@@ -111,6 +124,25 @@ class Template(object):
      "import" lines, which will be placed into the module level
      preamble of all generated Python modules. See the example
      in :ref:`filtering_default_filters`.
+
+    :param future_imports: String list of names to import from `__future__`.
+     These will be concatenated into a comma-separated string and inserted
+     into the beginning of the template, e.g. ``futures_imports=['FOO',
+     'BAR']`` results in ``from __future__ import FOO, BAR``.  If you're
+     interested in using features like the new division operator, you must
+     use future_imports to convey that to the renderer, as otherwise the
+     import will not appear as the first executed statement in the generated
+     code and will therefore not have the desired effect.
+
+    :param include_error_handler: An error handler that runs when this template
+     is included within another one via the ``<%include>`` tag, and raises an
+     error.  Compare to the :paramref:`.Template.error_handler` option.
+
+     .. versionadded:: 1.0.6
+
+     .. seealso::
+
+        :paramref:`.Template.error_handler` - top-level error handler function
 
     :param input_encoding: Encoding of the template's source code.  Can
      be used in lieu of the coding comment. See
@@ -154,7 +186,7 @@ class Template(object):
 
          from mako.template import Template
          mytemplate = Template(
-                         file="index.html",
+                         filename="index.html",
                          module_directory="/path/to/modules",
                          module_writer=module_writer
                      )
@@ -171,6 +203,12 @@ class Template(object):
      the full template source before it is parsed. The return
      result of the callable will be used as the template source
      code.
+
+    :param lexer_cls: A :class:`.Lexer` class used to parse
+     the template.   The :class:`.Lexer` class is used by
+     default.
+
+     .. versionadded:: 0.7.4
 
     :param strict_undefined: Replaces the automatic usage of
      ``UNDEFINED`` for any undeclared variables not located in
@@ -190,33 +228,38 @@ class Template(object):
 
     """
 
+    lexer_cls = Lexer
+
     def __init__(self,
-                    text=None,
-                    filename=None,
-                    uri=None,
-                    format_exceptions=False,
-                    error_handler=None,
-                    lookup=None,
-                    output_encoding=None,
-                    encoding_errors='strict',
-                    module_directory=None,
-                    cache_args=None,
-                    cache_impl='beaker',
-                    cache_enabled=True,
-                    cache_type=None,
-                    cache_dir=None,
-                    cache_url=None,
-                    module_filename=None,
-                    input_encoding=None,
-                    disable_unicode=False,
-                    module_writer=None,
-                    bytestring_passthrough=False,
-                    default_filters=None,
-                    buffer_filters=(),
-                    strict_undefined=False,
-                    imports=None,
-                    enable_loop=True,
-                    preprocessor=None):
+                 text=None,
+                 filename=None,
+                 uri=None,
+                 format_exceptions=False,
+                 error_handler=None,
+                 lookup=None,
+                 output_encoding=None,
+                 encoding_errors='strict',
+                 module_directory=None,
+                 cache_args=None,
+                 cache_impl='beaker',
+                 cache_enabled=True,
+                 cache_type=None,
+                 cache_dir=None,
+                 cache_url=None,
+                 module_filename=None,
+                 input_encoding=None,
+                 disable_unicode=False,
+                 module_writer=None,
+                 bytestring_passthrough=False,
+                 default_filters=None,
+                 buffer_filters=(),
+                 strict_undefined=False,
+                 imports=None,
+                 future_imports=None,
+                 enable_loop=True,
+                 preprocessor=None,
+                 lexer_cls=None,
+                 include_error_handler=None):
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
             self.uri = uri
@@ -235,9 +278,9 @@ class Template(object):
         u_norm = os.path.normpath(u_norm)
         if u_norm.startswith(".."):
             raise exceptions.TemplateLookupException(
-                    "Template uri \"%s\" is invalid - "
-                    "it cannot be relative outside "
-                    "of the root path." % self.uri)
+                "Template uri \"%s\" is invalid - "
+                "it cannot be relative outside "
+                "of the root path." % self.uri)
 
         self.input_encoding = input_encoding
         self.output_encoding = output_encoding
@@ -248,16 +291,16 @@ class Template(object):
         self.strict_undefined = strict_undefined
         self.module_writer = module_writer
 
-        if util.py3k and disable_unicode:
+        if compat.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
-                                    "Mako for Python 3 does not "
-                                    "support disabling Unicode")
+                "Mako for Python 3 does not "
+                "support disabling Unicode")
         elif output_encoding and disable_unicode:
             raise exceptions.UnsupportedError(
-                                    "output_encoding must be set to "
-                                    "None when disable_unicode is used.")
+                "output_encoding must be set to "
+                "None when disable_unicode is used.")
         if default_filters is None:
-            if util.py3k or self.disable_unicode:
+            if compat.py3k or self.disable_unicode:
                 self.default_filters = ['str']
             else:
                 self.default_filters = ['unicode']
@@ -266,7 +309,11 @@ class Template(object):
         self.buffer_filters = buffer_filters
 
         self.imports = imports
+        self.future_imports = future_imports
         self.preprocessor = preprocessor
+
+        if lexer_cls is not None:
+            self.lexer_cls = lexer_cls
 
         # if plain text, compile code in memory only
         if text is not None:
@@ -281,23 +328,24 @@ class Template(object):
                 path = module_filename
             elif module_directory is not None:
                 path = os.path.abspath(
-                        os.path.join(
-                            os.path.normpath(module_directory),
-                            u_norm + ".py"
-                            )
-                        )
+                    os.path.join(
+                        os.path.normpath(module_directory),
+                        u_norm + ".py"
+                    )
+                )
             else:
                 path = None
             module = self._compile_from_file(path, filename)
         else:
             raise exceptions.RuntimeException(
-                                "Template requires text or filename")
+                "Template requires text or filename")
 
         self.module = module
         self.filename = filename
         self.callable_ = self.module.render_body
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
+        self.include_error_handler = include_error_handler
         self.lookup = lookup
 
         self.module_directory = module_directory
@@ -315,8 +363,8 @@ class Template(object):
             return codegen.RESERVED_NAMES.difference(['loop'])
 
     def _setup_cache_args(self,
-                cache_impl, cache_enabled, cache_args,
-                cache_type, cache_dir, cache_url):
+                          cache_impl, cache_enabled, cache_args,
+                          cache_type, cache_dir, cache_url):
         self.cache_impl = cache_impl
         self.cache_enabled = cache_enabled
         if cache_args:
@@ -337,25 +385,25 @@ class Template(object):
             util.verify_directory(os.path.dirname(path))
             filemtime = os.stat(filename)[stat.ST_MTIME]
             if not os.path.exists(path) or \
-                        os.stat(path)[stat.ST_MTIME] < filemtime:
+                    os.stat(path)[stat.ST_MTIME] < filemtime:
                 data = util.read_file(filename)
                 _compile_module_file(
-                            self,
-                            data,
-                            filename,
-                            path,
-                            self.module_writer)
-            module = util.load_module(self.module_id, path)
+                    self,
+                    data,
+                    filename,
+                    path,
+                    self.module_writer)
+            module = compat.load_module(self.module_id, path)
             del sys.modules[self.module_id]
             if module._magic_number != codegen.MAGIC_NUMBER:
                 data = util.read_file(filename)
                 _compile_module_file(
-                            self,
-                            data,
-                            filename,
-                            path,
-                            self.module_writer)
-                module = util.load_module(self.module_id, path)
+                    self,
+                    data,
+                    filename,
+                    path,
+                    self.module_writer)
+                module = compat.load_module(self.module_id, path)
                 del sys.modules[self.module_id]
             ModuleInfo(module, path, self, filename, None, None)
         else:
@@ -363,9 +411,9 @@ class Template(object):
             # in memory
             data = util.read_file(filename)
             code, module = _compile_text(
-                                self,
-                                data,
-                                filename)
+                self,
+                data,
+                filename)
             self._source = None
             self._code = code
             ModuleInfo(module, None, self, filename, code, None)
@@ -390,9 +438,11 @@ class Template(object):
     @property
     def cache_dir(self):
         return self.cache_args['dir']
+
     @property
     def cache_url(self):
         return self.cache_args['url']
+
     @property
     def cache_type(self):
         return self.cache_args['type']
@@ -415,10 +465,10 @@ class Template(object):
         """Render the output of this template as a unicode object."""
 
         return runtime._render(self,
-                                self.callable_,
-                                args,
-                                data,
-                                as_unicode=True)
+                               self.callable_,
+                               args,
+                               data,
+                               as_unicode=True)
 
     def render_context(self, context, *args, **kwargs):
         """Render this :class:`.Template` with the given context.
@@ -442,6 +492,14 @@ class Template(object):
 
         return DefTemplate(self, getattr(self.module, "render_%s" % name))
 
+    def list_defs(self):
+        """return a list of defs in the template.
+
+        .. versionadded:: 1.0.4
+
+        """
+        return [i[7:] for i in dir(self.module) if i[:7] == 'render_']
+
     def _get_def_callable(self, name):
         return getattr(self.module, "render_%s" % name)
 
@@ -449,7 +507,9 @@ class Template(object):
     def last_modified(self):
         return self.module._modified_time
 
+
 class ModuleTemplate(Template):
+
     """A Template which is constructed given an existing Python module.
 
         e.g.::
@@ -467,25 +527,26 @@ class ModuleTemplate(Template):
     """
 
     def __init__(self, module,
-                        module_filename=None,
-                        template=None,
-                        template_filename=None,
-                        module_source=None,
-                        template_source=None,
-                        output_encoding=None,
-                        encoding_errors='strict',
-                        disable_unicode=False,
-                        bytestring_passthrough=False,
-                        format_exceptions=False,
-                        error_handler=None,
-                        lookup=None,
-                        cache_args=None,
-                        cache_impl='beaker',
-                        cache_enabled=True,
-                        cache_type=None,
-                        cache_dir=None,
-                        cache_url=None,
-    ):
+                 module_filename=None,
+                 template=None,
+                 template_filename=None,
+                 module_source=None,
+                 template_source=None,
+                 output_encoding=None,
+                 encoding_errors='strict',
+                 disable_unicode=False,
+                 bytestring_passthrough=False,
+                 format_exceptions=False,
+                 error_handler=None,
+                 lookup=None,
+                 cache_args=None,
+                 cache_impl='beaker',
+                 cache_enabled=True,
+                 cache_type=None,
+                 cache_dir=None,
+                 cache_url=None,
+                 include_error_handler=None,
+                 ):
         self.module_id = re.sub(r'\W', "_", module._template_uri)
         self.uri = module._template_uri
         self.input_encoding = module._source_encoding
@@ -495,34 +556,37 @@ class ModuleTemplate(Template):
         self.bytestring_passthrough = bytestring_passthrough or disable_unicode
         self.enable_loop = module._enable_loop
 
-        if util.py3k and disable_unicode:
+        if compat.py3k and disable_unicode:
             raise exceptions.UnsupportedError(
-                                    "Mako for Python 3 does not "
-                                    "support disabling Unicode")
+                "Mako for Python 3 does not "
+                "support disabling Unicode")
         elif output_encoding and disable_unicode:
             raise exceptions.UnsupportedError(
-                                    "output_encoding must be set to "
-                                    "None when disable_unicode is used.")
+                "output_encoding must be set to "
+                "None when disable_unicode is used.")
 
         self.module = module
         self.filename = template_filename
         ModuleInfo(module,
-                        module_filename,
-                        self,
-                        template_filename,
-                        module_source,
-                        template_source)
+                   module_filename,
+                   self,
+                   template_filename,
+                   module_source,
+                   template_source)
 
         self.callable_ = self.module.render_body
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
+        self.include_error_handler = include_error_handler
         self.lookup = lookup
         self._setup_cache_args(
             cache_impl, cache_enabled, cache_args,
             cache_type, cache_dir, cache_url
         )
 
+
 class DefTemplate(Template):
+
     """A :class:`.Template` which represents a callable def in a parent
     template."""
 
@@ -534,6 +598,7 @@ class DefTemplate(Template):
         self.encoding_errors = parent.encoding_errors
         self.format_exceptions = parent.format_exceptions
         self.error_handler = parent.error_handler
+        self.include_error_handler = parent.include_error_handler
         self.enable_loop = parent.enable_loop
         self.lookup = parent.lookup
         self.bytestring_passthrough = parent.bytestring_passthrough
@@ -541,7 +606,9 @@ class DefTemplate(Template):
     def get_def(self, name):
         return self.parent.get_def(name)
 
+
 class ModuleInfo(object):
+
     """Stores information about a module currently loaded into
     memory, provides reverse lookups of template source, module
     source code based on a module's identifier.
@@ -550,12 +617,12 @@ class ModuleInfo(object):
     _modules = weakref.WeakValueDictionary()
 
     def __init__(self,
-                    module,
-                    module_filename,
-                    template,
-                    template_filename,
-                    module_source,
-                    template_source):
+                 module,
+                 module_filename,
+                 template,
+                 template_filename,
+                 module_source,
+                 template_source):
         self.module = module
         self.module_filename = module_filename
         self.template_filename = template_filename
@@ -565,20 +632,40 @@ class ModuleInfo(object):
         if module_filename:
             self._modules[module_filename] = self
 
+    @classmethod
+    def get_module_source_metadata(cls, module_source, full_line_map=False):
+        source_map = re.search(
+            r"__M_BEGIN_METADATA(.+?)__M_END_METADATA",
+            module_source, re.S).group(1)
+        source_map = compat.json.loads(source_map)
+        source_map['line_map'] = dict(
+            (int(k), int(v))
+            for k, v in source_map['line_map'].items())
+        if full_line_map:
+            f_line_map = source_map['full_line_map'] = []
+            line_map = source_map['line_map']
+
+            curr_templ_line = 1
+            for mod_line in range(1, max(line_map)):
+                if mod_line in line_map:
+                    curr_templ_line = line_map[mod_line]
+                f_line_map.append(curr_templ_line)
+        return source_map
+
     @property
     def code(self):
         if self.module_source is not None:
             return self.module_source
         else:
-            return util.read_file(self.module_filename)
+            return util.read_python_file(self.module_filename)
 
     @property
     def source(self):
         if self.template_source is not None:
             if self.module._source_encoding and \
-                    not isinstance(self.template_source, unicode):
+                    not isinstance(self.template_source, compat.text_type):
                 return self.template_source.decode(
-                                self.module._source_encoding)
+                    self.module._source_encoding)
             else:
                 return self.template_source
         else:
@@ -588,46 +675,51 @@ class ModuleInfo(object):
             else:
                 return data
 
+
 def _compile(template, text, filename, generate_magic_comment):
-    lexer = Lexer(text,
-                    filename,
-                    disable_unicode=template.disable_unicode,
-                    input_encoding=template.input_encoding,
-                    preprocessor=template.preprocessor)
+    lexer = template.lexer_cls(text,
+                               filename,
+                               disable_unicode=template.disable_unicode,
+                               input_encoding=template.input_encoding,
+                               preprocessor=template.preprocessor)
     node = lexer.parse()
     source = codegen.compile(node,
-                            template.uri,
-                            filename,
-                            default_filters=template.default_filters,
-                            buffer_filters=template.buffer_filters,
-                            imports=template.imports,
-                            source_encoding=lexer.encoding,
-                            generate_magic_comment=generate_magic_comment,
-                            disable_unicode=template.disable_unicode,
-                            strict_undefined=template.strict_undefined,
-                            enable_loop=template.enable_loop,
-                            reserved_names=template.reserved_names)
+                             template.uri,
+                             filename,
+                             default_filters=template.default_filters,
+                             buffer_filters=template.buffer_filters,
+                             imports=template.imports,
+                             future_imports=template.future_imports,
+                             source_encoding=lexer.encoding,
+                             generate_magic_comment=generate_magic_comment,
+                             disable_unicode=template.disable_unicode,
+                             strict_undefined=template.strict_undefined,
+                             enable_loop=template.enable_loop,
+                             reserved_names=template.reserved_names)
     return source, lexer
+
 
 def _compile_text(template, text, filename):
     identifier = template.module_id
     source, lexer = _compile(template, text, filename,
-                        generate_magic_comment=template.disable_unicode)
+                             generate_magic_comment=template.disable_unicode)
 
     cid = identifier
-    if not util.py3k and isinstance(cid, unicode):
+    if not compat.py3k and isinstance(cid, compat.text_type):
         cid = cid.encode()
     module = types.ModuleType(cid)
     code = compile(source, cid, 'exec')
-    exec code in module.__dict__, module.__dict__
+
+    # this exec() works for 2.4->3.3.
+    exec(code, module.__dict__, module.__dict__)
     return (source, module)
 
-def _compile_module_file(template, text, filename, outputpath, module_writer):
-    identifier = template.module_id
-    source, lexer = _compile(template, text, filename,
-                        generate_magic_comment=True)
 
-    if isinstance(source, unicode):
+def _compile_module_file(template, text, filename, outputpath, module_writer):
+    source, lexer = _compile(template, text, filename,
+                             generate_magic_comment=True)
+
+    if isinstance(source, compat.text_type):
         source = source.encode(lexer.encoding or 'ascii')
 
     if module_writer:
@@ -642,9 +734,13 @@ def _compile_module_file(template, text, filename, outputpath, module_writer):
         os.close(dest)
         shutil.move(name, outputpath)
 
+
 def _get_module_info_from_callable(callable_):
-    return _get_module_info(callable_.func_globals['__name__'])
+    if compat.py3k:
+        return _get_module_info(callable_.__globals__['__name__'])
+    else:
+        return _get_module_info(callable_.func_globals['__name__'])
+
 
 def _get_module_info(filename):
     return ModuleInfo._modules[filename]
-

@@ -14,6 +14,8 @@
 
 """types create command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.deployment_manager import dm_base
 from googlecloudsdk.api_lib.deployment_manager import dm_labels
 from googlecloudsdk.calliope import base
@@ -24,10 +26,10 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def LogResource(request, async):
+def LogResource(request, is_async):
   log.CreatedResource(request.compositeType.name,
                       kind='composite_type',
-                      async=async)
+                      is_async=is_async)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)

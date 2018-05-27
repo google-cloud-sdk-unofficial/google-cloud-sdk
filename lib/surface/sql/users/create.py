@@ -80,6 +80,6 @@ class Create(base.CreateCommand):
                                                     'Creating Cloud SQL user')
       result = new_user
 
-    log.CreatedResource(args.username, kind='user', async=args.async)
+    log.CreatedResource(args.username, kind='user', is_async=args.async)
 
     return result

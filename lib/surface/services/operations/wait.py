@@ -70,4 +70,4 @@ class Wait(base.Command):
 
     operation = client.operations.Get(request)
 
-    return services_util.ProcessOperationResult(operation, async=False)
+    return services_util.ProcessOperationResult(operation, is_async=False)

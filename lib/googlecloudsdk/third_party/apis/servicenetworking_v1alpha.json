@@ -235,6 +235,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "consumer": {
+          "description": "Resource representing service consumer. It may be different from\nthe project number in consumer network parameter in case of that network\nbeing a shared VPC network. In that case, Service Networking will validate\nthat this resource belongs to that shared VPC.  Required.\nFor example 'projects\/123456'.",
+          "type": "string"
         }
       }
     },
@@ -1788,6 +1792,21 @@
       "properties": {
         "provider": {
           "description": "The name of the authorization provider, such as\nfirebaserules.googleapis.com.",
+          "type": "string"
+        }
+      }
+    },
+    "AddSubnetworkResponse": {
+      "id": "AddSubnetworkResponse",
+      "description": "Message returning the name of the created service subnetwork.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Subnetwork name.\nSee https:\/\/cloud.google.com\/compute\/docs\/vpc\/",
+          "type": "string"
+        },
+        "ipCidrRange": {
+          "description": "Subnetwork CIDR range in \"10.x.x.x\/y\" format.",
           "type": "string"
         }
       }

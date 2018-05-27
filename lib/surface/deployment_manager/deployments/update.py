@@ -14,6 +14,8 @@
 
 """deployments update command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.deployment_manager import dm_api_util
@@ -223,7 +225,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
         # If no fingerprint is present, default to an empty fingerprint.
         # TODO(b/34966984): Remove the empty default after cleaning up all
         # deployments that has no fingerprint
-        deployment.fingerprint = current_deployment.fingerprint or ''
+        deployment.fingerprint = current_deployment.fingerprint or b''
 
       # Get the credential from the deployment to update.
       if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA] and args.credential:

@@ -18,9 +18,12 @@ from __future__ import print_function
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
+from googlecloudsdk.api_lib.storage import storage_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.sql import flags
@@ -90,9 +93,6 @@ def AddBaseArgs(parser):
             'replication setup. The newly created instance will be a read '
             'replica of the specified master instance.'))
   flags.AddMemory(parser)
-  parser.add_argument(
-      '--on-premises-host-port', required=False, hidden=True,
-      help='THIS ARGUMENT NEEDS HELP TEXT.')
   parser.add_argument(
       '--pricing-plan',
       '-p',
@@ -194,7 +194,7 @@ def RunBaseCreateCommand(args, release_track):
       args.region = master_instance_resource.region
     if not args.IsSpecified('database_version'):
       args.database_version = master_instance_resource.databaseVersion
-    if not args.IsSpecified('tier'):
+    if not args.IsSpecified('tier') and master_instance_resource.settings:
       args.tier = master_instance_resource.settings.tier
 
   instance_resource = (
@@ -274,3 +274,79 @@ class CreateBeta(base.Command):
     AddBaseArgs(parser)
     flags.AddInstanceResizeLimit(parser)
     labels_util.AddCreateLabelsFlags(parser)
+
+    # Group for creating external primary instances.
+    external_master_group = parser.add_group(
+        required=False,
+        help='Options for creating a wrapper for an external data source.')
+    external_master_group.add_argument(
+        '--source-ip-address',
+        required=True,
+        type=compute_utils.IPV4Argument,
+        help=('Public IP address used to connect to and replicate from '
+              'the external data source.'))
+    external_master_group.add_argument(
+        '--source-port',
+        type=arg_parsers.BoundedInt(lower_bound=1, upper_bound=65535),
+        # Default MySQL port number.
+        default=3306,
+        help=('Port number used to connect to and replicate from the '
+              'external data source.'))
+
+    # Group for creating replicas of external primary instances.
+    internal_replica_group = parser.add_group(
+        required=False,
+        help=('Options for creating an internal replica of an external data '
+              'source.'))
+    internal_replica_group.add_argument(
+        '--master-username',
+        required=True,
+        help='Name of the replication user on the external data source.')
+
+    # TODO(b/78648703): Make group required when mutex required status is fixed.
+    # For entering the password of the replication user of an external primary.
+    master_password_group = internal_replica_group.add_group(
+        'Password group.', mutex=True)
+    master_password_group.add_argument(
+        '--master-password',
+        help='Password of the replication user on the external data source.')
+    master_password_group.add_argument(
+        '--prompt-for-master-password',
+        action='store_true',
+        help=('Prompt for the password of the replication user on the '
+              'external data source. The password is all typed characters up '
+              'to but not including the RETURN or ENTER key.'))
+    internal_replica_group.add_argument(
+        '--master-dump-file-path',
+        required=True,
+        type=storage_util.ObjectReference.FromArgument,
+        help=('Path to the MySQL dump file in Google Cloud Storage from '
+              'which the seed import is made. The URI is in the form '
+              'gs://bucketName/fileName. Compressed gzip files (.gz) are '
+              'also supported.'))
+
+    # For specifying SSL certs for connecting to an external primary.
+    credential_group = internal_replica_group.add_group(
+        'Client and server credentials.', required=False)
+    credential_group.add_argument(
+        '--master-ca-certificate-path',
+        required=True,
+        help=('Path to a file containing the X.509v3 (RFC5280) PEM encoded '
+              'certificate of the CA that signed the external data source\'s '
+              'certificate.'))
+
+    # For specifying client certs for connecting to an external primary.
+    client_credential_group = credential_group.add_group(
+        'Client credentials.', required=False)
+    client_credential_group.add_argument(
+        '--client-certificate-path',
+        required=True,
+        help=('Path to a file containing the X.509v3 (RFC5280) PEM encoded '
+              'certificate that will be used by the replica to authenticate '
+              'against the external data source.'))
+    client_credential_group.add_argument(
+        '--client-key-path',
+        required=True,
+        help=('Path to a file containing the unencrypted PKCS#1 or PKCS#8 '
+              'PEM encoded private key associated with the '
+              'clientCertificate.'))

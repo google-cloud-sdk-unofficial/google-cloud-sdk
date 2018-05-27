@@ -13,12 +13,13 @@
 # limitations under the License.
 """bigtable clusters update command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from googlecloudsdk.api_lib.bigtable import clusters
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -28,8 +29,8 @@ class UpdateCluster(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    (arguments.ArgAdder(parser).AddCluster().AddInstance(positional=False)
-     .AddClusterNodes().AddAsync())
+    arguments.AddClusterResourceArg(parser, 'to update')
+    (arguments.ArgAdder(parser).AddClusterNodes().AddAsync())
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -39,22 +40,15 @@ class UpdateCluster(base.UpdateCommand):
         command invocation.
 
     Returns:
-      Some value that we want to have printed later.
+      None
     """
-    cli = util.GetAdminClient()
-    msgs = util.GetAdminMessages()
-    ref = resources.REGISTRY.Parse(
-        args.cluster,
-        params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-            'instancesId': args.instance
-        },
-        collection='bigtableadmin.projects.instances.clusters')
-    msg = msgs.Cluster(name=ref.RelativeName(), serveNodes=args.num_nodes)
-    result = cli.projects_instances_clusters.Update(msg)
+    cluster_ref = args.CONCEPTS.cluster.Parse()
+    operation = clusters.Update(cluster_ref, args.num_nodes)
     if not args.async:
-      # TODO(b/36051980): enable this line when b/29563942 is fixed in apitools
-      pass
-      # util.WaitForOpV2(result, 'Updating cluster')
-    log.UpdatedResource(args.cluster, kind='cluster', async=args.async)
-    return result
+      operation_ref = util.GetOperationRef(operation)
+      return util.AwaitCluster(
+          operation_ref,
+          'Updating bigtable cluster {0}'.format(cluster_ref.Name()))
+
+    log.UpdatedResource(cluster_ref.Name(), kind='cluster', is_async=args.async)
+    return None

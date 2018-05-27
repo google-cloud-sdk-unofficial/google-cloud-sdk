@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -438,8 +438,15 @@ def load_model(
   if loader.maybe_saved_model_directory(model_path):
     try:
       logging.info("Importing tensorflow.contrib in load_model")
-      import tensorflow.contrib  # pylint: disable=redefined-outer-name, unused-variable, g-import-not-at-top
-      session = tf_session.Session(target="", graph=None, config=config)
+      # pylint: disable=redefined-outer-name,unused-variable,g-import-not-at-top
+      import tensorflow as tf
+      import tensorflow.contrib
+      from tensorflow.python.framework.ops import Graph
+      # pylint: enable=redefined-outer-name,unused-variable,g-import-not-at-top
+      if tf.__version__.startswith("1.0"):
+        session = tf_session.Session(target="", graph=None, config=config)
+      else:
+        session = tf_session.Session(target="", graph=Graph(), config=config)
       meta_graph = loader.load(session, tags=list(tags), export_dir=model_path)
     except Exception as e:  # pylint: disable=broad-except
       raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,

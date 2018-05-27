@@ -13,6 +13,8 @@
 # limitations under the License.
 """bigtable instances upgrade command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.bigtable import instances
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
@@ -43,11 +45,10 @@ class UpgradeInstance(base.UpdateCommand):
     if args.async:
       result = op
     else:
-      client = util.GetAdminClient()
       op_ref = resources.REGISTRY.ParseRelativeName(
           op.name, collection='bigtableadmin.operations')
       message = 'Upgrading bigtable instance {0}'.format(args.instance)
-      result = util.WaitForInstance(client, op_ref, message)
+      result = util.AwaitInstance(op_ref, message)
 
-    log.UpdatedResource(args.instance, kind='instance', async=args.async)
+    log.UpdatedResource(args.instance, kind='instance', is_async=args.async)
     return result

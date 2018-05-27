@@ -1258,6 +1258,13 @@ class _Load(BigqueryCmd):
         'Whether to require partition filter for queries over this table. '
         'Only apply to partitioned table.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'clustering_fields',
+        None,
+        'Comma separated field names. Can only be specified with time based '
+        'partitioning. Data will be first partitioned and subsequently "'
+        'clustered on these fields.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, destination_table, source, schema=None):
@@ -1338,6 +1345,9 @@ class _Load(BigqueryCmd):
         self.require_partition_filter)
     if time_partitioning is not None:
       opts['time_partitioning'] = time_partitioning
+    clustering = _ParseClustering(self.clustering_fields)
+    if clustering:
+      opts['clustering'] = clustering
     if self.destination_kms_key is not None:
       opts['destination_encryption_configuration'] = {
           'kmsKeyName': self.destination_kms_key
@@ -1646,6 +1656,13 @@ class _Query(BigqueryCmd):
         'Only apply to partitioned table.',
         flag_values=fv)
     flags.DEFINE_string(
+        'clustering_fields',
+        None,
+        'Comma separated field names. Can only be specified with time based '
+        'partitioning. Data will be first partitioned and subsequently "'
+        'clustered on these fields.',
+        flag_values=fv)
+    flags.DEFINE_string(
         'destination_kms_key', None,
         'Cloud KMS key for encryption of the destination table data.',
         flag_values=fv)
@@ -1709,6 +1726,9 @@ class _Query(BigqueryCmd):
         self.require_partition_filter)
     if time_partitioning is not None:
       kwds['time_partitioning'] = time_partitioning
+    clustering = _ParseClustering(self.clustering_fields)
+    if clustering:
+      kwds['clustering'] = clustering
     if self.destination_schema and not self.destination_table:
       raise app.UsageError(
           'destination_schema can only be used with destination_table.')
@@ -2658,7 +2678,8 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'data_location', None,
-        'Geographic location of the data.',
+        'Geographic location of the data. See details at '
+        'https://cloud.google.com/bigquery/docs/dataset-locations.',
         flag_values=fv)
     flags.DEFINE_integer(
         'expiration', None,
@@ -2729,6 +2750,13 @@ class _Make(BigqueryCmd):
         None,
         'Whether to require partition filter for queries over this table. '
         'Only apply to partitioned table.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'clustering_fields',
+        None,
+        'Comma separated field names. Can only be specified with time based '
+        'partitioning. Data will be first partitioned and subsequently "'
+        'clustered on these fields.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -2888,6 +2916,7 @@ class _Make(BigqueryCmd):
           self.time_partitioning_field,
           None,
           self.require_partition_filter)
+      clustering = _ParseClustering(self.clustering_fields)
       client.CreateTable(
           reference,
           ignore_existing=True,
@@ -2900,6 +2929,7 @@ class _Make(BigqueryCmd):
           external_data_config=external_data_config,
           labels=labels,
           time_partitioning=time_partitioning,
+          clustering=clustering,
           destination_kms_key=(self.destination_kms_key))
       print "%s '%s' successfully created." % (object_name, reference,)
 
@@ -3510,8 +3540,10 @@ class _Cancel(BigqueryCmd):
       job_id: Job ID to cancel.
     """
     client = Client.Get()
-    job = client.CancelJob(job_id=job_id,
-                           location=FLAGS.location)
+    job_reference_dict = dict(client.GetJobReference(job_id, FLAGS.location))
+    job = client.CancelJob(
+        job_id=job_reference_dict['jobId'],
+        location=job_reference_dict['location'])
     _PrintObjectInfo(job, JobReference.Create(**job['jobReference']),
                      custom_format='show')
     status = job['status']

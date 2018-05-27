@@ -13,10 +13,10 @@ package = 'cloudscheduler'
 
 
 class AppEngineHttpTarget(_messages.Message):
-  """App Engine target. The job will be pushed to a job handler by means of an
-  HTTP request via an AppEngineHttpTarget.http_method such as HTTP POST, HTTP
-  GET, etc. The job is acknowledged by means of an HTTP response code in the
-  range [200 - 299]. Error 503 is considered an App Engine system error
+  r"""App Engine target. The job will be pushed to a job handler by means of
+  an HTTP request via an AppEngineHttpTarget.http_method such as HTTP POST,
+  HTTP GET, etc. The job is acknowledged by means of an HTTP response code in
+  the range [200 - 299]. Error 503 is considered an App Engine system error
   instead of an application error. Requests returning error 503 will be
   retried regardless of retry configuration and not counted against retry
   counts. Any other response code, or a failure to receive a response before
@@ -86,7 +86,7 @@ class AppEngineHttpTarget(_messages.Message):
   """
 
   class HttpMethodValueValuesEnum(_messages.Enum):
-    """The HTTP method to use for the request. The default is POST. PATCH and
+    r"""The HTTP method to use for the request. The default is POST. PATCH and
     OPTIONS are not permitted.
 
     Values:
@@ -110,7 +110,7 @@ class AppEngineHttpTarget(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class HeadersValue(_messages.Message):
-    """HTTP request headers.  This map contains the header field names and
+    r"""HTTP request headers.  This map contains the header field names and
     values. Headers can be set when the job is created.  Cloud Scheduler sets
     some headers to default values:  * `User-Agent`: By default, this header
     is   `"AppEngine-Google; (+http://code.google.com/appengine)"`.   This
@@ -140,7 +140,7 @@ class AppEngineHttpTarget(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a HeadersValue object.
+      r"""An additional property for a HeadersValue object.
 
       Fields:
         key: Name of the additional property.
@@ -160,7 +160,7 @@ class AppEngineHttpTarget(_messages.Message):
 
 
 class AppEngineRouting(_messages.Message):
-  """App Engine Routing.  For more information about services, versions, and
+  r"""App Engine Routing.  For more information about services, versions, and
   instances see [An Overview of App Engine](/appengine/docs/python/an-
   overview-of-app-engine), [Microservices Architecture on Google App
   Engine](/appengine/docs/python/microservices-on-app-engine), [App Engine
@@ -224,7 +224,7 @@ class AppEngineRouting(_messages.Message):
 
 
 class CloudschedulerProjectsLocationsGetRequest(_messages.Message):
-  """A CloudschedulerProjectsLocationsGetRequest object.
+  r"""A CloudschedulerProjectsLocationsGetRequest object.
 
   Fields:
     name: Resource name for the location.
@@ -234,7 +234,7 @@ class CloudschedulerProjectsLocationsGetRequest(_messages.Message):
 
 
 class CloudschedulerProjectsLocationsJobsCreateRequest(_messages.Message):
-  """A CloudschedulerProjectsLocationsJobsCreateRequest object.
+  r"""A CloudschedulerProjectsLocationsJobsCreateRequest object.
 
   Fields:
     job: A Job resource to be passed as the request body.
@@ -247,7 +247,7 @@ class CloudschedulerProjectsLocationsJobsCreateRequest(_messages.Message):
 
 
 class CloudschedulerProjectsLocationsJobsDeleteRequest(_messages.Message):
-  """A CloudschedulerProjectsLocationsJobsDeleteRequest object.
+  r"""A CloudschedulerProjectsLocationsJobsDeleteRequest object.
 
   Fields:
     name: Required.  The job name. For example:
@@ -258,55 +258,18 @@ class CloudschedulerProjectsLocationsJobsDeleteRequest(_messages.Message):
 
 
 class CloudschedulerProjectsLocationsJobsGetRequest(_messages.Message):
-  """A CloudschedulerProjectsLocationsJobsGetRequest object.
-
-  Enums:
-    ResponseViewValueValuesEnum: The response_view specifies which subset of
-      the Job will be returned.  By default ListJobsRequest.response_view is
-      Job.View.BASIC; not all information is retrieved by default because some
-      data, such as payloads, might be desirable to return only when needed
-      because of its large size or because of the sensitivity of data that it
-      contains.
+  r"""A CloudschedulerProjectsLocationsJobsGetRequest object.
 
   Fields:
     name: The job name. For example:
       `projects/PROJECT_ID/locations/LOCATION_ID/jobs/JOB_ID`.
-    responseView: The response_view specifies which subset of the Job will be
-      returned.  By default ListJobsRequest.response_view is Job.View.BASIC;
-      not all information is retrieved by default because some data, such as
-      payloads, might be desirable to return only when needed because of its
-      large size or because of the sensitivity of data that it contains.
   """
 
-  class ResponseViewValueValuesEnum(_messages.Enum):
-    """The response_view specifies which subset of the Job will be returned.
-    By default ListJobsRequest.response_view is Job.View.BASIC; not all
-    information is retrieved by default because some data, such as payloads,
-    might be desirable to return only when needed because of its large size or
-    because of the sensitivity of data that it contains.
-
-    Values:
-      VIEW_UNSPECIFIED: <no description>
-      BASIC: <no description>
-      FULL: <no description>
-    """
-    VIEW_UNSPECIFIED = 0
-    BASIC = 1
-    FULL = 2
-
   name = _messages.StringField(1, required=True)
-  responseView = _messages.EnumField('ResponseViewValueValuesEnum', 2)
 
 
 class CloudschedulerProjectsLocationsJobsListRequest(_messages.Message):
-  """A CloudschedulerProjectsLocationsJobsListRequest object.
-
-  Enums:
-    ResponseViewValueValuesEnum: The response_view specifies which subset of
-      the Job will be returned.  By default response_view is Job.View.BASIC;
-      not all information is retrieved by default because some data, such as
-      payloads, might be desirable to return only when needed because of its
-      large size or because of the sensitivity of data that it contains.
+  r"""A CloudschedulerProjectsLocationsJobsListRequest object.
 
   Fields:
     pageSize: Requested page size. Fewer jobs than requested might be
@@ -322,37 +285,15 @@ class CloudschedulerProjectsLocationsJobsListRequest(_messages.Message):
       through pages.
     parent: Required.  The location name. For example:
       `projects/PROJECT_ID/locations/LOCATION_ID`.
-    responseView: The response_view specifies which subset of the Job will be
-      returned.  By default response_view is Job.View.BASIC; not all
-      information is retrieved by default because some data, such as payloads,
-      might be desirable to return only when needed because of its large size
-      or because of the sensitivity of data that it contains.
   """
-
-  class ResponseViewValueValuesEnum(_messages.Enum):
-    """The response_view specifies which subset of the Job will be returned.
-    By default response_view is Job.View.BASIC; not all information is
-    retrieved by default because some data, such as payloads, might be
-    desirable to return only when needed because of its large size or because
-    of the sensitivity of data that it contains.
-
-    Values:
-      VIEW_UNSPECIFIED: <no description>
-      BASIC: <no description>
-      FULL: <no description>
-    """
-    VIEW_UNSPECIFIED = 0
-    BASIC = 1
-    FULL = 2
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
-  responseView = _messages.EnumField('ResponseViewValueValuesEnum', 4)
 
 
 class CloudschedulerProjectsLocationsJobsRunRequest(_messages.Message):
-  """A CloudschedulerProjectsLocationsJobsRunRequest object.
+  r"""A CloudschedulerProjectsLocationsJobsRunRequest object.
 
   Fields:
     name: Required.  The job name. For example:
@@ -365,7 +306,7 @@ class CloudschedulerProjectsLocationsJobsRunRequest(_messages.Message):
 
 
 class CloudschedulerProjectsLocationsListRequest(_messages.Message):
-  """A CloudschedulerProjectsLocationsListRequest object.
+  r"""A CloudschedulerProjectsLocationsListRequest object.
 
   Fields:
     filter: The standard list filter.
@@ -381,7 +322,7 @@ class CloudschedulerProjectsLocationsListRequest(_messages.Message):
 
 
 class Empty(_messages.Message):
-  """A generic empty message that you can re-use to avoid defining duplicated
+  r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
   or the response type of an API method. For instance:      service Foo {
   rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);     }  The
@@ -391,7 +332,7 @@ class Empty(_messages.Message):
 
 
 class HttpTarget(_messages.Message):
-  """Http target. The job will be pushed to the job handler by means of an
+  r"""Http target. The job will be pushed to the job handler by means of an
   HTTP request via an HttpTarget.http_method such as HTTP POST, HTTP GET, etc.
   The job is acknowledged by means of an HTTP response code in the range [200
   - 299]. A failure to receive a response constitutes a failed execution.
@@ -411,7 +352,8 @@ class HttpTarget(_messages.Message):
       derived from HttpTarget.url. - Content-Length: This will be computed by
       Cloud Scheduler. - User-Agent: This will be populated by Cloud
       Scheduler. - X-Google-*: Google internal use only. - X-AppEngine-*:
-      Google internal use only.
+      Google internal use only.  The total size of headers must be less than
+      80KB.
 
   Fields:
     body: HTTP request body. A request body is allowed only if the HTTP method
@@ -427,7 +369,8 @@ class HttpTarget(_messages.Message):
       derived from HttpTarget.url. - Content-Length: This will be computed by
       Cloud Scheduler. - User-Agent: This will be populated by Cloud
       Scheduler. - X-Google-*: Google internal use only. - X-AppEngine-*:
-      Google internal use only.
+      Google internal use only.  The total size of headers must be less than
+      80KB.
     httpMethod: Which HTTP method to use for the request. The default is POST.
     url: Required.  The full url path that the request will be sent to. This
       string must begin with either "http://" or "https://". Some examples of
@@ -438,7 +381,7 @@ class HttpTarget(_messages.Message):
   """
 
   class HttpMethodValueValuesEnum(_messages.Enum):
-    """Which HTTP method to use for the request. The default is POST.
+    r"""Which HTTP method to use for the request. The default is POST.
 
     Values:
       HTTP_METHOD_UNSPECIFIED: HTTP method unspecified
@@ -461,7 +404,7 @@ class HttpTarget(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class HeadersValue(_messages.Message):
-    """The user can specify HTTP request headers to send with the Job's HTTP
+    r"""The user can specify HTTP request headers to send with the Job's HTTP
     request. This map contains the header field names and values. Repeated
     headers are not supported, but a header value can contain commas. These
     headers represent a subset of the headers that will accompany the Job's
@@ -470,7 +413,8 @@ class HttpTarget(_messages.Message):
     This will be computed by Cloud Scheduler and derived from HttpTarget.url.
     - Content-Length: This will be computed by Cloud Scheduler. - User-Agent:
     This will be populated by Cloud Scheduler. - X-Google-*: Google internal
-    use only. - X-AppEngine-*: Google internal use only.
+    use only. - X-AppEngine-*: Google internal use only.  The total size of
+    headers must be less than 80KB.
 
     Messages:
       AdditionalProperty: An additional property for a HeadersValue object.
@@ -480,7 +424,7 @@ class HttpTarget(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a HeadersValue object.
+      r"""An additional property for a HeadersValue object.
 
       Fields:
         key: Name of the additional property.
@@ -499,13 +443,11 @@ class HttpTarget(_messages.Message):
 
 
 class Job(_messages.Message):
-  """Configuration for a job.
+  r"""Configuration for a job. The maximum allowed size for a job is 100KB.
 
   Enums:
     JobStateValueValuesEnum: Output only. State of the job. For example:
       enabled, paused, or disabled.
-    ViewValueValuesEnum: Output only. The view specifies which subset of the
-      Job has been returned.
 
   Fields:
     appEngineHttpTarget: App Engine Http target.
@@ -534,12 +476,10 @@ class Job(_messages.Message):
       execution.
     userUpdateTime: Output only. The time of the last user update to the job,
       or the creation time if there have been no updates.
-    view: Output only. The view specifies which subset of the Job has been
-      returned.
   """
 
   class JobStateValueValuesEnum(_messages.Enum):
-    """Output only. State of the job. For example: enabled, paused, or
+    r"""Output only. State of the job. For example: enabled, paused, or
     disabled.
 
     Values:
@@ -556,27 +496,6 @@ class Job(_messages.Message):
     PAUSED = 2
     DISABLED = 3
 
-  class ViewValueValuesEnum(_messages.Enum):
-    """Output only. The view specifies which subset of the Job has been
-    returned.
-
-    Values:
-      VIEW_UNSPECIFIED: Unspecified. Defaults to BASIC.
-      BASIC: The basic view omits fields which can be large or can contain
-        sensitive data.  This view does not include the payload and
-        PubsubTarget.pubsub_message.
-      FULL: All information is returned.  Payloads and
-        PubsubTarget.pubsub_message might be desirable to return only when
-        needed, because they can be large and because of the sensitivity of
-        the data that you choose to store in it.  Authorization for
-        Job.View.FULL requires `cloudscheduler.jobs.fullView` [Google
-        IAM](https://cloud.google.com/iam/) permission on the Job.name
-        resource.
-    """
-    VIEW_UNSPECIFIED = 0
-    BASIC = 1
-    FULL = 2
-
   appEngineHttpTarget = _messages.MessageField('AppEngineHttpTarget', 1)
   description = _messages.StringField(2)
   httpTarget = _messages.MessageField('HttpTarget', 3)
@@ -589,11 +508,10 @@ class Job(_messages.Message):
   schedule = _messages.MessageField('Schedule', 10)
   status = _messages.MessageField('Status', 11)
   userUpdateTime = _messages.StringField(12)
-  view = _messages.EnumField('ViewValueValuesEnum', 13)
 
 
 class ListJobsResponse(_messages.Message):
-  """Response message for listing jobs using CloudScheduler.ListJobs.
+  r"""Response message for listing jobs using CloudScheduler.ListJobs.
 
   Fields:
     jobs: The list of jobs.
@@ -609,7 +527,7 @@ class ListJobsResponse(_messages.Message):
 
 
 class ListLocationsResponse(_messages.Message):
-  """The response message for Locations.ListLocations.
+  r"""The response message for Locations.ListLocations.
 
   Fields:
     locations: A list of locations that matches the specified filter in the
@@ -622,7 +540,7 @@ class ListLocationsResponse(_messages.Message):
 
 
 class Location(_messages.Message):
-  """A resource that represents Google Cloud Platform location.
+  r"""A resource that represents Google Cloud Platform location.
 
   Messages:
     LabelsValue: Cross-service attributes for the location. For example
@@ -645,7 +563,7 @@ class Location(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    """Cross-service attributes for the location. For example
+    r"""Cross-service attributes for the location. For example
     {"cloud.googleapis.com/region": "us-east1"}
 
     Messages:
@@ -656,7 +574,7 @@ class Location(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a LabelsValue object.
+      r"""An additional property for a LabelsValue object.
 
       Fields:
         key: Name of the additional property.
@@ -670,7 +588,7 @@ class Location(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class MetadataValue(_messages.Message):
-    """Service-specific metadata. For example the available capacity at the
+    r"""Service-specific metadata. For example the available capacity at the
     given location.
 
     Messages:
@@ -682,7 +600,7 @@ class Location(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a MetadataValue object.
+      r"""An additional property for a MetadataValue object.
 
       Fields:
         key: Name of the additional property.
@@ -702,8 +620,9 @@ class Location(_messages.Message):
 
 
 class PubsubMessage(_messages.Message):
-  """A message data and its attributes. The message payload must not be empty;
-  it must contain either a non-empty data field, or at least one attribute.
+  r"""A message data and its attributes. The message payload must not be
+  empty; it must contain either a non-empty data field, or at least one
+  attribute.
 
   Messages:
     AttributesValue: Optional attributes for this message.
@@ -723,7 +642,7 @@ class PubsubMessage(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AttributesValue(_messages.Message):
-    """Optional attributes for this message.
+    r"""Optional attributes for this message.
 
     Messages:
       AdditionalProperty: An additional property for a AttributesValue object.
@@ -733,7 +652,7 @@ class PubsubMessage(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a AttributesValue object.
+      r"""An additional property for a AttributesValue object.
 
       Fields:
         key: Name of the additional property.
@@ -752,7 +671,7 @@ class PubsubMessage(_messages.Message):
 
 
 class PubsubTarget(_messages.Message):
-  """Pub/Sub target. Jobs will be delivered by publishing a message to the
+  r"""Pub/Sub target. Jobs will be delivered by publishing a message to the
   given Pub/Sub topic.
 
   Messages:
@@ -772,7 +691,7 @@ class PubsubTarget(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class PubsubMessageValue(_messages.Message):
-    """Required.  This pubsub message is sent when the job is attempted.
+    r"""Required.  This pubsub message is sent when the job is attempted.
     `pubsub_message` should be a google.pubsub.v1.PubsubMessage.
 
     Messages:
@@ -785,7 +704,7 @@ class PubsubTarget(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a PubsubMessageValue object.
+      r"""An additional property for a PubsubMessageValue object.
 
       Fields:
         key: Name of the additional property.
@@ -802,70 +721,79 @@ class PubsubTarget(_messages.Message):
 
 
 class RetryConfig(_messages.Message):
-  """Settings that determine the retry behavior.  By default, if a job does
+  r"""Settings that determine the retry behavior.  By default, if a job does
   not complete successfully (meaning that an acknowledgement is not received
   from the handler, then it will be retried with exponential backoff according
   to the settings in RetryConfig.
 
   Fields:
-    jobAgeLimit: The time limit for retrying a failed job, measured from when
-      the job was first run. If specified with RetryConfig.retry_count, the
-      job will be retried until both limits are reached.  The default value
-      for job_age_limit is zero, which means job age is unlimited.
-    maxBackoffSeconds: The maximum amount of time to wait before retrying a
-      task after it fails.  The default value of this field is 1 hour.
-    maxDoublings: The maximum number of times that the interval between failed
-      job retries will be doubled before the increase becomes constant. The
-      constant is: 2**(max_doublings - 1) * RetryConfig.min_backoff_seconds.
-      The default value of this field is 16.
-    minBackoffSeconds: The minimum amount of time to wait before retrying a
-      task after it fails.  The default value of this field is 0.1 seconds.
+    maxBackoffDuration: The maximum amount of time to wait before retrying a
+      job after it fails.  The default value of this field is 1 hour.
+    maxDoublings: The time between retries will double `max_doublings` times.
+      A job's retry interval starts at min_backoff_duration, then doubles
+      `max_doublings` times, then increases linearly, and finally retries
+      retries at intervals of max_backoff_duration up to retry_count times.
+      For example, if min_backoff_duration is 10s, max_backoff_duration is
+      300s, and `max_doublings` is 3, then the a job will first be retried in
+      10s. The retry interval will double three times, and then increase
+      linearly by 2^3 * 10s.  Finally, the job will retry at intervals of
+      max_backoff_duration until the job has been attempted retry_count times.
+      Thus, the requests will retry at 10s, 20s, 40s, 80s, 160s, 240s, 300s,
+      300s, ....  The default value of this field is 5.
+    maxRetryDuration: The time limit for retrying a failed job, measured from
+      time when an execution was first attempted. If specified with
+      RetryConfig.retry_count, the job will be retried until both limits are
+      reached.  The default value for max_retry_duration is zero, which means
+      retry duration is unlimited.
+    minBackoffDuration: The minimum amount of time to wait before retrying a
+      job after it fails.  The default value of this field is 5 seconds.
     retryCount: It determines the  number attempts that the system will make
-      to deliver a job using the exponential backoff procedure described
-      above.  The default value of retry_count is zero.  If retry_count is
-      zero, a job attempt will *not* be retried if it fails. Instead the Cloud
-      Scheduler system will wait for the next scheduled execution time.  If
-      retry_count is set to a non-zero number then Cloud Scheduler will retry
-      failed attempts, using exponential backoff, retry_count times, or until
-      the next scheduled execution time, whichever comes first.  Value greater
+      to run a job using the exponential backoff procedure described above.
+      The default value of retry_count is zero.  If retry_count is zero, a job
+      attempt will *not* be retried if it fails. Instead the Cloud Scheduler
+      system will wait for the next scheduled execution time.  If retry_count
+      is set to a non-zero number then Cloud Scheduler will retry failed
+      attempts, using exponential backoff, retry_count times, or until the
+      next scheduled execution time, whichever comes first.  Value greater
       than 5 and negative values are not allowed.
   """
 
-  jobAgeLimit = _messages.StringField(1)
-  maxBackoffSeconds = _messages.StringField(2)
-  maxDoublings = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  minBackoffSeconds = _messages.StringField(4)
+  maxBackoffDuration = _messages.StringField(1)
+  maxDoublings = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  maxRetryDuration = _messages.StringField(3)
+  minBackoffDuration = _messages.StringField(4)
   retryCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
 
 
 class RunJobRequest(_messages.Message):
-  """Request message for forcing a job to run now using CloudScheduler.RunJob.
+  r"""Request message for forcing a job to run now using
+  CloudScheduler.RunJob.
   """
 
 
 
 class Schedule(_messages.Message):
-  """Scheduler schedule in an English-like format.
+  r"""Scheduler schedule in an English-like format.
 
   Fields:
     schedule: Required.  Scheduler schedules are specified using an English-
       like format. See https://cloud.google.com/appengine/docs/standard/python
       /config/cronref#schedule_format
-    timezone: Specifies the time zone to be used in interpreting
+    timeZone: Specifies the time zone to be used in interpreting
       Schedule.schedule. The value of this field must be a time zone name from
       the tz database: http://en.wikipedia.org/wiki/Tz_database.  Note that
-      some timezones include a includes a provision for daylight savings time.
-      The rules for daylight saving time are determined by the chosen tz. For
-      UTC use the string "utc". If a timezone is not specified, the default
-      will be in UTC (also known as GMT).
+      some time zones include a provision for daylight savings time. The rules
+      for daylight saving time are determined by the chosen tz. For UTC use
+      the string "utc". If a time zone is not specified, the default will be
+      in UTC (also known as GMT).
   """
 
   schedule = _messages.StringField(1)
-  timezone = _messages.StringField(2)
+  timeZone = _messages.StringField(2)
 
 
 class StandardQueryParameters(_messages.Message):
-  """Query parameters accepted by all methods.
+  r"""Query parameters accepted by all methods.
 
   Enums:
     FXgafvValueValuesEnum: V1 error format.
@@ -894,7 +822,7 @@ class StandardQueryParameters(_messages.Message):
   """
 
   class AltValueValuesEnum(_messages.Enum):
-    """Data format for response.
+    r"""Data format for response.
 
     Values:
       json: Responses with Content-Type of application/json
@@ -906,7 +834,7 @@ class StandardQueryParameters(_messages.Message):
     proto = 2
 
   class FXgafvValueValuesEnum(_messages.Enum):
-    """V1 error format.
+    r"""V1 error format.
 
     Values:
       _1: v1 error format
@@ -932,7 +860,7 @@ class StandardQueryParameters(_messages.Message):
 
 
 class Status(_messages.Message):
-  """The `Status` type defines a logical error model that is suitable for
+  r"""The `Status` type defines a logical error model that is suitable for
   different programming environments, including REST APIs and RPC APIs. It is
   used by [gRPC](https://github.com/grpc). The error model is designed to be:
   - Simple to use and understand for most users - Flexible enough to meet
@@ -980,7 +908,7 @@ class Status(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class DetailsValueListEntry(_messages.Message):
-    """A DetailsValueListEntry object.
+    r"""A DetailsValueListEntry object.
 
     Messages:
       AdditionalProperty: An additional property for a DetailsValueListEntry
@@ -992,7 +920,7 @@ class Status(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a DetailsValueListEntry object.
+      r"""An additional property for a DetailsValueListEntry object.
 
       Fields:
         key: Name of the additional property.

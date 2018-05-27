@@ -38,6 +38,7 @@ class BigtableadminV2(base_api.BaseApiClient):
     self.operations_projects_operations = self.OperationsProjectsOperationsService(self)
     self.operations_projects = self.OperationsProjectsService(self)
     self.operations = self.OperationsService(self)
+    self.projects_instances_appProfiles = self.ProjectsInstancesAppProfilesService(self)
     self.projects_instances_clusters = self.ProjectsInstancesClustersService(self)
     self.projects_instances_tables = self.ProjectsInstancesTablesService(self)
     self.projects_instances = self.ProjectsInstancesService(self)
@@ -54,7 +55,7 @@ class BigtableadminV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      """Lists operations that match the specified filter in the request. If the.
+      r"""Lists operations that match the specified filter in the request. If the.
 server doesn't support this method, it returns `UNIMPLEMENTED`.
 
 NOTE: the `name` binding allows API services to override the binding
@@ -110,7 +111,7 @@ is the parent resource, without the operations collection id.
           }
 
     def Cancel(self, request, global_params=None):
-      """Starts asynchronous cancellation on a long-running operation.  The server.
+      r"""Starts asynchronous cancellation on a long-running operation.  The server.
 makes a best effort to cancel the operation, but success is not
 guaranteed.  If the server doesn't support this method, it returns
 `google.rpc.Code.UNIMPLEMENTED`.  Clients can use
@@ -146,7 +147,7 @@ corresponding to `Code.CANCELLED`.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes a long-running operation. This method indicates that the client is.
+      r"""Deletes a long-running operation. This method indicates that the client is.
 no longer interested in the operation result. It does not cancel the
 operation. If the server doesn't support this method, it returns
 `google.rpc.Code.UNIMPLEMENTED`.
@@ -176,7 +177,7 @@ operation. If the server doesn't support this method, it returns
     )
 
     def Get(self, request, global_params=None):
-      """Gets the latest state of a long-running operation.  Clients can use this.
+      r"""Gets the latest state of a long-running operation.  Clients can use this.
 method to poll the operation result at intervals as recommended by the API
 service.
 
@@ -204,6 +205,151 @@ service.
         supports_download=False,
     )
 
+  class ProjectsInstancesAppProfilesService(base_api.BaseApiService):
+    """Service class for the projects_instances_appProfiles resource."""
+
+    _NAME = u'projects_instances_appProfiles'
+
+    def __init__(self, client):
+      super(BigtableadminV2.ProjectsInstancesAppProfilesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates an app profile within an instance.
+
+      Args:
+        request: (BigtableadminProjectsInstancesAppProfilesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AppProfile) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path=u'v2/projects/{projectsId}/instances/{instancesId}/appProfiles',
+        http_method=u'POST',
+        method_id=u'bigtableadmin.projects.instances.appProfiles.create',
+        ordered_params=[u'parent'],
+        path_params=[u'parent'],
+        query_params=[u'appProfileId', u'ignoreWarnings'],
+        relative_path=u'v2/{+parent}/appProfiles',
+        request_field=u'appProfile',
+        request_type_name=u'BigtableadminProjectsInstancesAppProfilesCreateRequest',
+        response_type_name=u'AppProfile',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an app profile from an instance.
+
+      Args:
+        request: (BigtableadminProjectsInstancesAppProfilesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path=u'v2/projects/{projectsId}/instances/{instancesId}/appProfiles/{appProfilesId}',
+        http_method=u'DELETE',
+        method_id=u'bigtableadmin.projects.instances.appProfiles.delete',
+        ordered_params=[u'name'],
+        path_params=[u'name'],
+        query_params=[u'ignoreWarnings'],
+        relative_path=u'v2/{+name}',
+        request_field='',
+        request_type_name=u'BigtableadminProjectsInstancesAppProfilesDeleteRequest',
+        response_type_name=u'Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets information about an app profile.
+
+      Args:
+        request: (BigtableadminProjectsInstancesAppProfilesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AppProfile) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path=u'v2/projects/{projectsId}/instances/{instancesId}/appProfiles/{appProfilesId}',
+        http_method=u'GET',
+        method_id=u'bigtableadmin.projects.instances.appProfiles.get',
+        ordered_params=[u'name'],
+        path_params=[u'name'],
+        query_params=[],
+        relative_path=u'v2/{+name}',
+        request_field='',
+        request_type_name=u'BigtableadminProjectsInstancesAppProfilesGetRequest',
+        response_type_name=u'AppProfile',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists information about app profiles in an instance.
+
+      Args:
+        request: (BigtableadminProjectsInstancesAppProfilesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAppProfilesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path=u'v2/projects/{projectsId}/instances/{instancesId}/appProfiles',
+        http_method=u'GET',
+        method_id=u'bigtableadmin.projects.instances.appProfiles.list',
+        ordered_params=[u'parent'],
+        path_params=[u'parent'],
+        query_params=[u'pageToken'],
+        relative_path=u'v2/{+parent}/appProfiles',
+        request_field='',
+        request_type_name=u'BigtableadminProjectsInstancesAppProfilesListRequest',
+        response_type_name=u'ListAppProfilesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an app profile within an instance.
+
+      Args:
+        request: (BigtableadminProjectsInstancesAppProfilesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path=u'v2/projects/{projectsId}/instances/{instancesId}/appProfiles/{appProfilesId}',
+        http_method=u'PATCH',
+        method_id=u'bigtableadmin.projects.instances.appProfiles.patch',
+        ordered_params=[u'name'],
+        path_params=[u'name'],
+        query_params=[u'ignoreWarnings', u'updateMask'],
+        relative_path=u'v2/{+name}',
+        request_field=u'appProfile',
+        request_type_name=u'BigtableadminProjectsInstancesAppProfilesPatchRequest',
+        response_type_name=u'Operation',
+        supports_download=False,
+    )
+
   class ProjectsInstancesClustersService(base_api.BaseApiService):
     """Service class for the projects_instances_clusters resource."""
 
@@ -215,7 +361,7 @@ service.
           }
 
     def Create(self, request, global_params=None):
-      """Creates a cluster within an instance.
+      r"""Creates a cluster within an instance.
 
       Args:
         request: (BigtableadminProjectsInstancesClustersCreateRequest) input message
@@ -242,7 +388,7 @@ service.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes a cluster from an instance.
+      r"""Deletes a cluster from an instance.
 
       Args:
         request: (BigtableadminProjectsInstancesClustersDeleteRequest) input message
@@ -269,7 +415,7 @@ service.
     )
 
     def Get(self, request, global_params=None):
-      """Gets information about a cluster.
+      r"""Gets information about a cluster.
 
       Args:
         request: (BigtableadminProjectsInstancesClustersGetRequest) input message
@@ -296,7 +442,7 @@ service.
     )
 
     def List(self, request, global_params=None):
-      """Lists information about clusters in an instance.
+      r"""Lists information about clusters in an instance.
 
       Args:
         request: (BigtableadminProjectsInstancesClustersListRequest) input message
@@ -323,7 +469,7 @@ service.
     )
 
     def Update(self, request, global_params=None):
-      """Updates a cluster within an instance.
+      r"""Updates a cluster within an instance.
 
       Args:
         request: (Cluster) input message
@@ -359,8 +505,37 @@ service.
       self._upload_configs = {
           }
 
+    def CheckConsistency(self, request, global_params=None):
+      r"""Checks replication consistency based on a consistency token, that is, if.
+replication has caught up based on the conditions specified in the token
+and the check request.
+
+      Args:
+        request: (BigtableadminProjectsInstancesTablesCheckConsistencyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CheckConsistencyResponse) The response message.
+      """
+      config = self.GetMethodConfig('CheckConsistency')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CheckConsistency.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path=u'v2/projects/{projectsId}/instances/{instancesId}/tables/{tablesId}:checkConsistency',
+        http_method=u'POST',
+        method_id=u'bigtableadmin.projects.instances.tables.checkConsistency',
+        ordered_params=[u'name'],
+        path_params=[u'name'],
+        query_params=[],
+        relative_path=u'v2/{+name}:checkConsistency',
+        request_field=u'checkConsistencyRequest',
+        request_type_name=u'BigtableadminProjectsInstancesTablesCheckConsistencyRequest',
+        response_type_name=u'CheckConsistencyResponse',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
-      """Creates a new table in the specified instance.
+      r"""Creates a new table in the specified instance.
 The table can be created with a full set of initial column families,
 specified in the request.
 
@@ -389,7 +564,7 @@ specified in the request.
     )
 
     def Delete(self, request, global_params=None):
-      """Permanently deletes a specified table and all of its data.
+      r"""Permanently deletes a specified table and all of its data.
 
       Args:
         request: (BigtableadminProjectsInstancesTablesDeleteRequest) input message
@@ -416,7 +591,7 @@ specified in the request.
     )
 
     def DropRowRange(self, request, global_params=None):
-      """Permanently drop/delete a row range from a specified table. The request can.
+      r"""Permanently drop/delete a row range from a specified table. The request can.
 specify whether to delete all rows in a table, or only those that match a
 particular prefix.
 
@@ -444,8 +619,38 @@ particular prefix.
         supports_download=False,
     )
 
+    def GenerateConsistencyToken(self, request, global_params=None):
+      r"""Generates a consistency token for a Table, which can be used in.
+CheckConsistency to check whether mutations to the table that finished
+before this call started have been replicated. The tokens will be available
+for 90 days.
+
+      Args:
+        request: (BigtableadminProjectsInstancesTablesGenerateConsistencyTokenRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GenerateConsistencyTokenResponse) The response message.
+      """
+      config = self.GetMethodConfig('GenerateConsistencyToken')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateConsistencyToken.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path=u'v2/projects/{projectsId}/instances/{instancesId}/tables/{tablesId}:generateConsistencyToken',
+        http_method=u'POST',
+        method_id=u'bigtableadmin.projects.instances.tables.generateConsistencyToken',
+        ordered_params=[u'name'],
+        path_params=[u'name'],
+        query_params=[],
+        relative_path=u'v2/{+name}:generateConsistencyToken',
+        request_field=u'generateConsistencyTokenRequest',
+        request_type_name=u'BigtableadminProjectsInstancesTablesGenerateConsistencyTokenRequest',
+        response_type_name=u'GenerateConsistencyTokenResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
-      """Gets metadata information about the specified table.
+      r"""Gets metadata information about the specified table.
 
       Args:
         request: (BigtableadminProjectsInstancesTablesGetRequest) input message
@@ -472,7 +677,7 @@ particular prefix.
     )
 
     def List(self, request, global_params=None):
-      """Lists all tables served from a specified instance.
+      r"""Lists all tables served from a specified instance.
 
       Args:
         request: (BigtableadminProjectsInstancesTablesListRequest) input message
@@ -499,7 +704,7 @@ particular prefix.
     )
 
     def ModifyColumnFamilies(self, request, global_params=None):
-      """Performs a series of column family modifications on the specified table.
+      r"""Performs a series of column family modifications on the specified table.
 Either all or none of the modifications will occur before this method
 returns, but data requests received prior to that point may see a table
 where only some modifications have taken effect.
@@ -539,7 +744,7 @@ where only some modifications have taken effect.
           }
 
     def Create(self, request, global_params=None):
-      """Create an instance within a project.
+      r"""Create an instance within a project.
 
       Args:
         request: (CreateInstanceRequest) input message
@@ -566,7 +771,7 @@ where only some modifications have taken effect.
     )
 
     def Delete(self, request, global_params=None):
-      """Delete an instance from a project.
+      r"""Delete an instance from a project.
 
       Args:
         request: (BigtableadminProjectsInstancesDeleteRequest) input message
@@ -593,7 +798,7 @@ where only some modifications have taken effect.
     )
 
     def Get(self, request, global_params=None):
-      """Gets information about an instance.
+      r"""Gets information about an instance.
 
       Args:
         request: (BigtableadminProjectsInstancesGetRequest) input message
@@ -620,7 +825,7 @@ where only some modifications have taken effect.
     )
 
     def GetIamPolicy(self, request, global_params=None):
-      """This is a private alpha release of Cloud Bigtable instance level.
+      r"""This is a private alpha release of Cloud Bigtable instance level.
 permissions. This feature is not currently available to most Cloud Bigtable
 customers. This feature might be changed in backward-incompatible ways and
 is not recommended for production use. It is not subject to any SLA or
@@ -654,7 +859,7 @@ policy if an instance exists but does not have a policy set.
     )
 
     def List(self, request, global_params=None):
-      """Lists information about instances in a project.
+      r"""Lists information about instances in a project.
 
       Args:
         request: (BigtableadminProjectsInstancesListRequest) input message
@@ -681,7 +886,7 @@ policy if an instance exists but does not have a policy set.
     )
 
     def PartialUpdateInstance(self, request, global_params=None):
-      """Partially updates an instance within a project.
+      r"""Partially updates an instance within a project.
 
       Args:
         request: (BigtableadminProjectsInstancesPartialUpdateInstanceRequest) input message
@@ -708,7 +913,7 @@ policy if an instance exists but does not have a policy set.
     )
 
     def SetIamPolicy(self, request, global_params=None):
-      """This is a private alpha release of Cloud Bigtable instance level.
+      r"""This is a private alpha release of Cloud Bigtable instance level.
 permissions. This feature is not currently available to most Cloud Bigtable
 customers. This feature might be changed in backward-incompatible ways and
 is not recommended for production use. It is not subject to any SLA or
@@ -742,7 +947,7 @@ existing policy.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """This is a private alpha release of Cloud Bigtable instance level.
+      r"""This is a private alpha release of Cloud Bigtable instance level.
 permissions. This feature is not currently available to most Cloud Bigtable
 customers. This feature might be changed in backward-incompatible ways and
 is not recommended for production use. It is not subject to any SLA or
@@ -775,7 +980,7 @@ Returns permissions that the caller has on the specified instance resource.
     )
 
     def Update(self, request, global_params=None):
-      """Updates an instance within a project.
+      r"""Updates an instance within a project.
 
       Args:
         request: (Instance) input message

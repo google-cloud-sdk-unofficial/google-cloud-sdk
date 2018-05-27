@@ -13,6 +13,8 @@
 # limitations under the License.
 """The gcloud datastore export command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.datastore import admin_api
 from googlecloudsdk.api_lib.datastore import operations
 from googlecloudsdk.calliope import base

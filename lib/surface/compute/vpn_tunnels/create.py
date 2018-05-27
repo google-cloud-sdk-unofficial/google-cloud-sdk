@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating VPN tunnels."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 import re
 
@@ -34,7 +36,7 @@ class DeprecatedArgumentException(exceptions.ToolException):
 
   def __init__(self, arg, msg):
     super(DeprecatedArgumentException, self).__init__(
-        u'{0} is deprecated. {1}'.format(arg, msg))
+        '{0} is deprecated. {1}'.format(arg, msg))
 
 
 def ValidateSimpleSharedSecret(possible_secret):

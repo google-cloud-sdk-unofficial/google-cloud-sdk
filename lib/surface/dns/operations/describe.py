@@ -13,13 +13,54 @@
 # limitations under the License.
 """gcloud dns operations describe command."""
 
+from googlecloudsdk.api_lib.dns import operations
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
 
 
+def _CommonArgs(parser):
+  flags.GetZoneArg('Name of zone to get operations from.').AddToParser(parser)
+  parser.add_argument('operation_id', metavar='OPERATION_ID',
+                      help='The id of the operation to display.')
+
+
+def _Describe(operations_client, args):
+  operation_ref = util.GetRegistry(operations_client.version).Parse(
+      args.operation_id,
+      params={
+          'project': properties.VALUES.core.project.GetOrFail,
+          'managedZone': args.zone
+      },
+      collection='dns.managedZoneOperations')
+
+  return operations_client.Get(operation_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  """Describe an operation.
+
+  This command displays the details of a single managed-zone operation.
+
+  ## EXAMPLES
+
+  To describe a managed-zone operation:
+
+    $ {command} 1234 --zone my_zone
+  """
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+
+  def Run(self, args):
+    operations_client = operations.Client.FromApiVersion('v1beta2')
+    return _Describe(operations_client, args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe an operation.
 
@@ -34,22 +75,8 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetZoneArg('Name of zone to get operations from.').AddToParser(parser)
-    parser.add_argument('operation_id', metavar='OPERATION_ID',
-                        help='The id of the operation to display.')
+    _CommonArgs(parser)
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1beta2')
-
-    zone_ref = util.GetRegistry('v1beta2').Parse(
-        args.zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='dns.managedZones')
-
-    return dns_client.managedZoneOperations.Get(
-        dns_client.MESSAGES_MODULE.DnsManagedZoneOperationsGetRequest(
-            operation=args.operation_id,
-            managedZone=zone_ref.Name(),
-            project=zone_ref.project))
+    operations_client = operations.Client.FromApiVersion('v1')
+    return _Describe(operations_client, args)

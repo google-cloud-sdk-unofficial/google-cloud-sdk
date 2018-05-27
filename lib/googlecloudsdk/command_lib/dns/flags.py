@@ -85,23 +85,41 @@ def GetZoneResourceSpec():
       disable_auto_completers=False)
 
 
-def GetZoneResourceArg(help_text=(
-    'Name of the managed-zone whose record-sets you want to manage.')):
+def GetZoneResourceArg(help_text, positional=True, plural=False):
+  arg_name = 'zones' if plural else 'zone'
   return concept_parsers.ConceptParser.ForResource(
-      'zone',
+      arg_name if positional else '--{}'.format(arg_name),
       GetZoneResourceSpec(),
       help_text,
+      plural=plural,
       required=True)
 
 
 def GetZoneArg(help_text=(
-    'Name of the managed-zone whose record-sets you want to manage.')):
-  return base.Argument(
-      '--zone',
-      '-z',
-      completer=ManagedZoneCompleter,
-      help=help_text,
-      required=True)
+    'Name of the managed-zone whose record-sets you want to manage.'),
+               hide_short_zone_flag=False):
+  if hide_short_zone_flag:
+    zone_group = base.ArgumentGroup(required=True)
+    zone_group.AddArgument(
+        base.Argument(
+            '--zone',
+            completer=ManagedZoneCompleter,
+            help=help_text))
+    zone_group.AddArgument(
+        base.Argument(
+            '-z',
+            dest='zone',
+            completer=ManagedZoneCompleter,
+            help=help_text,
+            hidden=True))
+    return zone_group
+  else:
+    return base.Argument(
+        '--zone',
+        '-z',
+        completer=ManagedZoneCompleter,
+        help=help_text,
+        required=True)
 
 
 def GetManagedZonesDnsNameArg():

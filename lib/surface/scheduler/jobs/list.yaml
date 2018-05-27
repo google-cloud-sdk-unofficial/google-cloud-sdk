@@ -22,7 +22,7 @@
               format(
                   "{0} ({1})",
                   schedule.schedule,
-                  schedule.timezone
+                  schedule.timeZone
               ):label="SCHEDULE (TZ)",
               format(
                   "{0}{1}",

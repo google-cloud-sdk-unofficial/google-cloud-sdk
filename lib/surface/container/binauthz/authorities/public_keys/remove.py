@@ -45,5 +45,5 @@ class Remove(base.Command):
 
     authority_ref = args.CONCEPTS.authority.Parse()
 
-    return authorities_client.RemoveKey(
+    authorities_client.RemoveKey(
         authority_ref, fingerprint_to_remove=args.public_key_fingerprint)

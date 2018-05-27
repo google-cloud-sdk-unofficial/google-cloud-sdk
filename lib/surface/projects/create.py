@@ -133,7 +133,7 @@ class Create(base.CreateCommand):
              'already in use by another project. Please try an alternative '
              'ID.')
       core_exceptions.reraise(exceptions.HttpException(msg))
-    log.CreatedResource(project_ref, async=True)
+    log.CreatedResource(project_ref, is_async=True)
     create_op = operations.WaitForOperation(create_op)
 
     # Enable cloudapis.googleapis.com

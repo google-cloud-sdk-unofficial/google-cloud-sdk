@@ -13,6 +13,8 @@
 # limitations under the License.
 """Commands for reading and manipulating target HTTPS proxies."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 

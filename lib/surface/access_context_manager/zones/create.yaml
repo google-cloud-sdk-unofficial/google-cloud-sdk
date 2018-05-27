@@ -30,7 +30,7 @@
         required: true
         help_text: |
             Comma-separated list of resources (currently only projects, in the
-            form `project/<projectnumber>`) in this zone.
+            form `projects/<projectnumber>`) in this zone.
       - group:
           mutex: True
           params:

@@ -14,6 +14,8 @@
 
 """The main command group for bigtable."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
@@ -21,4 +23,3 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Tables(base.Group):
   """Query Cloud Bigtable tables."""
-

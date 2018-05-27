@@ -58,14 +58,16 @@ class SetAutoscaling(base.Command):
     else:
       return client.apitools_client.regionAutoscalers
 
-  def CreateAutoscalerResource(self, client, resources, igm_ref, args):
+  def CreateAutoscalerResource(self, client, resources, igm_ref, args,
+                               mode_enabled=False):
     autoscaler = managed_instance_groups_utils.AutoscalerForMigByRef(
         client, resources, igm_ref)
     autoscaler_name = getattr(autoscaler, 'name', None)
     new_one = autoscaler_name is None
     autoscaler_name = autoscaler_name or args.name
     autoscaler_resource = managed_instance_groups_utils.BuildAutoscaler(
-        args, client.messages, igm_ref, autoscaler_name, autoscaler)
+        args, client.messages, igm_ref, autoscaler_name, autoscaler,
+        mode_enabled=mode_enabled)
     return autoscaler_resource, new_one
 
   def ScopeRequest(self, request, igm_ref):
@@ -238,7 +240,8 @@ class SetAutoscalingAlpha(SetAutoscaling):
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
         parser=parser, queue_scaling_enabled=True,
-        autoscaling_file_enabled=True, stackdriver_metrics_flags=True)
+        autoscaling_file_enabled=True, stackdriver_metrics_flags=True,
+        mode_enabled=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -258,7 +261,7 @@ class SetAutoscalingAlpha(SetAutoscaling):
         igm_ref, client)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client, holder.resources, igm_ref, args)
+        client, holder.resources, igm_ref, args, mode_enabled=True)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
         args, autoscaler_resource)

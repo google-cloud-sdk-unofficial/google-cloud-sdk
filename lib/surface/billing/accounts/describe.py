@@ -46,5 +46,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     client = billing_client.AccountsClient()
-    account_ref = utils.ParseAccount(args.id)
+    account_ref = utils.ParseAccount(args.account_id)
     return client.Get(account_ref)
