@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import walker_util
 from googlecloudsdk.command_lib.meta import help_util
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.util import pkg_resources
 
 
@@ -193,6 +194,8 @@ class GenerateHelpDocs(base.Command):
           self._cli_power_users_only, args.manpage_dir).Walk(args.hidden,
                                                              args.restrict)
     if args.update_help_text_dir:
+      # The help text golden files are always ascii.
+      console_attr.ResetConsoleAttr(encoding='ascii')
       changes = help_util.HelpTextUpdater(
           self._cli_power_users_only, args.update_help_text_dir,
           test=args.test).Update(args.restrict)

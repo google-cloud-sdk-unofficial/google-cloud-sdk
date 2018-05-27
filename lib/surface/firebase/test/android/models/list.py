@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """The 'gcloud firebase test android models list' command."""
-import re
 
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
@@ -59,7 +58,7 @@ class List(base.ListCommand):
     filtered_models = [
         model for model in catalog.models if model.supportedVersionIds
     ]
-    self._epilog = self._warn_on_deprecated_tag(filtered_models)
+    self._epilog = util.GetDeprecatedTagWarning(filtered_models)
 
     return filtered_models
 
@@ -68,13 +67,3 @@ class List(base.ListCommand):
 
     if self._epilog:
       log.warning(self._epilog)
-
-  @staticmethod
-  def _warn_on_deprecated_tag(models):
-    for model in models:
-      for tag in model.tags:
-        if re.match('deprecated', tag):
-          return (
-              'Some devices are deprecated. Learn more at https://firebase.'
-              'google.com/docs/test-lab/available-testing-devices#deprecated')
-    return None

@@ -14,7 +14,9 @@
 
 """Command to remove IAM policy binding for a resource."""
 
-import httplib
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.util import http_retry
@@ -23,6 +25,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.projects import flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.resource_manager import completers
+import six.moves.http_client
 
 
 class RemoveIamPolicyBinding(base.Command):
@@ -41,7 +44,7 @@ class RemoveIamPolicyBinding(base.Command):
     iam_util.AddArgsForRemoveIamPolicyBinding(
         parser, completer=completers.ProjectsIamRolesCompleter)
 
-  @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
+  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
     return projects_api.RemoveIamPolicyBinding(project_ref,

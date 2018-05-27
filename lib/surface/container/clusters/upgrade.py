@@ -184,6 +184,10 @@ Upgrade.detailed_help = {
       a cluster. Note that the Kubernetes version of the cluster's *master* is
       also periodically upgraded automatically as new releases are available.
 
+      If desired cluster version is omitted, *node* upgrades default to the
+      current *master* version and *master* upgrades default to the latest
+      supported version.
+
       *By running this command, all of the cluster's nodes will be deleted and*
       *recreated one at a time.* While persistent Kubernetes resources, such as
       pods backed by replication controllers, will be rescheduled onto new nodes,

@@ -14,6 +14,8 @@
 
 """Command for updating managed instance config."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -25,6 +27,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_getter
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_disk_getter
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -117,7 +120,7 @@ class Update(base.UpdateCommand):
         messages.ManagedInstanceOverride.MetadataValueListEntry(
             key=metadata_key, value=metadata_value)
         for metadata_key, metadata_value in sorted(
-            new_stateful_metadata.iteritems())
+            six.iteritems(new_stateful_metadata))
     ]
 
     return per_instance_config

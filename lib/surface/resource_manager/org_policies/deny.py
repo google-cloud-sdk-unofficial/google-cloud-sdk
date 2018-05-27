@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command to add denied values to an Organization Policy list policy."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.resource_manager import exceptions
 from googlecloudsdk.api_lib.resource_manager import org_policies
 from googlecloudsdk.calliope import base
@@ -66,7 +68,7 @@ class Deny(base.Command):
 
     if policy.listPolicy and policy.listPolicy.deniedValues:
       for value in args.denied_value:
-        policy.listPolicy.deniedValues.append(unicode(value))
+        policy.listPolicy.deniedValues.append(str(value))
     else:
       policy.listPolicy = messages.ListPolicy(deniedValues=args.denied_value)
 

@@ -25,6 +25,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
+from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
@@ -65,12 +67,12 @@ def _CommonArgs(parser,
                 enable_regional=False,
                 support_local_ssd_size=False,
                 enable_kms=False,
-                support_sole_tenancy=False):
+                support_sole_tenancy=False,
+                supports_resource_policies=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms)
+  instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms)
   if release_track in [base.ReleaseTrack.ALPHA]:
     instances_flags.AddShieldedVMConfigArgs(parser)
   if support_local_ssd_size:
@@ -107,6 +109,8 @@ def _CommonArgs(parser,
   if support_sole_tenancy:
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
     sole_tenancy_flags.AddSoleTenancyArgsToParser(parser)
+  if supports_resource_policies:
+    maintenance_flags.AddResourcePoliciesArgs(parser, 'added to')
 
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddMinCpuPlatformArgs(parser, release_track)
@@ -425,6 +429,19 @@ class Create(base.CreateCommand):
       if sole_tenancy_host:
         instance.host = sole_tenancy_host
 
+      resource_policies = getattr(
+          args, 'resource_policies', None)
+      if resource_policies:
+        parsed_resource_policies = []
+        for policy in resource_policies:
+          resource_policy_ref = maintenance_util.ParseResourcePolicyWithZone(
+              resource_parser,
+              policy,
+              project=instance_ref.project,
+              zone=instance_ref.zone)
+          parsed_resource_policies.append(resource_policy_ref.SelfLink())
+        instance.resourcePolicies = parsed_resource_policies
+
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
           project=instance_ref.project,
@@ -550,7 +567,8 @@ class CreateAlpha(CreateBeta):
         enable_regional=True,
         support_local_ssd_size=True,
         enable_kms=cls._support_kms,
-        support_sole_tenancy=True)
+        support_sole_tenancy=True,
+        supports_resource_policies=True)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

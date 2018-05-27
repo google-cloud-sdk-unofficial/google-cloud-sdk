@@ -24,7 +24,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
-CLOUD_SDK_IMAGE = 'google/cloud-sdk'
+CLOUD_SDK_IMAGE = 'google/cloud-sdk:alpine'
 SHARED_DISK = 'gcloud-shared'
 
 
@@ -306,7 +306,8 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
       pipeline = genomics_messages.Pipeline(
           actions=[genomics_messages.Action(
               imageUri=args.docker_image,
-              commands=['/bin/sh', '-c', args.command_line])])
+              commands=['-c', args.command_line],
+              entrypoint='bash')])
     else:
       raise exceptions.GenomicsError(
           'Either --pipeline-file or --command_line is required.')
@@ -406,13 +407,12 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
               path='/' + SHARED_DISK))
 
       if args.logging:
-        for name, value in args.outputs.items():
-          pipeline.actions.append(genomics_messages.Action(
-              imageUri=CLOUD_SDK_IMAGE,
-              commands=['/bin/sh', '-c',
-                        'gsutil -q cp /google/logs/output ' + args.logging],
-              flags=[(genomics_messages.Action
-                      .FlagsValueListEntryValuesEnum.ALWAYS_RUN)]))
+        pipeline.actions.append(genomics_messages.Action(
+            imageUri=CLOUD_SDK_IMAGE,
+            commands=['/bin/sh', '-c',
+                      'gsutil -q cp /google/logs/output ' + args.logging],
+            flags=[(genomics_messages.Action
+                    .FlagsValueListEntryValuesEnum.ALWAYS_RUN)]))
 
       # Update disk sizes if specified, potentially including the shared disk.
       if args.disk_size:

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command to set IAM policy for an instance resource."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -55,6 +57,11 @@ class SetIamPolicy(base.Command):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    # TODO(b/78371568): Construct the RegionSetPolicyRequest directly
+    # out of the parsed policy instead of setting 'bindings' and 'etags'.
+    # This current form is required so gcloud won't break while Compute
+    # roll outs the breaking change to SetIamPolicy (b/75971480)
+
     # TODO(b/36053578): determine how this output should look when empty.
 
     # SetIamPolicy always returns either an error or the newly set policy.
@@ -64,7 +71,9 @@ class SetIamPolicy(base.Command):
     return client.MakeRequests(
         [(client.apitools_client.subnetworks, 'SetIamPolicy',
           client.messages.ComputeSubnetworksSetIamPolicyRequest(
-              policy=policy,
+              regionSetPolicyRequest=client.messages.RegionSetPolicyRequest(
+                  bindings=policy.bindings,
+                  etag=policy.etag),
               project=subnetwork_ref.project,
               region=subnetwork_ref.region,
               resource=subnetwork_ref.subnetwork))])[0]

@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command line processing utilities for access zones."""
+"""Command line processing utilities for service perimeters."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.accesscontextmanager import util
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.accesscontextmanager import common
@@ -64,21 +66,19 @@ def AddImplicitServiceWildcard(ref, args, req):
 
 def _GetAttributeConfig():
   return concepts.ResourceParameterAttributeConfig(
-      name='zone',
-      help_text='The ID of the access zone.'
-  )
+      name='perimeter', help_text='The ID of the service perimeter.')
 
 
 def _GetResourceSpec():
   return concepts.ResourceSpec(
       'accesscontextmanager.accessPolicies.accessZones',
-      resource_name='zone',
+      resource_name='level',
       accessPoliciesId=policies.GetAttributeConfig(),
       accessZonesId=_GetAttributeConfig())
 
 
 def AddResourceArg(parser, verb):
-  """Add a resource argument for an access zone.
+  """Add a resource argument for a service perimeter.
 
   NOTE: Must be used only if it's the only resource arg in the command.
 
@@ -87,9 +87,9 @@ def AddResourceArg(parser, verb):
     verb: str, the verb to describe the resource, such as 'to update'.
   """
   concept_parsers.ConceptParser.ForResource(
-      'zone',
+      'perimeter',
       _GetResourceSpec(),
-      'The access zone {}.'.format(verb),
+      'The service perimemter {}.'.format(verb),
       required=True).AddToParser(parser)
 
 
@@ -103,26 +103,26 @@ def GetTypeEnumMapper():
       },
       required=False,
       help_str="""\
-          Type of the zone.
+          Type of the perimeter.
 
-          A *regular* zone allows resources within this access zone to import
-          and export data amongst themselves. A project may belong to at most
-          one regular access zone.
+          A *regular* perimeter allows resources within this service perimeter
+          to import and export data amongst themselves. A project may belong to
+          at most one regular service perimeter.
 
-          A *bridge* access zone allows resources in different regular access
-          zones to import and export data between each other. A project may
-          belong to multiple bridge access zones (only if it also belongs to a
-          regular access zone). Both restricted and unrestricted service lists,
+          A *bridge* perimeter allows resources in different regular service
+          perimeters to import and export data between each other. A project may
+          belong to multiple bridge service perimeters (only if it also belongs to a
+          regular service perimeter). Both restricted and unrestricted service lists,
           as well as access level lists, must be empty.
           """,
   )
 
 
-def AddZoneUpdateArgs(parser):
-  """Add args for zones update command."""
+def AddPerimeterUpdateArgs(parser):
+  """Add args for perimeters update command."""
   args = [
-      common.GetDescriptionArg('access zone'),
-      common.GetTitleArg('access zone'),
+      common.GetDescriptionArg('service perimeter'),
+      common.GetTitleArg('service perimeter'),
       GetTypeEnumMapper().choice_arg
   ]
   for arg in args:
@@ -135,71 +135,83 @@ def AddZoneUpdateArgs(parser):
 
 def _AddResources(parser):
   repeated.AddPrimitiveArgs(
-      parser, 'zone', 'resources', 'resources',
+      parser,
+      'perimeter',
+      'resources',
+      'resources',
       additional_help=('Resources must be projects, in the form '
                        '`projects/<projectnumber>`.'))
 
 
-def ParseResources(args, zone_result):
-  return repeated.ParsePrimitiveArgs(
-      args, 'resources', zone_result.GetAttrThunk('resources'))
+def ParseResources(args, perimeter_result):
+  return repeated.ParsePrimitiveArgs(args, 'resources',
+                                     perimeter_result.GetAttrThunk('resources'))
 
 
 def _AddUnrestrictedServices(parser):
   repeated.AddPrimitiveArgs(
-      parser, 'zone', 'unrestricted-services', 'unrestricted services',
+      parser,
+      'perimemter',
+      'unrestricted-services',
+      'unrestricted services',
       metavar='SERVICE',
       additional_help=(
-          'The zone boundary DOES NOT apply to these services (for example, '
-          '`storage.googleapis.com`). A wildcard (```*```) may be given to '
-          'denote all services.\n\n'
+          'The perimeter boundary DOES NOT apply to these services (for '
+          'example, `storage.googleapis.com`). A wildcard (```*```) may be '
+          'given to denote all services.\n\n'
           'If restricted services are set, unrestricted services must be a '
           'wildcard.'))
 
 
-def ParseUnrestrictedServices(args, zone_result):
+def ParseUnrestrictedServices(args, perimeter_result):
   return repeated.ParsePrimitiveArgs(
       args, 'unrestricted_services',
-      zone_result.GetAttrThunk('unrestrictedServices'))
+      perimeter_result.GetAttrThunk('unrestrictedServices'))
 
 
 def _AddRestrictedServices(parser):
   repeated.AddPrimitiveArgs(
-      parser, 'zone', 'restricted-services', 'restricted services',
+      parser,
+      'perimeter',
+      'restricted-services',
+      'restricted services',
       metavar='SERVICE',
       additional_help=(
-          'The zone boundary DOES apply to these services (for example, '
+          'The perimeter boundary DOES apply to these services (for example, '
           '`storage.googleapis.com`). A wildcard (```*```) may be given to '
           'denote all services.\n\n'
           'If unrestricted services are set, restricted services must be a '
           'wildcard.'))
 
 
-def ParseRestrictedServices(args, zone_result):
+def ParseRestrictedServices(args, perimeter_result):
   return repeated.ParsePrimitiveArgs(
       args, 'restricted_services',
-      zone_result.GetAttrThunk('restrictedServices'))
+      perimeter_result.GetAttrThunk('restrictedServices'))
 
 
 def _AddLevelsUpdate(parser):
   repeated.AddPrimitiveArgs(
-      parser, 'zone', 'access-levels', 'access levels',
+      parser,
+      'perimeter',
+      'access-levels',
+      'access levels',
       metavar='LEVEL',
       additional_help=(
-          'An intra-zone request must satisfy these access levels (for '
+          'An intra-perimeter request must satisfy these access levels (for '
           'example, `MY_LEVEL`; must be in the same access policy as this '
-          'zone) to be allowed.'))
+          'perimeter) to be allowed.'))
 
 
 def _GetLevelIdFromLevelName(level_name):
   return REGISTRY.Parse(level_name, collection=levels.COLLECTION).accessLevelsId
 
 
-def ParseLevels(args, zone_result, policy_id):
+def ParseLevels(args, perimeter_result, policy_id):
   level_ids = repeated.ParsePrimitiveArgs(
       args, 'access_levels',
-      zone_result.GetAttrThunk('accessLevels',
-                               transform=_GetLevelIdFromLevelName))
+      perimeter_result.GetAttrThunk(
+          'accessLevels', transform=_GetLevelIdFromLevelName))
   if level_ids is None:
     return None
   return [REGISTRY.Create(levels.COLLECTION,

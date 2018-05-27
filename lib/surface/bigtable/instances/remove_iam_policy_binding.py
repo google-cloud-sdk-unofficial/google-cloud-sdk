@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.bigtable import iam
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a Cloud Spanner instance."""
 

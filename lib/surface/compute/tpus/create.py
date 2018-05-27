@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """cloud tpu create command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.tpus import flags
@@ -39,7 +41,7 @@ class Create(base.CreateCommand):
     $ {command} my-tpu \
         --zone us-central1-a \
         --range '10.240.0.0/29' \
-        --accelerator-type 'tpu-v2' \
+        --accelerator-type 'v2-8' \
         --network my-tf-network \
         --description 'My TF Node' \
         --version '1.1'

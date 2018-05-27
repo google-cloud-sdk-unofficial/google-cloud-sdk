@@ -32,6 +32,7 @@ from apache_beam.utils.windowed_value import WindowedValue
 from google.cloud.ml import prediction as mlprediction
 from google.cloud.ml.dataflow import _aggregators as aggregators
 
+from google.cloud.ml.dataflow import _cloud_logging_client as cloud_logging_client
 
 from google.cloud.ml.dataflow import _error_filter as error_filter
 from tensorflow.python.saved_model import tag_constants
@@ -162,6 +163,7 @@ class PredictionDoFn(beam.DoFn):
     self._aggregator_dict = aggregator_dict
     self._model_state = None
 
+    self._cloud_logger = None
 
     self._tag_list = []
     self._framework = framework
@@ -175,10 +177,25 @@ class PredictionDoFn(beam.DoFn):
     user_project_id = self._user_project_id.get()
     user_job_id = self._user_job_id.get()
 
+    if user_project_id and user_job_id:
+      self._cloud_logger = cloud_logging_client.MLCloudLoggingClient.create(
+          user_project_id, user_job_id, LOG_NAME, "jsonPayload")
 
     self._tag_list = self._tags.get().split(",")
     self._signature_name = self._signature_name.get()
 
+  def _create_snippet(self, input_data):
+    """Truncate the input data to create a snippet."""
+    try:
+      input_snippet = "\n".join(str(x) for x in input_data)
+      if isinstance(input_snippet, unicode):
+        return input_snippet[:LOG_SIZE_LIMIT]
+      else:
+        return unicode(input_snippet[:LOG_SIZE_LIMIT], errors="replace")
+    except Exception:  # pylint: disable=broad-except
+      logging.warning("Failed to create snippet from input: [%s].",
+                      traceback.format_exc())
+      return "Input snippet is unavailable."
 
   def process(self, element, model_dir):
     try:
@@ -239,7 +256,11 @@ class PredictionDoFn(beam.DoFn):
                     traceback.format_exc())
       clean_error_detail = error_filter.filter_tensorflow_error(e.error_detail)
 
-
+      if self._cloud_logger:
+        # TODO(user): consider to write a sink to buffer the logging events. It
+        # also eliminates the restarting/duplicated running issue.
+        self._cloud_logger.write_error_message(clean_error_detail,
+                                               self._create_snippet(element))
       # Track in the counter.
       if self._aggregator_dict:
         counter_name = aggregators.AggregatorName.ML_FAILED_PREDICTIONS
@@ -258,6 +279,9 @@ class PredictionDoFn(beam.DoFn):
     except Exception as e:  # pylint: disable=broad-except
       logging.error("Got an unknown exception: [%s].", traceback.format_exc())
 
+      if self._cloud_logger:
+        self._cloud_logger.write_error_message(
+            str(e), self._create_snippet(element))
 
       # Track in the counter.
       if self._aggregator_dict:

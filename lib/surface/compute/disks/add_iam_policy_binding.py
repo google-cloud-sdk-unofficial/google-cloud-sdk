@@ -47,7 +47,13 @@ class AddIamPolicyBinding(base.Command):
     policy = client.apitools_client.disks.GetIamPolicy(get_request)
     iam_util.AddBindingToIamPolicy(client.messages.Binding, policy, args.member,
                                    args.role)
+    # TODO(b/78371568): Construct the ZoneSetPolicyRequest directly
+    # out of the parsed policy
     set_request = client.messages.ComputeDisksSetIamPolicyRequest(
-        policy=policy, resource=disk_ref.disk, zone=disk_ref.zone,
+        zoneSetPolicyRequest=client.messages.ZoneSetPolicyRequest(
+            bindings=policy.bindings,
+            etag=policy.etag),
+        resource=disk_ref.disk,
+        zone=disk_ref.zone,
         project=disk_ref.project)
     return client.apitools_client.disks.SetIamPolicy(set_request)

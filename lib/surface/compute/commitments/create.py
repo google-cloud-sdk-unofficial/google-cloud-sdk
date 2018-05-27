@@ -13,6 +13,9 @@
 # limitations under the License.
 """Command for creating Google Compute Engine commitments."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -42,7 +45,7 @@ class Create(base.Command):
     Resources to be included in the commitment commitment:
     * MEMORY should include unit (eg. 3072MB or 9GB). If no units are specified,
       GB is assumed.
-    * VCPU is number of commited cores.
+    * VCPU is number of committed cores.
     Ratio between number of VCPU cores and memory must conform to limits
     described on:
     https://cloud.google.com/compute/docs/instances/creating-instance-with-custom-machine-type"""

@@ -13,6 +13,8 @@
 # limitations under the License.
 """The group for the Cloud Resource Manager Liens CLI."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.resource_manager import liens
 from googlecloudsdk.calliope import base
 

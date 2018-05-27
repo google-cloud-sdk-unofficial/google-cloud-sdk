@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command to add values to an Organization Policy whitelist."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.resource_manager import exceptions
 from googlecloudsdk.api_lib.resource_manager import org_policies
 from googlecloudsdk.calliope import base
@@ -66,7 +68,7 @@ class Allow(base.Command):
 
     if policy.listPolicy and policy.listPolicy.allowedValues:
       for value in args.allowed_value:
-        policy.listPolicy.allowedValues.append(unicode(value))
+        policy.listPolicy.allowedValues.append(str(value))
     else:
       policy.listPolicy = messages.ListPolicy(allowedValues=args.allowed_value)
 

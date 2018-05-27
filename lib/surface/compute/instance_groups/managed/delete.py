@@ -14,6 +14,8 @@
 
 """Command for deleting managed instance group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
@@ -47,7 +49,7 @@ class Delete(base.DeleteCommand):
     Returns:
       Messages, which will be sent to delete autoscalers.
     """
-    mig_requests = zip(*mig_requests)[2] if mig_requests else []
+    mig_requests = list(zip(*mig_requests))[2] if mig_requests else []
     zone_migs = [(request.instanceGroupManager, 'zone',
                   managed_instance_groups_utils.CreateZoneRef(
                       holder.resources, request)) for request in mig_requests
@@ -57,8 +59,8 @@ class Delete(base.DeleteCommand):
                         holder.resources, request)) for request in mig_requests
                    if hasattr(request, 'region') and request.region is not None]
 
-    zones = zip(*zone_migs)[2] if zone_migs else []
-    regions = zip(*region_migs)[2] if region_migs else []
+    zones = list(zip(*zone_migs))[2] if zone_migs else []
+    regions = list(zip(*region_migs))[2] if region_migs else []
 
     client = holder.client.apitools_client
     messages = client.MESSAGES_MODULE

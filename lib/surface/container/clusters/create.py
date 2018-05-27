@@ -379,6 +379,7 @@ class CreateBeta(Create):
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddPrivateClusterFlags(parser, hidden=False)
+    flags.AddEnableStackdriverKubernetesFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -390,6 +391,7 @@ class CreateBeta(Create):
     ops.new_scopes_behavior = True
     ops.private_cluster = args.private_cluster
     ops.master_ipv4_cidr = args.master_ipv4_cidr
+    ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     return ops
 
 
@@ -429,13 +431,7 @@ class CreateAlpha(Create):
     flags.AddPrivateClusterFlags(parser, hidden=False)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False)
-    parser.add_argument(
-        '--enable-stackdriver-kubernetes',
-        action='store_true',
-        default=False,
-        hidden=True,
-        help='Enable logging and monitoring beta experience. Cloud Logging '
-        'and Cloud Monitoring are both required.')
+    flags.AddEnableStackdriverKubernetesFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)

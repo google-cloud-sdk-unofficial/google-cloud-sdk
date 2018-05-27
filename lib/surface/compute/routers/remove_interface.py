@@ -14,6 +14,8 @@
 
 """Command for removing an interface from a Google Compute Engine router."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base

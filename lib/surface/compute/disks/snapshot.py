@@ -146,8 +146,10 @@ class SnapshotDisks(base.SilentCommand):
             snapshot=snapshot_message,
             project=disk_ref.project,
             region=disk_ref.region)
-        if hasattr(request, 'guestFlush'):
-          request.guestFlush = args.guest_flush
+        if hasattr(request, 'guestFlush'):  # only available in alpha API
+          guest_flush = getattr(args, 'guest_flush', None)
+          if guest_flush is not None:
+            request.guestFlush = guest_flush
         requests.append((client.regionDisks, 'CreateSnapshot', request))
 
     errors_to_collect = []

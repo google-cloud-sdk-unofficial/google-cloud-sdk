@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.bigtable import iam
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a Cloud Bigtable instance."""
 

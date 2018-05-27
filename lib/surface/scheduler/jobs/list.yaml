@@ -29,5 +29,5 @@
                   pubsubTarget.yesno(yes="Pub/Sub", no=""),
                   appEngineHttpTarget.yesno(yes="App Engine", no="")
               ):label=TARGET_TYPE,
-              jobState:label=STATE
+              state:label=STATE
           )

@@ -14,6 +14,8 @@
 """Command for creating interconnects."""
 
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from surface.compute.interconnects import update
 

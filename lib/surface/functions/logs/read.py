@@ -14,6 +14,8 @@
 
 """Displays log entries produced by Google Cloud Functions."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.api_lib.logging import common as logging_common
 from googlecloudsdk.api_lib.logging import util as logging_util

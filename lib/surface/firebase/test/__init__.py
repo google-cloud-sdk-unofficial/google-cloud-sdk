@@ -21,7 +21,6 @@ from googlecloudsdk.api_lib.firebase.test import exceptions
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -62,9 +61,5 @@ class Test(base.Group):
 
     # Create the client for the Storage service.
     context['storage_client'] = apis.GetClientInstance('storage', 'v1')
-
-    log.status.Print(
-        '\nHave questions, feedback, or issues? Get support by '
-        'visiting:\n  https://firebase.google.com/support/\n')
 
     return context

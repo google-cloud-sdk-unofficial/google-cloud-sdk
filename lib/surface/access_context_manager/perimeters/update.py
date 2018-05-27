@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """`gcloud access-context-manager zones update` command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.accesscontextmanager import zones as zones_api
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.accesscontextmanager import zones
+from googlecloudsdk.command_lib.accesscontextmanager import perimeters
 from googlecloudsdk.command_lib.util.args import repeated
 
 
@@ -23,20 +25,22 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    zones.AddResourceArg(parser, 'to update')
-    zones.AddZoneUpdateArgs(parser)
+    perimeters.AddResourceArg(parser, 'to update')
+    perimeters.AddPerimeterUpdateArgs(parser)
 
   def Run(self, args):
     client = zones_api.Client()
-    zone_ref = args.CONCEPTS.zone.Parse()
-    result = repeated.CachedResult.FromFunc(client.Get, zone_ref)
+    perimeter_ref = args.CONCEPTS.perimeter.Parse()
+    result = repeated.CachedResult.FromFunc(client.Get, perimeter_ref)
 
     return client.Patch(
-        zone_ref,
+        perimeter_ref,
         description=args.description,
         title=args.title,
-        zone_type=zones.GetTypeEnumMapper().GetEnumForChoice(args.type),
-        resources=zones.ParseResources(args, result),
-        restricted_services=zones.ParseRestrictedServices(args, result),
-        unrestricted_services=zones.ParseUnrestrictedServices(args, result),
-        levels=zones.ParseLevels(args, result, zone_ref.accessPoliciesId))
+        zone_type=perimeters.GetTypeEnumMapper().GetEnumForChoice(args.type),
+        resources=perimeters.ParseResources(args, result),
+        restricted_services=perimeters.ParseRestrictedServices(args, result),
+        unrestricted_services=perimeters.ParseUnrestrictedServices(
+            args, result),
+        levels=perimeters.ParseLevels(args, result,
+                                      perimeter_ref.accessPoliciesId))

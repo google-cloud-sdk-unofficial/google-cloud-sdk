@@ -14,6 +14,8 @@
 
 """Resource filters supplementary help."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.calliope import base
@@ -194,10 +196,11 @@ class Filters(base.TopicCommand):
 
             $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime>=2018-01-15"
 
-          List projects that were created on and after a specific date and time,
-          and sort from oldest to newest:
+          List projects that were created on and after a specific date and time
+          and sort from oldest to newest (with dates and times listed according
+          to the local timezone):
 
-            $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime>=2018-01-15T12:00:00" --sort-by=createTime
+            $ gcloud projects list --format="table(projectNumber,projectId,createTime.date(tz=LOCAL))" --filter="createTime>=2018-01-15T12:00:00" --sort-by=createTime
 
           List projects that were created within the last two weeks, using
           ISO8601 durations:

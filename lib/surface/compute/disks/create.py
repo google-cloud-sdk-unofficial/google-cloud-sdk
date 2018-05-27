@@ -31,6 +31,8 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.command_lib.compute.resource_policies import flags as resource_flags
+from googlecloudsdk.command_lib.compute.resource_policies import util as resource_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
@@ -331,6 +333,8 @@ class Create(base.Command):
           csek_utils.MaybeLookupKeyMessagesByUri(
               csek_keys, compute_holder.resources,
               [source_image_uri, snapshot_uri], client.apitools_client))
+
+    resource_policies = getattr(args, 'resource_policies', None)
     # end of alpha/beta features.
 
     guest_os_feature_messages = _ParseGuestOsFeaturesToMessages(
@@ -360,6 +364,21 @@ class Create(base.Command):
       kwargs['diskEncryptionKey'] = kms_utils.MaybeGetKmsKey(
           args, disk_ref.project, client.apitools_client,
           kwargs.get('diskEncryptionKey', None))
+
+      if resource_policies:
+        if disk_ref.Collection() == 'compute.regionDisks':
+          raise exceptions.InvalidArgumentException(
+              '--resource-policies',
+              'Resource policies are not supported for regional disks.')
+        parsed_resource_policies = []
+        for policy in resource_policies:
+          resource_policy_ref = resource_util.ParseResourcePolicyWithZone(
+              compute_holder.resources,
+              policy,
+              project=disk_ref.project,
+              zone=disk_ref.zone)
+          parsed_resource_policies.append(resource_policy_ref.SelfLink())
+        kwargs['resourcePolicies'] = parsed_resource_policies
 
       # end of alpha/beta features.
 
@@ -440,6 +459,7 @@ class CreateAlpha(Create):
     kms_utils.AddKmsKeyArgs(parser, resource_type='disk')
     _AddReplicaZonesArg(parser)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    resource_flags.AddResourcePoliciesArgs(parser, 'added to')
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
     return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)

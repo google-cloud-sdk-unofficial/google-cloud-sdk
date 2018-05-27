@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a UDP health check to monitor load balanced instances.

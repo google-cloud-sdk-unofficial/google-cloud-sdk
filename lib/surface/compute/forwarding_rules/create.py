@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating forwarding rules."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
@@ -24,6 +26,7 @@ from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.core import log
 import ipaddress
 import six
+from six.moves import range  # pylint: disable=redefined-builtin
 
 
 def _Args(parser, include_beta, include_alpha=False):
@@ -353,7 +356,7 @@ def _ResolvePortRange(port_range, port_range_list):
 def _GetPortList(range_list):
   ports = []
   for port_range in range_list:
-    ports.extend(range(port_range.start, port_range.end + 1))
+    ports.extend(list(range(port_range.start, port_range.end + 1)))
   return sorted(ports)
 
 

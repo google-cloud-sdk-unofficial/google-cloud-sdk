@@ -13,6 +13,9 @@
 # limitations under the License.
 """List tags command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import heapq
 import sys
 
@@ -145,7 +148,7 @@ class ListTagsALPHA(ListTagsGAandBETA, base.ListCommand):
         help='A filter for the Occurrences which will be summarized.')
     parser.add_argument(
         '--show-occurrences-from',
-        type=arg_parsers.BoundedInt(1, sys.maxint, unlimited=True),
+        type=arg_parsers.BoundedInt(1, sys.maxsize, unlimited=True),
         default=_DEFAULT_SHOW_OCCURRENCES_FROM,
         help=('How many of the most recent images for which to summarize '
               'Occurences.'))

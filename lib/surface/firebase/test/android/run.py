@@ -162,6 +162,8 @@ class _BaseRun(object):
             'Final test results will be available at [{0}].', [])
           )
       """
+    log.status.Print('\nHave questions, feedback, or issues? Get support by '
+                     'visiting:\n  https://firebase.google.com/support/\n')
 
     arg_manager.AndroidArgsManager().Prepare(args)
 

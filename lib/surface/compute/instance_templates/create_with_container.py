@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating instance templates running Docker images."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import containers_utils
 from googlecloudsdk.api_lib.compute import image_utils
@@ -25,6 +27,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
@@ -49,6 +52,7 @@ def _Args(parser, release_track):
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddImageArgs(parser)
   instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+  labels_util.AddCreateLabelsFlags(parser)
 
   flags.AddRegionFlag(
       parser,
@@ -182,6 +186,11 @@ class CreateWithContainer(base.CreateCommand):
     image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
     labels = containers_utils.GetLabelsMessageWithCosVersion(
         None, image_uri, holder.resources, client.messages.InstanceProperties)
+    argument_labels = labels_util.ParseCreateArgs(
+        args, client.messages.InstanceProperties.LabelsValue)
+    if argument_labels:
+      labels.additionalProperties.extend(argument_labels.additionalProperties)
+
     metadata = self._GetUserMetadata(args, client, instance_template_ref)
     network_interface = self._GetNetworkInterface(args, client, holder)
     scheduling = self._GetScheduling(args, client)
@@ -271,6 +280,10 @@ class CreateWithContainerAlpha(CreateWithContainer):
     image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
     labels = containers_utils.GetLabelsMessageWithCosVersion(
         None, image_uri, holder.resources, client.messages.InstanceProperties)
+    argument_labels = labels_util.ParseCreateArgs(
+        args, client.messages.InstanceProperties.LabelsValue)
+    if argument_labels:
+      labels.additionalProperties.extend(argument_labels.additionalProperties)
     metadata = self._GetUserMetadata(args, client, instance_template_ref)
     network_interface = self._GetNetworkInterface(args, client, holder)
     scheduling = self._GetScheduling(args, client)

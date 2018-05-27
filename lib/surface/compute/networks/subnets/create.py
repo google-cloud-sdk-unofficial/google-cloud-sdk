@@ -14,12 +14,15 @@
 
 """Command for creating subnetworks."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
+import six
 
 
 def _AddArgs(cls, parser):
@@ -108,7 +111,7 @@ class Create(base.CreateCommand):
     secondary_ranges = []
     if args.secondary_range:
       for secondary_range in args.secondary_range:
-        for range_name, ip_cidr_range in sorted(secondary_range.iteritems()):
+        for range_name, ip_cidr_range in sorted(six.iteritems(secondary_range)):
           secondary_ranges.append(
               client.messages.SubnetworkSecondaryRange(
                   rangeName=range_name,

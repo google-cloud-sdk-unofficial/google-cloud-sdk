@@ -14,6 +14,8 @@
 
 """Resource keys supplementary help."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.calliope import base

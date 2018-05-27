@@ -14,7 +14,9 @@
 
 """Command to remove a principal from a service's access policy."""
 
-import httplib
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.endpoints import services_util
 from googlecloudsdk.api_lib.util import http_retry
@@ -22,6 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.endpoints import arg_parsers
 from googlecloudsdk.command_lib.endpoints import common_flags
 from googlecloudsdk.command_lib.iam import iam_util
+
+import six.moves.http_client
 
 
 class RemoveIamPolicyBinding(base.Command):
@@ -45,7 +49,7 @@ class RemoveIamPolicyBinding(base.Command):
 
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
-  @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
+  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):
     """Run 'service-management remove-iam-policy-binding'.
 

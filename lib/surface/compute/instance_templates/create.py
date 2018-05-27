@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating instance templates."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_template_utils
@@ -41,7 +43,6 @@ _INSTANTIATE_FROM_VALUES = [
 def _CommonArgs(parser,
                 release_track,
                 support_source_instance,
-                support_create_disk=False,
                 support_network_tier=False,
                 support_local_ssd_size=False,
                 support_shielded_vms=False,
@@ -51,8 +52,7 @@ def _CommonArgs(parser,
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
-  if support_create_disk:
-    instances_flags.AddCreateDiskArgs(parser)
+  instances_flags.AddCreateDiskArgs(parser)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -489,7 +489,6 @@ class CreateBeta(Create):
     _CommonArgs(
         parser,
         release_track=base.ReleaseTrack.BETA,
-        support_create_disk=True,
         support_network_tier=True,
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
@@ -536,7 +535,6 @@ class CreateAlpha(Create):
     _CommonArgs(
         parser,
         release_track=base.ReleaseTrack.ALPHA,
-        support_create_disk=True,
         support_network_tier=True,
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,

@@ -13,11 +13,13 @@
 # limitations under the License.
 """The Open Console command."""
 
-import urllib
+from __future__ import absolute_import
 
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import browser_dispatcher
 from googlecloudsdk.core import properties
+from six.moves import urllib
 
 
 CONSOLE_URL = 'https://console.developers.google.com/appengine?{query}'
@@ -40,7 +42,7 @@ def _CreateDevConsoleURL(project, service='default', version=None, logs=False):
   query = [('project', project), ('serviceId', service)]
   if version:
     query.append(('versionId', version))
-  query_string = urllib.urlencode(query)
+  query_string = urllib.parse.urlencode(query)
   return (LOGS_URL if logs else CONSOLE_URL).format(query=query_string)
 
 

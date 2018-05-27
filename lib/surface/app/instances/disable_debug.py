@@ -16,8 +16,8 @@
 
 from __future__ import absolute_import
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.app import env
 from googlecloudsdk.api_lib.app import instances_util
-from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -73,7 +73,7 @@ class DisableDebug(base.Command):
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
     all_instances = list(api_client.GetAllInstances(
         args.service, args.version,
-        version_filter=lambda v: util.Environment.IsFlexible(v.environment)))
+        version_filter=lambda v: v.environment in [env.FLEX, env.MANAGED_VMS]))
     try:
       res = resources.REGISTRY.Parse(args.instance)
     except Exception:  # pylint:disable=broad-except

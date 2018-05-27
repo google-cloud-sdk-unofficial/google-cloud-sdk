@@ -20,6 +20,9 @@ from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
 
 
+_DEFAULT_PAGE_SIZE = 25
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List tasks."""
@@ -29,6 +32,7 @@ class List(base.ListCommand):
     list_formats.AddListTasksFormats(parser)
     flags.AddQueueResourceFlag(parser, plural_tasks=True)
     flags.AddLocationFlag(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, _DEFAULT_PAGE_SIZE)
 
   def Run(self, args):
     tasks_client = tasks.Tasks()

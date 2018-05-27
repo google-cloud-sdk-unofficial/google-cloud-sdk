@@ -140,7 +140,6 @@ class ListAlpha(List):
     # Returns a list of whitelisted protocols.
     whitelist = super(ListAlpha, self)._ProtocolWhitelist()
     whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number)
-    whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.UDP.number)
     return whitelist
 
   def _Format(self, args):

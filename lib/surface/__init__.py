@@ -14,6 +14,9 @@
 
 """The super-group for the cloud CLI."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import argparse
 import os
 import textwrap
@@ -24,6 +27,7 @@ from googlecloudsdk.command_lib.resource_manager import completers as resource_m
 from googlecloudsdk.core import properties
 
 
+@base.CommandSuggestion('update', 'components update')
 class Gcloud(base.Group):
   """Manage Google Cloud Platform resources and developer workflow.
 

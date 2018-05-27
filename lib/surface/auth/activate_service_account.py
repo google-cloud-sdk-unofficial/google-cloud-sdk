@@ -31,39 +31,47 @@ from googlecloudsdk.core.util import encoding
 
 
 class ActivateServiceAccount(base.SilentCommand):
-  """Authorize gcloud to access Cloud Platform with a Google service account.
+  r"""Authorize access to Google Cloud Platform with a service account.
 
-  If you want gcloud (and other tools in the Cloud SDK) to use service account
+  To allow `gcloud` (and other tools in Cloud SDK) to use service account
   credentials to make requests, use this command to import these credentials
   from a file that contains a private authorization key, and activate them for
-  use in gcloud. This command serves the same function as ``gcloud auth login''
-  but for using a service account rather than your Google user credentials.
+  use in `gcloud`. {command} serves the same function as `gcloud auth login`
+  but uses a service account rather than Google user credentials.
 
   For more information on authorization and credential types, see:
   [](https://cloud.google.com/sdk/docs/authorizing).
 
-  The key file for this command can be obtained using either:
-    * the [Cloud Platform console](https://console.cloud.google.com) or
-    * $ gcloud iam service-accounts keys create.
+  _Key File_
 
-  The key file can be .json (preferred) or .p12 (legacy) format.
-  For legacy .p12 files, a separate password might be required. This password
-  is displayed in the console when you create the key.
+  To obtain the key file for this command, use either the [Google Cloud
+  Platform Console](https://console.cloud.google.com) or `gcloud iam
+  service-accounts keys create`. The key file can be .json (preferred) or
+  .p12 (legacy) format. In the case of legacy .p12 files, a separate password
+  might be required and is displayed in the Console when you create the key.
 
-  The credentials will also be activated, which is same as running
-  $ gcloud config set account ACCOUNT_NAME.
+  _Credentials_
 
-  If you specify a project using the `--project` flag, the project is set in
-  your active configuration, which is same as running
-  $ gcloud config set project PROJECT_NAME.
+  Credentials will also be activated (similar to running
+  `gcloud config set account [ACCOUNT_NAME]`).
 
-  Any previously active credentials will still be retained, and can be seen by
-  running $ gcloud auth list. They will just no longer be the active/default
-  credentials.
+  If a project is specified using the `--project` flag, the project is set in
+  active configuration, which is the same as running
+  `gcloud config set project [PROJECT_NAME]`. Any previously active credentials,
+  will be retained (though no longer default) and can be
+  displayed by running `gcloud auth list`.
 
-  If you want to delete previous credentials see `gcloud auth revoke` command.
+  If you want to delete previous credentials, see `gcloud auth revoke`.
 
-  Note: Service accounts use client quotas for tracking usage.
+  _Note:_ Service accounts use client quotas for tracking usage.
+
+  ## EXAMPLES
+
+  To authorize `gcloud` to access Google Cloud Platform using an existing
+  service account while also specifying a project, run:
+
+            $ {command} test-service-account@google.com \
+                --key-file=/path/key.json --project=testproject
   """
 
   @staticmethod

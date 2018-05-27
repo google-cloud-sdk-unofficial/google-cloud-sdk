@@ -13,6 +13,8 @@
 # limitations under the License.
 """Commands for updating backend buckets."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import backend_buckets_utils

@@ -28,7 +28,7 @@ class RegistryEntry(object):
 
   Attributes:
     runtime: str or re.RegexObject, the runtime to be staged
-    envs: set(util.Environment), the environments to be staged
+    envs: set(env.Environment), the environments to be staged
   """
 
   def __init__(self, runtime, envs):
@@ -54,7 +54,7 @@ class RegistryEntry(object):
 
     Args:
       runtime: str, the runtime to match
-      env: util.Environment, the environment to match
+      env: env.Environment, the environment to match
 
     Returns:
       bool, whether the given runtime and environment match.
@@ -80,9 +80,9 @@ class Registry(object):
   runtimes/environments would look like:
 
   REGISTRY = {
-    RegistryEntry('php72', {util.Environment.STANDARD}): True,
-    RegistryEntry('php55', {util.Environment.STANDARD}): False,
-    RegistryEntry('nodejs8', {util.Environment.FLEX}): False,
+    RegistryEntry('php72', {env.STANDARD}): True,
+    RegistryEntry('php55', {env.STANDARD}): False,
+    RegistryEntry('nodejs8', {env.FLEX}): False,
   }
 
   Attributes:
@@ -104,7 +104,7 @@ class Registry(object):
 
     Args:
       runtime: str, the runtime to get a stager for
-      env: util.Environment, the environment to get a stager for
+      env: env, the environment to get a stager for
 
     Returns:
       object, the matching entry, or override if one was specified. If no
@@ -117,7 +117,7 @@ class Registry(object):
       if entry.Matches(runtime, env):
         return value
 
-    if self.default:
+    if self.default is not None:
       return self.default
     else:
       return None

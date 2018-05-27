@@ -17,7 +17,7 @@
         $ {command} my-tpu \
             --zone us-central1-a \
             --range '10.240.0.0/29' \
-            --accelerator-type 'tpu-v2' \
+            --accelerator-type 'v2-8' \
             --network my-tf-network \
             --description 'My TF Node' \
             --version '1.1'
@@ -47,13 +47,13 @@
         required: False
         help_text: |
           TPU accelerator type for the TPU.
-          If not specified, this defaults to `tpu-v2`.
+          If not specified, this defaults to `v2-8`.
 
           For a list of available accelerator types run:
 
           `{parent_command} accelerator-types list`
         type: googlecloudsdk.command_lib.util.hooks.types:LowerCaseType
-        default: 'tpu-v2'
+        default: 'v2-8'
       - api_field: node.description
         arg_name: description
         required: False

@@ -35,9 +35,9 @@
         api_field: instance.alternativeLocationId
         help_text: |
           A secondary zone for the Redis instance to create. Only applicable to
-          STANDARD_HA tier which protects the instance against zonal failures by
-          provisioning it across two zones. If provided, it must be a different
-          zone from the one provided through --zone.
+          the standard tier. This protects the instance against zonal failures
+          by provisioning it across two zones. If provided, alternative zone
+          must be a different zone from the one provided through `--zone`.
       - arg_name: network
         api_field: instance.authorizedNetwork
         help_text: |

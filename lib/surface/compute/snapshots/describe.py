@@ -45,7 +45,40 @@ class Describe(base.DescribeCommand):
 Describe.detailed_help = {
     'brief': 'Describe a Google Compute Engine snapshot',
     'DESCRIPTION': """\
-        *{command}* displays all data associated with a Google Compute
-        Engine snapshot in a project.
+        *{command}* displays all data associated with a Compute Engine snapshot
+in a project.
+
+        Given an existing snapshot is queried, successful output of this command
+        looks like the following:
+
+        ```
+        creationTimestamp: '2018-05-07T10:45:46.988-07:00'
+        diskSizeGb: '500'
+        id: '1234567891234567890'
+        kind: compute#snapshot
+        labelFingerprint: 12345abcdWW=
+        name: zs9utdhb8r1x
+        selfLink: https://www.googleapis.com/compute/v1/projects/test-project-name/global/snapshots/snapshot-number
+        sourceDisk: https://www.googleapis.com/compute/v1/projects/test-project-name/zones/us-central1-c/disks/test
+        sourceDiskId: '1234567891234567890'
+        status: READY
+        storageBytes: '0'
+        storageBytesStatus: UP_TO_DATE
+        ```
+     """,
+
+    'EXAMPLES': """\
+
+    To run `{command}`, you'll need the name of a snapshot. To list existing
+    snapshots by name, run:
+
+        gcloud compute snapshots list
+
+    To display specific details of an existing Compute Engine snapshot (like
+    its creation time, status, and storage details), run:
+
+        gcloud compute snapshots describe [SNAPSHOT_NAME]  \
+        --format="table(creationTimestamp, status, storageBytes, storageBytesStatus)"
+
         """,
 }

@@ -34,7 +34,7 @@ class Create(base.CreateCommand):
     client = policies.AlertPolicyClient()
     messages = client.messages
 
-    policy_ref = args.CONCEPTS.name.Parse()
+    policy_ref = args.CONCEPTS.alert_policy.Parse()
     condition = util.GetConditionFromArgs(args, messages)
 
     policy = client.Get(policy_ref)

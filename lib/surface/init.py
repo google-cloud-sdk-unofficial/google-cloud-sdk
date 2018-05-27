@@ -14,6 +14,9 @@
 
 """Workflow to set up gcloud environment."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import os
 
 from googlecloudsdk.calliope import base
@@ -31,6 +34,8 @@ from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.diagnostics import network_diagnostics
 from googlecloudsdk.core.resource import resource_projector
 from googlecloudsdk.core.util import platforms
+
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -240,7 +245,7 @@ class Init(base.Command):
         'Re-initialize this configuration [{0}] with new settings '.format(
             active_config.name))
     choices.append('Create a new configuration')
-    config_choices = [name for name, c in sorted(configs.iteritems())
+    config_choices = [name for name, c in sorted(six.iteritems(configs))
                       if not c.is_active]
     choices.extend('Switch to and re-initialize '
                    'existing configuration: [{0}]'.format(name)

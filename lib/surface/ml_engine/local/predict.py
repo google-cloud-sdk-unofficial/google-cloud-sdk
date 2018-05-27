@@ -13,6 +13,8 @@
 # limitations under the License.
 """ml-engine local predict command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import local_utils
 from googlecloudsdk.command_lib.ml_engine import predict_utilities

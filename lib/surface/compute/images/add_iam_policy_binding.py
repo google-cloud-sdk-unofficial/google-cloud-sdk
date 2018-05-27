@@ -49,6 +49,12 @@ class AddIamPolicyBinding(base.Command):
     policy = client.apitools_client.images.GetIamPolicy(get_request)
     iam_util.AddBindingToIamPolicy(client.messages.Binding, policy, args.member,
                                    args.role)
+    # TODO(b/78371568): Construct the GlobalSetPolicyRequest directly
+    # out of the parsed policy.
     set_request = client.messages.ComputeImagesSetIamPolicyRequest(
-        policy=policy, resource=image_ref.image, project=image_ref.project)
+        globalSetPolicyRequest=client.messages.GlobalSetPolicyRequest(
+            bindings=policy.bindings,
+            etag=policy.etag),
+        resource=image_ref.image,
+        project=image_ref.project)
     return client.apitools_client.images.SetIamPolicy(set_request)

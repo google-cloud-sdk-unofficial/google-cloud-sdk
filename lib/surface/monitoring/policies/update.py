@@ -72,7 +72,7 @@ class Update(base.CreateCommand):
     messages = client.messages
 
     passed_yaml_policy = False
-    policy_ref = args.CONCEPTS.name.Parse()
+    policy_ref = args.CONCEPTS.alert_policy.Parse()
     if args.policy or args.policy_from_file:
       passed_yaml_policy = True
       policy = util.GetBasePolicyMessageFromArgs(args, messages.AlertPolicy)

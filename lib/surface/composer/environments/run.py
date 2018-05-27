@@ -51,7 +51,7 @@ class Run(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddEnvironmentResourceArg(
-        parser, 'in which to run an Airflow command.')
+        parser, 'in which to run an Airflow command')
 
     parser.add_argument(
         'subcommand',

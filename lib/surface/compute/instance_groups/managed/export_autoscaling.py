@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for configuring autoscaling of a managed instance group."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 
 from apitools.base.py import encoding

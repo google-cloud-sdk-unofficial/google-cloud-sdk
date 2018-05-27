@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for listing interconnect attachments."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import filter_rewrite
 from googlecloudsdk.calliope import base
@@ -30,6 +32,7 @@ class List(base.ListCommand):
         table(
           name,
           region.basename(),
+          type.basename(),
           interconnect.basename(),
           router.basename()
         )

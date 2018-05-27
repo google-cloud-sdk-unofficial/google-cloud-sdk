@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating Google Compute Engine routers."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
@@ -22,6 +24,7 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+import six
 
 
 class CreateWithCustomAdvertisements(base.CreateCommand):
@@ -74,7 +77,7 @@ class CreateWithCustomAdvertisements(base.CreateCommand):
           'advertisedIpRanges': ranges,
       }
 
-      for attr, value in attrs.iteritems():
+      for attr, value in six.iteritems(attrs):
         if value is not None:
           setattr(router_resource.bgp, attr, value)
 

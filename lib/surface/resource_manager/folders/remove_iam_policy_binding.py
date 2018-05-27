@@ -13,7 +13,8 @@
 # limitations under the License.
 """Command to remove IAM policy binding for a folder."""
 
-import httplib
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.api_lib.util import http_retry
@@ -21,6 +22,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.resource_manager import completers
 from googlecloudsdk.command_lib.resource_manager import flags
+
+import six.moves.http_client
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -42,7 +45,7 @@ class RemoveIamPolicyBinding(base.Command):
         completer=completers.FoldersIamRolesCompleter)
 
   # Allow for retries due to ETag-based optimistic concurrency control
-  @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
+  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):
     policy = folders.GetIamPolicy(args.id)
     iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)

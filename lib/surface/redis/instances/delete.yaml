@@ -27,6 +27,11 @@
   async:
     collection: redis.projects.locations.operations
 
+  input:
+    confirmation_prompt: |
+      You are about to delete instance [{__name__}] in [{locationsId}].
+      Any associated data will be lost.
+
   request: &request
     api_version: v1beta1
     collection: redis.projects.locations.instances

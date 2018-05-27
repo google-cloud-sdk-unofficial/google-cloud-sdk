@@ -14,7 +14,8 @@
 
 """Command to add IAM policy binding for an organization."""
 
-import httplib
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
@@ -22,6 +23,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.organizations import flags
 from googlecloudsdk.command_lib.organizations import orgs_base
 from googlecloudsdk.command_lib.resource_manager import completers
+import six.moves.http_client
 
 
 @base.ReleaseTracks(
@@ -42,7 +44,7 @@ class AddIamPolicyBinding(orgs_base.OrganizationCommand):
     iam_util.AddArgsForAddIamPolicyBinding(
         parser, completer=completers.OrganizationsIamRolesCompleter)
 
-  @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
+  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):
     messages = self.OrganizationsMessages()
 

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating managed instance group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import sys
 from apitools.base.py import encoding
 
@@ -50,7 +52,7 @@ def _AddInstanceGroupManagerArgs(parser):
   parser.add_argument(
       '--size',
       required=True,
-      type=arg_parsers.BoundedInt(0, sys.maxint, unlimited=True),
+      type=arg_parsers.BoundedInt(0, sys.maxsize, unlimited=True),
       help='The initial number of instances you want in this group.')
   parser.add_argument(
       '--description',

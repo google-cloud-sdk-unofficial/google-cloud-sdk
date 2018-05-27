@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating partner customer interconnect attachments."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
@@ -20,6 +22,16 @@ from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
 from googlecloudsdk.command_lib.compute.routers import flags as router_flags
+from googlecloudsdk.core import log
+
+
+def PrintPairingKeyEpilog(pairing_key):
+  """Prints the pairing key help text upon command completion."""
+  message = """\
+      Please use the pairing key to provision the attachment with your partner:
+      {0}
+      """.format(pairing_key)
+  log.status.Print(message)
 
 
 class Create(base.CreateCommand):
@@ -68,9 +80,14 @@ class Create(base.CreateCommand):
     if args.router is not None:
       router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
 
-    return interconnect_attachment.CreateAlpha(
+    attachment = interconnect_attachment.CreateAlpha(
         description=args.description,
         router=router_ref,
         attachment_type='PARTNER',
         edge_availability_domain=args.edge_availability_domain,
         admin_enabled=args.admin_enabled)
+    self._pairing_key = attachment.pairingKey
+    return attachment
+
+  def Epilog(self, resources_were_displayed=True):
+    PrintPairingKeyEpilog(self._pairing_key)

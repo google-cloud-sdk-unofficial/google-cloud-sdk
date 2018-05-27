@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Triggers execution of a Google Cloud Function."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 
 from googlecloudsdk.api_lib.functions import util
@@ -21,6 +23,8 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+
+import six
 
 
 class Call(base.Command):
@@ -57,7 +61,7 @@ class Call(base.Command):
         json.loads(args.data)
       except ValueError as e:
         raise exceptions.InvalidArgumentException(
-            '--data', 'Is not a valid JSON: ' + e.message)
+            '--data', 'Is not a valid JSON: ' + six.text_type(e))
     client = util.GetApiClientInstance()
     function_ref = resources.REGISTRY.Parse(
         args.name,

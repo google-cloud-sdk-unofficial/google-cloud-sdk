@@ -14,9 +14,10 @@
 
 """Extensible interactive shell with auto completion and help."""
 
+from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import StringIO
+import io
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.interactive import application
@@ -245,7 +246,7 @@ class Interactive(base.Command):
       generate_cli_trees.UpdateCliTrees(
           warn_on_exceptions=True, verbose=not args.quiet)
     if not args.quiet:
-      render_document.RenderDocument(fin=StringIO.StringIO(_SPLASH))
+      render_document.RenderDocument(fin=io.StringIO(_SPLASH))
     config = configuration.Config(
         context=args.context,
         hidden=args.hidden,

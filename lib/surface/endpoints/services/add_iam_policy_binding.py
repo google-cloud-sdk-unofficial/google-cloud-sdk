@@ -14,7 +14,9 @@
 
 """Command for adding a principal to a service's access policy."""
 
-import httplib
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 
@@ -24,6 +26,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.endpoints import arg_parsers
 from googlecloudsdk.command_lib.endpoints import common_flags
 from googlecloudsdk.command_lib.iam import iam_util
+
+import six.moves.http_client
 
 
 class AddIamPolicyBinding(base.Command):
@@ -47,7 +51,7 @@ class AddIamPolicyBinding(base.Command):
 
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
-  @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
+  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):
     """Run 'service-management add-iam-policy-binding'.
 

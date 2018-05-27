@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for listing IP owners in a network."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base

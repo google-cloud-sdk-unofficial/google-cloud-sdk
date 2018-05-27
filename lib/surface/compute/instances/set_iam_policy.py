@@ -49,6 +49,11 @@ class SetIamPolicy(base.Command):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+    # TODO(b/78371568): Construct the ZoneSetPolicyRequest directly
+    # out of the parsed policy instead of setting 'bindings' and 'etags'.
+    # This current form is required so gcloud won't break while Compute
+    # roll outs the breaking change to SetIamPolicy (b/75971480)
+
     # TODO(b/36053578): determine how this output should look when empty.
 
     # SetIamPolicy always returns either an error or the newly set policy.
@@ -58,7 +63,9 @@ class SetIamPolicy(base.Command):
     return client.MakeRequests(
         [(client.apitools_client.instances, 'SetIamPolicy',
           client.messages.ComputeInstancesSetIamPolicyRequest(
-              policy=policy,
+              zoneSetPolicyRequest=client.messages.ZoneSetPolicyRequest(
+                  bindings=policy.bindings,
+                  etag=policy.etag),
               project=instance_ref.project,
               resource=instance_ref.instance,
               zone=instance_ref.zone))])[0]

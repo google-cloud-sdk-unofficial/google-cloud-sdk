@@ -14,6 +14,8 @@
 
 """Resource formats supplementary help."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.calliope import base
@@ -85,6 +87,11 @@ class Formats(base.TopicCommand):
           List the URIs for all compute instances:
 
             $ gcloud compute instances list --format='value(uri())'
+
+          List all compute instances with their creation timestamps displayed
+          according to the local timezone:
+
+            $ gcloud compute instances list --format="table(name,creationTimestamp.date(tz=LOCAL))"
 
           List the project authenticated user email address:
 

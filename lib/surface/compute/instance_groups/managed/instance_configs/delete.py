@@ -14,6 +14,8 @@
 
 """Command for deleting managed instance group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -25,6 +27,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 from googlecloudsdk.core import properties
+from six.moves import map
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -88,9 +91,9 @@ class Delete(base.DeleteCommand):
                    scope_lister=flags.GetDefaultScopeLister(
                        holder.client, project))
 
-    instances = map(str,
-                    managed_instance_groups_utils.CreateInstanceReferences(
-                        holder, igm_ref, args.instances))
+    instances = list(map(str,
+                         managed_instance_groups_utils.CreateInstanceReferences(
+                             holder, igm_ref, args.instances)))
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       operation_collection = 'compute.zoneOperations'

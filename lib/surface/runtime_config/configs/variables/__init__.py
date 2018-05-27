@@ -14,6 +14,8 @@
 
 """The command group for configs variables component."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 

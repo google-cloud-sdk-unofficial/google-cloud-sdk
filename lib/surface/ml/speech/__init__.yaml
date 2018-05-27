@@ -21,6 +21,21 @@ args_v1p1beta1:
     help_text: |
         Include a list of words and the confidence for those words in the top
         result.
+  - group:
+      params:
+        - api_field: config.diarizationSpeakerCount
+          arg_name: diarization-speaker-count
+          type: int
+          help_text: |
+            Estimated number of speakers in the conversation being recognized.
+        - api_field: config.enableSpeakerDiarization
+          arg_name: enable-speaker-diarization
+          help_text:  |
+            Enable speaker detection for each recognized word in the top
+            alternative of the recognition result using an integer speaker_tag
+            provided in the WordInfo.
+          type: bool
+          required: true
 
 args:
   - group:

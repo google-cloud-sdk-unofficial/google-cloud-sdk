@@ -44,7 +44,7 @@ class AddIamPolicyBinding(base.Command):
     Returns:
       Status of command execution.
     """
-    org_resource = args.CONCEPTS.organization_id.Parse()
+    org_resource = args.CONCEPTS.organization.Parse()
     return iam_lib.AddIamPolicyBinding(
         resource_resource=util.GetTaxonomyStoreFromOrgResource(org_resource),
         role=args.role,

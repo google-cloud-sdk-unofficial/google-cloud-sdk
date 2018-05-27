@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 
 
-@base.Hidden
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a Cloud Bigtable instance."""
 

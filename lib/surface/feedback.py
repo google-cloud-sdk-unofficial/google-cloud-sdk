@@ -24,6 +24,9 @@ bug tracker, with a partly pre-filled form.
 StackOverflow, or the Cloud SDK groups page.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import datetime
 import textwrap
 
@@ -33,6 +36,9 @@ from googlecloudsdk.command_lib import info_holder
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import text as text_util
+
+import six
+from six.moves import map
 
 
 STACKOVERFLOW_URL = 'http://stackoverflow.com/questions/tagged/gcloud'
@@ -107,7 +113,7 @@ def _SuggestIncludeRecentLogs():
         time = text_util.PrettyTimeDelta(now - run.date) + ' ago'
       return '[{0}]{1}: {2}'.format(run.command, crash, time)
     idx = console_io.PromptChoice(
-        map(_FormatLogData, recent_runs) + ['None of these'], default=0,
+        list(map(_FormatLogData, recent_runs)) + ['None of these'], default=0,
         message=('Which recent gcloud invocation would you like to provide '
                  'feedback about? This will open a new browser tab.'))
     if idx < len(recent_runs):
@@ -143,10 +149,10 @@ class Feedback(base.Command):
       try:
         log_data = info_holder.LogData.FromFile(args.log_file)
       except IOError as err:
-        log.warning(u'Error reading the specified file [{0}]: '
-                    u'{1}\n'.format(args.log_file, err))
+        log.warning('Error reading the specified file [{0}]: '
+                    '{1}\n'.format(args.log_file, err))
     if args.quiet:
-      _PrintQuiet(unicode(info), log_data)
+      _PrintQuiet(six.text_type(info), log_data)
     else:
       log.status.Print(FEEDBACK_MESSAGE)
       if not log_data:

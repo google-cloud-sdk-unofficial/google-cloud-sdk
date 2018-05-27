@@ -14,6 +14,8 @@
 
 """The main command group for Google Cloud Functions."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 
 from googlecloudsdk.api_lib.functions import transforms

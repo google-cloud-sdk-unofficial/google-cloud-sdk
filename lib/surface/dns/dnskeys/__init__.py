@@ -17,8 +17,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Deprecate(is_removed=False, warning=(
-    'The `gcloud beta dnskeys` commands are deprecated; please use the '
-    '`gcloud beta dnskeys` commands instead.'))
+    'The `gcloud beta dns dnskeys` commands are deprecated; please use the '
+    '`gcloud beta dns dns-keys` commands instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Dnskeys(base.Group):
   """Manage Cloud DNS DNSKEY records.

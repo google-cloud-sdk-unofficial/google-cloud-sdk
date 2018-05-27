@@ -63,7 +63,7 @@ def _Args(parser):
           The name or ID of a container inside of the virtual machine instance
           to connect to. This only applies to virtual machines that are using
           a Google Container-Optimized virtual machine image. For more
-          information, see [](https://cloud.google.com/compute/docs/containers)
+          information, see [](https://cloud.google.com/compute/docs/containers).
           """)
 
   parser.add_argument(
@@ -212,27 +212,18 @@ class SshBeta(SshGA):
     parser.add_argument(
         '--internal-ip', default=False, action='store_true',
         help="""\
-        Connect to instances using their private IP addresses. By default,
-        gcloud attempts to establish a ssh connection only if the specified
-        instance has a public IP address. When this flag is present, gcloud
-        attempts to connect to the instance using the IP of the internal network
-        instance even if the instance has a public IP.
+        Connect to instances using their internal IP addresses rather than their
+        external IP addresses. Use this to connect from one instance to another
+        on the same VPC network, over a VPN connection, or between two peered
+        VPC networks.
 
-        For the connection to work, your network must already be configured to
-        allow you to establish connections using the instance's private
-        network IP.
+        For this connection to work, you must configure your networks and
+        firewall to allow SSH connections to the internal IP address of
+        the instance to which you want to connect.
 
-        gcloud will verify that the instance it connected to reports the same id
-        as the instance you requested connection to. This only helps with
-        catching network configuration mistakes and is not meant as protection
-        against any kind of attack.
-
-        The same IP can appear in two internal networks and can result in an
-        incorrect connection. For example, instance-1 in network-1 has the same
-        internal IP as instance-2 in network-2. You want to connect to
-        instance-1 but your network configuration results in opening a
-        connection to instance-2. This requires the instance to have curl tool
-        available.""")
+        To learn how to use this flag, see
+        [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
+        """)
 
   def Run(self, args):
     """See SshGA.Run."""

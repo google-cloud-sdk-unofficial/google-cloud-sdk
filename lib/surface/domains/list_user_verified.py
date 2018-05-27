@@ -27,7 +27,7 @@ class ListUserVerified(base.Command):
           """\
           To list domains that have been verified by the current user, run:
 
-            $ {command} list-user-verified
+            $ {command}
 
           Use the {parent_command} verify command to verify additional
           domains.

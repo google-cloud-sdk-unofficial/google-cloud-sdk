@@ -14,6 +14,9 @@
 
 """endpoints deploy command."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 import os
 
 from googlecloudsdk.api_lib.endpoints import config_reporter
@@ -24,6 +27,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import http_encoding
 
 
 ADVICE_STRING = ('Advice found for changes in the new service config. If this '
@@ -93,6 +97,11 @@ class _BaseDeploy(object):
     """
 
     messages = services_util.GetMessagesModule()
+
+    file_types = messages.ConfigFile.FileTypeValueValuesEnum
+    if file_type != file_types.FILE_DESCRIPTOR_SET_PROTO:
+      # File is human-readable text, not binary; needs to be encoded.
+      file_contents = http_encoding.Encode(file_contents)
     return messages.ConfigFile(
         fileContents=file_contents,
         filePath=os.path.basename(filename),

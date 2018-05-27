@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,15 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for the Access Context Manager zones CLI."""
+
+"""Package for the service-management/operations CLI subcommands."""
+
 from googlecloudsdk.calliope import base
 
 
-class Zones(base.Group):
-  """Manage Access Context Manager zones.
-
-  An access zone describes a set of Google Cloud Platform resources which can
-  freely import and export data amongst themselves, but not externally.
-
-  Currently, the only allowed members of an access zone are projects.
-  """
+class Operations(base.Group):
+  """Manage Operation for various services."""

@@ -16,6 +16,9 @@
 
 """gcloud command line tool."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import os
 import sys
 
@@ -45,15 +48,17 @@ def _import_gcloud_main():
 
 
 def main():
+  # pylint:disable=g-import-not-at-top
+  from googlecloudsdk.core.util import encoding
 
-  if '_ARGCOMPLETE' in os.environ:
+  if encoding.GetEncodedValue(os.environ, '_ARGCOMPLETE'):
     try:
       # pylint:disable=g-import-not-at-top
       import googlecloudsdk.command_lib.static_completion.lookup as lookup
       lookup.Complete()
       return
     except Exception:  # pylint:disable=broad-except, hide completion errors
-      if os.environ.get('_ARGCOMPLETE_TRACE') == 'static':
+      if encoding.GetEncodedValue(os.environ, '_ARGCOMPLETE_TRACE') == 'static':
         raise
 
   try:

@@ -15,7 +15,7 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
-import cStringIO
+import io
 from apitools.base.protorpclite import messages
 from apitools.base.py import encoding
 
@@ -156,7 +156,7 @@ class Edit(base.Command):
       yield resource
 
   def BuildFileContents(self, args, client, original_record, modifiable_record):
-    buf = cStringIO.StringIO()
+    buf = io.StringIO()
     for line in base_classes.HELP.splitlines():
       buf.write('#')
       if line:
@@ -195,10 +195,7 @@ class Edit(base.Command):
       except (ValueError, yaml.YAMLParseError,
               messages.ValidationError,
               calliope_exceptions.ToolException) as e:
-        if isinstance(e, ValueError):
-          message = e.message
-        else:
-          message = str(e)
+        message = getattr(e, 'message', str(e))
 
         if isinstance(e, calliope_exceptions.ToolException):
           problem_type = 'applying'

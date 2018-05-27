@@ -14,6 +14,8 @@
 
 """Implements the command to add an SSH public key to the OS Login profile."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.oslogin import flags

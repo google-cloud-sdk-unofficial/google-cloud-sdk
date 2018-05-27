@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating security policies."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -76,8 +78,9 @@ class Create(base.CreateCommand):
         return security_policies_utils.SecurityPolicyFromFile(
             import_file, messages, 'yaml')
     except Exception as exp:
-      msg = (u'Unable to read security policy config from specified file '
-             u'[{0}] because [{1}]'.format(args.file_name, exp.message))
+      exp_msg = getattr(exp, 'message', str(exp))
+      msg = ('Unable to read security policy config from specified file '
+             '[{0}] because [{1}]'.format(args.file_name, exp_msg))
       raise exceptions.BadFileException(msg)
 
   def Run(self, args):

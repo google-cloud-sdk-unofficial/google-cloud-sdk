@@ -18,7 +18,7 @@
 __version__ = '0.1-alpha'
 
 required_install_packages = [
-    'oauth2client == 2.2.0',
+    'oauth2client >= 2.2.0',
     'six == 1.10.0',
     'bs4 >= 0.0.1, < 1.0',
     'numpy >= 1.10.4',  # Don't pin numpy, as it requires a recompile.
@@ -27,11 +27,14 @@ required_install_packages = [
     'pyyaml >= 3.11, < 4.0',
     'protobuf >= 3.1.0, < 4.0',
     'enum34 >= 1.1',
-    'tensorflow >= 1.0.0',
 ]
 
 required_install_packages_with_batch_prediction = required_install_packages + [
     # Remove < 2.4.0 after b/77730826 is fixed.
     'apache-beam[gcp] >= 2.0.0, < 2.4.0',
+    'google-cloud-logging >= 0.23.0, < 1.0',
+]
+
+required_install_packages_no_deps = required_install_packages + [
     'google-cloud-logging >= 0.23.0, < 1.0',
 ]

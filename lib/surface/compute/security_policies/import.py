@@ -14,6 +14,8 @@
 
 """Command for importing security policy configs from a file."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -71,14 +73,15 @@ class Import(base.SilentCommand):
           imported = security_policies_utils.SecurityPolicyFromFile(
               import_file, holder.client.messages, 'yaml')
     except Exception as exp:
-      msg = (u'Unable to read security policy config from specified file [{0}] '
-             u'because [{1}]'.format(args.file_name, exp.message))
+      exp_msg = getattr(exp, 'message', str(exp))
+      msg = ('Unable to read security policy config from specified file [{0}] '
+             'because [{1}]'.format(args.file_name, exp_msg))
       raise exceptions.BadFileException(msg)
 
     # Send the change to the service.
     security_policy = client.SecurityPolicy(ref, compute_client=holder.client)
     security_policy.Patch(security_policy=imported)
 
-    msg = u'Updated [{0}] with config from [{1}].'.format(
+    msg = 'Updated [{0}] with config from [{1}].'.format(
         ref.Name(), args.file_name)
     log.status.Print(msg)

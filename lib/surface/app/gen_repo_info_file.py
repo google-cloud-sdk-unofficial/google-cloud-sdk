@@ -14,6 +14,8 @@
 
 """The gen_repo_info_file command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 import os
 

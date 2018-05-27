@@ -53,10 +53,14 @@ class RemoveIamPolicyBinding(base.Command):
               zone=instance_ref.zone,
               project=instance_ref.project))])[0]
     iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
+    # TODO(b/78371568): Construct the ZoneSetPolicyRequest directly
+    # out of the parsed policy.
     return client.MakeRequests(
         [(client.apitools_client.instances, 'SetIamPolicy',
           client.messages.ComputeInstancesSetIamPolicyRequest(
-              policy=policy,
+              zoneSetPolicyRequest=client.messages.ZoneSetPolicyRequest(
+                  bindings=policy.bindings,
+                  etag=policy.etag),
               project=instance_ref.project,
               resource=instance_ref.instance,
               zone=instance_ref.zone))])[0]
