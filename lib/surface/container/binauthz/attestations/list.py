@@ -37,13 +37,13 @@ class List(base.ListCommand):
   passed attestation authority note:
 
       $ {command} \
-          --attestation-authority-note=providers/example-prj/notes/note-id
+          --attestation-authority-note=projects/example-prj/notes/note-id
 
   List the (pgp_key_fingerprint, signature) pairs for all attestations for the
   passed artifact-url bound to the passed attestation authority note:
 
       $ {command} \
-          --attestation-authority-note=providers/exmple-prj/notes/note-id \
+          --attestation-authority-note=projects/exmple-prj/notes/note-id \
           --artifact-url='gcr.io/example-project/example-image@sha256:abcd'
   """
 

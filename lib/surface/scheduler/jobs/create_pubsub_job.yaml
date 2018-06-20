@@ -12,20 +12,20 @@
     resource:
       help_text: The job to create.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
-      removed_flags: [ location ]
+      removed_flags: [location]
     params:
       - _COMMON_args
       - api_field: job.pubsubTarget.topicName
         arg_name: topic
-        required: True
+        required: true
         type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
         processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
         help_text: |
           The name of the Google Cloud Pub/Sub topic to publish to when the job
           runs.
       - group:
-          mutex: True
-          required: True
+          mutex: true
+          required: true
           help_text: |
             The body of the message to publish to the given topic name.
             Information on message formatting and size limits can be found at:

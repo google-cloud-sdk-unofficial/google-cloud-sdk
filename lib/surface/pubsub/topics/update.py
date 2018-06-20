@@ -40,6 +40,11 @@ class Update(base.UpdateCommand):
     """Registers flags for this command."""
     resource_args.AddTopicResourceArg(parser, 'to update.')
     labels_util.AddUpdateLabelsFlags(parser)
+    parser.add_argument(
+        '--recompute-message-storage-policy',
+        action='store_true',
+        help='If given, Cloud Pub/Sub will recompute the regions where messages'
+             " can be stored at rest based on your organization's policies.")
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -61,15 +66,19 @@ class Update(base.UpdateCommand):
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args, client.messages.Topic.LabelsValue,
         orig_labels_thunk=lambda: client.Get(topic_ref).labels)
+
+    result = None
     try:
-      result = client.Patch(topic_ref, labels=labels_update.GetOrNone())
+      result = client.Patch(
+          topic_ref,
+          labels_update.GetOrNone(),
+          args.recompute_message_storage_policy)
     except topics.NoFieldsSpecifiedError:
-      if not any(args.IsSpecified(arg) for arg in ('clear_labels',
-                                                   'update_labels',
-                                                   'remove_labels')):
+      if not any(args.IsSpecified(arg) for arg in (
+          'clear_labels', 'update_labels', 'remove_labels',
+          'recompute_message_storage_policy')):
         raise
       log.status.Print('No update to perform.')
-      result = None
     else:
       log.UpdatedResource(topic_ref.RelativeName(), kind='topic')
     return result

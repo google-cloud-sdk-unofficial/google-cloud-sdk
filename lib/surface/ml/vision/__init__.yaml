@@ -25,7 +25,7 @@ args:
   image_field:
     api_field: requests.image
     arg_name: image_path
-    is_positional: True
+    is_positional: true
     help_text: >
       The path to the image to be analyzed. This can be either a local path
       or a URL. If you provide a local file, the contents will be sent

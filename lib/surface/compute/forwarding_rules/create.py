@@ -38,7 +38,7 @@ def _Args(parser, include_beta, include_alpha=False):
   flags.AddPortsAndPortRange(parser)
   flags.AddNetworkTier(
       parser, supports_network_tier_flag=include_beta, for_update=False)
-  if include_alpha:
+  if include_beta:
     parser.add_argument(
         '--service-label',
         help='(Only for Internal Load Balancing): '

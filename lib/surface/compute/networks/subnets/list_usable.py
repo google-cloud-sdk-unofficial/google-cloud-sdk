@@ -31,14 +31,15 @@ class ListUsableSubnets(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    display_format = 'table({fields})'.format(fields=','.join([
-        'subnetwork.segment(-5):label=PROJECT',
-        'subnetwork.segment(-3):label=REGION',
-        'network.segment(-1):label=NETWORK',
-        'subnetwork.segment(-1):label=SUBNET',
-        'ipCidrRange:label=RANGE',
-    ]))
-    parser.display_info.AddFormat(display_format)
+    parser.display_info.AddFormat("""\
+        table(
+          subnetwork.segment(-5):label=PROJECT,
+          subnetwork.segment(-3):label=REGION,
+          network.segment(-1):label=NETWORK,
+          subnetwork.segment(-1):label=SUBNET,
+          ipCidrRange:label=RANGE,
+          secondaryIpRanges.map().format("{0} {1}", rangeName, ipCidrRange).list(separator="\n"):label=SECONDARY_RANGES
+        )""")
 
   def Collection(self):
     return 'compute.subnetworks'

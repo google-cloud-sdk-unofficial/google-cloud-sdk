@@ -28,8 +28,8 @@
     params:
       - arg_name: job-type
         api_field: type
-        is_positional: False
-        required: False
+        is_positional: false
+        required: false
         help_text: |
            The type of Cloud DLP jobs to list.
         default: inspect
@@ -39,7 +39,7 @@
           - arg_value: risk-analysis
             enum_value: RISK_ANALYSIS_JOB
 
-    resource: # TODO: Remove when (b/79129961) is resolved.
+    resource:  # TODO: Remove when (b/79129961) is resolved.
       help_text: The project to list jobs for.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project
 

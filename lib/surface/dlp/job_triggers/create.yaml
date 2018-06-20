@@ -35,21 +35,21 @@
     params:
       - arg_name: description
         api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.description
-        is_positional: False
-        required: False
+        is_positional: false
+        required: false
         help_text: |
           User provided description (maximum 256 characters)
       - arg_name: display-name
         api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.displayName
-        is_positional: False
-        required: False
+        is_positional: false
+        required: false
         help_text: |
           Display name of the job trigger (maximum 100 characters)
       - api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.limits.maxFindingsPerItem
         arg_name: max-findings-per-item
         type: int
-        is_positional: False
-        required: False
+        is_positional: false
+        required: false
         help_text: |
             Maximum number of findings that will be returned for each item
             scanned.
@@ -59,9 +59,9 @@
         arg_name: trigger-schedule
         type: 'googlecloudsdk.calliope.arg_parsers:Duration:'
         processor: googlecloudsdk.command_lib.dlp.hooks:GetJobScheduleDurationString
-        is_positional: False
-        repeated: False
-        required: True
+        is_positional: false
+        repeated: false
+        required: true
         help_text: |
            Duration specifying how often the triggered job will be run. A
            scheduled start time will be skipped if the previous execution has
@@ -71,8 +71,8 @@
 
            See `$ gcloud topic datetimes for information on duration formats.`
       - group:
-          mutex: True
-          required: True
+          mutex: true
+          required: true
           params:
           - arg_name: output-topics
             api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.actions
@@ -94,8 +94,8 @@
               dataset_id, and table_id in the format
               `<project_id>.<dataset_id>.<table_id>`.
       - group:
-          mutex: True
-          required: True
+          mutex: true
+          required: true
           params:
           - _REF_: googlecloudsdk.command_lib.dlp.flags:datastore_kind
           - _REF_: googlecloudsdk.command_lib.dlp.flags:gcs_path

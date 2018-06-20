@@ -13,6 +13,9 @@
 # limitations under the License.
 """The CreateSignaturePayload command for Binary Authorization signatures."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
 from googlecloudsdk.command_lib.container.binauthz import flags as binauthz_flags

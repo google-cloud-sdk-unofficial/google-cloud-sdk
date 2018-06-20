@@ -31,13 +31,13 @@
       - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
         api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.minLikelihood
       - group:
-          mutex: True
-          required: True
+          mutex: true
+          required: true
           params:
           - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.replaceWithInfoTypeConfig
             arg_name: replace-with-info-type
             action: store_true
-            repeated: False
+            repeated: false
             default: !!null
             processor: googlecloudsdk.command_lib.dlp.hooks:GetInfoTypeTransform
             help_text: |
@@ -48,14 +48,14 @@
             arg_name: remove-findings
             action: store_true
             default: !!null
-            repeated: False
+            repeated: false
             processor: googlecloudsdk.command_lib.dlp.hooks:GetRedactTransform
             help_text: |
               If specified, all sensitive data will be removed, instead of
               replaced.
           - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.replaceConfig
             arg_name: replacement-text
-            repeated: False
+            repeated: false
             processor: googlecloudsdk.command_lib.dlp.hooks:GetReplaceTextTransform
             help_text: |
              Text to replace each sensitive data finding with.

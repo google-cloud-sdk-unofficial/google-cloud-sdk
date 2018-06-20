@@ -13,6 +13,9 @@
 # limitations under the License.
 """The Attestations base group for Binary Authorization signatures."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 
 

@@ -233,6 +233,7 @@ class CreateAlpha(Create):
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.new_scopes_behavior = True
     ops.local_ssd_volume_configs = args.local_ssd_volumes
+    ops.max_pods_per_node = args.max_pods_per_node
     return ops
 
   @staticmethod
@@ -249,6 +250,7 @@ class CreateAlpha(Create):
     flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
+    flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -13,6 +13,9 @@
 # limitations under the License.
 """Set the IAM policy for a Binary Authorization policy."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.container.binauthz import iam
 from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base

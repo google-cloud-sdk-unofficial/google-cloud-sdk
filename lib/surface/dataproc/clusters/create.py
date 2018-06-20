@@ -26,7 +26,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.core import log
 
 
 def _CommonArgs(parser, beta=False):
@@ -93,47 +92,7 @@ class Create(base.CreateCommand):
 
     self.ConfigureCluster(dataproc.messages, args, cluster)
 
-    operation = dataproc.client.projects_regions_clusters.Create(
-        dataproc.messages.DataprocProjectsRegionsClustersCreateRequest(
-            projectId=cluster_ref.projectId,
-            region=cluster_ref.region,
-            cluster=cluster,
-            requestId=util.GetUniqueId()))
-
-    if args.async:
-      log.status.write(
-          'Creating [{0}] with operation [{1}].'.format(
-              cluster_ref, operation.name))
-      return
-
-    operation = util.WaitForOperation(
-        dataproc,
-        operation,
-        message='Waiting for cluster creation operation',
-        timeout_s=args.timeout)
-
-    get_request = dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
-        projectId=cluster_ref.projectId,
-        region=cluster_ref.region,
-        clusterName=cluster_ref.clusterName)
-    cluster = dataproc.client.projects_regions_clusters.Get(get_request)
-    if cluster.status.state == (
-        dataproc.messages.ClusterStatus.StateValueValuesEnum.RUNNING):
-
-      zone_uri = cluster.config.gceClusterConfig.zoneUri
-      zone_short_name = zone_uri.split('/')[-1]
-
-      # Log the URL of the cluster
-      log.CreatedResource(
-          cluster_ref,
-          # Also indicate which zone the cluster was placed in. This is helpful
-          # if the server picked a zone (auto zone)
-          details='Cluster placed in zone [{0}]'.format(zone_short_name))
-    else:
-      log.error('Create cluster failed!')
-      if operation.details:
-        log.error('Details:\n' + operation.details)
-    return cluster
+    return clusters.CreateCluster(dataproc, cluster, args.async, args.timeout)
 
   @staticmethod
   def ConfigureCluster(messages, args, cluster):

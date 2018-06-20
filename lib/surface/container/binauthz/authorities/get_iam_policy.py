@@ -13,6 +13,9 @@
 # limitations under the License.
 """Fetch the IAM policy for an authority."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.container.binauthz import iam
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags

@@ -22,7 +22,6 @@ import textwrap
 import time
 import traceback
 
-
 import googleapiclient
 from googleapiclient import discovery
 from googleapiclient import http as http_request
@@ -2458,11 +2457,7 @@ class BigqueryClient(object):
     """
     _Typecheck(reference, ApiClientHelper.TableReference, method='UpdateTable')
 
-    # Get the existing table and associated ETag.
-    get_request = self.apiclient.tables().get(**dict(reference))
-    if etag:
-      get_request.headers['If-Match'] = etag
-    table = get_request.execute()
+    table = BigqueryClient.ConstructObjectInfo(reference)
 
     if schema is not None:
       table['schema'] = {'fields': schema}
@@ -2484,9 +2479,9 @@ class BigqueryClient(object):
       view_args = {'query': view_query}
       if view_udf_resources is not None:
         view_args['userDefinedFunctionResources'] = view_udf_resources
-      table['view'] = view_args
       if use_legacy_sql is not None:
         view_args['useLegacySql'] = use_legacy_sql
+      table['view'] = view_args
     if external_data_config is not None:
       table['externalDataConfiguration'] = external_data_config
     if 'labels' not in table:
@@ -2496,19 +2491,17 @@ class BigqueryClient(object):
         table['labels'][label_key] = label_value
     if label_keys_to_remove:
       for label_key in label_keys_to_remove:
-        table['labels'].pop(label_key, None)
+        table['labels'][label_key] = None
     if time_partitioning is not None:
       table['timePartitioning'] = time_partitioning
 
-    request = self.apiclient.tables().update(body=table, **dict(reference))
+    request = self.apiclient.tables().patch(body=table, **dict(reference))
 
     # Perform a conditional update to protect against concurrent
-    # modifications to this table.  By placing the ETag returned in
-    # the get operation into the If-Match header, the API server will
-    # make sure the table hasn't changed.  If there is a conflicting
+    # modifications to this table. If there is a conflicting
     # change, this update will fail with a "Precondition failed"
     # error.
-    if etag or table['etag']:
+    if etag:
       request.headers['If-Match'] = etag if etag else table['etag']
     request.execute()
 
@@ -2680,7 +2673,7 @@ class BigqueryClient(object):
         # Log response headers, which contain debug info for GFEs.
         for key, value in e.resp.items():
           logging.info('  %s: %s', key, value)
-        if e.resp.status in [500, 502, 503, 504]:
+        if e.resp.status in [502, 503, 504]:
           sleep_sec = 2 ** retriable_errors
           retriable_errors += 1
           if retriable_errors > 3:

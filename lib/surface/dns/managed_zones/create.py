@@ -13,6 +13,8 @@
 # limitations under the License.
 """gcloud dns managed-zone create command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base

@@ -19,7 +19,12 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
+_DEPRECATION_WARNING = (
+    '`gcloud sql ssl-certs` is deprecated. Use `gcloud sql ssl client-certs` '
+    'instead.')
 
+
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class SslCerts(base.Group):
   """Provide commands for managing SSL certificates of Cloud SQL instances.

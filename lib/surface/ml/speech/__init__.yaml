@@ -4,7 +4,7 @@ args_v1:
     help_text: |
       The location of the audio file to transcribe. Must be a local path or a
       Google Cloud Storage URL (in the format gs://bucket/object).
-    is_positional: True
+    is_positional: true
     processor: googlecloudsdk.command_lib.ml.speech.util:GetAudioHook:version=v1
 
 args_v1p1beta1:
@@ -13,7 +13,7 @@ args_v1p1beta1:
     help_text: |
       The location of the audio file to transcribe. Must be a local path or a
       Google Cloud Storage URL (in the format gs://bucket/object).
-    is_positional: True
+    is_positional: true
     processor: googlecloudsdk.command_lib.ml.speech.util:GetAudioHook:version=v1p1beta1
 
   - api_field: config.enableWordConfidence
@@ -37,10 +37,22 @@ args_v1p1beta1:
           type: bool
           required: true
 
+  - api_field: config.alternativeLanguageCodes
+    arg_name: additional-language-codes
+    metavar: language_code
+    repeated: true
+    help_text: |
+      The BCP-47 language tags of other languages that the speech may be
+      in. Up to 3 can be provided.
+
+      If alternative languages are listed, recognition result will contain
+      recognition in the most likely language detected including the main
+      language-code.
+
 args:
   - group:
-      mutex: True
-      required: True
+      mutex: true
+      required: true
       params:
         - api_field: config.languageCode
           arg_name: language-code
@@ -51,7 +63,7 @@ args:
             of the currently supported language codes.
         - api_field: config.languageCode
           arg_name: language
-          hidden: True
+          hidden: true
           action:
             deprecated:
               warn: Flag {flag_name} is deprecated. Use --language-code instead.

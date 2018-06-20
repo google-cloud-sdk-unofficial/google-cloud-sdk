@@ -14,4 +14,4 @@
     resource:
       help_text: The device you want to show the configuration for.
       spec: !REF googlecloudsdk.command_lib.iot.resources:device
-      is_positional: False
+      is_positional: false

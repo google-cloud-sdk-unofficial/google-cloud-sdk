@@ -27,7 +27,7 @@
      id_field: name
 
   arguments:
-    resource: # TODO: Remove when (b/79129961) is resolved.
+    resource:  # TODO: Remove when (b/79129961) is resolved.
       help_text: The project to list job triggers for.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project
 

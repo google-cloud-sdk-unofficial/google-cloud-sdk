@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20180418",
+ "revision": "20180516",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -470,7 +470,7 @@
     },
     "endMs": {
      "type": "string",
-     "description": "Stage end time in milliseconds.",
+     "description": "Stage end time represented as milliseconds since epoch.",
      "format": "int64"
     },
     "id": {
@@ -537,7 +537,7 @@
     },
     "startMs": {
      "type": "string",
-     "description": "Stage start time in milliseconds.",
+     "description": "Stage start time represented as milliseconds since epoch.",
      "format": "int64"
     },
     "status": {
@@ -1225,7 +1225,7 @@
     },
     "location": {
      "type": "string",
-     "description": "[Experimental] The geographic location of the job. Required except for US and EU."
+     "description": "[Experimental] The geographic location of the job. Required except for US and EU. See details at https://cloud.google.com/bigquery/docs/dataset-locations#specifying_your_location."
     },
     "projectId": {
      "type": "string",
@@ -1324,6 +1324,24 @@
      "description": "[Output-only] Referenced tables for the job. Queries that reference more than 50 tables will not have a complete list.",
      "items": {
       "$ref": "TableReference"
+     }
+    },
+    "reservationUsage": {
+     "type": "array",
+     "description": "[Output-only] Job resource usage breakdown by reservation.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "name": {
+        "type": "string",
+        "description": "[Output-only] Reservation name or \"unreserved\" for on-demand resources usage."
+       },
+       "slotMs": {
+        "type": "string",
+        "description": "[Output-only] Slot-milliseconds the job spent in the given reservation.",
+        "format": "int64"
+       }
+      }
      }
     },
     "schema": {
@@ -2172,12 +2190,12 @@
    "properties": {
     "expirationMs": {
      "type": "string",
-     "description": "[Optional] Number of milliseconds for which to keep the storage for a partition.",
+     "description": "[Optional] Number of milliseconds for which to keep the storage for partitions in the table. The storage in a partition will have an expiration time of its partition time plus this value.",
      "format": "int64"
     },
     "field": {
      "type": "string",
-     "description": "[Experimental] [Optional] If not set, the table is partitioned by pseudo column '_PARTITIONTIME'; if set, the table is partitioned by this field. The field must be a top-level TIMESTAMP or DATE field. Its mode must be NULLABLE or REQUIRED."
+     "description": "[Experimental] [Optional] If not set, the table is partitioned by pseudo column, referenced via either '_PARTITIONTIME' as TIMESTAMP type, or '_PARTITIONDATE' as DATE type. If field is specified, the table is instead partitioned by this field. The field must be a top-level TIMESTAMP or DATE field. Its mode must be NULLABLE or REQUIRED."
     },
     "requirePartitionFilter": {
      "type": "boolean",
@@ -2453,7 +2471,7 @@
       },
       "location": {
        "type": "string",
-       "description": "[Experimental] The geographic location of the job. Required except for US and EU.",
+       "description": "[Experimental] The geographic location of the job. Required except for US and EU. See details at https://cloud.google.com/bigquery/docs/dataset-locations#specifying_your_location.",
        "location": "query"
       },
       "projectId": {
@@ -2489,7 +2507,7 @@
       },
       "location": {
        "type": "string",
-       "description": "[Experimental] The geographic location of the job. Required except for US and EU.",
+       "description": "[Experimental] The geographic location of the job. Required except for US and EU. See details at https://cloud.google.com/bigquery/docs/dataset-locations#specifying_your_location.",
        "location": "query"
       },
       "projectId": {
@@ -2526,7 +2544,7 @@
       },
       "location": {
        "type": "string",
-       "description": "[Experimental] The geographic location where the job should run. Required except for US and EU.",
+       "description": "[Experimental] The geographic location where the job should run. Required except for US and EU. See details at https://cloud.google.com/bigquery/docs/dataset-locations#specifying_your_location.",
        "location": "query"
       },
       "maxResults": {

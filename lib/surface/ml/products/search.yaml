@@ -26,7 +26,7 @@
     params:
       - api_field: requests.image
         arg_name: image_path
-        is_positional: True
+        is_positional: true
         help_text: >
           The path to the image to be searched for. This can be either a local
           path or a URL. If you provide a local file, the contents will be sent
@@ -53,7 +53,7 @@
       # images resources actually live in different API version.
       - api_field: requests.imageContext.productSearchParams.catalogName
         arg_name: catalog
-        required: True
+        required: true
         type: googlecloudsdk.command_lib.ml.products.flags:CatalogNameType
         help_text: The ID of the catalog to search in.
 

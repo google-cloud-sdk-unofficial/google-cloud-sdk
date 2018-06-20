@@ -28,7 +28,7 @@ class _BaseList(object):
   @staticmethod
   def Args(parser):
     flags.AddInstance(parser)
-    parser.display_info.AddFormat(flags.SSL_CERTS_FORMAT)
+    parser.display_info.AddFormat(flags.CLIENT_CERTS_FORMAT)
 
   def Run(self, args):
     """Lists all SSL certs for a Cloud SQL instance.

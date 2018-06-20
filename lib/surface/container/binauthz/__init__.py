@@ -13,6 +13,9 @@
 # limitations under the License.
 """The base surface for Binary Authorization signatures."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -82,7 +85,7 @@ class Binauthz(base.Group):
           --pgp-key-fingerprint=${KEY_FINGERPRINT} \
           --signature-file=example_signature.pgp \
           --artifact-url="${ARTIFACT_URL}" \
-          --attestation-authority-note=providers/example-prj/notes/note-id
+          --attestation-authority-note=projects/example-prj/notes/note-id
         ```
 
     List the attestation by artifact URL.  `--format` can be passed to
@@ -127,7 +130,7 @@ class Binauthz(base.Group):
         ```sh
         {command} attestations list \
           --artifact-url="${ARTIFACT_URL}" \
-          --attestation-authority-note=providers/exmple-prj/notes/note-id \
+          --attestation-authority-note=projects/exmple-prj/notes/note-id \
           --format=yaml
 
           ...

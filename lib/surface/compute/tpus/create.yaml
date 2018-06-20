@@ -27,14 +27,14 @@
     api_version: v1alpha1
     resource_method_params:
       nodeId: nodesId
-    use_relative_name: False
+    use_relative_name: false
     modify_request_hooks:
       - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetParentRequestHook
 
   async:
     collection: tpu.projects.locations.operations
     result_attribute: response
-    extract_resource_result: False
+    extract_resource_result: false
 
   arguments:
     resource:
@@ -44,7 +44,7 @@
     params:
       - api_field: node.acceleratorType
         arg_name: accelerator-type
-        required: False
+        required: false
         help_text: |
           TPU accelerator type for the TPU.
           If not specified, this defaults to `v2-8`.
@@ -56,23 +56,23 @@
         default: 'v2-8'
       - api_field: node.description
         arg_name: description
-        required: False
+        required: false
         help_text: |
           Specifies a text description of the TPU.
       - api_field: node.network
         arg_name: network
-        required: True
+        required: true
         help_text: |
           Specifies the network that this TPU will be a part of.
       - api_field: node.tensorflowVersion
         arg_name: version
-        required: True
+        required: true
         help_text: |
           TensorFlow version for the TPU, such as `1.6`. For a list of available
           TensorFlow versions please see https://www.tensorflow.org/versions/.
       - api_field: node.cidrBlock
         arg_name: range
-        required: True
+        required: true
         help_text: |
           CIDR Range for the TPU.
 

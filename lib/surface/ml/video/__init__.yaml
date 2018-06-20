@@ -5,14 +5,14 @@ request:
 
 async:
   collection: videointelligence.operations
-  extract_resource_result: False
+  extract_resource_result: false
   result_attribute: response
   operation_get_method_params:
     name: operationsId
 
 args:
   - arg_name: input_path
-    is_positional: True
+    is_positional: true
     help_text: |
       The path to the video to be analyzed. Must be a local path or a Google
       Cloud Storage URI.

@@ -382,11 +382,6 @@ def _GetCredentialsFromFlags():
   """Returns credentials based on user supplied flags."""
 
 
-  try:
-    return oauth2client_4_0.contrib.devshell.DevshellCredentials()
-  except:  # pylint: disable=bare-except
-    pass
-
   # In the case of a GCE service account, we can skip the entire
   # process of loading from storage.
   if FLAGS.use_gce_service_account:
@@ -738,6 +733,10 @@ class Client(object):
     # for the case of being loaded as a library.
     _ProcessBigqueryrc()
     bigquery_client.ConfigurePythonLogger(FLAGS.apilog)
+
+    if FLAGS.httplib2_debuglevel:
+      httplib2.debuglevel = FLAGS.httplib2_debuglevel
+
     if 'credentials' in kwds:
       credentials = kwds.pop('credentials')
     else:
@@ -1235,10 +1234,11 @@ class _Load(BigqueryCmd):
     flags.DEFINE_integer(
         'time_partitioning_expiration',
         None,
-        'Enables time based partitioning on the table and set the number of '
-        'seconds for which to keep the storage for a partition relative to its'
-        'partition key. The storage will have an expiration time of its '
-        'partition key plus this value. A negative number means no expiration.',
+        'Enables time based partitioning on the table and sets the number of '
+        'seconds for which to keep the storage for the partitions in the table.'
+        ' The storage in a partition will have an expiration time of its '
+        'partition time plus this value. A negative number means no '
+        'expiration.',
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_field',
@@ -1636,10 +1636,11 @@ class _Query(BigqueryCmd):
     flags.DEFINE_integer(
         'time_partitioning_expiration',
         None,
-        'Enables time based partitioning on the table and set the number of '
-        'seconds for which to keep the storage for a partition. The storage '
-        'will have an expiration time of its creation time plus this value. '
-        'A negative number means no expiration.',
+        'Enables time based partitioning on the table and sets the number of '
+        'seconds for which to keep the storage for the partitions in the table.'
+        ' The storage in a partition will have an expiration time of its '
+        'partition time plus this value. A negative number means no '
+        'expiration.',
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_field',
@@ -1932,10 +1933,11 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
     flags.DEFINE_integer(
         'time_partitioning_expiration',
         None,
-        'Enables time based partitioning on the table and set the number of '
-        'seconds for which to keep the storage for a partition. The storage '
-        'will have an expiration time of its creation time plus this value. '
-        'A negative number means no expiration.',
+        'Enables time based partitioning on the table and sets the number of '
+        'seconds for which to keep the storage for the partitions in the table.'
+        ' The storage in a partition will have an expiration time of its '
+        'partition time plus this value. A negative number means no '
+        'expiration.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -2571,7 +2573,7 @@ def _ParseTimePartitioning(partitioning_type=None,
     if key_type not in time_partitioning:
       time_partitioning[key_type] = 'DAY'
     if (key_expiration in time_partitioning
-        and time_partitioning[key_expiration] < 0):
+        and time_partitioning[key_expiration] <= 0):
       time_partitioning[key_expiration] = None
     return time_partitioning
   else:
@@ -2723,10 +2725,11 @@ class _Make(BigqueryCmd):
     flags.DEFINE_integer(
         'time_partitioning_expiration',
         None,
-        'Enables time based partitioning on the table and set the number of '
-        'seconds for which to keep the storage for a partition. The storage '
-        'will have an expiration time of its creation time plus this value. '
-        'A negative number means no expiration.',
+        'Enables time based partitioning on the table and sets the number of '
+        'seconds for which to keep the storage for the partitions in the table.'
+        ' The storage in a partition will have an expiration time of its '
+        'partition time plus this value. A negative number means no '
+        'expiration.',
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_field',
@@ -3043,10 +3046,11 @@ class _Update(BigqueryCmd):
     flags.DEFINE_integer(
         'time_partitioning_expiration',
         None,
-        'Enables time based partitioning on the table and set the number of '
-        'seconds for which to keep the storage for a partition. The storage '
-        'will have an expiration time of its creation time plus this value. '
-        'A negative number means no expiration.',
+        'Enables time based partitioning on the table and sets the number of '
+        'seconds for which to keep the storage for the partitions in the table.'
+        ' The storage in a partition will have an expiration time of its '
+        'partition time plus this value. A negative number means no '
+        'expiration.',
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_field',
@@ -3444,6 +3448,8 @@ def _PrintJobMessages(printable_job_info):
           message = '[%s] %s' % (w['location'], w['message'])
         else:
           message = w['message']
+        if message is not None:
+          message = message.encode('utf-8')
         print '%s\n' % message
     if recommend_show:
       print 'Use "bq show -j %s" to view job warnings.' % job_ref

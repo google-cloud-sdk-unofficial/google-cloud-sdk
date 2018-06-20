@@ -18,7 +18,7 @@
 
         If not specified, will use `default` compute/zone.
       spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:location
-      is_positional: False
+      is_positional: false
 
   output:
     format: |

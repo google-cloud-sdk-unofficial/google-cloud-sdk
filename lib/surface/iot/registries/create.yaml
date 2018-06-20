@@ -20,22 +20,22 @@
         arg_name: enable-mqtt-config
         help_text: Whether to allow MQTT connections to this device registry.
         action: store_true
-        default: True
+        default: true
         choices:
-          - arg_value: True
+          - arg_value: true
             enum_value: MQTT_ENABLED
-          - arg_value: False
+          - arg_value: false
             enum_value: MQTT_DISABLED
 
       - api_field: deviceRegistry.httpConfig.httpEnabledState
         arg_name: enable-http-config
         help_text: Whether to allow device connections to the HTTP bridge.
         action: store_true
-        default: True
+        default: true
         choices:
-          - arg_value: True
+          - arg_value: true
             enum_value: HTTP_ENABLED
-          - arg_value: False
+          - arg_value: false
             enum_value: HTTP_DISABLED
 
       - api_field: deviceRegistry.stateNotificationConfig.pubsubTopicName
@@ -46,7 +46,7 @@
 
       - api_field: deviceRegistry.credentials
         arg_name: public-key-path
-        repeated: False
+        repeated: false
         processor: googlecloudsdk.command_lib.iot.util:ParseRegistryCredential
         help_text: |
           Path to a file containing an X.509v3 certificate

@@ -14,8 +14,8 @@
 image_file:
   api_field: googlePrivacyDlpV2InspectContentRequest.item.byteItem
   arg_name: image
-  is_positional: True
-  required: True
+  is_positional: true
+  required: true
   processor: googlecloudsdk.command_lib.dlp.hooks:GetImageFromFile
   help_text: |
     Image file to search for sensitive info. The file type must be one of

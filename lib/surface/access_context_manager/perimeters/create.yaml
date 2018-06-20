@@ -32,7 +32,7 @@
             Comma-separated list of resources (currently only projects, in the
             form `projects/<projectnumber>`) in this perimeter.
       - group:
-          mutex: True
+          mutex: true
           params:
             - api_field: accessZone.unrestrictedServices
               arg_name: unrestricted-services

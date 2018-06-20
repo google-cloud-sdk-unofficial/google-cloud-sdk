@@ -61,6 +61,7 @@ DETAILED_HELP = {
 
 
 def _CommonArgs(parser,
+                # TODO(b/80138906): Release track should not be passed around.
                 release_track,
                 support_public_dns,
                 support_network_tier,
@@ -73,8 +74,6 @@ def _CommonArgs(parser,
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
   instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms)
-  if release_track in [base.ReleaseTrack.ALPHA]:
-    instances_flags.AddShieldedVMConfigArgs(parser)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -162,35 +161,17 @@ class Create(base.CreateCommand):
     ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
     return ref.SelfLink()
 
-  def BuildShieldedVMConfigMessage(self, messages, args):
-    # Set the default values for ShieledVmConfig parameters
-
-    shieldedvm_config_message = None
-    if (hasattr(args, 'shielded_vm_secure_boot') or
-        hasattr(args, 'shielded_vm_vtpm') or
-        hasattr(args, 'shielded_vm_integrity_monitoring')):
-      enable_secure_boot = None
-      enable_vtpm = None
-      enable_integrity_monitoring = None
-
-      if (not args.IsSpecified('shielded_vm_secure_boot') and
-          not args.IsSpecified('shielded_vm_vtpm') and
-          not args.IsSpecified('shielded_vm_integrity_monitoring')):
-        return shieldedvm_config_message
-      if args.shielded_vm_secure_boot is not None:
-        enable_secure_boot = args.shielded_vm_secure_boot
-      if args.shielded_vm_vtpm is not None:
-        enable_vtpm = args.shielded_vm_vtpm
-      if args.shielded_vm_integrity_monitoring is not None:
-        enable_integrity_monitoring = args.shielded_vm_integrity_monitoring
-      # compute message fot shielded VM configuration.
-      shieldedvm_config_message = instance_utils.CreateShieldedVmConfigMessage(
+  def _BuildShieldedVMConfigMessage(self, messages, args):
+    if (args.IsSpecified('shielded_vm_secure_boot') or
+        args.IsSpecified('shielded_vm_vtpm') or
+        args.IsSpecified('shielded_vm_integrity_monitoring')):
+      return instance_utils.CreateShieldedVmConfigMessage(
           messages,
-          enable_secure_boot,
-          enable_vtpm,
-          enable_integrity_monitoring)
-
-    return shieldedvm_config_message
+          args.shielded_vm_secure_boot,
+          args.shielded_vm_vtpm,
+          args.shielded_vm_integrity_monitoring)
+    else:
+      return None
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -361,10 +342,6 @@ class Create(base.CreateCommand):
         args, resource_parser)
     skip_defaults = source_instance_template is not None
 
-    # This feature is only exposed in alpha/beta
-    allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
-                                                  base.ReleaseTrack.BETA]
-    csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
     scheduling = instance_utils.GetScheduling(
         args, compute_client, skip_defaults,
         support_node_affinity=self._support_node_affinity)
@@ -372,12 +349,6 @@ class Create(base.CreateCommand):
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
-
-    # Compute the shieldedVMConfig message.
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      shieldedvm_config_message = self.BuildShieldedVMConfigMessage(
-          messages=compute_client.messages,
-          args=args)
 
     network_interfaces = self._GetNetworkInterfacesWithValidation(
         args, resource_parser, compute_client, holder, instance_refs,
@@ -389,6 +360,17 @@ class Create(base.CreateCommand):
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     image_uri = self._GetImageUri(
         args, compute_client, create_boot_disk, instance_refs, resource_parser)
+
+    # TODO(b/80138906): Release track should not be used like this.
+    # These feature are only exposed in alpha/beta
+    shielded_vm_config = None
+    allow_rsa_encrypted = False
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      allow_rsa_encrypted = True
+      shielded_vm_config = self._BuildShieldedVMConfigMessage(
+          messages=compute_client.messages, args=args)
+
+    csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
 
     disks_messages = self._GetDiskMessagess(
         args, skip_defaults, instance_refs, compute_client, resource_parser,
@@ -421,9 +403,6 @@ class Create(base.CreateCommand):
           scheduling=scheduling,
           tags=tags)
 
-      if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA]:
-        instance.shieldedVmConfig = shieldedvm_config_message
-
       sole_tenancy_host = self._GetGetSoleTenancyHost(
           args, resource_parser, instance_ref)
       if sole_tenancy_host:
@@ -441,6 +420,9 @@ class Create(base.CreateCommand):
               zone=instance_ref.zone)
           parsed_resource_policies.append(resource_policy_ref.SelfLink())
         instance.resourcePolicies = parsed_resource_policies
+
+      if shielded_vm_config:
+        instance.shieldedVmConfig = shielded_vm_config
 
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
@@ -540,6 +522,7 @@ class CreateBeta(Create):
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+    instances_flags.AddShieldedVMConfigArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -572,6 +555,7 @@ class CreateAlpha(CreateBeta):
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+    instances_flags.AddShieldedVMConfigArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

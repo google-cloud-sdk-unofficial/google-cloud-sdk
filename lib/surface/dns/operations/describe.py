@@ -13,6 +13,8 @@
 # limitations under the License.
 """gcloud dns operations describe command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dns import operations
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base

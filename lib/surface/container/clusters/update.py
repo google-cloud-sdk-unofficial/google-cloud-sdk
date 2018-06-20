@@ -402,10 +402,12 @@ class UpdateBeta(Update):
     flags.AddLoggingServiceFlag(group)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
+    flags.AddEnableBinAuthzFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
+    opts.enable_binauthz = args.enable_binauthz
     return opts
 
 

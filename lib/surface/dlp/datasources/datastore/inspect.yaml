@@ -36,8 +36,8 @@
       - _REF_: googlecloudsdk.command_lib.dlp.flags:datastore_kind
         arg_name: datastore_kind
         api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.datastoreOptions
-        is_positional: True
-        required: True
+        is_positional: true
+        required: true
       - _REF_: googlecloudsdk.command_lib.dlp.flags:max_item_findings
       - _REF_: googlecloudsdk.command_lib.dlp.flags:min_time
       - _REF_: googlecloudsdk.command_lib.dlp.flags:max_time
@@ -57,4 +57,4 @@
       help_text: |
         The Cloud DLP project to create Job In.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project
-      is_parent_resource: True
+      is_parent_resource: true

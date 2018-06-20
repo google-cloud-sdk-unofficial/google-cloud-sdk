@@ -41,7 +41,7 @@ class _BaseAddCert(object):
         help=('Location of file which the private key of the created ssl-cert'
               ' will be written to.'))
     flags.AddInstance(parser)
-    parser.display_info.AddFormat(flags.SSL_CERTS_FORMAT)
+    parser.display_info.AddFormat(flags.CLIENT_CERTS_FORMAT)
 
   def Run(self, args):
     """Creates an SSL certificate for a Cloud SQL instance.

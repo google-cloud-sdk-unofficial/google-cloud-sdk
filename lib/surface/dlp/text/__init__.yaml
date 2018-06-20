@@ -18,8 +18,8 @@ text_args:
 
   redact_content_arg:
     group:
-      mutex: True
-      required: True
+      mutex: true
+      required: true
       params:
         - api_field: googlePrivacyDlpV2DeidentifyContentRequest.item.value
           arg_name: content-file
@@ -35,8 +35,8 @@ text_args:
             Text content to redact sensitive data from.
   inspect_content_arg:
     group:
-      mutex: True
-      required: True
+      mutex: true
+      required: true
       params:
         - api_field: googlePrivacyDlpV2InspectContentRequest.item.value
           arg_name: content-file

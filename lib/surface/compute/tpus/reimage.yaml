@@ -12,7 +12,7 @@
   async:
     collection: tpu.projects.locations.operations
     api_version: v1alpha1
-    extract_resource_result: False
+    extract_resource_result: false
 
   arguments:
     resource:
@@ -21,7 +21,7 @@
     params:
       - api_field: reimageNodeRequest.tensorflowVersion
         arg_name: version
-        required: True
+        required: true
         help_text: |
           TensorFlow version for the TPU, such as `1.6`. For a list of available
           TensorFlow versions please see https://www.tensorflow.org/versions/.

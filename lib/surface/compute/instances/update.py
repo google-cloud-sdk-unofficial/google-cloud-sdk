@@ -98,7 +98,10 @@ class Update(base.UpdateCommand):
         operation_poller, deletion_protection_operation_ref,
         'Setting deletion protection of instance [{0}] to [{1}]',
         instance_ref.Name(), args.deletion_protection) or result
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+
+    # TODO(b/80138906): Release track should not be used like this.
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
+                               base.ReleaseTrack.BETA]:
       if (args.IsSpecified('shielded_vm_secure_boot') or
           args.IsSpecified('shielded_vm_vtpm') or
           args.IsSpecified('shielded_vm_integrity_monitoring')):
@@ -229,6 +232,9 @@ class UpdateBeta(Update):
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, UpdateBeta.ReleaseTrack())
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
+    flags.AddShieldedVMConfigArgs(
+        parser, use_default_value=False, for_update=True)
+    flags.AddShieldedVMIntegrityPolicyArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -14,6 +14,8 @@
 
 """gcloud dns record-sets transaction remove command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dns import transaction_util as trans_util

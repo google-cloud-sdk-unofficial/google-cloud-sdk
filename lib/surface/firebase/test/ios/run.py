@@ -132,6 +132,8 @@ class Run(base.ListCommand):
                                                  args.results_dir, tr_client,
                                                  tr_messages, storage_client)
     bucket_ops.UploadFileToGcs(args.test)
+    if args.xctestrun_file:
+      bucket_ops.UploadFileToGcs(args.xctestrun_file)
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(

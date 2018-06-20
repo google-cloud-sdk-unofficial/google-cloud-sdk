@@ -39,8 +39,8 @@
       - _REF_: googlecloudsdk.command_lib.dlp.flags:big_query_table
         arg_name: input_table
         api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.bigQueryOptions
-        required: True
-        is_positional: True
+        required: true
+        is_positional: true
       - _REF_: googlecloudsdk.command_lib.dlp.flags:max_item_findings
       - _REF_: googlecloudsdk.command_lib.dlp.flags:min_time
       - _REF_: googlecloudsdk.command_lib.dlp.flags:max_time
@@ -60,4 +60,4 @@
       help_text: |
         The Cloud DLP project to create Job In.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project
-      is_parent_resource: True
+      is_parent_resource: true

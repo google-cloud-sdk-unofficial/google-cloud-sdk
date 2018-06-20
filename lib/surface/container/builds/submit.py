@@ -164,10 +164,18 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
     build_config = parser.add_mutually_exclusive_group(required=True)
     build_config.add_argument(
         '--tag', '-t',
-        help='The tag to use with a "docker build" image creation. The '
-             'Container Builder service will run a remote "docker build -t '
-             '$TAG .", where $TAG is the tag provided by this flag. The tag '
-             'must be in the gcr.io/* or *.gcr.io/* namespaces.',
+        help='The tag to use with a `docker build` image creation. '
+             'Container Builder will run a remote `docker build -t '
+             '$TAG .`, where $TAG is the tag provided by this flag. The tag '
+             'must be in the `gcr.io/*` or `*.gcr.io/*` namespaces.\n'
+             '\n'
+             'Specify a tag  if you want Container Builder to build using a '
+             'Dockerfile instead of a build config file. If you specify a tag '
+             'in this command, your source must include a Dockerfile.\n'
+             '\n'
+             'For instructions on building using a Dockerfile, see '
+             'https://cloud.google.com/container-builder/docs/'
+             'quickstart-docker.',
     )
     build_config.add_argument(
         '--config',

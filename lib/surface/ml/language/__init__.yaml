@@ -43,8 +43,8 @@ args:
 
   content_group:
     group:
-      mutex: True
-      required: True
+      mutex: true
+      required: true
       params:
         - arg_name: content
           help_text: |

@@ -143,8 +143,11 @@ class Upgrade(base.Command):
 
     try:
       cluster = adapter.GetCluster(cluster_ref)
-    except apitools_exceptions.HttpError as error:
-      log.warning('Problem loading details of cluster to upgrade: {}'
+    except (exceptions.HttpException,
+            apitools_exceptions.HttpForbiddenError,
+            util.Error) as error:
+      log.warning(('Problem loading details of cluster to upgrade:\n\n{}\n\n' +
+                   'You can still attempt to upgrade the cluster.\n')
                   .format(console_attr.SafeText(error)))
       cluster = None
 

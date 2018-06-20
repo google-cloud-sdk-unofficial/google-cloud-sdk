@@ -29,6 +29,11 @@ flags.DEFINE_string(
     'A tracing token of the form "token:<token>" '
     'to include in api requests.'
 )
+flags.DEFINE_string(
+    'httplib2_debuglevel',
+    None,
+    'Instruct httplib2 to print debugging messages by setting debuglevel to '
+    'the given value.')
 
 flags.DEFINE_string(
     'bigqueryrc', os.path.join(os.path.expanduser('~'), '.bigqueryrc'),

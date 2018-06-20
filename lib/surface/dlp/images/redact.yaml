@@ -32,7 +32,7 @@
         help_text: |
           If specified, all text info in the image will be removed,
           whether it is detected as sensitive or not.
-        required: False
+        required: false
       - arg_name: redact-color
         api_field: googlePrivacyDlpV2RedactImageRequest.imageRedactionConfigs.redactionColor
         processor: googlecloudsdk.command_lib.dlp.hooks:GetRedactColorFromString
@@ -43,7 +43,7 @@
           the amount of red, green, and blue in the color, respectively.
           For example, `black = 0,0,0`, `red = 1.0,0,0`, `white = 1.0,1.0,1.0`,
           and so on.
-        required: False
+        required: false
       # Need to override shared arg definitions
       - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
         api_field: googlePrivacyDlpV2RedactImageRequest.inspectConfig.infoTypes

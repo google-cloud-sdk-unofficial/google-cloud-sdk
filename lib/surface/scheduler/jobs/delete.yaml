@@ -9,4 +9,4 @@
     resource:
       help_text: The job you want to delete.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
-      removed_flags: [ location ]
+      removed_flags: [location]

@@ -363,6 +363,7 @@ class CreateBeta(Create):
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
+    flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser)
@@ -392,6 +393,7 @@ class CreateBeta(Create):
     ops.private_cluster = args.private_cluster
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
+    ops.enable_binauthz = args.enable_binauthz
     return ops
 
 
@@ -410,6 +412,7 @@ class CreateAlpha(Create):
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser)
+    flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
@@ -458,5 +461,6 @@ class CreateAlpha(Create):
     ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     ops.istio_config = args.istio_config
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
+    ops.default_max_pods_per_node = args.default_max_pods_per_node
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     return ops

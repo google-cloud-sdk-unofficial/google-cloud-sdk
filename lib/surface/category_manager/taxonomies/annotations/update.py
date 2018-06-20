@@ -33,7 +33,7 @@ class Update(base.Command):
         [flags.CreateAnnotationResourceArg(positional=True)]
     ).AddToParser(parser)
     update_group = parser.add_group(required=True)
-    flags.AddDescriptionFlag(update_group, required=False)
+    flags.AddDescriptionFlag(update_group, 'annotation', required=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

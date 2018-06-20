@@ -484,6 +484,7 @@ class CreateBeta(Create):
   instances in any zone.
   """
   _support_source_instance = True
+  _support_shielded_vms = True
 
   @classmethod
   def Args(cls, parser):
@@ -493,6 +494,7 @@ class CreateBeta(Create):
         support_network_tier=True,
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
+        support_shielded_vms=cls._support_shielded_vms,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -511,6 +513,7 @@ class CreateBeta(Create):
         args=args,
         support_network_tier=True,
         support_source_instance=self._support_source_instance,
+        support_shielded_vms=self._support_shielded_vms,
     )
 
 

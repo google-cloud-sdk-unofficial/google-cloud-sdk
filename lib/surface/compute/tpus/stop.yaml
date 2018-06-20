@@ -14,7 +14,7 @@
 
   async:
     collection: tpu.projects.locations.operations
-    extract_resource_result: False
+    extract_resource_result: false
 
   arguments:
     resource:

@@ -12,7 +12,7 @@
     resource:
       help_text: The job to create.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
-      removed_flags: [ location ]
+      removed_flags: [location]
     params:
       - _COMMON_args
       - _COMMON_retry_args
@@ -57,7 +57,7 @@
           repeated*. Example:
           `--header 'Accept-Language: en-us' --header 'Accept: text/plain'`
       - group:
-          mutex: True
+          mutex: true
           params:
             - api_field: job.appEngineHttpTarget.body
               arg_name: message-body
@@ -68,7 +68,7 @@
 
             - api_field: job.appEngineHttpTarget.body
               arg_name: message-body-from-file
-              type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+              type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:binary=True"
               help_text: |
                 String, a data payload to be included as the body of the HTTP
                 request. May only be given with compatible HTTP methods (PUT

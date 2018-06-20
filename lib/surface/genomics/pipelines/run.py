@@ -285,8 +285,9 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
     genomics_messages = genomics_util.GetGenomicsMessages('v1alpha2')
     if args.pipeline_file:
       if args.command_line:
+        # TODO(b/79982664): Use a mutex argument group instead.
         raise exceptions.GenomicsError(
-            '--command_line cannot be used with --pipeline-file.')
+            '--command-line cannot be used with --pipeline-file.')
 
       pipeline = genomics_util.GetFileAsMessage(
           args.pipeline_file,
@@ -313,7 +314,7 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
               entrypoint='bash')])
     else:
       raise exceptions.GenomicsError(
-          'Either --pipeline-file or --command_line is required.')
+          'Either --pipeline-file or --command-line is required.')
 
     arg_inputs = _ValidateAndMergeArgInputs(args)
 

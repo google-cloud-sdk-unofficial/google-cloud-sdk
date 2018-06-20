@@ -13,6 +13,9 @@
 # limitations under the License.
 """The Create command for Binary Authorization attestations."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.container import binauthz_util as binauthz_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
@@ -34,11 +37,11 @@ class Create(base.CreateCommand):
 
   To create an attestation as the attestation authority represented by an
   ATTESTATION_AUTHORITY Note with resource path
-  "providers/exmple-prj/notes/note-id", run:
+  "projects/exmple-prj/notes/note-id", run:
 
       $ {command} \
           --artifact-url='gcr.io/example-project/example-image@sha256:abcd' \
-          --attestation-authority-note=providers/exmple-prj/notes/note-id \
+          --attestation-authority-note=projects/exmple-prj/notes/note-id \
           --signature-file=signed_artifact_attestation.pgp.sig \
           --pgp-key-fingerprint=AAAA0000000000000000FFFFFFFFFFFFFFFFFFFF
   """
