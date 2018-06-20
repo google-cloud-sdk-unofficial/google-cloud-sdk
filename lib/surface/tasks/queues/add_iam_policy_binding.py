@@ -13,6 +13,8 @@
 # limitations under the License.
 """`gcloud tasks queues add-iam-policy-binding` command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base

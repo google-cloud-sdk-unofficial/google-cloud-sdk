@@ -75,7 +75,6 @@ class Insert(base.Command):
         relative_name=session_name.name,
         collection='spanner.projects.instances.databases.sessions')
     try:
-      # TODO(b/78234658).
       return database_sessions.Commit(session, [mutation])
     finally:
       database_sessions.Delete(session)

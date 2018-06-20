@@ -17,7 +17,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
@@ -31,7 +30,7 @@ class SetManagedCluster(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateFlag(parser, 'set managed cluster')
+    flags.AddTemplateResourceArg(parser, 'set managed cluster')
     parser.add_argument(
         '--cluster-name', help='The name of the managed dataproc cluster.')
     clusters.ArgsForClusterRef(parser, beta=True)
@@ -101,19 +100,19 @@ class SetManagedCluster(base.UpdateCommand):
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    template = util.ParseWorkflowTemplates(args.template, dataproc)
+    template_ref = args.CONCEPTS.template.Parse()
 
     workflow_template = dataproc.GetRegionsWorkflowTemplate(
-        template, args.version)
+        template_ref, args.version)
 
-    cluster_name = template.workflowTemplatesId
+    cluster_name = template_ref.workflowTemplatesId
 
     compute_resources = compute_helpers.GetComputeResources(
         self.ReleaseTrack(), cluster_name)
 
     beta = self.ReleaseTrack() == base.ReleaseTrack.BETA
     cluster_config = clusters.GetClusterConfig(
-        args, dataproc, template.projectsId, compute_resources, beta)
+        args, dataproc, template_ref.projectsId, compute_resources, beta)
 
     labels = labels_util.ParseCreateArgs(
         args, dataproc.messages.ManagedCluster.LabelsValue)

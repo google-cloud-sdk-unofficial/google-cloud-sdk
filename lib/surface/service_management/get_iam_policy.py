@@ -14,6 +14,8 @@
 
 """Command to describe the access policy for a service."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.endpoints import common_flags
 

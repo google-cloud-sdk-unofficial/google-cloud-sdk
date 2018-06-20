@@ -116,7 +116,7 @@ HTTP_WARNING = """
 ***************************** WARNING *****************************
 """.lstrip()
 
-debug = 0
+debug_level = 0
 test_exception_traces = False
 
 
@@ -154,7 +154,7 @@ def _OutputAndExit(message, exception=None):
     message: Message to print to stderr.
     exception: The exception that caused gsutil to fail.
   """
-  if debug >= constants.DEBUGLEVEL_DUMP_REQUESTS or test_exception_traces:
+  if debug_level >= constants.DEBUGLEVEL_DUMP_REQUESTS or test_exception_traces:
     stack_trace = traceback.format_exc()
     err = ('DEBUG: Exception stack trace:\n    %s\n%s\n' %
            (re.sub('\\n', '\n    ', stack_trace), message))
@@ -186,7 +186,7 @@ class GsutilFormatter(logging.Formatter):
     return super(GsutilFormatter, self).formatTime(record, datefmt=datefmt)
 
 
-def _ConfigureLogging(level=logging.INFO):
+def _ConfigureRootLogger(level=logging.INFO):
   """Similar to logging.basicConfig() except it always adds a handler."""
   log_format = '%(levelname)s %(asctime)s %(filename)s] %(message)s'
   date_format = '%m%d %H:%M:%S.%f'
@@ -235,7 +235,7 @@ def main():
   except ImportError:
     pass
 
-  global debug
+  global debug_level
   global test_exception_traces
 
   if not (2, 7) <= sys.version_info[:3] < (3,):
@@ -256,7 +256,7 @@ def main():
   parallel_operations = False
   quiet = False
   version = False
-  debug = 0
+  debug_level = 0
   trace_token = None
   perf_trace_token = None
   test_exception_traces = False
@@ -291,16 +291,16 @@ def main():
     for o, a in opts:
       if o in ('-d', '--debug'):
         # Also causes boto to include httplib header output.
-        debug = constants.DEBUGLEVEL_DUMP_REQUESTS
+        debug_level = constants.DEBUGLEVEL_DUMP_REQUESTS
       elif o in ('-D', '--detailedDebug'):
         # We use debug level 3 to ask gsutil code to output more detailed
         # debug output. This is a bit of a hack since it overloads the same
         # flag that was originally implemented for boto use. And we use -DD
         # to ask for really detailed debugging (i.e., including HTTP payload).
-        if debug == constants.DEBUGLEVEL_DUMP_REQUESTS:
-          debug = constants.DEBUGLEVEL_DUMP_REQUESTS_AND_PAYLOADS
+        if debug_level == constants.DEBUGLEVEL_DUMP_REQUESTS:
+          debug_level = constants.DEBUGLEVEL_DUMP_REQUESTS_AND_PAYLOADS
         else:
-          debug = constants.DEBUGLEVEL_DUMP_REQUESTS
+          debug_level = constants.DEBUGLEVEL_DUMP_REQUESTS
       elif o in ('-?', '--help'):
         _OutputUsageAndExit(command_runner)
       elif o in ('-h', '--header'):
@@ -336,19 +336,20 @@ def main():
           boto.config.add_section(opt_section)
         boto.config.set(opt_section, opt_name, opt_value)
     metrics.LogCommandParams(global_opts=opts)
-    httplib2.debuglevel = debug
+    httplib2.debuglevel = debug_level
     if trace_token:
       sys.stderr.write(TRACE_WARNING)
-    if debug >= constants.DEBUGLEVEL_DUMP_REQUESTS:
+    if debug_level >= constants.DEBUGLEVEL_DUMP_REQUESTS:
       sys.stderr.write(DEBUG_WARNING)
-      _ConfigureLogging(level=logging.DEBUG)
+      _ConfigureRootLogger(level=logging.DEBUG)
       command_runner.RunNamedCommand('ver', ['-l'])
+
       config_items = []
-      try:
-        config_items.extend(boto.config.items('Boto'))
-        config_items.extend(boto.config.items('GSUtil'))
-      except ConfigParser.NoSectionError:
-        pass
+      for config_section in ('Boto', 'GSUtil'):
+        try:
+          config_items.extend(boto.config.items(config_section))
+        except ConfigParser.NoSectionError:
+          pass
       for i in xrange(len(config_items)):
         config_item_key = config_items[i][0]
         if config_item_key in CONFIG_KEYS_TO_REDACT:
@@ -357,19 +358,23 @@ def main():
       sys.stderr.write(
           'config_file_list: %s\n' % boto_util.GetBotoConfigFileList())
       sys.stderr.write('config: %s\n' % str(config_items))
-    elif quiet:
-      _ConfigureLogging(level=logging.WARNING)
-    else:
-      _ConfigureLogging(level=logging.INFO)
+    else:  # Non-debug log level.
+      root_logger_level = logging.WARNING if quiet else logging.INFO
       # oauth2client uses INFO and WARNING logging in places that would better
       # correspond to gsutil's debug logging (e.g., when refreshing
       # access tokens), so we bump the threshold one level higher where
-      # appropriate.
-      oauth2client.client.logger.setLevel(logging.WARNING)
+      # appropriate. These log levels work for regular- and quiet-level logging.
+      oa2c_logger_level = logging.WARNING
+      oa2c_multiprocess_file_storage_logger_level = logging.ERROR
+
+      _ConfigureRootLogger(level=root_logger_level)
+      oauth2client.client.logger.setLevel(oa2c_logger_level)
       oauth2client.contrib.multiprocess_file_storage.logger.setLevel(
-          logging.ERROR)
-      oauth2client.transport._LOGGER.setLevel(logging.WARNING)
-      reauth_creds._LOGGER.setLevel(logging.WARNING)
+          oa2c_multiprocess_file_storage_logger_level)
+      # pylint: disable=protected-access
+      oauth2client.transport._LOGGER.setLevel(oa2c_logger_level)
+      reauth_creds._LOGGER.setLevel(oa2c_logger_level)
+      # pylint: enable=protected-access
 
     # TODO(reauth): Fix once reauth pins to pyu2f version newer than 0.1.3.
     # Fixes pyu2f v0.1.3 bug.
@@ -393,7 +398,7 @@ def main():
 
     return _RunNamedCommandAndHandleExceptions(
         command_runner, command_name, args=args[1:], headers=headers,
-        debug_level=debug, trace_token=trace_token,
+        debug_level=debug_level, trace_token=trace_token,
         parallel_operations=parallel_operations,
         perf_trace_token=perf_trace_token, user_project=user_project)
   finally:
@@ -467,7 +472,7 @@ def _HandleControlC(signal_num, cur_stack_frame):
     signal_num: Signal that was caught.
     cur_stack_frame: Unused.
   """
-  if debug >= 2:
+  if debug_level >= 2:
     stack_trace = ''.join(traceback.format_list(traceback.extract_stack()))
     _OutputAndExit(
         'DEBUG: Caught CTRL-C (signal %d) - Exception stack trace:\n'

@@ -32,7 +32,7 @@ class GcloudignoreHelp(base.TopicCommand):
 
   The following `gcloud` commands respect the `.gcloudignore` file:
 
-  * `gcloud app deploy`
+  * `gcloud beta app deploy`
   * `gcloud beta functions deploy`
   * `gcloud container builds submit`
   * `gcloud beta debug source upload`

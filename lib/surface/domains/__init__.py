@@ -13,15 +13,13 @@
 # limitations under the License.
 """The gcloud domains group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
-from googlecloudsdk.core.util import platforms
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DisallowPython3  # TODO(b/77812608): Enable for py3.
 class Domains(base.Group):
   """Base class for gcloud domains command group."""
 

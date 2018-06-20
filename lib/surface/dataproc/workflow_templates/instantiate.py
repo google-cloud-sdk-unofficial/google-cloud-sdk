@@ -31,7 +31,7 @@ class Instantiate(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateFlag(parser, 'run')
+    flags.AddTemplateResourceArg(parser, 'run')
     flags.AddTimeoutFlag(parser, default='35m')
     flags.AddParametersFlag(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -39,7 +39,7 @@ class Instantiate(base.CreateCommand):
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     msgs = dataproc.messages
-    template = util.ParseWorkflowTemplates(args.template, dataproc)
+    template_ref = args.CONCEPTS.template.Parse()
 
     instantiate_request = dataproc.messages.InstantiateWorkflowTemplateRequest()
     instantiate_request.instanceId = uuid.uuid4().hex  # request UUID
@@ -50,13 +50,13 @@ class Instantiate(base.CreateCommand):
 
     request = msgs.DataprocProjectsRegionsWorkflowTemplatesInstantiateRequest(
         instantiateWorkflowTemplateRequest=instantiate_request,
-        name=template.RelativeName())
+        name=template_ref.RelativeName())
 
     operation = dataproc.client.projects_regions_workflowTemplates.Instantiate(
         request)
     if args.async:
       log.status.Print('Instantiating [{0}] with operation [{1}].'.format(
-          template.Name(), operation.name))
+          template_ref.Name(), operation.name))
       return
 
     operation = util.WaitForWorkflowTemplateOperation(

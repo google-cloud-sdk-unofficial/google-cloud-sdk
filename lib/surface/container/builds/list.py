@@ -74,4 +74,5 @@ class List(base.ListCommand):
             filter=server_filter),
         field='builds',
         batch_size=args.page_size,
+        limit=args.limit,
         batch_size_attribute='pageSize')

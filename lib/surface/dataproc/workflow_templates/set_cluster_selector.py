@@ -16,7 +16,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
@@ -30,7 +29,7 @@ class SetClusterSelector(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateFlag(parser, 'set cluster selector')
+    flags.AddTemplateResourceArg(parser, 'set cluster selector')
     flags.AddZoneFlag(parser)
     parser.add_argument(
         '--cluster-labels',
@@ -45,10 +44,10 @@ class SetClusterSelector(base.UpdateCommand):
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    template = util.ParseWorkflowTemplates(args.template, dataproc)
+    template_ref = args.CONCEPTS.template.Parse()
 
     workflow_template = dataproc.GetRegionsWorkflowTemplate(
-        template, args.version)
+        template_ref, args.version)
 
     labels = labels_util.Diff(additions=args.cluster_labels).Apply(
         dataproc.messages.ClusterSelector.ClusterLabelsValue).GetOrNone()

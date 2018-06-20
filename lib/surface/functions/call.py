@@ -21,26 +21,27 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 import six
 
 
 class Call(base.Command):
-  """Trigger execution of a Google Cloud Function."""
+  """Trigger execution of a Google Cloud Function.
+
+  ## EXAMPLES
+
+  To call a function giving it hello world in message field of its event
+  argument (depending on your environment you might need to escape
+  characters in --data flag value differently):
+
+      $ {command} helloWorld --data '{"message": "Hello World!"}'
+
+  """
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddRegionFlag(
-        parser,
-        help_text='The region of the function to execute.',
-    )
-    parser.add_argument(
-        'name',
-        help='Name of the function to execute.',
-        type=util.ValidateFunctionNameOrRaise)
+    flags.AddFunctionResourceArg(parser, 'to execute')
     parser.add_argument(
         '--data',
         help='JSON string with data that will be passed to the function.')
@@ -63,13 +64,7 @@ class Call(base.Command):
         raise exceptions.InvalidArgumentException(
             '--data', 'Is not a valid JSON: ' + six.text_type(e))
     client = util.GetApiClientInstance()
-    function_ref = resources.REGISTRY.Parse(
-        args.name,
-        params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-            'locationsId': properties.VALUES.functions.region.GetOrFail,
-        },
-        collection='cloudfunctions.projects.locations.functions')
+    function_ref = args.CONCEPTS.name.Parse()
     # Do not retry calling function - most likely user want to know that the
     # call failed and debug.
     client.projects_locations_functions.client.num_retries = 0
@@ -78,15 +73,3 @@ class Call(base.Command):
         messages.CloudfunctionsProjectsLocationsFunctionsCallRequest(
             name=function_ref.RelativeName(),
             callFunctionRequest=messages.CallFunctionRequest(data=args.data)))
-
-Call.detailed_help = {
-    'brief': 'Trigger execution of a Google Cloud Function.',
-    'EXAMPLES': """\
-        To call a function giving it hello world in message field of its event
-        argument (depending on your environment you might need to escape
-        characters in --data flag value differently):
-
-        $ {{command}} helloWorld --data '{"message":"Hello World!"}'
-
-     """
-}

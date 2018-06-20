@@ -113,8 +113,8 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    if ((args.backup_pool and not args.failover_ratio) or
-        (args.failover_ratio and not args.backup_pool)):
+    if ((args.backup_pool and not args.IsSpecified('failover_ratio')) or
+        (args.failover_ratio and not args.IsSpecified('backup_pool'))):
       raise calliope_exceptions.ToolException(
           'Either both or neither of [--failover-ratio] and [--backup-pool] '
           'must be provided.')

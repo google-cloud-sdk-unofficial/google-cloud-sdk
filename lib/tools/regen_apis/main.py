@@ -13,6 +13,8 @@
 # limitations under the License.
 """Script to regenerate samples with latest client generator."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 import logging
 import os
@@ -21,6 +23,7 @@ import sys
 
 from googlecloudsdk.api_lib.regen import generate
 from googlecloudsdk.core import yaml
+import six
 
 
 class Error(Exception):
@@ -95,13 +98,14 @@ def main(argv=None):
                                  config_file=args.config))
       regenerate_list = [(api_name, api_version, api_config)]
     else:
-      regenerate_list = [(api_name, api_version, api_config)
-                         for api_version, api_config in api_section.iteritems()]
+      regenerate_list = [
+          (api_name, api_version, api_config)
+          for api_version, api_config in six.iteritems(api_section)]
   else:
     regenerate_list = [
         (api_name, api_version, api_config)
-        for api_name, api_version_config in config['apis'].iteritems()
-        for api_version, api_config in api_version_config.iteritems()
+        for api_name, api_version_config in six.iteritems(config['apis'])
+        for api_version, api_config in six.iteritems(api_version_config)
     ]
 
   for api_name, api_version, api_config in sorted(regenerate_list):

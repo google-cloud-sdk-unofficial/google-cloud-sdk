@@ -1,6 +1,4 @@
-- release_tracks: [ALPHA]
-
-  help_text:
+- help_text:
     brief: Create a new Cloud TPU.
     DESCRIPTION: Create a new Cloud TPU.
     EXAMPLES: |
@@ -24,7 +22,7 @@
 
   request:
     collection: tpu.projects.locations.nodes
-    api_version: v1alpha1
+    api_version: v1
     resource_method_params:
       nodeId: nodesId
     use_relative_name: false
@@ -82,3 +80,14 @@
           used for a currently existing TPU, the CIDR range conflicts with any
           networks in the user's provided network, or the provided network is
           peered with another network that is using that CIDR range.
+      - api_field: node.schedulingConfig.preemptible
+        arg_name: preemptible
+        type: bool
+        default: false
+        required: false
+        help_text: |
+          If provided, the TPU will be preemptible and time-limited. It may be
+          preempted to free up resources for standard TPUs, and will only be able
+          to run for a limited amount of time.
+
+          Preemptible TPUs cannot be restarted.

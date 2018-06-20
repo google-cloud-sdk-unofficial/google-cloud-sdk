@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
 from six.moves import input  # pylint: disable=redefined-builtin
 
@@ -211,8 +212,23 @@ class Update(base.UpdateCommand):
     location_get = self.context['location_get']
     location = location_get(args)
     cluster_ref = adapter.ParseCluster(args.name, location)
-    # Make sure it exists (will raise appropriate error if not)
-    cluster = adapter.GetCluster(cluster_ref)
+    cluster_name = args.name
+    cluster_node_count = None
+    cluster_zone = cluster_ref.zone
+    try:
+      # Attempt to get cluster for better prompts and to validate args.
+      # Error is a warning but not fatal. Should only exit with a failure on
+      # the actual update API calls below.
+      cluster = adapter.GetCluster(cluster_ref)
+      cluster_name = cluster.name
+      cluster_node_count = cluster.currentNodeCount
+      cluster_zone = cluster.zone
+    except (exceptions.HttpException,
+            apitools_exceptions.HttpForbiddenError,
+            util.Error) as error:
+      log.warning(('Problem loading details of cluster to update:\n\n{}\n\n'
+                   'You can still attempt updates to the cluster.\n')
+                  .format(console_attr.SafeText(error)))
 
     # locations will be None if additional-zones was specified, an empty list
     # if it was specified with no argument, or a populated list if zones were
@@ -294,7 +310,8 @@ cluster (including delete) until it has run to completion."""
         rotate_credentials = True
       console_io.PromptContinue(
           message=msg_tmpl.format(
-              name=cluster.name, num_nodes=cluster.currentNodeCount),
+              name=cluster_name,
+              num_nodes=cluster_node_count if cluster_node_count else '?'),
           cancel_on_no=True)
       try:
         op_ref = adapter.StartIpRotation(
@@ -321,9 +338,9 @@ will block other operations on the cluster (including delete) until it has run \
 to completion."""
       console_io.PromptContinue(
           message=msg_tmpl.format(
-              name=cluster.name,
+              name=cluster_name,
               project=cluster_ref.projectId,
-              zone=cluster.zone),
+              zone=cluster_zone),
           cancel_on_no=True)
       try:
         op_ref = adapter.CompleteIpRotation(cluster_ref)

@@ -19,13 +19,9 @@ from __future__ import division
 from __future__ import print_function
 
 import hashlib
-import six
 
 
 
-def SHA256(content):
+def SHA256(content, prefix='sha256:'):
   """Return 'sha256:' + hex(sha256(content))."""
-  bytes_content = content
-  if isinstance(content, six.text_type):
-    bytes_content = content.encode()
-  return 'sha256:' + hashlib.sha256(bytes_content).hexdigest()
+  return prefix + hashlib.sha256(content).hexdigest()

@@ -17,6 +17,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import datetime
 import sys
 
 from googlecloudsdk.calliope import base
@@ -53,7 +54,9 @@ class DockerHelper(base.Command):
 
     elif args.method == DockerHelper.GET:
       cred = c_store.Load()
-      c_store.Refresh(cred)
+      if (not cred.token_expiry or cred.token_expiry.utcnow() >
+          cred.token_expiry - datetime.timedelta(minutes=55)):
+        c_store.Refresh(cred)
       url = sys.stdin.read().strip()
       if (url.replace('https://', '',
                       1) not in credential_utils.SupportedRegistries()):

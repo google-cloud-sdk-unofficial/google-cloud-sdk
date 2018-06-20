@@ -16,7 +16,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
@@ -27,15 +26,15 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateFlag(parser, 'describe')
+    flags.AddTemplateResourceArg(parser, 'describe')
     flags.AddVersionFlag(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    template = util.ParseWorkflowTemplates(args.template, dataproc)
+    template_ref = args.CONCEPTS.template.Parse()
 
     workflow_template = dataproc.GetRegionsWorkflowTemplate(
-        template, args.version)
+        template_ref, args.version)
 
     return workflow_template

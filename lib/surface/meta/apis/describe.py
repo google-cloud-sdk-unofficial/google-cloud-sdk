@@ -14,6 +14,9 @@
 
 """A command that describes a registered gcloud API."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.meta.apis import flags
 from googlecloudsdk.command_lib.util.apis import registry

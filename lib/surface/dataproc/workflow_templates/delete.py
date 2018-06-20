@@ -16,7 +16,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core.console import console_io
@@ -28,20 +27,20 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateFlag(parser, 'delete')
+    flags.AddTemplateResourceArg(parser, 'delete')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     messages = dataproc.messages
 
-    template = util.ParseWorkflowTemplates(args.template, dataproc)
+    template_ref = args.CONCEPTS.template.Parse()
 
     request = messages.DataprocProjectsRegionsWorkflowTemplatesDeleteRequest(
-        name=template.RelativeName())
+        name=template_ref.RelativeName())
 
     console_io.PromptContinue(
         message="The workflow template '[{0}]' will be deleted.".format(
-            template.Name()),
+            template_ref.Name()),
         cancel_on_no=True)
 
     dataproc.client.projects_regions_workflowTemplates.Delete(request)

@@ -25,6 +25,7 @@ from googlecloudsdk.core import properties
 
 
 class AddMetadata(base.UpdateCommand):
+  # pylint:disable=line-too-long
   """Add or update project-wide metadata.
 
     *{command}* can be used to add or update project-wide
@@ -38,7 +39,15 @@ class AddMetadata(base.UpdateCommand):
 
   Only metadata keys that are provided are mutated. Existing
   metadata entries will remain unaffected.
+
+  If you are using this command to manage SSH keys for your project, please note
+  the
+  [risks](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys#risks)
+  of manual SSH key management as well as the required format for SSH key
+  metadata, available at
+  [](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys)
   """
+  # pylint:enable=line-too-long
 
   @staticmethod
   def Args(parser):

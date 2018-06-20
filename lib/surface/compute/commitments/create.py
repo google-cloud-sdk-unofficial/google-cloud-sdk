@@ -21,7 +21,7 @@ import re
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import request_helper
 from googlecloudsdk.api_lib.compute import utils
-from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.commitments import flags
@@ -31,33 +31,14 @@ from googlecloudsdk.core import properties
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create Google Compute Engine commitments."""
 
   @classmethod
   def Args(cls, parser):
     flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
-    parser.add_argument('--plan',
-                        required=True,
-                        choices=flags.VALID_PLANS,
-                        help=('Duration of the commitment.'))
-    resources_help = """\
-    Resources to be included in the commitment commitment:
-    * MEMORY should include unit (eg. 3072MB or 9GB). If no units are specified,
-      GB is assumed.
-    * VCPU is number of committed cores.
-    Ratio between number of VCPU cores and memory must conform to limits
-    described on:
-    https://cloud.google.com/compute/docs/instances/creating-instance-with-custom-machine-type"""
-
-    parser.add_argument('--resources',
-                        required=True,
-                        help=resources_help,
-                        metavar='RESOURCE=COMMITMENT',
-                        type=arg_parsers.ArgDict(spec={
-                            'VCPU': int,
-                            'MEMORY': arg_parsers.BinarySize(),
-                        }))
+    flags.AddCreateFlags(parser)
 
   def _ValidateArgs(self, args):
     flags.ValidateResourcesArg(args.resources)
@@ -109,3 +90,30 @@ class Create(base.Command):
     if errors:
       utils. RaiseToolException(errors)
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Google Compute Engine commitments."""
+
+  @classmethod
+  def Args(cls, parser):
+    flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
+    flags.AddCreateFlags(parser)
+    messages = apis.GetMessagesModule('compute', 'alpha')
+    flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
+
+  def _MakeCreateRequest(self, args, messages, project, region, commitment_ref):
+    commitment_type_flag = flags.GetTypeMapperFlag(messages)
+    commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
+    commitment = messages.Commitment(
+        name=commitment_ref.Name(),
+        plan=flags.TranslatePlanArg(messages, args.plan),
+        resources=flags.TranslateResourcesArg(messages, args.resources),
+        type=commitment_type
+    )
+    return messages.ComputeRegionCommitmentsInsertRequest(
+        commitment=commitment,
+        project=project,
+        region=commitment_ref.region,
+    )

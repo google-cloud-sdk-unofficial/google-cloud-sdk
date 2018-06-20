@@ -38,8 +38,7 @@ CATALOG = 'catalog'
 ACTIONS = [PULL, PUSH, DELETE, CATALOG]
 
 MANIFEST_SCHEMA1_MIME = 'application/vnd.docker.distribution.manifest.v1+json'
-MANIFEST_SCHEMA1_SIGNED_MIME = (
-    'application/vnd.docker.distribution.manifest.v1+prettyjws')
+MANIFEST_SCHEMA1_SIGNED_MIME = 'application/vnd.docker.distribution.manifest.v1+prettyjws'  # pylint disable=line-too-long
 MANIFEST_SCHEMA2_MIME = 'application/vnd.docker.distribution.manifest.v2+json'
 MANIFEST_LIST_MIME = 'application/vnd.docker.distribution.manifest.list.v2+json'
 LAYER_MIME = 'application/vnd.docker.image.rootfs.diff.tar.gzip'
@@ -95,6 +94,7 @@ class Diagnostic(object):
 
 def _DiagnosticsFromContent(content):
   try:
+    content = content.decode('utf8')
     o = json.loads(content)
     return [Diagnostic(d) for d in o.get('errors', [])]
   except:  # pylint: disable=bare-except
@@ -300,8 +300,7 @@ class Transport(object):
 
     wrapper_object = json.loads(content)
     token = wrapper_object.get('token') or wrapper_object.get('access_token')
-    _CheckState(token is not None,
-                'Malformed JSON response: %s' % content)
+    _CheckState(token is not None, 'Malformed JSON response: %s' % content)
 
     with self._lock:
       # We have successfully reauthenticated.
@@ -401,7 +400,7 @@ class Transport(object):
     while next_page:
       resp, content = self.Request(next_page, accepted_codes, method, body,
                                    content_type)
-      yield resp, content  # pytype: disable=bad-return-type
+      yield resp, content
 
       next_page = ParseNextLinkHeader(resp)
 

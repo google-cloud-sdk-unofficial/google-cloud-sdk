@@ -14,6 +14,9 @@
 
 """The meta cache delete command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.meta import cache_util
 from googlecloudsdk.core import log
@@ -56,7 +59,7 @@ class Delete(base.Command):
           raise cache_util.NoTablesMatched('No tables matched [{}].'.format(
               ','.join(args.tables)))
         console_io.PromptContinue(
-            message=u'[{}] will be deleted.'.format(','.join(names)),
+            message='[{}] will be deleted.'.format(','.join(names)),
             default=True,
             cancel_on_no=True)
         for name in names:

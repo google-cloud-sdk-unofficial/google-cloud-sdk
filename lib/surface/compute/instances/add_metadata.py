@@ -47,6 +47,14 @@ class InstancesAddMetadata(base.UpdateCommand):
   querying custom instance or project metadata through the Cloud Platform
   Console or the API, see
   [](https://cloud.google.com/compute/docs/storing-retrieving-metadata#querying_custom_metadata)
+
+
+  If you are using this command to manage SSH keys for your project, please note
+  the
+  [risks](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys#risks)
+  of manual SSH key management as well as the required format for SSH key
+  metadata, available at
+  [](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys)
   """
   # pylint: enable=line-too-long
 

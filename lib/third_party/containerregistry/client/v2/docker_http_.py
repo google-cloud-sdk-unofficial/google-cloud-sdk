@@ -287,13 +287,13 @@ class Transport(object):
       self._creds = v2_creds.Bearer(token)
 
   # pylint: disable=invalid-name
-  def Request(self,
-              url,
-              accepted_codes = None,
-              method = None,
-              body = None,
-              content_type = None
-             ):
+  def Request(
+      self,
+      url,
+      accepted_codes = None,
+      method = None,
+      body = None,
+      content_type = None):
     """Wrapper containing much of the boilerplate REST logic for Registry calls.
 
     Args:
@@ -375,7 +375,7 @@ class Transport(object):
     while next_page:
       resp, content = self.Request(next_page, accepted_codes, method, body,
                                    content_type)
-      yield resp, content  # pytype: disable=bad-return-type
+      yield resp, content
 
       next_page = ParseNextLinkHeader(resp)
 

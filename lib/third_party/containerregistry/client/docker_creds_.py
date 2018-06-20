@@ -21,6 +21,7 @@ from __future__ import print_function
 import abc
 import base64
 import errno
+import io
 import json
 import logging
 import os
@@ -66,17 +67,7 @@ class SchemeProvider(Provider):
 
   def Get(self):
     """Gets the credential in a form suitable for an Authorization header."""
-    if isinstance(self._scheme, six.binary_type):
-      s = self._scheme.decode()
-    else:
-      s = self._scheme
-
-    if isinstance(self.suffix, six.binary_type):
-      x = self.suffix.decode()
-    else:
-      x = self.suffix
-
-    return u'%s %s' % (s, x)
+    return u'%s %s' % (self._scheme, self.suffix)
 
 
 class Basic(SchemeProvider):
@@ -97,17 +88,9 @@ class Basic(SchemeProvider):
 
   @property
   def suffix(self):
-    if isinstance(self.username, six.binary_type):
-      u = self.username
-    else:
-      u = self.username.encode()
-
-    if isinstance(self.password, six.binary_type):
-      p = self.password
-    else:
-      p = self.password.encode()
-
-    return base64.b64encode(u + b':' + p).decode()
+    u = self.username.encode('utf8')
+    p = self.password.encode('utf8')
+    return base64.b64encode(u + b':' + p).decode('utf8')
 
 
 _USERNAME = '_token'
@@ -182,11 +165,7 @@ class Helper(Basic):
     # Some keychains expect a scheme:
     # https://github.com/bazelbuild/rules_docker/issues/111
     stdout = p.communicate(input='https://' + self._registry)[0]
-
-    output = stdout
-    if isinstance(output, six.binary_type):
-      output = stdout.decode()
-    if output.strip() == _MAGIC_NOT_FOUND_MESSAGE:
+    if stdout.strip() == _MAGIC_NOT_FOUND_MESSAGE:
       # Use empty auth when no auth is found.
       logging.info('Credentials not found, falling back to anonymous auth.')
       return Anonymous().Get()
@@ -195,7 +174,7 @@ class Helper(Basic):
       raise Exception('Error fetching credential for %s, exit status: %d\n%s' %
                       (self._name, p.returncode, stdout))
 
-    blob = json.loads(output)
+    blob = json.loads(stdout)
     logging.info('Successfully obtained Docker credentials.')
     return Basic(blob['Username'], blob['Secret']).Get()
 
@@ -258,7 +237,7 @@ class _DefaultKeychain(Keychain):
     logging.info('Loading Docker credentials for repository %r', str(name))
     config_file = os.path.join(_GetConfigDirectory(), 'config.json')
     try:
-      with open(config_file, 'r') as reader:
+      with io.open(config_file, u'r', encoding='utf8') as reader:
         cfg = json.loads(reader.read())
     except IOError:
       # If the file doesn't exist, fallback on anonymous auth.
@@ -280,7 +259,7 @@ class _DefaultKeychain(Keychain):
       if form % name.registry in auths:
         entry = auths[form % name.registry]
         if 'auth' in entry:
-          decoded = base64.b64decode(entry['auth']).decode()
+          decoded = base64.b64decode(entry['auth']).decode('utf8')
           username, password = decoded.split(':', 1)
           return Basic(username, password)
         elif 'username' in entry and 'password' in entry:

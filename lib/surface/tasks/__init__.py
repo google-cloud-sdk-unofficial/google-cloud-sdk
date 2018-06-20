@@ -13,10 +13,13 @@
 # limitations under the License.
 
 """Command group for Cloud Tasks."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DisallowPython3  # TODO(b/77812635): Enable for py3.
 class Tasks(base.Group):
   """Manage Cloud Tasks queues and tasks."""
 

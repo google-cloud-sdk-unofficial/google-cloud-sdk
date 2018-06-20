@@ -22,8 +22,6 @@ from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -33,12 +31,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddRegionFlag(
-        parser,
-        help_text='The region of the function to delete.',
-    )
-    parser.add_argument(
-        'name', help='The name of the function to delete.')
+    flags.AddFunctionResourceArg(parser, 'to delete')
     parser.display_info.AddCacheUpdater(None)
 
   @util.CatchHTTPErrorRaiseHTTPException
@@ -57,12 +50,7 @@ class Delete(base.DeleteCommand):
     """
     client = util.GetApiClientInstance()
     messages = client.MESSAGES_MODULE
-    function_ref = resources.REGISTRY.Parse(
-        args.name, params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-            'locationsId': properties.VALUES.functions.region.GetOrFail},
-        collection='cloudfunctions.projects.locations.functions')
-    util.ValidateFunctionNameOrRaise(function_ref.Name())
+    function_ref = args.CONCEPTS.name.Parse()
     function__url = function_ref.RelativeName()
     prompt_message = 'Resource [{0}] will be deleted.'.format(function__url)
     if not console_io.PromptContinue(message=prompt_message):

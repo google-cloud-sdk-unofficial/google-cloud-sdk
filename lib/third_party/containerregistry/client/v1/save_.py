@@ -14,6 +14,7 @@
 """This package provides tools for saving docker images."""
 
 from __future__ import absolute_import
+from __future__ import division
 
 from __future__ import print_function
 
@@ -40,8 +41,6 @@ def multi_image_tarball(
 
   def add_file(filename, contents):
     info = tarfile.TarInfo(filename)
-    if isinstance(contents, six.text_type):
-      contents = contents.encode()
     info.size = len(contents)
     tar.addfile(tarinfo=info, fileobj=io.BytesIO(contents))
 
@@ -74,10 +73,11 @@ def multi_image_tarball(
       add_file(layer_id + '/layer.tar', content)
 
       # Now the json metadata
-      add_file(layer_id + '/json', image.json(layer_id))
+      add_file(layer_id + '/json', image.json(layer_id).encode('utf8'))
 
   # Add the metadata tagging the top layer.
-  add_file('repositories', json.dumps(repositories, sort_keys=True))
+  add_file('repositories',
+           json.dumps(repositories, sort_keys=True).encode('utf8'))
 
 
 def tarball(name, image,
@@ -98,8 +98,4 @@ def tarball(name, image,
   multi_image_tarball({name: image}, tar)
 
   # Add our convenience file with the top layer's ID.
-  top_id = image.top()
-  if isinstance(top_id, six.text_type):
-    top_id = top_id.encode()
-
-  add_file('top', top_id)
+  add_file('top', image.top().encode('utf8'))

@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine dedicated interconnect attachment.
 
@@ -60,14 +61,45 @@ class Update(base.UpdateCommand):
     if labels_diff.MayHaveUpdates():
       old_attachment = interconnect_attachment.Describe()
       labels_cls = holder.client.messages.InterconnectAttachment.LabelsValue
-      labels = labels_diff.Apply(labels_cls,
-                                 labels=old_attachment.labels).GetOrNone()
+      labels = labels_diff.Apply(
+          labels_cls, labels=old_attachment.labels).GetOrNone()
       if labels is not None:
         label_fingerprint = old_attachment.labelFingerprint
 
-    return interconnect_attachment.PatchAlpha(
+    return interconnect_attachment.PatchAlphaAndBeta(
         description=args.description,
         admin_enabled=args.admin_enabled,
         labels=labels,
         label_fingerprint=label_fingerprint,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class GaUpdate(Update):
+  """Update a Google Compute Engine dedicated interconnect attachment.
+
+  *{command}* is used to update interconnect attachments. An interconnect
+  attachment is what binds the underlying connectivity of an interconnect to a
+  path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+
+    cls.INTERCONNECT_ATTACHMENT_ARG = (
+        attachment_flags.InterconnectAttachmentArgument())
+    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
+    attachment_flags.AddDescription(parser)
+    attachment_flags.AddAdminEnabled(parser, update=True)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+
+    interconnect_attachment = client.InterconnectAttachment(
+        attachment_ref, compute_client=holder.client)
+    return interconnect_attachment.PatchGa(
+        description=args.description, admin_enabled=args.admin_enabled)

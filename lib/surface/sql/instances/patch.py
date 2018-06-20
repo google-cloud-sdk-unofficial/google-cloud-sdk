@@ -95,7 +95,7 @@ def AddBaseArgs(parser):
       action='store_true',
       help='Do not wait for the operation to complete.')
   gae_apps_group = parser.add_mutually_exclusive_group()
-  flags.AddAuthorizedGAEApps(gae_apps_group)
+  flags.AddAuthorizedGAEApps(gae_apps_group, update=True)
   gae_apps_group.add_argument(
       '--clear-gae-apps',
       required=False,
@@ -103,7 +103,7 @@ def AddBaseArgs(parser):
       help=('Specified to clear the list of App Engine apps that can access '
             'this instance.'))
   networks_group = parser.add_mutually_exclusive_group()
-  flags.AddAuthorizedNetworks(networks_group)
+  flags.AddAuthorizedNetworks(networks_group, update=True)
   networks_group.add_argument(
       '--clear-authorized-networks',
       required=False,

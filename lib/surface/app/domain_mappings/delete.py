@@ -14,6 +14,7 @@
 """Surface for deleting an App Engine domain mapping."""
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.app.api import appengine_domains_api_client as api_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import flags

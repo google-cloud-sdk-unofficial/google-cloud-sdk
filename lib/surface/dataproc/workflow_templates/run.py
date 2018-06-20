@@ -33,7 +33,7 @@ class Run(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateFlag(parser, 'run')
+    flags.AddTemplateResourceArg(parser, 'run')
     flags.AddTimeoutFlag(parser, default='24h')
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -41,19 +41,19 @@ class Run(base.CreateCommand):
     # TODO (b/68774667): deprecate Run command in favor of Instantiate command.
     dataproc = dp.Dataproc(self.ReleaseTrack())
     msgs = dataproc.messages
-    template = util.ParseWorkflowTemplates(args.template, dataproc)
+    template_ref = args.CONCEPTS.template.Parse()
 
     instantiate_request = dataproc.messages.InstantiateWorkflowTemplateRequest()
     instantiate_request.instanceId = uuid.uuid4().hex  # request UUID
 
     request = msgs.DataprocProjectsRegionsWorkflowTemplatesInstantiateRequest(
         instantiateWorkflowTemplateRequest=instantiate_request,
-        name=template.RelativeName())
+        name=template_ref.RelativeName())
 
     operation = dataproc.client.projects_regions_workflowTemplates.Instantiate(
         request)
     if args.async:
-      log.status.Print('Running [{0}].'.format(template.Name()))
+      log.status.Print('Running [{0}].'.format(template_ref.Name()))
       return
 
     operation = util.WaitForWorkflowTemplateOperation(

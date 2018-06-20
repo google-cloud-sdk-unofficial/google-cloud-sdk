@@ -90,12 +90,12 @@ class UpdateGA(base.UpdateCommand):
     flags.AddCacheKeyQueryStringList(parser)
     AddIapFlag(parser)
 
-  def _CreateSetSecurityPoliciesRequest(self, client, backend_service_ref,
-                                        security_policy_ref):
+  def _GetSetSecurityPolicyRequest(self, client, backend_service_ref,
+                                   security_policy_ref):
     backend_service = backend_service_client.BackendService(
         backend_service_ref, compute_client=client)
-    return backend_service.SetSecurityPolicy(
-        security_policy=security_policy_ref, only_generate_request=True)
+    return backend_service.MakeSetSecurityPolicyRequestTuple(
+        security_policy=security_policy_ref)
 
   def GetGetRequest(self, client, backend_service_ref):
     """Create Backend Services get request."""
@@ -106,33 +106,37 @@ class UpdateGA(base.UpdateCommand):
           client.messages.ComputeRegionBackendServicesGetRequest(
               project=backend_service_ref.project,
               region=backend_service_ref.region,
-              backendService=backend_service_ref.Name()))
+              backendService=backend_service_ref.Name()),
+      )
     return (
         client.apitools_client.backendServices,
         'Get',
         client.messages.ComputeBackendServicesGetRequest(
             project=backend_service_ref.project,
-            backendService=backend_service_ref.Name()))
+            backendService=backend_service_ref.Name()),
+    )
 
   def GetSetRequest(self, client, backend_service_ref, replacement):
     """Create Backend Services set request."""
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
       return (
           client.apitools_client.regionBackendServices,
-          'Update',
-          client.messages.ComputeRegionBackendServicesUpdateRequest(
+          'Patch',
+          client.messages.ComputeRegionBackendServicesPatchRequest(
               project=backend_service_ref.project,
               region=backend_service_ref.region,
               backendService=backend_service_ref.Name(),
-              backendServiceResource=replacement))
+              backendServiceResource=replacement),
+      )
 
     return (
         client.apitools_client.backendServices,
-        'Update',
-        client.messages.ComputeBackendServicesUpdateRequest(
+        'Patch',
+        client.messages.ComputeBackendServicesPatchRequest(
             project=backend_service_ref.project,
             backendService=backend_service_ref.Name(),
-            backendServiceResource=replacement))
+            backendServiceResource=replacement),
+    )
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -142,10 +146,8 @@ class UpdateGA(base.UpdateCommand):
       replacement.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    if args.description:
+    if args.IsSpecified('description'):
       replacement.description = args.description
-    elif args.description is not None:
-      replacement.description = None
 
     health_checks = flags.GetHealthCheckUris(args, self, resources)
     if health_checks:
@@ -158,8 +160,8 @@ class UpdateGA(base.UpdateCommand):
       replacement.portName = args.port_name
 
     if args.protocol:
-      replacement.protocol = (client.messages.BackendService
-                              .ProtocolValueValuesEnum(args.protocol))
+      replacement.protocol = (
+          client.messages.BackendService.ProtocolValueValuesEnum(args.protocol))
 
     if args.enable_cdn is not None:
       replacement.enableCDN = args.enable_cdn
@@ -177,7 +179,8 @@ class UpdateGA(base.UpdateCommand):
 
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
-    return replacement
+    cleared_fields = []
+    return replacement, cleared_fields
 
   def ValidateArgs(self, args):
     """Validate arguments."""
@@ -218,7 +221,8 @@ class UpdateGA(base.UpdateCommand):
 
     objects = client.MakeRequests([get_request])
 
-    new_object = self.Modify(client, holder.resources, args, objects[0])
+    new_object, cleared_fields = self.Modify(client, holder.resources, args,
+                                             objects[0])
 
     # If existing object is equal to the proposed object or if
     # Modify() returns None, then there is no work to be done, so we
@@ -230,9 +234,13 @@ class UpdateGA(base.UpdateCommand):
             'No change requested; skipping update for [{0}].'.format(
                 objects[0].name))
         return objects
-      requests = []
+      backend_service_result = []
     else:
-      requests = [self.GetSetRequest(client, backend_service_ref, new_object)]
+      backend_service_request = self.GetSetRequest(client, backend_service_ref,
+                                                   new_object)
+      # Cleared list fields need to be explicitly identified for Patch API.
+      with client.apitools_client.IncludeFields(cleared_fields):
+        backend_service_result = client.MakeRequests([backend_service_request])
 
     # Empty string is a valid value.
     if getattr(args, 'security_policy', None) is not None:
@@ -242,10 +250,13 @@ class UpdateGA(base.UpdateCommand):
       # If security policy is an empty string we should clear the current policy
       except resources_exceptions.InvalidResourceException:
         security_policy_ref = None
-      requests += self._CreateSetSecurityPoliciesRequest(
+      security_policy_request = self._GetSetSecurityPolicyRequest(
           client, backend_service_ref, security_policy_ref)
+      security_policy_result = client.MakeRequests([security_policy_request])
+    else:
+      security_policy_result = []
 
-    return client.MakeRequests(requests)
+    return backend_service_result + security_policy_result
 
   def _ApplyIapArgs(self, client, iap_arg, existing, replacement):
     if iap_arg is not None:
@@ -255,8 +266,8 @@ class UpdateGA(base.UpdateCommand):
       if replacement.iap.enabled and not (existing_iap and
                                           existing_iap.enabled):
         log.warning(backend_services_utils.IapBestPracticesNotice())
-      if (replacement.iap.enabled and replacement.protocol is not
-          client.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+      if (replacement.iap.enabled and replacement.protocol is
+          not client.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
         log.warning(backend_services_utils.IapHttpWarning())
 
 
@@ -314,8 +325,8 @@ class UpdateAlpha(UpdateGA):
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
-    replacement = super(UpdateAlpha, self).Modify(client, resources, args,
-                                                  existing)
+    replacement, cleared_fields = super(UpdateAlpha, self).Modify(
+        client, resources, args, existing)
 
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = client.messages.ConnectionDraining(
@@ -335,7 +346,9 @@ class UpdateAlpha(UpdateGA):
     backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
                                                    replacement)
 
-    return replacement
+    if not replacement.customRequestHeaders:
+      cleared_fields.append('customRequestHeaders')
+    return replacement, cleared_fields
 
   def ValidateArgs(self, args):
     """Validate arguments."""
@@ -425,8 +438,8 @@ class UpdateBeta(UpdateGA):
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
-    replacement = super(UpdateBeta, self).Modify(client, resources, args,
-                                                 existing)
+    replacement, cleared_fields = super(UpdateBeta, self).Modify(
+        client, resources, args, existing)
 
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = client.messages.ConnectionDraining(
@@ -443,7 +456,9 @@ class UpdateBeta(UpdateGA):
         is_update=True,
         apply_signed_url_cache_max_age=True)
 
-    return replacement
+    if not replacement.customRequestHeaders:
+      cleared_fields.append('customRequestHeaders')
+    return replacement, cleared_fields
 
   def ValidateArgs(self, args):
     """Validate arguments."""

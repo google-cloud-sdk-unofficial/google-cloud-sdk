@@ -13,6 +13,7 @@
 # limitations under the License.
 """app logs tail command."""
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.app import logs_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import flags

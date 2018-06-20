@@ -13,7 +13,10 @@
 # limitations under the License.
 """This package defines Tag a way of representing an image uri."""
 
+from __future__ import absolute_import
+from __future__ import division
 
+from __future__ import print_function
 
 import os
 import sys
@@ -39,13 +42,8 @@ DEFAULT_DOMAIN = 'index.docker.io'
 DEFAULT_TAG = 'latest'
 
 
-def _check_element(
-    name,
-    element,
-    characters,
-    min_len,
-    max_len
-):
+def _check_element(name, element, characters, min_len,
+                   max_len):
   """Checks a given named element matches character and length restrictions.
 
   Args:

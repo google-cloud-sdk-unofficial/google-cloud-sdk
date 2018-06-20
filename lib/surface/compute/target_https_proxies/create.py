@@ -26,8 +26,7 @@ from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGA(base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a target HTTPS proxy.
 
     *{command}* is used to create target HTTPS proxies. A target
@@ -71,7 +70,9 @@ class CreateGA(base.CreateCommand):
         help='An optional, textual description for the target HTTPS proxy.')
     parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleter)
 
-  def _SendRequests(self, args, quic_override=None):
+    target_proxies_utils.AddQuicOverrideCreateArgs(parser)
+
+  def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -88,8 +89,9 @@ class CreateGA(base.CreateCommand):
     ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
         args, holder.resources) if args.ssl_policy else None
 
-    if quic_override:
-      target_https_proxy.quicOverride = quic_override
+    if args.IsSpecified('quic_override'):
+      quic_enum = client.messages.TargetHttpsProxy.QuicOverrideValueValuesEnum
+      target_https_proxy.quicOverride = quic_enum(args.quic_override)
 
     if ssl_policy_ref:
       target_https_proxy.sslPolicy = ssl_policy_ref.SelfLink()
@@ -100,34 +102,3 @@ class CreateGA(base.CreateCommand):
 
     return client.MakeRequests([(client.apitools_client.targetHttpsProxies,
                                  'Insert', request)])
-
-  def Run(self, args):
-    return self._SendRequests(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateBeta(CreateGA):
-  """Create a target HTTPS proxy.
-
-    *{command}* is used to create target HTTPS proxies. A target
-  HTTPS proxy is referenced by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTPS proxy points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests. The target
-  HTTPS proxy also points to at most 10 SSL certificates used for
-  server-side authentication. The target HTTPS proxy can be associated with
-  at most one SSL policy.
-  """
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateBeta, cls).Args(parser)
-    target_proxies_utils.AddQuicOverrideCreateArgs(parser)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    messages = holder.client.messages
-    quic_override = messages.TargetHttpsProxy.QuicOverrideValueValuesEnum(
-        args.quic_override)
-    return self._SendRequests(args, quic_override)

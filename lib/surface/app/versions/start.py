@@ -15,6 +15,7 @@
 """The Start command."""
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import version_util
@@ -100,5 +101,5 @@ class Start(base.Command):
         printable_errors[short_name] = '{0}: {1}'.format(short_name, error_msg)
       raise VersionsStartError(
           'Issues starting version(s): {0}\n\n'.format(
-              ', '.join(printable_errors.keys())) +
-          '\n\n'.join(printable_errors.values()))
+              ', '.join(list(printable_errors.keys()))) +
+          '\n\n'.join(list(printable_errors.values())))

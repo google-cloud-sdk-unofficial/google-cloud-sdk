@@ -17,9 +17,9 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloud_shell import util
-from googlecloudsdk.command_lib.util.ssh import containers
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -68,15 +68,17 @@ class SshAlpha(base.Command):
         action='append')
 
   def Run(self, args):
-    command_list = args.command.split(' ') if args.command else None
+    command_list = args.command.split(' ') if args.command else ['bash -l']
+    project = properties.VALUES.core.project.Get()
     connection_info = util.PrepareEnvironment(args)
     command = ssh.SSHCommand(
         remote=ssh.Remote(host=connection_info.host, user=connection_info.user),
         port=str(connection_info.port),
         identity_file=connection_info.key,
-        remote_command=containers.GetRemoteCommand(None, command_list),
+        remote_command=(['DEVSHELL_PROJECT_ID=' + project]
+                        if project else []) + command_list,
         extra_flags=args.ssh_flag,
-        tty=containers.GetTty(None, args.command),
+        tty=not args.command,
         options={'StrictHostKeyChecking': 'no'},
     )
 

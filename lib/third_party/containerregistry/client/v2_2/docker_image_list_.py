@@ -112,7 +112,7 @@ class DockerImageList(six.with_metaclass(abc.ABCMeta, object)):
 
   def digest(self):
     """The digest of the manifest."""
-    return docker_digest.SHA256(self.manifest())
+    return docker_digest.SHA256(self.manifest().encode('utf8'))
 
   def media_type(self):
     """The media type of the manifest."""
@@ -128,6 +128,7 @@ class DockerImageList(six.with_metaclass(abc.ABCMeta, object)):
     Returns:
       The raw json manifest
     """
+
   # pytype: enable=bad-return-type
 
   # pytype: disable=bad-return-type
@@ -144,6 +145,7 @@ class DockerImageList(six.with_metaclass(abc.ABCMeta, object)):
       A list of images that can be run on the target platform. The images are
       sorted by their digest.
     """
+
   # pytype: enable=bad-return-type
 
   def resolve(self,
@@ -334,7 +336,8 @@ class FromRegistry(DockerImageList):
     # GET server1/v2/<name>/manifests/<tag_or_digest>
 
     if isinstance(self._name, docker_name.Tag):
-      return self._content('manifests/' + self._name.tag, self._accepted_mimes)
+      return self._content('manifests/' + self._name.tag,
+                           self._accepted_mimes).decode('utf8')
     else:
       assert isinstance(self._name, docker_name.Digest)
       c = self._content('manifests/' + self._name.digest, self._accepted_mimes)
@@ -343,7 +346,7 @@ class FromRegistry(DockerImageList):
         raise DigestMismatchedError(
             'The returned manifest\'s digest did not match requested digest, '
             '%s vs. %s' % (self._name.digest, computed))
-      return c
+      return c.decode('utf8')
 
   # __enter__ and __exit__ allow use as a context manager.
   def __enter__(self):

@@ -14,6 +14,9 @@
 
 """A command that parses resources given collection and api version."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import sys
 
 from googlecloudsdk.calliope import base
@@ -22,6 +25,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
+
+import six
 
 
 class Parse(base.ListCommand):
@@ -70,9 +75,9 @@ class Parse(base.ListCommand):
         except (Exception, SystemExit) as e:  # pylint: disable=broad-except
           if args.stack_trace:
             exceptions.reraise(e)
-          log.error(unicode(e))
+          log.error(six.text_type(e))
           parsed_resources.append({
-              'error': unicode(e),
+              'error': six.text_type(e),
               'uri': uri,
           })
           continue
@@ -99,7 +104,7 @@ class Parse(base.ListCommand):
       except (Exception, SystemExit) as e:  # pylint: disable=broad-except
         if args.stack_trace:
           exceptions.reraise(e)
-        log.error(unicode(e))
+        log.error(six.text_type(e))
         continue
       resource_printer.Print(params, 'json')
     sys.stderr.write('\n')

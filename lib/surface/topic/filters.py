@@ -155,35 +155,41 @@ class Filters(base.TopicCommand):
           .format(description=resource_topics.ResourceDescription('filter')),
       'EXAMPLES':
           textwrap.dedent("""\
-          List all instances resources:
+          List all Google Compute Engine instance resources:
 
             $ gcloud compute instances list
 
-          List instances resources that have machineType *f1-micro*:
+          List Compute Engine instance resources that have machineType
+          *f1-micro*:
 
             $ gcloud compute instances list --filter='machineType:f1-micro'
 
-          List resources with zone prefix *us* and not MachineType *f1-micro*:
+          List Compute Engine instance resources with zone prefix *us* and not
+          MachineType *f1-micro*:
 
             $ gcloud compute instances list --filter='zone ~ ^us AND -machineType:f1-micro'
 
-          List resources with tag *my-tag*:
+          List Compute Engine instance resources with tag *my-tag*:
 
             $ gcloud compute instances list --filter='tags.items=my-tag'
 
-          List resources with tag *my-tag* or *my-other-tag*:
+          List Compute Engine instance resources with tag *my-tag* or
+          *my-other-tag*:
 
             $ gcloud compute instances list --filter='tags.items=(my-tag,my-other-tag)'
 
-          List resources with tag *my-tag* and *my-other-tag*:
+          List Compute Engine instance resources with tag *my-tag* and
+          *my-other-tag*:
 
             $ gcloud compute instances list --filter='tags.items=my-tag AND tags.items=my-other-tag'
 
-          List resources which either have tag *my-tag* but not *my-other-tag* or have tag *alternative-tag*:
+          List Compute Engine instance resources which either have tag *my-tag*
+          but not *my-other-tag* or have tag *alternative-tag*:
 
             $ gcloud compute instances list --filter='(tags.items=my-tag AND -tags.items=my-other-tag) OR tags.items=alternative-tag'
 
-          List resources with label *my-label* with any value:
+          List Compute Engine instance resources with label *my-label* with any
+          value:
 
             $ gcloud compute instances list --filter='labels.my-label:*'
 

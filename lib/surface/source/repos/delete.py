@@ -14,7 +14,7 @@
 """Delete Google Cloud Platform git repository."""
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from googlecloudsdk.api_lib.source.repos import sourcerepo
+from googlecloudsdk.api_lib.source import sourcerepo
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log

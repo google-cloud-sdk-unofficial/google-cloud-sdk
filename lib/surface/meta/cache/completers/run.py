@@ -14,6 +14,10 @@
 
 """The meta cache completers run command."""
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 
 from googlecloudsdk.calliope import arg_parsers
@@ -26,6 +30,8 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import module_util
 from googlecloudsdk.core.console import console_io
+
+import six
 
 
 class _FunctionCompleter(object):
@@ -268,9 +274,9 @@ class Run(base.Command):
           if args.stack_trace:
             exceptions.reraise(Exception(e))
           else:
-            log.error(unicode(e))
+            log.error(six.text_type(e))
           continue
         if completions:
-          print '\n'.join(completions)
+          print('\n'.join(completions))
       sys.stderr.write('\n')
       return None

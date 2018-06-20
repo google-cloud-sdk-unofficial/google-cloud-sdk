@@ -33,7 +33,7 @@ _OverridesT = namedtuple('OverridesT', [
 # Unix epoch 0, representable in 32 bits.
 _DEFAULT_TIMESTAMP = '1970-01-01T00:00:00Z'
 
-_EMPTY_LAYER = hashlib.sha256(''.encode('utf-8')).hexdigest()
+_EMPTY_LAYER = hashlib.sha256(b'').hexdigest()
 
 
 class Overrides(_OverridesT):

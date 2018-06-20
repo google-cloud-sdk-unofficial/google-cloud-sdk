@@ -100,8 +100,7 @@ class Push(object):
         ])
     return resp.status == six.moves.http_client.OK
 
-  def _put_json(self, image,
-                layer_id):
+  def _put_json(self, image, layer_id):
     """Upload the json for a single layer."""
     docker_http.Request(
         self._transport,
@@ -111,10 +110,9 @@ class Push(object):
             layer=layer_id),
         self._token_creds,
         accepted_codes=[six.moves.http_client.OK],
-        body=image.json(layer_id))
+        body=image.json(layer_id).encode('utf8'))
 
-  def _put_layer(self, image,
-                 layer_id):
+  def _put_layer(self, image, layer_id):
     """Upload the aufs tarball for a single layer."""
     # TODO(user): We should stream this instead of loading
     # it into memory.
@@ -173,7 +171,7 @@ class Push(object):
             tag=self._name.tag),
         self._token_creds,
         accepted_codes=[six.moves.http_client.OK],
-        body='"%s"' % self._top)
+        body=('"%s"' % self._top).encode('utf8'))
 
   def _put_images(self):
     """Close the session by putting to the .../images endpoint."""
@@ -185,7 +183,7 @@ class Push(object):
             repository=self._name.repository),
         self._basic_creds,
         accepted_codes=[six.moves.http_client.NO_CONTENT],
-        body='[]')
+        body=b'[]')
 
   def __exit__(self, exception_type, unused_value, unused_traceback):
     if exception_type:

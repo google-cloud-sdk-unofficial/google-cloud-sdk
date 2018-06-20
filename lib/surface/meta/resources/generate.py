@@ -14,9 +14,14 @@
 
 """A command that generates resource URIs given collection and api version."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
+import six
+from six.moves import range
 
 
 class Parse(base.Command):
@@ -59,7 +64,7 @@ class Parse(base.Command):
     uris = []
     for i in range(1, args.count + 1):
       params = {}
-      for param, template in templates.iteritems():
+      for param, template in six.iteritems(templates):
         params[param] = template.format(i)
       uri = resources.Resource(
           None, collection_info, '', params, None).SelfLink()

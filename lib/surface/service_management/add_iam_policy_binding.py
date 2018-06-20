@@ -14,6 +14,8 @@
 
 """Command for adding a principal to a service's access policy."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.endpoints import common_flags
 from googlecloudsdk.command_lib.iam import iam_util

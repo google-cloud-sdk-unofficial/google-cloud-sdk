@@ -15,6 +15,7 @@
 """Deletes a specific instance."""
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.calliope import base

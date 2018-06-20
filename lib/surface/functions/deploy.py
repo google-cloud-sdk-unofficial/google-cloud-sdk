@@ -41,7 +41,7 @@ def _Run(args, enable_runtime=False):
       args.trigger_http, args.trigger_bucket, args.trigger_topic,
       args.trigger_event, args.trigger_resource)
 
-  function_ref = api_util.GetFunctionRef(args.name)
+  function_ref = args.CONCEPTS.name.Parse()
   function_url = function_ref.RelativeName()
 
   messages = api_util.GetApiMessagesModule()
@@ -111,7 +111,8 @@ def _Run(args, enable_runtime=False):
     updated_fields.append('labels')
 
   if is_new_function:
-    return api_util.CreateFunction(function)
+    return api_util.CreateFunction(function,
+                                   function_ref.Parent().RelativeName())
   if updated_fields:
     return api_util.PatchFunction(function, updated_fields)
   log.status.Print('Nothing to update.')
@@ -124,17 +125,15 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    flags.AddFunctionResourceArg(parser, 'to deploy')
     # Add args for function properties
-    flags.AddFunctionNameArg(parser)
     flags.AddFunctionMemoryFlag(parser)
     flags.AddFunctionTimeoutFlag(parser)
     flags.AddFunctionRetryFlag(parser)
     args_labels_util.AddUpdateLabelsFlags(
         parser,
-        extra_update_message=
-        ' ' + labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
-        extra_remove_message=
-        ' ' + labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
+        extra_update_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
+        extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
 
     # Add args for specifying the function source code
     flags.AddSourceFlag(parser)
@@ -143,11 +142,6 @@ class Deploy(base.Command):
 
     # Add args for specifying the function trigger
     flags.AddTriggerFlagGroup(parser)
-
-    flags.AddRegionFlag(
-        parser,
-        help_text='The region in which the function will run.',
-    )
 
   def Run(self, args):
     return _Run(args)

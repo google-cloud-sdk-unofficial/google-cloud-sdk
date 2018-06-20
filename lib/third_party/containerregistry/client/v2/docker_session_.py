@@ -129,8 +129,7 @@ class Push(object):
     return six.moves.urllib.parse.urlunsplit((scheme, netloc, path,
                                               query_string, fragment))
 
-  def _put_upload(self, image,
-                  digest):
+  def _put_upload(self, image, digest):
     mounted, location = self._start_upload(digest, self._mount)
 
     if mounted:
@@ -223,7 +222,7 @@ class Push(object):
             base_url=self._base_url(),
             tag_or_digest=_tag_or_digest(self._name)),
         method='PUT',
-        body=image.manifest(),
+        body=image.manifest().encode('utf8'),
         accepted_codes=[
             six.moves.http_client.OK, six.moves.http_client.CREATED,
             six.moves.http_client.ACCEPTED
@@ -256,8 +255,7 @@ class Push(object):
     return resp.status == six.moves.http_client.CREATED, resp.get('location')
     # pytype: enable=attribute-error,bad-return-type
 
-  def _upload_one(self, image,
-                  digest):
+  def _upload_one(self, image, digest):
     """Upload a single layer, after checking whether it exists already."""
     if self._blob_exists(digest):
       logging.info('Layer %s exists, skipping', digest)

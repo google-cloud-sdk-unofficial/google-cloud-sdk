@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  is_hidden: true
+- is_hidden: true
 
   help_text:
     brief: Resets a Cloud TPU.
@@ -7,12 +6,12 @@
 
   request:
     collection: tpu.projects.locations.nodes
-    api_version: v1alpha1
+    api_version: v1
     method: reset
 
   async:
     collection: tpu.projects.locations.operations
-    api_version: v1alpha1
+    api_version: v1
     extract_resource_result: false
 
   arguments:

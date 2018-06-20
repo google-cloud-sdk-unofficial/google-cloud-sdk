@@ -16,6 +16,7 @@
 
 """Assorted utilities shared between parts of apitools."""
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import collections
 import contextlib
@@ -251,6 +252,39 @@ class ClientInfo(collections.namedtuple('ClientInfo', (
         return '%s.proto' % self.services_rule_name
 
 
+def ReplaceHomoglyphs(s):
+    """Returns s with unicode homoglyphs replaced by ascii equivalents."""
+    homoglyphs = {
+        '\u00e3': '',  # TODO(user) drop after .proto spurious char elided
+        '\u00a9': '(C)',  # COPYRIGHT SIGN (would you believe "asciiglyph"?)
+        '\u00ae': '(R)',  # REGISTERED SIGN (would you believe "asciiglyph"?)
+        '\u2014': '-',  # EM DASH
+        '\u2018': "'",  # LEFT SINGLE QUOTATION MARK
+        '\u2019': "'",  # RIGHT SINGLE QUOTATION MARK
+        '\u201c': '"',  # LEFT DOUBLE QUOTATION MARK
+        '\u201d': '"',  # RIGHT DOUBLE QUOTATION MARK
+        '\u2026': '...',  # HORIZONTAL ELLIPSIS
+        '\u2e3a': '-',  # TWO-EM DASH
+    }
+
+    def _ReplaceOne(c):
+        """Returns the homoglyph or escaped replacement for c."""
+        equiv = homoglyphs.get(c)
+        if equiv is not None:
+            return equiv
+        try:
+            c.encode('ascii')
+            return c
+        except UnicodeError:
+            pass
+        try:
+            return c.encode('unicode-escape').decode('ascii')
+        except UnicodeError:
+            return '?'
+
+    return ''.join([_ReplaceOne(c) for c in s])
+
+
 def CleanDescription(description):
     """Return a version of description safe for printing in a docstring."""
     if not isinstance(description, six.string_types):
@@ -260,6 +294,7 @@ def CleanDescription(description):
         description = description.replace('\\N', '\\\\N')
         description = description.replace('\\u', '\\\\u')
         description = description.replace('\\U', '\\\\U')
+    description = ReplaceHomoglyphs(description)
     return description.replace('"""', '" " "')
 
 
@@ -303,9 +338,12 @@ class SimplePrettyPrinter(object):
                 line = (args[0] % args[1:]).rstrip()
             else:
                 line = args[0].rstrip()
-            if six.PY2:
-                line = line.encode('ascii', 'backslashreplace')
-            print('%s%s' % (self.__indent, line), file=self.__out)
+            line = ReplaceHomoglyphs(line)
+            try:
+                print('%s%s' % (self.__indent, line), file=self.__out)
+            except UnicodeEncodeError:
+                line = line.encode('ascii', 'backslashreplace').decode('ascii')
+                print('%s%s' % (self.__indent, line), file=self.__out)
         else:
             print('', file=self.__out)
 

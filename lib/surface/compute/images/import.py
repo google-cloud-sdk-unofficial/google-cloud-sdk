@@ -223,5 +223,8 @@ Import.detailed_help = {
 
         This command uses the `--os` flag to choose the appropriate translation.
         You can omit the translation step using the `--data-disk` flag.
+
+        Files stored on Cloud Storage and images in Compute Engine incur
+        charges. See [](https://cloud.google.com/compute/docs/images/importing-virtual-disks#resource_cleanup).
         """,
 }

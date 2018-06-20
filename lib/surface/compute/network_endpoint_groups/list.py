@@ -24,7 +24,15 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('yaml')
+    parser.display_info.AddFormat("""\
+        table(
+            name,
+            selfLink.scope().segment(-3).yesno(no="global"):label=LOCATION,
+            type,
+            networkEndpointType:label=ENDPOINT_TYPE,
+            size
+        )
+        """)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

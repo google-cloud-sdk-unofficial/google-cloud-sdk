@@ -26,6 +26,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class CleanupIndexes(base.Command):
+  """Clean up Datastore indexes."""
 
   detailed_help = {
       'brief': 'Remove unused datastore indexes based on your local index '

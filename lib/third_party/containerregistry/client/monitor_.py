@@ -14,6 +14,7 @@
 """This module contains utilities for monitoring client side calls."""
 
 from __future__ import absolute_import
+from __future__ import division
 
 from __future__ import print_function
 
@@ -47,6 +48,7 @@ class Context(six.with_metaclass(abc.ABCMeta, object)):
 class Nop(Context):
   """Default implementation of Context that does nothing."""
 
+  # pylint: disable=useless-super-delegation
   def __init__(self, operation):
     super(Nop, self).__init__(operation)
 

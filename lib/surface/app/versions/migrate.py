@@ -15,6 +15,7 @@
 """The Migrate command."""
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import service_util
@@ -105,6 +106,6 @@ class Migrate(base.Command):
     if errors:
       error_string = ('Issues migrating all traffic of '
                       'service(s): [{0}]\n\n{1}'.format(
-                          ', '.join(errors.keys()),
-                          '\n\n'.join(errors.values())))
+                          ', '.join(list(errors.keys())),
+                          '\n\n'.join(list(errors.values()))))
       raise VersionsMigrateError(error_string)

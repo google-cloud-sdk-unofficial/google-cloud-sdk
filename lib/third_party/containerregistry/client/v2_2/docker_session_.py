@@ -114,10 +114,9 @@ class Push(object):
 
     return resp.status == six.moves.http_client.OK  # pytype: disable=attribute-error
 
-  def _get_blob(self, image,
-                digest):
+  def _get_blob(self, image, digest):
     if digest == image.config_blob():
-      return image.config_file()
+      return image.config_file().encode('utf8')
     return image.blob(digest)
 
   def _monolithic_upload(self, image,
@@ -138,8 +137,7 @@ class Push(object):
     return six.moves.urllib.parse.urlunsplit((scheme, netloc, path,
                                               query_string, fragment))
 
-  def _put_upload(self, image,
-                  digest):
+  def _put_upload(self, image, digest):
     mounted, location = self._start_upload(digest, self._mount)
 
     if mounted:
@@ -154,11 +152,8 @@ class Push(object):
         accepted_codes=[six.moves.http_client.CREATED])
 
   # pylint: disable=missing-docstring
-  def _patch_upload(
-      self,
-      image,
-      digest
-  ):
+  def _patch_upload(self, image,
+                    digest):
     mounted, location = self._start_upload(digest, self._mount)
 
     if mounted:
@@ -276,8 +271,7 @@ class Push(object):
     return resp.status == six.moves.http_client.CREATED, resp.get('location')
     # pytype: enable=attribute-error,bad-return-type
 
-  def _upload_one(self, image,
-                  digest):
+  def _upload_one(self, image, digest):
     """Upload a single layer, after checking whether it exists already."""
     if self._blob_exists(digest):
       logging.info('Layer %s exists, skipping', digest)

@@ -25,35 +25,56 @@ from googlecloudsdk.core.util import files
 
 
 class Decrypt(base.Command):
-  r"""Decrypt a ciphertext file using a key.
+  r"""Decrypt a ciphertext file using a Cloud KMS key.
 
-  Decrypts the given ciphertext file using the given CryptoKey and writes the
-  result to the named plaintext file.
+  {command} decrypts the given ciphertext file using the given Cloud KMS key and
+  writes the result to the named plaintext file. Note that to permit users to
+  decrypt using a key, they must be have at least one of the following IAM roles
+  for that key: `roles/cloudkms.cryptoKeyDecrypter`,
+  `roles/cloudkms.cryptoKeyEncrypterDecrypter`.
 
-  If an additional authenticated data file is provided, its contents must match
-  the additional authenticated data provided during encryption. The file must
-  not be larger than 64KiB.
+  Additional authenticated data (AAD) is used as an additional check by Cloud
+  KMS to authenticate a decryption request. If an additional authenticated data
+  file is provided, its contents must match the additional authenticated data
+  provided during encryption and must not be larger than 64KiB. If you don't
+  provide a value for `--additional-authenticated-data-file`, an empty string is
+  used. For a thorough explanation of AAD, refer to this
+  guide: https://cloud.google.com/kms/docs/additional-authenticated-data
 
   If `--ciphertext-file` or `--additional-authenticated-data-file` is set to
-  '-', that file is read from stdin. Similarly, if `--plaintext-file` is set to
-  '-', the decrypted plaintext is written to stdout.
+  '-', that file is read from stdin. Note that both files cannot be read from
+  stdin. Similarly, if `--plaintext-file` is set to '-', the decrypted plaintext
+  is written to stdout.
 
   ## EXAMPLES
-  The following command will read the file 'path/to/ciphertext', decrypt it
-  using the CryptoKey `frodo` with the KeyRing `fellowship` and Location
-  `global`, and write the plaintext to 'path/to/plaintext'.
+
+  To decrypt the file 'path/to/ciphertext' using the key `frodo` with key
+  ring `fellowship` and location `global` and write the plaintext
+  to 'path/to/plaintext.dec', run:
 
     $ {command} \
-        --key frodo \
-        --keyring fellowship \
-        --location global \
-        --ciphertext-file path/to/input/ciphertext \
-        --plaintext-file path/to/output/plaintext
+        --key=frodo \
+        --keyring=fellowship \
+        --location=global \
+        --ciphertext-file=path/to/input/ciphertext \
+        --plaintext-file=path/to/output/plaintext.dec
+
+  To decrypt the file 'path/to/ciphertext' using the key `frodo` and the
+  additional authenticated data that was used to encrypt the ciphertext, and
+  write the decrypted plaintext to stdout, run:
+
+    $ {command} \
+        --key=frodo \
+        --keyring=fellowship \
+        --location=global \
+        --additional-authenticated-data-file=path/to/aad \
+        --ciphertext-file=path/to/input/ciphertext \
+        --plaintext-file='-'
   """
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyResourceFlags(parser, 'The key to use for decryption.')
+    flags.AddKeyResourceFlags(parser, 'Cloud KMS key to use for decryption.')
     flags.AddCiphertextFileFlag(parser, 'to decrypt')
     flags.AddPlaintextFileFlag(parser, 'to output')
     flags.AddAadFileFlag(parser)

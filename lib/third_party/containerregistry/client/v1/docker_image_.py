@@ -14,6 +14,7 @@
 """This package provides DockerImage for examining docker_build outputs."""
 
 from __future__ import absolute_import
+from __future__ import division
 
 from __future__ import print_function
 
@@ -160,8 +161,7 @@ class FromShardedTarball(DockerImage):
     self._lock = threading.Lock()
     self._name = name
 
-  def _content(self, layer_id, name,
-               memoize = True):
+  def _content(self, layer_id, name, memoize = True):
     """Fetches a particular path's contents from the tarball."""
     # Check our cache
     if memoize:
@@ -173,7 +173,7 @@ class FromShardedTarball(DockerImage):
     # https://mail.python.org/pipermail/python-bugs-list/2015-March/265999.html
     # so instead of locking, just open the tarfile for each file
     # we want to read.
-    with tarfile.open(name=self._layer_to_tarball(layer_id), mode='r') as tar:
+    with tarfile.open(name=self._layer_to_tarball(layer_id), mode='r:') as tar:
       try:
         content = tar.extractfile(name).read()  # pytype: disable=attribute-error
       except KeyError:
@@ -191,11 +191,11 @@ class FromShardedTarball(DockerImage):
 
   def repositories(self):
     """Override."""
-    return json.loads(self._content(self.top(), 'repositories'))
+    return json.loads(self._content(self.top(), 'repositories').decode('utf8'))
 
   def json(self, layer_id):
     """Override."""
-    return self._content(layer_id, layer_id + '/json')
+    return self._content(layer_id, layer_id + '/json').decode('utf8')
 
   # Large, do not memoize.
   def uncompressed_layer(self, layer_id):
@@ -233,11 +233,11 @@ class FromShardedTarball(DockerImage):
 
 def _get_top(tarball, name = None):
   """Get the topmost layer in the image tarball."""
-  with tarfile.open(name=tarball, mode='r') as tar:
-    try:
-      repositories = json.loads(tar.extractfile('repositories').read())  # pytype: disable=attribute-error
-    except KeyError:
-      repositories = json.loads(tar.extractfile('./repositories').read())  # pytype: disable=attribute-error
+  with tarfile.open(name=tarball, mode='r:') as tar:
+    reps = tar.extractfile('repositories') or tar.extractfile('./repositories')
+    if reps is None:
+      raise ValueError('Tarball must contain a repositories file')
+    repositories = json.loads(reps.read().decode('utf8'))
 
   if name:
     key = str(name.as_repository())
@@ -315,7 +315,7 @@ class FromRegistry(DockerImage):
   def json(self, layer_id):
     """Override."""
     # GET server1/v1/images/IMAGEID/json
-    return self._content(layer_id + '/json')
+    return self._content(layer_id + '/json').decode('utf8')
 
   # Large, do not memoize.
   def layer(self, layer_id):
@@ -326,7 +326,7 @@ class FromRegistry(DockerImage):
   def ancestry(self, layer_id):
     """Override."""
     # GET server1/v1/images/IMAGEID/ancestry
-    return json.loads(self._content(layer_id + '/ancestry'))
+    return json.loads(self._content(layer_id + '/ancestry').decode('utf8'))
 
   # __enter__ and __exit__ allow use as a context manager.
   def __enter__(self):
@@ -359,7 +359,7 @@ class FromRegistry(DockerImage):
             repository_name=self._name.repository), self._creds,
         [six.moves.http_client.OK])
 
-    self._tags = json.loads(content)
+    self._tags = json.loads(content.decode('utf8'))
     return self
 
   def __exit__(self, unused_type, unused_value, unused_traceback):
@@ -401,12 +401,7 @@ class Random(DockerImage):
 
   def repositories(self):
     """Override."""
-    return {
-        'random/image': {
-            # TODO(user): Remove this suppression.
-            'latest': self.top(),  # type: ignore
-        }
-    }
+    return {'random/image': {'latest': self.top(),}}
 
   def json(self, layer_id):
     """Override."""
@@ -416,10 +411,7 @@ class Random(DockerImage):
     if len(ancestry) != 1:
       metadata['parent'] = ancestry[1]
 
-    out = json.dumps(metadata, sort_keys=True)
-    if isinstance(out, six.binary_type):
-      return out
-    return out.encode()
+    return json.dumps(metadata, sort_keys=True)
 
   def layer(self, layer_id):
     """Override."""
@@ -432,7 +424,7 @@ class Random(DockerImage):
     return self._ancestry[index:]
 
   def _next_id(self, sample):
-    return sample('0123456789abcdef', 64)
+    return sample(b'0123456789abcdef', 64).decode('utf8')
 
   # pylint: disable=missing-docstring
   def _next_layer(self, sample,
@@ -460,15 +452,13 @@ class Random(DockerImage):
         ])
         process.wait()
 
-        with open(data_filename, 'rb') as fd:
+        with io.open(data_filename, u'rb') as fd:
           info = tar.gettarinfo(name=data_filename)
           tar.addfile(info, fileobj=fd)
           os.remove(data_filename)
           os.rmdir(tempdir)
       else:
-        data = sample(string.printable, layer_byte_size)
-        if isinstance(data, six.text_type):
-          data = data.encode()
+        data = sample(string.printable.encode('utf8'), layer_byte_size)
         info = tarfile.TarInfo(name='./' + self._next_id(sample))
         info.size = len(data)
         tar.addfile(info, fileobj=io.BytesIO(data))

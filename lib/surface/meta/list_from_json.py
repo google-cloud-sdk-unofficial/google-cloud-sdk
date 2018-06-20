@@ -14,6 +14,10 @@
 
 """A command that reads JSON data and lists it."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+import io
 import json
 import sys
 
@@ -50,7 +54,7 @@ class ListFromJson(base.ListCommand):
   def Run(self, args):
     if args.json_file:
       try:
-        with open(args.json_file, 'r') as f:
+        with io.open(args.json_file, 'rt') as f:
           resources = json.load(f)
       except (IOError, ValueError) as e:
         raise exceptions.BadFileException(

@@ -29,14 +29,6 @@ from containerregistry.client.v2_2 import docker_image_list
 class OCIFromV22(docker_image.Delegate):
   """This compatibility interface serves an OCI image from a v2_2 image."""
 
-  def __init__(self, image):
-    """Constructor.
-
-    Args:
-      image: a DockerImage on which __enter__ has already been called.
-    """
-    super(OCIFromV22, self).__init__(image)
-
   def manifest(self):
     """Override."""
     manifest = json.loads(self._image.manifest())
@@ -62,14 +54,6 @@ class OCIFromV22(docker_image.Delegate):
 
 class V22FromOCI(docker_image.Delegate):
   """This compatibility interface serves a v2_2 image from an OCI image."""
-
-  def __init__(self, image):
-    """Constructor.
-
-    Args:
-      image: a DockerImage on which __enter__ has already been called.
-    """
-    super(V22FromOCI, self).__init__(image)
 
   def manifest(self):
     """Override."""

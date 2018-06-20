@@ -19,8 +19,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.functions import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 class Describe(base.DescribeCommand):
@@ -29,13 +27,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument(
-        'name', help='The name of the function to describe.',
-        type=util.ValidateFunctionNameOrRaise)
-    flags.AddRegionFlag(
-        parser,
-        help_text='The region of the function to describe.',
-    )
+    flags.AddFunctionResourceArg(parser, 'to describe')
 
   @util.CatchHTTPErrorRaiseHTTPException
   def Run(self, args):
@@ -50,13 +42,7 @@ class Describe(base.DescribeCommand):
     """
     client = util.GetApiClientInstance()
     messages = client.MESSAGES_MODULE
-
-    function_ref = resources.REGISTRY.Parse(
-        args.name, params={
-            'projectsId': properties.VALUES.core.project.GetOrFail,
-            'locationsId': properties.VALUES.functions.region.GetOrFail},
-        collection='cloudfunctions.projects.locations.functions')
-
+    function_ref = args.CONCEPTS.name.Parse()
     return client.projects_locations_functions.Get(
         messages.CloudfunctionsProjectsLocationsFunctionsGetRequest(
             name=function_ref.RelativeName()))

@@ -14,9 +14,14 @@
 """Resize cluster command."""
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from apitools.base.py import exceptions as apitools_exceptions
+
+from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
 
 
@@ -52,16 +57,33 @@ class Resize(base.Command):
     location_get = self.context['location_get']
     location = location_get(args)
     cluster_ref = adapter.ParseCluster(args.name, location)
-    cluster = adapter.GetCluster(cluster_ref)
-    pool = adapter.FindNodePool(cluster, args.node_pool)
+    cluster = None
+    cluster_name = args.name
+    pool_name = args.node_pool if args.node_pool else 'default-pool'
+    try:
+      # Attempt to get cluster for better prompts and to validate args.
+      # Error is a warning but not fatal. Should only exit with a failure on
+      # ResizeNodePool(...) below.
+      cluster = adapter.GetCluster(cluster_ref)
+      cluster_name = cluster.name
+    except (exceptions.HttpException,
+            apitools_exceptions.HttpForbiddenError,
+            util.Error) as error:
+      log.warning(('Problem loading details of cluster to resize:\n\n{}\n\n'
+                   'You can still attempt to resize the cluster.\n')
+                  .format(console_attr.SafeText(error)))
+
+    if cluster is not None:
+      pool_name = adapter.FindNodePool(cluster, args.node_pool).name
+
     console_io.PromptContinue(
         message=('Pool [{pool}] for [{cluster_name}] will be resized to '
-                 '{new_size}.').format(pool=pool.name,
-                                       cluster_name=cluster.name,
-                                       new_size=args.size),
+                 '{new_size}.')
+        .format(pool=pool_name, cluster_name=cluster_name, new_size=args.size),
         throw_if_unattended=True,
         cancel_on_no=True)
-    op_ref = adapter.ResizeNodePool(cluster_ref, pool.name, args.size)
+
+    op_ref = adapter.ResizeNodePool(cluster_ref, pool_name, args.size)
 
     if not args.async:
       adapter.WaitForOperation(op_ref,

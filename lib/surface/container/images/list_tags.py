@@ -78,6 +78,10 @@ class ListTagsGAandBETA(base.ListCommand):
 
             $ {command} gcr.io/myproject/myimage --format=json
 
+          To list digests without corresponding tags:
+
+            $ {command} gcr.io/myproject/myimage --filter="NOT tags:*"
+
       """,
   }
 

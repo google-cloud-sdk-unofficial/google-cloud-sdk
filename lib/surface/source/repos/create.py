@@ -15,7 +15,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from apitools.base.py import exceptions
-from googlecloudsdk.api_lib.source.repos import sourcerepo
+from googlecloudsdk.api_lib.source import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.source import flags

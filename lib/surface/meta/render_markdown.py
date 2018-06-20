@@ -14,6 +14,9 @@
 
 """A command that generates all DevSite and manpage documents."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import sys
 
 from googlecloudsdk.calliope import base

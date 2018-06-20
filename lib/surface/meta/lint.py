@@ -14,8 +14,11 @@
 
 """A command that validates gcloud flags according to Cloud SDK CLI Style."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+import io
 import os
-import StringIO
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -178,7 +181,7 @@ def _GetWhitelistedCommandVocabulary():
 
   vocabulary_file = os.path.join(os.path.dirname(__file__),
                                  'gcloud_command_vocabulary.txt')
-  with open(vocabulary_file, 'r') as f:
+  with io.open(vocabulary_file, 'rt') as f:
     return set(line for line in f.read().split('\n')
                if not line.startswith('#'))
 
@@ -220,7 +223,7 @@ def _WalkGroupTree(group):
 
   yield group
 
-  for sub_group in group.groups.itervalues():
+  for sub_group in six.itervalues(group.groups):
     for value in _WalkGroupTree(sub_group):
       yield value
 
@@ -239,7 +242,7 @@ class Linter(object):
     for group in _WalkGroupTree(group_root):
       for check in self._checks:
         check.ForEveryGroup(group)
-      for command in group.commands.itervalues():
+      for command in six.itervalues(group.commands):
         for check in self._checks:
           check.ForEveryCommand(command)
 
@@ -258,7 +261,7 @@ _LINT_CHECKS = [
 
 
 def _FormatCheckList(check_list):
-  buf = StringIO.StringIO()
+  buf = io.StringIO()
   for check in check_list:
     usage_text.WrapWithPrefix(
         check.name, check.description, 20, 78, '  ', writer=buf)

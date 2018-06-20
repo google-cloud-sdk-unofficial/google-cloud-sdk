@@ -55,8 +55,10 @@ class Dataproc(base.Group):
   """Create and manage Google Cloud Dataproc clusters and jobs."""
   detailed_help = DETAILED_HELP
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
+      return
     region_prop = properties.VALUES.dataproc.region
     parser.add_argument(
         '--region',

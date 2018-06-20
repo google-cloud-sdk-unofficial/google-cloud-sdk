@@ -233,7 +233,7 @@ class SshBeta(SshGA):
     super(SshBeta, self).Run(args)
 
 
-def DetailedHelp(version):
+def DetailedHelp():
   """Construct help text based on the command release track."""
   detailed_help = {
       'brief': 'SSH into a virtual machine instance',
@@ -273,31 +273,7 @@ def DetailedHelp(version):
           $ {command} example-instance --zone us-central1-a --container CONTAINER
         """,
   }
-  if version == 'BETA':
-    detailed_help['DESCRIPTION'] = """\
-        *{command}* is a thin wrapper around the *ssh(1)* command that
-        takes care of authentication and the translation of the
-        instance name into an IP address.
-
-        The default network comes preconfigured to allow ssh access to
-        all VMs. If the default network was edited, or if not using the
-        default network, you may need to explicitly enable ssh access by adding
-        a firewall-rule:
-
-          $ gcloud compute firewall-rules create --network=NETWORK \
-            default-allow-ssh --allow tcp:22
-
-        This command does not work for Windows VMs.
-
-        This command uses the Compute Accounts API to ensure that the user's
-        public SSH key is availibe to the VM. This form of key management
-        will only work with VMs configured to work with the Compute Accounts
-        API. If the user does not have a public SSH key, one is generated using
-        *ssh-keygen(1)* (if `the --quiet` flag is given, the generated key will
-        have an empty passphrase).
-
-        """
   return detailed_help
 
-SshGA.detailed_help = DetailedHelp('GA')
-SshBeta.detailed_help = DetailedHelp('BETA')
+SshGA.detailed_help = DetailedHelp()
+SshBeta.detailed_help = DetailedHelp()

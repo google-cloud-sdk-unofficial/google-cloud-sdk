@@ -16,7 +16,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.source.repos import sourcerepo
+from googlecloudsdk.api_lib.source import sourcerepo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source import flags
 from googlecloudsdk.command_lib.source import util

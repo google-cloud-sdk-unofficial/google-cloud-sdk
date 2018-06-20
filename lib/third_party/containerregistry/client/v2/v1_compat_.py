@@ -18,10 +18,10 @@ from __future__ import division
 
 from __future__ import print_function
 
-import hashlib
 import json
 
 from containerregistry.client.v1 import docker_image as v1_image
+from containerregistry.client.v2 import docker_digest
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import util
 
@@ -142,7 +142,7 @@ class V2FromV1(v2_image.DockerImage):
     self._layer_map = {}
     for layer_id in self._v1_image.ancestry(self._v1_image.top()):
       blob = self._v1_image.layer(layer_id)
-      digest = 'sha256:' + hashlib.sha256(blob).hexdigest()
+      digest = docker_digest.SHA256(blob)
       fs_layers += [{'blobSum': digest}]
       self._layer_map[digest] = layer_id
     self._manifest = util.Sign(
@@ -159,7 +159,7 @@ class V2FromV1(v2_image.DockerImage):
                 'fsLayers':
                     fs_layers,
                 'history': [{
-                    'v1Compatibility': self._v1_image.json(layer_id).decode()
+                    'v1Compatibility': self._v1_image.json(layer_id)
                 } for layer_id in self._v1_image.ancestry(self._v1_image.top())
                            ],
             },

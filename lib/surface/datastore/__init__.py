@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.DisallowPython3  # TODO(b/77812235): Enable for py3.
 class Datastore(base.Group):
   """Manage your Cloud Datastore indexes.
 

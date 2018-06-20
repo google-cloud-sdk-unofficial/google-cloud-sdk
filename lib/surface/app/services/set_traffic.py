@@ -14,6 +14,7 @@
 """`gcloud app services set-traffic` command."""
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import service_util
@@ -125,5 +126,5 @@ for more information.""")
         printable_errors[service] = error_msg
       raise TrafficSplitError(
           'Issue setting traffic on service(s): {0}\n\n'.format(
-              ', '.join(printable_errors.keys())) +
-          '\n\n'.join(printable_errors.values()))
+              ', '.join(list(printable_errors.keys()))) +
+          '\n\n'.join(list(printable_errors.values())))

@@ -14,6 +14,7 @@
 """Surface for updating a firewall rule."""
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.app import util as util
 from googlecloudsdk.api_lib.app.api import appengine_firewall_api_client as api_client
 from googlecloudsdk.calliope import base

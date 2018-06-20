@@ -20,7 +20,6 @@ from __future__ import print_function
 
 import abc
 import gzip
-import hashlib
 import io
 import json
 import os
@@ -80,7 +79,7 @@ class DockerImage(six.with_metaclass(abc.ABCMeta, object)):
       digest: the 'algo:digest' of the layer being addressed.
 
     Returns:
-      The raw blob string of the layer.
+      The raw blob bytes of the layer.
     """
 
   # pytype: enable=bad-return-type
@@ -138,7 +137,7 @@ class FromRegistry(DockerImage):
   def _tags(self):
     # See //cloud/containers/registry/proto/v2/tags.proto
     # for the full response structure.
-    return json.loads(self._content('tags/list'))
+    return json.loads(self._content('tags/list').decode('utf8'))
 
   def tags(self):
     return self._tags().get('tags', [])
@@ -170,10 +169,10 @@ class FromRegistry(DockerImage):
     """Override."""
     # GET server1/v2/<name>/manifests/<tag_or_digest>
     if isinstance(self._name, docker_name.Tag):
-      return self._content('manifests/' + self._name.tag)
+      return self._content('manifests/' + self._name.tag).decode('utf8')
     else:
       assert isinstance(self._name, docker_name.Digest)
-      c = self._content('manifests/' + self._name.digest)
+      c = self._content('manifests/' + self._name.digest).decode('utf8')
       # v2 removes signatures to compute the manifest digest, this is hard.
       computed = docker_digest.SignedManifestToSHA256(c)
       if validate and computed != self._name.digest:
@@ -204,9 +203,7 @@ class FromRegistry(DockerImage):
     """Override."""
     # GET server1/v2/<name>/blobs/<digest>
     c = self._content('blobs/' + digest, cache=False)
-    if isinstance(c, six.text_type):
-      c = c.encode()
-    computed = 'sha256:' + hashlib.sha256(c).hexdigest()
+    computed = docker_digest.SHA256(c)
     if digest != computed:
       raise DigestMismatchedError(
           'The returned content\'s digest did not match its content-address, '

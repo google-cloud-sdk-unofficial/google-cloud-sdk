@@ -17,7 +17,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.iam import iam_util
@@ -35,7 +34,7 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateFlag(parser, 'set the policy on')
+    flags.AddTemplateResourceArg(parser, 'set the policy on')
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):
@@ -45,9 +44,9 @@ class SetIamPolicy(base.Command):
     policy = iam_util.ParsePolicyFile(args.policy_file, msgs.Policy)
     set_iam_policy_request = msgs.SetIamPolicyRequest(policy=policy)
 
-    template = util.ParseWorkflowTemplates(args.template, dataproc)
+    template_ref = args.CONCEPTS.template.Parse()
     request = msgs.DataprocProjectsRegionsWorkflowTemplatesSetIamPolicyRequest(
-        resource=template.RelativeName(),
+        resource=template_ref.RelativeName(),
         setIamPolicyRequest=set_iam_policy_request)
 
     return dataproc.client.projects_regions_workflowTemplates.SetIamPolicy(
