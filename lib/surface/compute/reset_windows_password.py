@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Implements the command for resetting a password in a Windows instance."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 import textwrap
 
@@ -29,6 +31,7 @@ from googlecloudsdk.command_lib.util import time_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import encoding as core_encoding
 from googlecloudsdk.core.util import files
 
 # This will only succeed on Windows machines.
@@ -173,8 +176,8 @@ class ResetWindowsPassword(base.UpdateCommand):
     """Return a JSON formatted entry for 'windows-keys'."""
     expire_str = time_util.CalculateExpiration(RSA_KEY_EXPIRATION_TIME_SEC)
     windows_key_data = {'userName': user,
-                        'modulus': modulus,
-                        'exponent': exponent,
+                        'modulus': core_encoding.Decode(modulus),
+                        'exponent': core_encoding.Decode(exponent),
                         'email': email,
                         'expireOn': expire_str}
 

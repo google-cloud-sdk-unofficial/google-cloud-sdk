@@ -13,6 +13,8 @@
 # limitations under the License.
 """Add tag command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from containerregistry.client import docker_name
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import docker_session as v2_session

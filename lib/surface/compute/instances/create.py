@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating instances."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -31,6 +33,8 @@ from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenanc
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
+import six
+from six.moves import zip
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
@@ -107,7 +111,6 @@ def _CommonArgs(parser,
     instances_flags.AddNetworkTierArgs(parser, instance=True)
   if support_sole_tenancy:
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
-    sole_tenancy_flags.AddSoleTenancyArgsToParser(parser)
   if supports_resource_policies:
     maintenance_flags.AddResourcePoliciesArgs(parser, 'added to')
 
@@ -214,7 +217,8 @@ class Create(base.CreateCommand):
               resource_parser,
               csek_keys,
               getattr(args, 'create_disk', []),
-              instance_ref))
+              instance_ref,
+              enable_kms=self._support_kms))
       local_ssds = []
       for x in args.local_ssd or []:
         local_ssds.append(
@@ -240,7 +244,8 @@ class Create(base.CreateCommand):
             image_uri=image_uri,
             instance_ref=instance_ref,
             csek_keys=csek_keys,
-            kms_args=args)
+            kms_args=args,
+            enable_kms=self._support_kms)
         persistent_disks = [boot_disk] + persistent_disks
       else:
         existing_boot_disks[boot_disk_ref.zone] = boot_disk_ref
@@ -464,9 +469,9 @@ class Create(base.CreateCommand):
         invalid_machine_type_message_regex = (
             r'Invalid value for field \'resource.machineType\': .+. '
             r'Machine type with name \'.+\' does not exist in zone \'.+\'\.')
-        if re.search(invalid_machine_type_message_regex, e.message):
+        if re.search(invalid_machine_type_message_regex, six.text_type(e)):
           raise exceptions.ToolException(
-              e.message +
+              six.text_type(e) +
               '\nUse `gcloud compute machine-types list --zones` to see the '
               'available machine  types.')
         raise
@@ -499,10 +504,10 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create Google Compute Engine virtual machine instances."""
 
-  _support_kms = False
+  _support_kms = True
   _support_network_tier = True
   _support_public_dns = False
-  _support_node_affinity = False
+  _support_node_affinity = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -518,6 +523,7 @@ class CreateBeta(Create):
         support_network_tier=cls._support_network_tier,
         enable_regional=True,
         enable_kms=cls._support_kms,
+        support_sole_tenancy=True,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

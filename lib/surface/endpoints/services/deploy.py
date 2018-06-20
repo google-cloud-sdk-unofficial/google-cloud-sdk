@@ -29,6 +29,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import http_encoding
 
+import six.moves.urllib.parse
+
 
 ADVICE_STRING = ('Advice found for changes in the new service config. If this '
                  'is a --validate-only run, the config push would have failed. '
@@ -55,6 +57,26 @@ def _CommonArgs(parser):
             'specifications, and Google Service Configuration files in JSON '
             'and YAML formats are acceptable.'))
   base.ASYNC_FLAG.AddToParser(parser)
+
+
+def GenerateManagementUrl(service):
+  """Generate a service management url for this service."""
+  # It is actually possible to deploy a service configuration for a service
+  # which is not in the current project, as long as you have appropriate
+  # permissions. Because of this, we need to explicitly query for the service's
+  # project.
+  messages = services_util.GetMessagesModule()
+  client = services_util.GetClientInstance()
+  get_request = messages.ServicemanagementServicesGetRequest(
+      serviceName=service,
+  )
+  response = client.services.Get(get_request)
+  project = response.producerProjectId
+
+  return ('https://console.cloud.google.com/endpoints/api/'
+          '{service}/overview?project={project}'.format(
+              service=six.moves.urllib.parse.quote(service),
+              project=six.moves.urllib.parse.quote(project)))
 
 
 class _BaseDeploy(object):
@@ -296,7 +318,7 @@ class _BaseDeploy(object):
       push_config_result = services_util.PushNormalizedGoogleServiceConfig(
           self.service_name,
           properties.VALUES.core.project.Get(required=True),
-          config_contents)
+          services_util.LoadJsonOrYaml(config_contents))
       self.service_config_id = push_config_result.id
 
     if not self.service_config_id:
@@ -342,8 +364,7 @@ class _BaseDeploy(object):
           ('\nService Configuration [{0}] uploaded for '
            'service [{1}]\n').format(self.service_config_id, self.service_name))
 
-      management_url = services_util.GenerateManagementUrl(
-          self.service_name, properties.VALUES.core.project.Get(required=True))
+      management_url = GenerateManagementUrl(self.service_name)
       log.status.Print('To manage your API, go to: ' + management_url)
 
 

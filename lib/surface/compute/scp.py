@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Implements the command for copying files from and to virtual machines."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import scp_utils

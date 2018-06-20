@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for resuming a suspended instance."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -22,6 +24,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+from six.moves import zip
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -26,11 +26,22 @@ class Update(base.Command):
   """Update the Cloud Source Repositories configuration of the current project.
   """
 
+  _ENABLE_KEY_UPDATE_MASK = 'enablePrivateKeyCheck'
+  _PUBSUB_CONFIGS_UPDATE_MASK = 'pubsubConfigs'
+
   @staticmethod
   def Args(parser):
-    flags.AddPushblockFlagsToParser(parser)
+    flags.AddProjectConfigUpdateArgs(parser)
 
   def Run(self, args):
     client = project_configs.ProjectConfig()
-    updated_project_config = util.ParseProjectConfig(args)
-    return client.Update(updated_project_config, 'enablePrivateKeyCheck')
+    if args.enable_pushblock or args.disable_pushblock:
+      updated_project_config = util.ParseProjectConfigWithPushblock(args)
+      return client.Update(updated_project_config, self._ENABLE_KEY_UPDATE_MASK)
+
+    project_ref = util.CreateProjectResource(args)
+    project_config = client.Get(project_ref)
+    updated_project_config = util.ParseProjectConfigWithModifiedTopic(
+        args, project_config)
+    return client.Update(updated_project_config,
+                         self._PUBSUB_CONFIGS_UPDATE_MASK)

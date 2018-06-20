@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for spanner databases list."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args

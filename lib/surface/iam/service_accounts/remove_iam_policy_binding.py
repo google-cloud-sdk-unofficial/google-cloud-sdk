@@ -11,14 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Command for removing IAM policies for service accounts."""
 
-import httplib
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.util import http_retry
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+
+import six.moves.http_client
 
 
 class RemoveIamPolicyBinding(base.Command):
@@ -41,7 +45,7 @@ class RemoveIamPolicyBinding(base.Command):
         action='to remove the policy binding from')
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
-  @http_retry.RetryOnHttpStatus(httplib.CONFLICT)
+  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):
     client, messages = util.GetClientAndMessages()
     policy = client.projects_serviceAccounts.GetIamPolicy(

@@ -13,12 +13,15 @@
 # limitations under the License.
 """Routes to/from Google Compute Engine VMs."""
 
-from __future__ import print_function
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import argparse
+import io
 import os
 import re
-import tempfile
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import exceptions
@@ -260,7 +263,7 @@ class Routes(base_classes.BaseCommand):
     if dry_run:
       log.out.Print('<SELF-IP>')
 
-    temp = tempfile.TemporaryFile()
+    temp = io.BytesIO()
     cmd = ['echo', '$SSH_CLIENT']
     try:
       external_helper.RunSSHCommandToInstance(
@@ -276,8 +279,7 @@ class Routes(base_classes.BaseCommand):
       log.out.flush()
       raise ssh.CommandError(' '.join(cmd), str(e))
 
-    temp.seek(0)
-    who_am_i_str = temp.read()
+    who_am_i_str = temp.getvalue().decode('utf-8')
     result = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', who_am_i_str)
     if result:
       res = result.group(1)

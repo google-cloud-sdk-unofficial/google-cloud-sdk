@@ -41,7 +41,7 @@ class GetServerConfig(base.Command):
         which you can register arguments.  See the public argparse documentation
         for its capabilities.
     """
-    flags.AddZoneAndRegionFlags(parser, region_hidden=True)
+    flags.AddZoneAndRegionFlags(parser)
 
   def Run(self, args):
     adapter = self.context['api_adapter']

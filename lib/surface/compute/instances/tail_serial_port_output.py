@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for tailing the serial port output of an instance."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import time
 
 from googlecloudsdk.api_lib.compute import base_classes

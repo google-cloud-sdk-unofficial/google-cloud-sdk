@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for spanner databases set-iam-policy."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.spanner import iam

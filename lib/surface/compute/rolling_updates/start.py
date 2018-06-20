@@ -14,6 +14,8 @@
 
 """rolling-updates start command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util

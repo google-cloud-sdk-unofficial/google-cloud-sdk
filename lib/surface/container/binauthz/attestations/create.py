@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container import binauthz_util as binauthz_api_util
+from googlecloudsdk.api_lib.container.binauthz import authorities
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
 from googlecloudsdk.command_lib.container.binauthz import flags as binauthz_flags
@@ -60,10 +61,19 @@ class Create(base.CreateCommand):
     signature = console_io.ReadFromFileOrStdin(
         args.signature_file, binary=False)
 
+    note_ref = args.CONCEPTS.attestation_authority_note.Parse()
+    if note_ref is None:
+      authority_ref = args.CONCEPTS.attestation_authority.Parse()
+      authority = authorities.Client().Get(authority_ref)
+      # TODO(b/79709480): Add other types of authorities if/when supported.
+      note_ref = resources.REGISTRY.ParseResourceId(
+          'containeranalysis.projects.notes',
+          authority.userOwnedDrydockNote.noteReference, {})
+
     client = binauthz_api_util.ContainerAnalysisClient()
     return client.CreateAttestationOccurrence(
         project_ref=project_ref,
-        note_ref=args.CONCEPTS.attestation_authority_note.Parse(),
+        note_ref=note_ref,
         artifact_url=normalized_artifact_url,
         pgp_key_fingerprint=args.pgp_key_fingerprint,
         signature=signature,

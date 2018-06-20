@@ -381,6 +381,7 @@ class CreateBeta(Create):
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddPrivateClusterFlags(parser, hidden=False)
     flags.AddEnableStackdriverKubernetesFlag(parser)
+    flags.AddTpuFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -394,6 +395,8 @@ class CreateBeta(Create):
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.enable_binauthz = args.enable_binauthz
+    ops.enable_tpu = args.enable_tpu
+    ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     return ops
 
 

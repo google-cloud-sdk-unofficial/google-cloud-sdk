@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """`gcloud monitoring policies conditions create` command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.monitoring import policies
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.monitoring import flags

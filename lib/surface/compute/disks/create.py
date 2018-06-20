@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating disks."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 import textwrap
 
@@ -31,10 +33,12 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.compute.resource_policies import flags as resource_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as resource_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+import six
 
 DETAILED_HELP = {
     'brief': 'Create Google Compute Engine persistent disks',
@@ -269,7 +273,7 @@ class Create(base.Command):
       labels = client.messages.Disk.LabelsValue(additionalProperties=[
           client.messages.Disk.LabelsValue.AdditionalProperty(
               key=key, value=value)
-          for key, value in sorted(args.labels.iteritems())])
+          for key, value in sorted(six.iteritems(args.labels))])
     return labels
 
   def GetDiskTypeUri(self, args, disk_ref, compute_holder):
@@ -304,6 +308,9 @@ class Create(base.Command):
     return result
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, supports_kms_keys=False):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = compute_holder.client
 
@@ -361,9 +368,9 @@ class Create(base.Command):
       if labels:
         kwargs['labels'] = labels
 
-      kwargs['diskEncryptionKey'] = kms_utils.MaybeGetKmsKey(
-          args, disk_ref.project, client.apitools_client,
-          kwargs.get('diskEncryptionKey', None))
+      if supports_kms_keys:
+        kwargs['diskEncryptionKey'] = kms_utils.MaybeGetKmsKey(
+            args, client.messages, kwargs.get('diskEncryptionKey', None))
 
       if resource_policies:
         if disk_ref.Collection() == 'compute.regionDisks':
@@ -438,13 +445,16 @@ class CreateBeta(Create):
     Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
 
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
-
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
-
     _AddReplicaZonesArg(parser)
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser, 'disk', region_fallthrough=True)
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
     return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
+
+  def Run(self, args):
+    return self._Run(args, supports_kms_keys=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -455,14 +465,18 @@ class CreateAlpha(Create):
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
 
-    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
-    kms_utils.AddKmsKeyArgs(parser, resource_type='disk')
-    _AddReplicaZonesArg(parser)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
+    _AddReplicaZonesArg(parser)
     resource_flags.AddResourcePoliciesArgs(parser, 'added to')
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser, 'disk', region_fallthrough=True)
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
     return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
+
+  def Run(self, args):
+    return self._Run(args, supports_kms_keys=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

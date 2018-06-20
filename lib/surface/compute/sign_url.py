@@ -13,6 +13,8 @@
 # limitations under the License.
 """Implements the command for generating Cloud CDN Signed URLs."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import file_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base

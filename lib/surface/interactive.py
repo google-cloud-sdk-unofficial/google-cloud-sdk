@@ -27,6 +27,8 @@ from googlecloudsdk.command_lib.meta import generate_cli_trees
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.document_renderers import render_document
 
+import six
+
 
 _FEATURES = """
 * auto-completion for *gcloud* commands, flags and resource arguments
@@ -69,11 +71,11 @@ def _GetPropertiesHelp():
       lines.append(prop.help_text)
       default = prop.default
       if default is not None:
-        if isinstance(default, basestring):
+        if isinstance(default, six.string_types):
           default = '"{}"'.format(default)
         else:
           if default in (False, True):
-            default = str(default).lower()
+            default = six.text_type(default).lower()
           default = '*{}*'.format(default)
         lines.append('The default value is {}.'.format(default))
   return '\n'.join(lines)

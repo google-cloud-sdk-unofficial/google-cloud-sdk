@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for deleting instances."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
@@ -20,6 +22,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core.console import console_io
+from six.moves import zip
 
 
 _INSTANCE_DELETE_PROMPT = 'The following instances will be deleted.'

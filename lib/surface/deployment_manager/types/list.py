@@ -125,6 +125,8 @@ class ListALPHA(base.ListCommand, dm_base.DmCommand):
 
   @staticmethod
   def Args(parser):
+    # TODO(b/79993361): support URI flag after resolving the bug.
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.add_argument('--provider', help='Type provider name.')
     parser.add_argument('--provider-project',
                         help='Project id with types you want to see.')

@@ -36,7 +36,7 @@ class Operations(base.Group):
         which you can register arguments.  See the public argparse documentation
         for its capabilities.
     """
-    flags.AddZoneAndRegionFlags(parser, region_hidden=True)
+    flags.AddZoneAndRegionFlags(parser)
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

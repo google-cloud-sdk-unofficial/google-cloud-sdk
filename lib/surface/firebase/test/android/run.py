@@ -39,7 +39,7 @@ class _BaseRun(object):
           *{command}* invokes and monitors tests in Firebase Test Lab for
           Android.
 
-          Two main types of tests are currently supported:
+          Three main types of Android tests are currently supported:
           - *robo*: runs a smart, automated exploration of the activities in
             your Android app which records any installation failures or crashes
             and builds an activity map with associated screenshots and video.
@@ -47,11 +47,18 @@ class _BaseRun(object):
             using a testing framework. Firebase Test Lab for Android currently
             supports the Espresso, Robotium and UI Automator 2.0 testing
             frameworks.
+          - *game-loop*: executes a special intent built into the game app (a
+            "demo mode") that simulates the actions of a real player. This test
+            type can include multiple game loops (also called "scenarios"),
+            which can be logically organized using scenario labels so that you
+            can run related loops together. Refer to
+            https://firebase.google.com/docs/test-lab/android/game-loop for
+            more information about how to build and run Game Loop tests.
 
           The type of test to run can be specified with the *--type* flag,
           although the type can often be inferred from other flags.
-          Specifically, if the *--test* flag is present, the test *--type* will
-          default to `instrumentation`. If *--test* is not present, then
+          Specifically, if the *--test* flag is present, the test *--type*
+          defaults to `instrumentation`. If *--test* is not present, then
           *--type* defaults to `robo`.
 
           All arguments for *{command}* may be specified on the command line

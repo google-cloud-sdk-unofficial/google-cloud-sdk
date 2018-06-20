@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for spanner instance configs list."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.calliope import base
 

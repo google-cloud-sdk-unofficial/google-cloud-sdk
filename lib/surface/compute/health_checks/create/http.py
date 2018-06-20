@@ -59,7 +59,7 @@ def _Run(args, holder, supports_response=False,
       [(client.apitools_client.healthChecks, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a HTTP health check to monitor load balanced instances."""
 
@@ -78,14 +78,29 @@ class Create(base.CreateCommand):
     return _Run(args, holder)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Create a HTTP health check to monitor load balanced instances."""
 
   @staticmethod
   def Args(parser):
     Create.Args(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
+    parser.display_info.AddCacheUpdater(completers.HealthChecksCompleter)
+
+  def Run(self, args):
+    """Issues the request necessary for adding the health check."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return _Run(args, holder, supports_response=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a HTTP health check to monitor load balanced instances."""
+
+  @staticmethod
+  def Args(parser):
+    CreateBeta.Args(parser)
     health_checks_utils.AddPortSpecificationFlag(parser)
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleter)
 

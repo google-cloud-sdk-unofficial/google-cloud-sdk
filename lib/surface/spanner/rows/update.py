@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for spanner rows update."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base

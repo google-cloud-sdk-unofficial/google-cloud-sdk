@@ -495,6 +495,7 @@ class CreateBeta(Create):
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
         support_shielded_vms=cls._support_shielded_vms,
+        support_sole_tenancy=True,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -514,6 +515,7 @@ class CreateBeta(Create):
         support_network_tier=True,
         support_source_instance=self._support_source_instance,
         support_shielded_vms=self._support_shielded_vms,
+        support_node_affinity=True,
     )
 
 

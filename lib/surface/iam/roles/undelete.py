@@ -14,6 +14,9 @@
 
 """Command for undeleting a role."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions

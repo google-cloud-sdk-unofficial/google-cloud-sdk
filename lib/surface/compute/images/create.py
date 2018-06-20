@@ -24,11 +24,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
+from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 import six
 
 
-def _Args(parser, release_track):
+def _Args(parser, release_track, supports_kms_keys=False):
   """Set Args based on Release Track."""
   # GA Args
   parser.display_info.AddFormat(flags.LIST_FORMAT)
@@ -46,10 +47,15 @@ def _Args(parser, release_track):
   flags.AddCloningImagesArgs(parser, sources_group)
   flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
 
+  image_utils.AddGuestOsFeaturesArg(parser, release_track)
+
   # Alpha and Beta Args
   if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
+
+  if supports_kms_keys:
+    kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -61,10 +67,12 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     _Args(parser, cls.ReleaseTrack())
-    image_utils.AddGuestOsFeaturesArg(parser, cls.ReleaseTrack())
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, supports_kms_keys=False):
     """Returns a list of requests necessary for adding images."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -85,9 +93,9 @@ class Create(base.CreateCommand):
           csek_keys.LookupKey(image_ref,
                               raise_if_missing=args.require_csek_key_create),
           client.apitools_client)
-    image.imageEncryptionKey = kms_utils.MaybeGetKmsKey(
-        args, image_ref.project, client.apitools_client,
-        image.imageEncryptionKey)
+    if supports_kms_keys:
+      image.imageEncryptionKey = kms_utils.MaybeGetKmsKey(
+          args, messages, image.imageEncryptionKey)
 
     # Validate parameters.
     if args.source_disk_zone and not args.source_disk:
@@ -169,23 +177,21 @@ class Create(base.CreateCommand):
                                  request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(Create):
+  """Create Google Compute Engine images."""
 
   # Used in CreateRequests. We only want to allow RSA key wrapping in
   # alpha/beta, *not* GA.
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls.ReleaseTrack())
-    image_utils.AddGuestOsFeaturesArg(parser, cls.ReleaseTrack())
-    kms_utils.AddKmsKeyArgs(parser, resource_type='image')
+    _Args(parser, cls.ReleaseTrack(), supports_kms_keys=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
+
+  def Run(self, args):
+    return self._Run(args, supports_kms_keys=True)
 
 
 Create.detailed_help = {
@@ -211,4 +217,3 @@ Create.detailed_help = {
 }
 
 CreateBeta.detailed_help = Create.detailed_help
-CreateAlpha.detailed_help = Create.detailed_help

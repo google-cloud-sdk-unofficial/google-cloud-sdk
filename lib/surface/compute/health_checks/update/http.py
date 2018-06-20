@@ -23,7 +23,7 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a HTTP health check.
 
@@ -157,8 +157,8 @@ class Update(base.UpdateCommand):
         [self.GetSetRequest(client, health_check_ref, new_object)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateBeta(Update):
   """Update a HTTP health check.
 
   *{command}* is used to update an existing HTTP health check. Only
@@ -173,8 +173,8 @@ class UpdateAlpha(Update):
 
   def Modify(self, client, args, existing_check):
     """Returns a modified HealthCheck message."""
-    new_health_check = super(UpdateAlpha, self).Modify(client, args,
-                                                       existing_check)
+    new_health_check = super(UpdateBeta, self).Modify(client, args,
+                                                      existing_check)
 
     if args.response:
       response = args.response

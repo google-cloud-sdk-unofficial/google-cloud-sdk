@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import text
+from six.moves import zip
 
 
 class Delete(base.DeleteCommand):

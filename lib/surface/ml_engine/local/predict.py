@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import local_utils
 from googlecloudsdk.command_lib.ml_engine import predict_utilities
 
@@ -23,6 +24,7 @@ from googlecloudsdk.command_lib.ml_engine import predict_utilities
 def _AddLocalPredictArgs(parser):
   """Add arguments for `gcloud ml-engine local predict` command."""
   parser.add_argument('--model-dir', required=True, help='Path to the model.')
+  flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
   group = parser.add_mutually_exclusive_group(required=True)
   group.add_argument(
       '--json-instances',
@@ -62,9 +64,13 @@ class Predict(base.Command):
     _AddLocalPredictArgs(parser)
 
   def Run(self, args):
+    framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
+    framework_flag = framework.name.lower() if framework else 'tensorflow'
+
     results = local_utils.RunPredict(args.model_dir,
                                      args.json_instances,
-                                     args.text_instances)
+                                     args.text_instances,
+                                     framework=framework_flag)
     if not args.IsSpecified('format'):
       # default format is based on the response.
       if isinstance(results, list):
@@ -87,3 +93,4 @@ the TensorFlow SDK be installed locally. The output format mirrors
 
 
 Predict.detailed_help = _DETAILED_HELP
+

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """rolling-updates describe command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import rolling_updates_util as updater_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties

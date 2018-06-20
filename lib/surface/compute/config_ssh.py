@@ -13,7 +13,11 @@
 # limitations under the License.
 
 """Implements the command for modifying the user's SSH config."""
-import cStringIO
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+import io
 import os
 import re
 import stat
@@ -189,7 +193,7 @@ def _CreateAlias(instance_resource):
 
 def _BuildComputeSection(instances, private_key_file, known_hosts_file):
   """Returns a string representing the Compute section that should be added."""
-  buf = cStringIO.StringIO()
+  buf = io.StringIO()
   buf.write(_HEADER)
 
   for instance in instances:
