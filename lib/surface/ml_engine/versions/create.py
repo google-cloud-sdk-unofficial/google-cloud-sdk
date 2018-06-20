@@ -78,6 +78,7 @@ def _AddCreateArgs(parser):
       """
   ).AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
+  flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -97,6 +98,7 @@ class CreateGA(base.CreateCommand):
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
     labels = versions_util.ParseCreateLabels(versions_client, args)
+    framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
     return versions_util.Create(versions_client,
                                 operations.OperationsClient(),
                                 args.version,
@@ -107,7 +109,8 @@ class CreateGA(base.CreateCommand):
                                 config_file=args.config,
                                 asyncronous=args.async,
                                 description=args.description,
-                                labels=labels)
+                                labels=labels,
+                                framework=framework)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -123,7 +126,6 @@ class CreateBeta(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _AddCreateArgs(parser)
-    flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
     flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):
@@ -159,7 +161,6 @@ class CreateAlpha(base.CreateCommand):
   def Args(parser):
     _AddCreateArgs(parser)
     flags.MACHINE_TYPE.AddToParser(parser)
-    flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
     flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):

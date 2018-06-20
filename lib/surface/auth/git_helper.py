@@ -42,6 +42,7 @@ from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import store as c_store
+from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
 from oauth2client import client
@@ -203,10 +204,9 @@ class GitHelper(base.Command):
       if not os.path.exists(p):
         return
       try:
-        with open(p) as f:
-          data = f.read()
-          if 'source.developers.google.com' in data:
-            sys.stderr.write(textwrap.dedent("""\
+        data = files.ReadFileContents(p)
+        if 'source.developers.google.com' in data:
+          sys.stderr.write(textwrap.dedent("""\
 You have credentials for your Google repository in [{path}]. This repository's
 git credential helper is set correctly, so the credentials in [{path}] will not
 be used, but you may want to remove them to avoid confusion.

@@ -54,6 +54,7 @@ class Update(base.UpdateCommand):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser, operation_type='update')
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
+    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
   def _UpdateStatefulPolicy(self, client, device_names):
     preserved_disks = [
@@ -117,11 +118,19 @@ class Update(base.UpdateCommand):
                    default_scope=compute_scope.ScopeEnum.ZONE,
                    scope_lister=flags.GetDefaultScopeLister(client))
 
+    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
+        args.GetValue('instance_redistribution_type'), igm_ref)
+
     igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
         igm_ref, client)
 
     device_names = instance_groups_flags.GetValidatedUpdateStatefulPolicyParams(
         args, igm_resource.statefulPolicy)
+
+    update_policy = (managed_instance_groups_utils.
+                     ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                         client, args.GetValue('instance_redistribution_type'),
+                         igm_resource.updatePolicy)
 
     if not device_names:
       # TODO(b/70314588): Use Patch instead of manual Update.
@@ -130,10 +139,11 @@ class Update(base.UpdateCommand):
         igm_resource.reset('statefulPolicy')
       elif igm_resource.statefulPolicy or args.GetValue('stateful_names'):
         igm_resource.statefulPolicy = self._UpdateStatefulPolicy(client, [])
+      igm_resource.updatePolicy = update_policy
       return self._MakeUpdateRequest(client, igm_ref, igm_resource)
 
     stateful_policy = self._UpdateStatefulPolicy(client, device_names)
     igm_updated_resource = client.messages.InstanceGroupManager(
-        statefulPolicy=stateful_policy)
+        statefulPolicy=stateful_policy, updatePolicy=update_policy)
 
     return self._MakePatchRequest(client, igm_ref, igm_updated_resource)

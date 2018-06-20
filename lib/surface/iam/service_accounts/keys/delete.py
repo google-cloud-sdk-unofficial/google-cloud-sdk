@@ -51,7 +51,7 @@ class Delete(base.Command):
     key = key_ref.keysId
     console_io.PromptContinue(
         message='You are about to delete key [{0}] for service '
-        'account [{1}].'.format(args.key, args.account),
+        'account [{1}].'.format(args.key, args.iam_account),
         cancel_on_no=True)
 
     client, messages = util.GetClientAndMessages()

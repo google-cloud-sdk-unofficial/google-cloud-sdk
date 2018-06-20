@@ -93,8 +93,7 @@ class Upload(base.CreateCommand):
       result['context_file'] = os.path.join(output_dir, 'source-context.json')
       best_context = context_util.BestSourceContext(extended_contexts)
       result['best_context'] = context_util.BestSourceContext(extended_contexts)
-      with open(result['context_file'], 'w') as f:
-        json.dump(best_context, f)
+      files.WriteFileContents(result['context_file'], json.dumps(best_context))
 
     log.status.write('Wrote {0} file(s), {1} bytes.\n'.format(
         result['files_written'], result['size_written']))

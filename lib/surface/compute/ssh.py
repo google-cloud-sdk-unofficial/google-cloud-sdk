@@ -242,6 +242,10 @@ def DetailedHelp():
         takes care of authentication and the translation of the
         instance name into an IP address.
 
+        Note, this command does not work for Windows VMs. To connect to a
+        Windows instance using a command-line method, refer to this
+        guide: https://cloud.google.com/compute/docs/instances/connecting-to-instance#windows_cli
+
         The default network comes preconfigured to allow ssh access to
         all VMs. If the default network was edited, or if not using the
         default network, you may need to explicitly enable ssh access by adding
@@ -250,9 +254,7 @@ def DetailedHelp():
           $ gcloud compute firewall-rules create --network=NETWORK \
             default-allow-ssh --allow tcp:22
 
-        This command does not work for Windows VMs.
-
-        This command ensures that the user's public SSH key is present
+        {command} ensures that the user's public SSH key is present
         in the project's metadata. If the user does not have a public
         SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
         flag is given, the generated key will have an empty passphrase).

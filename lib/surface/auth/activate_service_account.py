@@ -28,6 +28,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import encoding
+from googlecloudsdk.core.util import files
 
 
 class ActivateServiceAccount(base.SilentCommand):
@@ -115,9 +116,8 @@ class ActivateServiceAccount(base.SilentCommand):
       password = None
       if args.password_file:
         try:
-          with open(args.password_file) as f:
-            password = f.read().strip()
-        except IOError as e:
+          password = files.ReadFileContents(args.password_file).strip()
+        except files.Error as e:
           raise c_exc.UnknownArgumentException('--password-file', e)
       elif args.prompt_for_password:
         password = getpass.getpass('Password: ')

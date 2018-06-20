@@ -20,8 +20,10 @@ from itertools import chain
 
 from apitools.base.py import list_pager
 
+from googlecloudsdk.api_lib.genomics import filter_rewrite
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 class List(base.Command):
@@ -49,24 +51,29 @@ class List(base.Command):
         addition to typical operators (AND, OR, =, >, etc.) the following
         filter fields are supported:
 
-            createTime - The time the operation was created as a timestamp
-                         YYYY-MM-DD HH:MM:SS<time zone>.  T can also be used as
-                         a separator between the date and time.  The time zone
-                         is optional and can be specified as an offset from
-                         UTC, a name, or 'Z' for UTC.
-                             ex. 2018-02-15T16:53:38
-                                 2018-02-15 16:53:38-5:00
-                                 2018-02-15T16:53:38Z
-                                 2018-02-15 16:53:38 America/Los_Angeles
-                  done - A boolean for whether the operation has completed.
-                 error - A google.rpc.Code for a completed operation.
-                events - A set of strings for all events on the operation.
-                             ex. events:WorkerStartedEvent
-                labels - A map of string key and value for the operation.
-                             ex. labels.key = value
-                                 labels."key with space" = "value with space"
-                         For the existence of a key with any value.
-                             ex. labels.key:*
+          metadata.createTime - The time the operation was created as a
+                                timestamp YYYY-MM-DD HH:MM:SS<time zone>.  T can
+                                also be used as a separator between the date and
+                                time.  The time zone is optional and can be
+                                specified as an offset from UTC, a name, or 'Z'
+                                for UTC. Run $ gcloud topic datetimes
+                                to see more examples.
+                                    2018-02-15T16:53:38
+                                    2018-02-15 16:53:38-5:00
+                                    2018-02-15T16:53:38Z
+                                    2018-02-15 16:53:38 America/Los_Angeles
+                         done - A boolean for whether the operation has
+                                completed.
+                   error.code - A google.rpc.Code for a completed operation.
+              metadata.events - A set of strings for all events on the
+                                operation.
+                                    events:WorkerStartedEvent
+              metadata.labels - A map of string key and value for the operation.
+                                    labels.key = value
+                                    labels."key with space" = "value with space"
+                                For the existence of a key with any value.
+                                    labels.key:*
+        Run "$ gcloud topic filters" for more information.
         """)
 
     parser.add_argument(
@@ -120,9 +127,16 @@ class List(base.Command):
       apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
       genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
 
+      request_filter = None
+      if args.filter:
+        rewriter = filter_rewrite.OperationsBackend()
+        args.filter, request_filter = rewriter.Rewrite(args.filter)
+        log.info('client_filter=%r server_filter=%r',
+                 args.filter, request_filter)
+
       request = genomics_messages.GenomicsProjectsOperationsListRequest(
           name='projects/%s/operations' % (genomics_util.GetProjectId(),),
-          filter=args.filter)
+          filter=request_filter)
 
       outputs.append(list_pager.YieldFromList(
           apitools_client.projects_operations, request,

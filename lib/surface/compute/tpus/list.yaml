@@ -14,7 +14,10 @@
       help_text: |
         The compute/zone of the Cloud TPU.
 
-        If not specified, will use `default` compute/zone.
+        If not specified, will use the value of the [compute/zone] property in the current
+        gcloud configuration. To find a list of compute zones available for Cloud TPUs in your
+        project, run `{parent_command} locations list`.
+
       spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:location
       is_positional: false
 

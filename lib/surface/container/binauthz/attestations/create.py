@@ -36,13 +36,12 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  To create an attestation as the attestation authority represented by an
-  ATTESTATION_AUTHORITY Note with resource path
-  "projects/exmple-prj/notes/note-id", run:
+  To create an attestation as the attestation authority with resource path
+  "projects/foo/attestationAuthorities/bar", run:
 
       $ {command} \
           --artifact-url='gcr.io/example-project/example-image@sha256:abcd' \
-          --attestation-authority-note=projects/exmple-prj/notes/note-id \
+          --attestation-authority=projects/foo/attestationAuthorities/bar \
           --signature-file=signed_artifact_attestation.pgp.sig \
           --pgp-key-fingerprint=AAAA0000000000000000FFFFFFFFFFFFFFFFFFFF
   """

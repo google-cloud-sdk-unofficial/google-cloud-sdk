@@ -30,6 +30,8 @@ from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
+import six
+
 
 class Create(base.CreateCommand):
   """Adds tags to existing image."""
@@ -90,7 +92,10 @@ class Create(base.CreateCommand):
 
     dest_names = []
     for dest_image in args.dest_image:
-      dest_name = docker_name.Tag(dest_image)
+      try:
+        dest_name = docker_name.Tag(dest_image)
+      except docker_name.BadNameException as e:
+        raise util.InvalidImageNameError(six.text_type(e))
 
       if '/' not in dest_name.repository:
         raise exceptions.Error(

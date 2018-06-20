@@ -317,7 +317,7 @@ class ConfigSSH(base.Command):
 
     instances = None
     try:
-      existing_content = files.GetFileContents(ssh_config_file)
+      existing_content = files.ReadFileContents(ssh_config_file)
     except files.Error as e:
       existing_content = ''
       log.debug('SSH Config File [{0}] could not be opened: {1}'
@@ -370,8 +370,7 @@ class ConfigSSH(base.Command):
       # TODO(b/36050483): This write will not work very well if there is
       # a lot of write contention for the SSH config file. We should
       # add a function to do a better job at "atomic file writes".
-      with files.OpenForWritingPrivate(ssh_config_file) as f:
-        f.write(new_content)
+      files.WriteFileContents(ssh_config_file, new_content, private=True)
 
     if compute_section:
       log.out.write(textwrap.dedent("""\

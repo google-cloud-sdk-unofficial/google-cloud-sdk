@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.meta import cache_util
 from googlecloudsdk.command_lib.util import parameter_info_lib
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import module_util
@@ -58,7 +59,7 @@ def _GetPresentationSpec(resource_spec_path, **kwargs):
       o.split(':')[0]: o.split(':')[1] if ':' in o else ''
       for o in flag_name_overrides.split(';')}
   prefixes = kwargs.pop('prefixes', False)
-  return concept_parsers.ResourcePresentationSpec(
+  return presentation_specs.ResourcePresentationSpec(
       kwargs.pop('name', resource_spec.name),
       resource_spec,
       'help text',

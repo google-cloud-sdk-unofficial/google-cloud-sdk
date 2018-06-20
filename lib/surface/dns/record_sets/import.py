@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """gcloud dns record-sets import command."""
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
-import io
+
 import os
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -28,6 +29,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import files
 
 
 @base.UnicodeIsSupported
@@ -128,7 +130,7 @@ class Import(base.Command):
 
     # Get the imported record-sets.
     try:
-      with io.open(args.records_file, 'rt') as import_file:
+      with files.FileReader(args.records_file) as import_file:
         if args.zone_file_format:
           imported = import_util.RecordSetsFromZoneFile(
               import_file, zone.dnsName, api_version=api_version)

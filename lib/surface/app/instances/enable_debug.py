@@ -27,15 +27,18 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 class EnableDebug(base.Command):
-  """Enables debug mode for an instance.
+  """Enable debug mode for an instance (only works on the flexible environment).
 
   When in debug mode, SSH will be enabled on the VMs, and you can use
   `gcloud compute ssh` to login to them. They will be removed from the health
   checking pools, but they still receive requests.
 
-  Note that any local changes to an instance will be **lost** if debug mode is
+  Note that any local changes to an instance will be *lost* if debug mode is
   disabled on the instance. New instance(s) may spawn depending on the app's
   scaling settings.
+
+  Additionally, debug mode doesn't work for applications using the
+  App Engine standard environment.
   """
 
   detailed_help = {
@@ -55,7 +58,7 @@ class EnableDebug(base.Command):
     parser.add_argument(
         'instance', nargs='?',
         help="""\
-        The instance ID to enable debug mode on. If not specified,
+        Instance ID to enable debug mode on. If not specified,
         select instance interactively. Must uniquely specify (with other
         flags) exactly one instance""")
 

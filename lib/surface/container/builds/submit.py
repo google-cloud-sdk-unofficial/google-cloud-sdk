@@ -167,7 +167,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
         help='The tag to use with a `docker build` image creation. '
              'Container Builder will run a remote `docker build -t '
              '$TAG .`, where $TAG is the tag provided by this flag. The tag '
-             'must be in the `gcr.io/*` or `*.gcr.io/*` namespaces.\n'
+             'must be in the ```gcr.io/*``` or ```*.gcr.io/*``` namespaces.\n'
              '\n'
              'Specify a tag  if you want Container Builder to build using a '
              'Dockerfile instead of a build config file. If you specify a tag '

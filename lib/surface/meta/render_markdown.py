@@ -17,11 +17,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import io
 import sys
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.document_renderers import render_document
-from googlecloudsdk.core.util import files
 
 
 class GenerateHelpDocs(base.Command):
@@ -40,5 +41,6 @@ class GenerateHelpDocs(base.Command):
         help='The renderer output format.')
 
   def Run(self, args):
-    with files.Open(args.md_file, 'r') as f:
+    data = console_io.ReadFromFileOrStdin(args.md_file, binary=False)
+    with io.StringIO(data) as f:
       render_document.RenderDocument(args.style, f, sys.stdout)

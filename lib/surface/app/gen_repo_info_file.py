@@ -106,5 +106,5 @@ class GenRepoInfoFile(base.Command):
 
     best_context = context_util.BestSourceContext(contexts)
     files.MakeDir(output_directory)
-    with open(output_file, 'w') as f:
-      json.dump(best_context, f, indent=2, sort_keys=True)
+    files.WriteFileContents(
+        output_file, json.dumps(best_context, indent=2, sort_keys=True))

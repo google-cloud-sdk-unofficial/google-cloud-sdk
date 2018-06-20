@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import fnmatch
-import io
 import os
 import re
 import shutil
@@ -32,6 +31,7 @@ from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.meta import regen as regen_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import encoding
+from googlecloudsdk.core.util import files
 
 import ruamel.yaml
 import six
@@ -150,7 +150,7 @@ class Regen(base.Command):
     # Now that everything passed, config can be updated if needed.
     if changed_config:
       log.warning('Updated %s', args.config)
-      with io.open(args.config, 'wt') as stream:
+      with files.FileWriter(args.config) as stream:
         ruamel.yaml.round_trip_dump(config, stream)
 
 
@@ -162,7 +162,7 @@ def _LoadConfig(config_file_name=None):
 
   if not os.path.isfile(config_file_name):
     raise regen_utils.ConfigFileError('{} Not found'.format(config_file_name))
-  with io.open(config_file_name, 'rt') as stream:
+  with files.FileReader(config_file_name) as stream:
     config = ruamel.yaml.round_trip_load(stream)
   if not config or 'root_dir' not in config:
     raise regen_utils.ConfigFileError(

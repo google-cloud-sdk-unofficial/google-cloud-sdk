@@ -151,6 +151,7 @@ for examples.
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
   flags.AddNodeVersionFlag(parser)
   flags.AddIssueClientCertificateFlag(parser)
+  flags.AddAcceleratorArgs(parser)
 
 
 def ValidateBasicAuthFlags(args):
@@ -188,6 +189,7 @@ def ParseCreateOptionsBase(args):
   cluster_ipv4_cidr = args.cluster_ipv4_cidr
   enable_master_authorized_networks = args.enable_master_authorized_networks
   return api_adapter.CreateClusterOptions(
+      accelerators=args.accelerator,
       additional_zones=args.additional_zones,
       addons=args.addons,
       cluster_ipv4_cidr=cluster_ipv4_cidr,
@@ -218,6 +220,7 @@ def ParseCreateOptionsBase(args):
       master_authorized_networks=args.master_authorized_networks,
       max_nodes=args.max_nodes,
       max_nodes_per_pool=args.max_nodes_per_pool,
+      min_cpu_platform=args.min_cpu_platform,
       min_nodes=args.min_nodes,
       network=args.network,
       node_disk_size_gb=args.disk_size,
@@ -357,8 +360,6 @@ class CreateBeta(Create):
     group = parser.add_mutually_exclusive_group()
     _AddAdditionalZonesFlag(group, deprecated=True)
     flags.AddNodeLocationsFlag(group)
-
-    flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser)
@@ -385,8 +386,6 @@ class CreateBeta(Create):
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
-    ops.accelerators = args.accelerator
-    ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
@@ -410,8 +409,6 @@ class CreateAlpha(Create):
     group = parser.add_mutually_exclusive_group()
     _AddAdditionalZonesFlag(group, deprecated=True)
     flags.AddNodeLocationsFlag(group)
-
-    flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser)
@@ -439,10 +436,10 @@ class CreateAlpha(Create):
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddEnableStackdriverKubernetesFlag(parser)
+    flags.AddManagedPodIdentityFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
-    ops.accelerators = args.accelerator
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.min_cpu = args.min_cpu
     ops.max_cpu = args.max_cpu
@@ -452,7 +449,6 @@ class CreateAlpha(Create):
     ops.max_accelerator = args.max_accelerator
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.enable_binauthz = args.enable_binauthz
-    ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_shared_network = args.enable_shared_network
     ops.enable_pod_security_policy = args.enable_pod_security_policy
@@ -465,5 +461,6 @@ class CreateAlpha(Create):
     ops.istio_config = args.istio_config
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.default_max_pods_per_node = args.default_max_pods_per_node
+    ops.enable_managed_pod_identity = args.enable_managed_pod_identity
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     return ops

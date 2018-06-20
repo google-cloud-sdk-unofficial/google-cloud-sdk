@@ -39,8 +39,8 @@ class SetIamPolicy(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'name',
-        help='The name of the cluster to set the policy on.')
+        'cluster',
+        help='The ID of the cluster to set the policy on.')
     parser.add_argument(
         'policy_file',
         metavar='POLICY_FILE',
@@ -57,7 +57,7 @@ class SetIamPolicy(base.Command):
     set_iam_policy_request = messages.SetIamPolicyRequest(
         policy=policy)
 
-    cluster_ref = util.ParseCluster(args.name, dataproc)
+    cluster_ref = util.ParseCluster(args.cluster, dataproc)
     request = messages.DataprocProjectsRegionsClustersSetIamPolicyRequest(
         resource=cluster_ref.RelativeName(),
         setIamPolicyRequest=set_iam_policy_request)

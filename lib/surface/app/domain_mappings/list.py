@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.app.api import appengine_domains_api_client as api_c
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists domain mappings."""
 
@@ -40,25 +39,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""
-            table(
-              id:sort=1,
-              ssl_settings.certificate_id:label=SSL_CERTIFICATE_ID)
-        """)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ListBeta(List):
-  """Lists domain mappings."""
-
-  def Run(self, args):
-    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
-    return client.ListDomainMappings()
-
-  @staticmethod
-  def Args(parser):
-    # TODO(b/65059086): Add an UNSPECIFIED default value to SslManagementType
-    # so we don't have to do this hacky conversion.
+    # TODO(b/65059086): Display UNSPECIFIED default value to SslManagementType
     parser.display_info.AddFormat("""
         table(
           id:sort=1,

@@ -21,6 +21,8 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.core.util import files
+
 
 _IGNORED_FIELDS = ['creationTimestamp', 'id', 'kind', 'name', 'region',
                    'selfLink', 'status', 'statusDetails', 'target', 'zone']
@@ -57,8 +59,8 @@ class ExportAutoscaling(base.Command):
           del autoscaler_dict[f]
     else:
       autoscaler_dict = None
-    with open(args.autoscaling_file, 'w') as f:
-      json.dump(autoscaler_dict, f)
+
+    files.WriteFileContents(args.autoscaling_file, json.dumps(autoscaler_dict))
 
 
 ExportAutoscaling.detailed_help = {

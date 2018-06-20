@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import usage_text
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 import six
 
@@ -181,9 +182,9 @@ def _GetWhitelistedCommandVocabulary():
 
   vocabulary_file = os.path.join(os.path.dirname(__file__),
                                  'gcloud_command_vocabulary.txt')
-  with io.open(vocabulary_file, 'rt') as f:
-    return set(line for line in f.read().split('\n')
-               if not line.startswith('#'))
+  return set(
+      line for line in files.ReadFileContents(vocabulary_file).split('\n')
+      if not line.startswith('#'))
 
 
 class VocabularyChecker(Checker):

@@ -18,7 +18,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class DomainMappings(base.Group):
   """View and manage your App Engine domain mappings.
 
@@ -28,27 +29,6 @@ class DomainMappings(base.Group):
   App Engine Domain Mappings allow an application to be served via one or many
   custom domains, such as `example.com`, instead of the default `appspot.com`
   address. You can use a custom domain with or without SSL.
-  """
-
-  detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
-          To list your App Engine domains, run:
-
-            $ {command} list
-      """,
-  }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
-class DomainMappingsAlpha(base.Group):
-  """View and manage your App Engine domain mappings.
-
-  This set of commands can be used to view and manage your app's
-  domain mappings.
 
   App Engine Domain Mappings allow an application to be served via one or many
   custom domains, such as `example.com`, instead of the default `appspot.com`

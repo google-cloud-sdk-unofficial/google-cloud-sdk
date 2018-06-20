@@ -44,7 +44,7 @@ class Sql(base.Command):
           on the command line after this command. Positional arguments are
           allowed.
     """
-    import_util.AddBaseImportFlags(parser)
+    import_util.AddBaseImportFlags(parser, filetype='MySQL dump')
     flags.AddDatabase(
         parser,
         'The database (for example, guestbook) to which the import is'

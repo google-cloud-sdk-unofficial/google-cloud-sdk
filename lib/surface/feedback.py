@@ -35,6 +35,7 @@ from googlecloudsdk.command_lib import feedback_util
 from googlecloudsdk.command_lib import info_holder
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import text as text_util
 
 import six
@@ -148,7 +149,7 @@ class Feedback(base.Command):
     if args.log_file:
       try:
         log_data = info_holder.LogData.FromFile(args.log_file)
-      except IOError as err:
+      except files.Error as err:
         log.warning('Error reading the specified file [{0}]: '
                     '{1}\n'.format(args.log_file, err))
     if args.quiet:

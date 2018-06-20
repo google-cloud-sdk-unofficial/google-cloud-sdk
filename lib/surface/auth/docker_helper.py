@@ -48,7 +48,7 @@ class DockerHelper(base.Command):
           # This tells Docker that the secret will be an access token, not a
           # username/password.
           # Docker normally expects a prefixed 'https://' for auth configs.
-          ('https://' + url): 'oauth2accesstoken'
+          ('https://' + url): '_dcgcloud_token'
           for url in credential_utils.DefaultAuthenticatedRegistries()
       }
 
@@ -66,7 +66,7 @@ class DockerHelper(base.Command):
       # then prompt for a password instead of using the access token.
       return {
           'Secret': cred.access_token,
-          'Username': 'oauth2accesstoken',
+          'Username': '_dcgcloud_token',
       }
 
     # Don't print anything if we are not supporting the given action.

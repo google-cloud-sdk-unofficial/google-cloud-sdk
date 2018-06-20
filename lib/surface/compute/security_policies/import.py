@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import (
     security_policies_utils)
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
 @base.UnicodeIsSupported
@@ -65,7 +66,7 @@ class Import(base.SilentCommand):
 
     # Get the imported security policy config.
     try:
-      with open(args.file_name) as import_file:
+      with files.FileReader(args.file_name) as import_file:
         if args.file_format == 'json':
           imported = security_policies_utils.SecurityPolicyFromFile(
               import_file, holder.client.messages, 'json')

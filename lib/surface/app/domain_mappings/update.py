@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.app import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates a domain mapping."""
 
@@ -47,44 +46,6 @@ class Update(base.UpdateCommand):
   def Args(parser):
     flags.DOMAIN_FLAG.AddToParser(parser)
     flags.AddCertificateIdFlag(parser, include_no_cert=True)
-
-  def Run(self, args):
-    client = api_client.GetApiClientForTrack(self.ReleaseTrack())
-    mapping = client.UpdateDomainMapping(args.domain, args.certificate_id,
-                                         args.no_certificate_id)
-    log.UpdatedResource(args.domain)
-    return mapping
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Updates a domain mapping."""
-
-  detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
-          To update an App Engine domain mapping, run:
-
-              $ {command} '*.example.com' \
-                  --certificate-id=1234
-
-          To remove a certificate from a domain:
-
-              $ {command} '*.example.com' \
-                  --no-certificate-id
-
-          To configure a new managed certificate:
-
-              $ {command} '*.example.com' \
-                  --certificate-management=automatic
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    super(UpdateBeta, UpdateBeta).Args(parser)
     flags.AddCertificateManagementFlag(parser)
 
   def Run(self, args):

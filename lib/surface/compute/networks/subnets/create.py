@@ -66,7 +66,9 @@ def _AddArgs(cls, parser):
       '--enable-flow-logs',
       action='store_true',
       default=None,
-      help='Enable/disable flow logs for this subnet.')
+      help=('Enable/disable VPC flow logging for this subnet. More information '
+            'for VPC flow logs can be found at '
+            'https://cloud.google.com/vpc/docs/using-flow-logs.'))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,

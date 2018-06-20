@@ -172,6 +172,7 @@ class CreateGA(base.CreateCommand):
     client = holder.client
 
     group_ref = self.CreateGroupReference(args, client, holder.resources)
+
     template_ref = holder.resources.Parse(
         args.template,
         params={'project': properties.VALUES.core.project.GetOrFail},
@@ -286,6 +287,7 @@ class CreateAlpha(CreateBeta):
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
     instance_groups_flags.AddMigCreateStatefulFlags(parser)
+    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
   @staticmethod
   def _GetStatefulPolicy(args, client):
@@ -315,6 +317,13 @@ class CreateAlpha(CreateBeta):
             client.messages, health_check, args.initial_delay))
     managed_instance_groups_utils.ValidateAutohealingPolicies(
         auto_healing_policies)
+    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
+        args.GetValue('instance_redistribution_type'), group_ref)
+    update_policy = (managed_instance_groups_utils.
+                     ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                         client, args.GetValue('instance_redistribution_type'),
+                         None)
+
     return client.messages.InstanceGroupManager(
         name=group_ref.Name(),
         description=args.description,
@@ -328,7 +337,9 @@ class CreateAlpha(CreateBeta):
         distributionPolicy=self._CreateDistributionPolicy(
             args.zones, holder.resources, client.messages),
         statefulPolicy=self._GetStatefulPolicy(args, client),
+        updatePolicy=update_policy,
     )
+
 
 DETAILED_HELP = {
     'brief': 'Create a Compute Engine managed instance group',

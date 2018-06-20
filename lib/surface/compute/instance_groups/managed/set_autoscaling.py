@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files
 
 
 _DELETE_AUTOSCALER_PROMPT = (
@@ -65,8 +66,7 @@ class SetAutoscaling(base.Command):
   def _SetAutoscalerFromFile(
       self, autoscaling_file, autoscalers_client, igm_ref,
       existing_autoscaler_name):
-    with open(autoscaling_file) as f:
-      new_autoscaler = json.load(f)
+    new_autoscaler = json.loads(files.ReadFileContents(autoscaling_file))
     if new_autoscaler is None:
       if existing_autoscaler_name is None:
         log.info('Configuration specifies no autoscaling and there is no '

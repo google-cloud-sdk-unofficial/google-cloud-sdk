@@ -162,36 +162,36 @@ class Filters(base.TopicCommand):
           List Compute Engine instance resources that have machineType
           *f1-micro*:
 
-            $ gcloud compute instances list --filter='machineType:f1-micro'
+            $ gcloud compute instances list --filter="machineType:f1-micro"
 
           List Compute Engine instance resources with zone prefix *us* and not
           MachineType *f1-micro*:
 
-            $ gcloud compute instances list --filter='zone ~ ^us AND -machineType:f1-micro'
+            $ gcloud compute instances list --filter="zone ~ ^us AND -machineType:f1-micro"
 
           List Compute Engine instance resources with tag *my-tag*:
 
-            $ gcloud compute instances list --filter='tags.items=my-tag'
+            $ gcloud compute instances list --filter="tags.items=my-tag"
 
           List Compute Engine instance resources with tag *my-tag* or
           *my-other-tag*:
 
-            $ gcloud compute instances list --filter='tags.items=(my-tag,my-other-tag)'
+            $ gcloud compute instances list --filter="tags.items=(my-tag,my-other-tag)"
 
           List Compute Engine instance resources with tag *my-tag* and
           *my-other-tag*:
 
-            $ gcloud compute instances list --filter='tags.items=my-tag AND tags.items=my-other-tag'
+            $ gcloud compute instances list --filter="tags.items=my-tag AND tags.items=my-other-tag"
 
           List Compute Engine instance resources which either have tag *my-tag*
           but not *my-other-tag* or have tag *alternative-tag*:
 
-            $ gcloud compute instances list --filter='(tags.items=my-tag AND -tags.items=my-other-tag) OR tags.items=alternative-tag'
+            $ gcloud compute instances list --filter="(tags.items=my-tag AND -tags.items=my-other-tag) OR tags.items=alternative-tag"
 
           List Compute Engine instance resources with label *my-label* with any
           value:
 
-            $ gcloud compute instances list --filter='labels.my-label:*'
+            $ gcloud compute instances list --filter="labels.my-label:*"
 
           List in JSON format those projects where the labels match specific
           values (e.g. label.env is 'test' and label.version is alpha):

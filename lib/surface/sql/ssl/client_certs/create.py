@@ -64,8 +64,7 @@ class _BaseAddCert(object):
     # First check if args.out_file is writeable. If not, abort and don't create
     # the useless cert.
     try:
-      with files.OpenForWritingPrivate(args.cert_file) as cf:
-        cf.write('placeholder\n')
+      files.WriteFileContents(args.cert_file, 'placeholder\n', private=True)
     except (files.Error, OSError) as e:
       raise exceptions.ArgumentError('unable to write [{path}]: {error}'.format(
           path=args.cert_file, error=str(e)))
@@ -91,10 +90,7 @@ class _BaseAddCert(object):
                 commonName=args.common_name)))
 
     private_key = result.clientCert.certPrivateKey
-
-    with files.OpenForWritingPrivate(args.cert_file) as cf:
-      cf.write(private_key)
-      cf.write('\n')
+    files.WriteFileContents(args.cert_file, private_key + '\n', private=True)
 
     cert_ref = client.resource_parser.Create(
         collection='sql.sslCerts',

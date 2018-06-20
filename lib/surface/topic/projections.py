@@ -92,9 +92,11 @@ class Projections(base.TopicCommand):
   sorted based on displayed value alone, irrespective of the type of
   value(date, time, etc.).
 
-  *wrap*::
+  *wrap*[=_MIN-WIDTH_]::
   Enables the column text to be wrapped if the table would otherwise
-  be too wide for the display.
+  be too wide for the display. The column will be wrapped in the available space
+  with a minimum width of either the default or of _MIN-WIDTH_ if specified. The
+  default is 10 characters.
 
   ## EXAMPLES
 
@@ -103,16 +105,22 @@ class Projections(base.TopicCommand):
   and *creationTimestamp* (listed using the *strftime*(3) year-month-day
   format with column heading *START*):
 
-    $ gcloud compute instances list --format='table(name:sort=2:align=center:label=INSTANCE, zone:sort=1:reverse, creationTimestamp.date("%Y-%m-%d"):label=START)'
+    $ gcloud compute instances list --format="table(name:sort=2:align=center:label=INSTANCE, zone:sort=1:reverse, creationTimestamp.date("%Y-%m-%d"):label=START)"
 
   List only the *name*, *status* and *zone* instance resource keys in
   YAML format:
 
-    $ gcloud compute instances list --format='yaml(name, status, zone)'
+    $ gcloud compute instances list --format="yaml(name, status, zone)"
 
   List only the *config.account* key value(s) in the *info* resource:
 
-    $ gcloud info --format='value(config.account)'
+    $ gcloud info --format="value(config.account)"
+
+  List the *name*, *id*, and *description* of an imaginary *foo* resource,
+  wrapping the *id* column with the default minimum width and the *description*
+  column with a minimum width of 20 characters:
+
+    $ gcloud example foo list --format="table(name, id:wrap, description:wrap=20)"
   """
 
   detailed_help = {

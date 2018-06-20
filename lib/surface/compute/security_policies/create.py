@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
+from googlecloudsdk.core.util import files
 
 
 class Create(base.CreateCommand):
@@ -71,7 +72,7 @@ class Create(base.CreateCommand):
       raise exceptions.BadFileException('[{0}] is a directory'.format(
           args.file_name))
     try:
-      with open(args.file_name) as import_file:
+      with files.FileReader(args.file_name) as import_file:
         if args.file_format == 'json':
           return security_policies_utils.SecurityPolicyFromFile(
               import_file, messages, 'json')

@@ -30,7 +30,10 @@ from googlecloudsdk.command_lib.app import deployables
 from googlecloudsdk.command_lib.app import output_helpers
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files
+
 from googlecloudsdk.third_party.appengine.api import appinfo
+
 from ruamel import yaml
 
 
@@ -144,7 +147,7 @@ def _AlterRuntime(config_filename, runtime):
             config_filename, backup_fname))
     shutil.copyfile(config_filename, backup_fname)
     # 1. Open and parse file using ruamel
-    with open(config_filename, 'r') as yaml_file:
+    with files.FileReader(config_filename) as yaml_file:
       encoding = yaml_file.encoding
       config = yaml.load(yaml_file, yaml.RoundTripLoader)
     # 2. Alter the ruamel in-memory object representing the yaml file
@@ -154,7 +157,7 @@ def _AlterRuntime(config_filename, runtime):
     tmp_yaml_buf = io.TextIOWrapper(raw_buf, encoding)
     yaml.dump(config, tmp_yaml_buf, Dumper=yaml.RoundTripDumper)
     # 4. Overwrite the original app.yaml
-    with open(config_filename, 'wb') as yaml_file:
+    with files.BinaryFileWriter(config_filename) as yaml_file:
       tmp_yaml_buf.seek(0)
       yaml_file.write(raw_buf.getvalue())
   except Exception as e:

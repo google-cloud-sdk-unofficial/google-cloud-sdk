@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files
 
 
 class Routes(base_classes.BaseCommand):
@@ -219,7 +220,7 @@ class Routes(base_classes.BaseCommand):
     cmd = ['which', 'traceroute']
     try:
       # This command is silent
-      with open(os.devnull) as dev_null:
+      with files.FileWriter(os.devnull) as dev_null:
         return_code = external_helper.RunSSHCommandToInstance(
             command_list=cmd,
             instance=instance,

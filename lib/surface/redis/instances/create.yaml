@@ -62,21 +62,30 @@
         api_field: instance.displayName
         help_text: |
            A human-readable name for the instance.
-      - arg_name: redis-config
+      - api_field: instance.redisConfigs.additionalProperties
         metavar: KEY=VALUE
+        arg_name: redis-config
         help_text: |
           A list of Redis config KEY=VALUE pairs to set on the instance
           according to http://redis.io/topics/config. Currently, the only
           supported parameters are: maxmemory-policy, notify-keyspace-events.
-        # TODO(b/78533503): Convert this type directly to arg_dict in YAML.
-        type: googlecloudsdk.command_lib.redis.util:InstanceRedisConfigArgType
-      - arg_name: labels
+        type:
+          arg_dict:
+            flatten: True
+            spec:
+              - api_field: key
+              - api_field: value
+      - api_field: instance.labels.additionalProperties
+        arg_name: labels
         metavar: KEY=VALUE
         help_text: |
           A list of label KEY=VALUE pairs to add.
-        # TODO(b/78533503): Convert this type directly to arg_dict in YAML.
-        type: googlecloudsdk.command_lib.redis.util:InstanceLabelsArgType
-        action: googlecloudsdk.calliope.arg_parsers:UpdateAction
+        type:
+          arg_dict:
+            flatten: True
+            spec:
+              - api_field: key
+              - api_field: value
       - arg_name: redis-version
         api_field: instance.redisVersion
         metavar: VERSION
@@ -106,9 +115,6 @@
   request: &request
     api_version: v1beta1
     collection: redis.projects.locations.instances
-    modify_request_hooks:
-      - googlecloudsdk.command_lib.redis.instances_create_util:AddRedisConfigs
-      - googlecloudsdk.command_lib.redis.instances_create_util:AddLabels
 
 
 - <<: *beta_command

@@ -75,7 +75,7 @@ def _ValidateAndMergeArgInputs(args):
 
   # Read up the inputs-from-file and add the values from the file
   for key, value in six.iteritems(args.inputs_from_file):
-    arg_inputs[key] = files.GetFileContents(value)
+    arg_inputs[key] = files.ReadFileContents(value)
 
   return arg_inputs
 

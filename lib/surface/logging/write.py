@@ -22,7 +22,7 @@ from googlecloudsdk.core import log
 
 
 class Write(base.SilentCommand):
-  """Writes a log entry."""
+  """Write a log entry."""
 
   SEVERITY_ENUM = ('DEFAULT', 'DEBUG', 'INFO', 'NOTICE', 'WARNING',
                    'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY')
@@ -33,11 +33,11 @@ class Write(base.SilentCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument(
-        'log_name', help=('The name of the log where the log entry will '
+        'log_name', help=('Name of the log where the log entry will '
                           'be written.'))
     parser.add_argument(
-        'message', help=('The message to put in the log entry. It can be '
-                         'JSON if you include --payload-type=json.'))
+        'message', help=('Message to put in the log entry. It can be '
+                         'JSON if you include `--payload-type=json`.'))
     parser.add_argument(
         '--payload-type',
         choices=Write.PAYLOAD_TYPE, default='text',

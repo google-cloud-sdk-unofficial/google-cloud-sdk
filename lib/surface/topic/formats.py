@@ -69,24 +69,24 @@ class Formats(base.TopicCommand):
           List a table of compute instance resources sorted by *name* with
           box decorations and title *Instances*:
 
-            $ gcloud compute instances list --format='table[box,title=Instances](name:sort=1, zone:label=zone, status)'
+            $ gcloud compute instances list --format="table[box,title=Instances](name:sort=1, zone:label=zone, status)"
 
           List a nested table of the quotas of a region:
 
-            $ gcloud compute regions describe us-central1 --format="table(quotas:format='table(metric,limit,usage)')"
+            $ gcloud compute regions describe us-central1 --format="table(quotas:format="table(metric,limit,usage)")"
 
           Print a flattened list of global quotas in CSV format:
 
-            $ gcloud compute project-info describe --flatten='quotas[]' --format='csv(quotas.metric,quotas.limit,quotas.usage)'
+            $ gcloud compute project-info describe --flatten="quotas[]" --format="csv(quotas.metric,quotas.limit,quotas.usage)"
 
           List the disk interfaces for all compute instances as a compact
           comma separated list:
 
-            $ gcloud compute instances list --format='value(disks[].interface.list())'
+            $ gcloud compute instances list --format="value(disks[].interface.list())"
 
           List the URIs for all compute instances:
 
-            $ gcloud compute instances list --format='value(uri())'
+            $ gcloud compute instances list --format="value(uri())"
 
           List all compute instances with their creation timestamps displayed
           according to the local timezone:
@@ -95,12 +95,12 @@ class Formats(base.TopicCommand):
 
           List the project authenticated user email address:
 
-            $ gcloud info --format='value(config.account)'
+            $ gcloud info --format="value(config.account)"
 
           List resources filtered on repeated fields by projecting subfields on
           a repeated message:
 
-            $ gcloud alpha genomics readgroupsets list --format 'default(readGroups[].name)'
+            $ gcloud alpha genomics readgroupsets list --format="default(readGroups[].name)"
 
           Return the scope of the current instance:
 
@@ -123,7 +123,7 @@ class Formats(base.TopicCommand):
           corresponding service account, extracting just the first '/' delimited
           part with segment(0):
 
-            $ gcloud iam service-accounts keys list --iam-account svc-2-123@test-minutia-123.iam.gserviceaccount.com --project test-minutia-123 --format="table(name.scope(serviceAccounts).segment(0):label='service Account',name.scope(keys):label='keyID',validAfterTime)"
+            $ gcloud iam service-accounts keys list --iam-account=svc-2-123@test-minutia-123.iam.gserviceaccount.com --project=test-minutia-123 --format="table(name.scope(serviceAccounts).segment(0):label='service Account',name.scope(keys):label='keyID',validAfterTime)"
 
           The last example returns a table with service account names without
           their full paths, keyID and validity.

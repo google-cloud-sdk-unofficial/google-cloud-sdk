@@ -24,15 +24,18 @@ from googlecloudsdk.calliope import base
 
 
 class Read(base.Command):
-  """Reads log entries."""
+  """Read log entries."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
     base.LIMIT_FLAG.AddToParser(parser)
     parser.add_argument(
-        'log_filter', help=('A filter expression that specifies the '
-                            'log entries to return.'),
+        'log_filter', help=('Filter expression that specifies the '
+                            'log entries to return. A detailed guide on'
+                            'basic and advanced filters can be found at: '
+                            'https://cloud.google.com/logging/docs/view/'
+                            'overview)'),
         nargs='?')
     order_arg = base.ChoiceArgument(
         '--order',
@@ -84,10 +87,10 @@ class Read(base.Command):
 
 Read.detailed_help = {
     'DESCRIPTION': """\
-        Reads log entries.  Log entries matching *log-filter* are returned in
-        order of decreasing timestamps, most-recent entries first.  If the log
-        entries come from multiple logs, then entries from different logs
-        might be intermingled in the results.
+        {command} reads log entries.  Log entries matching *log-filter* are
+        returned in order of decreasing timestamps, most-recent entries first.
+        If the log entries come from multiple logs, then entries from different
+        logs might be intermingled in the results.
     """,
     'EXAMPLES': """\
         To read log entries from Google Compute Engine instances, run:
@@ -101,6 +104,16 @@ Read.detailed_help = {
         To read log entries written in a specific time window, run:
 
           $ {command} 'timestamp<="2015-05-31T23:59:59Z" AND timestamp>="2015-05-31T00:00:00Z"'
+
+        To read up to 10 log entries in your project's syslog log from Compute
+        Engine instances containing payloads that include the word `SyncAddress`
+        and format the output in `JSON` format, run:
+
+          $ {command} "resource.type=gce_instance AND logName=projects/[PROJECT_ID]/logs/syslog AND textPayload:SyncAddress" --limit=10 --format=json
+
+        To read a log entry from a folder, run:
+
+          $ {command} "resource.type=global" --folder=[FOLDER_ID] --limit=1
 
         Detailed information about filters can be found at:
         [](https://cloud.google.com/logging/docs/view/advanced_filters)

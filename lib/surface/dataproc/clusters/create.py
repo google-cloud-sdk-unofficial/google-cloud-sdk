@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
@@ -137,6 +138,14 @@ class CreateBeta(Create):
         "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
         information on time formats.
         """)
+
+    # Add gce-pd-kms-key args
+    kms_flag_overrides = {'kms-key': '--gce-pd-kms-key',
+                          'kms-keyring': '--gce-pd-kms-key-keyring',
+                          'kms-location': '--gce-pd-kms-key-location',
+                          'kms-project': '--gce-pd-kms-key-project'}
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser, 'cluster', flag_overrides=kms_flag_overrides)
 
     for instance_type in ('master', 'worker'):
       help_msg = """\

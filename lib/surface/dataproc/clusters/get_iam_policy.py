@@ -38,15 +38,15 @@ class GetIamPolicy(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'name',
-        help='The name of the cluster to retrieve the policy for.')
+        'cluster',
+        help='The id of the cluster to retrieve the policy for.')
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     messages = dataproc.messages
 
-    cluster_ref = util.ParseCluster(args.name, dataproc)
+    cluster_ref = util.ParseCluster(args.cluster, dataproc)
     request = messages.DataprocProjectsRegionsClustersGetIamPolicyRequest(
         resource=cluster_ref.RelativeName())
 

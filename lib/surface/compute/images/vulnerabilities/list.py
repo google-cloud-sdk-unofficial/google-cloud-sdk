@@ -78,7 +78,7 @@ class List(base.ListCommand):
   def Run(self, args):
     """Yields filtered vulnerabilities."""
     project = properties.VALUES.core.project.Get()
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = base_classes.ComputeApiHolder(base.ReleaseTrack.GA)
     resource_filter = self._GetFilter(args, holder)
 
     return containeranalysis_util.MakeOccurrenceRequest(

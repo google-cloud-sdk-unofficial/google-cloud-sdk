@@ -61,6 +61,17 @@ class DockerImage(six.with_metaclass(abc.ABCMeta, object)):
     """The unique set of blobs that compose to create the filesystem."""
     return set(self.fs_layers() + [self.config_blob()])
 
+  def distributable_blob_set(self):
+    """The unique set of blobs which are distributable."""
+    manifest = json.loads(self.manifest())
+    distributable_blobs = {
+        x['digest']
+        for x in reversed(manifest['layers'])
+        if x['mediaType'] not in docker_http.NON_DISTRIBUTABLE_LAYER_MIMES
+    }
+    distributable_blobs.add(self.config_blob())
+    return distributable_blobs
+
   def digest(self):
     """The digest of the manifest."""
     return docker_digest.SHA256(self.manifest().encode('utf8'))

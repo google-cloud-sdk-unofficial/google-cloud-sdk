@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import io
 import os
 
 from googlecloudsdk.calliope import base
@@ -26,6 +25,7 @@ from googlecloudsdk.calliope import walker_util
 from googlecloudsdk.command_lib.meta import help_util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_attr
+from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import pkg_resources
 
 
@@ -182,13 +182,13 @@ class GenerateHelpDocs(base.Command):
                                                           args.restrict)
       tree = walker_util.CommandTreeGenerator(
           self._cli_power_users_only).Walk(args.hidden, args.restrict)
-      with io.open(os.path.join(args.html_dir, '_menu_.html'), 'wt') as out:
+      with files.FileWriter(os.path.join(args.html_dir, '_menu_.html')) as out:
         WriteHtmlMenu(tree, out)
       for file_name in _HELP_HTML_DATA_FILES:
-        with io.open(os.path.join(args.html_dir, file_name), 'wb') as out:
-          file_contents = pkg_resources.GetResource(
-              'googlecloudsdk.api_lib.meta.help_html_data.', file_name)
-          out.write(file_contents)
+        file_contents = pkg_resources.GetResource(
+            'googlecloudsdk.api_lib.meta.help_html_data.', file_name)
+        files.WriteBinaryFileContents(os.path.join(args.html_dir, file_name),
+                                      file_contents)
     if args.manpage_dir:
       walker_util.ManPageGenerator(
           self._cli_power_users_only, args.manpage_dir).Walk(args.hidden,

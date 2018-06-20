@@ -68,7 +68,7 @@ class SignBlob(base.Command):
         messages.IamProjectsServiceAccountsSignBlobRequest(
             name=iam_util.EmailToAccountResourceName(args.iam_account),
             signBlobRequest=messages.SignBlobRequest(
-                bytesToSign=files.GetFileContents(args.input, binary=True))))
+                bytesToSign=files.ReadBinaryFileContents(args.input))))
 
     log.WriteToFileOrStdout(
         args.output, content=response.signature, binary=True)

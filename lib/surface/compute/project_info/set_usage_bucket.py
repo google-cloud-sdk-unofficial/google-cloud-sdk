@@ -23,17 +23,19 @@ from googlecloudsdk.core import properties
 
 
 class SetUsageBucket(base.SilentCommand):
-  """Set the usage reporting bucket for a project.
+  """Set usage reporting bucket for a project.
 
-    *{command}* is used to configure usage reporting for projects.
+    *{command}* configures usage reporting for projects.
 
   Setting usage reporting will cause a log of usage per resource to be
-  written to a specified Google Cloud Storage bucket daily. For example,
+  written to a specified Google Cloud Storage bucket daily.
 
-    $ gcloud compute project-info set-usage-bucket --bucket gs://my-bucket
+  For example, to write daily logs of the form usage_gce_YYYYMMDD.csv
+  to the bucket `my-bucket`, run:
 
-  will cause logs of the form usage_gce_YYYYMMDD.csv to be written daily
-  to the bucket `my-bucket`. To disable this feature, issue the command:
+    $ gcloud compute project-info set-usage-bucket --bucket=gs://my-bucket
+
+  To disable this feature, issue the command:
 
     $ gcloud compute project-info set-usage-bucket --no-bucket
   """
@@ -47,18 +49,21 @@ class SetUsageBucket(base.SilentCommand):
     bucket_group.add_argument(
         '--bucket',
         help="""\
-        The URI of a Google Cloud Storage bucket where the usage
-        report object should be stored. The Google Service Account for
+        Name of an existing Google Cloud Storage bucket where the usage
+        report object should be stored. This can either be the bucket name by
+        itself, such as `my-bucket`, or the bucket name with `gs://`
+        or `https://storage.googleapis.com/` in front of it, such as
+        `gs://my-bucket`. The Google Service Account for
         performing usage reporting is granted write access to this bucket.
         The user running this command must be an owner of the bucket.
 
-        To clear the usage bucket, use --no-bucket.
+        To clear the usage bucket, use `--no-bucket`.
         """)
 
     parser.add_argument(
         '--prefix',
         help="""\
-        An optional prefix for the name of the usage report object stored in
+        Optional prefix for the name of the usage report object stored in
         the bucket. If not supplied, then this defaults to ``usage''. The
         report is stored as a CSV file named PREFIX_gce_YYYYMMDD.csv where
         YYYYMMDD is the day of the usage according to Pacific Time. The prefix

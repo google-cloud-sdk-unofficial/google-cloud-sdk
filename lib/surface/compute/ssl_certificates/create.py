@@ -15,11 +15,12 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import file_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
+from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -74,8 +75,8 @@ class Create(base.CreateCommand):
 
     ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
         args, holder.resources)
-    certificate = file_utils.ReadFile(args.certificate, 'certificate')
-    private_key = file_utils.ReadFile(args.private_key, 'private key')
+    certificate = files.ReadFileContents(args.certificate)
+    private_key = files.ReadFileContents(args.private_key)
 
     request = client.messages.ComputeSslCertificatesInsertRequest(
         sslCertificate=client.messages.SslCertificate(
@@ -164,8 +165,8 @@ class CreateAlpha(base.CreateCommand):
         args, holder.resources)
 
     if args.certificate:
-      certificate = file_utils.ReadFile(args.certificate, 'certificate')
-      private_key = file_utils.ReadFile(args.private_key, 'private key')
+      certificate = files.ReadFileContents(args.certificate)
+      private_key = files.ReadFileContents(args.private_key)
 
       request = client.messages.ComputeSslCertificatesInsertRequest(
           sslCertificate=client.messages.SslCertificate(

@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import (
     security_policies_utils)
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
 class Export(base.Command):
@@ -59,7 +60,7 @@ class Export(base.Command):
 
     # Export the security policy.
     try:
-      with open(args.file_name, 'w') as export_file:
+      with files.FileWriter(args.file_name) as export_file:
         if args.file_format == 'json':
           security_policies_utils.WriteToFile(export_file, resources[0], 'json')
         else:

@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import files
 
 
 class Export(base.Command):
@@ -103,7 +104,7 @@ class Export(base.Command):
 
     # Export the record-sets.
     try:
-      with open(args.records_file, 'w') as export_file:
+      with files.FileWriter(args.records_file) as export_file:
         if args.zone_file_format:
           export_util.WriteToZoneFile(export_file, record_sets, zone.dnsName)
         else:

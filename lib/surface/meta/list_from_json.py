@@ -17,12 +17,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import io
 import json
 import sys
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core.util import files
 
 
 class ListFromJson(base.ListCommand):
@@ -54,9 +54,8 @@ class ListFromJson(base.ListCommand):
   def Run(self, args):
     if args.json_file:
       try:
-        with io.open(args.json_file, 'rt') as f:
-          resources = json.load(f)
-      except (IOError, ValueError) as e:
+        resources = json.loads(files.ReadFileContents(args.json_file))
+      except (files.Error, ValueError) as e:
         raise exceptions.BadFileException(
             'Cannot read [{}]: {}'.format(args.json_file, e))
     else:

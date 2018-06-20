@@ -94,6 +94,7 @@ for examples.
   flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
   flags.AddNodeVersionFlag(parser)
+  flags.AddAcceleratorArgs(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -103,6 +104,7 @@ def ParseCreateNodePoolOptionsBase(args):
                      'property container/ new_scopes_behavior is set to true.')
   flags.WarnForUnspecifiedAutorepair(args)
   return api_adapter.CreateNodePoolOptions(
+      accelerators=args.accelerator,
       machine_type=args.machine_type,
       disk_size_gb=args.disk_size,
       scopes=args.scopes,
@@ -115,6 +117,7 @@ def ParseCreateNodePoolOptionsBase(args):
       node_taints=args.node_taints,
       enable_autoscaling=args.enable_autoscaling,
       max_nodes=args.max_nodes,
+      min_cpu_platform=args.min_cpu_platform,
       min_nodes=args.min_nodes,
       image_type=args.image_type,
       image=args.image,
@@ -201,7 +204,6 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddAcceleratorArgs(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser)
     flags.AddLocalSSDFlag(parser)
@@ -214,8 +216,6 @@ class CreateBeta(Create):
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
-    ops.accelerators = args.accelerator
-    ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.new_scopes_behavior = True
     return ops
@@ -227,8 +227,6 @@ class CreateAlpha(Create):
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
-    ops.accelerators = args.accelerator
-    ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.new_scopes_behavior = True
@@ -245,7 +243,6 @@ class CreateAlpha(Create):
     flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser, for_node_pool=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
-    flags.AddAcceleratorArgs(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)

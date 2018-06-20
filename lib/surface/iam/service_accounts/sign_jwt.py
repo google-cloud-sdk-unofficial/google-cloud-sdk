@@ -65,7 +65,7 @@ class SignJwt(base.Command):
         messages.IamProjectsServiceAccountsSignJwtRequest(
             name=iam_util.EmailToAccountResourceName(args.iam_account),
             signJwtRequest=messages.SignJwtRequest(
-                payload=files.GetFileContents(args.input, binary=False))))
+                payload=files.ReadFileContents(args.input,))))
 
     log.WriteToFileOrStdout(
         args.output, content=response.signedJwt, binary=True)
