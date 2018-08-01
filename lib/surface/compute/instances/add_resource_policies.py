@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for adding resource policies to instances."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
@@ -40,7 +43,7 @@ class InstancesAddResourcePolicies(base.UpdateCommand):
   def Args(parser):
     instance_flags.INSTANCE_ARG.AddArgument(
         parser, operation_type='add resource policies to')
-    flags.AddResourcePoliciesArgs(parser, 'added to', required=True)
+    flags.AddResourcePoliciesArgs(parser, 'added to', 'instance', required=True)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

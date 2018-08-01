@@ -15,7 +15,9 @@
 """Command to show metadata for an operation."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import resource_args
@@ -30,4 +32,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     operation_ref = args.CONCEPTS.operation.Parse()
-    return operations_api_util.Get(operation_ref)
+    return operations_api_util.Get(
+        operation_ref, release_track=self.ReleaseTrack())

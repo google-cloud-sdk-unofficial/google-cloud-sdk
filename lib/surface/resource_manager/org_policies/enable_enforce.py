@@ -15,7 +15,9 @@
 """Command to turn on enforcement of a boolean constraint."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.resource_manager import org_policies
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import org_policies_base

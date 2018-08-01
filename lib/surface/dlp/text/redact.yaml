@@ -16,6 +16,12 @@
     brief: Redact potentially sensitive data from text content.
     DESCRIPTION: |
       Redacts potentially sensitive data from text content.
+    EXAMPLES: |
+      To redact email addresses from a file named my-data.csv and write the
+      redacted contents to my-redacted-data.csv, run:
+
+        $ {command} --info-types EMAIL_ADDRESS --replace-with-info-type \
+          --content-file my-data.csv --output-file my-redacted-data.csv
 
   request:
     collection: dlp.projects.content
@@ -23,6 +29,7 @@
     api_version: v2
 
   arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.dlp.hooks:AddOutputFileFlag
     params:
       - _COMMON_: text_args.redact_content_arg
       # Need to override shared arg definitions
@@ -63,4 +70,6 @@
       help_text: Project to use to redact images.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project_content
 
-
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.dlp.hooks:PossiblyWriteRedactedTextResponseToOutputFile

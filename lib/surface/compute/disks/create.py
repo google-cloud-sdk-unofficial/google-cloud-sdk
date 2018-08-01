@@ -15,7 +15,9 @@
 """Command for creating disks."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import argparse
 import textwrap
 
@@ -113,13 +115,14 @@ def _CommonArgs(parser, source_snapshot_arg):
           lower_bound='1GB',
           suggested_binary_size_scales=['GB', 'GiB', 'TB', 'TiB', 'PiB', 'PB']),
       help="""\
-        Indicates the size of the disks. The value must be a whole
+        Size of the disks. The value must be a whole
         number followed by a size unit of ``GB'' for gigabyte, or ``TB''
         for terabyte. If no size unit is specified, GB is
         assumed. For example, ``10GB'' will produce 10 gigabyte
-        disks. Disk size must be a multiple of 1 GB. If not specified, the
-        default size of {}GB for standard disks and {}GB for pd-ssd disks will
-        be used.
+        disks. Disk size must be a multiple of 1 GB. Limit your boot disk size
+        to 2TB to account for MBR partition table limitations. If disk size is
+        not specified, the default size of {}GB for standard disks and {}GB for
+        pd-ssd disks will be used.
         """.format(constants.DEFAULT_STANDARD_DISK_SIZE_GB,
                    constants.DEFAULT_SSD_DISK_SIZE_GB))
 
@@ -378,16 +381,16 @@ class Create(base.Command):
 
       if resource_policies:
         if disk_ref.Collection() == 'compute.regionDisks':
-          raise exceptions.InvalidArgumentException(
-              '--resource-policies',
-              'Resource policies are not supported for regional disks.')
+          disk_region = disk_ref.region
+        else:
+          disk_region = utils.ZoneNameToRegionName(disk_ref.zone)
         parsed_resource_policies = []
         for policy in resource_policies:
-          resource_policy_ref = resource_util.ParseResourcePolicyWithZone(
+          resource_policy_ref = resource_util.ParseResourcePolicy(
               compute_holder.resources,
               policy,
               project=disk_ref.project,
-              zone=disk_ref.zone)
+              region=disk_region)
           parsed_resource_policies.append(resource_policy_ref.SelfLink())
         kwargs['resourcePolicies'] = parsed_resource_policies
 
@@ -472,7 +475,7 @@ class CreateAlpha(Create):
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     _AddReplicaZonesArg(parser)
-    resource_flags.AddResourcePoliciesArgs(parser, 'added to')
+    resource_flags.AddResourcePoliciesArgs(parser, 'added to', 'disk')
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
 

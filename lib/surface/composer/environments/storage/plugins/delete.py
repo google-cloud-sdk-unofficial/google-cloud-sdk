@@ -15,6 +15,7 @@
 """Command to delete Airflow plugins for a Cloud Composer environment."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
@@ -42,4 +43,8 @@ class Delete(base.Command):
         'subdirectory of environment [{}]'.format(subtarget,
                                                   env_ref.RelativeName()),
         cancel_on_no=True)
-    return storage_util.Delete(env_ref, args.target or '*', 'plugins')
+    return storage_util.Delete(
+        env_ref,
+        args.target or '*',
+        'plugins',
+        release_track=self.ReleaseTrack())

@@ -14,11 +14,14 @@
 # limitations under the License.
 
 """Command group for Cloud Tasks."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Locations(base.Group):
   """Get information about Cloud Tasks locations."""

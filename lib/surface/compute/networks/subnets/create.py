@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.networks.subnets import flags
 import six
 
 
-def _AddArgs(cls, parser):
+def _AddArgs(cls, parser, include_alpha=False):
   """Add subnetwork create arguments to parser."""
   cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
   cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
@@ -71,9 +71,34 @@ def _AddArgs(cls, parser):
             'for VPC flow logs can be found at '
             'https://cloud.google.com/vpc/docs/using-flow-logs.'))
 
+  if include_alpha:
+    parser.add_argument(
+        '--purpose',
+        choices={
+            'PRIVATE_RFC_1918':
+                'Regular user created or automatically created subnet.',
+            'INTERNAL_HTTPS_LOAD_BALANCER':
+                'Reserved for Internal HTTP(S) Load Balancing.'
+        },
+        type=lambda x: x.replace('-', '_').upper(),
+        help='The purpose of this subnetwork.')
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+    parser.add_argument(
+        '--role',
+        choices={
+            'ACTIVE': 'The ACTIVE subnet that is currently used.',
+            'BACKUP': 'The BACKUP subnet that could be promoted to ACTIVE.'
+        },
+        type=lambda x: x.replace('-', '_').upper(),
+        help=('The role of subnetwork. This field is only used when'
+              'purpose=INTERNAL_HTTPS_LOAD_BALANCER. The value can be set to '
+              'ACTIVE or BACKUP. An ACTIVE subnetwork is one that is currently '
+              'being used for Internal HTTP(S) Load Balancing. A BACKUP '
+              'subnetwork is one that is ready to be promoted to ACTIVE or is '
+              'currently draining.'))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Define a subnet for a network in custom subnet mode.
 
@@ -91,13 +116,28 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
 
   def _CreateSubnetwork(self, messages, subnet_ref, network_ref, args):
-    return messages.Subnetwork(
+    subnetwork = messages.Subnetwork(
         name=subnet_ref.Name(),
         description=args.description,
         network=network_ref.SelfLink(),
         ipCidrRange=args.range,
         privateIpGoogleAccess=args.enable_private_ip_google_access,
         enableFlowLogs=args.enable_flow_logs)
+
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.purpose:
+        subnetwork.purpose = messages.Subnetwork.PurposeValueValuesEnum(
+            args.purpose)
+      if (subnetwork.purpose == messages.Subnetwork.PurposeValueValuesEnum.
+          INTERNAL_HTTPS_LOAD_BALANCER):
+        # Clear unsupported fields in the subnet resource
+        subnetwork.privateIpGoogleAccess = None
+        subnetwork.enableFlowLogs = None
+
+      if getattr(args, 'role', None):
+        subnetwork.role = messages.Subnetwork.RoleValueValuesEnum(args.role)
+
+    return subnetwork
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
@@ -127,3 +167,18 @@ class Create(base.CreateCommand):
     request.subnetwork.secondaryIpRanges = secondary_ranges
     return client.MakeRequests([(client.apitools_client.subnetworks, 'Insert',
                                  request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Define a subnet for a network in custom subnet mode.
+
+  Define a subnet for a network in custom subnet mode. Subnets must be uniquely
+  named per region.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    _AddArgs(cls, parser, include_alpha=True)
+    parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)

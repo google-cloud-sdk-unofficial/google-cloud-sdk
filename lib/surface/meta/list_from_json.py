@@ -16,6 +16,7 @@
 """A command that reads JSON data and lists it."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 import json

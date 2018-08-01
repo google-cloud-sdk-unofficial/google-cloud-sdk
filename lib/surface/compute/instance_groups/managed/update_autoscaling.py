@@ -15,7 +15,9 @@
 """Command to PATCH-style update autoscaling for a managed instance group."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils as mig_utils
 from googlecloudsdk.api_lib.compute.instance_groups.managed import autoscalers as autoscalers_api

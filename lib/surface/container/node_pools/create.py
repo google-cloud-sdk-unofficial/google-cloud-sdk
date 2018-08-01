@@ -15,7 +15,9 @@
 """Create node pool command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -99,11 +101,19 @@ for examples.
 
 
 def ParseCreateNodePoolOptionsBase(args):
+  """Parses the flags provided with the node pool creation command."""
   if (args.IsSpecified('enable_cloud_endpoints') and
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
                      'property container/ new_scopes_behavior is set to true.')
-  flags.WarnForUnspecifiedAutorepair(args)
+  if args.IsSpecified('enable_autorepair'):
+    enable_autorepair = args.enable_autorepair
+  else:
+    # Node pools using COS support auto repairs, enable it for them by default.
+    # Other node pools using (Ubuntu, custom images) don't support node auto
+    # repairs, attempting to enable autorepair for them will result in API call
+    # failing so don't do it.
+    enable_autorepair = ((args.image_type or '').lower() in ['', 'cos'])
   return api_adapter.CreateNodePoolOptions(
       accelerators=args.accelerator,
       machine_type=args.machine_type,
@@ -125,7 +135,7 @@ def ParseCreateNodePoolOptionsBase(args):
       image_project=args.image_project,
       image_family=args.image_family,
       preemptible=args.preemptible,
-      enable_autorepair=args.enable_autorepair,
+      enable_autorepair=enable_autorepair,
       enable_autoupgrade=args.enable_autoupgrade,
       service_account=args.service_account,
       disk_type=args.disk_type)

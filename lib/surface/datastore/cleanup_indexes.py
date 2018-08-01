@@ -16,7 +16,9 @@
 """The gcloud datstore cleanup-indexes command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.calliope import base

@@ -15,7 +15,9 @@
 """Command to run an Airflow CLI sub-command in an environment."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import argparse
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
@@ -69,10 +71,12 @@ class Run(base.Command):
 
   def Run(self, args):
     running_state = (
-        api_util.GetMessagesModule().Environment.StateValueValuesEnum.RUNNING)
+        api_util.GetMessagesModule(release_track=self.ReleaseTrack())
+        .Environment.StateValueValuesEnum.RUNNING)
 
     env_ref = args.CONCEPTS.environment.Parse()
-    env_obj = environments_api_util.Get(env_ref)
+    env_obj = environments_api_util.Get(
+        env_ref, release_track=self.ReleaseTrack())
 
     if env_obj.state != running_state:
       raise command_util.Error(

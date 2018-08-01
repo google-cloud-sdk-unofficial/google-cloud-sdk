@@ -15,7 +15,9 @@
 """Command for creating networks."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import textwrap
 
 from googlecloudsdk.api_lib.compute import base_classes

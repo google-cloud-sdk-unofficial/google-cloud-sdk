@@ -15,14 +15,15 @@
 """Delete images command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_session
 from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
@@ -105,7 +106,7 @@ class Delete(base.DeleteCommand):
     # IMAGE_NAME: The fully-qualified image name to delete (with a digest).
     # Deletes the layers. Ex. gcr.io/google-appengine/java(@DIGEST|:TAG).
 
-    http_obj = http.Http()
+    http_obj = util.Http()
     with util.WrapExpectedDockerlessErrors():
       # collect input/validate
       digests, explicit_tags = self._ProcessImageNames(args.image_names)

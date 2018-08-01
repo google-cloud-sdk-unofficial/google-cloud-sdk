@@ -16,6 +16,7 @@
 """The auth command gets tokens via oauth2."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 import textwrap

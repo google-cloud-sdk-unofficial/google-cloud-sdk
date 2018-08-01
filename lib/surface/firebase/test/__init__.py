@@ -16,7 +16,9 @@
 """The 'gcloud firebase test' sub-group."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import argparse
 
 from googlecloudsdk.api_lib.firebase.test import endpoints

@@ -16,6 +16,12 @@
     brief: Redact potentially sensitive data from image content.
     DESCRIPTION: |
       Redact potentially sensitive data from image content.
+    EXAMPLES: |
+      To redact phone numbers from an image named my-image.jpg and write the
+      redacted image to my-redacted-image.jpg, run:
+
+        $ {command} my-image.jpg --info-types PHONE_NUMBER \
+            --output-file my-redacted-image.jpg
 
   request:
     collection: dlp.projects.image
@@ -23,6 +29,7 @@
     api_version: v2
 
   arguments:
+    additional_arguments_hook: googlecloudsdk.command_lib.dlp.hooks:AddOutputFileFlag
     params:
       - _COMMON_: image_file
         api_field: googlePrivacyDlpV2RedactImageRequest.byteItem
@@ -54,4 +61,8 @@
     resource:
       help_text: Project to use to redact images.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project_image
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.dlp.hooks:PossiblyWriteRedactedImageResponseToOutputFile
 

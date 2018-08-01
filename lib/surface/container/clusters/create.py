@@ -14,8 +14,11 @@
 # limitations under the License.
 
 """Create cluster command."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -158,20 +161,17 @@ for examples.
 def ValidateBasicAuthFlags(args):
   """Validates flags associated with basic auth.
 
-  Check that args don't conflict, but only if they're both specified; overwrites
-  username if enable_basic_auth is specified; and checks that password is set
-  only if username is non-empty.
+  Overwrites username if enable_basic_auth is specified; checks that password is
+  set if username is non-empty.
 
   Args:
     args: an argparse namespace. All the arguments that were provided to this
       command invocation.
 
   Raises:
-    util.Error, if flags conflict.
+    util.Error, if username is non-empty and password is not set.
   """
   if args.IsSpecified('enable_basic_auth'):
-    if args.IsSpecified('username'):
-      raise util.Error(constants.USERNAME_ENABLE_BASIC_AUTH_ERROR_MSG)
     if not args.enable_basic_auth:
       args.username = ''
     # Right now, enable_basic_auth is a no-op because username defaults to
@@ -182,13 +182,19 @@ def ValidateBasicAuthFlags(args):
 
 def ParseCreateOptionsBase(args):
   """Parses the flags provided with the cluster creation command."""
-
   flags.MungeBasicAuthFlags(args)
   if (args.IsSpecified('enable_cloud_endpoints') and
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
                      'property container/ new_scopes_behavior is set to true.')
-  flags.WarnForUnspecifiedAutorepair(args)
+  if args.IsSpecified('enable_autorepair'):
+    enable_autorepair = args.enable_autorepair
+  else:
+    # Node pools using COS support auto repairs, enable it for them by default.
+    # Other node pools using (Ubuntu, custom images) don't support node auto
+    # repairs, attempting to enable autorepair for them will result in API call
+    # failing so don't do it.
+    enable_autorepair = ((args.image_type or '').lower() in ['', 'cos'])
   flags.WarnForUnspecifiedIpAllocationPolicy(args)
   cluster_ipv4_cidr = args.cluster_ipv4_cidr
   enable_master_authorized_networks = args.enable_master_authorized_networks
@@ -202,7 +208,7 @@ def ParseCreateOptionsBase(args):
       node_version=args.node_version,
       create_subnetwork=args.create_subnetwork,
       disk_type=args.disk_type,
-      enable_autorepair=args.enable_autorepair,
+      enable_autorepair=enable_autorepair,
       enable_autoscaling=args.enable_autoscaling,
       enable_autoupgrade=args.enable_autoupgrade,
       enable_cloud_endpoints=args.enable_cloud_endpoints,

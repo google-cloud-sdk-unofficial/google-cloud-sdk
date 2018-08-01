@@ -15,15 +15,16 @@
 """Command for modifying the properties of a subnetwork."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import subnets_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
@@ -54,3 +55,32 @@ class Update(base.UpdateCommand):
         add_secondary_ranges=args.add_secondary_ranges,
         remove_secondary_ranges=args.remove_secondary_ranges,
         enable_flow_logs=args.enable_flow_logs)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Updates properties of an existing Google Compute Engine subnetwork."""
+
+  @classmethod
+  def Args(cls, parser):
+    """The command argument handler."""
+    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
+    cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
+
+    flags.AddUpdateArgs(parser, include_alpha=True)
+
+  def Run(self, args):
+    """Issues requests necessary to update Subnetworks."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, holder.resources)
+
+    return subnets_utils.MakeSubnetworkUpdateRequest(
+        client,
+        subnet_ref,
+        enable_private_ip_google_access=args.enable_private_ip_google_access,
+        add_secondary_ranges=args.add_secondary_ranges,
+        remove_secondary_ranges=args.remove_secondary_ranges,
+        enable_flow_logs=args.enable_flow_logs,
+        set_role_active=getattr(args, 'role', None) == 'ACTIVE',
+        drain_timeout_seconds=args.drain_timeout)

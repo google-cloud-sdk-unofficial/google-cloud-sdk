@@ -19,8 +19,11 @@ The fact that this is a directory with
 an __init__.py in it makes it a command group. The methods written below will
 all be called by calliope (though they are all optional).
 """
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import argparse
 import os
 import re

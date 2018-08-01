@@ -16,6 +16,7 @@
 """A command that lists the gcloud group and command tree with details."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base

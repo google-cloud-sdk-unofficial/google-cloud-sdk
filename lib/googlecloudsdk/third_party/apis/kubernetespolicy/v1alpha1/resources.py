@@ -17,29 +17,28 @@
 import enum
 
 
-BASE_URL = 'https://alpha-vision.googleapis.com/v1alpha1/'
-DOCS_URL = 'https://cloud.google.com/vision/'
+BASE_URL = 'https://kubernetespolicy.googleapis.com/v1alpha1/'
+DOCS_URL = 'https://cloud.google.com/containers'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  PRODUCTSEARCH_CATALOGS_REFERENCEIMAGES = (
-      'productSearch.catalogs.referenceImages',
+  PROJECTS = (
+      'projects',
+      'projects/{projectsId}',
+      {},
+      [u'projectsId'],
+      True
+  )
+  PROJECTS_NAMESPACES = (
+      'projects.namespaces',
       '{+name}',
       {
           '':
-              'productSearch/catalogs/{catalogsId}/referenceImages/'
-              '{referenceImagesId}',
+              'projects/{projectsId}/namespaces/{namespacesId}',
       },
       [u'name'],
-      True
-  )
-  PRODUCTSEARCH_CATALOGS = (
-      'productSearch.catalogs',
-      'productSearch/catalogs/{catalogsId}',
-      {},
-      [u'catalogsId'],
       True
   )
 

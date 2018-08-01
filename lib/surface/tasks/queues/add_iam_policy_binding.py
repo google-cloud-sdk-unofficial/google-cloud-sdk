@@ -15,7 +15,9 @@
 """`gcloud tasks queues add-iam-policy-binding` command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
@@ -24,7 +26,6 @@ from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a queue's access policy."""
 

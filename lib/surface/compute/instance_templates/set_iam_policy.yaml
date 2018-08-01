@@ -1,0 +1,39 @@
+- &beta_command
+  release_tracks: [BETA]
+  help_text:
+    brief: Set the IAM policy for a Google Compute Engine instance template.
+    DESCRIPTION: |
+      Sets the IAM policy for the given instance template as defined in a JSON or YAML file.
+
+    EXAMPLES: |
+      The following command will read am IAM policy defined in a JSON file
+      'policy.json' and set it for the instance template `my_template`:
+
+      $ {command} my_template policy.json
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of the
+      policy file format and contents.
+
+  request:
+    &request
+    collection: compute.instanceTemplates
+    api_version: beta
+    use_relative_name: False
+
+  iam:
+    set_iam_policy_request_path: globalSetPolicyRequest
+    message_type_overrides:
+      policy: Policy
+      set_iam_policy_request: ComputeInstanceTemplatesSetIamPolicyRequest
+
+  arguments:
+    resource:
+      help_text: The instance template to set the IAM policy for.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:instance_template
+
+
+- <<: *beta_command
+  release_tracks: [ALPHA]
+  request:
+    <<: *request
+    api_version: alpha

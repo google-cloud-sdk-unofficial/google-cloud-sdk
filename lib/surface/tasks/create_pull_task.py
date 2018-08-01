@@ -15,7 +15,9 @@
 """`gcloud tasks create-pull-task` command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.tasks import tasks
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import constants
@@ -25,7 +27,6 @@ from googlecloudsdk.core import log
 
 
 # TODO(b/64460484): Add descriptions of App Engine vs. pull queues.
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreatePull(base.CreateCommand):
   """Create and add a task to a pull queue."""
 

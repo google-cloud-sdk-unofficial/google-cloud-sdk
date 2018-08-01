@@ -15,7 +15,9 @@
 """Command for creating managed instance group."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import sys
 from apitools.base.py import encoding
 
@@ -79,10 +81,24 @@ class CreateGA(base.CreateCommand):
   def Args(parser):
     parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser=parser)
-    instance_groups_flags.GetInstanceGroupManagerArg().AddArgument(
-        parser, operation_type='create')
+    igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
+    igm_arg.AddArgument(parser, operation_type='create')
+    instance_groups_flags.AddZonesFlag(parser)
 
   def CreateGroupReference(self, args, client, resources):
+    if args.zones:
+      zone_ref = resources.Parse(
+          args.zones[0],
+          collection='compute.zones',
+          params={'project': properties.VALUES.core.project.GetOrFail})
+      region = utils.ZoneNameToRegionName(zone_ref.Name())
+      return resources.Parse(
+          args.name,
+          params={
+              'region': region,
+              'project': properties.VALUES.core.project.GetOrFail
+          },
+          collection='compute.regionInstanceGroupManagers')
     group_ref = (
         instance_groups_flags.GetInstanceGroupManagerArg().
         ResolveAsResource)(args, resources,
@@ -92,6 +108,19 @@ class CreateGA(base.CreateCommand):
       zonal_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
       zonal_resource_fetcher.WarnForZonalCreation([group_ref])
     return group_ref
+
+  def _CreateDistributionPolicy(self, zones, resources, messages):
+    if zones:
+      policy_zones = []
+      for zone in zones:
+        zone_ref = resources.Parse(
+            zone,
+            collection='compute.zones',
+            params={'project': properties.VALUES.core.project.GetOrFail})
+        policy_zones.append(
+            messages.DistributionPolicyZoneConfiguration(
+                zone=zone_ref.SelfLink()))
+      return messages.DistributionPolicy(zones=policy_zones)
 
   def GetRegionForGroup(self, group_ref):
     if _IsZonalGroup(group_ref):
@@ -148,6 +177,8 @@ class CreateGA(base.CreateCommand):
   def _CreateInstanceGroupManager(
       self, args, group_ref, template_ref, client, holder):
     """Create parts of Instance Group Manager shared for the track."""
+    instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
+        args, holder.resources)
     return client.messages.InstanceGroupManager(
         name=group_ref.Name(),
         description=args.description,
@@ -157,6 +188,8 @@ class CreateGA(base.CreateCommand):
         targetPools=self._GetInstanceGroupManagerTargetPools(
             args.target_pool, group_ref, holder),
         targetSize=int(args.size),
+        distributionPolicy=self._CreateDistributionPolicy(
+            args.zones, holder.resources, client.messages),
     )
 
   def Run(self, args):

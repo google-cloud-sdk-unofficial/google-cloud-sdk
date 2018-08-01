@@ -15,7 +15,9 @@
 """Command to list environments in a project and location."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import flags
@@ -25,7 +27,7 @@ from googlecloudsdk.command_lib.composer import resource_args
 class List(base.ListCommand):
   """List the Cloud Composer environments under a project and location.
 
-  Lists environments that not have been successfully deleted. Prints a table
+  List environments that not have been successfully deleted. Prints a table
   with the following columns:
   * name
   * location
@@ -57,4 +59,7 @@ class List(base.ListCommand):
         'One or more locations in which to list environments must be provided.')
 
     return environments_api_util.List(
-        location_refs, args.page_size, limit=args.limit)
+        location_refs,
+        args.page_size,
+        limit=args.limit,
+        release_track=self.ReleaseTrack())

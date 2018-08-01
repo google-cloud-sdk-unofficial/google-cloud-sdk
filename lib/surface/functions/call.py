@@ -14,8 +14,11 @@
 # limitations under the License.
 
 """Triggers execution of a Google Cloud Function."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import json
 
 from googlecloudsdk.api_lib.functions import util

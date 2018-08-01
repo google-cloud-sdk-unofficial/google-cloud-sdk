@@ -15,13 +15,15 @@
 """The main command group for Cloud Composer."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Composer(base.Group):
-  """Cloud Composer command groups.
+  """Create and manage Cloud Composer Environments.
 
   Cloud Composer is a managed Apache Airflow service that helps you create,
   schedule, monitor and manage workflows. Cloud Composer automation helps you

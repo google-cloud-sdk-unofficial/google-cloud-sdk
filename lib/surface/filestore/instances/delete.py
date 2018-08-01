@@ -16,13 +16,16 @@
 """Deletes a Cloud Filestore instance."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.filestore import filestore_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.filestore import flags
 from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -49,9 +52,12 @@ class DeleteBeta(base.DeleteCommand):
     result = client.DeleteInstance(
         instance_ref, args.async)
     if args.async:
+      command = properties.VALUES.metrics.command_name.Get().split('.')
+      if command:
+        command[-1] = 'list'
       log.status.Print(
-          '\nCheck the status of the deletion by listing all instances:\n  '
-          '$ gcloud alpha filestore instances list')
+          'Check the status of the deletion by listing all instances:\n  '
+          '$ {} '.format(' '.join(command)))
     return result
 
 

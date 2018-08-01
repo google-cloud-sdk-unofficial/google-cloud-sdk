@@ -15,7 +15,9 @@
 """`gcloud tasks queues resume` command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.tasks import queues
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import constants
@@ -24,7 +26,6 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Resume(base.Command):
   """Request to resume a paused or disabled queue."""
 

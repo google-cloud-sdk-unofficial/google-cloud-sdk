@@ -15,7 +15,9 @@
 """Command to delete an environment."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
@@ -29,7 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes one or more Cloud Composer environments.
+  """Delete one or more Cloud Composer environments.
 
   Environments cannot be deleted unless they are in one of the RUNNING or
   ERROR states. If run asynchronously with `--async`, exits after printing
@@ -62,14 +64,16 @@ class Delete(base.DeleteCommand):
         cancel_string='Deletion aborted by user.',
         throw_if_unattended=True)
 
-    waiter = delete_util.EnvironmentDeletionWaiter()
+    waiter = delete_util.EnvironmentDeletionWaiter(
+        release_track=self.ReleaseTrack())
     encountered_errors = False
     for env_ref in env_refs:
       operation = None
       failed = None
       details = None
       try:
-        operation = environments_api_util.Delete(env_ref)
+        operation = environments_api_util.Delete(
+            env_ref, release_track=self.ReleaseTrack())
       except apitools_exceptions.HttpError as e:
         failed = exceptions.HttpException(e).payload.status_message
         encountered_errors = True

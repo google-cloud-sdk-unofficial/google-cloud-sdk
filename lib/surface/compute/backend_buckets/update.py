@@ -15,7 +15,9 @@
 """Commands for updating backend buckets."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import backend_buckets_utils
@@ -62,8 +64,8 @@ class Update(base.UpdateCommand):
     """Returns a request to update the backend bucket."""
     return (
         client.apitools_client.backendBuckets,
-        'Update',
-        client.messages.ComputeBackendBucketsUpdateRequest(
+        'Patch',
+        client.messages.ComputeBackendBucketsPatchRequest(
             project=backend_bucket_ref.project,
             backendBucket=backend_bucket_ref.Name(),
             backendBucketResource=replacement))
@@ -73,11 +75,10 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     replacement = encoding.CopyProtoMessage(existing)
+    cleared_fields = []
 
-    if args.description:
+    if args.IsSpecified('description'):
       replacement.description = args.description
-    elif args.description == '':  # pylint: disable=g-explicit-bool-comparison
-      replacement.description = None
 
     if args.gcs_bucket_name:
       replacement.bucketName = args.gcs_bucket_name
@@ -89,7 +90,9 @@ class Update(base.UpdateCommand):
       replacement.cdnPolicy = client.messages.BackendBucketCdnPolicy(
           signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
 
-    return replacement
+    if not replacement.description:
+      cleared_fields.append('description')
+    return replacement, cleared_fields
 
   def MakeRequests(self, args):
     """Makes the requests for updating the backend bucket."""
@@ -102,7 +105,7 @@ class Update(base.UpdateCommand):
 
     objects = client.MakeRequests([get_request])
 
-    new_object = self.Modify(args, objects[0])
+    new_object, cleared_fields = self.Modify(args, objects[0])
 
     # If existing object is equal to the proposed object or if
     # Modify() returns None, then there is no work to be done, so we
@@ -113,8 +116,9 @@ class Update(base.UpdateCommand):
               objects[0].name))
       return objects
 
-    return client.MakeRequests(
-        [self.GetSetRequest(client, backend_bucket_ref, new_object)])
+    with client.apitools_client.IncludeFields(cleared_fields):
+      return client.MakeRequests(
+          [self.GetSetRequest(client, backend_bucket_ref, new_object)])
 
   def Run(self, args):
     """Issues the request necessary for updating a backend bucket."""

@@ -15,7 +15,9 @@
 """Command for modifying backend services."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import io
 from apitools.base.protorpclite import messages
 from apitools.base.py import encoding

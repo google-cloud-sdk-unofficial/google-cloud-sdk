@@ -15,7 +15,9 @@
 """The 'gcloud firebase test network-profiles describe' command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.firebase.test import exceptions
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base

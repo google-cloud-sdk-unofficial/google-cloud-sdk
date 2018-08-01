@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for adding resource policies to disks."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags
@@ -38,34 +42,48 @@ class DisksAddResourcePolicies(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    disks_flags.MakeDiskArg(plural=False).AddArgument(
+    disks_flags.MakeDiskArgZonalOrRegional(plural=False).AddArgument(
         parser, operation_type='add resource policies to')
-    flags.AddResourcePoliciesArgs(parser, 'added to', required=True)
+    flags.AddResourcePoliciesArgs(parser, 'added to', 'disk', required=True)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = client.messages
 
-    disk_ref = disks_flags.MakeDiskArg(plural=False).ResolveAsResource(
-        args, holder.resources)
+    disk_ref = disks_flags.MakeDiskArgZonalOrRegional(
+        plural=False).ResolveAsResource(args, holder.resources)
+    if disk_ref.Collection() == 'compute.regionDisks':
+      disk_region = disk_ref.region
+    else:
+      disk_region = compute_utils.ZoneNameToRegionName(disk_ref.zone)
 
     resource_policies = []
     for policy in args.resource_policies:
-      resource_policy_ref = util.ParseResourcePolicyWithZone(
+      resource_policy_ref = util.ParseResourcePolicy(
           holder.resources,
           policy,
           project=disk_ref.project,
-          zone=disk_ref.zone)
+          region=disk_region)
       resource_policies.append(resource_policy_ref.SelfLink())
 
-    add_request = messages.ComputeDisksAddResourcePoliciesRequest(
-        disk=disk_ref.Name(),
-        project=disk_ref.project,
-        zone=disk_ref.zone,
-        disksAddResourcePoliciesRequest=
-        messages.DisksAddResourcePoliciesRequest(
-            resourcePolicies=resource_policies))
-
-    return client.MakeRequests([(client.apitools_client.disks,
-                                 'AddResourcePolicies', add_request)])
+    if disk_ref.Collection() == 'compute.regionDisks':
+      add_request = messages.ComputeRegionDisksAddResourcePoliciesRequest(
+          disk=disk_ref.Name(),
+          project=disk_ref.project,
+          region=disk_ref.region,
+          regionDisksAddResourcePoliciesRequest=
+          messages.RegionDisksAddResourcePoliciesRequest(
+              resourcePolicies=resource_policies))
+      return client.MakeRequests([(client.apitools_client.regionDisks,
+                                   'AddResourcePolicies', add_request)])
+    else:
+      add_request = messages.ComputeDisksAddResourcePoliciesRequest(
+          disk=disk_ref.Name(),
+          project=disk_ref.project,
+          zone=disk_ref.zone,
+          disksAddResourcePoliciesRequest=
+          messages.DisksAddResourcePoliciesRequest(
+              resourcePolicies=resource_policies))
+      return client.MakeRequests([(client.apitools_client.disks,
+                                   'AddResourcePolicies', add_request)])

@@ -15,7 +15,9 @@
 """Command for waiting until managed instance group becomes stable."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
@@ -37,7 +39,8 @@ def _AddArgs(parser):
       parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class WaitUntilStable(base.Command):
   """Waits until state of managed instance group is stable."""
 
@@ -100,29 +103,3 @@ class WaitUntilStable(base.Command):
         errors_to_collect=errors)
 
     return results, errors
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class WaitUntilStableAlpha(WaitUntilStable):
-  """Waits until state of managed instance group is stable."""
-
-  def Run(self, args):
-    """Issues requests necessary to wait until stable on a MIG."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    start = time_util.CurrentTimeSec()
-    group_ref = self.CreateGroupReference(client, holder.resources, args)
-
-    while True:
-      responses, errors = self._GetResources(client, group_ref)
-      if errors:
-        utils.RaiseToolException(errors)
-      if wait_info.IsGroupStableAlpha(responses[0]):
-        break
-      log.out.Print(wait_info.CreateWaitTextAlpha(responses[0]))
-      time_util.Sleep(WaitUntilStableAlpha._TIME_BETWEEN_POLLS_SEC)
-
-      if args.timeout and time_util.CurrentTimeSec() - start > args.timeout:
-        raise utils.TimeoutError('Timeout while waiting for group to become '
-                                 'stable.')
-    log.out.Print('Group is stable')

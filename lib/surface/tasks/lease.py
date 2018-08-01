@@ -15,7 +15,9 @@
 """`gcloud tasks lease` command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.tasks import tasks
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import flags
@@ -23,7 +25,6 @@ from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Lease(base.ListCommand):
   """Leases a list of tasks and displays them.
 

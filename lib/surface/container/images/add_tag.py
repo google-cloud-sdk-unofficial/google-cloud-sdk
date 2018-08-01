@@ -15,7 +15,9 @@
 """Add tag command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from containerregistry.client import docker_name
 from containerregistry.client.v2 import docker_image as v2_image
 from containerregistry.client.v2 import docker_session as v2_session
@@ -27,7 +29,6 @@ from googlecloudsdk.api_lib.container.images import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -87,7 +88,7 @@ class Create(base.CreateCommand):
           log.CreatedResource(dest_name)
       log.UpdatedResource(src_name)
 
-    http_obj = http.Http()
+    http_obj = util.Http()
 
     src_name = util.GetDockerImageFromTagOrDigest(args.src_image)
 

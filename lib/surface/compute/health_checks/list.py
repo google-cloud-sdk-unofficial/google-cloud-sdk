@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing health checks."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
@@ -162,8 +165,20 @@ class ListBeta(List):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
+class ListAlpha(base_classes.MultiScopeLister, ListBeta):
   """List health checks in Alpha."""
+
+  @staticmethod
+  def Args(parser):
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+
+    parser.add_argument(
+        '--protocol',
+        help="""\
+        If protocol is specified, only health checks for that protocol are
+        listed, and protocol-specific columns are added to the output. By
+        default, health checks for all protocols are listed.
+        """)
 
   def _ProtocolWhitelist(self):
     # Returns a list of whitelisted protocols.
@@ -180,6 +195,44 @@ class ListAlpha(ListBeta):
                         'udpHealthCheck.request:label=REQUEST',
                         'udpHealthCheck.response:label=RESPONSE'])
     return 'table[]({columns})'.format(columns=','.join(columns))
+
+  @property
+  def global_service(self):
+    """The service used to list global resources."""
+    return self.compute.healthChecks
+
+  @property
+  def regional_service(self):
+    """The service used to list regional resources."""
+    return self.compute.regionHealthChecks
+
+  @property
+  def zonal_service(self):
+    """The service used to list regional resources."""
+    return None
+
+  @property
+  def aggregation_service(self):
+    """The service used to get aggregated list of resources."""
+    return self.compute.healthChecks
+
+  def GetResources(self, args, errors):
+    health_checks = super(ListAlpha, self).GetResources(args, errors)
+
+    # If a protocol is specified, check that it is one we support, and convert
+    # it to a number.
+    protocol_value = None
+    if args.protocol is not None:
+      protocol_value = self._ConvertProtocolArgToValue(args)
+      if protocol_value not in self._ProtocolWhitelist():
+        # TODO(b/111311137): Replace with InvalidArgumentException.
+        raise exceptions.ToolException('Invalid health check protocol ' +
+                                       args.protocol + '.')
+
+    for health_check in health_checks:
+      if (protocol_value is None or
+          health_check['type'] == args.protocol.upper()):
+        yield health_check
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('health checks')

@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Instantiate a workflow template from a file."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import uuid
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
@@ -24,6 +27,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -49,7 +53,9 @@ class InstantiateFromFile(base.CreateCommand):
     instance_id = uuid.uuid4().hex
     regions_ref = util.ParseRegion(dataproc)
     # Read template from YAML file.
-    template = util.ReadYaml(args.file, msgs.WorkflowTemplate)
+    with files.FileReader(args.file) as stream:
+      template = util.ReadYaml(
+          message_type=msgs.WorkflowTemplate, stream=stream)
 
     # Send instantiate inline request.
     request = \

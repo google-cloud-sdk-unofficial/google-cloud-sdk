@@ -1,4 +1,5 @@
-- release_tracks: [ALPHA]
+- &beta_command
+  release_tracks: [BETA]
 
   help_text:
     brief: Set the IAM policy for a Google Compute Engine snapshot.
@@ -15,8 +16,9 @@
       policy file format and contents.
 
   request:
+    &request
     collection: compute.snapshots
-    api_version: alpha
+    api_version: beta
     use_relative_name: False
 
   iam:
@@ -29,3 +31,10 @@
     resource:
       help_text: The snapshot to set the IAM policy for.
       spec: !REF googlecloudsdk.command_lib.compute.resources:snapshot
+
+
+- <<: *beta_command
+  release_tracks: [ALPHA]
+  request:
+    <<: *request
+    api_version: alpha

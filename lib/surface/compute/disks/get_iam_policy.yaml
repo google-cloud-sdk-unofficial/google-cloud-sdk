@@ -1,4 +1,5 @@
-- release_tracks: [ALPHA]
+- &beta_command
+  release_tracks: [BETA]
   help_text:
     brief: Get the IAM policy for a Google Compute Engine disk.
     DESCRIPTION: |
@@ -15,11 +16,18 @@
               $ {command} --zone=my-zone my-disk
 
   request:
+    &request
     collection: compute.disks
-    api_version: alpha
+    api_version: beta
     use_relative_name: false
 
   arguments:
     resource:
       help_text: The disk for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.compute.resources:disk
+
+- <<: *beta_command
+  release_tracks: [ALPHA]
+  request:
+    <<: *request
+    api_version: alpha

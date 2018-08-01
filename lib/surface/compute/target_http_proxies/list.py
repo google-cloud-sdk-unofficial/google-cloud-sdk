@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing target HTTP proxies."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List target HTTP proxies."""
 
@@ -43,3 +47,35 @@ class List(base.ListCommand):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('target HTTP proxies')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List Target HTTP Proxies.."""
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleterAlpha)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionTargetHttpProxies,
+        global_service=client.apitools_client.targetHttpProxies,
+        aggregation_service=client.apitools_client.targetHttpProxies)
+
+    return lister.Invoke(request_data, list_implementation)
+
+
+ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'target HTTP proxies',
+    scopes=[
+        base_classes.ScopeType.global_scope,
+        base_classes.ScopeType.regional_scope
+    ])

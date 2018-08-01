@@ -16,7 +16,9 @@
 """Upgrade cluster command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -26,6 +28,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util.semver import SemVer
@@ -89,15 +92,9 @@ def _Args(parser):
       help="""\
 The Kubernetes release version to which to upgrade the cluster's nodes.
 
-When upgrading nodes, the minor version (*X.Y*.Z) must be no greater than the
-cluster master's minor version (i.e. if the master's version is 1.2.34, the
-nodes cannot be upgraded to 1.3.45). For any minor version, only the latest
-patch version (X.Y.*Z*) is allowed (i.e. if there exists a version 1.2.34, the
-nodes cannot be upgraded to 1.2.33). Omit to upgrade to the same version as the
-master.
-
-When upgrading master, the only valid value is the latest supported version.
-Omit to have the server automatically select the latest version.
+If desired cluster version is omitted, *node* upgrades default to the current
+*master* version and *master* upgrades default to the default cluster version,
+which can be found in the server config.
 
 You can find the list of allowed versions for upgrades by running:
 
@@ -140,6 +137,7 @@ class Upgrade(base.Command):
     location_get = self.context['location_get']
     location = location_get(args)
     cluster_ref = adapter.ParseCluster(args.name, location)
+    project_id = properties.VALUES.core.project.Get(required=True)
     concurrent_node_count = getattr(args, 'concurrent_node_count', None)
 
     try:
@@ -147,13 +145,24 @@ class Upgrade(base.Command):
     except (exceptions.HttpException,
             apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
-      log.warning(('Problem loading details of cluster to upgrade:\n\n{}\n\n' +
+      log.warning(('Problem loading details of cluster to upgrade:\n\n{}\n\n'
                    'You can still attempt to upgrade the cluster.\n')
                   .format(console_attr.SafeText(error)))
       cluster = None
 
+    try:
+      server_conf = adapter.GetServerConfig(project_id, location)
+    except (exceptions.HttpException,
+            apitools_exceptions.HttpForbiddenError,
+            util.Error) as error:
+      log.warning(('Problem loading server config:\n\n{}\n\n'
+                   'You can still attempt to upgrade the cluster.\n')
+                  .format(console_attr.SafeText(error)))
+      server_conf = None
+
     upgrade_message = container_command_util.ClusterUpgradeMessage(
         name=args.name,
+        server_conf=server_conf,
         cluster=cluster,
         master=args.master,
         node_pool_name=args.node_pool,
@@ -195,8 +204,8 @@ Upgrade.detailed_help = {
       also periodically upgraded automatically as new releases are available.
 
       If desired cluster version is omitted, *node* upgrades default to the
-      current *master* version and *master* upgrades default to the latest
-      supported version.
+      current *master* version and *master* upgrades default to the default
+      cluster version, which can be found in the server config.
 
       *By running this command, all of the cluster's nodes will be deleted and*
       *recreated one at a time.* While persistent Kubernetes resources, such as
@@ -219,7 +228,7 @@ Upgrade.detailed_help = {
 
         $ {command} <cluster> --cluster-version "x.y.z"
 
-      Upgrade the master of <cluster> to the latest supported version:
+      Upgrade the master of <cluster> to the default cluster version:
 
         $ {command} <cluster> --master"
 """,

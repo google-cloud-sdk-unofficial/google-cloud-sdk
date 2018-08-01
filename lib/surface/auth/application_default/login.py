@@ -16,6 +16,7 @@
 """A command to install Application Default Credentials using a user account."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 import textwrap

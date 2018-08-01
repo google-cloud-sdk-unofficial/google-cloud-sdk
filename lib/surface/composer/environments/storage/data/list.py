@@ -15,6 +15,7 @@
 """Command to list data for a Cloud Composer environment."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
@@ -33,4 +34,4 @@ class List(base.Command):
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
-    return storage_util.List(env_ref, 'data')
+    return storage_util.List(env_ref, 'data', release_track=self.ReleaseTrack())

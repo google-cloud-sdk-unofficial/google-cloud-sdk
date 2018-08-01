@@ -15,7 +15,9 @@
 """Command for creating forwarding rules."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
@@ -168,7 +170,8 @@ class Create(base.CreateCommand):
         resources,
         args,
         forwarding_rule_ref,
-        allow_global_target=validate_beta_args)
+        allow_global_target=validate_beta_args,
+        include_alpha=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
     if not args.region and region_ref:
       args.region = region_ref
     protocol = self.ConstructProtocol(client.messages, args)
@@ -212,8 +215,21 @@ class Create(base.CreateCommand):
         forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
             args, resources).SelfLink()
     else:
-      forwarding_rule.portRange = (
-          _ResolvePortRange(args.port_range, range_list))
+      if (forwarding_rule_ref.Collection() == 'compute.forwardingRules' and
+          target_ref.Collection() == 'compute.regionTargetHttpProxies' and
+          args.load_balancing_scheme == 'INTERNAL'):
+        forwarding_rule.ports = [str(p) for p in _GetPortList(range_list)]
+        if args.subnet is not None:
+          if not args.subnet_region:
+            args.subnet_region = forwarding_rule_ref.region
+          forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
+              args, resources).SelfLink()
+        if args.network is not None:
+          forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
+              args, resources).SelfLink()
+      else:
+        forwarding_rule.portRange = (
+            _ResolvePortRange(args.port_range, range_list))
       forwarding_rule.target = target_ref.SelfLink()
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label

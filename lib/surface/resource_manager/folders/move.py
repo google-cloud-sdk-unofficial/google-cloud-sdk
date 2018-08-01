@@ -15,7 +15,9 @@
 """Command to move a folder."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.api_lib.resource_manager import operations
 from googlecloudsdk.calliope import base

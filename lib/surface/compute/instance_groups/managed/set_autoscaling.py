@@ -15,7 +15,9 @@
 """Command for configuring autoscaling of a managed instance group."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import json
 import re
 

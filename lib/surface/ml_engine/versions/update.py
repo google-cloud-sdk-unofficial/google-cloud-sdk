@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml-engine versions update command."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
@@ -31,8 +34,9 @@ def _AddUpdateArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a Cloud ML Engine model."""
+  """Update a Cloud ML Engine version."""
 
   @staticmethod
   def Args(parser):
@@ -43,4 +47,22 @@ class Update(base.UpdateCommand):
     operations_client = operations.OperationsClient()
     version_ref = args.CONCEPTS.version.Parse()
     versions_util.Update(versions_client, operations_client, version_ref, args)
-    log.UpdatedResource(args.model, kind='ml engine model')
+    log.UpdatedResource(args.version, kind='ML Engine version')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.UpdateCommand):
+  """Update a Cloud ML Engine version."""
+
+  @staticmethod
+  def Args(parser):
+    _AddUpdateArgs(parser)
+    flags.AddUserCodeUpdateArgs(parser)
+
+  def Run(self, args):
+    versions_client = versions_api.VersionsClient()
+    operations_client = operations.OperationsClient()
+    version_ref = args.CONCEPTS.version.Parse()
+    versions_util.Update(versions_client, operations_client, version_ref, args,
+                         enable_user_code=True)
+    log.UpdatedResource(args.version, kind='ML Engine version')

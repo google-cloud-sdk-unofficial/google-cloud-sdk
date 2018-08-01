@@ -15,7 +15,9 @@
 """Update cluster command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -462,6 +464,7 @@ class UpdateAlpha(Update):
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group, hidden=True)
+    flags.AddResourceUsageBigqueryDatasetFlag(group, add_clear_flag=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -474,4 +477,7 @@ class UpdateAlpha(Update):
     opts.max_accelerator = args.max_accelerator
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.enable_binauthz = args.enable_binauthz
+    opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
+    opts.clear_resource_usage_bigquery_dataset = \
+        args.clear_resource_usage_bigquery_dataset
     return opts

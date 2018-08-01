@@ -15,7 +15,9 @@
 """Command for updating an interface on a Google Compute Engine router."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes

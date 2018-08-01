@@ -15,7 +15,9 @@
 """ml-engine versions create command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
@@ -167,6 +169,7 @@ class CreateAlpha(base.CreateCommand):
   def Args(parser):
     _AddCreateArgs(parser)
     flags.ALPHA_MACHINE_TYPE.AddToParser(parser)
+    flags.AddUserCodeArgs(parser)
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
@@ -185,4 +188,6 @@ class CreateAlpha(base.CreateCommand):
                                 description=args.description,
                                 machine_type=args.machine_type,
                                 framework=framework,
-                                python_version=args.python_version)
+                                python_version=args.python_version,
+                                model_class=args.model_class,
+                                package_uris=args.package_uris)

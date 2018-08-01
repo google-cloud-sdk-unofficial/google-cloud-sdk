@@ -15,7 +15,9 @@
 """Command to wait for operation completion."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import resource_args
@@ -30,6 +32,9 @@ class Wait(base.SilentCommand):
 
   def Run(self, args):
     operation_ref = args.CONCEPTS.operation.Parse()
-    operation = operations_api_util.Get(operation_ref)
+    operation = operations_api_util.Get(
+        operation_ref, release_track=self.ReleaseTrack())
     operations_api_util.WaitForOperation(
-        operation, 'Waiting for [{}] to complete.'.format(operation.name))
+        operation,
+        'Waiting for [{}] to complete.'.format(operation.name),
+        release_track=self.ReleaseTrack())

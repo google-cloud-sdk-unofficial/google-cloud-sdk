@@ -16,6 +16,7 @@
 """Command for adding IAM policy bindings for service accounts."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.iam import util

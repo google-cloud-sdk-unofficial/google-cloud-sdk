@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating UDP health checks."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
@@ -39,7 +42,7 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('UDP')
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('UDP', include_alpha=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='create')
     health_checks_utils.AddUdpRelatedArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'UDP')
@@ -59,22 +62,42 @@ class Create(base.CreateCommand):
       raise exceptions.ToolException(
           '"response" field for UDP can not be empty.')
 
-    request = client.messages.ComputeHealthChecksInsertRequest(
-        healthCheck=client.messages.HealthCheck(
-            name=health_check_ref.Name(),
-            description=args.description,
-            type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
-            udpHealthCheck=client.messages.UDPHealthCheck(
-                request=args.request,
-                response=args.response,
-                port=args.port,
-                portName=args.port_name),
-            checkIntervalSec=args.check_interval,
-            timeoutSec=args.timeout,
-            healthyThreshold=args.healthy_threshold,
-            unhealthyThreshold=args.unhealthy_threshold,
-        ),
-        project=health_check_ref.project)
+    if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
+      request = client.messages.ComputeRegionHealthChecksInsertRequest(
+          healthCheck=client.messages.HealthCheck(
+              name=health_check_ref.Name(),
+              description=args.description,
+              type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
+              udpHealthCheck=client.messages.UDPHealthCheck(
+                  request=args.request,
+                  response=args.response,
+                  port=args.port,
+                  portName=args.port_name),
+              checkIntervalSec=args.check_interval,
+              timeoutSec=args.timeout,
+              healthyThreshold=args.healthy_threshold,
+              unhealthyThreshold=args.unhealthy_threshold,
+          ),
+          project=health_check_ref.project,
+          region=health_check_ref.region)
+      collection = client.apitools_client.regionHealthChecks
+    else:
+      request = client.messages.ComputeHealthChecksInsertRequest(
+          healthCheck=client.messages.HealthCheck(
+              name=health_check_ref.Name(),
+              description=args.description,
+              type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
+              udpHealthCheck=client.messages.UDPHealthCheck(
+                  request=args.request,
+                  response=args.response,
+                  port=args.port,
+                  portName=args.port_name),
+              checkIntervalSec=args.check_interval,
+              timeoutSec=args.timeout,
+              healthyThreshold=args.healthy_threshold,
+              unhealthyThreshold=args.unhealthy_threshold,
+          ),
+          project=health_check_ref.project)
+      collection = client.apitools_client.healthChecks
 
-    return client.MakeRequests([(client.apitools_client.healthChecks,
-                                 'Insert', request)])
+    return client.MakeRequests([(collection, 'Insert', request)])

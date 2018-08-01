@@ -14,8 +14,11 @@
 # limitations under the License.
 
 """Creates or updates a Google Cloud Function."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.functions import env_vars as env_vars_api_util
 from googlecloudsdk.api_lib.functions import util as api_util

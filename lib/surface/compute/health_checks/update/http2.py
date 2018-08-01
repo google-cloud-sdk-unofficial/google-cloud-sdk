@@ -14,7 +14,9 @@
 # limitations under the License.
 """Command for updating health checks."""
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
@@ -24,7 +26,7 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a HTTP2 health check.
 
@@ -43,7 +45,7 @@ class Update(base.UpdateCommand):
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP2')
 
-  def GetGetRequest(self, client, health_check_ref):
+  def _GetGetRequest(self, client, health_check_ref):
     """Returns a request for fetching the existing health check."""
     return (client.apitools_client.healthChecks,
             'Get',
@@ -51,7 +53,7 @@ class Update(base.UpdateCommand):
                 healthCheck=health_check_ref.Name(),
                 project=health_check_ref.project))
 
-  def GetSetRequest(self, client, health_check_ref, replacement):
+  def _GetSetRequest(self, client, health_check_ref, replacement):
     """Returns a request for updating the health check."""
     return (client.apitools_client.healthChecks,
             'Update',
@@ -59,6 +61,23 @@ class Update(base.UpdateCommand):
                 healthCheck=health_check_ref.Name(),
                 healthCheckResource=replacement,
                 project=health_check_ref.project))
+
+  def _GetRegionalGetRequest(self, client, health_check_ref):
+    """Returns a request for fetching the existing health check."""
+    return (client.apitools_client.regionHealthChecks, 'Get',
+            client.messages.ComputeRegionHealthChecksGetRequest(
+                healthCheck=health_check_ref.Name(),
+                project=health_check_ref.project,
+                region=health_check_ref.region))
+
+  def _GetRegionalSetRequest(self, client, health_check_ref, replacement):
+    """Returns a request for updating the health check."""
+    return (client.apitools_client.regionHealthChecks, 'Update',
+            client.messages.ComputeRegionHealthChecksUpdateRequest(
+                healthCheck=health_check_ref.Name(),
+                healthCheckResource=replacement,
+                project=health_check_ref.project,
+                region=health_check_ref.region))
 
   def Modify(self, client, args, existing_check):
     """Returns a modified HealthCheck message."""
@@ -148,7 +167,10 @@ class Update(base.UpdateCommand):
 
     health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
         args, holder.resources)
-    get_request = self.GetGetRequest(client, health_check_ref)
+    if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
+      get_request = self._GetRegionalGetRequest(client, health_check_ref)
+    else:
+      get_request = self._GetGetRequest(client, health_check_ref)
 
     objects = client.MakeRequests([get_request])
 
@@ -163,5 +185,31 @@ class Update(base.UpdateCommand):
               objects[0].name))
       return objects
 
-    return client.MakeRequests(
-        [self.GetSetRequest(client, health_check_ref, new_object)])
+    if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
+      set_request = self._GetRegionalSetRequest(client, health_check_ref,
+                                                new_object)
+    else:
+      set_request = self._GetSetRequest(client, health_check_ref, new_object)
+
+    return client.MakeRequests([set_request])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a HTTP2 health check.
+
+  *{command}* is used to update an existing HTTP2 health check. Only
+  arguments passed in will be updated on the health check. Other
+  attributes will remain unaffected.
+  """
+
+  HEALTH_CHECK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
+        'HTTP2', include_alpha=True)
+    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
+    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
+    health_checks_utils.AddHttpRelatedResponseArg(parser)
+    health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP2')

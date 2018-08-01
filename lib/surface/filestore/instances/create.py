@@ -15,13 +15,16 @@
 """Creates a Cloud Filestore instance."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.filestore import filestore_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 import six
 
@@ -56,9 +59,12 @@ class CreateBeta(base.CreateCommand):
                                                 six.text_type(e))
     result = client.CreateInstance(instance_ref, args.async, instance)
     if args.async:
+      command = properties.VALUES.metrics.command_name.Get().split('.')
+      if command:
+        command[-1] = 'list'
       log.status.Print(
-          '\nCheck the status of the new instance by listing all instances:\n  '
-          '$ gcloud alpha filestore instances list')
+          'Check the status of the new instance by listing all instances:\n  '
+          '$ {} '.format(' '.join(command)))
     return result
 
 

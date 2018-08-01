@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating instances."""
+
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -113,7 +116,7 @@ def _CommonArgs(parser,
   if support_sole_tenancy:
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
   if supports_resource_policies:
-    maintenance_flags.AddResourcePoliciesArgs(parser, 'added to')
+    maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddMinCpuPlatformArgs(parser, release_track)

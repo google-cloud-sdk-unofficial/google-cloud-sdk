@@ -18,7 +18,9 @@
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -255,7 +257,7 @@ class CreateAlpha(CreateGA):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
         parser, operation_type='create')
     flags.AddDescription(parser)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(include_alpha=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
     cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
     cls.HTTP_HEALTH_CHECK_ARG.AddArgument(

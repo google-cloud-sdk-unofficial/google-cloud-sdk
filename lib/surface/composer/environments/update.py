@@ -15,7 +15,9 @@
 """Command that updates scalar properties of an environment."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import environment_patch_util as patch_util
 from googlecloudsdk.command_lib.composer import flags
@@ -25,7 +27,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 
 class Update(base.Command):
-  """Updates properties of an environment."""
+  """Update properties of a Cloud Composer environment."""
 
   @staticmethod
   def Args(parser):
@@ -59,5 +61,11 @@ class Update(base.Command):
         update_airflow_configs=args.update_airflow_configs,
         clear_env_variables=args.clear_env_variables,
         remove_env_variables=args.remove_env_variables,
-        update_env_variables=args.update_env_variables)
-    return patch_util.Patch(env_ref, field_mask, patch, args.async)
+        update_env_variables=args.update_env_variables,
+        release_track=self.ReleaseTrack())
+    return patch_util.Patch(
+        env_ref,
+        field_mask,
+        patch,
+        args.async,
+        release_track=self.ReleaseTrack())

@@ -15,7 +15,9 @@
 """Command to create an environment."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
 from googlecloudsdk.calliope import arg_parsers
@@ -29,7 +31,7 @@ from googlecloudsdk.core import log
 
 
 class Create(base.Command):
-  """Creates and initializes a Cloud Composer environment.
+  """Create and initialize a Cloud Composer environment.
 
   If run asynchronously with `--async`, exits after printing an operation
   that can be used to poll the status of the creation operation via:
@@ -154,7 +156,8 @@ information on how to structure KEYs and VALUEs, run
         service_account=args.service_account,
         oauth_scopes=args.oauth_scopes,
         tags=args.tags,
-        disk_size_gb=args.disk_size >> 30)
+        disk_size_gb=args.disk_size >> 30,
+        release_track=self.ReleaseTrack())
     details = 'with operation [{0}]'.format(operation.name)
     if args.async:
       log.CreatedResource(
@@ -166,8 +169,10 @@ information on how to structure KEYs and VALUEs, run
     else:
       try:
         operations_api_util.WaitForOperation(
-            operation, 'Waiting for [{}] to be created with [{}]'.format(
-                env_ref.RelativeName(), operation.name))
+            operation,
+            'Waiting for [{}] to be created with [{}]'.format(
+                env_ref.RelativeName(), operation.name),
+            release_track=self.ReleaseTrack())
       except command_util.OperationError as e:
         raise command_util.EnvironmentCreateError(
             'Error creating [{}]: {}'.format(env_ref.RelativeName(), str(e)))

@@ -15,7 +15,9 @@
 """Command for bigtable instances get-iam-policy."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.bigtable import instances
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base

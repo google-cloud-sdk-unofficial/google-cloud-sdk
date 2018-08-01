@@ -15,7 +15,9 @@
 """Command for modifying URL maps."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import io
 from apitools.base.protorpclite import messages
 from apitools.base.py import encoding
@@ -24,8 +26,8 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.url_maps import flags
+from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
@@ -265,6 +267,8 @@ class EditGA(base.Command):
       return NormalizeReference
 
     allowed_collections = ['compute.backendServices', 'compute.backendBuckets']
+    if self.TRACK == 'alpha':
+      allowed_collections += ['compute.regionBackendServices']
     return [
         ('defaultService', MakeReferenceNormalizer(
             'defaultService', allowed_collections)),
@@ -277,10 +281,25 @@ class EditGA(base.Command):
     ]
 
   def GetGetRequest(self, client, url_map_ref):
+    if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
+      return (client.apitools_client.regionUrlMaps, 'Get',
+              client.messages.ComputeRegionUrlMapsGetRequest(
+                  urlMap=url_map_ref.Name(),
+                  project=url_map_ref.project,
+                  region=url_map_ref.region))
+
     return (client.apitools_client.urlMaps, 'Get',
             client.messages.ComputeUrlMapsGetRequest(**url_map_ref.AsDict()))
 
   def GetSetRequest(self, client, url_map_ref, replacement):
+    if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
+      return (client.apitools_client.regionUrlMaps, 'Update',
+              client.messages.ComputeRegionUrlMapsUpdateRequest(
+                  urlMap=url_map_ref.Name(),
+                  urlMapResource=replacement,
+                  project=url_map_ref.project,
+                  region=url_map_ref.region))
+
     return (client.apitools_client.urlMaps, 'Update',
             client.messages.ComputeUrlMapsUpdateRequest(
                 urlMapResource=replacement, **url_map_ref.AsDict()))
@@ -298,6 +317,11 @@ class EditAlpha(EditBeta):
   """Modify URL maps."""
 
   TRACK = 'alpha'
+
+  @classmethod
+  def Args(cls, parser):
+    cls.URL_MAP_ARG = flags.UrlMapArgument(include_alpha=True)
+    cls.URL_MAP_ARG.AddArgument(parser)
 
 
 EditGA.detailed_help = {

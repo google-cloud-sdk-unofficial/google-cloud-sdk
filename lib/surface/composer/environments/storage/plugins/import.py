@@ -15,7 +15,9 @@
 """Command to import files into a Cloud Composer environment's bucket."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import posixpath
 
 from googlecloudsdk.calliope import base
@@ -25,7 +27,7 @@ from googlecloudsdk.command_lib.composer import storage_util
 
 
 class Import(base.Command):
-  """Imports plugins from local storage or Cloud Storage into an environment.
+  """Import plugins from local storage or Cloud Storage into an environment.
 
   If the SOURCE is a directory, it and its contents are imported recursively.
   Colliding files in the environment's Cloud Storage bucket will be
@@ -134,4 +136,5 @@ class Import(base.Command):
       gcs_subdir = posixpath.join(gcs_subdir,
                                   args.destination.strip(posixpath.sep))
     gcs_subdir = posixpath.join(gcs_subdir, '')
-    return storage_util.Import(env_ref, [args.source], gcs_subdir)
+    return storage_util.Import(
+        env_ref, [args.source], gcs_subdir, release_track=self.ReleaseTrack())

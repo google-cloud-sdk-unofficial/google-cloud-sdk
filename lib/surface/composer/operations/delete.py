@@ -15,7 +15,9 @@
 """Command to delete an operation."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
@@ -28,9 +30,9 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes one or more completed Cloud Composer operations.
+  """Delete one or more completed Cloud Composer operations.
 
-  Deletes operations that are done. If more than one operation is specified,
+  Delete operations that are done. If more than one operation is specified,
   all deletes will be attempted. If any of the deletes fail, those operations
   and their failure messages will be listed on the standard error, and the
   command will exit with a non-zero status.
@@ -56,7 +58,7 @@ class Delete(base.DeleteCommand):
     encountered_errors = False
     for op_ref in op_refs:
       try:
-        operations_api_util.Delete(op_ref)
+        operations_api_util.Delete(op_ref, release_track=self.ReleaseTrack())
         failed = None
       except apitools_exceptions.HttpError as e:
         exc = exceptions.HttpException(e)

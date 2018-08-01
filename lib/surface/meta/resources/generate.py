@@ -16,6 +16,7 @@
 """A command that generates resource URIs given collection and api version."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers

@@ -16,6 +16,7 @@
 """A command that validates gcloud flags according to Cloud SDK CLI Style."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 import io

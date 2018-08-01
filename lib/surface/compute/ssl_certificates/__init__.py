@@ -15,7 +15,9 @@
 """Commands for reading and manipulating SSL certificates."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 
 
@@ -25,5 +27,5 @@ class SslCertificates(base.Group):
   List, create and delete Google Compute Engine SSL certificates that can be
   used to configure a target HTTPS proxy. For more information, see:
 
-  [](https://cloud.google.com/compute/docs/load-balancing/http/ssl-certificates)
+  [](https://cloud.google.com/load-balancing/docs/ssl-certificates)
   """
