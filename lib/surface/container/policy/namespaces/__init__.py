@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Flags for the compute sole-tenancy host-types commands."""
+
+"""The command group for the Kubernetes Managed Namespaces CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute.sole_tenancy.hosts import flags as hosts_flags
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import util
 
 
-def MakeHostTypeArg():
-  return compute_flags.ResourceArgument(
-      resource_name='host type',
-      completer=hosts_flags.HostTypesCompleter,
-      zonal_collection='compute.hostTypes',
-      zone_explanation=compute_flags.ZONE_PROPERTY_EXPLANATION)
+class Namespace(base.Group):
+  """Create and manage Kubernetes Managed Namespaces
+
+  Commands for creating and managing Kubernetes Managed Namespaces.
+  """

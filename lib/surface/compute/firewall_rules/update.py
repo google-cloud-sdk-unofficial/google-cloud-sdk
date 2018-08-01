@@ -229,32 +229,6 @@ class BetaUpdateFirewall(UpdateFirewall):
   """Update a firewall rule."""
 
   with_disabled = True
-
-  @classmethod
-  def Args(cls, parser):
-    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
-    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
-    firewalls_utils.AddCommonArgs(
-        parser,
-        for_update=True,
-        with_egress_support=cls.with_egress_firewall,
-        with_service_account=cls.with_service_account,
-        with_disabled=cls.with_disabled)
-    firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
-
-  def Modify(self, client, args, existing, cleared_fields):
-    new_firewall = super(BetaUpdateFirewall, self).Modify(
-        client, args, existing, cleared_fields)
-
-    if args.disabled is not None:
-      new_firewall.disabled = args.disabled
-    return new_firewall
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdateFirewall(BetaUpdateFirewall):
-  """Update a firewall rule."""
-
   with_logging = True
 
   @classmethod
@@ -271,14 +245,34 @@ class AlphaUpdateFirewall(BetaUpdateFirewall):
     flags.AddEnableLogging(parser, default=None)
 
   def Modify(self, client, args, existing, cleared_fields):
-    new_firewall = super(AlphaUpdateFirewall, self).Modify(
+    new_firewall = super(BetaUpdateFirewall, self).Modify(
         client, args, existing, cleared_fields)
 
+    if args.disabled is not None:
+      new_firewall.disabled = args.disabled
     if args.enable_logging is None:
       new_firewall.enableLogging = existing.enableLogging
     else:
       new_firewall.enableLogging = args.enable_logging
     return new_firewall
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdateFirewall(BetaUpdateFirewall):
+  """Update a firewall rule."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
+    cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
+    firewalls_utils.AddCommonArgs(
+        parser,
+        for_update=True,
+        with_egress_support=cls.with_egress_firewall,
+        with_service_account=cls.with_service_account,
+        with_disabled=cls.with_disabled)
+    firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
+    flags.AddEnableLogging(parser, default=None)
 
 
 UpdateFirewall.detailed_help = {

@@ -57,5 +57,8 @@ StartUpdate.detailed_help = {
         'Restarts instances in a managed instance group',
     'DESCRIPTION':
         """\
-        *{command}* restarts instances in a managed instance group."""
+        *{command}* restarts instances in a managed instance group, effectively
+        performing a stop and start request. Note, if your request
+        requires that the instance be replaced to pick up changes, a forced
+        `replace` will be performed instead."""
 }

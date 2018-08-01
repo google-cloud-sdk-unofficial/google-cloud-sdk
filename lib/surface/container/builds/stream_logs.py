@@ -25,7 +25,12 @@ from googlecloudsdk.command_lib.container.builds import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
+DEPRECATED_WARNING_MESSAGE = """\
+This command is deprecated. Please use `gcloud{}builds log --stream`
+instead."""
 
+
+@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StreamLogs(base.Command):
   """Stream the logs for a build."""

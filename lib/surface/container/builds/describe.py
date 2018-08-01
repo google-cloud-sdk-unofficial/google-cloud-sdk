@@ -24,7 +24,12 @@ from googlecloudsdk.command_lib.container.builds import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
+DEPRECATED_WARNING_MESSAGE = """\
+This command is deprecated. Please use `gcloud{}builds describe`
+instead."""
 
+
+@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
 class Describe(base.DescribeCommand):
   """Get information about a particular build."""
 

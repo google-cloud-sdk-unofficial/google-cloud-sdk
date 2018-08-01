@@ -67,8 +67,8 @@ class InstantiateFromFile(base.CreateCommand):
       dataproc.client.projects_regions_workflowTemplates.InstantiateInline(
           request)
     if args.async:
-      log.status.Print('Instantiating [{0}] with operation [{1}].'.format(
-          template.id, operation.name))
+      log.status.Print('Instantiating with operation [{0}].'.format(
+          operation.name))
       return
     operation = util.WaitForWorkflowTemplateOperation(dataproc, operation)
     return operation

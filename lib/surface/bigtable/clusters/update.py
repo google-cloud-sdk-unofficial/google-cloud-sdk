@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateCluster(base.UpdateCommand):
   """Update a Bigtable cluster's friendly name and serving nodes."""
 

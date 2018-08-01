@@ -35,80 +35,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
 
 
-def _Args(parser):
-  """Argument parsing for ssh, including hook for remote completion."""
-  ssh_utils.BaseSSHCLIHelper.Args(parser)
-
-  parser.add_argument(
-      '--command',
-      help="""\
-      A command to run on the virtual machine.
-
-      Runs the command on the target instance and then exits.
-      """)
-
-  parser.add_argument(
-      '--ssh-flag',
-      action='append',
-      help="""\
-      Additional flags to be passed to *ssh(1)*. It is recommended that flags
-      be passed using an assignment operator and quotes. This flag will
-      replace occurences of ``%USER%'' and ``%INSTANCE%'' with their
-      dereferenced values. Example:
-
-        $ {command} example-instance --zone us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:%INSTANCE%:80"
-
-      is equivalent to passing the flags ``--vvv'' and ``-L
-      80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
-      'example-instance' is 162.222.181.197.
-      """)
-
-  parser.add_argument(
-      '--container',
-      help="""\
-          The name or ID of a container inside of the virtual machine instance
-          to connect to. This only applies to virtual machines that are using
-          a Google Container-Optimized virtual machine image. For more
-          information, see [](https://cloud.google.com/compute/docs/containers).
-          """)
-
-  parser.add_argument(
-      'user_host',
-      completer=completers.InstancesCompleter,
-      metavar='[USER@]INSTANCE',
-      help="""\
-      Specifies the instance to SSH into.
-
-      ``USER'' specifies the username with which to SSH. If omitted,
-      $USER from the environment is selected.
-
-      ``INSTANCE'' specifies the name of the virtual machine instance to SSH
-      into.
-      """)
-
-  parser.add_argument(
-      'ssh_args',
-      nargs=argparse.REMAINDER,
-      help="""\
-          Flags and positionals passed to the underlying ssh implementation.
-          """,
-      example="""\
-        $ {command} example-instance --zone us-central1-a -- -vvv -L 80:%INSTANCE%:80
-      """)
-
-  flags.AddZoneFlag(
-      parser,
-      resource_type='instance',
-      operation_type='connect to')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class SshGA(base.Command):
+class Ssh(base.Command):
   """SSH into a virtual machine instance."""
-
-  def __init__(self, *args, **kwargs):
-    super(SshGA, self).__init__(*args, **kwargs)
-    self._use_internal_ip = False
 
   @staticmethod
   def Args(parser):
@@ -117,7 +45,85 @@ class SshGA(base.Command):
     Args:
       parser: An argparse.ArgumentParser.
     """
-    _Args(parser)
+    ssh_utils.BaseSSHCLIHelper.Args(parser)
+
+    parser.add_argument(
+        '--command',
+        help="""\
+        A command to run on the virtual machine.
+
+        Runs the command on the target instance and then exits.
+        """)
+
+    parser.add_argument(
+        '--ssh-flag',
+        action='append',
+        help="""\
+        Additional flags to be passed to *ssh(1)*. It is recommended that flags
+        be passed using an assignment operator and quotes. This flag will
+        replace occurences of ``%USER%'' and ``%INSTANCE%'' with their
+        dereferenced values. Example:
+
+          $ {command} example-instance --zone us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:%INSTANCE%:80"
+
+        is equivalent to passing the flags ``--vvv'' and ``-L
+        80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
+        'example-instance' is 162.222.181.197.
+        """)
+
+    parser.add_argument(
+        '--container',
+        help="""\
+            The name or ID of a container inside of the virtual machine instance
+            to connect to. This only applies to virtual machines that are using
+            a Google Container-Optimized virtual machine image. For more
+            information, see [](https://cloud.google.com/compute/docs/containers).
+            """)
+
+    parser.add_argument(
+        'user_host',
+        completer=completers.InstancesCompleter,
+        metavar='[USER@]INSTANCE',
+        help="""\
+        Specifies the instance to SSH into.
+
+        ``USER'' specifies the username with which to SSH. If omitted,
+        $USER from the environment is selected.
+
+        ``INSTANCE'' specifies the name of the virtual machine instance to SSH
+        into.
+        """)
+
+    parser.add_argument(
+        'ssh_args',
+        nargs=argparse.REMAINDER,
+        help="""\
+            Flags and positionals passed to the underlying ssh implementation.
+            """,
+        example="""\
+          $ {command} example-instance --zone us-central1-a -- -vvv -L 80:%INSTANCE%:80
+        """)
+
+    parser.add_argument(
+        '--internal-ip',
+        default=False,
+        action='store_true',
+        help="""\
+          Connect to instances using their internal IP addresses rather than their
+          external IP addresses. Use this to connect from one instance to another
+          on the same VPC network, over a VPN connection, or between two peered
+          VPC networks.
+
+          For this connection to work, you must configure your networks and
+          firewall to allow SSH connections to the internal IP address of
+          the instance to which you want to connect.
+
+          To learn how to use this flag, see
+          [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
+          """)
+
+    flags.AddZoneFlag(
+        parser, resource_type='instance', operation_type='connect to')
 
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
@@ -138,7 +144,7 @@ class SshGA(base.Command):
     else:
       user, use_oslogin = ssh_helper.CheckForOsloginAndGetUser(
           instance, project, user, self.ReleaseTrack())
-    if self._use_internal_ip:
+    if args.internal_ip:
       ip_address = ssh_utils.GetInternalIPAddress(instance)
     else:
       ip_address = ssh_utils.GetExternalIPAddress(instance)
@@ -189,7 +195,7 @@ class SshGA(base.Command):
       except retry.WaitException:
         raise ssh_utils.NetworkError()
 
-    if self._use_internal_ip:
+    if args.internal_ip:
       ssh_helper.PreliminarilyVerifyInstance(instance.id, remote, identity_file,
                                              options)
 
@@ -198,43 +204,6 @@ class SshGA(base.Command):
       # Can't raise an exception because we don't want any "ERROR" message
       # printed; the output from `ssh` will be enough.
       sys.exit(return_code)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SshBeta(SshGA):
-  """SSH into a virtual machine instance."""
-
-  def __init__(self, *args, **kwargs):
-    super(SshBeta, self).__init__(*args, **kwargs)
-
-  @staticmethod
-  def Args(parser):
-    """Set up arguments for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser.
-    """
-    _Args(parser)
-    parser.add_argument(
-        '--internal-ip', default=False, action='store_true',
-        help="""\
-        Connect to instances using their internal IP addresses rather than their
-        external IP addresses. Use this to connect from one instance to another
-        on the same VPC network, over a VPN connection, or between two peered
-        VPC networks.
-
-        For this connection to work, you must configure your networks and
-        firewall to allow SSH connections to the internal IP address of
-        the instance to which you want to connect.
-
-        To learn how to use this flag, see
-        [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
-        """)
-
-  def Run(self, args):
-    """See SshGA.Run."""
-    self._use_internal_ip = args.internal_ip
-    super(SshBeta, self).Run(args)
 
 
 def DetailedHelp():
@@ -281,5 +250,5 @@ def DetailedHelp():
   }
   return detailed_help
 
-SshGA.detailed_help = DetailedHelp()
-SshBeta.detailed_help = DetailedHelp()
+
+Ssh.detailed_help = DetailedHelp()

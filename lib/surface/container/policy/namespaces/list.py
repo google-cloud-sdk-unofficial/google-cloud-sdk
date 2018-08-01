@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Package for the sole tenant hosts CLI commands."""
+"""`gcloud container policy namespaces list` command."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.policy.namespaces import policy_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.policy.namespaces import command_lib
 
 
-@base.Deprecate(
-    is_removed=False,
-    warning=('This command group is deprecated. Please use '
-             '`gcloud alpha compute sole-tenancy node-types` instead.'))
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SoleTenancyHostTypes(base.Group):
-  """Read Google Compute Engine sole-tenancy host types."""
+class List(base.ListCommand):
+  """List the Kubernetes Managed Namespace in a project."""
+
+  def Run(self, args):
+    project_id = command_lib.GetProjectResourceName()
+    return policy_api.List(project_id)

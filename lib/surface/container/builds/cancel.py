@@ -25,7 +25,12 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
+DEPRECATED_WARNING_MESSAGE = """\
+This command is deprecated. Please use `gcloud{}builds cancel`
+instead."""
 
+
+@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
 class Cancel(base.Command):
   """Cancel an ongoing build."""
 
@@ -60,8 +65,7 @@ class Cancel(base.Command):
           collection='cloudbuild.projects.builds')
       cancelled_build = client.projects_builds.Cancel(
           messages.CloudbuildProjectsBuildsCancelRequest(
-              projectId=build_ref.projectId,
-              id=build_ref.id))
+              projectId=build_ref.projectId, id=build_ref.id))
       log.status.write('Cancelled [{r}].\n'.format(r=str(build_ref)))
       cancelled.append(cancelled_build)
     return cancelled

@@ -29,6 +29,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import http_encoding
 
 import six.moves.urllib.parse
@@ -45,6 +46,14 @@ ADVICE_STRING = ('Advice found for changes in the new service config. If this '
 
 FORCE_ADVICE_STRING = ('Advice found for changes in the new service config, '
                        'but proceeding anyway because --force is set...')
+
+VALIDATE_NEW_PROMPT = ('The service {service_name} must exist in order to '
+                       'validate the configuration. Do you want to create the '
+                       'service in project {project_id}?')
+VALIDATE_NEW_ERROR = ('The service {service_name} must exist in order to '
+                      'validate the configuration. To create the service in '
+                      'project {project_id}, rerun the command without the '
+                      '--validate-only flag.')
 
 NUM_ADVICE_TO_PRINT = 3
 
@@ -305,8 +314,20 @@ class _BaseDeploy(object):
         services_util.GetEndpointsServiceName(),
         args.async)
     # Check if we need to create the service.
-    services_util.CreateServiceIfNew(
-        self.service_name, properties.VALUES.core.project.Get(required=True))
+    if not services_util.DoesServiceExist(self.service_name):
+      project_id = properties.VALUES.core.project.Get(required=True)
+      # Deploying, even with validate-only, cannot succeed without the service
+      # being created
+      if self.validate_only:
+        if not console_io.CanPrompt():
+          log.error(VALIDATE_NEW_ERROR.format(
+              service_name=self.service_name, project_id=project_id))
+          return None
+        if not console_io.PromptContinue(
+            VALIDATE_NEW_PROMPT.format(
+                service_name=self.service_name, project_id=project_id)):
+          return None
+      services_util.CreateService(self.service_name, project_id)
 
     if config_files:
       push_config_result = services_util.PushMultipleServiceConfigFiles(

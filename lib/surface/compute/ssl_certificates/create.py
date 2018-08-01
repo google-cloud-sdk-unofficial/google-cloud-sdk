@@ -33,8 +33,7 @@ class Create(base.CreateCommand):
   configure a target HTTPS proxy. An SSL certificate consists of a
   certificate and private key. The private key is encrypted before it is
   stored. For more information, see:
-
-  [](https://cloud.google.com/compute/docs/load-balancing/http/ssl-certificates)
+  [](https://cloud.google.com/load-balancing/docs/ssl-certificates)
   """
 
   SSL_CERTIFICATE_ARG = None

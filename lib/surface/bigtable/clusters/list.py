@@ -31,7 +31,6 @@ def _GetUriFunction(resource):
       collection='bigtableadmin.projects.instances.clusters').SelfLink()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListClusters(base.ListCommand):
   """List existing Bigtable clusters.
 

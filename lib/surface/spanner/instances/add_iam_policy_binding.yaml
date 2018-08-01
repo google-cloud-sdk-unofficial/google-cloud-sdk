@@ -1,0 +1,13 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Add an IAM policy binding to a Cloud Spanner instance.
+    DESCRIPTION: |
+      Add an IAM policy binding to a Cloud Spanner instance.
+  request:
+    collection: spanner.projects.instances
+  arguments:
+    resource:
+      help_text:
+        The Cloud Spanner instance to which to add the IAM policy binding.
+      spec:
+        !REF googlecloudsdk.command_lib.spanner.resources:instance

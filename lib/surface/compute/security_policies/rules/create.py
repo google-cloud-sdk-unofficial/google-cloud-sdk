@@ -16,8 +16,8 @@
 """Command for creating security policies rules."""
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
@@ -35,6 +35,7 @@ class Create(base.CreateCommand):
   1.2.3.0/24, run:
 
         $ {command} 1000 \
+            --action deny-403 \
             --security-policy my-policy \
             --description "block 1.2.3.0/24" \
             --src-ip-ranges 1.2.3.0/24

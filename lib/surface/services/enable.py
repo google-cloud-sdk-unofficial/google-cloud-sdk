@@ -28,10 +28,10 @@ from googlecloudsdk.command_lib.services import common_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-_OP_ALPHA_BASE_CMD = 'gcloud alpha services operations '
-_OP_ALPHA_WAIT_CMD = _OP_ALPHA_BASE_CMD + 'wait {0}'
+_OP_BASE_CMD = 'gcloud beta services operations '
+_OP_WAIT_CMD = _OP_BASE_CMD + 'wait {0}'
 
-_DETAILED_ALPHA_HELP = {
+_DETAILED_HELP = {
     'DESCRIPTION':
         """\
         This command enables a service for consumption for a project.
@@ -58,8 +58,9 @@ _DETAILED_ALPHA_HELP = {
         """,
 }
 
-_DETAILED_HELP = {
-    'DESCRIPTION': """\
+_DETAILED_LEGACY_HELP = {
+    'DESCRIPTION':
+        """\
         This command enables a service for consumption for a project.
 
         To see a list of available services for a project, run:
@@ -71,7 +72,8 @@ _DETAILED_HELP = {
         enabling a service at:
         https://cloud.google.com/service-management/enable-disable#enabling_services
         """,
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
         To enable a service called `my-consumed-service` on the current
         project, run:
 
@@ -84,8 +86,8 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class EnableAlpha(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Enable(base.SilentCommand):
   """Enables a service for consumption for a project."""
 
   @staticmethod
@@ -118,7 +120,7 @@ class EnableAlpha(base.SilentCommand):
     if op.done:
       return
     if args.async:
-      cmd = _OP_ALPHA_WAIT_CMD.format(op.name)
+      cmd = _OP_WAIT_CMD.format(op.name)
       log.status.Print('Asynchronous operation is in progress... '
                        'Use the following command to wait for its '
                        'completion:\n {0}'.format(cmd))
@@ -127,8 +129,8 @@ class EnableAlpha(base.SilentCommand):
     services_util.PrintOperation(op)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Enable(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class LegacyEnable(base.SilentCommand):
   """Enables a service for consumption for a project."""
 
   @staticmethod
@@ -160,5 +162,5 @@ class Enable(base.SilentCommand):
       services_util.ProcessOperationResult(operation, args.async)
 
 
-EnableAlpha.detailed_help = _DETAILED_ALPHA_HELP
 Enable.detailed_help = _DETAILED_HELP
+LegacyEnable.detailed_help = _DETAILED_LEGACY_HELP

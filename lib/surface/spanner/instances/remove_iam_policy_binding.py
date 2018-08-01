@@ -26,6 +26,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a Cloud Spanner instance."""
 

@@ -182,6 +182,18 @@ def ValidateBasicAuthFlags(args):
 
 def ParseCreateOptionsBase(args):
   """Parses the flags provided with the cluster creation command."""
+  if not (args.IsSpecified('enable_basic_auth') or
+          args.IsSpecified('username')):
+    log.warning('Starting in 1.12, new clusters will have basic '
+                'authentication disabled by default. Basic authentication '
+                'can be enabled (or disabled) manually using the '
+                '`--[no-]enable-basic-auth` flag.')
+  if not args.IsSpecified('issue_client_certificate'):
+    log.warning('Starting in 1.12, new clusters will not have a client '
+                'certificate issued. You can manually enable (or disable) the '
+                'issuance of the client certificate using the '
+                '`--[no-]issue-client-certificate` flag.')
+
   flags.MungeBasicAuthFlags(args)
   if (args.IsSpecified('enable_cloud_endpoints') and
       properties.VALUES.container.new_scopes_behavior.GetBool()):
@@ -262,7 +274,7 @@ class Create(base.CreateCommand):
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser, suppressed=True)
-    flags.AddEnableAutoRepairFlag(parser)
+    flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser)
@@ -373,7 +385,7 @@ class CreateBeta(Create):
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser)
-    flags.AddEnableAutoRepairFlag(parser)
+    flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
@@ -432,7 +444,7 @@ class CreateAlpha(Create):
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser)
     flags.AddMaxPodsPerNodeFlag(parser)
-    flags.AddEnableAutoRepairFlag(parser)
+    flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)

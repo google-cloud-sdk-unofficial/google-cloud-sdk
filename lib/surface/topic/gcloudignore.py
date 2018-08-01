@@ -38,6 +38,7 @@ class GcloudignoreHelp(base.TopicCommand):
 
   * `gcloud beta app deploy`
   * `gcloud beta functions deploy`
+  * `gcloud builds submit`
   * `gcloud container builds submit`
   * `gcloud beta debug source upload`
 

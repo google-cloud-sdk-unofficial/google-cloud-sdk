@@ -46,6 +46,15 @@ class GetCredentials(base.Command):
   with multiple clusters. It can also be used to access a previously created
   cluster from a new workstation.
 
+  By default, {command} will configure kubectl to automatically refresh its
+  credentials using the same identity as gcloud. If you are running kubectl as
+  part of an application, it is recommended to use [application default
+  credentials](https://cloud.google.com/docs/authentication/production).
+  To configure a `kubeconfig` file to use application default credentials, set
+  the container/use_application_default_credentials
+  [Cloud SDK property](https://cloud.google.com/sdk/docs/properties) to true
+  before running {command}
+
   See [](https://cloud.google.com/kubernetes-engine/docs/kubectl) for
   kubectl documentation.
   """

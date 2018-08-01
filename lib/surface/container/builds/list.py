@@ -24,7 +24,12 @@ from googlecloudsdk.api_lib.cloudbuild import filter_rewrite
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
+DEPRECATED_WARNING_MESSAGE = """\
+This command is deprecated. Please use `gcloud{}builds list`
+instead."""
 
+
+@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
 class List(base.ListCommand):
   """List builds."""
 

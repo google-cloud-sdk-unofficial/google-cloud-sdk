@@ -82,5 +82,8 @@ class UpdateAlpha(base.UpdateCommand):
         add_secondary_ranges=args.add_secondary_ranges,
         remove_secondary_ranges=args.remove_secondary_ranges,
         enable_flow_logs=args.enable_flow_logs,
+        aggregation_interval=args.aggregation_interval,
+        flow_sampling=args.flow_sampling,
+        metadata=args.metadata,
         set_role_active=getattr(args, 'role', None) == 'ACTIVE',
         drain_timeout_seconds=args.drain_timeout)

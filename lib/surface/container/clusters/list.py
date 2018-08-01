@@ -78,7 +78,9 @@ class List(base.ListCommand):
         if time_left and time_left.days < constants.EXPIRE_WARNING_DAYS:
           expiring = True
         if adapter.IsDegraded(c):
-          self._degraded_warning = constants.DEGRADED_WARNING
+          self._degraded_warning += constants.DEGRADED_WARNING.format(
+              cluster_name=c.name,
+              cluster_degraded_warning=adapter.GetDegradedWarning(c))
         if c.enableKubernetesAlpha:
           # Don't print upgrade hints for alpha clusters, they aren't
           # upgradeable.

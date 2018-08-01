@@ -27,11 +27,13 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import http
 
 # Add to this as we add columns.
 _DEFAULT_KINDS = [
     'BUILD_DETAILS',
     'IMAGE_BASIS',
+    'DISCOVERY',
 ]
 # How many images for which to report vulnerabilities, by default. These are
 # always the most recent images, regardless of sorting.
@@ -48,7 +50,8 @@ _TAGS_FORMAT = """
         BUILD_DETAILS.buildDetails.provenance.sourceProvenance.context.cloudRepo.revisionId.notnull().list().slice(:8).join(''):optional:label=GIT_SHA,
         vuln_counts.list():optional:label=VULNERABILITIES,
         IMAGE_BASIS.derivedImage.sort(distance).map().extract(baseResourceUrl).slice(:1).map().list().list().split('//').slice(1:).list().split('@').slice(:1).list():optional:label=FROM,
-        BUILD_DETAILS.buildDetails.provenance.id.notnull().list():optional:label=BUILD
+        BUILD_DETAILS.buildDetails.provenance.id.notnull().list():optional:label=BUILD,
+        DISCOVERY[0].discovered.analysisStatus:optional:label=VULNERABILITY_SCAN_STATUS
     )
 """
 
@@ -114,7 +117,7 @@ class ListTagsGAandBETA(base.ListCommand):
       Some value that we want to have printed later.
     """
     repository = util.ValidateRepositoryPath(args.image_name)
-    http_obj = util.Http()
+    http_obj = http.Http()
     with util.WrapExpectedDockerlessErrors(repository):
       with docker_image.FromRegistry(
           basic_creds=util.CredentialProvider(),
@@ -144,7 +147,7 @@ class ListTagsALPHA(ListTagsGAandBETA, base.ListCommand):
     parser.add_argument(
         '--show-occurrences',
         action='store_true',
-        default=False,
+        default=True,
         help='Whether to show summaries of the various Occurrence types.')
     parser.add_argument(
         '--occurrence-filter',
@@ -178,7 +181,7 @@ class ListTagsALPHA(ListTagsGAandBETA, base.ListCommand):
           '--show-occurrences-from may only be set if --show-occurrences=True')
 
     repository = util.ValidateRepositoryPath(args.image_name)
-    http_obj = util.Http()
+    http_obj = http.Http()
     with util.WrapExpectedDockerlessErrors(repository):
       with docker_image.FromRegistry(
           basic_creds=util.CredentialProvider(),

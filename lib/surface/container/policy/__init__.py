@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create build command."""
+
+"""The command group for container policy."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-# Importing the beta version of this command to reduce repetition.
-from surface.container.builds import submit
+from googlecloudsdk.command_lib.projects import util
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(submit.Submit):
-  """Create a build using the Google Container Builder service."""
+class Policy(base.Group):
+  """Manage Kubernetes Policies
+
+  Commands for Kubernetes Policy Management.
+  """
+
+  def Filter(self, context, args):
+    base.EnableUserProjectQuota()

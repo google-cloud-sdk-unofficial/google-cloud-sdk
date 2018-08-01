@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Add an IAM policy binding to a Cloud Spanner database.
     DESCRIPTION: |
@@ -9,5 +9,5 @@
   arguments:
     resource:
       help_text:
-        The Cloud Spanner database for which to add IAM policy binding to.
+        The Cloud Spanner database to which to add the IAM policy binding.
       spec: !REF googlecloudsdk.command_lib.spanner.resources:database

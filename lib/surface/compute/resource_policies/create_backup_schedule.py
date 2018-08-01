@@ -42,6 +42,7 @@ class CreateBackupSchedule(base.CreateCommand):
         flag_suffix='schedule',
         start_time_help='Start time for the disk snapshot schedule to start.',
         cadence_help='Snapshot schedule',
+        supports_weekly=True,
         supports_hourly=True)
     flags.AddBackupScheduleArgs(parser)
     parser.display_info.AddCacheUpdater(None)

@@ -34,7 +34,7 @@ class List(base.ListCommand):
           zone.basename(),
           description,
           nodeTemplate.basename(),
-          nodes.len():label=NUM_NODES
+          size:label=NODES
         )""")
 
   def Run(self, args):

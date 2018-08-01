@@ -44,32 +44,34 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import times
 
-
 _ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
+
+DEPRECATED_WARNING_MESSAGE = """\
+This command is deprecated. Please use `gcloud{}builds submit`
+instead."""
 
 
 class FailedBuildException(core_exceptions.Error):
   """Exception for builds that did not succeed."""
 
   def __init__(self, build):
-    super(FailedBuildException, self).__init__(
-        'build {id} completed with status "{status}"'.format(
-            id=build.id, status=build.status))
+    super(FailedBuildException,
+          self).__init__('build {id} completed with status "{status}"'.format(
+              id=build.id, status=build.status))
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA,
-    base.ReleaseTrack.GA)
+@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Submit(base.CreateCommand):
-  """Submit a build using the Google Container Builder service.
+  """Submit a build using the Google Cloud Build service.
 
-  Submit a build using the Google Container Builder service.
+  Submit a build using the Google Cloud Build service.
 
   ## NOTES
 
   You can also run a build locally using the
-  separate component: `gcloud components install container-builder-local`.
+  separate component: `gcloud components install cloud-build-local`.
   """
 
   _machine_type_flag_map = arg_utils.ChoiceEnumMapper(
@@ -79,7 +81,9 @@ class Submit(base.CreateCommand):
       # TODO(b/69962368): remove this custom mapping when we can exclude
       # UNSPECIFIED from the proto.
       custom_mappings={
-          'N1_HIGHCPU_32': 'n1-highcpu-32', 'N1_HIGHCPU_8': 'n1-highcpu-8'},
+          'N1_HIGHCPU_32': 'n1-highcpu-32',
+          'N1_HIGHCPU_8': 'n1-highcpu-8'
+      },
       help_str='Machine type used to run the build.')
 
   @staticmethod
@@ -95,14 +99,14 @@ class Submit(base.CreateCommand):
         'source',
         nargs='?',
         default='.',  # By default, the current directory is used.
-        help='The source directory on local disk or tarball in Google Cloud '
-             'Storage or disk to use for this build. If source is a local '
-             'directory this command skips files specified in the '
-             '`.gcloudignore` file (see `$ gcloud topic gcloudignore` for more '
-             'information). If a .gitignore file is present in the local '
-             'source directory, gcloud will use a Git-compatible '
-             '.gcloudignore file that respects your .gitignore-ed files. The '
-             'global .gitignore is not respected.'
+        help='The location of the source to build. The location can be a '
+        'directory on a local disk or a gzipped archive file (.tar.gz) in '
+        'Google Cloud Storage. If the source is a local directory, this '
+        'command skips the files specified in the `.gcloudignore` file. If a '
+        '`.gitignore` file is present in the local source directory, gcloud '
+        'will use a Git-compatible `.gcloudignore` file that respects your '
+        '.gitignored files. The global `.gitignore` is not respected. For more '
+        'information on `.gcloudignore`, see `$gcloud topic gcloudignore`.',
     )
     source.add_argument(
         '--no-source',
@@ -111,23 +115,24 @@ class Submit(base.CreateCommand):
 
     parser.add_argument(
         '--gcs-source-staging-dir',
-        help='Directory in Google Cloud Storage to stage a copy of the source '
-             'used for the build. If the bucket does not exist, it will be '
-             'created. If not set, ```gs://<project id>_cloudbuild/source``` '
-             'is used.',
+        help='A directory in Google Cloud Storage to copy the source used for '
+        'staging the build. If the specified bucket does not exist, Cloud '
+        'Build will create one. If you don\'t set this field, '
+        '```gs://[PROJECT_ID]_cloudbuild/source``` is used.',
     )
     parser.add_argument(
         '--gcs-log-dir',
-        help='Directory in Google Cloud Storage to hold build logs. If not '
-        'set, ```gs://<project num>.cloudbuild-logs.googleusercontent.com/``` '
+        help='A directory in Google Cloud Storage to hold build logs. If this '
+        'field is not set, '
+        '```gs://[PROJECT_NUMBER].cloudbuild-logs.googleusercontent.com/``` '
         'will be created and used.',
     )
     parser.add_argument(
         '--timeout',
-        help='Maximum time a build can last before it is failed as "TIMEOUT", '
-             'written as a duration (eg "2h15m5s" is two hours, fifteen '
-             'minutes, and five seconds). If no unit is specified, seconds is '
-             'assumed (eg "10" is 10 seconds).',
+        help='Maximum time a build is run before it is failed as `TIMEOUT`. It '
+        'is specified as a duration; for example, "2h15m5s" is two hours, '
+        'fifteen minutes, and five seconds. If you don\'t specify a unit, '
+        'seconds is assumed. For example, "10" is 10 seconds.',
         action=actions.StoreProperty(properties.VALUES.container.build_timeout),
     )
 
@@ -161,24 +166,22 @@ Only the following built-in variables can be specified with the
 COMMIT_SHA, SHORT_SHA.
 
 For more details, see:
-https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
+https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
 """)
 
     build_config = parser.add_mutually_exclusive_group(required=True)
     build_config.add_argument(
-        '--tag', '-t',
-        help='The tag to use with a `docker build` image creation. '
-             'Container Builder will run a remote `docker build -t '
-             '$TAG .`, where $TAG is the tag provided by this flag. The tag '
-             'must be in the ```gcr.io/*``` or ```*.gcr.io/*``` namespaces.\n'
-             '\n'
-             'Specify a tag  if you want Container Builder to build using a '
-             'Dockerfile instead of a build config file. If you specify a tag '
-             'in this command, your source must include a Dockerfile.\n'
-             '\n'
-             'For instructions on building using a Dockerfile, see '
-             'https://cloud.google.com/container-builder/docs/'
-             'quickstart-docker.',
+        '--tag',
+        '-t',
+        help='The tag to use with a "docker build" image creation. '
+        'Cloud Build will run a remote "docker build -t '
+        '$TAG .", where $TAG is the tag provided by this flag. The tag '
+        'must be in the gcr.io/* or *.gcr.io/* namespaces. Specify a tag '
+        'if you want Cloud Build to build using a Dockerfile '
+        'instead of a build config file. If you specify a tag in this '
+        'command, your source must include a Dockerfile. For instructions '
+        'on building using a Dockerfile see '
+        'https://cloud.google.com/cloud-build/docs/quickstart-docker.',
     )
     build_config.add_argument(
         '--config',
@@ -259,9 +262,8 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
               ),
           ],
           timeout=timeout_str,
-          substitutions=cloudbuild_util.EncodeSubstitutions(args.substitutions,
-                                                            messages)
-      )
+          substitutions=cloudbuild_util.EncodeSubstitutions(
+              args.substitutions, messages))
     elif args.config:
       build_config = config.LoadCloudbuildConfigFromPath(
           args.config, messages, params=args.substitutions)
@@ -300,8 +302,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       if default_gcs_source:
         # This request returns only the buckets owned by the project.
         bucket_list_req = gcs_client.messages.StorageBucketsListRequest(
-            project=project,
-            prefix=default_bucket_name)
+            project=project, prefix=default_bucket_name)
         bucket_list = gcs_client.client.buckets.List(bucket_list_req)
         found_bucket = False
         for bucket in bucket_list.items:
@@ -344,8 +345,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
           log.status.Print(
               'Creating temporary tarball archive of {num_files} file(s)'
               ' totalling {size} before compression.'.format(
-                  num_files=len(source_snapshot.files),
-                  size=size_str))
+                  num_files=len(source_snapshot.files), size=size_str))
           staged_source_obj = source_snapshot.CopyTarballToGCS(
               gcs_client, gcs_source_staging)
           build_config.source = messages.Source(
@@ -358,18 +358,18 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
           unused_root, ext = os.path.splitext(args.source)
           if ext not in _ALLOWED_SOURCE_EXT:
             raise c_exceptions.BadFileException(
-                'Local file [{src}] is none of '+', '.join(_ALLOWED_SOURCE_EXT))
-          log.status.Print(
-              'Uploading local file [{src}] to '
-              '[gs://{bucket}/{object}].'.format(
-                  src=args.source,
-                  bucket=gcs_source_staging.bucket,
-                  object=gcs_source_staging.object,
-              ))
+                'Local file [{src}] is none of ' +
+                ', '.join(_ALLOWED_SOURCE_EXT))
+          log.status.Print('Uploading local file [{src}] to '
+                           '[gs://{bucket}/{object}].'.format(
+                               src=args.source,
+                               bucket=gcs_source_staging.bucket,
+                               object=gcs_source_staging.object,
+                           ))
           staged_source_obj = gcs_client.CopyFileToGCS(
               storage_util.BucketReference.FromBucketUrl(
-                  gcs_source_staging.bucket),
-              args.source, gcs_source_staging.object)
+                  gcs_source_staging.bucket), args.source,
+              gcs_source_staging.object)
           build_config.source = messages.Source(
               storageSource=messages.StorageSource(
                   bucket=staged_source_obj.bucket,
@@ -380,15 +380,14 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       # No source
       if not args.no_source:
         raise c_exceptions.InvalidArgumentException(
-            '--no-source',
-            'To omit source, use the --no-source flag.')
+            '--no-source', 'To omit source, use the --no-source flag.')
 
     if args.gcs_log_dir:
       gcs_log_dir = resources.REGISTRY.Parse(
           args.gcs_log_dir, collection='storage.objects')
 
       build_config.logsBucket = (
-          'gs://'+gcs_log_dir.bucket+'/'+gcs_log_dir.object)
+          'gs://' + gcs_log_dir.bucket + '/' + gcs_log_dir.object)
 
     # Machine type.
     if args.machine_type is not None:
@@ -405,13 +404,12 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
         build_config.options = messages.BuildOptions()
       build_config.options.diskSizeGb = int(disk_size)
 
-    log.debug('submitting build: '+repr(build_config))
+    log.debug('submitting build: ' + repr(build_config))
 
     # Start the build.
     op = client.projects_builds.Create(
         messages.CloudbuildProjectsBuildsCreateRequest(
-            build=build_config,
-            projectId=properties.VALUES.core.project.Get()))
+            build=build_config, projectId=properties.VALUES.core.project.Get()))
     json = encoding.MessageToJson(op.metadata)
     build = encoding.JsonToMessage(messages.BuildOperationMetadata, json).build
 
@@ -422,8 +420,8 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
 
     log.CreatedResource(build_ref)
     if build.logUrl:
-      log.status.Print('Logs are available at [{log_url}].'.format(
-          log_url=build.logUrl))
+      log.status.Print(
+          'Logs are available at [{log_url}].'.format(log_url=build.logUrl))
     else:
       log.status.Print('Logs are available in the Cloud Console.')
 

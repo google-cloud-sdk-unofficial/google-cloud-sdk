@@ -140,9 +140,11 @@ class BetaCreate(Create):
         with_service_account=True,
         with_disabled=cls.with_disabled)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
+    flags.AddEnableLogging(parser, default=None)
 
   def _CreateFirewall(self, holder, args):
     firewall, project = super(BetaCreate, self)._CreateFirewall(holder, args)
+    firewall.enableLogging = args.enable_logging
     if args.disabled is not None:
       firewall.disabled = args.disabled
 
@@ -168,12 +170,6 @@ class AlphaCreate(BetaCreate):
         with_disabled=cls.with_disabled)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
     flags.AddEnableLogging(parser, default=None)
-
-  def _CreateFirewall(self, holder, args):
-    firewall, project = super(AlphaCreate, self)._CreateFirewall(holder, args)
-    firewall.enableLogging = args.enable_logging
-
-    return firewall, project
 
 
 Create.detailed_help = {

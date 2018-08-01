@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The command group for cloud container builds."""
+"""The command group for cloud builds."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,8 +23,14 @@ from googlecloudsdk.api_lib.cloudbuild import transforms
 from googlecloudsdk.calliope import base
 
 
+DEPRECATED_WARNING_MESSAGE = """\
+This command group is deprecated. Please use `gcloud{}builds`
+instead."""
+
+
+@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
 class Builds(base.Group):
-  """Create and manage container builds."""
+  """Create and manage builds."""
 
   @staticmethod
   def Args(parser):

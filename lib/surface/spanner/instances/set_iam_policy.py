@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a Cloud Spanner instance."""
 

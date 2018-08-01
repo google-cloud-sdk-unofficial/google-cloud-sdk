@@ -28,12 +28,12 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-OP_BASE_CMD = 'gcloud alpha services operations '
+OP_BASE_CMD = 'gcloud beta services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DisableAlpha(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Disable(base.SilentCommand):
   """Disable a service for consumption for a project.
 
      This command disables one or more previously-enabled services for
@@ -70,6 +70,13 @@ class DisableAlpha(base.SilentCommand):
     """
     common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help='If specified, the disable call will proceed even if there are '
+        'enabled services which depend on the service to be disabled. '
+        'Forcing the call means that the services which depend on the service '
+        'to be disabled will also be disabled.')
 
   def Run(self, args):
     """Run 'services disable'.
@@ -84,7 +91,7 @@ class DisableAlpha(base.SilentCommand):
     project = properties.VALUES.core.project.Get(required=True)
     for service_name in args.service:
       service_name = arg_parsers.GetServiceNameFromArg(service_name)
-      op = serviceusage.DisableApiCall(project, service_name)
+      op = serviceusage.DisableApiCall(project, service_name, args.force)
       if op.done:
         return
       if args.async:
@@ -97,8 +104,8 @@ class DisableAlpha(base.SilentCommand):
       services_util.PrintOperation(op)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class Disable(base.SilentCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class LegacyDisable(base.SilentCommand):
   # pylint: disable=line-too-long
   """Disable a service for consumption for a project.
 

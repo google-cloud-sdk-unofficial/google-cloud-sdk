@@ -51,7 +51,6 @@ def _CommonArgs(parser,
                 support_network_tier=False,
                 support_local_ssd_size=False,
                 support_shielded_vms=False,
-                support_sole_tenancy=False,
                 support_kms=False,
                ):
   """Adding arguments applicable for creating instance templates."""
@@ -83,8 +82,8 @@ def _CommonArgs(parser,
   labels_util.AddCreateLabelsFlags(parser)
   if support_network_tier:
     instances_flags.AddNetworkTierArgs(parser, instance=True)
-  if support_sole_tenancy:
-    sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
+
+  sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
   flags.AddRegionFlag(
       parser,
@@ -235,7 +234,6 @@ def _RunCreate(compute_api,
                support_source_instance,
                support_network_tier=False,
                support_shielded_vms=False,
-               support_node_affinity=False,
                support_kms=False):
   """Common routine for creating instance template.
 
@@ -249,7 +247,6 @@ def _RunCreate(compute_api,
       support_network_tier: Indicates whether network tier is supported or not.
       support_shielded_vms: Indicate whether a shielded vm config is supported
       or not.
-      support_node_affinity: Indicate whether node affinity is supported or not.
       support_kms: Indicate whether KMS is integrated or not.
 
   Returns:
@@ -304,10 +301,8 @@ def _RunCreate(compute_api,
         messages=client.messages,
         args=args)
 
-  node_affinities = None
-  if support_node_affinity:
-    node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
-        args, client.messages)
+  node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
+      args, client.messages)
 
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
@@ -508,7 +503,6 @@ class CreateBeta(Create):
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
         support_shielded_vms=cls._support_shielded_vms,
-        support_sole_tenancy=True,
         support_kms=cls._support_kms
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
@@ -529,7 +523,6 @@ class CreateBeta(Create):
         support_network_tier=True,
         support_source_instance=self._support_source_instance,
         support_shielded_vms=self._support_shielded_vms,
-        support_node_affinity=True,
         support_kms=self._support_kms
     )
 
@@ -561,7 +554,6 @@ class CreateAlpha(Create):
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
         support_shielded_vms=cls._support_shielded_vms,
-        support_sole_tenancy=True,
         support_kms=cls._support_kms
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -582,6 +574,5 @@ class CreateAlpha(Create):
         support_network_tier=True,
         support_source_instance=self._support_source_instance,
         support_shielded_vms=self._support_shielded_vms,
-        support_node_affinity=True,
         support_kms=self._support_kms
     )

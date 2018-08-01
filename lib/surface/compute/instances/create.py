@@ -76,7 +76,6 @@ def _CommonArgs(parser,
                 enable_regional=False,
                 support_local_ssd_size=False,
                 enable_kms=False,
-                support_sole_tenancy=False,
                 supports_resource_policies=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -113,8 +112,9 @@ def _CommonArgs(parser,
     instances_flags.AddPublicDnsArgs(parser, instance=True)
   if support_network_tier:
     instances_flags.AddNetworkTierArgs(parser, instance=True)
-  if support_sole_tenancy:
-    sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
+
+  sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
+
   if supports_resource_policies:
     maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
@@ -143,7 +143,6 @@ class Create(base.CreateCommand):
   _support_kms = False
   _support_network_tier = False
   _support_public_dns = False
-  _support_node_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -299,17 +298,6 @@ class Create(base.CreateCommand):
         project_to_sa[instance_ref.project] = service_accounts
     return project_to_sa
 
-  def _GetGetSoleTenancyHost(self, args, resource_parser, instance_ref):
-    sole_tenancy_host_arg = getattr(args, 'sole_tenancy_host', None)
-    if sole_tenancy_host_arg:
-      sole_tenancy_host_ref = resource_parser.Parse(
-          sole_tenancy_host_arg, collection='compute.hosts',
-          params={
-              'project': instance_ref.project,
-              'zone': instance_ref.zone
-          })
-      return sole_tenancy_host_ref.SelfLink()
-
   def _GetImageUri(
       self, args, client, create_boot_disk, instance_refs, resource_parser):
     if create_boot_disk:
@@ -352,8 +340,7 @@ class Create(base.CreateCommand):
     skip_defaults = source_instance_template is not None
 
     scheduling = instance_utils.GetScheduling(
-        args, compute_client, skip_defaults,
-        support_node_affinity=self._support_node_affinity)
+        args, compute_client, skip_defaults, support_node_affinity=True)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
@@ -411,11 +398,6 @@ class Create(base.CreateCommand):
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
           tags=tags)
-
-      sole_tenancy_host = self._GetGetSoleTenancyHost(
-          args, resource_parser, instance_ref)
-      if sole_tenancy_host:
-        instance.host = sole_tenancy_host
 
       resource_policies = getattr(
           args, 'resource_policies', None)
@@ -511,7 +493,6 @@ class CreateBeta(Create):
   _support_kms = True
   _support_network_tier = True
   _support_public_dns = False
-  _support_node_affinity = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -527,7 +508,6 @@ class CreateBeta(Create):
         support_network_tier=cls._support_network_tier,
         enable_regional=True,
         enable_kms=cls._support_kms,
-        support_sole_tenancy=True,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
@@ -542,7 +522,6 @@ class CreateAlpha(CreateBeta):
   _support_kms = True
   _support_network_tier = True
   _support_public_dns = True
-  _support_node_affinity = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -560,7 +539,6 @@ class CreateAlpha(CreateBeta):
         enable_regional=True,
         support_local_ssd_size=True,
         enable_kms=cls._support_kms,
-        support_sole_tenancy=True,
         supports_resource_policies=True)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

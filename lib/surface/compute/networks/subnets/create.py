@@ -15,7 +15,9 @@
 """Command for creating subnetworks."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -97,6 +99,42 @@ def _AddArgs(cls, parser, include_alpha=False):
               'subnetwork is one that is ready to be promoted to ACTIVE or is '
               'currently draining.'))
 
+    aggregation_interval_argument = base.ChoiceArgument(
+        '--aggregation-interval',
+        choices=[
+            'interval-5-sec', 'interval-30-sec', 'interval-1-min',
+            'interval-5-min', 'interval-10-min', 'interval-15-min'
+        ],
+        help_str="""\
+        Can only be specified if VPC flow logging for this subnetwork is
+        enabled. Toggles the aggregation interval for collecting flow logs.
+        Increasing the interval time will reduce the amount of generated flow
+        logs for long lasting connections. Default is an interval of 5 seconds
+        per connection.
+        """)
+    aggregation_interval_argument.AddToParser(parser)
+
+    parser.add_argument(
+        '--flow-sampling',
+        type=arg_parsers.BoundedFloat(lower_bound=0.0, upper_bound=1.0),
+        help="""\
+        Can only be specified if VPC flow logging for this subnetwork is
+        enabled. The value of the field must be in [0, 1]. Set the sampling rate
+        of VPC flow logs within the subnetwork where 1.0 means all collected
+        logs are reported and 0.0 means no logs are reported. Default is 0.5
+        which means half of all collected logs are reported.
+        """)
+
+    metadata_argument = base.ChoiceArgument(
+        '--metadata',
+        choices=['include-all-metadata', 'exclude-all-metadata'],
+        help_str="""\
+        Can only be specified if VPC flow logging for this subnetwork is
+        enabled. Configures whether metadata fields should be added to the
+        reported VPC flow logs. Default is to include all metadata.
+        """)
+    metadata_argument.AddToParser(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -136,6 +174,17 @@ class Create(base.CreateCommand):
 
       if getattr(args, 'role', None):
         subnetwork.role = messages.Subnetwork.RoleValueValuesEnum(args.role)
+
+      convert_to_enum = lambda x: x.replace('-', '_').upper()
+      if args.aggregation_interval:
+        subnetwork.aggregationInterval = (
+            messages.Subnetwork.AggregationIntervalValueValuesEnum(
+                convert_to_enum(args.aggregation_interval)))
+      if args.flow_sampling is not None:
+        subnetwork.flowSampling = args.flow_sampling
+      if args.metadata:
+        subnetwork.metadata = messages.Subnetwork.MetadataValueValuesEnum(
+            convert_to_enum(args.metadata))
 
     return subnetwork
 

@@ -26,8 +26,8 @@ from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class List(base.ListCommand):
   """List services for a project.
 
   This command lists the services that are enabled or available to be enabled
@@ -100,8 +100,8 @@ class ListAlpha(base.ListCommand):
                                      args.limit)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class List(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class LegacyList(base.ListCommand):
   """List services for a project.
 
   This command lists the services that are enabled or available to be enabled
