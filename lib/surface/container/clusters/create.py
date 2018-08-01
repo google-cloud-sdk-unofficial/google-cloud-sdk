@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -383,9 +384,18 @@ class CreateBeta(Create):
     flags.AddPrivateClusterFlags(parser, hidden=False)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddTpuFlags(parser, hidden=True)
+    flags.AddAutoprovisioningFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
+    ops.enable_autoprovisioning = args.enable_autoprovisioning
+    ops.min_cpu = args.min_cpu
+    ops.max_cpu = args.max_cpu
+    ops.min_memory = args.min_memory
+    ops.max_memory = args.max_memory
+    ops.min_accelerator = args.min_accelerator
+    ops.max_accelerator = args.max_accelerator
+    ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
@@ -426,7 +436,6 @@ class CreateAlpha(Create):
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
-    flags.AddEnableSharedNetworkFlag(parser, hidden=True)
     flags.AddAutoprovisioningFlags(parser, hidden=False)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
@@ -450,7 +459,6 @@ class CreateAlpha(Create):
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.enable_binauthz = args.enable_binauthz
     ops.workload_metadata_from_node = args.workload_metadata_from_node
-    ops.enable_shared_network = args.enable_shared_network
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
     ops.private_cluster = args.private_cluster

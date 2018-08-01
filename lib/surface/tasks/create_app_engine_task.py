@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +37,8 @@ class CreateAppEngine(base.CreateCommand):
   def Run(self, args):
     tasks_client = tasks.Tasks()
     queue_ref = parsers.ParseQueue(args.queue, args.location)
-    task_ref = parsers.ParseTask(args.id, queue_ref) if args.id else None
+    task_ref = parsers.ParseTask(args.task,
+                                 queue_ref) if args.task else None
     task_config = parsers.ParseCreateTaskArgs(
         args, constants.APP_ENGINE_QUEUE, tasks_client.api.messages)
     create_response = tasks_client.Create(

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +25,7 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import users
 from googlecloudsdk.core import properties
 
 
@@ -75,17 +77,19 @@ class SetPassword(base.CreateCommand):
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances')
     operation_ref = None
+
+    host = users.GetHostValue(args)
     result_operation = sql_client.users.Update(
         sql_messages.SqlUsersUpdateRequest(
             project=instance_ref.project,
             instance=args.instance,
             name=args.username,
-            host=args.host,
+            host=host,
             user=sql_messages.User(
                 project=instance_ref.project,
                 instance=args.instance,
                 name=args.username,
-                host=args.host,
+                host=host,
                 password=args.password)))
     operation_ref = client.resource_parser.Create(
         'sql.operations',

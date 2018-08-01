@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -88,6 +89,8 @@ class UpdateGA(base.UpdateCommand):
     flags.AddCacheKeyIncludeHost(parser, default=None)
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
+    signed_url_flags.AddSignedUrlCacheMaxAge(
+        parser, required=False, unspecified_help='')
     AddIapFlag(parser)
 
   def _GetSetSecurityPolicyRequest(self, client, backend_service_ref,
@@ -175,7 +178,11 @@ class UpdateGA(base.UpdateCommand):
       replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     backend_services_utils.ApplyCdnPolicyArgs(
-        client, args, replacement, is_update=True)
+        client,
+        args,
+        replacement,
+        is_update=True,
+        apply_signed_url_cache_max_age=True)
 
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
@@ -201,6 +208,7 @@ class UpdateGA(base.UpdateCommand):
         args.port_name,
         args.protocol,
         args.session_affinity is not None,
+        args.IsSpecified('signed_url_cache_max_age'),
         args.timeout is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
@@ -421,7 +429,10 @@ class UpdateBeta(UpdateGA):
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser, default=None)
+    flags.AddProtocol(
+        parser,
+        default=None,
+        choices=['HTTP', 'HTTPS', 'HTTP2', 'SSL', 'TCP', 'UDP'])
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)

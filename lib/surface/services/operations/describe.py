@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +20,7 @@ from __future__ import unicode_literals
 import sys
 
 from googlecloudsdk.api_lib.services import services_util
+from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import arg_parsers
 from googlecloudsdk.command_lib.services import common_flags
@@ -28,8 +30,58 @@ from googlecloudsdk.core import log
 MAX_RESPONSE_BYTES = 1000
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describes an operation resource for a given operation name.
+
+     This command will return information about an operation given the name
+     of that operation.
+
+     ## EXAMPLES
+     To describe an operation resource named
+     `operations/abc`, run:
+
+       $ {command} operations/abc
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go
+          on the command line after this command. Positional arguments are
+          allowed.
+    """
+    common_flags.operation_flag(suffix='to describe').AddToParser(parser)
+
+    parser.display_info.AddFormat(
+        ':(metadata.startTime.date(format="%Y-%m-%d %H:%M:%S %Z", tz=LOCAL)) '
+        '[transforms] default')
+
+    parser.add_argument(
+        '--full',
+        action='store_true',
+        default=False,
+        help=('DEPRECATED; print the entire operation resource, which could be '
+              'large. By default, a summary will be printed instead.'))
+
+  def Run(self, args):
+    """Run 'services operations describe'.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+          with.
+
+    Returns:
+      The response from the operations.Get API call.
+    """
+    op = serviceusage.GetOperation(args.operation)
+    services_util.PrintOperation(op)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  # pylint: disable=line-too-long
   """Describes an operation resource for a given operation name.
 
      This command will return information about an operation given the name
@@ -52,7 +104,6 @@ class Describe(base.DescribeCommand):
 
        $ {command} serviceConfigs.my-service.1 --full
   """
-  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):

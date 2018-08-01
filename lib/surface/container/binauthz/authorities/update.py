@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,14 +24,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
 
-# TODO(b/74193183): Unhide when there are fields available to update.
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update an existing Attestation Authority."""
 
   @staticmethod
   def Args(parser):
-    # TODO(b/74193183): Add a comment option.
     flags.AddConcepts(
         parser,
         flags.GetAuthorityPresentationSpec(
@@ -38,9 +36,11 @@ class Update(base.UpdateCommand):
             group_help='The authority to update.'
         ),
     )
+    parser.add_argument('--description',
+                        required=False,
+                        help='The new description for the authority')
 
   def Run(self, args):
     authority_ref = args.CONCEPTS.authority.Parse()
-
-    # TODO(b/74193183): Add a comment option.
-    return authorities.Client().Update(authority_ref)
+    return authorities.Client().Update(
+        authority_ref, description=args.description)

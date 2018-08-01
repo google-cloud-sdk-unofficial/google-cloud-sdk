@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,12 +31,14 @@ cluster {0} is not running. The kubernetes API may not be available.'''
 class GetCredentials(base.Command):
   """Fetch credentials for a running cluster.
 
-  {command} updates a kubeconfig file with appropriate credentials and endpoint
-  information to point kubectl at a specific cluster in Google Kubernetes
-  Engine. It takes a project and a zone as parameters, passed through by set
-  defaults or flags.
-  By default, credentials are written to HOME/.kube/config. You can provide an
-  alternate path by setting the KUBECONFIG environment variable.
+  {command} updates a `kubeconfig` file with appropriate credentials and
+  endpoint information to point `kubectl` at a specific cluster in Google
+  Kubernetes Engine.
+
+  It takes a project and a zone as parameters, passed through by set
+  defaults or flags. By default, credentials are written to `HOME/.kube/config`.
+  You can provide an alternate path by setting the `KUBECONFIG` environment
+  variable.
 
   This command enables switching to a specific cluster, when working
   with multiple clusters. It can also be used to access a previously created
@@ -49,7 +52,7 @@ class GetCredentials(base.Command):
           """\
           To switch to working on your cluster 'testcluster1', run:
 
-            $ {command} testcluster1 --zone us-central1-f
+            $ {command} testcluster1 --zone=us-central1-f
       """,
   }
 
@@ -63,7 +66,7 @@ class GetCredentials(base.Command):
     """
     parser.add_argument(
         'name',
-        help='The name of the cluster to get credentials for.',
+        help='Name of the cluster to get credentials for.',
         action=actions.StoreProperty(properties.VALUES.container.cluster))
 
   def Run(self, args):

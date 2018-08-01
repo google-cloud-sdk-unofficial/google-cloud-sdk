@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +28,7 @@ class List(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddEnvironmentResourceArg(
-        parser, 'for which to list DAGs.', positional=False)
+        parser, 'for which to list DAGs', positional=False)
     parser.display_info.AddFormat('table(name)')
 
   def Run(self, args):

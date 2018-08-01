@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,7 +111,7 @@ class Export(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddEnvironmentResourceArg(
-        parser, 'from whose Cloud Storage bucket to export DAGs.',
+        parser, 'from whose Cloud Storage bucket to export DAGs',
         positional=False)
     flags.AddExportSourceFlag(parser, Export.SUBDIR_BASE)
     flags.AddExportDestinationFlag(parser)

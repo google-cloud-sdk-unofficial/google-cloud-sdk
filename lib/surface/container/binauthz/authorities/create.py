@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,11 +55,13 @@ class Create(base.CreateCommand):
                 """),
         ),
     )
-    # TODO(b/74193183): Add a comment option.
+    parser.add_argument('--description',
+                        required=False,
+                        help='A description for the authority')
 
   def Run(self, args):
     authority_ref = args.CONCEPTS.authority.Parse()
     note_ref = args.CONCEPTS.authority_note.Parse()
 
-    # TODO(b/74193183): Add a comment option.
-    return authorities.Client().Create(authority_ref, note_ref)
+    return authorities.Client().Create(
+        authority_ref, note_ref, description=args.description)

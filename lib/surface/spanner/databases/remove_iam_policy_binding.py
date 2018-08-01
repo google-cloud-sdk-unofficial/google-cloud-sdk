@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +22,7 @@ from googlecloudsdk.command_lib.spanner import iam
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a Cloud Spanner database."""
 

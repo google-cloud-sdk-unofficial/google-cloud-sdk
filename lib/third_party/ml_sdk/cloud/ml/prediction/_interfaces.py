@@ -34,30 +34,29 @@ class Model(object):
     about decoding json nor base64 decoding.
 
     Args:
-      instances: list of instances, as described in the API.
-      **kwargs: additional keyword arguments, will be passed into the client's
-                predict method
+      instances: A list of instances, as described in the API.
+      **kwargs: Additional keyword arguments, will be passed into the client's
+          predict method.
 
     Returns:
-      A two-element tuple (inputs, outputs). Both inputs and outputs are
-      lists. Each input/output is a dict mapping input/output alias to the
-      value for that input/output.
+      A list of outputs containing the prediction results.
 
     Raises:
-      PredictionError: if an error occurs during prediction.
+      PredictionError: If an error occurs during prediction.
     """
     raise NotImplementedError()
 
   @classmethod
-  def from_client(cls, client, model_path):
-    """Creates a model using the given client and path.
+  def from_path(cls, model_path):
+    """Creates a model using the given model path.
 
     Path is useful, e.g., to load files from the exported directory containing
     the model.
 
     Args:
-      client: An instance of PredictionClient for performing prediction.
-      model_path: The path to the stored model.
+      model_path: The local directory that contains the exported model file
+          along with any additional files uploaded when creating the version
+          resource.
 
     Returns:
       An instance implementing this Model class.
@@ -83,7 +82,7 @@ class PredictionClient(object):
     """Produces predictions for the given inputs.
 
     Args:
-      inputs: a dict mapping input names to values
+      inputs: A dict mapping input names to values.
       **kwargs: Additional keyword arguments for prediction
 
     Returns:
@@ -116,9 +115,8 @@ class Preprocessor(object):
     """The preprocessing function.
 
     Args:
-      instances: a list of instances, as provided to the predict()
-        method.
-      **kwargs: Additional keyword arguments for preprocessing
+      instances: A list of instances, as provided to the predict() method.
+      **kwargs: Additional keyword arguments for preprocessing.
 
     Returns:
       The processed instance to use in the predict() method.
@@ -133,9 +131,8 @@ class Postprocessor(object):
     """The postprocessing function.
 
     Args:
-      instances: a list of instances, as provided to the predict()
-        method.
-      **kwargs: Additional keyword arguments for postprocessing
+      instances: A list of instances, as provided to the predict() method.
+      **kwargs: Additional keyword arguments for postprocessing.
 
     Returns:
       The processed instance to return as the final prediction output.

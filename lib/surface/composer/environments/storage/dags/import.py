@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,7 +122,7 @@ class Import(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddEnvironmentResourceArg(
-        parser, 'into whose Cloud Storage bucket to import DAGs.',
+        parser, 'into whose Cloud Storage bucket to import DAGs',
         positional=False)
     flags.AddImportSourceFlag(parser, Import.SUBDIR_BASE)
     flags.AddImportDestinationFlag(parser, Import.SUBDIR_BASE)

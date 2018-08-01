@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,8 +117,11 @@ def _CommonArgs(parser, source_snapshot_arg):
         number followed by a size unit of ``GB'' for gigabyte, or ``TB''
         for terabyte. If no size unit is specified, GB is
         assumed. For example, ``10GB'' will produce 10 gigabyte
-        disks. Disk size must be a multiple of 1 GB.
-        """)
+        disks. Disk size must be a multiple of 1 GB. If not specified, the
+        default size of {}GB for standard disks and {}GB for pd-ssd disks will
+        be used.
+        """.format(constants.DEFAULT_STANDARD_DISK_SIZE_GB,
+                   constants.DEFAULT_SSD_DISK_SIZE_GB))
 
   parser.add_argument(
       '--type',

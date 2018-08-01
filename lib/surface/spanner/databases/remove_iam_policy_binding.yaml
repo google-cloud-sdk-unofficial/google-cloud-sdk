@@ -1,0 +1,13 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Remove an IAM policy binding from a Cloud Spanner database.
+    DESCRIPTION: |
+      Remove an IAM policy binding from a Cloud Spanner database.
+  request:
+    collection: spanner.projects.instances.databases
+
+  arguments:
+    resource:
+      help_text:
+        The Cloud Spanner database to remove IAM policy binding from.
+      spec: !REF googlecloudsdk.command_lib.spanner.resources:database

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +27,6 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a backend bucket.
 
@@ -40,6 +40,8 @@ class Update(base.UpdateCommand):
     """Set up arguments for this command."""
     backend_buckets_utils.AddUpdatableArgs(cls, parser, 'update')
     backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
+    signed_url_flags.AddSignedUrlCacheMaxAge(
+        parser, required=False, unspecified_help='')
 
   def AnyArgsSpecified(self, args):
     """Returns true if any args for updating backend bucket were specified."""
@@ -68,6 +70,8 @@ class Update(base.UpdateCommand):
 
   def Modify(self, args, existing):
     """Modifies and returns the updated backend bucket."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
     replacement = encoding.CopyProtoMessage(existing)
 
     if args.description:
@@ -80,6 +84,10 @@ class Update(base.UpdateCommand):
 
     if args.enable_cdn is not None:
       replacement.enableCdn = args.enable_cdn
+
+    if args.IsSpecified('signed_url_cache_max_age'):
+      replacement.cdnPolicy = client.messages.BackendBucketCdnPolicy(
+          signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
 
     return replacement
 
@@ -110,41 +118,7 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Issues the request necessary for updating a backend bucket."""
-    if not self.AnyArgsSpecified(args):
-      raise exceptions.ToolException('At least one property must be modified.')
-    return self.MakeRequests(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(Update):
-  """Update a backend bucket.
-
-  *{command}* is used to update backend buckets.
-  """
-
-  @classmethod
-  def Args(cls, parser):
-    """Set up arguments for this command."""
-    super(UpdateAlphaBeta, cls).Args(parser)
-    signed_url_flags.AddSignedUrlCacheMaxAge(
-        parser, required=False, unspecified_help='')
-
-  def Modify(self, args, existing):
-    """Modifies and returns the updated backend bucket."""
-    replacement = super(UpdateAlphaBeta, self).Modify(args, existing)
-
-    if args.IsSpecified('signed_url_cache_max_age'):
-      holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-      client = holder.client
-      replacement.cdnPolicy = client.messages.BackendBucketCdnPolicy(
-          signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
-
-    return replacement
-
-  def Run(self, args):
-    """Issues the request necessary for updating a backend bucket."""
     if not self.AnyArgsSpecified(args) and not args.IsSpecified(
         'signed_url_cache_max_age'):
       raise exceptions.ToolException('At least one property must be modified.')
-
-    return super(UpdateAlphaBeta, self).MakeRequests(args)
+    return self.MakeRequests(args)

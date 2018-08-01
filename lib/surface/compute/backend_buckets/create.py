@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +23,6 @@ from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a backend bucket.
 
@@ -41,6 +41,7 @@ class Create(base.CreateCommand):
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
     parser.display_info.AddCacheUpdater(
         backend_buckets_flags.BackendBucketsCompleter)
+    signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -52,11 +53,17 @@ class Create(base.CreateCommand):
 
     enable_cdn = args.enable_cdn or False
 
+    cdn_policy = None
+    if args.IsSpecified('signed_url_cache_max_age'):
+      cdn_policy = client.messages.BackendBucketCdnPolicy(
+          signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
+
     return client.messages.BackendBucket(
         description=args.description,
         name=backend_buckets_ref.Name(),
         bucketName=args.gcs_bucket_name,
-        enableCdn=enable_cdn)
+        enableCdn=enable_cdn,
+        cdnPolicy=cdn_policy)
 
   def Run(self, args):
     """Issues the request necessary for creating a backend bucket."""
@@ -72,29 +79,3 @@ class Create(base.CreateCommand):
         backendBucket=backend_bucket, project=backend_buckets_ref.project)
     return client.MakeRequests([(client.apitools_client.backendBuckets,
                                  'Insert', request)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
-  """Create a backend bucket.
-
-  *{command}* is used to create backend buckets. Backend buckets
-  define a Google Cloud Storage bucket that can serve content. URL
-  maps define which requests are sent to which backend buckets.
-  """
-
-  @classmethod
-  def Args(cls, parser):
-    """Set up arguments for this command."""
-    super(CreateAlphaBeta, cls).Args(parser)
-    signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
-
-  def CreateBackendBucket(self, args):
-    """Creates and returns the backend bucket."""
-    backend_bucket = super(CreateAlphaBeta, self).CreateBackendBucket(args)
-    if args.IsSpecified('signed_url_cache_max_age'):
-      holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-      client = holder.client
-      backend_bucket.cdnPolicy = client.messages.BackendBucketCdnPolicy(
-          signedUrlCacheMaxAgeSec=args.signed_url_cache_max_age)
-    return backend_bucket

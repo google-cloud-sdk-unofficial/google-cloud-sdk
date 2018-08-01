@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,31 +18,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.ml.products import product_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml.products import util as products_command_util
-from googlecloudsdk.core import log
 
 
-class Create(base.CreateCommand):
-  """Create a Cloud Product Search Catalog to contain ReferenceImages.
-
-  This command creates a Cloud Product Search Catalog.
-
-  ## EXAMPLES
-
-  To create a product search catalog, run:
-
-    $ {command}
-
-
-  {alpha_list_note}
-  """
-
-  detailed_help = {'alpha_list_note': products_command_util.ALPHA_LIST_NOTE}
-
-  def Run(self, args):
-    api_client = product_util.ProductsClient()
-    catalog = api_client.CreateCatalog()
-    log.CreatedResource(catalog.name, kind='Catalog')
-    return catalog
+class Create(base.Command):
+  """Create a Cloud Product Search Catalog to contain ReferenceImages."""

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,6 +117,7 @@ class CreateGA(base.CreateCommand):
     flags.AddCacheKeyQueryStringList(parser)
     AddIapFlag(parser)
     parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
+    signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
   def _CreateBackendService(self, holder, args, backend_services_ref):
     health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
@@ -154,7 +156,11 @@ class CreateGA(base.CreateCommand):
       backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
 
     backend_services_utils.ApplyCdnPolicyArgs(
-        client, args, backend_service, is_update=False)
+        client,
+        args,
+        backend_service,
+        is_update=False,
+        apply_signed_url_cache_max_age=True)
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
@@ -406,7 +412,10 @@ class CreateBeta(CreateGA):
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser, default=None)
+    flags.AddProtocol(
+        parser,
+        default=None,
+        choices=['HTTP', 'HTTPS', 'HTTP2', 'SSL', 'TCP', 'UDP'])
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)

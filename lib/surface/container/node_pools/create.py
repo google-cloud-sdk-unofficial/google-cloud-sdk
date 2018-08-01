@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2014 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -213,11 +214,13 @@ class CreateBeta(Create):
     flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
+    flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.new_scopes_behavior = True
+    ops.enable_autoprovisioning = args.enable_autoprovisioning
     return ops
 
 

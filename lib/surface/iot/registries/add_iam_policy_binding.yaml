@@ -1,0 +1,13 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: add an IAM policy binding to a device registry.
+    DESCRIPTION: |
+      Add an IAM policy binding to a device registry.
+  request:
+    collection: cloudiot.projects.locations.registries
+
+  arguments:
+    resource:
+      help_text:
+        The device registry for which to add IAM policy binding to.
+      spec: !REF googlecloudsdk.command_lib.iot.resources:registry

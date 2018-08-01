@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +21,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base_classes.BaseLister):
-  """List health checks in Beta or GA."""
+  """List health checks in GA."""
 
   @staticmethod
   def Args(parser):
@@ -132,18 +133,19 @@ class List(base_classes.BaseLister):
         yield health_check
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """List health checks in Alpha."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List health checks in Beta."""
 
   def _ProtocolWhitelist(self):
     # Returns a list of whitelisted protocols.
-    whitelist = super(ListAlpha, self)._ProtocolWhitelist()
+    whitelist = super(ListBeta, self)._ProtocolWhitelist()
     whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number)
     return whitelist
 
-  def _Format(self, args):
-    columns = self._GetValidColumns(args)
+  def _GetValidColumns(self, args):
+    """Returns a list of valid columns."""
+    columns = super(ListBeta, self)._GetValidColumns(args)
     if args.protocol is not None:
       protocol_value = self._ConvertProtocolArgToValue(args)
       if (protocol_value ==
@@ -152,8 +154,28 @@ class ListAlpha(List):
                         'http2HealthCheck.port:label=PORT',
                         'http2HealthCheck.requestPath:label=REQUEST_PATH',
                         'http2HealthCheck.proxyHeader:label=PROXY_HEADER'])
-      elif (protocol_value ==
-            self.messages.HealthCheck.TypeValueValuesEnum.UDP.number):
+    return columns
+
+  def _Format(self, args):
+    columns = self._GetValidColumns(args)
+    return 'table[]({columns})'.format(columns=','.join(columns))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List health checks in Alpha."""
+
+  def _ProtocolWhitelist(self):
+    # Returns a list of whitelisted protocols.
+    whitelist = super(ListAlpha, self)._ProtocolWhitelist()
+    return whitelist
+
+  def _Format(self, args):
+    columns = super(ListAlpha, self)._GetValidColumns(args)
+    if args.protocol is not None:
+      protocol_value = self._ConvertProtocolArgToValue(args)
+      if (protocol_value ==
+          self.messages.HealthCheck.TypeValueValuesEnum.UDP.number):
         columns.extend(['udpHealthCheck.port:label=PORT',
                         'udpHealthCheck.request:label=REQUEST',
                         'udpHealthCheck.response:label=RESPONSE'])
@@ -161,4 +183,5 @@ class ListAlpha(List):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('health checks')
+ListBeta.detailed_help = base_classes.GetGlobalListerHelp('health checks')
 ListAlpha.detailed_help = base_classes.GetGlobalListerHelp('health checks')

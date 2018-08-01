@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,13 +18,52 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.services import services_util
+from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import arg_parsers
 from googlecloudsdk.command_lib.services import common_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class WaitAlpha(base.Command):
+  """Waits for an operation to complete for a given operation name.
+
+     This command will block until an operation has been marked as complete.
+
+     ## EXAMPLES
+     To wait on an operation named `operations/abc`
+     to complete, run:
+
+       $ {command} operations/abc
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go
+          on the command line after this command. Positional arguments are
+          allowed.
+    """
+    common_flags.operation_flag(suffix='on which to wait').AddToParser(parser)
+
+  def Run(self, args):
+    """Run 'services operations wait'.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+          with.
+
+    Returns:
+      If successful, the response from the operations.Get API call.
+    """
+    op = serviceusage.WaitOperation(args.operation)
+    services_util.PrintOperation(op)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Wait(base.Command):
-  # pylint: disable=line-too-long
   """Waits for an operation to complete.
 
      This command will block until an operation has been marked as complete.
@@ -37,7 +77,6 @@ class Wait(base.Command):
 
        $ {command} serviceConfigs.my-service.1
   """
-  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,26 +18,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.ml.products import product_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml.products import util as products_command_util
 
 
-class List(base.ListCommand):
-  """List all Cloud Product Search Catalogs.
-
-  This command list all Cloud Product Search Catalogs.
-
-  {alpha_list_note}
-  """
-
-  detailed_help = {'alpha_list_note': products_command_util.ALPHA_LIST_NOTE}
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(products_command_util.CATALOG_LIST_FORMAT)
-
-  def Run(self, args):
-    api_client = product_util.ProductsClient()
-    return api_client.ListCatalogs()
-
+class List(base.Command):
+  """List all Cloud Product Search Catalogs."""

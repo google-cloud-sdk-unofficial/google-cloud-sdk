@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=True,
+    error=('The `gcloud alpha ml products` commands are deprecated due to '
+           'API changes.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Products(base.Group):
   """Use Google Cloud ML product search capabilities."""

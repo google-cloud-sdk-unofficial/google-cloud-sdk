@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -420,11 +421,19 @@ class UpdateBeta(Update):
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group, hidden=True)
+    flags.AddAutoprovisioningFlags(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.enable_binauthz = args.enable_binauthz
+    opts.enable_autoprovisioning = args.enable_autoprovisioning
+    opts.min_cpu = args.min_cpu
+    opts.max_cpu = args.max_cpu
+    opts.min_memory = args.min_memory
+    opts.max_memory = args.max_memory
+    opts.min_accelerator = args.min_accelerator
+    opts.max_accelerator = args.max_accelerator
     return opts
 
 

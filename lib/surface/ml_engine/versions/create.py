@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -126,25 +127,28 @@ class CreateBeta(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _AddCreateArgs(parser)
+    flags.MACHINE_TYPE.AddToParser(parser)
     flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
     labels = versions_util.ParseCreateLabels(versions_client, args)
     framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
-    return versions_util.Create(versions_client,
-                                operations.OperationsClient(),
-                                args.version,
-                                model=args.model,
-                                origin=args.origin,
-                                staging_bucket=args.staging_bucket,
-                                runtime_version=args.runtime_version,
-                                config_file=args.config,
-                                asyncronous=args.async,
-                                description=args.description,
-                                labels=labels,
-                                framework=framework,
-                                python_version=args.python_version)
+    return versions_util.Create(
+        versions_client,
+        operations.OperationsClient(),
+        args.version,
+        model=args.model,
+        origin=args.origin,
+        staging_bucket=args.staging_bucket,
+        runtime_version=args.runtime_version,
+        config_file=args.config,
+        asyncronous=args.async,
+        description=args.description,
+        labels=labels,
+        machine_type=args.machine_type,
+        framework=framework,
+        python_version=args.python_version)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -160,7 +164,7 @@ class CreateAlpha(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _AddCreateArgs(parser)
-    flags.MACHINE_TYPE.AddToParser(parser)
+    flags.ALPHA_MACHINE_TYPE.AddToParser(parser)
     flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):

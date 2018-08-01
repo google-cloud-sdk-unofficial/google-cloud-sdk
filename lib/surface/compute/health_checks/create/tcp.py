@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,11 +68,12 @@ class Create(base.CreateCommand):
   """
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, supports_port_specification=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.HealthCheckArgument('TCP').AddArgument(parser,
                                                  operation_type='create')
-    health_checks_utils.AddTcpRelatedCreationArgs(parser)
+    health_checks_utils.AddTcpRelatedCreationArgs(
+        parser, port_specification=supports_port_specification)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'TCP')
 
   def Run(self, args):
@@ -86,8 +88,7 @@ class CreateAlpha(Create):
 
   @staticmethod
   def Args(parser):
-    Create.Args(parser)
-    health_checks_utils.AddPortSpecificationFlag(parser)
+    Create.Args(parser, supports_port_specification=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""

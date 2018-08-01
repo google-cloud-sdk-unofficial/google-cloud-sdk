@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,11 +65,12 @@ class Create(base.CreateCommand):
   """Create a HTTP health check to monitor load balanced instances."""
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, supports_port_specification=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.HealthCheckArgument('HTTP').AddArgument(parser,
                                                   operation_type='create')
-    health_checks_utils.AddHttpRelatedCreationArgs(parser)
+    health_checks_utils.AddHttpRelatedCreationArgs(
+        parser, port_specification=supports_port_specification)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP')
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleter)
 
@@ -83,8 +85,8 @@ class CreateBeta(Create):
   """Create a HTTP health check to monitor load balanced instances."""
 
   @staticmethod
-  def Args(parser):
-    Create.Args(parser)
+  def Args(parser, supports_port_specification=False):
+    Create.Args(parser, supports_port_specification=supports_port_specification)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleter)
 
@@ -100,8 +102,7 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    CreateBeta.Args(parser)
-    health_checks_utils.AddPortSpecificationFlag(parser)
+    CreateBeta.Args(parser, supports_port_specification=True)
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleter)
 
   def Run(self, args):

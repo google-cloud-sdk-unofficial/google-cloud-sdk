@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,32 +17,8 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from googlecloudsdk.api_lib.ml.products import product_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.ml.products import flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.DeleteCommand):
-  """Delete a Cloud Product Search Catalog.
-
-
-  This command deletes a Cloud Product Search Catalog.
-
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddCatalogResourceArg(parser, verb='to delete')
-
-  def Run(self, args):
-    catalog_ref = args.CONCEPTS.catalog.Parse()
-    console_io.PromptContinue(
-        'Catalog [{}] and all related ReferenceImages will be deleted.'.format(
-            catalog_ref.Name()),
-        cancel_on_no=True)
-    api_client = product_util.ProductsClient()
-    result = api_client.DeleteCatalog(catalog_ref.RelativeName())
-    log.DeletedResource(catalog_ref.Name(), kind='Catalog')
-    return result
+class Delete(base.Command):
+  """Delete a Cloud Product Search Catalog."""

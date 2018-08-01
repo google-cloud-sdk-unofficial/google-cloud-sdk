@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -120,10 +121,22 @@ class UpdateBeta(Update):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    node_management_group = parser.add_argument_group('Node management',
-                                                      required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
+    node_management_group = group.add_argument_group('Node management')
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
+    autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
+    flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=True)
+
+  def ParseUpdateNodePoolOptions(self, args):
+    ops = api_adapter.UpdateNodePoolOptions(
+        enable_autorepair=args.enable_autorepair,
+        enable_autoupgrade=args.enable_autoupgrade,
+        enable_autoscaling=args.enable_autoscaling,
+        max_nodes=args.max_nodes,
+        min_nodes=args.min_nodes,
+        enable_autoprovisioning=args.enable_autoprovisioning)
+    return ops
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

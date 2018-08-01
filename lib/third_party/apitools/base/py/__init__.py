@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2015 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,23 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Top-level imports for apitools base files."""
+"""This file replaces the version that imports everything to the top level.
 
-# pylint:disable=wildcard-import
-# pylint:disable=redefined-builtin
-from apitools.base.py.base_api import *
-from apitools.base.py.batch import *
-from apitools.base.py.credentials_lib import *
-from apitools.base.py.encoding import *
-from apitools.base.py.exceptions import *
-from apitools.base.py.extra_types import *
-from apitools.base.py.http_wrapper import *
-from apitools.base.py.list_pager import *
-from apitools.base.py.transfer import *
-from apitools.base.py.util import *
-
-try:
-    # pylint:disable=no-name-in-module
-    from apitools.base.py.internal import *
-except ImportError:
-    pass
+Different from the normal dependency generation process, this file just replaces
+a single file (apitools/base/py/__init__.py) from Google internal apitools
+during the depenency generation process. This allows us to make a breaking
+change to apitools without complicating the process of updating apitools, as
+changes are frequently pulled in from upstream.
+"""

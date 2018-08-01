@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +27,6 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddSignedUrlKey(base.UpdateCommand):
   """Add Cloud CDN Signed URL key to a backend bucket.
 

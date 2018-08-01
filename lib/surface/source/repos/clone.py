@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,7 +76,7 @@ class CloneGA(base.Command):
   def ActionIfMirror(self, project, repo, mirror_url):
     """Prints a warning if the repository is a mirror."""
     message = ('Repository "{repo}" in project "{prj}" is a mirror. Pushing to '
-               'this clone will have no effect.  Instead, directly clone the '
+               'this clone will have no effect.  Instead, clone the '
                'mirrored repository directly with \n$ git clone '
                '{url}'.format(repo=repo, prj=project, url=mirror_url))
     log.warning(message)
