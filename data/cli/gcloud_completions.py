@@ -17251,13 +17251,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic"
                   }
                 },
-                "export": {
-                  "commands": {},
-                  "flags": {
-                    "--destination": "value",
-                    "--region": "dynamic"
-                  }
-                },
                 "get-iam-policy": {
                   "commands": {},
                   "flags": {
@@ -17266,13 +17259,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--region": "dynamic",
                     "--sort-by": "value"
-                  }
-                },
-                "import": {
-                  "commands": {},
-                  "flags": {
-                    "--region": "dynamic",
-                    "--source": "value"
                   }
                 },
                 "instantiate": {
