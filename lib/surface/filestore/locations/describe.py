@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +22,11 @@ from googlecloudsdk.command_lib.filestore import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-class Describe(base.DescribeCommand):
-  """Describe a Cloud Filestore location.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  """Describe a Cloud Filestore location."""
 
-  ## EXAMPLE
-
-  The following command shows the details for the Cloud Filestore location
-  named NAME.
-
-    $ {command} NAME
-  """
+  _API_VERSION = filestore_client.FILESTORE_API_VERSION
 
   @staticmethod
   def Args(parser):
@@ -40,4 +36,23 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     location_ref = args.CONCEPTS.location.Parse()
-    return filestore_client.FilestoreClient().GetLocation(location_ref)
+    client = filestore_client.FilestoreClient(version=self._API_VERSION)
+    return client.GetLocation(location_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+  """Describe a Cloud Filestore location."""
+
+  _API_VERSION = filestore_client.FILESTORE_ALPHA_API_VERSION
+
+
+DescribeBeta.detailed_help = {
+    'DESCRIPTION': 'Describe a Cloud Filestore location.',
+    'EXAMPLES': """\
+The following command shows the details for the Cloud Filestore location named
+NAME.
+
+  $ {command} NAME
+"""
+}

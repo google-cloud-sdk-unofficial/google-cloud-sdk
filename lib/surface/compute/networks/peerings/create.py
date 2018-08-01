@@ -18,10 +18,12 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create a Google Compute Engine network peering."""
 
@@ -81,3 +83,39 @@ class Create(base.Command):
 
     return client.MakeRequests([(client.apitools_client.networks, 'AddPeering',
                                  request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine network peering."""
+
+  @staticmethod
+  def Args(parser):
+    super(CreateAlpha, CreateAlpha).Args(parser)
+    flags.AddImportCustomRoutesFlag(parser)
+    flags.AddExportCustomRoutesFlag(parser)
+
+  def Run(self, args):
+    """Issues the request necessary for adding the peering."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    messages = holder.client.messages
+    networks = holder.client.apitools_client.networks
+
+    peer_network_ref = resources.REGISTRY.Parse(
+        args.peer_network,
+        params={
+            'project':
+                args.peer_project or properties.VALUES.core.project.GetOrFail
+        },
+        collection='compute.networks')
+
+    return networks.AddPeering(
+        messages.ComputeNetworksAddPeeringRequest(
+            network=args.network,
+            networksAddPeeringRequest=messages.NetworksAddPeeringRequest(
+                autoCreateRoutes=args.auto_create_routes,
+                exportCustomRoutes=args.export_custom_routes,
+                importCustomRoutes=args.import_custom_routes,
+                name=args.name,
+                peerNetwork=peer_network_ref.RelativeName()),
+            project=properties.VALUES.core.project.GetOrFail()))

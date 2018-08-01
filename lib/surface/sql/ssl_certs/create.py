@@ -103,7 +103,8 @@ class _BaseAddCert(object):
     return result.clientCert.certInfo
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class AddCert(_BaseAddCert, base.CreateCommand):
   """Creates an SSL certificate for a Cloud SQL instance."""
   pass

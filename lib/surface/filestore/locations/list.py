@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,20 +23,27 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-class List(base.ListCommand):
-  """List all Cloud Filestore locations.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """List all Cloud Filestore locations."""
 
-  ## EXAMPLE
-
-  The following command lists a maximum of five Cloud Filestore locations
-  sorted alphabetically by name in descending order:
-
-    $ {command} --limit=5 --sort-by=~name
-  """
+  _API_VERSION = filestore_client.FILESTORE_API_VERSION
 
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.LOCATIONS_LIST_FORMAT)
+
+    def UriFunc(resource):
+      registry = resources.REGISTRY.Clone()
+      registry.RegisterApiByName(
+          filestore_client.FILESTORE_API_NAME,
+          api_version=filestore_client.FILESTORE_API_VERSION)
+      ref = registry.Parse(
+          resource.name,
+          collection='file.projects.locations')
+      return ref.SelfLink()
+
+    parser.display_info.AddUriFunc(UriFunc)
 
   def Run(self, args):
     """Make API calls to List Cloud Filestore locations.
@@ -49,5 +57,38 @@ class List(base.ListCommand):
     project_ref = resources.REGISTRY.Parse(
         properties.VALUES.core.project.GetOrFail(),
         collection='file.projects')
-    return filestore_client.FilestoreClient().ListLocations(
-        project_ref, limit=args.limit)
+    client = filestore_client.FilestoreClient(version=self._API_VERSION)
+    return list(client.ListLocations(project_ref, limit=args.limit))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List all Cloud Filestore locations."""
+
+  _API_VERSION = filestore_client.FILESTORE_ALPHA_API_VERSION
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat(flags.LOCATIONS_LIST_FORMAT)
+
+    def UriFunc(resource):
+      registry = resources.REGISTRY.Clone()
+      registry.RegisterApiByName(
+          filestore_client.FILESTORE_API_NAME,
+          api_version=filestore_client.FILESTORE_ALPHA_API_VERSION)
+      ref = registry.Parse(
+          resource.name,
+          collection='file.projects.locations')
+      return ref.SelfLink()
+
+    parser.display_info.AddUriFunc(UriFunc)
+
+
+ListBeta.detailed_help = {
+    'DESCRIPTION': 'List all Cloud Filestore locations.',
+    'EXAMPLES': """\
+The following command lists a maximum of five Cloud Filestore locations
+sorted alphabetically by name in descending order:
+
+  $ {command} --limit=5 --sort-by=~name
+"""}

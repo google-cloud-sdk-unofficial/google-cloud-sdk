@@ -26,6 +26,7 @@ from ruamel.yaml.scalarstring import (PreservedScalarString, SingleQuotedScalarS
 from ruamel.yaml.scalarint import ScalarInt, BinaryInt, OctalInt, HexInt, HexCapsInt
 from ruamel.yaml.scalarfloat import ScalarFloat
 from ruamel.yaml.timestamp import TimeStamp
+from ruamel.yaml.util import RegExp
 
 if False:  # MYPY
     from typing import Any, Dict, List, Set, Generator  # NOQA
@@ -471,7 +472,7 @@ class SafeConstructor(BaseConstructor):
                     None, None,
                     "failed to decode base64 data: %s" % exc, node.start_mark)
 
-    timestamp_regexp = re.compile(
+    timestamp_regexp = RegExp(
         u'''^(?P<year>[0-9][0-9][0-9][0-9])
           -(?P<month>[0-9][0-9]?)
           -(?P<day>[0-9][0-9]?)
@@ -1437,7 +1438,7 @@ class RoundTripConstructor(SafeConstructor):
                 data.yaml_set_tag(node.tag)
                 yield data
                 return
-        except:
+        except:  # NOQA
             pass
         raise ConstructorError(
             None, None,

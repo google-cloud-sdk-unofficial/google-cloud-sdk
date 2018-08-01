@@ -25,7 +25,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class CreateBackup(base.CreateCommand):
   """Creates a backup of a Cloud SQL instance."""
 

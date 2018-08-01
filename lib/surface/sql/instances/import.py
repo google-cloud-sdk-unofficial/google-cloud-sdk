@@ -32,7 +32,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 @deprecation_utils.DeprecateCommandAtVersion(
     remove_version='205.0.0', remove=False, alt_command='gcloud sql import sql')
 class Import(base.Command):

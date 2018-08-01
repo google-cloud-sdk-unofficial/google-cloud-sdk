@@ -67,7 +67,8 @@ class _BaseGet(object):
                                 args.common_name)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Get(_BaseGet, base.DescribeCommand):
   """Retrieve information about a client cert for a Cloud SQL instance."""
   pass

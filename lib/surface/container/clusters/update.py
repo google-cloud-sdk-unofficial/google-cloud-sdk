@@ -81,7 +81,6 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
             api_adapter.HPA: _ParseAddonDisabled,
             api_adapter.DASHBOARD: _ParseAddonDisabled,
             api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
-            api_adapter.ISTIO: _ParseAddonDisabled,
         }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -89,13 +88,11 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED
-{istio}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
-    network_policy=api_adapter.NETWORK_POLICY,
-    istio=api_adapter.ISTIO,))
+    network_policy=api_adapter.NETWORK_POLICY))
 
   else:
     mutex_group.add_argument(
@@ -465,7 +462,6 @@ class UpdateAlpha(Update):
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group, hidden=True)
-    flags.AddIstioConfigFlag(parser)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -478,6 +474,4 @@ class UpdateAlpha(Update):
     opts.max_accelerator = args.max_accelerator
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.enable_binauthz = args.enable_binauthz
-    opts.istio_config = args.istio_config
-    flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     return opts

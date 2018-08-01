@@ -64,7 +64,8 @@ class Import(base.Command):
              'contents.')
 
   def Run(self, args):
-    messages = apis.GetMessagesModule()
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    messages = apis.GetMessagesModule(api_version)
 
     # Load the policy file into a Python object.
     policy_obj = parsing.LoadResourceFile(args.policy_file)
@@ -83,4 +84,4 @@ class Import(base.Command):
     # to the user if they are raised.
     policy = encoding.DictToMessageWithErrorCheck(policy_obj, messages.Policy)
 
-    return policies.Client().Set(util.GetPolicyRef(), policy)
+    return policies.Client(api_version).Set(util.GetPolicyRef(), policy)

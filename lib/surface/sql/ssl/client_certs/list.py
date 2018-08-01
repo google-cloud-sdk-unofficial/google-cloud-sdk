@@ -58,7 +58,8 @@ class _BaseList(object):
     return iter(result.items)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class List(_BaseList, base.ListCommand):
   """List all client certs for a Cloud SQL instance."""
   pass

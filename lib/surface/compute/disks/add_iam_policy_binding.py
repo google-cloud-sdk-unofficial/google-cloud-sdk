@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a Google Compute Engine disk.

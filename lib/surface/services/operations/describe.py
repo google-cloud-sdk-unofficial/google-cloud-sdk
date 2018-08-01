@@ -21,6 +21,7 @@ import sys
 
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import arg_parsers
 from googlecloudsdk.command_lib.services import common_flags
@@ -59,12 +60,12 @@ class DescribeAlpha(base.DescribeCommand):
         ':(metadata.startTime.date(format="%Y-%m-%d %H:%M:%S %Z", tz=LOCAL)) '
         '[transforms] default')
 
+    action = actions.DeprecationAction('full', warn='This flag is deprecated.')
     parser.add_argument(
         '--full',
-        action='store_true',
+        action=action,
         default=False,
-        help=('DEPRECATED; print the entire operation resource, which could be '
-              'large. By default, a summary will be printed instead.'))
+        help=('This flag is deprecated.'))
 
   def Run(self, args):
     """Run 'services operations describe'.
@@ -120,9 +121,10 @@ class Describe(base.DescribeCommand):
         ':(metadata.startTime.date(format="%Y-%m-%d %H:%M:%S %Z", tz=LOCAL)) '
         '[transforms] default')
 
+    action = actions.DeprecationAction('full', warn='This flag is deprecated.')
     parser.add_argument(
         '--full',
-        action='store_true',
+        action=action,
         default=False,
         help=('Print the entire operation resource, which could be large. '
               'By default, a summary will be printed instead.'))

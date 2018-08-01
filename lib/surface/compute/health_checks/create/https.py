@@ -66,12 +66,17 @@ class Create(base.CreateCommand):
   """Create a HTTPS health check to monitor load balanced instances."""
 
   @classmethod
-  def Args(cls, parser, supports_port_specification=False):
+  def Args(cls,
+           parser,
+           supports_port_specification=False,
+           supports_use_serving_port=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    flags.HealthCheckArgument('HTTPS').AddArgument(parser,
-                                                   operation_type='create')
+    flags.HealthCheckArgument('HTTPS').AddArgument(
+        parser, operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(
-        parser, port_specification=supports_port_specification)
+        parser,
+        port_specification=supports_port_specification,
+        use_serving_port=supports_use_serving_port)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTPS')
     parser.display_info.AddCacheUpdater(completers.HttpsHealthChecksCompleter)
 
@@ -86,15 +91,21 @@ class CreateBeta(Create):
   """Create a HTTPS health check to monitor load balanced instances."""
 
   @staticmethod
-  def Args(parser, supports_port_specification=False):
-    Create.Args(parser, supports_port_specification)
+  def Args(parser,
+           supports_port_specification=False,
+           supports_use_serving_port=True):
+    Create.Args(
+        parser,
+        supports_port_specification=supports_port_specification,
+        supports_use_serving_port=supports_use_serving_port)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     parser.display_info.AddCacheUpdater(completers.HttpsHealthChecksCompleter)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, supports_response=True)
+    return _Run(
+        args, holder, supports_response=True, supports_port_specification=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

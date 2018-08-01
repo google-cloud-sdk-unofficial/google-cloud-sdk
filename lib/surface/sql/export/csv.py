@@ -27,7 +27,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import export_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Csv(base.Command):
   """Exports data from a Cloud SQL instance to a CSV file.
 

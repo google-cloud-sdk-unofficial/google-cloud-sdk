@@ -26,7 +26,8 @@ _DEPRECATION_WARNING = (
 
 
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class SslCerts(base.Group):
   """Provide commands for managing SSL certificates of Cloud SQL instances.
 

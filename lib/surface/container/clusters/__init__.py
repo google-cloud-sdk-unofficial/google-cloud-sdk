@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Clusters(base.Group):
   """Deploy and teardown Google Kubernetes Engine clusters.
 
@@ -61,49 +60,5 @@ class Clusters(base.Group):
     Returns:
       The refined command context.
     """
-    context['location_get'] = container_command_util.GetZoneOrRegion
-    return context
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ClustersAlphaBeta(Clusters):
-  """Deploy and teardown Google Kubernetes Engine clusters.
-
-  The gcloud container clusters command group lets you deploy and teardown
-  Google Kubernetes Engine clusters.
-
-  See $ gcloud docker --help for information about deploying docker images
-  to clusters.
-  """
-
-  @staticmethod
-  def Args(parser):
-    """Add arguments to the parser.
-
-    Args:
-      parser: argparse.ArgumentParser, This is a standard argparser parser with
-        which you can register arguments.  See the public argparse documentation
-        for its capabilities.
-    """
-    flags.AddZoneAndRegionFlags(parser)
-    parser.display_info.AddTransforms(transforms.GetTransforms())
-
-  def Filter(self, context, args):
-    """Modify the context that will be given to this group's commands when run.
-
-    Args:
-      context: {str:object}, A set of key-value pairs that can be used for
-          common initialization among commands.
-      args: argparse.Namespace: The same namespace given to the corresponding
-          .Run() invocation.
-
-    Returns:
-      The refined command context.
-    """
-    if container_command_util.GetUseV1APIProperty():
-      warning = messages.GetAPIMismatchingWarning(self.ReleaseTrack())
-      if warning:
-        log.warning(warning)
-
     context['location_get'] = container_command_util.GetZoneOrRegion
     return context

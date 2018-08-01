@@ -32,7 +32,8 @@ class _Result(object):
     self.old = old
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Patch(base.Command):
   """Patches the settings of a Cloud SQL database."""
 

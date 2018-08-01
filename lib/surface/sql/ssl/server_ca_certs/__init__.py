@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ServerCaCerts(base.Group):
   """Provide commands for managing server CA certs of Cloud SQL instances.
 

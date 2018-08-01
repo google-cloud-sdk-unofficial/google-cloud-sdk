@@ -75,7 +75,7 @@ class SQL(base.Group):
     base.DisableUserProjectQuota()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SQLBeta(base.Group):
   """Create and manage Google Cloud SQL databases."""
   detailed_help = DETAILED_HELP

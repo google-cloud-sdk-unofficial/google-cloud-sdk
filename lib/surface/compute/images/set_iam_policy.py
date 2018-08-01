@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetIamPolicy(base.Command):
   """Set the IAM Policy for a Google Compute Engine disk image.

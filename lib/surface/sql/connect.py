@@ -271,7 +271,7 @@ class Connect(base.Command):
     return RunConnectCommand(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ConnectBeta(base.Command):
   """Connects to a Cloud SQL instance."""
 

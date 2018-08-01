@@ -20,7 +20,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Ssl(base.Group):
   """Provide commands for managing SSL certificates of Cloud SQL instances.
 

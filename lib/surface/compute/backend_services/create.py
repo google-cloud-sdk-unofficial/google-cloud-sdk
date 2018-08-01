@@ -277,7 +277,7 @@ class CreateAlpha(CreateGA):
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
-    flags.AddLoadBalancingScheme(parser)
+    flags.AddLoadBalancingScheme(parser, include_alpha=True)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False, default=False)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
     flags.AddConnectionDrainOnFailover(parser, default=None)
@@ -323,6 +323,11 @@ class CreateAlpha(CreateGA):
       backend_service.customRequestHeaders = args.custom_request_header
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
+
+    if args.load_balancing_scheme != 'EXTERNAL':
+      backend_service.loadBalancingScheme = (
+          client.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+              args.load_balancing_scheme))
 
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,

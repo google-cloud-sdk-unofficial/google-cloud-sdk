@@ -86,7 +86,7 @@ class _BaseRollbackCert(object):
     return previous_server_ca
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class RollbackCert(_BaseRollbackCert, base.CreateCommand):
   """Roll back to the previous server CA cert for a Cloud SQL instance."""
   pass

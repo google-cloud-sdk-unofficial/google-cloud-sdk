@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,13 +40,13 @@ class CreateAppEngine(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddIdArg(parser, 'App Engine queue', 'to create')
+    flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
     flags.AddCreateAppEngineQueueFlags(parser)
 
   def Run(self, args):
     queues_client = queues.Queues()
-    queue_ref = parsers.ParseQueue(args.id, args.location)
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
         args, constants.APP_ENGINE_QUEUE, queues_client.api.messages)

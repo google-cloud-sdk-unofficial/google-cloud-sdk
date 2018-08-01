@@ -92,11 +92,7 @@ class ContainerBeta(Container):
       The refined command context.
     """
     base.DisableUserProjectQuota()
-    if container_command_util.GetUseV1APIProperty():
-      api_version = 'v1'
-    else:
-      api_version = 'v1beta1'
-    context['api_adapter'] = api_adapter.NewAPIAdapter(api_version)
+    context['api_adapter'] = api_adapter.NewAPIAdapter('v1beta1')
     return context
 
 
@@ -117,9 +113,5 @@ class ContainerAlpha(Container):
       The refined command context.
     """
     base.DisableUserProjectQuota()
-    if container_command_util.GetUseV1APIProperty():
-      api_version = 'v1'
-    else:
-      api_version = 'v1alpha1'
-    context['api_adapter'] = api_adapter.NewAPIAdapter(api_version)
+    context['api_adapter'] = api_adapter.NewAPIAdapter('v1alpha1')
     return context

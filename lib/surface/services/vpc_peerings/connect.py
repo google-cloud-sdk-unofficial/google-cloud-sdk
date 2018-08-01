@@ -71,7 +71,10 @@ class Connect(base.SilentCommand):
     parser.add_argument(
         '--network', metavar='NETWORK', required=True, help=_NETWORK_HELP)
     parser.add_argument(
-        '--service', metavar='SERVICE', required=True, help=_SERVICE_HELP)
+        '--service',
+        metavar='SERVICE',
+        default='servicenetworking.googleapis.com',
+        help=_SERVICE_HELP)
     parser.add_argument(
         '--reserved-ranges',
         metavar='RESERVED_RANGES',
@@ -92,8 +95,8 @@ class Connect(base.SilentCommand):
     project = properties.VALUES.core.project.Get(required=True)
     project_number = _GetProjectNumber(project)
     reserved_ranges = args.reserved_ranges.split(',')
-    op = peering.PeerApiCall(project_number, args.service, args.network,
-                             reserved_ranges)
+    op = peering.CreateConnection(project_number, args.service, args.network,
+                                  reserved_ranges)
     if args.async:
       cmd = OP_WAIT_CMD.format(op.name)
       log.status.Print('Asynchronous operation is in progress... '

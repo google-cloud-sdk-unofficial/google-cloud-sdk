@@ -79,7 +79,7 @@ class _BaseRotateCert(object):
     return next_server_ca
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class RotateCert(_BaseRotateCert, base.CreateCommand):
   """Rotate in the upcoming server CA cert for a Cloud SQL instance."""
   pass

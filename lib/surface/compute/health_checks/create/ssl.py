@@ -56,20 +56,22 @@ def _Run(args, holder, supports_port_specification=False):
       [(client.apitools_client.healthChecks, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a SSL health check to monitor load balanced instances.
-  """
-
-  HEALTH_CHECK_ARG = None
+  """Create a SSL health check to monitor load balanced instances."""
 
   @classmethod
-  def Args(cls, parser, supports_port_specification=False):
+  def Args(cls,
+           parser,
+           supports_port_specification=False,
+           supports_use_serving_port=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    flags.HealthCheckArgument('SSL').AddArgument(parser,
-                                                 operation_type='create')
+    flags.HealthCheckArgument('SSL').AddArgument(
+        parser, operation_type='create')
     health_checks_utils.AddTcpRelatedCreationArgs(
-        parser, port_specification=supports_port_specification)
+        parser,
+        port_specification=supports_port_specification,
+        use_serving_port=supports_use_serving_port)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'SSL')
 
   def Run(self, args):
@@ -78,13 +80,32 @@ class Create(base.CreateCommand):
     return _Run(args, holder)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a SSL health check to monitor load balanced instances."""
+
+  @staticmethod
+  def Args(parser,
+           supports_port_specification=False,
+           supports_use_serving_port=True):
+    Create.Args(
+        parser,
+        supports_port_specification=supports_port_specification,
+        supports_use_serving_port=supports_use_serving_port)
+
+  def Run(self, args):
+    """Issues the request necessary for adding the health check."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return _Run(args, holder, supports_port_specification=True)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create a SSL health check to monitor load balanced instances."""
 
   @staticmethod
   def Args(parser):
-    Create.Args(parser, supports_port_specification=True)
+    CreateBeta.Args(parser, supports_port_specification=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""

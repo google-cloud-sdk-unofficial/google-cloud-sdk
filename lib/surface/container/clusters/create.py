@@ -181,12 +181,15 @@ def ValidateBasicAuthFlags(args):
 
 
 def ParseCreateOptionsBase(args):
+  """Parses the flags provided with the cluster creation command."""
+
   flags.MungeBasicAuthFlags(args)
   if (args.IsSpecified('enable_cloud_endpoints') and
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
                      'property container/ new_scopes_behavior is set to true.')
   flags.WarnForUnspecifiedAutorepair(args)
+  flags.WarnForUnspecifiedIpAllocationPolicy(args)
   cluster_ipv4_cidr = args.cluster_ipv4_cidr
   enable_master_authorized_networks = args.enable_master_authorized_networks
   return api_adapter.CreateClusterOptions(
@@ -383,7 +386,7 @@ class CreateBeta(Create):
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddPrivateClusterFlags(parser, hidden=False)
     flags.AddEnableStackdriverKubernetesFlag(parser)
-    flags.AddTpuFlags(parser, hidden=True)
+    flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
@@ -419,7 +422,7 @@ class CreateAlpha(Create):
     group = parser.add_mutually_exclusive_group()
     _AddAdditionalZonesFlag(group, deprecated=True)
     flags.AddNodeLocationsFlag(group)
-    flags.AddAddonsFlags(parser)
+    flags.AddAlphaAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddDiskTypeFlag(parser)
     flags.AddMaxPodsPerNodeFlag(parser)
@@ -446,6 +449,7 @@ class CreateAlpha(Create):
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddManagedPodIdentityFlag(parser)
+    flags.AddResourceUsageBigqueryDatasetFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -470,5 +474,6 @@ class CreateAlpha(Create):
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.default_max_pods_per_node = args.default_max_pods_per_node
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
-    flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
+    ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
+    flags.ValidateIstioConfigArgs(args.istio_config, args.addons)
     return ops

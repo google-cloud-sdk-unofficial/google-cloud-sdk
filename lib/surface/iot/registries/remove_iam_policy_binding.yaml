@@ -1,0 +1,13 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Remove an IAM policy binding from a device registry.
+    DESCRIPTION: |
+      Remove an IAM policy binding from a device registry.
+  request:
+    collection: cloudiot.projects.locations.registries
+
+  arguments:
+    resource:
+      help_text:
+        The device registry for which to remove IAM policy binding from.
+      spec: !REF googlecloudsdk.command_lib.iot.resources:registry

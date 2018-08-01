@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
-from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -58,26 +57,6 @@ class GetServerConfig(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetServerConfigAlphaBeta(GetServerConfig):
   """Get Kubernetes Engine server config."""
-
-  def __init__(self, *args, **kwargs):
-    if container_command_util.GetUseV1APIProperty():
-      warning = messages.GetAPIMismatchingWarning(self.ReleaseTrack())
-      if warning:
-        log.warning(warning)
-
-    super(GetServerConfigAlphaBeta, self).__init__(*args, **kwargs)
-    self.location_get = container_command_util.GetZoneOrRegion
-
-  @staticmethod
-  def Args(parser):
-    """Add arguments to the parser.
-
-    Args:
-      parser: argparse.ArgumentParser, This is a standard argparser parser with
-        which you can register arguments.  See the public argparse documentation
-        for its capabilities.
-    """
-    flags.AddZoneAndRegionFlags(parser)
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

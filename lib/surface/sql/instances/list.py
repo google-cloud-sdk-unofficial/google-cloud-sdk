@@ -34,7 +34,8 @@ def _GetUriFromResource(resource):
       instance=resource.name).SelfLink()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """Lists Cloud SQL instances in a given project.
 

@@ -59,7 +59,8 @@ class Update(base.UpdateCommand):
         (args.certificate_id or args.no_certificate_id)):
       args.certificate_management = 'manual'
 
-    if (args.certificate_management.upper() == 'manual' and
+    if (args.certificate_management and
+        args.certificate_management.lower() == 'manual' and
         not args.certificate_id and not args.no_certificate_id):
       args.no_certificate_id = True
 

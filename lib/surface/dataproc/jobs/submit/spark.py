@@ -42,7 +42,7 @@ class Spark(spark.SparkBase, submitter.JobSubmitter):
 
   To submit a Spark job that runs a jar that is already on the cluster, run:
 
-    $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/lib/spark-examples.jar 1000
+    $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/examples/jars/spark-examples.jar -- 1000
   """
   # pylint: enable=line-too-long
 
@@ -79,7 +79,7 @@ class SparkBeta(spark.SparkBase, submitter.JobSubmitterBeta):
 
   To submit a Spark job that runs a jar that is already on the cluster, run:
 
-    $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/lib/spark-examples.jar 1000
+    $ {command} --cluster my_cluster --class org.apache.spark.examples.SparkPi --jars file:///usr/lib/spark/examples/jars/spark-examples.jar -- 1000
   """
   # pylint: enable=line-too-long
 

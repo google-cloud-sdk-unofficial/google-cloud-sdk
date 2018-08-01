@@ -29,7 +29,6 @@ class List(base.ListCommand):
         table(
             name,
             selfLink.scope().segment(-3).yesno(no="global"):label=LOCATION,
-            type,
             networkEndpointType:label=ENDPOINT_TYPE,
             size
         )

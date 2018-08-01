@@ -80,6 +80,7 @@ def _AddCreateArgs(parser):
   ).AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
+  flags.AddPythonVersionFlag(parser, 'when creating the version')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -100,18 +101,20 @@ class CreateGA(base.CreateCommand):
     versions_client = versions_api.VersionsClient()
     labels = versions_util.ParseCreateLabels(versions_client, args)
     framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
-    return versions_util.Create(versions_client,
-                                operations.OperationsClient(),
-                                args.version,
-                                model=args.model,
-                                origin=args.origin,
-                                staging_bucket=args.staging_bucket,
-                                runtime_version=args.runtime_version,
-                                config_file=args.config,
-                                asyncronous=args.async,
-                                description=args.description,
-                                labels=labels,
-                                framework=framework)
+    return versions_util.Create(
+        versions_client,
+        operations.OperationsClient(),
+        args.version,
+        model=args.model,
+        origin=args.origin,
+        staging_bucket=args.staging_bucket,
+        runtime_version=args.runtime_version,
+        config_file=args.config,
+        asyncronous=args.async,
+        description=args.description,
+        labels=labels,
+        framework=framework,
+        python_version=args.python_version)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -128,7 +131,6 @@ class CreateBeta(base.CreateCommand):
   def Args(parser):
     _AddCreateArgs(parser)
     flags.MACHINE_TYPE.AddToParser(parser)
-    flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
@@ -165,7 +167,6 @@ class CreateAlpha(base.CreateCommand):
   def Args(parser):
     _AddCreateArgs(parser)
     flags.ALPHA_MACHINE_TYPE.AddToParser(parser)
-    flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()

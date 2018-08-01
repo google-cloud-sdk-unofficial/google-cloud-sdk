@@ -195,42 +195,11 @@ class UpdateBackendBeta(UpdateBackend):
   load balancing policy and `draining` a backend by setting
   its capacity scaler to zero.
 
-  Backends are named by their associated instances groups, and one
-  of the `--group` or `--instance-group` flags is required to
-  identify the backend that you are modifying.  You cannot "change"
-  the instance group associated with a backend, but you can accomplish
-  something similar with `backend-services remove-backend` and
-  `backend-services add-backend`.
-
-  `gcloud compute backend-services edit` can also be used to
-  update a backend if the use of a text editor is desired.
-  """
-
-  @classmethod
-  def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    backend_flags.AddDescription(parser)
-    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
-        parser, operation_type='update the backend service')
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser)
-    backend_flags.AddCapacityScalar(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateBackendAlpha(UpdateBackend):
-  """Update an existing backend in a backend service.
-
-  *{command}* updates a backend that is part of a backend
-  service. This is useful for changing the way a backend
-  behaves. Example changes that can be made include changing the
-  load balancing policy and `draining` a backend by setting
-  its capacity scaler to zero.
-
-  Backends are named by their associated instances groups, and one
-  of the `--group` or `--instance-group` flags is required to
-  identify the backend that you are modifying.  You cannot "change"
-  the instance group associated with a backend, but you can accomplish
+  Backends are named by their associated instances groups or network
+  endpoint groups, and one of the `--network-endpoint-group` or
+  `--instance-group` flags is required to identify the backend that
+  you are modifying. You cannot "change" the instance group or
+  network endpoint group associated with a backend, but you can accomplish
   something similar with `backend-services remove-backend` and
   `backend-services add-backend`.
 
@@ -246,7 +215,6 @@ class UpdateBackendAlpha(UpdateBackend):
     backend_flags.AddBalancingMode(parser, supports_neg=True)
     backend_flags.AddCapacityLimits(parser, supports_neg=True)
     backend_flags.AddCapacityScalar(parser)
-    backend_flags.AddFailover(parser, default=None)
 
   def _GetGroupRef(self, args, resources, client):
     if args.instance_group:
@@ -271,6 +239,56 @@ class UpdateBackendAlpha(UpdateBackend):
 
     _ModifyBalancingModeArgs(
         client.messages, args, backend_to_update, supports_neg=True)
+
+  def _ValidateArgs(self, args):
+    """Overrides."""
+
+    if not any([
+        args.description is not None,
+        args.balancing_mode,
+        args.max_utilization is not None,
+        args.max_rate is not None,
+        args.max_rate_per_instance is not None,
+        args.max_rate_per_endpoint is not None,
+        args.max_connections is not None,
+        args.max_connections_per_instance is not None,
+        args.max_connections_per_endpoint is not None,
+        args.capacity_scaler is not None,
+    ]):
+      raise exceptions.ToolException('At least one property must be modified.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateBackendAlpha(UpdateBackendBeta):
+  """Update an existing backend in a backend service.
+
+  *{command}* updates a backend that is part of a backend
+  service. This is useful for changing the way a backend
+  behaves. Example changes that can be made include changing the
+  load balancing policy and `draining` a backend by setting
+  its capacity scaler to zero.
+
+  Backends are named by their associated instances groups or network
+  endpoint groups, and one of the `--network-endpoint-group` or
+  `--instance-group` flags is required to identify the backend that
+  you are modifying. You cannot "change" the instance group or
+  network endpoint group associated with a backend, but you can accomplish
+  something similar with `backend-services remove-backend` and
+  `backend-services add-backend`.
+
+  `gcloud compute backend-services edit` can also be used to
+  update a backend if the use of a text editor is desired.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
+    backend_flags.AddDescription(parser)
+    backend_flags.AddBalancingMode(parser, supports_neg=True)
+    backend_flags.AddCapacityLimits(parser, supports_neg=True)
+    backend_flags.AddCapacityScalar(parser)
+    backend_flags.AddFailover(parser, default=None)
 
   def _Modify(self, client, resources, backend_service_ref, args, existing):
     """Modify Backend."""

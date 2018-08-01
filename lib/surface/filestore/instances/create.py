@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,57 +17,40 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.filestore import filestore_client
-from googlecloudsdk.api_lib.filestore import filestore_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.command_lib.filestore import flags
 from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 import six
 
 
-class Create(base.CreateCommand):
-  """Create a Cloud Filestore instance.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
+  """Create a Cloud Filestore instance."""
 
-  ## EXAMPLES
-
-  The following command creates a Cloud Filestore instance named NAME with a
-  single volume.
-
-    $ {command} NAME --description=DESCRIPTION --tier=TIER
-        --fileshare=name=VOLUME_NAME,capacity=CAPACITY
-        --network=name=NETWORK_NAME,reserved-ip-range=RESERVED-IP-RANGE
-  """
+  _API_VERSION = filestore_client.FILESTORE_API_VERSION
 
   @staticmethod
   def Args(parser):
-    concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
-        'The instance to create.')]).AddToParser(parser)
-    instances_flags.AddDescriptionArg(parser)
-    messages = filestore_util.GetMessages()
-    instances_flags.GetTierArg(messages).choice_arg.AddToParser(parser)
-    instances_flags.AddAsyncFlag(parser, 'create')
-    instances_flags.AddFileshareArg(parser)
-    instances_flags.AddNetworkArg(parser)
-    labels_util.AddCreateLabelsFlags(parser)
+    instances_flags.AddInstanceCreateArgs(
+        parser, filestore_client.FILESTORE_API_VERSION)
 
   def Run(self, args):
     """Create a Cloud Filestore instance in the current project."""
     instance_ref = args.CONCEPTS.instance.Parse()
-    messages = filestore_util.GetMessages()
-    tier = instances_flags.GetTierArg(messages).GetEnumForChoice(args.tier)
+    client = filestore_client.FilestoreClient(self._API_VERSION)
+    tier = instances_flags.GetTierArg(
+        client.messages).GetEnumForChoice(args.tier)
     labels = labels_util.ParseCreateArgs(args,
-                                         messages.Instance.LabelsValue)
-    instance = filestore_util.ParseFilestoreConfig(
+                                         client.messages.Instance.LabelsValue)
+    instance = client.ParseFilestoreConfig(
         tier=tier, description=args.description,
         file_share=args.file_share, network=args.network,
         labels=labels)
-    client = filestore_client.FilestoreClient()
     try:
-      client.ValidateFileshares(instance)
+      client.ValidateFileShares(instance)
     except filestore_client.InvalidCapacityError as e:
       raise exceptions.InvalidArgumentException('--file-share',
                                                 six.text_type(e))
@@ -76,3 +60,26 @@ class Create(base.CreateCommand):
           '\nCheck the status of the new instance by listing all instances:\n  '
           '$ gcloud alpha filestore instances list')
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.FILESTORE_ALPHA_API_VERSION
+
+  @staticmethod
+  def Args(parser):
+    instances_flags.AddInstanceCreateArgs(
+        parser, filestore_client.FILESTORE_ALPHA_API_VERSION)
+
+
+CreateBeta.detailed_help = {
+    'DESCRIPTION': 'Create a Cloud Filestore instance.',
+    'EXAMPLES': """\
+The following command creates a Cloud Filestore instance named NAME with a
+single volume.
+
+  $ {command} NAME --description=DESCRIPTION --tier=TIER --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED-IP-RANGE
+"""
+}

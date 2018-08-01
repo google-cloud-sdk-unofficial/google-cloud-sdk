@@ -32,7 +32,8 @@ def _AddCommonFlags(parser):
     """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List customizable flags for Google Cloud SQL instances."""
 

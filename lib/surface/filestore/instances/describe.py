@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +22,11 @@ from googlecloudsdk.command_lib.filestore import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-class Describe(base.DescribeCommand):
-  """Show metadata for a Cloud Filestore instance.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
+  """Show metadata for a Cloud Filestore instance."""
 
-  ## EXAMPLE
-
-  The following command shows the metadata for the Cloud Filestore instance
-  named NAME in us-central1-c.
-
-    $ {command} NAME --location=us-central1-c
-  """
+  _API_VERSION = filestore_client.FILESTORE_API_VERSION
 
   @staticmethod
   def Args(parser):
@@ -40,4 +36,23 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     instance_ref = args.CONCEPTS.instance.Parse()
-    return filestore_client.FilestoreClient().GetInstance(instance_ref)
+    client = filestore_client.FilestoreClient(version=self._API_VERSION)
+    return client.GetInstance(instance_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+  """Show metadata for a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.FILESTORE_ALPHA_API_VERSION
+
+
+DescribeBeta.detailed_help = {
+    'DESCRIPTION': 'Show metadata for a Cloud Filestore instance.',
+    'EXAMPLES': """\
+The following command shows the metadata for the Cloud Filestore instance
+named NAME in us-central1-c.
+
+  $ {command} NAME --location=us-central1-c
+"""
+}

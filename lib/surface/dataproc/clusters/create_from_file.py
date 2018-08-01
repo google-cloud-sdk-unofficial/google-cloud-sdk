@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
+from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -47,5 +48,7 @@ class CreateFromFile(base.CreateCommand):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
     # Read cluster from YAML file.
-    cluster = util.ReadYaml(args.file, dataproc.messages.Cluster)
+    with files.FileReader(args.file) as stream:
+      cluster = util.ReadYaml(
+          message_type=dataproc.messages.Cluster, stream=stream)
     return clusters.CreateCluster(dataproc, cluster, args.async, args.timeout)

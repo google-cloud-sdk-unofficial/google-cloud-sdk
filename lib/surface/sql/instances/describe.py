@@ -28,7 +28,8 @@ from googlecloudsdk.core import properties
 import six.moves.http_client
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Get(base.DescribeCommand):
   """Displays configuration and metadata about a Cloud SQL instance.
 

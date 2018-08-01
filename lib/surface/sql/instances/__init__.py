@@ -20,7 +20,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 @base.CommandSuggestion('connect', 'sql connect')
 class Instances(base.Group):
   """Provide commands for managing Cloud SQL instances.

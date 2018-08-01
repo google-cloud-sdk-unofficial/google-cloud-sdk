@@ -47,7 +47,8 @@ class _BaseDelete(object):
     flags.AddInstance(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Delete(_BaseDelete, base.Command):
   """Deletes an SSL certificate for a Cloud SQL instance."""
 

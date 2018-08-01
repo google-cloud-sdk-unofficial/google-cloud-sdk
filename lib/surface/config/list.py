@@ -31,12 +31,12 @@ class BadConfigListInvocation(exceptions.Error):
 
 
 class List(base.ListCommand):
-  """View Cloud SDK properties.
+  """List Cloud SDK properties for the currently active configuration.
 
-  Lists all properties in your active configuration. These include the
+  {command} lists all properties of the active configuration. These include the
   account used to authorize access to the Cloud Platform, the current Cloud
   Platform project, and the default Compute Engine region and zone, if set. See
-  `gcloud topic configurations` for more information.
+  `gcloud topic configurations` for more about configurations.
 
   ## AVAILABLE PROPERTIES
 
@@ -56,7 +56,7 @@ class List(base.ListCommand):
 
     $ {command} --all
 
-  Note you cannot specify both --all and a property name.
+  Note, you cannot specify both --all and a property name.
   """
 
   detailed_help = {'properties': properties.VALUES.GetHelpString()}
@@ -72,7 +72,7 @@ class List(base.ListCommand):
         metavar='SECTION/PROPERTY',
         nargs='?',
         completer=completers.PropertiesCompleter,
-        help='The property to be listed. Note that SECTION/ is optional while '
+        help='Property to be listed. Note that SECTION/ is optional while '
         'referring to properties in the core section.')
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)

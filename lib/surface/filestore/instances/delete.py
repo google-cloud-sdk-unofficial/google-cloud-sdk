@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,16 +26,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.DeleteCommand):
-  """Delete a Cloud Filestore instance.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DeleteCommand):
+  """Delete a Cloud Filestore instance."""
 
-  ## EXAMPLES
-
-  To delete a Cloud Filestore instance named NAME in us-central1-c:
-
-    $ {command} NAME --location=us-central1-c
-
-  """
+  _API_VERSION = filestore_client.FILESTORE_API_VERSION
 
   @staticmethod
   def Args(parser):
@@ -49,10 +45,28 @@ class Delete(base.DeleteCommand):
                       'Are you sure?'.format(instance_ref.RelativeName()))
     if not console_io.PromptContinue(message=delete_warning):
       return None
-    result = filestore_client.FilestoreClient().DeleteInstance(
+    client = filestore_client.FilestoreClient(version=self._API_VERSION)
+    result = client.DeleteInstance(
         instance_ref, args.async)
     if args.async:
       log.status.Print(
           '\nCheck the status of the deletion by listing all instances:\n  '
           '$ gcloud alpha filestore instances list')
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+  """Delete a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.FILESTORE_ALPHA_API_VERSION
+
+
+DeleteBeta.detailed_help = {
+    'DESCRIPTION': 'Delete a Cloud Filestore instance.',
+    'EXAMPLES': """\
+To delete a Cloud Filestore instance named NAME in us-central1-c:
+
+  $ {command} NAME --location=us-central1-c
+"""
+}

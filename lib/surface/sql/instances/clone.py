@@ -48,7 +48,8 @@ _DETAILED_HELP = """
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Clone(base.CreateCommand):
   """Clones a Cloud SQL instance."""
 
