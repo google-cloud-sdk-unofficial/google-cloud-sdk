@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class WorkflowTemplates(base.Group):
-  """Create and manage Google Cloud Dataproc workflow templates.
+  r"""Create and manage Google Cloud Dataproc workflow templates.
 
   Create and manage Google Cloud Dataproc workflow templates.
 
@@ -59,7 +59,8 @@ class WorkflowTemplates(base.Group):
 
   To update cluster selector in a workflow template, run:
 
-    $ {command} set-cluster-selector my_template --num-workers 5
+    $ {command} set-cluster-selector my_template \
+        --cluster-labels environment=prod
 
   """
 

@@ -27,7 +27,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AsymmetricDecrypt(base.Command):
   r"""Decrypt an input file using an asymmetric-encryption key version.

@@ -20,16 +20,15 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from googlecloudsdk.api_lib.container import binauthz_util as binauthz_api_util
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
+from googlecloudsdk.api_lib.container.binauthz import containeranalysis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   r"""List Binary Authorization attestations.
 
@@ -40,14 +39,14 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  List all artifact URLs for which an attestation exists and is bound to the
-  passed attestor:
+  List the Occurrence messages for all attestations bound to the passed
+  attestor:
 
       $ {command} \
           --attestor=projects/foo/attestor/bar
 
-  List the (pgp_key_fingerprint, signature) pairs for all attestations for the
-  passed artifact-url bound to the passed attestor:
+  List the Occurrence messages for all attestations for the passed artifact-url
+  bound to the passed attestor:
 
       $ {command} \
           --attestor=projects/foo/attestors/bar \
@@ -56,6 +55,13 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
+    parser.display_info.AddFormat("""
+        table(
+            attestation.pgpSignedAttestation.pgpKeyId,
+            resourceUrl:label=ARTIFACT_URL:sort=1
+        )
+    """)
+
     flags.AddArtifactUrlFlag(parser, required=False)
 
     flags.AddConcepts(
@@ -87,12 +93,8 @@ class List(base.ListCommand):
         'containeranalysis.projects.notes',
         attestor.userOwnedDrydockNote.noteReference, {})
 
-    client = binauthz_api_util.ContainerAnalysisClient()
-
-    if normalized_artifact_url:
-      return client.YieldPgpKeyFingerprintsAndSignatures(
-          note_ref=note_ref,
-          artifact_url=normalized_artifact_url,
-      )
-    else:
-      return client.YieldUrlsWithOccurrences(note_ref)
+    client = containeranalysis.Client()
+    return client.YieldAttestations(
+        note_ref=note_ref,
+        artifact_url=normalized_artifact_url,
+    )

@@ -71,7 +71,6 @@ class List(base.ListCommand):
         batch_size_attribute='pageSize')
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListALPHA(List):
   """List the keys within a keyring.

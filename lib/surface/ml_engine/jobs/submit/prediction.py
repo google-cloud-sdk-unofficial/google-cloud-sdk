@@ -108,6 +108,7 @@ aren't a first-class Cloud Storage concept) of `my-bucket`.
             'batch_size number of records in memory before invoking TensorFlow.'
             ' Defaults to 64 if not specified.'))
 
+  flags.SIGNATURE_NAME.AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
@@ -140,6 +141,7 @@ class Prediction(base.Command):
         runtime_version=args.runtime_version,
         max_worker_count=args.max_worker_count,
         batch_size=args.batch_size,
+        signature_name=args.signature_name,
         labels=labels)
 
 
@@ -171,6 +173,7 @@ class PredictionAlpha(base.Command):
         runtime_version=args.runtime_version,
         max_worker_count=args.max_worker_count,
         batch_size=args.batch_size,
+        signature_name=args.signature_name,
         labels=labels,
         accelerator_type=args.accelerator_type,
         accelerator_count=args.accelerator_count)

@@ -22,13 +22,13 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import kms_utils
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import resources
 import six
 
 
@@ -127,9 +127,8 @@ class Create(base.CreateCommand):
       image.sourceImageEncryptionKey = csek_utils.MaybeLookupKeyMessage(
           csek_keys, source_image_ref, client.apitools_client)
 
-    # TODO(b/30086260): use resources.REGISTRY.Parse() for GCS URIs.
     if args.source_uri:
-      source_uri = utils.NormalizeGoogleStorageUri(args.source_uri)
+      source_uri = str(resources.REGISTRY.Parse(args.source_uri))
       image.rawDisk = messages.Image.RawDiskValue(source=source_uri)
     elif args.source_disk:
       source_disk_ref = flags.SOURCE_DISK_ARG.ResolveAsResource(

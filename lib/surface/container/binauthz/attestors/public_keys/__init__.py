@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 class PublicKeys(base.Group):
   r"""Create and manage public keys associated with Attestation Authorities.
 

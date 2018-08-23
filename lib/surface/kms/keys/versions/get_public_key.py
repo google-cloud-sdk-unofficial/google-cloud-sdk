@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetPublicKey(base.DescribeCommand):
   r"""Get the public key for a given version.

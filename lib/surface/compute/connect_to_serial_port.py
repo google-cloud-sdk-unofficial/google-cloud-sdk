@@ -142,6 +142,7 @@ class ConnectToSerialPort(base.Command):
           .format(args.user_host))
     if not remote.user:
       remote.user = ssh.GetDefaultSshUsername()
+    public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
 
     hostname = '[{0}]:{1}'.format(args.serial_port_gateway, CONNECTION_PORT)
     # Update google_compute_known_hosts file with published host key
@@ -179,6 +180,9 @@ class ConnectToSerialPort(base.Command):
     instance = ssh_helper.GetInstance(client, instance_ref)
     project = ssh_helper.GetProject(client, instance_ref.project)
 
+    remote.user, use_os_login = ssh.CheckForOsloginAndGetUser(
+        instance, project, remote.user, public_key, self.ReleaseTrack())
+
     # Determine the serial user, host tuple (remote)
     port = 'port={0}'.format(args.port)
     constructed_username_list = [instance_ref.project, instance_ref.zone,
@@ -199,7 +203,8 @@ class ConnectToSerialPort(base.Command):
     if args.dry_run:
       log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
       return
-    ssh_helper.EnsureSSHKeyExists(client, remote.user, instance, project)
+    if not use_os_login:
+      ssh_helper.EnsureSSHKeyExists(client, remote.user, instance, project)
 
     # Don't wait for the instance to become SSHable. We are not connecting to
     # the instance itself through SSH, so the instance doesn't need to have

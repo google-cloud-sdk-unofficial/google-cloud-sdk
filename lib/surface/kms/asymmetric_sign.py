@@ -27,7 +27,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AsymmetricSign(base.Command):
   r"""Sign a user input file using an asymmetric-signing key version.

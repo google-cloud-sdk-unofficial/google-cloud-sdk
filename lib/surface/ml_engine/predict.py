@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import predict
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import predict_utilities
 
 
@@ -82,6 +83,8 @@ versions run
         This flag accepts "-" for stdin.
         """)
 
+    flags.SIGNATURE_NAME.AddToParser(parser)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -98,7 +101,8 @@ versions run
     model_or_version_ref = predict_utilities.ParseModelOrVersionRef(
         args.model, args.version)
 
-    results = predict.Predict(model_or_version_ref, instances)
+    results = predict.Predict(model_or_version_ref, instances,
+                              signature_name=args.signature_name)
 
     if not args.IsSpecified('format'):
       # default format is based on the response.

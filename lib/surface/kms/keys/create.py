@@ -18,15 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.core import log
-from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -114,7 +111,6 @@ class Create(base.CreateCommand):
         self._CreateRequest(args))
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateALPHA(Create):
   r"""Create a new key.
@@ -137,10 +133,6 @@ class CreateALPHA(Create):
   created key. The default is software; use "HSM" to create a hardware-backed
   key.
 
-  The optional flag `attestation-file` specifies file to write attestation
-  object into. The attestation object helps the user assert the integrity and
-  provenance of the crypto operation.
-
   ## EXAMPLES
 
   The following command creates a key named `frodo` within the
@@ -149,8 +141,7 @@ class CreateALPHA(Create):
     $ {command} frodo \
         --location us-east1 \
         --keyring fellowship \
-        --purpose encryption \
-        --attestation-file /tmp/attestation.txt
+        --purpose encryption
 
   The following command creates a key named `strider` within the
   keyring `rangers` and location `global` with a specified rotation
@@ -170,15 +161,13 @@ class CreateALPHA(Create):
         --location us-east1 \
         --keyring fellowship \
         --purpose asymmetric-signing \
-        --default-algorithm ec-sign-p256-sha256 \
-        --attestation-file /tmp/attestation.txt
+        --default-algorithm ec-sign-p256-sha256
   """
 
   @staticmethod
   def Args(parser):
     super(CreateALPHA, CreateALPHA).Args(parser)
     flags.AddProtectionLevelFlag(parser)
-    flags.AddAttesationFileFlag(parser)
     flags.AddDefaultAlgorithmFlag(parser)
 
   def _CreateRequest(self, args):
@@ -204,11 +193,6 @@ class CreateALPHA(Create):
           'algorithms for --purpose={}: {}'.format(args.purpose,
                                                    ', '.join(valid_algorithms)))
 
-    # Raise exception if attestations are requested for software key.
-    if args.attestation_file and args.protection_level != 'hsm':
-      raise exceptions.ToolException(
-          '--attestation-file requires --protection-level=hsm.')
-
     crypto_key_ref = flags.ParseCryptoKeyName(args)
     parent_ref = flags.ParseParentFromResource(crypto_key_ref)
 
@@ -231,16 +215,3 @@ class CreateALPHA(Create):
     flags.SetRotationPeriod(args, req.cryptoKey)
 
     return req
-
-  def Run(self, args):
-    resp = super(CreateALPHA, self).Run(args)
-    if args.attestation_file and resp.primary.attestation is not None:
-      try:
-        log.WriteToFileOrStdout(
-            args.attestation_file,
-            encoding.MessageToJson(resp.primary.attestation),
-            overwrite=True,
-            binary=False,
-            private=True)
-      except files.Error as e:
-        raise exceptions.BadFileException(e)

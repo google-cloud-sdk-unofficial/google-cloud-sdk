@@ -242,7 +242,6 @@ class Update(base.UpdateCommand):
       return crypto_key
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateALPHA(Update):
   r"""Update a key.

@@ -421,6 +421,7 @@ class UpdateBeta(Update):
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group, hidden=True)
     flags.AddAutoprovisioningFlags(group, hidden=True)
+    flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -433,6 +434,7 @@ class UpdateBeta(Update):
     opts.max_memory = args.max_memory
     opts.min_accelerator = args.min_accelerator
     opts.max_accelerator = args.max_accelerator
+    opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     return opts
 
 
@@ -465,6 +467,7 @@ class UpdateAlpha(Update):
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group, hidden=True)
     flags.AddResourceUsageBigqueryDatasetFlag(group, add_clear_flag=True)
+    flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -480,4 +483,5 @@ class UpdateAlpha(Update):
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.clear_resource_usage_bigquery_dataset = \
         args.clear_resource_usage_bigquery_dataset
+    opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     return opts

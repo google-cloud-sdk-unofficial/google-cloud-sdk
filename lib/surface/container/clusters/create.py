@@ -406,6 +406,7 @@ class CreateBeta(Create):
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser, hidden=True)
+    flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -427,6 +428,7 @@ class CreateBeta(Create):
     ops.enable_binauthz = args.enable_binauthz
     ops.enable_tpu = args.enable_tpu
     ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
+    ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     return ops
 
 
@@ -469,6 +471,7 @@ class CreateAlpha(Create):
     flags.AddManagedPodIdentityFlag(parser)
     flags.AddResourceUsageBigqueryDatasetFlag(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
+    flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -496,4 +499,5 @@ class CreateAlpha(Create):
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.security_group = args.security_group
     flags.ValidateIstioConfigArgs(args.istio_config, args.addons)
+    ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     return ops

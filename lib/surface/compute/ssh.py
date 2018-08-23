@@ -142,8 +142,9 @@ class Ssh(base.Command):
     if args.plain:
       use_oslogin = False
     else:
-      user, use_oslogin = ssh_helper.CheckForOsloginAndGetUser(
-          instance, project, user, self.ReleaseTrack())
+      public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
+      user, use_oslogin = ssh.CheckForOsloginAndGetUser(
+          instance, project, user, public_key, self.ReleaseTrack())
     if args.internal_ip:
       ip_address = ssh_utils.GetInternalIPAddress(instance)
     else:

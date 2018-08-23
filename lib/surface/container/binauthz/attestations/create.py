@@ -20,9 +20,9 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from googlecloudsdk.api_lib.container import binauthz_util as binauthz_api_util
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
+from googlecloudsdk.api_lib.container.binauthz import containeranalysis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
 from googlecloudsdk.command_lib.container.binauthz import flags
@@ -31,7 +31,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Create a Binary Authorization attestation.
 
@@ -110,8 +109,7 @@ class Create(base.CreateCommand):
         'containeranalysis.projects.notes',
         attestor.userOwnedDrydockNote.noteReference, {})
 
-    client = binauthz_api_util.ContainerAnalysisClient()
-    return client.CreateAttestationOccurrence(
+    return containeranalysis.Client().CreateAttestationOccurrence(
         project_ref=project_ref,
         note_ref=note_ref,
         artifact_url=normalized_artifact_url,

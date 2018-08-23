@@ -5465,6 +5465,180 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "container": {
           "commands": {
+            "binauthz": {
+              "commands": {
+                "attestations": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--artifact-url": "value",
+                        "--attestor": "value",
+                        "--attestor-project": "value",
+                        "--pgp-key-fingerprint": "value",
+                        "--signature-file": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--artifact-url": "value",
+                        "--attestor": "value",
+                        "--attestor-project": "value",
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "attestors": {
+                  "commands": {
+                    "add-iam-policy-binding": {
+                      "commands": {},
+                      "flags": {
+                        "--member": "value",
+                        "--role": "value"
+                      }
+                    },
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--attestation-authority-note": "value",
+                        "--attestation-authority-note-project": "value",
+                        "--description": "value"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "get-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "public-keys": {
+                      "commands": {
+                        "add": {
+                          "commands": {},
+                          "flags": {
+                            "--attestor": "value",
+                            "--comment": "value",
+                            "--public-key-file": "value"
+                          }
+                        },
+                        "remove": {
+                          "commands": {},
+                          "flags": {
+                            "--attestor": "value"
+                          }
+                        },
+                        "update": {
+                          "commands": {},
+                          "flags": {
+                            "--attestor": "value",
+                            "--comment": "value",
+                            "--public-key-file": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
+                    "remove-iam-policy-binding": {
+                      "commands": {},
+                      "flags": {
+                        "--member": "value",
+                        "--role": "value"
+                      }
+                    },
+                    "set-iam-policy": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--description": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "create-signature-payload": {
+                  "commands": {},
+                  "flags": {
+                    "--artifact-url": "value"
+                  }
+                },
+                "policy": {
+                  "commands": {
+                    "add-iam-policy-binding": {
+                      "commands": {},
+                      "flags": {
+                        "--member": "value",
+                        "--role": "value"
+                      }
+                    },
+                    "export": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "get-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "import": {
+                      "commands": {},
+                      "flags": {
+                        "--strict-validation": "bool"
+                      }
+                    },
+                    "remove-iam-policy-binding": {
+                      "commands": {},
+                      "flags": {
+                        "--member": "value",
+                        "--role": "value"
+                      }
+                    },
+                    "set-iam-policy": {
+                      "commands": {},
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
             "builds": {
               "commands": {
                 "cancel": {
@@ -8182,6 +8356,31 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "kms": {
           "commands": {
+            "asymmetric-decrypt": {
+              "commands": {},
+              "flags": {
+                "--ciphertext-file": "value",
+                "--key": "dynamic",
+                "--keyring": "dynamic",
+                "--location": "dynamic",
+                "--plaintext-file": "value"
+              }
+            },
+            "asymmetric-sign": {
+              "commands": {},
+              "flags": {
+                "--digest-algorithm": [
+                  "sha256",
+                  "sha384",
+                  "sha512"
+                ],
+                "--input-file": "value",
+                "--key": "dynamic",
+                "--keyring": "dynamic",
+                "--location": "dynamic",
+                "--signature-file": "value"
+              }
+            },
             "decrypt": {
               "commands": {},
               "flags": {
@@ -8275,6 +8474,46 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--role": "dynamic"
                   }
                 },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--default-algorithm": [
+                      "crypto-key-version-algorithm-unspecified",
+                      "ec-sign-p256-sha256",
+                      "ec-sign-p384-sha384",
+                      "google-symmetric-encryption",
+                      "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-sign-pkcs1-2048-sha256",
+                      "rsa-sign-pkcs1-3072-sha256",
+                      "rsa-sign-pkcs1-4096-sha256",
+                      "rsa-sign-pss-2048-sha256",
+                      "rsa-sign-pss-3072-sha256",
+                      "rsa-sign-pss-4096-sha256"
+                    ],
+                    "--keyring": "dynamic",
+                    "--labels": "value",
+                    "--location": "dynamic",
+                    "--next-rotation-time": "value",
+                    "--protection-level": [
+                      "hsm",
+                      "software"
+                    ],
+                    "--purpose": [
+                      "asymmetric-encryption",
+                      "asymmetric-signing",
+                      "encryption"
+                    ],
+                    "--rotation-period": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--keyring": "dynamic",
+                    "--location": "dynamic"
+                  }
+                },
                 "get-iam-policy": {
                   "commands": {},
                   "flags": {
@@ -8284,6 +8523,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--location": "value",
                     "--page-size": "value",
                     "--sort-by": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--keyring": "dynamic",
+                    "--limit": "value",
+                    "--location": "dynamic",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
                   }
                 },
                 "remove-iam-policy-binding": {
@@ -8325,6 +8576,34 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--rotation-period": "value"
                   }
                 },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--clear-labels": "bool",
+                    "--default-algorithm": [
+                      "crypto-key-version-algorithm-unspecified",
+                      "ec-sign-p256-sha256",
+                      "ec-sign-p384-sha384",
+                      "google-symmetric-encryption",
+                      "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-sign-pkcs1-2048-sha256",
+                      "rsa-sign-pkcs1-3072-sha256",
+                      "rsa-sign-pkcs1-4096-sha256",
+                      "rsa-sign-pss-2048-sha256",
+                      "rsa-sign-pss-3072-sha256",
+                      "rsa-sign-pss-4096-sha256"
+                    ],
+                    "--keyring": "dynamic",
+                    "--location": "dynamic",
+                    "--next-rotation-time": "value",
+                    "--primary-version": "dynamic",
+                    "--remove-labels": "value",
+                    "--remove-rotation-schedule": "bool",
+                    "--rotation-period": "value",
+                    "--update-labels": "value"
+                  }
+                },
                 "versions": {
                   "commands": {
                     "create": {
@@ -8339,6 +8618,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "describe": {
                       "commands": {},
                       "flags": {
+                        "--attestation-file": "value",
                         "--key": "dynamic",
                         "--keyring": "dynamic",
                         "--location": "dynamic"
@@ -8366,6 +8646,15 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--key": "dynamic",
                         "--keyring": "dynamic",
                         "--location": "dynamic"
+                      }
+                    },
+                    "get-public-key": {
+                      "commands": {},
+                      "flags": {
+                        "--key": "dynamic",
+                        "--keyring": "dynamic",
+                        "--location": "dynamic",
+                        "--output-file": "value"
                       }
                     },
                     "list": {
@@ -8770,7 +9059,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--model-dir": "value",
                         "--output-path": "value",
                         "--region": "value",
-                        "--runtime-version": "value"
+                        "--runtime-version": "value",
+                        "--signature-name": "value"
                       }
                     },
                     "training": {
@@ -8824,6 +9114,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--json-instances": "value",
                     "--model-dir": "value",
+                    "--signature-name": "value",
                     "--text-instances": "value"
                   }
                 },
@@ -8965,6 +9256,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--json-instances": "value",
                 "--model": "value",
+                "--signature-name": "value",
                 "--text-instances": "value"
               }
             },
@@ -17077,6 +17369,180 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "container": {
           "commands": {
+            "binauthz": {
+              "commands": {
+                "attestations": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--artifact-url": "value",
+                        "--attestor": "value",
+                        "--attestor-project": "value",
+                        "--pgp-key-fingerprint": "value",
+                        "--signature-file": "value"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--artifact-url": "value",
+                        "--attestor": "value",
+                        "--attestor-project": "value",
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "attestors": {
+                  "commands": {
+                    "add-iam-policy-binding": {
+                      "commands": {},
+                      "flags": {
+                        "--member": "value",
+                        "--role": "value"
+                      }
+                    },
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--attestation-authority-note": "value",
+                        "--attestation-authority-note-project": "value",
+                        "--description": "value"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "get-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "public-keys": {
+                      "commands": {
+                        "add": {
+                          "commands": {},
+                          "flags": {
+                            "--attestor": "value",
+                            "--comment": "value",
+                            "--public-key-file": "value"
+                          }
+                        },
+                        "remove": {
+                          "commands": {},
+                          "flags": {
+                            "--attestor": "value"
+                          }
+                        },
+                        "update": {
+                          "commands": {},
+                          "flags": {
+                            "--attestor": "value",
+                            "--comment": "value",
+                            "--public-key-file": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
+                    "remove-iam-policy-binding": {
+                      "commands": {},
+                      "flags": {
+                        "--member": "value",
+                        "--role": "value"
+                      }
+                    },
+                    "set-iam-policy": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--description": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "create-signature-payload": {
+                  "commands": {},
+                  "flags": {
+                    "--artifact-url": "value"
+                  }
+                },
+                "policy": {
+                  "commands": {
+                    "add-iam-policy-binding": {
+                      "commands": {},
+                      "flags": {
+                        "--member": "value",
+                        "--role": "value"
+                      }
+                    },
+                    "export": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "get-iam-policy": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "import": {
+                      "commands": {},
+                      "flags": {
+                        "--strict-validation": "bool"
+                      }
+                    },
+                    "remove-iam-policy-binding": {
+                      "commands": {},
+                      "flags": {
+                        "--member": "value",
+                        "--role": "value"
+                      }
+                    },
+                    "set-iam-policy": {
+                      "commands": {},
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
             "builds": {
               "commands": {
                 "cancel": {
@@ -18162,8 +18628,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--cluster-labels": "value",
-                    "--region": "dynamic",
-                    "--zone": "value"
+                    "--region": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -20875,7 +21340,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--model-dir": "value",
                         "--output-path": "value",
                         "--region": "value",
-                        "--runtime-version": "value"
+                        "--runtime-version": "value",
+                        "--signature-name": "value"
                       }
                     },
                     "training": {
@@ -20929,6 +21395,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--json-instances": "value",
                     "--model-dir": "value",
+                    "--signature-name": "value",
                     "--text-instances": "value"
                   }
                 },
@@ -21051,6 +21518,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--json-instances": "value",
                 "--model": "value",
+                "--signature-name": "value",
                 "--text-instances": "value"
               }
             },
@@ -29942,7 +30410,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--model-dir": "value",
                     "--output-path": "value",
                     "--region": "value",
-                    "--runtime-version": "value"
+                    "--runtime-version": "value",
+                    "--signature-name": "value"
                   }
                 },
                 "training": {
@@ -29996,6 +30465,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--json-instances": "value",
                 "--model-dir": "value",
+                "--signature-name": "value",
                 "--text-instances": "value"
               }
             },
@@ -30118,6 +30588,7 @@ STATIC_COMPLETION_CLI_TREE = {
           "flags": {
             "--json-instances": "value",
             "--model": "value",
+            "--signature-name": "value",
             "--text-instances": "value"
           }
         },
