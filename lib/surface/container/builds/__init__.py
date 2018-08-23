@@ -22,8 +22,8 @@ from googlecloudsdk.api_lib.cloudbuild import transforms
 from googlecloudsdk.calliope import base
 
 DEPRECATED_WARNING_MESSAGE = """\
-This command group is deprecated. Please use `gcloud builds`
-instead."""
+This command is deprecated and will be removed on or after 2018-10-31. Please
+use `gcloud builds` instead."""
 
 
 @base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)

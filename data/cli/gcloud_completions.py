@@ -1770,7 +1770,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-project": "value",
                     "--log-location": "value",
                     "--network": "value",
-                    "--timeout": "value"
+                    "--timeout": "value",
+                    "--zone": "dynamic"
                   }
                 },
                 "get-iam-policy": {
@@ -6185,14 +6186,6 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "datastore": {
           "commands": {
-            "cleanup-indexes": {
-              "commands": {},
-              "flags": {}
-            },
-            "create-indexes": {
-              "commands": {},
-              "flags": {}
-            },
             "export": {
               "commands": {},
               "flags": {
@@ -8036,8 +8029,7 @@ STATIC_COMPLETION_CLI_TREE = {
         "interactive": {
           "commands": {},
           "flags": {
-            "--context": "value",
-            "--update-cli-trees": "bool"
+            "--context": "value"
           }
         },
         "iot": {
@@ -11199,7 +11191,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "wait": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--timeout": "value"
+                  }
                 }
               },
               "flags": {}
@@ -14239,7 +14233,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-project": "value",
                     "--log-location": "value",
                     "--network": "value",
-                    "--timeout": "value"
+                    "--timeout": "value",
+                    "--zone": "dynamic"
                   }
                 },
                 "get-iam-policy": {
@@ -18688,14 +18683,6 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "datastore": {
           "commands": {
-            "cleanup-indexes": {
-              "commands": {},
-              "flags": {}
-            },
-            "create-indexes": {
-              "commands": {},
-              "flags": {}
-            },
             "export": {
               "commands": {},
               "flags": {
@@ -23107,7 +23094,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "wait": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--timeout": "value"
+                  }
                 }
               },
               "flags": {}
@@ -23287,20 +23276,6 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "tasks": {
           "commands": {
-            "acknowledge": {
-              "commands": {},
-              "flags": {
-                "--queue": "value",
-                "--schedule-time": "value"
-              }
-            },
-            "cancel-lease": {
-              "commands": {},
-              "flags": {
-                "--queue": "value",
-                "--schedule-time": "value"
-              }
-            },
             "create-app-engine-task": {
               "commands": {},
               "flags": {
@@ -23314,16 +23289,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--url": "value"
               }
             },
-            "create-pull-task": {
-              "commands": {},
-              "flags": {
-                "--payload-content": "value",
-                "--payload-file": "value",
-                "--queue": "value",
-                "--schedule-time": "value",
-                "--tag": "value"
-              }
-            },
             "delete": {
               "commands": {},
               "flags": {
@@ -23334,19 +23299,6 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--queue": "value"
-              }
-            },
-            "lease": {
-              "commands": {},
-              "flags": {
-                "--filter": "value",
-                "--lease-duration": "value",
-                "--limit": "value",
-                "--oldest-tag": "bool",
-                "--queue": "value",
-                "--sort-by": "value",
-                "--tag": "value",
-                "--uri": "bool"
               }
             },
             "list": {
@@ -23399,13 +23351,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--max-tasks-dispatched-per-second": "value",
                     "--min-backoff": "value",
                     "--routing-override": "value"
-                  }
-                },
-                "create-pull-queue": {
-                  "commands": {},
-                  "flags": {
-                    "--max-attempts": "value",
-                    "--max-retry-duration": "value"
                   }
                 },
                 "delete": {
@@ -23481,26 +23426,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--min-backoff": "value",
                     "--routing-override": "value"
                   }
-                },
-                "update-pull-queue": {
-                  "commands": {},
-                  "flags": {
-                    "--clear-max-attempts": "bool",
-                    "--clear-max-retry-duration": "bool",
-                    "--max-attempts": "value",
-                    "--max-retry-duration": "value"
-                  }
                 }
               },
               "flags": {}
-            },
-            "renew-lease": {
-              "commands": {},
-              "flags": {
-                "--lease-duration": "value",
-                "--queue": "value",
-                "--schedule-time": "value"
-              }
             },
             "run": {
               "commands": {},
@@ -24863,7 +24791,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--image-project": "value",
                 "--log-location": "value",
                 "--network": "value",
-                "--timeout": "value"
+                "--timeout": "value",
+                "--zone": "dynamic"
               }
             },
             "import": {
@@ -27484,6 +27413,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--cluster-version": "value",
                 "--create-subnetwork": "value",
                 "--disk-size": "value",
+                "--disk-type": [
+                  "pd-ssd",
+                  "pd-standard"
+                ],
                 "--enable-autorepair": "bool",
                 "--enable-autoscaling": "bool",
                 "--enable-autoupgrade": "bool",
@@ -27678,6 +27611,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--accelerator": "value",
                 "--cluster": "value",
                 "--disk-size": "value",
+                "--disk-type": [
+                  "pd-ssd",
+                  "pd-standard"
+                ],
                 "--enable-autorepair": "bool",
                 "--enable-autoscaling": "bool",
                 "--enable-autoupgrade": "bool",
@@ -28185,6 +28122,33 @@ STATIC_COMPLETION_CLI_TREE = {
             "--namespaces": "value",
             "--operation-labels": "value"
           }
+        },
+        "indexes": {
+          "commands": {
+            "cleanup": {
+              "commands": {},
+              "flags": {}
+            },
+            "create": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
         },
         "operations": {
           "commands": {
@@ -31633,7 +31597,9 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "wait": {
               "commands": {},
-              "flags": {}
+              "flags": {
+                "--timeout": "value"
+              }
             }
           },
           "flags": {}

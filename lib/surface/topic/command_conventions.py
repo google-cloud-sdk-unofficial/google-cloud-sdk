@@ -158,7 +158,7 @@ class CommandConventions(base.TopicCommand):
   described below.
 
   Most standard error messaging is also logged to a file that can be accessed
-  by $ gcloud info --show-logs.
+  by $ gcloud info --show-log.
 
   No *gcloud* command should crash with an uncaught exception. However, if
   *gcloud* does crash the stack trace is intercepted and written to the log

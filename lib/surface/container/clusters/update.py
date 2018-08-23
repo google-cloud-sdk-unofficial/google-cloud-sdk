@@ -69,12 +69,6 @@ def _AddCommonArgs(parser):
 
 def _AddMutuallyExclusiveArgs(mutex_group, release_track):
   """Add all arguments that need to be mutually exclusive from each other."""
-  mutex_group.add_argument(
-      '--monitoring-service',
-      help='The monitoring service to use for the cluster. Options '
-      'are: "monitoring.googleapis.com" (the Google Cloud Monitoring '
-      'service),  "none" (no metrics will be exported from the cluster)')
-
   if release_track in [base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA]:
     mutex_group.add_argument(
         '--update-addons',
@@ -192,7 +186,8 @@ class Update(base.UpdateCommand):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
-    flags.AddLoggingServiceFlag(group)
+    flags.AddLoggingServiceFlag(group, enable_kubernetes=False)
+    flags.AddMonitoringServiceFlag(group, enable_kubernetes=False)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
 
   def ParseUpdateOptions(self, args, locations):
@@ -356,7 +351,7 @@ to completion."""
         op_ref = adapter.RemoveLabels(cluster_ref, args.remove_labels)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif args.logging_service is not None:
+    elif args.logging_service is not None and args.monitoring_service is None:
       try:
         op_ref = adapter.SetLoggingService(cluster_ref, args.logging_service)
       except apitools_exceptions.HttpError as error:
@@ -406,6 +401,11 @@ class UpdateBeta(Update):
     group_locations = group.add_mutually_exclusive_group()
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
+    group_logging_monitoring = group.add_group()
+    flags.AddLoggingServiceFlag(group_logging_monitoring,
+                                enable_kubernetes=True)
+    flags.AddMonitoringServiceFlag(group_logging_monitoring,
+                                   enable_kubernetes=True)
     flags.AddMasterAuthorizedNetworksFlags(parser,
                                            enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -416,7 +416,6 @@ class UpdateBeta(Update):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
-    flags.AddLoggingServiceFlag(group)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group, hidden=True)
@@ -451,6 +450,11 @@ class UpdateAlpha(Update):
     group_locations = group.add_mutually_exclusive_group()
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
+    group_logging_monitoring = group.add_group()
+    flags.AddLoggingServiceFlag(group_logging_monitoring,
+                                enable_kubernetes=True)
+    flags.AddMonitoringServiceFlag(group_logging_monitoring,
+                                   enable_kubernetes=True)
     flags.AddMasterAuthorizedNetworksFlags(parser,
                                            enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -461,7 +465,6 @@ class UpdateAlpha(Update):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
-    flags.AddLoggingServiceFlag(group)
     flags.AddAutoprovisioningFlags(group, hidden=False)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)

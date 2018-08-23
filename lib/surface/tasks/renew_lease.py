@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import parsers
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RenewLease(base.Command):
   """Renew the lease on a task in a pull queue."""
 

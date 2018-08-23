@@ -156,6 +156,7 @@ for examples.
   flags.AddNodeVersionFlag(parser)
   flags.AddIssueClientCertificateFlag(parser)
   flags.AddAcceleratorArgs(parser)
+  flags.AddDiskTypeFlag(parser)
 
 
 def ValidateBasicAuthFlags(args):
@@ -273,7 +274,6 @@ class Create(base.CreateCommand):
     flags.AddNodeLocationsFlag(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddDiskTypeFlag(parser, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
@@ -384,7 +384,6 @@ class CreateBeta(Create):
     flags.AddNodeLocationsFlag(group)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddDiskTypeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
@@ -444,7 +443,6 @@ class CreateAlpha(Create):
     flags.AddNodeLocationsFlag(group)
     flags.AddAlphaAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddDiskTypeFlag(parser)
     flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)

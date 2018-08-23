@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
@@ -33,6 +34,13 @@ class Wait(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddOperationArgument(parser)
+    parser.add_argument(
+        '--timeout',
+        type=arg_parsers.BoundedInt(lower_bound=0, unlimited=True),
+        default=300,
+        help=('Maximum number of seconds to wait for an operation to complete. '
+              'By default, wait for 300s. Set to *unlimited* to wait '
+              'indefinitely.'))
     parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
 
   def Run(self, args):
@@ -58,7 +66,8 @@ class Wait(base.Command):
       operations.OperationsV1Beta4.WaitForOperation(
           sql_client,
           operation_ref,
-          'Waiting for [{operation}]'.format(operation=operation_ref))
+          'Waiting for [{operation}]'.format(operation=operation_ref),
+          max_wait_seconds=args.timeout)
       yield sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project, operation=operation_ref.operation))

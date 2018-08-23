@@ -20,12 +20,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import io
+import os
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.interactive import application
 from googlecloudsdk.command_lib.interactive import bindings
 from googlecloudsdk.command_lib.interactive import config as configuration
-from googlecloudsdk.command_lib.meta import generate_cli_trees
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.document_renderers import render_document
 
@@ -33,8 +33,7 @@ import six
 
 
 _FEATURES = """
-* auto-completion for *gcloud* commands, flags and resource arguments
-* support for other CLIs including *bq*, *gsutil* and *kubectl*
+* auto-completion and active help for all commands
 * state preservation across commands: *cd*, local/environment variables
 """
 
@@ -43,14 +42,30 @@ _SPLASH = """
 
 Tips:
 
-* start by typing "gcloud " to get auto-suggestions
-* run *gcloud alpha interactive --update-cli-trees* to enable autocompletion
-  for *gsutil* and *kubectl*
+* start by typing commands to get auto-suggestions and inline help
+* use `tab`, `up-arrow`, or `down-arrow` to navigate completion dropdowns
+* use `space` or `/` to accept the highlighted dropdown item
 * run `gcloud alpha interactive --help` for more info
 
 Run *$ gcloud feedback* to report bugs or request new features.
 
 """
+
+
+def _AppendMetricsEnvironment(tag):
+  """Appends tag to the Cloud SDK metrics environment tag.
+
+  The metrics/environment tag is sent via the useragent. This tag is visible in
+  metrics for all gcloud commands executed by the calling command.
+
+  Args:
+    tag: The string to append to the metrics/environment tag.
+  """
+  metrics_environment = properties.VALUES.metrics.environment.Get() or ''
+  if metrics_environment:
+    metrics_environment += '.'
+  metrics_environment += tag
+  os.environ['CLOUDSDK_METRICS_ENVIRONMENT'] = metrics_environment
 
 
 def _GetKeyBindingsHelp():
@@ -119,16 +134,17 @@ class Interactive(base.Command):
   toggle mode/state settings or run specific actions.
   {bindings}
 
-  ### Auto and TAB Completion
+  ### Auto and Tab Completion
 
-  Command completions are displayed in a scrolling pop-up window. Use TAB and
-  up/down keys to navigate the completions, and ENTER/RETURN to select the
-  highlighted completion. Completions for _known_ commands, flags and static
+  Command completions are displayed in a scrolling pop-up menu. Use `tab` and
+  up/down keys to navigate the completions, and `space` or `/` to select the
+  highlighted completion. Completions for _known_ commands (`gcloud`, `bq`,
+  `gsutil`, `kubectl`, or any command with a man page), flags and static
   flag values are displayed automatically. Positional and dynamic flag value
-  completions for _known_ commands are displayed after TAB is entered. TAB
-  completion for unknown commands defers to *bash*(1), but using the
+  completions for _known_ commands are displayed after `tab` is entered. `tab`
+  completion for unknown commands defers to *bash*(1), while still using the
   *interactive* user interface. Absent specific command information, a
-  file/path completer is used when TAB is entered for unknown positionals
+  file/path completer is used when `tab` is entered for unknown positionals
   (arguments that do not start with '-').
 
   ### Control Characters
@@ -186,7 +202,8 @@ class Interactive(base.Command):
   *{command}* uses CLI tree data files for typeahead, command line completion
   and help snippet generation. A few CLI trees are installed with their
   respective Cloud SDK components: *gcloud* (core component), *bq*, *gsutil*,
-  and *kubectl*. See `$ gcloud topic cli-trees` for details.
+  and *kubectl*. Trees for commands that have man(1) pages are generated on
+  the fly. See `$ gcloud topic cli-trees` for details.
 
   ## EXAMPLES
 
@@ -217,6 +234,12 @@ class Interactive(base.Command):
               'in each command line. You can inline edit any part of the '
               'context, or ^C to eliminate it.'))
     parser.add_argument(
+        '--debug',
+        hidden=True,
+        action='store_true',
+        default=None,
+        help='Enable debugging display.')
+    parser.add_argument(
         '--hidden',
         hidden=True,
         action='store_true',
@@ -233,28 +256,16 @@ class Interactive(base.Command):
         default=None,
         help=('Enable auto suggestion from history. The defaults are currently '
               'too rudimentary for prime time.'))
-    # TODO(b/69033748): drop this workaround when the trees are packaged
-    parser.add_argument(
-        '--update-cli-trees',
-        action='store_true',
-        help=('Update the *bq*, *gsutil* and *kubectl* CLI trees, if the '
-              'corresponding command components have been installed. '
-              'Run with this flag *once* to enable completion and active help '
-              'for these commands. NOTICE: it may take a few minutes to '
-              'complete. This is a workaround that will be automatic (and '
-              '_faster_) in a future release.'))
 
   def Run(self, args):
-    # TODO(b/69033748): drop this workaround when the trees are packaged
-    if args.update_cli_trees:
-      generate_cli_trees.UpdateCliTrees(
-          warn_on_exceptions=True, verbose=not args.quiet)
     if not args.quiet:
       render_document.RenderDocument(fin=io.StringIO(_SPLASH))
     config = configuration.Config(
         context=args.context,
+        debug=args.debug,
         hidden=args.hidden,
         prompt=args.prompt,
         suggest=args.suggest,
     )
+    _AppendMetricsEnvironment('interactive_shell')
     application.main(args=args, config=config)

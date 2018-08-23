@@ -51,7 +51,7 @@ class Datastore(base.Group):
              ' API v1beta2.')
 
   def Filter(self, context, args):
-    java.RequireJavaInstalled(datastore_util.DATASTORE_TITLE)
+    java.RequireJavaInstalled(datastore_util.DATASTORE_TITLE, min_version=8)
     if args.legacy:
       util.EnsureComponentIsInstalled('gcd-emulator',
                                       datastore_util.DATASTORE_TITLE)

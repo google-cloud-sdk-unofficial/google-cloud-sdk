@@ -25,8 +25,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 DEPRECATED_WARNING_MESSAGE = """\
-This command is deprecated. Please use `gcloud builds describe`
-instead."""
+This command is deprecated and will be removed on or after 2018-10-31. Please
+use `gcloud builds describe` instead."""
 
 
 @base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)

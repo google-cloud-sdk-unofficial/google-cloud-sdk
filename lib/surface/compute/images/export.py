@@ -49,6 +49,10 @@ class Export(base.CreateCommand):
     )
     image_utils.AddImageProjectFlag(parser)
 
+    flags.compute_flags.AddZoneFlag(
+        parser, 'image', 'export',
+        explanation='The zone to use when exporting the image.')
+
     parser.add_argument(
         '--destination-uri',
         required=True,
@@ -104,7 +108,8 @@ class Export(base.CreateCommand):
 
     tags = ['gce-daisy-image-export']
     return daisy_utils.RunDaisyBuild(args, workflow, variables,
-                                     tags=tags, output_filter=_OUTPUT_FILTER)
+                                     tags=tags, user_zone=args.zone,
+                                     output_filter=_OUTPUT_FILTER)
 
 Export.detailed_help = {
     'brief': 'Export a Google Compute Engine image',

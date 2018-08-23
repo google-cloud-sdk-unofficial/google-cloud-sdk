@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 
 
 class UpdateCluster(base.UpdateCommand):
-  """Update a Bigtable cluster's friendly name and serving nodes."""
+  """Update a Bigtable cluster's number of nodes."""
 
   @staticmethod
   def Args(parser):

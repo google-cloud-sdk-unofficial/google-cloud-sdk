@@ -15,8 +15,10 @@
 """The `gcloud meta test` command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
 import os
 import signal
 import sys
@@ -30,6 +32,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import module_util
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
 
 
 class Test(base.Command):
@@ -69,16 +72,22 @@ class Test(base.Command):
         help=('Call console_io.IsInteractive(heuristic=True) and exit 0 '
               'if the return value is True, 1 if False.'))
     scenarios.add_argument(
+        '--prompt-completer',
+        metavar='MODULE_PATH',
+        help=('Call console_io.PromptResponse() with a MODULE_PATH completer '
+              'and print the response on the standard output.'))
+    scenarios.add_argument(
+        '--progress-tracker',
+        metavar='SECONDS',
+        type=float,
+        default=0.0,
+        help='Run the progress tracker for SECONDS seconds and exit.')
+    scenarios.add_argument(
         '--sleep',
         metavar='SECONDS',
         type=float,
         default=0.0,
         help='Sleep for SECONDS seconds and exit.')
-    scenarios.add_argument(
-        '--prompt-completer',
-        metavar='MODULE_PATH',
-        help=('Call console_io.PromptResponse() with a MODULE_PATH completer '
-              'and print the response on the standard output.'))
     scenarios.add_argument(
         '--uncaught-exception',
         action='store_true',
@@ -114,6 +123,16 @@ class Test(base.Command):
     response = console_io.PromptResponse('Complete this: ', choices=choices)
     print(response)
 
+  def _RunProgressTracker(self, args):
+    start_time = time.time()
+    def message_callback():
+      remaining_time = args.progress_tracker - (time.time() - start_time)
+      return '{0:.1f}s remaining'.format(remaining_time)
+    with progress_tracker.ProgressTracker(
+        message='This is a progress tracker.',
+        detail_message_callback=message_callback):
+      time.sleep(args.progress_tracker)
+
   def _RunSleep(self, args):
     time.sleep(args.sleep)
 
@@ -133,6 +152,8 @@ class Test(base.Command):
       self._RunIsInteractive(args)
     elif args.prompt_completer:
       self._RunPromptCompleter(args)
+    elif args.progress_tracker:
+      self._RunProgressTracker(args)
     elif args.sleep:
       self._RunSleep(args)
     elif args.uncaught_exception:

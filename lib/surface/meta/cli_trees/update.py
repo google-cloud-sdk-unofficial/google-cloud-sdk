@@ -63,10 +63,17 @@ class Update(base.Command):
         action='store_true',
         help=('Force existing CLI trees to be out of date. This causes them '
               'to be regenerated.'))
+    parser.add_argument(
+        '--tarball',
+        help=('For packaging CLI trees. --commands specifies one command '
+              'that is a relative path in this tarball. The tarball is '
+              'extracted to a temporary directory and the command path is '
+              'adjusted to point to the temporary directory.'))
 
   def Run(self, args):
     generate_cli_trees.UpdateCliTrees(cli=self._cli_power_users_only,
                                       commands=args.commands,
                                       directory=args.directory,
+                                      tarball=args.tarball,
                                       force=args.force,
                                       verbose=not args.quiet)

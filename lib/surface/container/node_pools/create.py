@@ -98,6 +98,7 @@ for examples.
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
   flags.AddNodeVersionFlag(parser)
   flags.AddAcceleratorArgs(parser)
+  flags.AddDiskTypeFlag(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -149,7 +150,6 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddDiskTypeFlag(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
@@ -216,7 +216,6 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddDiskTypeFlag(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
@@ -245,13 +244,13 @@ class CreateAlpha(Create):
     ops.new_scopes_behavior = True
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.max_pods_per_node = args.max_pods_per_node
+    ops.sandbox = args.sandbox
     return ops
 
   @staticmethod
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
-    flags.AddDiskTypeFlag(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
     flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser, for_node_pool=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
@@ -261,6 +260,7 @@ class CreateAlpha(Create):
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
+    flags.AddSandboxFlag(parser, hidden=True)
 
 
 Create.detailed_help = DETAILED_HELP
