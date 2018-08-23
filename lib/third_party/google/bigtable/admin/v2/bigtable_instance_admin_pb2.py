@@ -15,8 +15,11 @@ _sym_db = _symbol_database.Default()
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.bigtable.admin.v2 import instance_pb2 as google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2
+from google.iam.v1 import iam_policy_pb2 as google_dot_iam_dot_v1_dot_iam__policy__pb2
+from google.iam.v1 import policy_pb2 as google_dot_iam_dot_v1_dot_policy__pb2
 from google.longrunning import operations_pb2 as google_dot_longrunning_dot_operations__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from google.protobuf import field_mask_pb2 as google_dot_protobuf_dot_field__mask__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
@@ -24,9 +27,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='google/bigtable/admin/v2/bigtable_instance_admin.proto',
   package='google.bigtable.admin.v2',
   syntax='proto3',
-  serialized_pb=_b('\n6google/bigtable/admin/v2/bigtable_instance_admin.proto\x12\x18google.bigtable.admin.v2\x1a\x1cgoogle/api/annotations.proto\x1a\'google/bigtable/admin/v2/instance.proto\x1a#google/longrunning/operations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x97\x02\n\x15\x43reateInstanceRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x13\n\x0binstance_id\x18\x02 \x01(\t\x12\x34\n\x08instance\x18\x03 \x01(\x0b\x32\".google.bigtable.admin.v2.Instance\x12O\n\x08\x63lusters\x18\x04 \x03(\x0b\x32=.google.bigtable.admin.v2.CreateInstanceRequest.ClustersEntry\x1aR\n\rClustersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x30\n\x05value\x18\x02 \x01(\x0b\x32!.google.bigtable.admin.v2.Cluster:\x02\x38\x01\"\"\n\x12GetInstanceRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\":\n\x14ListInstancesRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x12\n\npage_token\x18\x02 \x01(\t\"\x81\x01\n\x15ListInstancesResponse\x12\x35\n\tinstances\x18\x01 \x03(\x0b\x32\".google.bigtable.admin.v2.Instance\x12\x18\n\x10\x66\x61iled_locations\x18\x02 \x03(\t\x12\x17\n\x0fnext_page_token\x18\x03 \x01(\t\"%\n\x15\x44\x65leteInstanceRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"n\n\x14\x43reateClusterRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x12\n\ncluster_id\x18\x02 \x01(\t\x12\x32\n\x07\x63luster\x18\x03 \x01(\x0b\x32!.google.bigtable.admin.v2.Cluster\"!\n\x11GetClusterRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"9\n\x13ListClustersRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x12\n\npage_token\x18\x02 \x01(\t\"~\n\x14ListClustersResponse\x12\x33\n\x08\x63lusters\x18\x01 \x03(\x0b\x32!.google.bigtable.admin.v2.Cluster\x12\x18\n\x10\x66\x61iled_locations\x18\x02 \x03(\t\x12\x17\n\x0fnext_page_token\x18\x03 \x01(\t\"$\n\x14\x44\x65leteClusterRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xc6\x01\n\x16\x43reateInstanceMetadata\x12I\n\x10original_request\x18\x01 \x01(\x0b\x32/.google.bigtable.admin.v2.CreateInstanceRequest\x12\x30\n\x0crequest_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12/\n\x0b\x66inish_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xb7\x01\n\x15UpdateClusterMetadata\x12;\n\x10original_request\x18\x01 \x01(\x0b\x32!.google.bigtable.admin.v2.Cluster\x12\x30\n\x0crequest_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12/\n\x0b\x66inish_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\xdb\x0b\n\x15\x42igtableInstanceAdmin\x12\x8e\x01\n\x0e\x43reateInstance\x12/.google.bigtable.admin.v2.CreateInstanceRequest\x1a\x1d.google.longrunning.Operation\",\x82\xd3\xe4\x93\x02&\"!/v2/{parent=projects/*}/instances:\x01*\x12\x8a\x01\n\x0bGetInstance\x12,.google.bigtable.admin.v2.GetInstanceRequest\x1a\".google.bigtable.admin.v2.Instance\")\x82\xd3\xe4\x93\x02#\x12!/v2/{name=projects/*/instances/*}\x12\x9b\x01\n\rListInstances\x12..google.bigtable.admin.v2.ListInstancesRequest\x1a/.google.bigtable.admin.v2.ListInstancesResponse\")\x82\xd3\xe4\x93\x02#\x12!/v2/{parent=projects/*}/instances\x12\x86\x01\n\x0eUpdateInstance\x12\".google.bigtable.admin.v2.Instance\x1a\".google.bigtable.admin.v2.Instance\",\x82\xd3\xe4\x93\x02&\x1a!/v2/{name=projects/*/instances/*}:\x01*\x12\x84\x01\n\x0e\x44\x65leteInstance\x12/.google.bigtable.admin.v2.DeleteInstanceRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#*!/v2/{name=projects/*/instances/*}\x12\x9d\x01\n\rCreateCluster\x12..google.bigtable.admin.v2.CreateClusterRequest\x1a\x1d.google.longrunning.Operation\"=\x82\xd3\xe4\x93\x02\x37\",/v2/{parent=projects/*/instances/*}/clusters:\x07\x63luster\x12\x92\x01\n\nGetCluster\x12+.google.bigtable.admin.v2.GetClusterRequest\x1a!.google.bigtable.admin.v2.Cluster\"4\x82\xd3\xe4\x93\x02.\x12,/v2/{name=projects/*/instances/*/clusters/*}\x12\xa3\x01\n\x0cListClusters\x12-.google.bigtable.admin.v2.ListClustersRequest\x1a..google.bigtable.admin.v2.ListClustersResponse\"4\x82\xd3\xe4\x93\x02.\x12,/v2/{parent=projects/*/instances/*}/clusters\x12\x8a\x01\n\rUpdateCluster\x12!.google.bigtable.admin.v2.Cluster\x1a\x1d.google.longrunning.Operation\"7\x82\xd3\xe4\x93\x02\x31\x1a,/v2/{name=projects/*/instances/*/clusters/*}:\x01*\x12\x8d\x01\n\rDeleteCluster\x12..google.bigtable.admin.v2.DeleteClusterRequest\x1a\x16.google.protobuf.Empty\"4\x82\xd3\xe4\x93\x02.*,/v2/{name=projects/*/instances/*/clusters/*}B{\n\x1c\x63om.google.bigtable.admin.v2B\x1a\x42igtableInstanceAdminProtoP\x01Z=google.golang.org/genproto/googleapis/bigtable/admin/v2;adminb\x06proto3')
+  serialized_pb=_b('\n6google/bigtable/admin/v2/bigtable_instance_admin.proto\x12\x18google.bigtable.admin.v2\x1a\x1cgoogle/api/annotations.proto\x1a\'google/bigtable/admin/v2/instance.proto\x1a\x1egoogle/iam/v1/iam_policy.proto\x1a\x1agoogle/iam/v1/policy.proto\x1a#google/longrunning/operations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x97\x02\n\x15\x43reateInstanceRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x13\n\x0binstance_id\x18\x02 \x01(\t\x12\x34\n\x08instance\x18\x03 \x01(\x0b\x32\".google.bigtable.admin.v2.Instance\x12O\n\x08\x63lusters\x18\x04 \x03(\x0b\x32=.google.bigtable.admin.v2.CreateInstanceRequest.ClustersEntry\x1aR\n\rClustersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x30\n\x05value\x18\x02 \x01(\x0b\x32!.google.bigtable.admin.v2.Cluster:\x02\x38\x01\"\"\n\x12GetInstanceRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\":\n\x14ListInstancesRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x12\n\npage_token\x18\x02 \x01(\t\"\x81\x01\n\x15ListInstancesResponse\x12\x35\n\tinstances\x18\x01 \x03(\x0b\x32\".google.bigtable.admin.v2.Instance\x12\x18\n\x10\x66\x61iled_locations\x18\x02 \x03(\t\x12\x17\n\x0fnext_page_token\x18\x03 \x01(\t\"\x85\x01\n\x1cPartialUpdateInstanceRequest\x12\x34\n\x08instance\x18\x01 \x01(\x0b\x32\".google.bigtable.admin.v2.Instance\x12/\n\x0bupdate_mask\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\"%\n\x15\x44\x65leteInstanceRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"n\n\x14\x43reateClusterRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x12\n\ncluster_id\x18\x02 \x01(\t\x12\x32\n\x07\x63luster\x18\x03 \x01(\x0b\x32!.google.bigtable.admin.v2.Cluster\"!\n\x11GetClusterRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"9\n\x13ListClustersRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x12\n\npage_token\x18\x02 \x01(\t\"~\n\x14ListClustersResponse\x12\x33\n\x08\x63lusters\x18\x01 \x03(\x0b\x32!.google.bigtable.admin.v2.Cluster\x12\x18\n\x10\x66\x61iled_locations\x18\x02 \x03(\t\x12\x17\n\x0fnext_page_token\x18\x03 \x01(\t\"$\n\x14\x44\x65leteClusterRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xc6\x01\n\x16\x43reateInstanceMetadata\x12I\n\x10original_request\x18\x01 \x01(\x0b\x32/.google.bigtable.admin.v2.CreateInstanceRequest\x12\x30\n\x0crequest_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12/\n\x0b\x66inish_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xcd\x01\n\x16UpdateInstanceMetadata\x12P\n\x10original_request\x18\x01 \x01(\x0b\x32\x36.google.bigtable.admin.v2.PartialUpdateInstanceRequest\x12\x30\n\x0crequest_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12/\n\x0b\x66inish_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xc4\x01\n\x15\x43reateClusterMetadata\x12H\n\x10original_request\x18\x01 \x01(\x0b\x32..google.bigtable.admin.v2.CreateClusterRequest\x12\x30\n\x0crequest_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12/\n\x0b\x66inish_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xb7\x01\n\x15UpdateClusterMetadata\x12;\n\x10original_request\x18\x01 \x01(\x0b\x32!.google.bigtable.admin.v2.Cluster\x12\x30\n\x0crequest_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12/\n\x0b\x66inish_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x95\x01\n\x17\x43reateAppProfileRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x16\n\x0e\x61pp_profile_id\x18\x02 \x01(\t\x12\x39\n\x0b\x61pp_profile\x18\x03 \x01(\x0b\x32$.google.bigtable.admin.v2.AppProfile\x12\x17\n\x0fignore_warnings\x18\x04 \x01(\x08\"$\n\x14GetAppProfileRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"<\n\x16ListAppProfilesRequest\x12\x0e\n\x06parent\x18\x01 \x01(\t\x12\x12\n\npage_token\x18\x02 \x01(\t\"n\n\x17ListAppProfilesResponse\x12:\n\x0c\x61pp_profiles\x18\x01 \x03(\x0b\x32$.google.bigtable.admin.v2.AppProfile\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\x9e\x01\n\x17UpdateAppProfileRequest\x12\x39\n\x0b\x61pp_profile\x18\x01 \x01(\x0b\x32$.google.bigtable.admin.v2.AppProfile\x12/\n\x0bupdate_mask\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\x12\x17\n\x0fignore_warnings\x18\x03 \x01(\x08\"@\n\x17\x44\x65leteAppProfileRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x17\n\x0fignore_warnings\x18\x02 \x01(\x08\"\x1a\n\x18UpdateAppProfileMetadata2\xaa\x17\n\x15\x42igtableInstanceAdmin\x12\x8e\x01\n\x0e\x43reateInstance\x12/.google.bigtable.admin.v2.CreateInstanceRequest\x1a\x1d.google.longrunning.Operation\",\x82\xd3\xe4\x93\x02&\"!/v2/{parent=projects/*}/instances:\x01*\x12\x8a\x01\n\x0bGetInstance\x12,.google.bigtable.admin.v2.GetInstanceRequest\x1a\".google.bigtable.admin.v2.Instance\")\x82\xd3\xe4\x93\x02#\x12!/v2/{name=projects/*/instances/*}\x12\x9b\x01\n\rListInstances\x12..google.bigtable.admin.v2.ListInstancesRequest\x1a/.google.bigtable.admin.v2.ListInstancesResponse\")\x82\xd3\xe4\x93\x02#\x12!/v2/{parent=projects/*}/instances\x12\x86\x01\n\x0eUpdateInstance\x12\".google.bigtable.admin.v2.Instance\x1a\".google.bigtable.admin.v2.Instance\",\x82\xd3\xe4\x93\x02&\x1a!/v2/{name=projects/*/instances/*}:\x01*\x12\xac\x01\n\x15PartialUpdateInstance\x12\x36.google.bigtable.admin.v2.PartialUpdateInstanceRequest\x1a\x1d.google.longrunning.Operation\"<\x82\xd3\xe4\x93\x02\x36\x32*/v2/{instance.name=projects/*/instances/*}:\x08instance\x12\x84\x01\n\x0e\x44\x65leteInstance\x12/.google.bigtable.admin.v2.DeleteInstanceRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#*!/v2/{name=projects/*/instances/*}\x12\x9d\x01\n\rCreateCluster\x12..google.bigtable.admin.v2.CreateClusterRequest\x1a\x1d.google.longrunning.Operation\"=\x82\xd3\xe4\x93\x02\x37\",/v2/{parent=projects/*/instances/*}/clusters:\x07\x63luster\x12\x92\x01\n\nGetCluster\x12+.google.bigtable.admin.v2.GetClusterRequest\x1a!.google.bigtable.admin.v2.Cluster\"4\x82\xd3\xe4\x93\x02.\x12,/v2/{name=projects/*/instances/*/clusters/*}\x12\xa3\x01\n\x0cListClusters\x12-.google.bigtable.admin.v2.ListClustersRequest\x1a..google.bigtable.admin.v2.ListClustersResponse\"4\x82\xd3\xe4\x93\x02.\x12,/v2/{parent=projects/*/instances/*}/clusters\x12\x8a\x01\n\rUpdateCluster\x12!.google.bigtable.admin.v2.Cluster\x1a\x1d.google.longrunning.Operation\"7\x82\xd3\xe4\x93\x02\x31\x1a,/v2/{name=projects/*/instances/*/clusters/*}:\x01*\x12\x8d\x01\n\rDeleteCluster\x12..google.bigtable.admin.v2.DeleteClusterRequest\x1a\x16.google.protobuf.Empty\"4\x82\xd3\xe4\x93\x02.*,/v2/{name=projects/*/instances/*/clusters/*}\x12\xb1\x01\n\x10\x43reateAppProfile\x12\x31.google.bigtable.admin.v2.CreateAppProfileRequest\x1a$.google.bigtable.admin.v2.AppProfile\"D\x82\xd3\xe4\x93\x02>\"//v2/{parent=projects/*/instances/*}/appProfiles:\x0b\x61pp_profile\x12\x9e\x01\n\rGetAppProfile\x12..google.bigtable.admin.v2.GetAppProfileRequest\x1a$.google.bigtable.admin.v2.AppProfile\"7\x82\xd3\xe4\x93\x02\x31\x12//v2/{name=projects/*/instances/*/appProfiles/*}\x12\xaf\x01\n\x0fListAppProfiles\x12\x30.google.bigtable.admin.v2.ListAppProfilesRequest\x1a\x31.google.bigtable.admin.v2.ListAppProfilesResponse\"7\x82\xd3\xe4\x93\x02\x31\x12//v2/{parent=projects/*/instances/*}/appProfiles\x12\xb6\x01\n\x10UpdateAppProfile\x12\x31.google.bigtable.admin.v2.UpdateAppProfileRequest\x1a\x1d.google.longrunning.Operation\"P\x82\xd3\xe4\x93\x02J2;/v2/{app_profile.name=projects/*/instances/*/appProfiles/*}:\x0b\x61pp_profile\x12\x96\x01\n\x10\x44\x65leteAppProfile\x12\x31.google.bigtable.admin.v2.DeleteAppProfileRequest\x1a\x16.google.protobuf.Empty\"7\x82\xd3\xe4\x93\x02\x31*//v2/{name=projects/*/instances/*/appProfiles/*}\x12\x88\x01\n\x0cGetIamPolicy\x12\".google.iam.v1.GetIamPolicyRequest\x1a\x15.google.iam.v1.Policy\"=\x82\xd3\xe4\x93\x02\x37\"2/v2/{resource=projects/*/instances/*}:getIamPolicy:\x01*\x12\x88\x01\n\x0cSetIamPolicy\x12\".google.iam.v1.SetIamPolicyRequest\x1a\x15.google.iam.v1.Policy\"=\x82\xd3\xe4\x93\x02\x37\"2/v2/{resource=projects/*/instances/*}:setIamPolicy:\x01*\x12\xae\x01\n\x12TestIamPermissions\x12(.google.iam.v1.TestIamPermissionsRequest\x1a).google.iam.v1.TestIamPermissionsResponse\"C\x82\xd3\xe4\x93\x02=\"8/v2/{resource=projects/*/instances/*}:testIamPermissions:\x01*B\xbd\x01\n\x1c\x63om.google.bigtable.admin.v2B\x1a\x42igtableInstanceAdminProtoP\x01Z=google.golang.org/genproto/googleapis/bigtable/admin/v2;admin\xaa\x02\x1eGoogle.Cloud.Bigtable.Admin.V2\xca\x02\x1eGoogle\\Cloud\\Bigtable\\Admin\\V2b\x06proto3')
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.DESCRIPTOR,google_dot_longrunning_dot_operations__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.DESCRIPTOR,google_dot_iam_dot_v1_dot_iam__policy__pb2.DESCRIPTOR,google_dot_iam_dot_v1_dot_policy__pb2.DESCRIPTOR,google_dot_longrunning_dot_operations__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_field__mask__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
 
 
@@ -44,14 +47,14 @@ _CREATEINSTANCEREQUEST_CLUSTERSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='google.bigtable.admin.v2.CreateInstanceRequest.ClustersEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -64,8 +67,8 @@ _CREATEINSTANCEREQUEST_CLUSTERSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=452,
-  serialized_end=534,
+  serialized_start=546,
+  serialized_end=628,
 )
 
 _CREATEINSTANCEREQUEST = _descriptor.Descriptor(
@@ -81,28 +84,28 @@ _CREATEINSTANCEREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='instance_id', full_name='google.bigtable.admin.v2.CreateInstanceRequest.instance_id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='instance', full_name='google.bigtable.admin.v2.CreateInstanceRequest.instance', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='clusters', full_name='google.bigtable.admin.v2.CreateInstanceRequest.clusters', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -115,8 +118,8 @@ _CREATEINSTANCEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=255,
-  serialized_end=534,
+  serialized_start=349,
+  serialized_end=628,
 )
 
 
@@ -133,7 +136,7 @@ _GETINSTANCEREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -146,8 +149,8 @@ _GETINSTANCEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=536,
-  serialized_end=570,
+  serialized_start=630,
+  serialized_end=664,
 )
 
 
@@ -164,14 +167,14 @@ _LISTINSTANCESREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='page_token', full_name='google.bigtable.admin.v2.ListInstancesRequest.page_token', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -184,8 +187,8 @@ _LISTINSTANCESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=572,
-  serialized_end=630,
+  serialized_start=666,
+  serialized_end=724,
 )
 
 
@@ -202,21 +205,21 @@ _LISTINSTANCESRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='failed_locations', full_name='google.bigtable.admin.v2.ListInstancesResponse.failed_locations', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='next_page_token', full_name='google.bigtable.admin.v2.ListInstancesResponse.next_page_token', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -229,8 +232,46 @@ _LISTINSTANCESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=633,
-  serialized_end=762,
+  serialized_start=727,
+  serialized_end=856,
+)
+
+
+_PARTIALUPDATEINSTANCEREQUEST = _descriptor.Descriptor(
+  name='PartialUpdateInstanceRequest',
+  full_name='google.bigtable.admin.v2.PartialUpdateInstanceRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='instance', full_name='google.bigtable.admin.v2.PartialUpdateInstanceRequest.instance', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='update_mask', full_name='google.bigtable.admin.v2.PartialUpdateInstanceRequest.update_mask', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=859,
+  serialized_end=992,
 )
 
 
@@ -247,7 +288,7 @@ _DELETEINSTANCEREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -260,8 +301,8 @@ _DELETEINSTANCEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=764,
-  serialized_end=801,
+  serialized_start=994,
+  serialized_end=1031,
 )
 
 
@@ -278,21 +319,21 @@ _CREATECLUSTERREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='cluster_id', full_name='google.bigtable.admin.v2.CreateClusterRequest.cluster_id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='cluster', full_name='google.bigtable.admin.v2.CreateClusterRequest.cluster', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -305,8 +346,8 @@ _CREATECLUSTERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=803,
-  serialized_end=913,
+  serialized_start=1033,
+  serialized_end=1143,
 )
 
 
@@ -323,7 +364,7 @@ _GETCLUSTERREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -336,8 +377,8 @@ _GETCLUSTERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=915,
-  serialized_end=948,
+  serialized_start=1145,
+  serialized_end=1178,
 )
 
 
@@ -354,14 +395,14 @@ _LISTCLUSTERSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='page_token', full_name='google.bigtable.admin.v2.ListClustersRequest.page_token', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -374,8 +415,8 @@ _LISTCLUSTERSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=950,
-  serialized_end=1007,
+  serialized_start=1180,
+  serialized_end=1237,
 )
 
 
@@ -392,21 +433,21 @@ _LISTCLUSTERSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='failed_locations', full_name='google.bigtable.admin.v2.ListClustersResponse.failed_locations', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='next_page_token', full_name='google.bigtable.admin.v2.ListClustersResponse.next_page_token', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -419,8 +460,8 @@ _LISTCLUSTERSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1009,
-  serialized_end=1135,
+  serialized_start=1239,
+  serialized_end=1365,
 )
 
 
@@ -437,7 +478,7 @@ _DELETECLUSTERREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -450,8 +491,8 @@ _DELETECLUSTERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1137,
-  serialized_end=1173,
+  serialized_start=1367,
+  serialized_end=1403,
 )
 
 
@@ -468,21 +509,21 @@ _CREATEINSTANCEMETADATA = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='request_time', full_name='google.bigtable.admin.v2.CreateInstanceMetadata.request_time', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='finish_time', full_name='google.bigtable.admin.v2.CreateInstanceMetadata.finish_time', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -495,8 +536,98 @@ _CREATEINSTANCEMETADATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1176,
-  serialized_end=1374,
+  serialized_start=1406,
+  serialized_end=1604,
+)
+
+
+_UPDATEINSTANCEMETADATA = _descriptor.Descriptor(
+  name='UpdateInstanceMetadata',
+  full_name='google.bigtable.admin.v2.UpdateInstanceMetadata',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='original_request', full_name='google.bigtable.admin.v2.UpdateInstanceMetadata.original_request', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='request_time', full_name='google.bigtable.admin.v2.UpdateInstanceMetadata.request_time', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='finish_time', full_name='google.bigtable.admin.v2.UpdateInstanceMetadata.finish_time', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1607,
+  serialized_end=1812,
+)
+
+
+_CREATECLUSTERMETADATA = _descriptor.Descriptor(
+  name='CreateClusterMetadata',
+  full_name='google.bigtable.admin.v2.CreateClusterMetadata',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='original_request', full_name='google.bigtable.admin.v2.CreateClusterMetadata.original_request', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='request_time', full_name='google.bigtable.admin.v2.CreateClusterMetadata.request_time', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='finish_time', full_name='google.bigtable.admin.v2.CreateClusterMetadata.finish_time', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1815,
+  serialized_end=2011,
 )
 
 
@@ -513,21 +644,21 @@ _UPDATECLUSTERMETADATA = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='request_time', full_name='google.bigtable.admin.v2.UpdateClusterMetadata.request_time', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='finish_time', full_name='google.bigtable.admin.v2.UpdateClusterMetadata.finish_time', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -540,8 +671,274 @@ _UPDATECLUSTERMETADATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1377,
-  serialized_end=1560,
+  serialized_start=2014,
+  serialized_end=2197,
+)
+
+
+_CREATEAPPPROFILEREQUEST = _descriptor.Descriptor(
+  name='CreateAppProfileRequest',
+  full_name='google.bigtable.admin.v2.CreateAppProfileRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='parent', full_name='google.bigtable.admin.v2.CreateAppProfileRequest.parent', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='app_profile_id', full_name='google.bigtable.admin.v2.CreateAppProfileRequest.app_profile_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='app_profile', full_name='google.bigtable.admin.v2.CreateAppProfileRequest.app_profile', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ignore_warnings', full_name='google.bigtable.admin.v2.CreateAppProfileRequest.ignore_warnings', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2200,
+  serialized_end=2349,
+)
+
+
+_GETAPPPROFILEREQUEST = _descriptor.Descriptor(
+  name='GetAppProfileRequest',
+  full_name='google.bigtable.admin.v2.GetAppProfileRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='google.bigtable.admin.v2.GetAppProfileRequest.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2351,
+  serialized_end=2387,
+)
+
+
+_LISTAPPPROFILESREQUEST = _descriptor.Descriptor(
+  name='ListAppProfilesRequest',
+  full_name='google.bigtable.admin.v2.ListAppProfilesRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='parent', full_name='google.bigtable.admin.v2.ListAppProfilesRequest.parent', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='page_token', full_name='google.bigtable.admin.v2.ListAppProfilesRequest.page_token', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2389,
+  serialized_end=2449,
+)
+
+
+_LISTAPPPROFILESRESPONSE = _descriptor.Descriptor(
+  name='ListAppProfilesResponse',
+  full_name='google.bigtable.admin.v2.ListAppProfilesResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='app_profiles', full_name='google.bigtable.admin.v2.ListAppProfilesResponse.app_profiles', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='next_page_token', full_name='google.bigtable.admin.v2.ListAppProfilesResponse.next_page_token', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2451,
+  serialized_end=2561,
+)
+
+
+_UPDATEAPPPROFILEREQUEST = _descriptor.Descriptor(
+  name='UpdateAppProfileRequest',
+  full_name='google.bigtable.admin.v2.UpdateAppProfileRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='app_profile', full_name='google.bigtable.admin.v2.UpdateAppProfileRequest.app_profile', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='update_mask', full_name='google.bigtable.admin.v2.UpdateAppProfileRequest.update_mask', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ignore_warnings', full_name='google.bigtable.admin.v2.UpdateAppProfileRequest.ignore_warnings', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2564,
+  serialized_end=2722,
+)
+
+
+_DELETEAPPPROFILEREQUEST = _descriptor.Descriptor(
+  name='DeleteAppProfileRequest',
+  full_name='google.bigtable.admin.v2.DeleteAppProfileRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='google.bigtable.admin.v2.DeleteAppProfileRequest.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ignore_warnings', full_name='google.bigtable.admin.v2.DeleteAppProfileRequest.ignore_warnings', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2724,
+  serialized_end=2788,
+)
+
+
+_UPDATEAPPPROFILEMETADATA = _descriptor.Descriptor(
+  name='UpdateAppProfileMetadata',
+  full_name='google.bigtable.admin.v2.UpdateAppProfileMetadata',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2790,
+  serialized_end=2816,
 )
 
 _CREATEINSTANCEREQUEST_CLUSTERSENTRY.fields_by_name['value'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._CLUSTER
@@ -549,18 +946,31 @@ _CREATEINSTANCEREQUEST_CLUSTERSENTRY.containing_type = _CREATEINSTANCEREQUEST
 _CREATEINSTANCEREQUEST.fields_by_name['instance'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._INSTANCE
 _CREATEINSTANCEREQUEST.fields_by_name['clusters'].message_type = _CREATEINSTANCEREQUEST_CLUSTERSENTRY
 _LISTINSTANCESRESPONSE.fields_by_name['instances'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._INSTANCE
+_PARTIALUPDATEINSTANCEREQUEST.fields_by_name['instance'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._INSTANCE
+_PARTIALUPDATEINSTANCEREQUEST.fields_by_name['update_mask'].message_type = google_dot_protobuf_dot_field__mask__pb2._FIELDMASK
 _CREATECLUSTERREQUEST.fields_by_name['cluster'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._CLUSTER
 _LISTCLUSTERSRESPONSE.fields_by_name['clusters'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._CLUSTER
 _CREATEINSTANCEMETADATA.fields_by_name['original_request'].message_type = _CREATEINSTANCEREQUEST
 _CREATEINSTANCEMETADATA.fields_by_name['request_time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _CREATEINSTANCEMETADATA.fields_by_name['finish_time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_UPDATEINSTANCEMETADATA.fields_by_name['original_request'].message_type = _PARTIALUPDATEINSTANCEREQUEST
+_UPDATEINSTANCEMETADATA.fields_by_name['request_time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_UPDATEINSTANCEMETADATA.fields_by_name['finish_time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_CREATECLUSTERMETADATA.fields_by_name['original_request'].message_type = _CREATECLUSTERREQUEST
+_CREATECLUSTERMETADATA.fields_by_name['request_time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_CREATECLUSTERMETADATA.fields_by_name['finish_time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _UPDATECLUSTERMETADATA.fields_by_name['original_request'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._CLUSTER
 _UPDATECLUSTERMETADATA.fields_by_name['request_time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _UPDATECLUSTERMETADATA.fields_by_name['finish_time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_CREATEAPPPROFILEREQUEST.fields_by_name['app_profile'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._APPPROFILE
+_LISTAPPPROFILESRESPONSE.fields_by_name['app_profiles'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._APPPROFILE
+_UPDATEAPPPROFILEREQUEST.fields_by_name['app_profile'].message_type = google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._APPPROFILE
+_UPDATEAPPPROFILEREQUEST.fields_by_name['update_mask'].message_type = google_dot_protobuf_dot_field__mask__pb2._FIELDMASK
 DESCRIPTOR.message_types_by_name['CreateInstanceRequest'] = _CREATEINSTANCEREQUEST
 DESCRIPTOR.message_types_by_name['GetInstanceRequest'] = _GETINSTANCEREQUEST
 DESCRIPTOR.message_types_by_name['ListInstancesRequest'] = _LISTINSTANCESREQUEST
 DESCRIPTOR.message_types_by_name['ListInstancesResponse'] = _LISTINSTANCESRESPONSE
+DESCRIPTOR.message_types_by_name['PartialUpdateInstanceRequest'] = _PARTIALUPDATEINSTANCEREQUEST
 DESCRIPTOR.message_types_by_name['DeleteInstanceRequest'] = _DELETEINSTANCEREQUEST
 DESCRIPTOR.message_types_by_name['CreateClusterRequest'] = _CREATECLUSTERREQUEST
 DESCRIPTOR.message_types_by_name['GetClusterRequest'] = _GETCLUSTERREQUEST
@@ -568,7 +978,16 @@ DESCRIPTOR.message_types_by_name['ListClustersRequest'] = _LISTCLUSTERSREQUEST
 DESCRIPTOR.message_types_by_name['ListClustersResponse'] = _LISTCLUSTERSRESPONSE
 DESCRIPTOR.message_types_by_name['DeleteClusterRequest'] = _DELETECLUSTERREQUEST
 DESCRIPTOR.message_types_by_name['CreateInstanceMetadata'] = _CREATEINSTANCEMETADATA
+DESCRIPTOR.message_types_by_name['UpdateInstanceMetadata'] = _UPDATEINSTANCEMETADATA
+DESCRIPTOR.message_types_by_name['CreateClusterMetadata'] = _CREATECLUSTERMETADATA
 DESCRIPTOR.message_types_by_name['UpdateClusterMetadata'] = _UPDATECLUSTERMETADATA
+DESCRIPTOR.message_types_by_name['CreateAppProfileRequest'] = _CREATEAPPPROFILEREQUEST
+DESCRIPTOR.message_types_by_name['GetAppProfileRequest'] = _GETAPPPROFILEREQUEST
+DESCRIPTOR.message_types_by_name['ListAppProfilesRequest'] = _LISTAPPPROFILESREQUEST
+DESCRIPTOR.message_types_by_name['ListAppProfilesResponse'] = _LISTAPPPROFILESRESPONSE
+DESCRIPTOR.message_types_by_name['UpdateAppProfileRequest'] = _UPDATEAPPPROFILEREQUEST
+DESCRIPTOR.message_types_by_name['DeleteAppProfileRequest'] = _DELETEAPPPROFILEREQUEST
+DESCRIPTOR.message_types_by_name['UpdateAppProfileMetadata'] = _UPDATEAPPPROFILEMETADATA
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 CreateInstanceRequest = _reflection.GeneratedProtocolMessageType('CreateInstanceRequest', (_message.Message,), dict(
@@ -606,6 +1025,13 @@ ListInstancesResponse = _reflection.GeneratedProtocolMessageType('ListInstancesR
   # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.ListInstancesResponse)
   ))
 _sym_db.RegisterMessage(ListInstancesResponse)
+
+PartialUpdateInstanceRequest = _reflection.GeneratedProtocolMessageType('PartialUpdateInstanceRequest', (_message.Message,), dict(
+  DESCRIPTOR = _PARTIALUPDATEINSTANCEREQUEST,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.PartialUpdateInstanceRequest)
+  ))
+_sym_db.RegisterMessage(PartialUpdateInstanceRequest)
 
 DeleteInstanceRequest = _reflection.GeneratedProtocolMessageType('DeleteInstanceRequest', (_message.Message,), dict(
   DESCRIPTOR = _DELETEINSTANCEREQUEST,
@@ -656,6 +1082,20 @@ CreateInstanceMetadata = _reflection.GeneratedProtocolMessageType('CreateInstanc
   ))
 _sym_db.RegisterMessage(CreateInstanceMetadata)
 
+UpdateInstanceMetadata = _reflection.GeneratedProtocolMessageType('UpdateInstanceMetadata', (_message.Message,), dict(
+  DESCRIPTOR = _UPDATEINSTANCEMETADATA,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.UpdateInstanceMetadata)
+  ))
+_sym_db.RegisterMessage(UpdateInstanceMetadata)
+
+CreateClusterMetadata = _reflection.GeneratedProtocolMessageType('CreateClusterMetadata', (_message.Message,), dict(
+  DESCRIPTOR = _CREATECLUSTERMETADATA,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.CreateClusterMetadata)
+  ))
+_sym_db.RegisterMessage(CreateClusterMetadata)
+
 UpdateClusterMetadata = _reflection.GeneratedProtocolMessageType('UpdateClusterMetadata', (_message.Message,), dict(
   DESCRIPTOR = _UPDATECLUSTERMETADATA,
   __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
@@ -663,424 +1103,244 @@ UpdateClusterMetadata = _reflection.GeneratedProtocolMessageType('UpdateClusterM
   ))
 _sym_db.RegisterMessage(UpdateClusterMetadata)
 
+CreateAppProfileRequest = _reflection.GeneratedProtocolMessageType('CreateAppProfileRequest', (_message.Message,), dict(
+  DESCRIPTOR = _CREATEAPPPROFILEREQUEST,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.CreateAppProfileRequest)
+  ))
+_sym_db.RegisterMessage(CreateAppProfileRequest)
+
+GetAppProfileRequest = _reflection.GeneratedProtocolMessageType('GetAppProfileRequest', (_message.Message,), dict(
+  DESCRIPTOR = _GETAPPPROFILEREQUEST,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.GetAppProfileRequest)
+  ))
+_sym_db.RegisterMessage(GetAppProfileRequest)
+
+ListAppProfilesRequest = _reflection.GeneratedProtocolMessageType('ListAppProfilesRequest', (_message.Message,), dict(
+  DESCRIPTOR = _LISTAPPPROFILESREQUEST,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.ListAppProfilesRequest)
+  ))
+_sym_db.RegisterMessage(ListAppProfilesRequest)
+
+ListAppProfilesResponse = _reflection.GeneratedProtocolMessageType('ListAppProfilesResponse', (_message.Message,), dict(
+  DESCRIPTOR = _LISTAPPPROFILESRESPONSE,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.ListAppProfilesResponse)
+  ))
+_sym_db.RegisterMessage(ListAppProfilesResponse)
+
+UpdateAppProfileRequest = _reflection.GeneratedProtocolMessageType('UpdateAppProfileRequest', (_message.Message,), dict(
+  DESCRIPTOR = _UPDATEAPPPROFILEREQUEST,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.UpdateAppProfileRequest)
+  ))
+_sym_db.RegisterMessage(UpdateAppProfileRequest)
+
+DeleteAppProfileRequest = _reflection.GeneratedProtocolMessageType('DeleteAppProfileRequest', (_message.Message,), dict(
+  DESCRIPTOR = _DELETEAPPPROFILEREQUEST,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.DeleteAppProfileRequest)
+  ))
+_sym_db.RegisterMessage(DeleteAppProfileRequest)
+
+UpdateAppProfileMetadata = _reflection.GeneratedProtocolMessageType('UpdateAppProfileMetadata', (_message.Message,), dict(
+  DESCRIPTOR = _UPDATEAPPPROFILEMETADATA,
+  __module__ = 'google.bigtable.admin.v2.bigtable_instance_admin_pb2'
+  # @@protoc_insertion_point(class_scope:google.bigtable.admin.v2.UpdateAppProfileMetadata)
+  ))
+_sym_db.RegisterMessage(UpdateAppProfileMetadata)
+
 
 DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('\n\034com.google.bigtable.admin.v2B\032BigtableInstanceAdminProtoP\001Z=google.golang.org/genproto/googleapis/bigtable/admin/v2;admin'))
+DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('\n\034com.google.bigtable.admin.v2B\032BigtableInstanceAdminProtoP\001Z=google.golang.org/genproto/googleapis/bigtable/admin/v2;admin\252\002\036Google.Cloud.Bigtable.Admin.V2\312\002\036Google\\Cloud\\Bigtable\\Admin\\V2'))
 _CREATEINSTANCEREQUEST_CLUSTERSENTRY.has_options = True
 _CREATEINSTANCEREQUEST_CLUSTERSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-try:
-  # THESE ELEMENTS WILL BE DEPRECATED.
-  # Please use the generated *_pb2_grpc.py files instead.
-  import grpc
-  from grpc.beta import implementations as beta_implementations
-  from grpc.beta import interfaces as beta_interfaces
-  from grpc.framework.common import cardinality
-  from grpc.framework.interfaces.face import utilities as face_utilities
 
+_BIGTABLEINSTANCEADMIN = _descriptor.ServiceDescriptor(
+  name='BigtableInstanceAdmin',
+  full_name='google.bigtable.admin.v2.BigtableInstanceAdmin',
+  file=DESCRIPTOR,
+  index=0,
+  options=None,
+  serialized_start=2819,
+  serialized_end=5805,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='CreateInstance',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.CreateInstance',
+    index=0,
+    containing_service=None,
+    input_type=_CREATEINSTANCEREQUEST,
+    output_type=google_dot_longrunning_dot_operations__pb2._OPERATION,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002&\"!/v2/{parent=projects/*}/instances:\001*')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetInstance',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.GetInstance',
+    index=1,
+    containing_service=None,
+    input_type=_GETINSTANCEREQUEST,
+    output_type=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._INSTANCE,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002#\022!/v2/{name=projects/*/instances/*}')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='ListInstances',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.ListInstances',
+    index=2,
+    containing_service=None,
+    input_type=_LISTINSTANCESREQUEST,
+    output_type=_LISTINSTANCESRESPONSE,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002#\022!/v2/{parent=projects/*}/instances')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='UpdateInstance',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.UpdateInstance',
+    index=3,
+    containing_service=None,
+    input_type=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._INSTANCE,
+    output_type=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._INSTANCE,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002&\032!/v2/{name=projects/*/instances/*}:\001*')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='PartialUpdateInstance',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.PartialUpdateInstance',
+    index=4,
+    containing_service=None,
+    input_type=_PARTIALUPDATEINSTANCEREQUEST,
+    output_type=google_dot_longrunning_dot_operations__pb2._OPERATION,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\00262*/v2/{instance.name=projects/*/instances/*}:\010instance')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeleteInstance',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.DeleteInstance',
+    index=5,
+    containing_service=None,
+    input_type=_DELETEINSTANCEREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002#*!/v2/{name=projects/*/instances/*}')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='CreateCluster',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.CreateCluster',
+    index=6,
+    containing_service=None,
+    input_type=_CREATECLUSTERREQUEST,
+    output_type=google_dot_longrunning_dot_operations__pb2._OPERATION,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\0027\",/v2/{parent=projects/*/instances/*}/clusters:\007cluster')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetCluster',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.GetCluster',
+    index=7,
+    containing_service=None,
+    input_type=_GETCLUSTERREQUEST,
+    output_type=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._CLUSTER,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002.\022,/v2/{name=projects/*/instances/*/clusters/*}')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='ListClusters',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.ListClusters',
+    index=8,
+    containing_service=None,
+    input_type=_LISTCLUSTERSREQUEST,
+    output_type=_LISTCLUSTERSRESPONSE,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002.\022,/v2/{parent=projects/*/instances/*}/clusters')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='UpdateCluster',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.UpdateCluster',
+    index=9,
+    containing_service=None,
+    input_type=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._CLUSTER,
+    output_type=google_dot_longrunning_dot_operations__pb2._OPERATION,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\0021\032,/v2/{name=projects/*/instances/*/clusters/*}:\001*')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeleteCluster',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.DeleteCluster',
+    index=10,
+    containing_service=None,
+    input_type=_DELETECLUSTERREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002.*,/v2/{name=projects/*/instances/*/clusters/*}')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='CreateAppProfile',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.CreateAppProfile',
+    index=11,
+    containing_service=None,
+    input_type=_CREATEAPPPROFILEREQUEST,
+    output_type=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._APPPROFILE,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002>\"//v2/{parent=projects/*/instances/*}/appProfiles:\013app_profile')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetAppProfile',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.GetAppProfile',
+    index=12,
+    containing_service=None,
+    input_type=_GETAPPPROFILEREQUEST,
+    output_type=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2._APPPROFILE,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\0021\022//v2/{name=projects/*/instances/*/appProfiles/*}')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='ListAppProfiles',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.ListAppProfiles',
+    index=13,
+    containing_service=None,
+    input_type=_LISTAPPPROFILESREQUEST,
+    output_type=_LISTAPPPROFILESRESPONSE,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\0021\022//v2/{parent=projects/*/instances/*}/appProfiles')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='UpdateAppProfile',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.UpdateAppProfile',
+    index=14,
+    containing_service=None,
+    input_type=_UPDATEAPPPROFILEREQUEST,
+    output_type=google_dot_longrunning_dot_operations__pb2._OPERATION,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002J2;/v2/{app_profile.name=projects/*/instances/*/appProfiles/*}:\013app_profile')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeleteAppProfile',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.DeleteAppProfile',
+    index=15,
+    containing_service=None,
+    input_type=_DELETEAPPPROFILEREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\0021*//v2/{name=projects/*/instances/*/appProfiles/*}')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetIamPolicy',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.GetIamPolicy',
+    index=16,
+    containing_service=None,
+    input_type=google_dot_iam_dot_v1_dot_iam__policy__pb2._GETIAMPOLICYREQUEST,
+    output_type=google_dot_iam_dot_v1_dot_policy__pb2._POLICY,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\0027\"2/v2/{resource=projects/*/instances/*}:getIamPolicy:\001*')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetIamPolicy',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.SetIamPolicy',
+    index=17,
+    containing_service=None,
+    input_type=google_dot_iam_dot_v1_dot_iam__policy__pb2._SETIAMPOLICYREQUEST,
+    output_type=google_dot_iam_dot_v1_dot_policy__pb2._POLICY,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\0027\"2/v2/{resource=projects/*/instances/*}:setIamPolicy:\001*')),
+  ),
+  _descriptor.MethodDescriptor(
+    name='TestIamPermissions',
+    full_name='google.bigtable.admin.v2.BigtableInstanceAdmin.TestIamPermissions',
+    index=18,
+    containing_service=None,
+    input_type=google_dot_iam_dot_v1_dot_iam__policy__pb2._TESTIAMPERMISSIONSREQUEST,
+    output_type=google_dot_iam_dot_v1_dot_iam__policy__pb2._TESTIAMPERMISSIONSRESPONSE,
+    options=_descriptor._ParseOptions(descriptor_pb2.MethodOptions(), _b('\202\323\344\223\002=\"8/v2/{resource=projects/*/instances/*}:testIamPermissions:\001*')),
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_BIGTABLEINSTANCEADMIN)
 
-  class BigtableInstanceAdminStub(object):
-    """Service for creating, configuring, and deleting Cloud Bigtable Instances and
-    Clusters. Provides access to the Instance and Cluster schemas only, not the
-    tables' metadata or data stored in those tables.
-    """
+DESCRIPTOR.services_by_name['BigtableInstanceAdmin'] = _BIGTABLEINSTANCEADMIN
 
-    def __init__(self, channel):
-      """Constructor.
-
-      Args:
-        channel: A grpc.Channel.
-      """
-      self.CreateInstance = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/CreateInstance',
-          request_serializer=CreateInstanceRequest.SerializeToString,
-          response_deserializer=google_dot_longrunning_dot_operations__pb2.Operation.FromString,
-          )
-      self.GetInstance = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/GetInstance',
-          request_serializer=GetInstanceRequest.SerializeToString,
-          response_deserializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.FromString,
-          )
-      self.ListInstances = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/ListInstances',
-          request_serializer=ListInstancesRequest.SerializeToString,
-          response_deserializer=ListInstancesResponse.FromString,
-          )
-      self.UpdateInstance = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/UpdateInstance',
-          request_serializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.SerializeToString,
-          response_deserializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.FromString,
-          )
-      self.DeleteInstance = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/DeleteInstance',
-          request_serializer=DeleteInstanceRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-          )
-      self.CreateCluster = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/CreateCluster',
-          request_serializer=CreateClusterRequest.SerializeToString,
-          response_deserializer=google_dot_longrunning_dot_operations__pb2.Operation.FromString,
-          )
-      self.GetCluster = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/GetCluster',
-          request_serializer=GetClusterRequest.SerializeToString,
-          response_deserializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Cluster.FromString,
-          )
-      self.ListClusters = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/ListClusters',
-          request_serializer=ListClustersRequest.SerializeToString,
-          response_deserializer=ListClustersResponse.FromString,
-          )
-      self.UpdateCluster = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/UpdateCluster',
-          request_serializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Cluster.SerializeToString,
-          response_deserializer=google_dot_longrunning_dot_operations__pb2.Operation.FromString,
-          )
-      self.DeleteCluster = channel.unary_unary(
-          '/google.bigtable.admin.v2.BigtableInstanceAdmin/DeleteCluster',
-          request_serializer=DeleteClusterRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-          )
-
-
-  class BigtableInstanceAdminServicer(object):
-    """Service for creating, configuring, and deleting Cloud Bigtable Instances and
-    Clusters. Provides access to the Instance and Cluster schemas only, not the
-    tables' metadata or data stored in those tables.
-    """
-
-    def CreateInstance(self, request, context):
-      """Create an instance within a project.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def GetInstance(self, request, context):
-      """Gets information about an instance.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def ListInstances(self, request, context):
-      """Lists information about instances in a project.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def UpdateInstance(self, request, context):
-      """Updates an instance within a project.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def DeleteInstance(self, request, context):
-      """Delete an instance from a project.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def CreateCluster(self, request, context):
-      """Creates a cluster within an instance.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def GetCluster(self, request, context):
-      """Gets information about a cluster.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def ListClusters(self, request, context):
-      """Lists information about clusters in an instance.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def UpdateCluster(self, request, context):
-      """Updates a cluster within an instance.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def DeleteCluster(self, request, context):
-      """Deletes a cluster from an instance.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-
-  def add_BigtableInstanceAdminServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-        'CreateInstance': grpc.unary_unary_rpc_method_handler(
-            servicer.CreateInstance,
-            request_deserializer=CreateInstanceRequest.FromString,
-            response_serializer=google_dot_longrunning_dot_operations__pb2.Operation.SerializeToString,
-        ),
-        'GetInstance': grpc.unary_unary_rpc_method_handler(
-            servicer.GetInstance,
-            request_deserializer=GetInstanceRequest.FromString,
-            response_serializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.SerializeToString,
-        ),
-        'ListInstances': grpc.unary_unary_rpc_method_handler(
-            servicer.ListInstances,
-            request_deserializer=ListInstancesRequest.FromString,
-            response_serializer=ListInstancesResponse.SerializeToString,
-        ),
-        'UpdateInstance': grpc.unary_unary_rpc_method_handler(
-            servicer.UpdateInstance,
-            request_deserializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.FromString,
-            response_serializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.SerializeToString,
-        ),
-        'DeleteInstance': grpc.unary_unary_rpc_method_handler(
-            servicer.DeleteInstance,
-            request_deserializer=DeleteInstanceRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-        ),
-        'CreateCluster': grpc.unary_unary_rpc_method_handler(
-            servicer.CreateCluster,
-            request_deserializer=CreateClusterRequest.FromString,
-            response_serializer=google_dot_longrunning_dot_operations__pb2.Operation.SerializeToString,
-        ),
-        'GetCluster': grpc.unary_unary_rpc_method_handler(
-            servicer.GetCluster,
-            request_deserializer=GetClusterRequest.FromString,
-            response_serializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Cluster.SerializeToString,
-        ),
-        'ListClusters': grpc.unary_unary_rpc_method_handler(
-            servicer.ListClusters,
-            request_deserializer=ListClustersRequest.FromString,
-            response_serializer=ListClustersResponse.SerializeToString,
-        ),
-        'UpdateCluster': grpc.unary_unary_rpc_method_handler(
-            servicer.UpdateCluster,
-            request_deserializer=google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Cluster.FromString,
-            response_serializer=google_dot_longrunning_dot_operations__pb2.Operation.SerializeToString,
-        ),
-        'DeleteCluster': grpc.unary_unary_rpc_method_handler(
-            servicer.DeleteCluster,
-            request_deserializer=DeleteClusterRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-        ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-        'google.bigtable.admin.v2.BigtableInstanceAdmin', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-
-
-  class BetaBigtableInstanceAdminServicer(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    """Service for creating, configuring, and deleting Cloud Bigtable Instances and
-    Clusters. Provides access to the Instance and Cluster schemas only, not the
-    tables' metadata or data stored in those tables.
-    """
-    def CreateInstance(self, request, context):
-      """Create an instance within a project.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def GetInstance(self, request, context):
-      """Gets information about an instance.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def ListInstances(self, request, context):
-      """Lists information about instances in a project.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def UpdateInstance(self, request, context):
-      """Updates an instance within a project.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def DeleteInstance(self, request, context):
-      """Delete an instance from a project.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def CreateCluster(self, request, context):
-      """Creates a cluster within an instance.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def GetCluster(self, request, context):
-      """Gets information about a cluster.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def ListClusters(self, request, context):
-      """Lists information about clusters in an instance.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def UpdateCluster(self, request, context):
-      """Updates a cluster within an instance.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def DeleteCluster(self, request, context):
-      """Deletes a cluster from an instance.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-
-
-  class BetaBigtableInstanceAdminStub(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    """Service for creating, configuring, and deleting Cloud Bigtable Instances and
-    Clusters. Provides access to the Instance and Cluster schemas only, not the
-    tables' metadata or data stored in those tables.
-    """
-    def CreateInstance(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Create an instance within a project.
-      """
-      raise NotImplementedError()
-    CreateInstance.future = None
-    def GetInstance(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Gets information about an instance.
-      """
-      raise NotImplementedError()
-    GetInstance.future = None
-    def ListInstances(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Lists information about instances in a project.
-      """
-      raise NotImplementedError()
-    ListInstances.future = None
-    def UpdateInstance(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Updates an instance within a project.
-      """
-      raise NotImplementedError()
-    UpdateInstance.future = None
-    def DeleteInstance(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Delete an instance from a project.
-      """
-      raise NotImplementedError()
-    DeleteInstance.future = None
-    def CreateCluster(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Creates a cluster within an instance.
-      """
-      raise NotImplementedError()
-    CreateCluster.future = None
-    def GetCluster(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Gets information about a cluster.
-      """
-      raise NotImplementedError()
-    GetCluster.future = None
-    def ListClusters(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Lists information about clusters in an instance.
-      """
-      raise NotImplementedError()
-    ListClusters.future = None
-    def UpdateCluster(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Updates a cluster within an instance.
-      """
-      raise NotImplementedError()
-    UpdateCluster.future = None
-    def DeleteCluster(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """Deletes a cluster from an instance.
-      """
-      raise NotImplementedError()
-    DeleteCluster.future = None
-
-
-  def beta_create_BigtableInstanceAdmin_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_deserializers = {
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateCluster'): CreateClusterRequest.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateInstance'): CreateInstanceRequest.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteCluster'): DeleteClusterRequest.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteInstance'): DeleteInstanceRequest.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetCluster'): GetClusterRequest.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetInstance'): GetInstanceRequest.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListClusters'): ListClustersRequest.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListInstances'): ListInstancesRequest.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateCluster'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Cluster.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateInstance'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.FromString,
-    }
-    response_serializers = {
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateCluster'): google_dot_longrunning_dot_operations__pb2.Operation.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateInstance'): google_dot_longrunning_dot_operations__pb2.Operation.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteCluster'): google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteInstance'): google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetCluster'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Cluster.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetInstance'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListClusters'): ListClustersResponse.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListInstances'): ListInstancesResponse.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateCluster'): google_dot_longrunning_dot_operations__pb2.Operation.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateInstance'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.SerializeToString,
-    }
-    method_implementations = {
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateCluster'): face_utilities.unary_unary_inline(servicer.CreateCluster),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateInstance'): face_utilities.unary_unary_inline(servicer.CreateInstance),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteCluster'): face_utilities.unary_unary_inline(servicer.DeleteCluster),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteInstance'): face_utilities.unary_unary_inline(servicer.DeleteInstance),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetCluster'): face_utilities.unary_unary_inline(servicer.GetCluster),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetInstance'): face_utilities.unary_unary_inline(servicer.GetInstance),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListClusters'): face_utilities.unary_unary_inline(servicer.ListClusters),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListInstances'): face_utilities.unary_unary_inline(servicer.ListInstances),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateCluster'): face_utilities.unary_unary_inline(servicer.UpdateCluster),
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateInstance'): face_utilities.unary_unary_inline(servicer.UpdateInstance),
-    }
-    server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
-    return beta_implementations.server(method_implementations, options=server_options)
-
-
-  def beta_create_BigtableInstanceAdmin_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_serializers = {
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateCluster'): CreateClusterRequest.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateInstance'): CreateInstanceRequest.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteCluster'): DeleteClusterRequest.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteInstance'): DeleteInstanceRequest.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetCluster'): GetClusterRequest.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetInstance'): GetInstanceRequest.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListClusters'): ListClustersRequest.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListInstances'): ListInstancesRequest.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateCluster'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Cluster.SerializeToString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateInstance'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.SerializeToString,
-    }
-    response_deserializers = {
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateCluster'): google_dot_longrunning_dot_operations__pb2.Operation.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'CreateInstance'): google_dot_longrunning_dot_operations__pb2.Operation.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteCluster'): google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'DeleteInstance'): google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetCluster'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Cluster.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'GetInstance'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListClusters'): ListClustersResponse.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'ListInstances'): ListInstancesResponse.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateCluster'): google_dot_longrunning_dot_operations__pb2.Operation.FromString,
-      ('google.bigtable.admin.v2.BigtableInstanceAdmin', 'UpdateInstance'): google_dot_bigtable_dot_admin_dot_v2_dot_instance__pb2.Instance.FromString,
-    }
-    cardinalities = {
-      'CreateCluster': cardinality.Cardinality.UNARY_UNARY,
-      'CreateInstance': cardinality.Cardinality.UNARY_UNARY,
-      'DeleteCluster': cardinality.Cardinality.UNARY_UNARY,
-      'DeleteInstance': cardinality.Cardinality.UNARY_UNARY,
-      'GetCluster': cardinality.Cardinality.UNARY_UNARY,
-      'GetInstance': cardinality.Cardinality.UNARY_UNARY,
-      'ListClusters': cardinality.Cardinality.UNARY_UNARY,
-      'ListInstances': cardinality.Cardinality.UNARY_UNARY,
-      'UpdateCluster': cardinality.Cardinality.UNARY_UNARY,
-      'UpdateInstance': cardinality.Cardinality.UNARY_UNARY,
-    }
-    stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-    return beta_implementations.dynamic_stub(channel, 'google.bigtable.admin.v2.BigtableInstanceAdmin', cardinalities, options=stub_options)
-except ImportError:
-  pass
 # @@protoc_insertion_point(module_scope)

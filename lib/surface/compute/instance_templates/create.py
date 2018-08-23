@@ -48,7 +48,6 @@ _INSTANTIATE_FROM_VALUES = [
 def _CommonArgs(parser,
                 release_track,
                 support_source_instance,
-                support_network_tier=False,
                 support_local_ssd_size=False,
                 support_shielded_vms=False,
                 support_kms=False,
@@ -63,9 +62,7 @@ def _CommonArgs(parser,
   else:
     instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
-  instances_flags.AddAddressArgs(
-      parser, instances=False,
-      support_network_tier=support_network_tier)
+  instances_flags.AddAddressArgs(parser, instances=False)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
@@ -80,8 +77,7 @@ def _CommonArgs(parser,
   if support_shielded_vms:
     instances_flags.AddShieldedVMConfigArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
-  if support_network_tier:
-    instances_flags.AddNetworkTierArgs(parser, instance=True)
+  instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
@@ -232,7 +228,6 @@ def BuildShieldedVMConfigMessage(messages, args):
 def _RunCreate(compute_api,
                args,
                support_source_instance,
-               support_network_tier=False,
                support_shielded_vms=False,
                support_kms=False):
   """Common routine for creating instance template.
@@ -244,7 +239,6 @@ def _RunCreate(compute_api,
       args: argparse.Namespace, An object that contains the values for the
           arguments specified in the .Args() method.
       support_source_instance: indicates whether source instance is supported.
-      support_network_tier: Indicates whether network tier is supported or not.
       support_shielded_vms: Indicate whether a shielded vm config is supported
       or not.
       support_kms: Indicate whether KMS is integrated or not.
@@ -253,8 +247,7 @@ def _RunCreate(compute_api,
       A resource object dispatched by display.Displayer().
   """
   _ValidateInstancesFlags(args, support_kms=support_kms)
-  if support_network_tier:
-    instances_flags.ValidateNetworkTierArgs(args)
+  instances_flags.ValidateNetworkTierArgs(args)
 
   client = compute_api.client
 
@@ -277,8 +270,7 @@ def _RunCreate(compute_api,
             scope_lister=flags.GetDefaultScopeLister(client),
             messages=client.messages,
             network_interface_arg=args.network_interface,
-            region=args.region,
-            support_network_tier=support_network_tier)
+            region=args.region)
   else:
     network_tier = getattr(args, 'network_tier', None)
     network_interfaces = [
@@ -499,7 +491,6 @@ class CreateBeta(Create):
     _CommonArgs(
         parser,
         release_track=base.ReleaseTrack.BETA,
-        support_network_tier=True,
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
         support_shielded_vms=cls._support_shielded_vms,
@@ -520,7 +511,6 @@ class CreateBeta(Create):
     return _RunCreate(
         base_classes.ComputeApiHolder(base.ReleaseTrack.BETA),
         args=args,
-        support_network_tier=True,
         support_source_instance=self._support_source_instance,
         support_shielded_vms=self._support_shielded_vms,
         support_kms=self._support_kms
@@ -550,7 +540,6 @@ class CreateAlpha(Create):
     _CommonArgs(
         parser,
         release_track=base.ReleaseTrack.ALPHA,
-        support_network_tier=True,
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
         support_shielded_vms=cls._support_shielded_vms,
@@ -571,7 +560,6 @@ class CreateAlpha(Create):
     return _RunCreate(
         base_classes.ComputeApiHolder(base.ReleaseTrack.ALPHA),
         args=args,
-        support_network_tier=True,
         support_source_instance=self._support_source_instance,
         support_shielded_vms=self._support_shielded_vms,
         support_kms=self._support_kms

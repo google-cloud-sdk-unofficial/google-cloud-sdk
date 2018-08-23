@@ -96,11 +96,11 @@ class BigtableServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def ReadModifyWriteRow(self, request, context):
-    """Modifies a row atomically. The method reads the latest existing timestamp
-    and value from the specified columns and writes a new entry based on
-    pre-defined read/modify/write rules. The new value for the timestamp is the
-    greater of the existing timestamp or the current server time. The method
-    returns the new contents of all modified cells.
+    """Modifies a row atomically on the server. The method reads the latest
+    existing timestamp and value from the specified columns and writes a new
+    entry based on pre-defined read/modify/write rules. The new value for the
+    timestamp is the greater of the existing timestamp or the current server
+    time. The method returns the new contents of all modified cells.
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')

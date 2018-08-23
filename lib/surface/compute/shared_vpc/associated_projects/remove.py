@@ -44,5 +44,5 @@ class Remove(base.Command):
         'remove the associated project from').AddToParser(parser)
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient()
+    xpn_client = xpn_api.GetXpnClient(self.ReleaseTrack())
     xpn_client.DisableXpnAssociatedProject(args.host_project, args.project)

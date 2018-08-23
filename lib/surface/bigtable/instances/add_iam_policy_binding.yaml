@@ -1,0 +1,13 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Add an IAM policy binding to a Cloud Bigtable instance.
+    DESCRIPTION: |
+      Add an IAM policy binding to a Cloud Bigtable instance.
+  request:
+    collection: bigtableadmin.projects.instances
+
+  arguments:
+    resource:
+      help_text:
+        The Cloud Bigtable instance to which to add the IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:instance

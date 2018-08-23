@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 DEPRECATED_WARNING_MESSAGE = """\
-This command is deprecated. Please use `gcloud{}builds list`
+This command is deprecated. Please use `gcloud builds list`
 instead."""
 
 

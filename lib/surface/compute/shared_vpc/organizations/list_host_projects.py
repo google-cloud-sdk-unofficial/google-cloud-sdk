@@ -48,7 +48,7 @@ class ListHostProjects(base.ListCommand):
     parser.display_info.AddFormat(command_lib_util.XPN_PROJECTS_FORMAT)
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient()
+    xpn_client = xpn_api.GetXpnClient(self.ReleaseTrack())
     project = properties.VALUES.core.project.Get(required=True)
     organization_id = args.id
     return xpn_client.ListOrganizationHostProjects(

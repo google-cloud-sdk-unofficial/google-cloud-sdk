@@ -43,8 +43,8 @@ class AddIamPolicyBinding(base.Command):
   # The above text based on output from
   # iam_util.GetDetailedHelpForAddIamPolicyBinding.
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddConcepts(
         parser,
         flags.GetAttestorPresentationSpec(
@@ -56,5 +56,6 @@ class AddIamPolicyBinding(base.Command):
 
   def Run(self, args):
     attestor_ref = args.CONCEPTS.attestor.Parse()
-    return iam.Client(apis.V1_BETA1).AddBinding(
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    return iam.Client(api_version).AddBinding(
         attestor_ref, args.member, args.role)

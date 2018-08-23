@@ -29,7 +29,10 @@ APPENGINE_PATH_START = 'https://appengine.googleapis.com/{0}/'.format(
 def _GetUri(resource):
   # TODO(b/29539463): Use parser when instances collection adds simple URIs
   # and a Get method
-  return APPENGINE_PATH_START + resource.instance.name
+  try:
+    return APPENGINE_PATH_START + resource.instance.name
+  except AttributeError:
+    return APPENGINE_PATH_START + resource['instance']['name']
 
 
 class List(base.ListCommand):

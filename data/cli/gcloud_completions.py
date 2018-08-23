@@ -708,14 +708,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "INTERNAL_SELF_MANAGED"
                     ],
                     "--port-name": "value",
-                    "--protocol": [
-                      "HTTP",
-                      "HTTP2",
-                      "HTTPS",
-                      "SSL",
-                      "TCP",
-                      "UDP"
-                    ],
+                    "--protocol": "value",
                     "--region": "dynamic",
                     "--session-affinity": [
                       "CLIENT_IP",
@@ -823,14 +816,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--iap": "value",
                     "--no-custom-request-headers": "bool",
                     "--port-name": "value",
-                    "--protocol": [
-                      "HTTP",
-                      "HTTP2",
-                      "HTTPS",
-                      "SSL",
-                      "TCP",
-                      "UDP"
-                    ],
+                    "--protocol": "value",
                     "--region": "dynamic",
                     "--security-policy": "dynamic",
                     "--session-affinity": [
@@ -1837,6 +1823,39 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--uri": "bool"
                   }
                 },
+                "packages": {
+                  "commands": {
+                    "diff": {
+                      "commands": {},
+                      "flags": {
+                        "--base-image": "dynamic",
+                        "--base-project": "dynamic",
+                        "--diff-image": "dynamic",
+                        "--diff-project": "dynamic",
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--show-added-packages": "bool",
+                        "--show-removed-packages": "bool",
+                        "--show-updated-packages": "bool",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--image": "dynamic",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
@@ -2669,6 +2688,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--shielded-vm-secure-boot": "bool",
                     "--shielded-vm-vtpm": "bool",
                     "--source-instance-template": "dynamic",
+                    "--source-snapshot": "value",
                     "--subnet": "value",
                     "--tags": "value",
                     "--zone": "dynamic"
@@ -3164,6 +3184,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {}
                 },
                 "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "get-diagnostics": {
                   "commands": {},
                   "flags": {}
                 },
@@ -5553,6 +5577,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--preemptible": "bool",
                     "--private-cluster": "bool",
                     "--region": "value",
+                    "--resource-usage-bigquery-dataset": "value",
                     "--scopes": "value",
                     "--service-account": "value",
                     "--services-ipv4-cidr": "value",
@@ -5618,6 +5643,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--additional-zones": "value",
                     "--async": "bool",
+                    "--clear-resource-usage-bigquery-dataset": "bool",
                     "--complete-credential-rotation": "bool",
                     "--complete-ip-rotation": "bool",
                     "--enable-autoprovisioning": "bool",
@@ -5645,6 +5671,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--password": "value",
                     "--region": "value",
                     "--remove-labels": "value",
+                    "--resource-usage-bigquery-dataset": "value",
                     "--set-password": "bool",
                     "--start-credential-rotation": "bool",
                     "--start-ip-rotation": "bool",
@@ -6019,6 +6046,20 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
                 }
               },
               "flags": {}
@@ -6986,6 +7027,24 @@ STATIC_COMPLETION_CLI_TREE = {
                 },
                 "ios": {
                   "commands": {
+                    "locales": {
+                      "commands": {
+                        "describe": {
+                          "commands": {},
+                          "flags": {}
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--page-size": "value",
+                            "--sort-by": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
                     "models": {
                       "commands": {
                         "describe": {
@@ -7060,6 +7119,52 @@ STATIC_COMPLETION_CLI_TREE = {
                     }
                   },
                   "flags": {}
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "firestore": {
+          "commands": {
+            "export": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--collection-ids": "value"
+              }
+            },
+            "import": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--collection-ids": "value"
+              }
+            },
+            "operations": {
+              "commands": {
+                "cancel": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
                 }
               },
               "flags": {}
@@ -12873,14 +12978,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "INTERNAL"
                     ],
                     "--port-name": "value",
-                    "--protocol": [
-                      "HTTP",
-                      "HTTP2",
-                      "HTTPS",
-                      "SSL",
-                      "TCP",
-                      "UDP"
-                    ],
+                    "--protocol": "value",
                     "--region": "dynamic",
                     "--session-affinity": [
                       "CLIENT_IP",
@@ -12977,14 +13075,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--iap": "value",
                     "--no-custom-request-headers": "bool",
                     "--port-name": "value",
-                    "--protocol": [
-                      "HTTP",
-                      "HTTP2",
-                      "HTTPS",
-                      "SSL",
-                      "TCP",
-                      "UDP"
-                    ],
+                    "--protocol": "value",
                     "--region": "dynamic",
                     "--security-policy": "dynamic",
                     "--session-affinity": [
@@ -18167,6 +18258,20 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
                 }
               },
               "flags": {}
@@ -21711,6 +21816,44 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "vpc-peerings": {
+              "commands": {
+                "connect": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--network": "value",
+                    "--reserved-ranges": "value",
+                    "--service": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--network": "value",
+                    "--service": "value"
+                  }
+                },
+                "operations": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--name": "value"
+                      }
+                    },
+                    "wait": {
+                      "commands": {},
+                      "flags": {
+                        "--name": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                }
+              },
+              "flags": {}
             }
           },
           "flags": {}
@@ -23274,6 +23417,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "IPV4",
                   "IPV6"
                 ],
+                "--network-tier": "value",
                 "--region": "dynamic",
                 "--subnet": "value"
               }
@@ -23416,13 +23560,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "INTERNAL"
                 ],
                 "--port-name": "value",
-                "--protocol": [
-                  "HTTP",
-                  "HTTPS",
-                  "SSL",
-                  "TCP",
-                  "UDP"
-                ],
+                "--protocol": "value",
                 "--region": "dynamic",
                 "--session-affinity": [
                   "CLIENT_IP",
@@ -23513,13 +23651,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--https-health-checks": "dynamic",
                 "--iap": "value",
                 "--port-name": "value",
-                "--protocol": [
-                  "HTTP",
-                  "HTTPS",
-                  "SSL",
-                  "TCP",
-                  "UDP"
-                ],
+                "--protocol": "value",
                 "--region": "dynamic",
                 "--session-affinity": [
                   "CLIENT_IP",
@@ -23842,6 +23974,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "INTERNAL"
                 ],
                 "--network": "value",
+                "--network-tier": "value",
                 "--port-range": "value",
                 "--ports": "value",
                 "--region": "dynamic",
@@ -24654,6 +24787,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--min-cpu-platform": "value",
                 "--network": "value",
                 "--network-interface": "value",
+                "--network-tier": "value",
                 "--no-address": "bool",
                 "--no-scopes": "bool",
                 "--no-service-account": "bool",
@@ -24701,6 +24835,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--access-config-name": "value",
                 "--address": "value",
                 "--network-interface": "value",
+                "--network-tier": "value",
                 "--no-public-ptr": "bool",
                 "--no-public-ptr-domain": "bool",
                 "--public-ptr": "bool",
@@ -24777,6 +24912,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--min-cpu-platform": "value",
                 "--network": "value",
                 "--network-interface": "value",
+                "--network-tier": "value",
                 "--no-address": "bool",
                 "--no-public-ptr": "bool",
                 "--no-public-ptr-domain": "bool",
@@ -25440,6 +25576,15 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--bucket": "value",
                 "--no-bucket": "bool",
                 "--prefix": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--default-network-tier": [
+                  "PREMIUM",
+                  "STANDARD"
+                ]
               }
             }
           },

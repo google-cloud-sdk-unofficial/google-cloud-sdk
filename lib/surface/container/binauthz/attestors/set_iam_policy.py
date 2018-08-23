@@ -15,6 +15,7 @@
 """Set the IAM policy for an attestor."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
@@ -39,8 +40,8 @@ class SetIamPolicy(base.Command):
   # The above text is based on output of
   # iam_util.GetDetailedHelpForSetIamPolicy.
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     # TODO(b/77985971): Make this a resource.
     parser.add_argument('attestor_name', help=('The name of the attestor '
                                                'whose IAM policy will be '
@@ -49,7 +50,8 @@ class SetIamPolicy(base.Command):
                                              'file containing the IAM policy.'))
 
   def Run(self, args):
-    client = iam.Client(apis.V1_BETA1)
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    client = iam.Client(api_version)
     attestor_ref = util.GetAttestorRef(args.attestor_name)
 
     policy, _ = iam_util.ParseYamlOrJsonPolicyFile(args.policy_file,

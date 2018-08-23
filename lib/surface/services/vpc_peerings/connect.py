@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-OP_BASE_CMD = 'gcloud alpha services vpc-peerings operations '
+OP_BASE_CMD = 'gcloud beta services vpc-peerings operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 _DETAILED_HELP = {
@@ -57,7 +57,6 @@ _NETWORK_HELP = """The network in the current project to be peered with the \
 _RESERVED_RANGES_HELP = """The reserved IP CIDR ranges for service to use"""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Connect(base.SilentCommand):
   """Connect to a service via VPC peering for a project network."""
 

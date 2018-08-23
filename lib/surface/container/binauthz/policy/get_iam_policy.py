@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import iam
 from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base
@@ -38,4 +39,5 @@ class GetIamPolicy(base.ListCommand):
   """
 
   def Run(self, args):
-    return iam.Client().Get(util.GetPolicyRef())
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    return iam.Client(api_version).Get(util.GetPolicyRef())

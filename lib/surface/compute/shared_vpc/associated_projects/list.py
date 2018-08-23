@@ -50,7 +50,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(command_lib_util.XPN_RESOURCE_ID_FORMAT)
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient()
+    xpn_client = xpn_api.GetXpnClient(self.ReleaseTrack())
     xpn_types = xpn_client.messages.XpnResourceId.TypeValueValuesEnum
     resources = xpn_client.ListEnabledResources(args.project)
     return [resource for resource in resources if

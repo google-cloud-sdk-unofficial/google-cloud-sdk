@@ -45,11 +45,6 @@ class SetTargetPools(base.Command):
     *{command}* sets the target pools for an existing managed instance group.
   Instances that are part of the managed instance group will be added to the
   target pool automatically.
-
-  Setting a new target pool won't apply to existing instances in the group
-  unless they are recreated using the recreate-instances command. But any new
-  instances created in the managed instance group will be added to all of the
-  provided target pools for load balancing purposes.
   """
 
   @staticmethod

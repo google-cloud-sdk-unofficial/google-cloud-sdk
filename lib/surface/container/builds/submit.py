@@ -47,7 +47,7 @@ from googlecloudsdk.core.util import times
 _ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
 
 DEPRECATED_WARNING_MESSAGE = """\
-This command is deprecated. Please use `gcloud{}builds submit`
+This command is deprecated. Please use `gcloud builds submit`
 instead."""
 
 

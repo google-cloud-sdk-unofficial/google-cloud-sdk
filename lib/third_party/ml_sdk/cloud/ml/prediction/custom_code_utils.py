@@ -38,11 +38,14 @@ POSTPROCESS_KEY = "postprocess"
 FROM_MODEL_KEY = "from_model_path"
 
 
-def load_model_class(model_path):
+def create_user_model(model_path, unused_flags):
   """Loads in the user specified custom Model class.
 
   Args:
-    model_path: the path to either session_bundle or SavedModel
+    model_path: The path to either session_bundle or SavedModel.
+    unused_flags: Required since model creation for other frameworks needs the
+        additional flags params. And model creation is called in a framework
+        agnostic manner.
 
   Returns:
     An instance of a Model.

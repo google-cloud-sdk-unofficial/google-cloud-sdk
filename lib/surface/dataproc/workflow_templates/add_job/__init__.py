@@ -28,23 +28,24 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddJob(base.Group):
-  """Add Google Cloud Dataproc jobs to workflow template.
+  r"""Add Google Cloud Dataproc jobs to workflow template.
 
   ## EXAMPLES
 
   To add a Hadoop MapReduce job, run:
 
-    $ {command} hadoop --workflow-template my_template --jar my_jar.jar arg1
-    arg2
+    $ {command} hadoop --workflow-template my_template --jar my_jar.jar \
+        -- arg1 arg2
 
   To add a Spark Scala or Java job, run:
 
-    $ {command} spark --workflow-template my_template --jar my_jar.jar arg1
-    arg2
+    $ {command} spark --workflow-template my_template --jar my_jar.jar \
+        -- arg1 arg2
 
   To add a PySpark job, run:
 
-    $ {command} pyspark --workflow-template my_template my_script.py arg1 arg2
+    $ {command} pyspark --workflow-template my_template my_script.py \
+        -- arg1 arg2
 
   To add a Spark SQL job, run:
 

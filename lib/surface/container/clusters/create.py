@@ -468,6 +468,7 @@ class CreateAlpha(Create):
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddManagedPodIdentityFlag(parser)
     flags.AddResourceUsageBigqueryDatasetFlag(parser)
+    flags.AddAuthenticatorSecurityGroupFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -493,5 +494,6 @@ class CreateAlpha(Create):
     ops.default_max_pods_per_node = args.default_max_pods_per_node
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
+    ops.security_group = args.security_group
     flags.ValidateIstioConfigArgs(args.istio_config, args.addons)
     return ops

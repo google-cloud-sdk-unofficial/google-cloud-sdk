@@ -269,8 +269,7 @@ class CreateAlpha(CreateGA):
     flags.AddPortName(parser)
     flags.AddProtocol(
         parser,
-        default=None,
-        choices=['HTTP', 'HTTPS', 'HTTP2', 'SSL', 'TCP', 'UDP'])
+        default=None)
     flags.AddEnableCdn(parser, default=False)
     flags.AddCacheKeyIncludeProtocol(parser, default=True)
     flags.AddCacheKeyIncludeHost(parser, default=True)
@@ -421,8 +420,7 @@ class CreateBeta(CreateGA):
     flags.AddPortName(parser)
     flags.AddProtocol(
         parser,
-        default=None,
-        choices=['HTTP', 'HTTPS', 'HTTP2', 'SSL', 'TCP', 'UDP'])
+        default=None)
     flags.AddEnableCdn(parser, default=False)
     flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)

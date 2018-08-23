@@ -46,6 +46,10 @@ def create_model(client,
   Returns:
     An instance of the appropriate model class.
   """
+  custom_model = custom_code_utils.create_user_model(model_path, None)
+  if custom_model:
+    return custom_model
+
   framework = framework or prediction_utils.TENSORFLOW_FRAMEWORK_NAME
   if framework == prediction_utils.TENSORFLOW_FRAMEWORK_NAME:
     from .frameworks import tf_prediction_lib  # pylint: disable=g-import-not-at-top
@@ -57,8 +61,7 @@ def create_model(client,
     from .frameworks import sk_xg_prediction_lib  # pylint: disable=g-import-not-at-top
     model_cls = sk_xg_prediction_lib.XGBoostModel
 
-  return (custom_code_utils.load_model_class(model_path) or
-          model_cls(client))
+  return model_cls(client)
 
 
 def create_client(framework, model_path, **kwargs):

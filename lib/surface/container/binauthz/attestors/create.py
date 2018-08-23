@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.container.binauthz import apis
-from googlecloudsdk.api_lib.container.binauthz import authorities
+from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
@@ -30,8 +30,8 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 class Create(base.CreateCommand):
   """Create an Attestor."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddConcepts(
         parser,
         flags.GetAttestorPresentationSpec(
@@ -64,5 +64,6 @@ class Create(base.CreateCommand):
     attestor_ref = args.CONCEPTS.attestor.Parse()
     note_ref = args.CONCEPTS.attestation_authority_note.Parse()
 
-    return authorities.Client(apis.V1_BETA1).Create(
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    return attestors.Client(api_version).Create(
         attestor_ref, note_ref, description=args.description)

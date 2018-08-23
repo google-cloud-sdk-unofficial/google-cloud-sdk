@@ -15,6 +15,7 @@
 """Fetch the IAM policy for an attestor."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
@@ -36,8 +37,8 @@ class GetIamPolicy(base.ListCommand):
     $ {command} my_attestor
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddConcepts(
         parser,
         flags.GetAttestorPresentationSpec(
@@ -48,4 +49,5 @@ class GetIamPolicy(base.ListCommand):
 
   def Run(self, args):
     attestor_ref = args.CONCEPTS.attestor.Parse()
-    return iam.Client(apis.V1_BETA1).Get(attestor_ref)
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    return iam.Client(api_version).Get(attestor_ref)

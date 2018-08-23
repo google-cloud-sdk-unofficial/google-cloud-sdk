@@ -44,5 +44,5 @@ class GetHostProject(base.Command):
     flags.GetProjectIdArgument('get the host project for').AddToParser(parser)
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient()
+    xpn_client = xpn_api.GetXpnClient(self.ReleaseTrack())
     return xpn_client.GetHostProject(args.project)

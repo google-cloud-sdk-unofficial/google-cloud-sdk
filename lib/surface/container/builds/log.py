@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 DEPRECATED_WARNING_MESSAGE = """\
-This command is deprecated. Please use `gcloud{}builds log`
+This command is deprecated. Please use `gcloud builds log`
 instead."""
 
 

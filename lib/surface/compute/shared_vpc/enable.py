@@ -45,5 +45,5 @@ class Enable(base.Command):
         parser)
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient()
+    xpn_client = xpn_api.GetXpnClient(self.ReleaseTrack())
     xpn_client.EnableHost(args.project)

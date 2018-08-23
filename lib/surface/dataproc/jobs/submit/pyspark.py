@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class PySpark(pyspark.PySparkBase, submitter.JobSubmitter):
-  """Submit a PySpark job to a cluster.
+  r"""Submit a PySpark job to a cluster.
 
   Submit a PySpark job to a cluster.
 
@@ -37,7 +37,9 @@ class PySpark(pyspark.PySparkBase, submitter.JobSubmitter):
 
   To submit a Spark job that runs a script that is already on the cluster, run:
 
-    $ {command} --cluster my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py 100
+    $ {command} --cluster my_cluster \
+        file:///usr/lib/spark/examples/src/main/python/pi.py \
+        -- 100
   """
 
   @staticmethod

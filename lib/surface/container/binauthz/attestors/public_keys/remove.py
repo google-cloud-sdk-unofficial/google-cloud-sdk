@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
-from googlecloudsdk.api_lib.container.binauthz import authorities
+from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
@@ -28,8 +28,8 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 class Remove(base.Command):
   """Remove a public key from an Attestor."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddConcepts(
         parser,
         flags.GetAttestorPresentationSpec(
@@ -43,7 +43,8 @@ class Remove(base.Command):
                         help='The fingerprint of the public key to remove.')
 
   def Run(self, args):
-    attestors_client = authorities.Client(apis.V1_BETA1)
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    attestors_client = attestors.Client(api_version)
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
 

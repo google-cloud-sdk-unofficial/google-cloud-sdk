@@ -27,6 +27,7 @@ from googlecloudsdk.core import properties
 
 _DEFAULT_WORKFLOW = '../workflows/export/image_export.wf.json'
 _EXTERNAL_WORKFLOW = '../workflows/export/image_export_ext.wf.json'
+_OUTPUT_FILTER = ['[Daisy', '[image-export', '  image', 'ERROR']
 
 
 class Export(base.CreateCommand):
@@ -103,7 +104,7 @@ class Export(base.CreateCommand):
 
     tags = ['gce-daisy-image-export']
     return daisy_utils.RunDaisyBuild(args, workflow, variables,
-                                     tags=tags)
+                                     tags=tags, output_filter=_OUTPUT_FILTER)
 
 Export.detailed_help = {
     'brief': 'Export a Google Compute Engine image',

@@ -77,11 +77,26 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     _Args(cls, parser)
     flags.AddAddressesAndIPVersions(parser, required=False)
+    flags.AddNetworkTier(parser)
 
     cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
     cls.SUBNETWORK_ARG.AddArgument(parser)
 
+  def ConstructNetworkTier(self, messages, args):
+    if args.network_tier:
+      network_tier = args.network_tier.upper()
+      if network_tier in constants.NETWORK_TIER_CHOICES_FOR_INSTANCE:
+        return messages.Address.NetworkTierValueValuesEnum(args.network_tier)
+      else:
+        raise exceptions.InvalidArgumentException(
+            '--network-tier',
+            'Invalid network tier [{tier}]'.format(tier=network_tier))
+    else:
+      return None
+
   def GetAddress(self, messages, args, address, address_ref, resource_parser):
+    network_tier = self.ConstructNetworkTier(messages, args)
+
     if args.ip_version or (
         address is None and
         address_ref.Collection() == 'compute.globalAddresses'):
@@ -108,6 +123,7 @@ class Create(base.CreateCommand):
     return messages.Address(
         address=address,
         description=args.description,
+        networkTier=network_tier,
         ipVersion=ip_version,
         name=address_ref.Name(),
         addressType=(messages.Address.AddressTypeValueValuesEnum.INTERNAL
@@ -203,67 +219,6 @@ class CreateBeta(Create):
     $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
 
   """
-
-  SUBNETWORK_ARG = None
-  ADDRESSES_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    _Args(cls, parser)
-    flags.AddAddressesAndIPVersions(parser, required=False)
-    flags.AddNetworkTier(parser)
-
-    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
-    cls.SUBNETWORK_ARG.AddArgument(parser)
-
-  def ConstructNetworkTier(self, messages, args):
-    if args.network_tier:
-      network_tier = args.network_tier.upper()
-      if network_tier in constants.NETWORK_TIER_CHOICES_FOR_INSTANCE:
-        return messages.Address.NetworkTierValueValuesEnum(args.network_tier)
-      else:
-        raise exceptions.InvalidArgumentException(
-            '--network-tier',
-            'Invalid network tier [{tier}]'.format(tier=network_tier))
-    else:
-      return None
-
-  def GetAddress(self, messages, args, address, address_ref, resource_parser):
-    """Override."""
-    network_tier = self.ConstructNetworkTier(messages, args)
-
-    if args.ip_version or (
-        address is None and
-        address_ref.Collection() == 'compute.globalAddresses'):
-      ip_version = messages.Address.IpVersionValueValuesEnum(args.ip_version or
-                                                             'IPV4')
-    else:
-      # IP version is only specified in global requests if an address is not
-      # specified to determine whether an ipv4 or ipv6 address should be
-      # allocated.
-      ip_version = None
-
-    # TODO(b/36862747): get rid of args.subnet check
-    if args.subnet:
-      if address_ref.Collection() == 'compute.globalAddresses':
-        raise exceptions.ToolException(
-            '[--subnet] may not be specified for global addresses.')
-      if not args.subnet_region:
-        args.subnet_region = address_ref.region
-      subnetwork_url = flags.SubnetworkArgument().ResolveAsResource(
-          args, resource_parser).SelfLink()
-    else:
-      subnetwork_url = None
-
-    return messages.Address(
-        address=address,
-        description=args.description,
-        networkTier=network_tier,
-        ipVersion=ip_version,
-        name=address_ref.Name(),
-        addressType=(messages.Address.AddressTypeValueValuesEnum.INTERNAL
-                     if subnetwork_url else None),
-        subnetwork=subnetwork_url)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

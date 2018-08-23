@@ -62,7 +62,7 @@ def _AddSubmitTrainingArgs(parser):
 
 
 class Train(base.Command):
-  """Submits a Cloud Machine Learning training job."""
+  """Submit a Cloud Machine Learning training job."""
 
   @staticmethod
   def Args(parser):
@@ -96,7 +96,7 @@ class Train(base.Command):
 
 
 _DETAILED_HELP = {
-    'DESCRIPTION': r"""Submits a Cloud Machine Learning training job.
+    'DESCRIPTION': r"""Submit a Cloud Machine Learning training job.
 
 This creates temporary files and executes Python code staged
 by a user on Google Cloud Storage. Model code can either be
@@ -115,10 +115,10 @@ Or by specifying an already built package:
             --staging-bucket gs://my-bucket \
             --packages trainer-0.0.1.tar.gz,additional-dep1.tar.gz,dep2.whl
 
-If --package-path /my/code/path/trainer is specified and there is a
-setup.py file at /my/code/path/setup.py then that file will be invoked
+If `--package-path=/my/code/path/trainer` is specified and there is a
+`setup.py` file at `/my/code/path/setup.py`, the setup file will be invoked
 with `sdist` and the generated tar files will be uploaded to Cloud Storage.
-Otherwise a temporary setup.py file will be generated for the build.
+Otherwise, a temporary `setup.py` file will be generated for the build.
 
 By default, this command runs asynchronously; it exits once the job is
 successfully submitted.

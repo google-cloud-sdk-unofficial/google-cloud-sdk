@@ -44,7 +44,6 @@ _NETWORK_HELP = """The network in the current project to list connections
  with the service"""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.DescribeCommand):
   """List connections to a service via VPC peering for a project network."""
 

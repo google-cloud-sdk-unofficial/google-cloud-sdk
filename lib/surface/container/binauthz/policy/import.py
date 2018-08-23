@@ -50,8 +50,8 @@ class Import(base.Command):
       $ {parent_command} import --policy-file=my_policy.yaml
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'policy_file',
         type=arg_parsers.PolicyFileName,

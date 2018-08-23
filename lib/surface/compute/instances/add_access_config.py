@@ -45,7 +45,7 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser, support_public_dns, support_network_tier):
+def _Args(parser, support_public_dns):
   """Register parser args common to all tracks."""
 
   parser.add_argument(
@@ -73,8 +73,7 @@ def _Args(parser, support_public_dns, support_network_tier):
   flags.AddPublicPtrArgs(parser, instance=False)
   if support_public_dns:
     flags.AddPublicDnsArgs(parser, instance=False)
-  if support_network_tier:
-    flags.AddNetworkTierArgs(parser, instance=False)
+  flags.AddNetworkTierArgs(parser, instance=False)
   flags.INSTANCE_ARG.AddArgument(parser)
 
 
@@ -83,19 +82,14 @@ class AddAccessConfigInstances(base.SilentCommand):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
-  _support_network_tier = False
 
   @classmethod
   def Args(cls, parser):
-    _Args(
-        parser,
-        support_public_dns=cls._support_public_dns,
-        support_network_tier=cls._support_network_tier)
+    _Args(parser, support_public_dns=cls._support_public_dns)
 
   def Run(self, args):
     """Invokes request necessary for adding an access config."""
-    if self._support_network_tier:
-      flags.ValidateNetworkTierArgs(args)
+    flags.ValidateNetworkTierArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -148,7 +142,6 @@ class AddAccessConfigInstancesBeta(AddAccessConfigInstances):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = False
-  _support_network_tier = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -156,6 +149,5 @@ class AddAccessConfigInstancesAlpha(AddAccessConfigInstances):
   """Create a Google Compute Engine virtual machine access configuration."""
 
   _support_public_dns = True
-  _support_network_tier = True
 
 AddAccessConfigInstances.detailed_help = DETAILED_HELP

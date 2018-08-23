@@ -15,8 +15,10 @@
 """Command to add an IAM policy binding for a Binary Authorization policy."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import iam
 from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base
@@ -41,9 +43,11 @@ class AddIamPolicyBinding(base.Command):
   # The above text based on output from
   # iam_util.GetDetailedHelpForAddIamPolicyBinding.
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
-    return iam.Client().AddBinding(util.GetPolicyRef(), args.member, args.role)
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    return iam.Client(api_version).AddBinding(
+        util.GetPolicyRef(), args.member, args.role)

@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
-from googlecloudsdk.api_lib.container.binauthz import authorities
+from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
@@ -29,8 +29,8 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 class Update(base.UpdateCommand):
   """Update a public key on an Attestor."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddConcepts(
         parser,
         flags.GetAttestorPresentationSpec(
@@ -50,7 +50,8 @@ class Update(base.UpdateCommand):
                         help='The comment describing the public key.')
 
   def Run(self, args):
-    attestors_client = authorities.Client(apis.V1_BETA1)
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    attestors_client = attestors.Client(api_version)
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
     # TODO(b/71700164): Validate the contents of the public key file.

@@ -314,8 +314,7 @@ class UpdateAlpha(UpdateGA):
     flags.AddPortName(parser)
     flags.AddProtocol(
         parser,
-        default=None,
-        choices=['HTTP', 'HTTPS', 'HTTP2', 'SSL', 'TCP', 'UDP'])
+        default=None)
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
@@ -433,8 +432,7 @@ class UpdateBeta(UpdateGA):
     flags.AddPortName(parser)
     flags.AddProtocol(
         parser,
-        default=None,
-        choices=['HTTP', 'HTTPS', 'HTTP2', 'SSL', 'TCP', 'UDP'])
+        default=None)
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)

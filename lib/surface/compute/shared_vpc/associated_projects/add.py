@@ -42,5 +42,5 @@ class Add(base.Command):
     flags.GetHostProjectFlag('add an associated project to').AddToParser(parser)
 
   def Run(self, args):
-    xpn_client = xpn_api.GetXpnClient()
+    xpn_client = xpn_api.GetXpnClient(self.ReleaseTrack())
     xpn_client.EnableXpnAssociatedProject(args.host_project, args.project)

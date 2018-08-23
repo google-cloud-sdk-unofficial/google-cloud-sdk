@@ -72,23 +72,22 @@ def _CommonArgs(parser,
                 # TODO(b/80138906): Release track should not be passed around.
                 release_track,
                 support_public_dns,
-                support_network_tier,
                 enable_regional=False,
                 support_local_ssd_size=False,
                 enable_kms=False,
-                supports_resource_policies=False):
+                supports_resource_policies=False,
+                enable_snapshots=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
-  instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms)
+  instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms,
+                                    enable_snapshots=enable_snapshots)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
     instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
-  instances_flags.AddAddressArgs(
-      parser, instances=True,
-      support_network_tier=support_network_tier)
+  instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
@@ -105,13 +104,12 @@ def _CommonArgs(parser,
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
-  instances_flags.AddImageArgs(parser)
+  instances_flags.AddImageArgs(parser, enable_snapshots=enable_snapshots)
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   if support_public_dns:
     instances_flags.AddPublicDnsArgs(parser, instance=True)
-  if support_network_tier:
-    instances_flags.AddNetworkTierArgs(parser, instance=True)
+  instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
@@ -141,8 +139,8 @@ class Create(base.CreateCommand):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_kms = False
-  _support_network_tier = False
   _support_public_dns = False
+  _support_snapshots = False
 
   @classmethod
   def Args(cls, parser):
@@ -150,8 +148,8 @@ class Create(base.CreateCommand):
         parser,
         release_track=base.ReleaseTrack.GA,
         support_public_dns=cls._support_public_dns,
-        support_network_tier=cls._support_network_tier,
         enable_kms=cls._support_kms,
+        enable_snapshots=cls._support_snapshots
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
@@ -197,6 +195,7 @@ class Create(base.CreateCommand):
           'create_disk', 'boot_disk_kms_key', 'boot_disk_kms_project',
           'boot_disk_kms_location', 'boot_disk_kms_keyring',
       ])
+
     if (skip_defaults and
         not instance_utils.IsAnySpecified(args, *flags_to_check)):
       return [[] for _ in instance_refs]
@@ -221,7 +220,8 @@ class Create(base.CreateCommand):
               csek_keys,
               getattr(args, 'create_disk', []),
               instance_ref,
-              enable_kms=self._support_kms))
+              enable_kms=self._support_kms,
+              enable_snapshots=self._support_snapshots))
       local_ssds = []
       for x in args.local_ssd or []:
         local_ssds.append(
@@ -236,6 +236,14 @@ class Create(base.CreateCommand):
         )
 
       if create_boot_disk:
+        if self._support_snapshots:
+          boot_snapshot_uri = instance_utils.ResolveSnapshotURI(
+              user_project=instance_refs[0].project,
+              snapshot=args.source_snapshot,
+              resource_parser=resource_parser)
+        else:
+          boot_snapshot_uri = None
+
         boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
             compute_client, resource_parser,
             disk_type=args.boot_disk_type,
@@ -248,6 +256,7 @@ class Create(base.CreateCommand):
             instance_ref=instance_ref,
             csek_keys=csek_keys,
             kms_args=args,
+            snapshot_uri=boot_snapshot_uri,
             enable_kms=self._support_kms)
         persistent_disks = [boot_disk] + persistent_disks
       else:
@@ -318,8 +327,7 @@ class Create(base.CreateCommand):
           resources=resource_parser,
           compute_client=compute_client,
           network_interface_arg=args.network_interface,
-          instance_refs=instance_refs,
-          support_network_tier=self._support_network_tier)
+          instance_refs=instance_refs)
     else:
       instances_flags.ValidatePublicPtrFlags(args)
       if self._support_public_dns is True:
@@ -367,7 +375,6 @@ class Create(base.CreateCommand):
           messages=compute_client.messages, args=args)
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
-
     disks_messages = self._GetDiskMessagess(
         args, skip_defaults, instance_refs, compute_client, resource_parser,
         create_boot_disk, boot_disk_size_gb, image_uri, csek_keys)
@@ -428,13 +435,13 @@ class Create(base.CreateCommand):
     return requests
 
   def Run(self, args):
-    instances_flags.ValidateDiskFlags(args, enable_kms=self._support_kms)
+    instances_flags.ValidateDiskFlags(args, enable_kms=self._support_kms,
+                                      enable_snapshots=self._support_snapshots)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidateAcceleratorArgs(args)
-    if self._support_network_tier:
-      instances_flags.ValidateNetworkTierArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -491,13 +498,13 @@ class CreateBeta(Create):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_kms = True
-  _support_network_tier = True
   _support_public_dns = False
+  _support_snapshots = False
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
-    return instance_utils.GetNetworkInterfacesBeta(args, client, holder,
-                                                   instance_refs, skip_defaults)
+    return instance_utils.GetNetworkInterfaces(args, client, holder,
+                                               instance_refs, skip_defaults)
 
   @classmethod
   def Args(cls, parser):
@@ -505,9 +512,9 @@ class CreateBeta(Create):
         parser,
         release_track=base.ReleaseTrack.BETA,
         support_public_dns=cls._support_public_dns,
-        support_network_tier=cls._support_network_tier,
         enable_regional=True,
         enable_kms=cls._support_kms,
+        enable_snapshots=cls._support_snapshots,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
@@ -520,8 +527,8 @@ class CreateAlpha(CreateBeta):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_kms = True
-  _support_network_tier = True
   _support_public_dns = True
+  _support_snapshots = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -535,10 +542,10 @@ class CreateAlpha(CreateBeta):
         parser,
         release_track=base.ReleaseTrack.ALPHA,
         support_public_dns=cls._support_public_dns,
-        support_network_tier=cls._support_network_tier,
         enable_regional=True,
         support_local_ssd_size=True,
         enable_kms=cls._support_kms,
+        enable_snapshots=cls._support_snapshots,
         supports_resource_policies=True)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

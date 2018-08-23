@@ -38,8 +38,8 @@ class CreateSignaturePayload(base.Command):
           --artifact-url="gcr.io/example-project/example-image@sha256:abcd"
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     binauthz_flags.AddArtifactUrlFlag(parser)
     parser.display_info.AddFormat('json')
 

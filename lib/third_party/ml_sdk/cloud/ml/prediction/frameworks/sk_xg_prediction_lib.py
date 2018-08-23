@@ -49,12 +49,13 @@ class SklearnClient(PredictionClient):
           FRAMEWORK] = prediction_utils.SCIKIT_LEARN_FRAMEWORK_NAME
     stats[
         prediction_utils.ENGINE] = prediction_utils.SCIKIT_LEARN_FRAMEWORK_NAME
-    try:
-      return self._predictor.predict(inputs, **kwargs)
-    except Exception as e:
-      logging.exception("Exception while predicting with sklearn model.")
-      raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
-                            "Exception during sklearn prediction: " + str(e))
+    with stats.time(prediction_utils.SESSION_RUN_TIME):
+      try:
+        return self._predictor.predict(inputs, **kwargs)
+      except Exception as e:
+        logging.exception("Exception while predicting with sklearn model.")
+        raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
+                              "Exception during sklearn prediction: " + str(e))
 
 
 # (TODO:b/68775232) This class is specific to Xgboost, and should be moved to a
@@ -82,12 +83,13 @@ class XgboostClient(PredictionClient):
       raise PredictionError(
           PredictionError.FAILED_TO_RUN_MODEL,
           "Could not initialize DMatrix from inputs: " + str(e))
-    try:
-      return self._booster.predict(inputs_dmatrix, **kwargs)
-    except Exception as e:
-      logging.exception("Exception during predicting with xgboost model: ")
-      raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
-                            "Exception during xgboost prediction: " + str(e))
+    with stats.time(prediction_utils.SESSION_RUN_TIME):
+      try:
+        return self._booster.predict(inputs_dmatrix, **kwargs)
+      except Exception as e:
+        logging.exception("Exception during predicting with xgboost model: ")
+        raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
+                              "Exception during xgboost prediction: " + str(e))
 
 
 class SklearnModel(prediction_utils.BaseModel):
@@ -273,16 +275,17 @@ def _load_joblib_or_pickle_model(model_path):
         return pickle.loads(f.read())
 
     return None
+
   except Exception as e:
-    # TODO(b/109894300): Improve this error message. Currently if the failure is
-    # due to other reasons such as custom package not found, we give this
-    # error which talks about unrelated python version (while the actual error
-    # is included in `e`.)
-    error_msg = (
-        "Could not load the model: {}. {}. Please make sure the model was "
-        "exported using python {}. Otherwise, please specify the correct "
-        "'python_version' parameter when deploying the model. Currently, "
-        "'python_version' accepts 2.7 and 3.5."
-    ).format(model_file_name, str(e), sys.version_info[0])
+    raw_error_msg = str(e)
+    if "unsupported pickle protocol" in raw_error_msg:
+      error_msg = (
+          "Could not load the model: {}. {}. Please make sure the model was "
+          "exported using python {}. Otherwise, please specify the correct "
+          "'python_version' parameter when deploying the model.").format(
+              model_file_name, raw_error_msg, sys.version_info[0])
+    else:
+      error_msg = "Could not load the model: {}. {}.".format(
+          model_file_name, raw_error_msg)
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)

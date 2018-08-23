@@ -36,14 +36,27 @@ from six.moves import zip
 
 
 DETAILED_HELP = {
+    'brief': 'Create snapshots of Google Compute Engine persistent disks.',
     'DESCRIPTION': """\
-        Create snapshots of Google Compute Engine persistent disks.
-
         *{command}* creates snapshots of persistent disks. Snapshots are useful
-        for backing up data or copying a persistent disk. Once created,
-        snapshots may be managed (listed, deleted, etc.) via
-        ``gcloud compute snapshots''.
-        """
+        for backing up data, copying a persistent disk, and even, creating a
+        custom image. Snapshots can be created from persistent disks even while
+        they are attached to running instances. Once created, snapshots may be
+        managed (listed, deleted, resized etc.) via `gcloud compute snapshots`.
+
+        For best practices regarding managing snapshots, refer to this guide:
+        https://cloud.google.com/compute/docs/disks/create-snapshots#best_practices.
+
+        {command} waits until the operation returns a status of `READY` or
+        `FAILED`, or reaches the maximum timeout, and returns the last known
+        details of the snapshot.
+        """,
+    'EXAMPLES': """\
+        To create a snapshot named `snapshot-test` of a persistent disk named `test`
+        in zone `us-central1-a`, run:
+
+          $ {command} test --zone=us-central1-a --snapshot-names=snapshot-test --description="This is an example snapshot"
+    """
 }
 
 
@@ -53,22 +66,21 @@ def _CommonArgs(parser):
 
   parser.add_argument(
       '--description',
-      help=('An optional, textual description for the snapshots being '
-            'created.'))
+      help=('Text to describe the snapshots being created.'))
   parser.add_argument(
       '--snapshot-names',
       type=arg_parsers.ArgList(min_length=1),
       metavar='SNAPSHOT_NAME',
       help="""\
-      Names to assign to the snapshots. Without this option, the
-      name of each snapshot will be a random, 16-character
+      Names to assign to the created snapshots. Without this option, the
+      name of each snapshot will be a random 16-character
       hexadecimal number that starts with a letter. The values of
       this option run parallel to the disks specified. For example,
 
-        $ {command} my-disk-1 my-disk-2 my-disk-3 --snapshot-names snapshot-1,snapshot-2,snapshot-3
+          {command} my-disk-1 my-disk-2 my-disk-3 --snapshot-names snapshot-1,snapshot-2,snapshot-3
 
-      will result in ``my-disk-1'' being snapshotted as
-      ``snapshot-1'', ``my-disk-2'' as ``snapshot-2'', and so on.
+      will result in `my-disk-1` being snapshotted as
+      `snapshot-1`, `my-disk-2` as `snapshot-2`, and so on.
       """)
   parser.add_argument(
       '--guest-flush',

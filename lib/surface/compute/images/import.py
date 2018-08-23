@@ -52,6 +52,7 @@ _IMPORT_FROM_IMAGE_WORKFLOW = _WORKFLOW_DIR + 'import_from_image.wf.json'
 _IMPORT_AND_TRANSLATE_WORKFLOW = _WORKFLOW_DIR + 'import_and_translate.wf.json'
 _WORKFLOWS_URL = ('https://github.com/GoogleCloudPlatform/compute-image-tools/'
                   'tree/master/daisy_workflows/image_import')
+_OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
 def _IsLocalFile(file_name):
@@ -209,7 +210,8 @@ class Import(base.CreateCommand):
     log.warning('Importing image. This may take up to 2 hours.')
     return daisy_utils.RunDaisyBuild(args, workflow, ','.join(daisy_vars),
                                      daisy_bucket=daisy_bucket,
-                                     user_zone=args.zone)
+                                     user_zone=args.zone,
+                                     output_filter=_OUTPUT_FILTER)
 
 Import.detailed_help = {
     'brief': 'Import an image into Google Compute Engine',

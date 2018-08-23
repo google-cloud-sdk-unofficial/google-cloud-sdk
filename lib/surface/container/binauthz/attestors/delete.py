@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
-from googlecloudsdk.api_lib.container.binauthz import authorities
+from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
@@ -28,8 +28,8 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 class Delete(base.DeleteCommand):
   """Delete an Attestor."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddConcepts(
         parser,
         flags.GetAttestorPresentationSpec(
@@ -40,4 +40,5 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     attestor_ref = args.CONCEPTS.attestor.Parse()
-    return authorities.Client(apis.V1_BETA1).Delete(attestor_ref)
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    return attestors.Client(api_version).Delete(attestor_ref)

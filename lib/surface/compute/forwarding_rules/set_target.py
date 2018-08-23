@@ -75,13 +75,7 @@ class Set(base.UpdateCommand):
                              args):
     """Create a regionally scoped request."""
     target_ref, _ = utils.GetRegionalTarget(
-        client,
-        resources,
-        args,
-        forwarding_rule_ref=forwarding_rule_ref,
-        allow_global_target=(self.ReleaseTrack() in [
-            base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
-        ]))
+        client, resources, args, forwarding_rule_ref=forwarding_rule_ref)
 
     request = client.messages.ComputeForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),

@@ -20,18 +20,19 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
-from googlecloudsdk.api_lib.container.binauthz import authorities
+from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import util as cli_util
 
 
 class List(base.ListCommand):
-  """List Attestation Authorities associated with the current project."""
+  """List Attestors associated with the current project."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat(cli_util.ATTESTATION_AUTHORITY_LIST_FORMAT)
 
   def Run(self, args):
-    return authorities.Client(apis.V1_BETA1).List(util.GetProjectRef())
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    return attestors.Client(api_version).List(util.GetProjectRef())
