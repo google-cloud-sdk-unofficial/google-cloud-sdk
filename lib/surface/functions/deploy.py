@@ -45,7 +45,7 @@ def _ApplyEnvVarsArgsToFunction(function, args):
   return updated_fields
 
 
-def _Run(args, track=None, enable_runtime=False, enable_max_instances=False,
+def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
          enable_connected_vpc=False, enable_env_vars=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
@@ -176,6 +176,8 @@ class Deploy(base.Command):
     # Add args for specifying the function trigger
     flags.AddTriggerFlagGroup(parser)
 
+    flags.AddRuntimeFlag(parser)
+
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack())
 
@@ -188,12 +190,10 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddRuntimeFlag(parser)
     env_vars_util.AddUpdateEnvVarsFlags(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack(), enable_runtime=True,
-                enable_env_vars=True)
+    return _Run(args, track=self.ReleaseTrack(), enable_env_vars=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -204,12 +204,10 @@ class DeployAlpha(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddRuntimeFlag(parser)
     env_vars_util.AddUpdateEnvVarsFlags(parser)
     flags.AddMaxInstancesFlag(parser)
     flags.AddConnectedVPCFlag(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack(), enable_runtime=True,
-                enable_max_instances=True, enable_connected_vpc=True,
-                enable_env_vars=True)
+    return _Run(args, track=self.ReleaseTrack(), enable_max_instances=True,
+                enable_connected_vpc=True, enable_env_vars=True)

@@ -76,6 +76,19 @@ class VersionVerifier(object):
       return self.UPGRADE_AVAILABLE
 
 
+def ParseUpgradeOptionsBase(args):
+  """Parses the flags provided with the cluster upgrade command."""
+  return api_adapter.UpdateClusterOptions(
+      version=args.cluster_version,
+      update_master=args.master,
+      update_nodes=(not args.master),
+      node_pool=args.node_pool,
+      image_type=args.image_type,
+      image=args.image,
+      image_project=args.image_project,
+      concurrent_node_count=getattr(args, 'concurrent_node_count', None))
+
+
 def _Args(parser):
   """Register flags for this command.
 
@@ -122,6 +135,9 @@ class Upgrade(base.Command):
   @staticmethod
   def Args(parser):
     _Args(parser)
+
+  def ParseUpgradeOptions(self, args):
+    return ParseUpgradeOptionsBase(args)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -174,15 +190,7 @@ class Upgrade(base.Command):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    options = api_adapter.UpdateClusterOptions(
-        version=args.cluster_version,
-        update_master=args.master,
-        update_nodes=(not args.master),
-        node_pool=args.node_pool,
-        image_type=args.image_type,
-        image=args.image,
-        image_project=args.image_project,
-        concurrent_node_count=concurrent_node_count)
+    options = self.ParseUpgradeOptions(args)
 
     try:
       op_ref = adapter.UpdateCluster(cluster_ref, options)
@@ -252,3 +260,10 @@ class UpgradeAlpha(Upgrade):
   def Args(parser):
     _Args(parser)
     flags.AddConcurrentNodeCountFlag(parser)
+    flags.AddSecurityProfileForUpgradeFlags(parser)
+
+  def ParseUpgradeOptions(self, args):
+    ops = ParseUpgradeOptionsBase(args)
+    ops.security_profile = args.security_profile
+    ops.security_profile_runtime_rules = args.security_profile_runtime_rules
+    return ops

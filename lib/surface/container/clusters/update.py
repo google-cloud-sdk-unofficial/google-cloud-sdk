@@ -124,7 +124,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
       help='Set the basic auth password to the specified value, keeping the '
       'existing username.')
 
-  flags.AddBasicAuthFlags(mutex_group, None, None)
+  flags.AddBasicAuthFlags(mutex_group)
 
 
 def _AddAdditionalZonesArg(mutex_group, deprecated=True):
@@ -238,7 +238,7 @@ class Update(base.UpdateCommand):
     if hasattr(args, 'node_locations') and args.node_locations is not None:
       locations = sorted(args.node_locations)
 
-    if args.username is not None or args.enable_basic_auth is not None:
+    if args.IsSpecified('username') or args.IsSpecified('enable_basic_auth'):
       flags.MungeBasicAuthFlags(args)
       options = api_adapter.SetMasterAuthOptions(
           action=api_adapter.SetMasterAuthOptions.SET_USERNAME,
@@ -250,7 +250,7 @@ class Update(base.UpdateCommand):
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif (args.generate_password or args.set_password or
-          args.password is not None):
+          args.IsSpecified('password')):
       if args.generate_password:
         password = ''
         options = api_adapter.SetMasterAuthOptions(
@@ -258,7 +258,7 @@ class Update(base.UpdateCommand):
             password=password)
       else:
         password = args.password
-        if args.password is None:
+        if not args.IsSpecified('password'):
           password = input('Please enter the new password:')
         options = api_adapter.SetMasterAuthOptions(
             action=api_adapter.SetMasterAuthOptions.SET_PASSWORD,
@@ -471,6 +471,7 @@ class UpdateAlpha(Update):
     flags.AddEnableBinAuthzFlag(group, hidden=True)
     flags.AddResourceUsageBigqueryDatasetFlag(group, add_clear_flag=True)
     flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
+    flags.AddSecurityProfileForUpdateFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -487,4 +488,5 @@ class UpdateAlpha(Update):
     opts.clear_resource_usage_bigquery_dataset = \
         args.clear_resource_usage_bigquery_dataset
     opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
+    opts.security_profile = args.security_profile
     return opts

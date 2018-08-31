@@ -119,7 +119,10 @@ class SklearnModel(prediction_utils.BaseModel):
     # TODO(b/67383676) Consider changing this to a more generic type.
     return self._preprocess(np.array(instances), **kwargs)
 
-  def postprocess(self, predicted_outputs, original_input=None, stats=None,
+  def postprocess(self,
+                  predicted_outputs,
+                  original_input=None,
+                  stats=None,
                   **kwargs):
     # TODO(b/67383676) Consider changing this to a more generic type.
     post_processed = self._postprocess(predicted_outputs, **kwargs)
@@ -131,8 +134,7 @@ class SklearnModel(prediction_utils.BaseModel):
         PredictionError.INVALID_OUTPUTS,
         "Bad output type returned after running %s"
         "The post-processing function should return either "
-        "a numpy ndarray or a list."
-        % self._postprocess.__name__)
+        "a numpy ndarray or a list." % self._postprocess.__name__)
 
   def _null_processor(self, instances, **unused_kwargs):
     return instances
@@ -250,28 +252,32 @@ def _load_joblib_or_pickle_model(model_path):
     A loaded scikit-learn or xgboost predictor object or None if neither
     MODEL_FILE_NAME_JOBLIB nor MODEL_FILE_NAME_PICKLE files are found.
   """
-  try:
-    # If we put this at the top, we need to add a dependency to sklearn
-    # anywhere that prediction_lib is called.
-    from sklearn.externals import joblib  # pylint: disable=g-import-not-at-top
-  except Exception as e:
-    error_msg = "Could not import sklearn module."
-    logging.critical(error_msg)
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
   if model_path.startswith("gs://"):
     prediction_utils.copy_model_to_local(model_path,
                                          prediction_utils.LOCAL_MODEL_PATH)
     model_path = prediction_utils.LOCAL_MODEL_PATH
-  try:
-    if os.path.exists(os.path.join(model_path, MODEL_FILE_NAME_JOBLIB)):
-      model_file_name = os.path.join(model_path, MODEL_FILE_NAME_JOBLIB)
-      logging.info("Loading model %s using joblib.", model_file_name)
-      return joblib.load(os.path.join(model_path, MODEL_FILE_NAME_JOBLIB))
 
-    elif os.path.exists(os.path.join(model_path, MODEL_FILE_NAME_PICKLE)):
-      model_file_name = os.path.join(model_path, MODEL_FILE_NAME_PICKLE)
+  try:
+    model_file_name_joblib = os.path.join(model_path, MODEL_FILE_NAME_JOBLIB)
+    model_file_name_pickle = os.path.join(model_path, MODEL_FILE_NAME_PICKLE)
+    if os.path.exists(model_file_name_joblib):
+      model_file_name = model_file_name_joblib
+      try:
+        # Load joblib only when needed. If we put this at the top, we need to
+        # add a dependency to sklearn anywhere that prediction_lib is called.
+        from sklearn.externals import joblib  # pylint: disable=g-import-not-at-top
+      except Exception as e:
+        error_msg = "Could not import sklearn module."
+        logging.critical(error_msg)
+        raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+
+      logging.info("Loading model %s using joblib.", model_file_name)
+      return joblib.load(model_file_name)
+
+    elif os.path.exists(model_file_name_pickle):
+      model_file_name = model_file_name_pickle
       logging.info("Loading model %s using pickle.", model_file_name)
-      with open(os.path.join(model_path, MODEL_FILE_NAME_PICKLE), "rb") as f:
+      with open(model_file_name, "rb") as f:
         return pickle.loads(f.read())
 
     return None

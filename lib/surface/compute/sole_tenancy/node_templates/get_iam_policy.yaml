@@ -1,0 +1,33 @@
+- &beta_command
+  release_tracks: [BETA]
+  help_text:
+    brief: Get the IAM Policy for a Google Compute Engine node template.
+    DESCRIPTION: |
+            *{command}* displays the IAM policy associated with a Google
+            Compute Engine node template. If formatted as JSON,
+            the output can be edited and used as a policy file for
+            set-iam-policy. The output includes an "etag" field
+            identifying the version emitted and allowing detection of
+            concurrent policy updates; see
+            $ {parent} set-iam-policy for additional details.
+    EXAMPLES: |
+            To print the IAM policy for a given node template, run:
+
+              $ {command} my-node-template
+
+  request:
+    &request
+    collection: compute.nodeTemplates
+    api_version: beta
+    use_relative_name: false
+
+  arguments:
+    resource:
+      help_text: The node template for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:node_template
+
+- <<: *beta_command
+  release_tracks: [ALPHA]
+  request:
+    <<: *request
+    api_version: alpha

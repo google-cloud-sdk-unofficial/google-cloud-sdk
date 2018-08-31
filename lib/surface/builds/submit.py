@@ -99,7 +99,7 @@ class Submit(base.CreateCommand):
         '`.gitignore` file is present in the local source directory, gcloud '
         'will use a Git-compatible `.gcloudignore` file that respects your '
         '.gitignored files. The global `.gitignore` is not respected. For more '
-        'information on `.gcloudignore`, see `$gcloud topic gcloudignore`.',
+        'information on `.gcloudignore`, see `gcloud topic gcloudignore`.',
     )
     source.add_argument(
         '--no-source',

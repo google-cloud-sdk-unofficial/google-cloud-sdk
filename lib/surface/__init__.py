@@ -98,10 +98,3 @@ class Gcloud(base.Group):
         action=actions.StoreBooleanProperty(properties.VALUES.core.trace_log),
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.')
-    trace_group.add_argument(
-        '--capture-session-file',
-        default=None,
-        action=actions.StoreProperty(
-            properties.VALUES.core.capture_session_file),
-        hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')

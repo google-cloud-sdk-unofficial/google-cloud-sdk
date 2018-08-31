@@ -112,6 +112,7 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, beta=True)
+    flags.AddComponentFlag(parser)
     flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
     parser.add_argument(

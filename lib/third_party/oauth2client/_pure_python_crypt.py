@@ -19,10 +19,7 @@ to parse PEM files storing PKCS#1 or PKCS#8 keys as well as
 certificates.
 """
 
-from pyasn1.codec.der import decoder
 from pyasn1_modules import pem
-from pyasn1_modules.rfc2459 import Certificate
-from pyasn1_modules.rfc5208 import PrivateKeyInfo
 import rsa
 import six
 
@@ -43,7 +40,7 @@ _PKCS1_MARKER = ('-----BEGIN RSA PRIVATE KEY-----',
                  '-----END RSA PRIVATE KEY-----')
 _PKCS8_MARKER = ('-----BEGIN PRIVATE KEY-----',
                  '-----END PRIVATE KEY-----')
-_PKCS8_SPEC = PrivateKeyInfo()
+_PKCS8_SPEC = None
 
 
 def _bit_list_to_bytes(bit_list):
@@ -112,8 +109,11 @@ class RsaVerifier(object):
         """
         key_pem = _helpers._to_bytes(key_pem)
         if is_x509_cert:
+            from pyasn1.codec.der import decoder
+            from pyasn1_modules import rfc2459
+
             der = rsa.pem.load_pem(key_pem, 'CERTIFICATE')
-            asn1_cert, remaining = decoder.decode(der, asn1Spec=Certificate())
+            asn1_cert, remaining = decoder.decode(der, asn1Spec=rfc2459.Certificate())
             if remaining != b'':
                 raise ValueError('Unused bytes', remaining)
 
@@ -163,6 +163,7 @@ class RsaSigner(object):
             ValueError if the key cannot be parsed as PKCS#1 or PKCS#8 in
             PEM format.
         """
+        global _PKCS8_SPEC
         key = _helpers._from_bytes(key)  # pem expects str in Py3
         marker_id, key_bytes = pem.readPemBlocksFromFile(
             six.StringIO(key), _PKCS1_MARKER, _PKCS8_MARKER)
@@ -171,6 +172,11 @@ class RsaSigner(object):
             pkey = rsa.key.PrivateKey.load_pkcs1(key_bytes,
                                                  format='DER')
         elif marker_id == 1:
+            from pyasn1.codec.der import decoder
+            from pyasn1_modules import rfc5208
+
+            if _PKCS8_SPEC is None:
+              _PKCS8_SPEC = rfc5208.PrivateKeyInfo()
             key_info, remaining = decoder.decode(
                 key_bytes, asn1Spec=_PKCS8_SPEC)
             if remaining != b'':

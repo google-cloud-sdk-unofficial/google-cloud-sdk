@@ -36,9 +36,9 @@ _DEPRECATION_ERROR = """\
     """
 
 
-# TODO(b/79153388): Clean up this command flag after 3 months of deprecation.
+# TODO(b/79153388): Clean up this command after 3 months of deprecation.
 @base.Deprecate(
-    is_removed=False, warning=_DEPRECATION_WARNING, error=_DEPRECATION_ERROR)
+    is_removed=True, warning=_DEPRECATION_WARNING, error=_DEPRECATION_ERROR)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine interconnect attachment.
 

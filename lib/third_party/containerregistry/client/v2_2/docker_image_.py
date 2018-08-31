@@ -695,6 +695,22 @@ class FromDisk(DockerImage):
       with FromTarball(legacy_base) as base:
         self._legacy_base = base
 
+  def _get_foreign_layers(self):
+    foreign_layers = []
+    if self._foreign_layers_manifest:
+      manifest = json.loads(self._foreign_layers_manifest)
+      if 'layers' in manifest:
+        for layer in manifest['layers']:
+          if layer['mediaType'] == docker_http.FOREIGN_LAYER_MIME:
+            foreign_layers.append(layer)
+    return foreign_layers
+
+  def _get_foreign_layer_by_digest(self, digest):
+    for foreign_layer in self._get_foreign_layers():
+      if foreign_layer['digest'] == digest:
+        return foreign_layer
+    return None
+
   def _populate_manifest(self):
     base_layers = []
     if self._legacy_base:
@@ -703,14 +719,7 @@ class FromDisk(DockerImage):
       # Manifest files found in tar files are actually a json list.
       # This code iterates through that collection and appends any foreign
       # layers described in the order found in the config file.
-      foreign_layers_list = json.loads(self._foreign_layers_manifest)
-      for foreign_layers in foreign_layers_list:
-        if 'LayerSources' in foreign_layers:
-          config = json.loads(self._config)
-          layer_sources = foreign_layers['LayerSources']
-          for diff_id in config['rootfs']['diff_ids']:
-            if diff_id in layer_sources:
-              base_layers.append(layer_sources[diff_id])
+      base_layers += self._get_foreign_layers()
 
     # TODO(user): Update mimes here for oci_compat.
     self._manifest = json.dumps(
@@ -750,8 +759,11 @@ class FromDisk(DockerImage):
   def uncompressed_blob(self, digest):
     """Override."""
     if digest not in self._layer_to_filename:
-      # Leverage the FromTarball fast-path.
-      return self._legacy_base.uncompressed_blob(digest)
+      if self._get_foreign_layer_by_digest(digest):
+        return bytes([])
+      else:
+        # Leverage the FromTarball fast-path.
+        return self._legacy_base.uncompressed_blob(digest)
     return super(FromDisk, self).uncompressed_blob(digest)
 
   def uncompressed_layer(self, diff_id):

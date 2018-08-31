@@ -100,4 +100,4 @@ class List(base.ListCommand):
     # Filter for traffic.
     if args.hide_no_traffic:
       versions = [v for v in versions if v.traffic_split]
-    return sorted(versions)
+    return sorted(versions, key=str)

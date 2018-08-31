@@ -90,7 +90,7 @@ class Start(base.Command):
 
     errors = {}
     # Sort versions to make behavior deterministic enough for unit testing.
-    for version in sorted(versions):
+    for version in sorted(versions, key=str):
       try:
         with progress_tracker.ProgressTracker('Starting [{0}]'.format(version)):
           operations_util.CallAndCollectOpErrors(

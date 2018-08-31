@@ -175,8 +175,9 @@ def ValidateBasicAuthFlags(args):
   if args.IsSpecified('enable_basic_auth'):
     if not args.enable_basic_auth:
       args.username = ''
-    # Right now, enable_basic_auth is a no-op because username defaults to
-    # admin.
+    # `enable_basic_auth == true` is a no-op defaults are resoved server-side
+    # based on the version of the cluster. For versions before 1.12, this is
+    # 'admin', otherwise '' (disabled).
   if not args.username and args.IsSpecified('password'):
     raise util.Error(constants.USERNAME_PASSWORD_ERROR_MSG)
 
@@ -384,6 +385,7 @@ class CreateBeta(Create):
     flags.AddNodeLocationsFlag(group)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
@@ -422,12 +424,15 @@ class CreateBeta(Create):
     ops.allow_route_overlap = args.allow_route_overlap
     ops.new_scopes_behavior = True
     ops.private_cluster = args.private_cluster
+    ops.enable_private_nodes = args.enable_private_nodes
+    ops.enable_private_endpoint = args.enable_private_endpoint
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.enable_binauthz = args.enable_binauthz
     ops.enable_tpu = args.enable_tpu
     ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
+    ops.default_max_pods_per_node = args.default_max_pods_per_node
     return ops
 
 
@@ -470,6 +475,7 @@ class CreateAlpha(Create):
     flags.AddResourceUsageBigqueryDatasetFlag(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
+    flags.AddSecurityProfileForCreateFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -486,6 +492,8 @@ class CreateAlpha(Create):
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
     ops.private_cluster = args.private_cluster
+    ops.enable_private_nodes = args.enable_private_nodes
+    ops.enable_private_endpoint = args.enable_private_endpoint
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.new_scopes_behavior = True
     ops.enable_tpu = args.enable_tpu
@@ -498,4 +506,6 @@ class CreateAlpha(Create):
     ops.security_group = args.security_group
     flags.ValidateIstioConfigArgs(args.istio_config, args.addons)
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
+    ops.security_profile = args.security_profile
+    ops.security_profile_runtime_rules = args.security_profile_runtime_rules
     return ops

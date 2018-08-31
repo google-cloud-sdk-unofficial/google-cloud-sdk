@@ -34,6 +34,7 @@ class SetManagedCluster(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     flags.AddTemplateResourceArg(parser, 'set managed cluster')
+    flags.AddComponentFlag(parser)
     parser.add_argument(
         '--cluster-name',
         help="""\

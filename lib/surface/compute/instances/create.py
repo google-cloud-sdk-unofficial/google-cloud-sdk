@@ -390,21 +390,39 @@ class Create(base.CreateCommand):
       guest_accelerators = instance_utils.GetAccelerators(
           args, compute_client, resource_parser, instance_ref)
 
-      instance = compute_client.messages.Instance(
-          canIpForward=can_ip_forward,
-          deletionProtection=args.deletion_protection,
-          description=args.description,
-          disks=disks,
-          guestAccelerators=guest_accelerators,
-          labels=labels,
-          machineType=machine_type_uri,
-          metadata=metadata,
-          minCpuPlatform=args.min_cpu_platform,
-          name=instance_ref.Name(),
-          networkInterfaces=network_interfaces,
-          serviceAccounts=project_to_sa[instance_ref.project],
-          scheduling=scheduling,
-          tags=tags)
+      if hasattr(args, 'hostname'):
+        instance = compute_client.messages.Instance(
+            canIpForward=can_ip_forward,
+            deletionProtection=args.deletion_protection,
+            description=args.description,
+            disks=disks,
+            guestAccelerators=guest_accelerators,
+            hostname=args.hostname,
+            labels=labels,
+            machineType=machine_type_uri,
+            metadata=metadata,
+            minCpuPlatform=args.min_cpu_platform,
+            name=instance_ref.Name(),
+            networkInterfaces=network_interfaces,
+            serviceAccounts=project_to_sa[instance_ref.project],
+            scheduling=scheduling,
+            tags=tags)
+      else:
+        instance = compute_client.messages.Instance(
+            canIpForward=can_ip_forward,
+            deletionProtection=args.deletion_protection,
+            description=args.description,
+            disks=disks,
+            guestAccelerators=guest_accelerators,
+            labels=labels,
+            machineType=machine_type_uri,
+            metadata=metadata,
+            minCpuPlatform=args.min_cpu_platform,
+            name=instance_ref.Name(),
+            networkInterfaces=network_interfaces,
+            serviceAccounts=project_to_sa[instance_ref.project],
+            scheduling=scheduling,
+            tags=tags)
 
       resource_policies = getattr(
           args, 'resource_policies', None)
@@ -551,6 +569,7 @@ class CreateAlpha(CreateBeta):
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     instances_flags.AddShieldedVMConfigArgs(parser)
+    instances_flags.AddHostnameArg(parser)
 
 
 Create.detailed_help = DETAILED_HELP

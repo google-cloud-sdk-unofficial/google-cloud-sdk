@@ -1,0 +1,45 @@
+- &beta_command
+  release_tracks: [BETA]
+  help_text:
+    brief: Remove an IAM policy binding from a node group.
+    DESCRIPTION: |
+      Remove an IAM policy binding from a node group.
+    EXAMPLES: |
+      The following command will remove an IAM policy binding for the role
+      of 'roles/compute.admin' for the user 'test-user@gmail.com' on node
+      group with identifier 'my-node-group'
+
+        $ {command} my-node-group --member='user:test-user@gmail.com' --role='roles/compute.admin'
+
+      The following command will remove an IAM policy binding for the role
+      of 'roles/compute.admin' from all authenticated users on node group
+      'my-node-group':
+
+        $ {command} my-node-group --member='allAuthenticatedUsers' --role='roles/compute.admin'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details
+      of policy role and member types.
+
+  request:
+    &request
+    collection: compute.nodeGroups
+    api_version: beta
+    use_relative_name: false
+
+  iam:
+    set_iam_policy_request_path: zoneSetPolicyRequest
+    message_type_overrides:
+      policy: Policy
+      set_iam_policy_request: ComputeNodeGroupsSetIamPolicyRequest
+
+  arguments:
+    resource:
+      help_text:
+        The node group for which to remove IAM policy binding from.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:node_group
+
+- <<: *beta_command
+  release_tracks: [ALPHA]
+  request:
+    <<: *request
+    api_version: alpha

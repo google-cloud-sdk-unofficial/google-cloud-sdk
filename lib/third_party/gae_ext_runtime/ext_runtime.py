@@ -19,7 +19,8 @@ import os
 import subprocess
 import sys
 import threading
-import yaml
+
+import ruamel.yaml as yaml
 
 # Try importing these modules from the cloud SDK first.
 try:
@@ -163,7 +164,7 @@ class DefaultExecutionEnvironment(ExecutionEnvironment):
     return raw_input('> ')
 
   def Print(self, message):
-    print message
+    print(message)
 
 
 class ExternalRuntimeConfigurator(Configurator):
@@ -199,7 +200,7 @@ class ExternalRuntimeConfigurator(Configurator):
 
       # Add env: flex if we don't have an "env" field.
       self.generated_appinfo = {}
-      if not generated_appinfo.has_key('env'):
+      if not 'env' in generated_appinfo:
         self.generated_appinfo['env'] = 'flex'
 
       # And then update with the values provided by the runtime def.
@@ -543,7 +544,7 @@ class ExternalizedRuntime(object):
       PluginInvocationFailed: The plugin terminated with a non-zero exit code.
     """
     # TODO(user): Support other script types.
-    if plugin_spec.has_key('python'):
+    if 'python' in plugin_spec:
       normalized_path = _NormalizePath(self.root, plugin_spec['python'])
 
       # We're sharing 'result' with the output collection thread, we can get

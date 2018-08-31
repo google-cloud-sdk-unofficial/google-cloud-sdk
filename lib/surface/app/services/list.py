@@ -58,4 +58,4 @@ class List(base.ListCommand):
       result.append(
           {'id': service.id, 'versions': versions_for_service})
     # Sort so the order is deterministic for testing.
-    return sorted(result)
+    return sorted(result, key=lambda r: r['id'])

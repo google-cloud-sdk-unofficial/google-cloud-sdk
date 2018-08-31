@@ -1,0 +1,51 @@
+- &beta_command
+  release_tracks: [BETA]
+  help_text:
+    brief: Add an IAM policy binding to a node template.
+    DESCRIPTION: |
+      Add an IAM policy binding to a node template.
+    EXAMPLES: |
+      The following command will add an IAM policy binding for the role
+      of 'roles/compute.admin' for the user 'test-user@gmail.com' on a node
+      template with identifier 'my-node-template':
+
+        $ {command} my-node-template --member='user:test-user@gmail.com' --role='roles/compute.admin'
+
+      For a service account `test-proj1@example.domain.com`,
+      the following command will add an IAM policy binding for the role of
+      'roles/compute.admin' to the given service account:
+
+        $ {command} test-proj1@example.domain.com --member='serviceAccount:test-proj1@example.domain.com' --role='roles/compute.admin'
+
+      The following command will add an IAM policy binding for the role of
+      'roles/compute.admin' for all authenticated users on a node template
+      with identifier 'my-node-template':
+
+        $ {command} my-node-template --member='allAuthenticatedUsers' --role='roles/compute.admin'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details
+      of policy role and member types.
+
+  request:
+    &request
+    collection: compute.nodeTemplates
+    api_version: beta
+    use_relative_name: false
+
+  iam:
+    set_iam_policy_request_path: regionSetPolicyRequest
+    message_type_overrides:
+      policy: Policy
+      set_iam_policy_request: ComputeNodeTemplatesSetIamPolicyRequest
+
+  arguments:
+    resource:
+      help_text:
+        The node template to which to add an IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:node_template
+
+- <<: *beta_command
+  release_tracks: [ALPHA]
+  request:
+    <<: *request
+    api_version: alpha

@@ -78,7 +78,7 @@ class Delete(base.DeleteCommand):
     # Sort versions to make behavior deterministic enough for unit testing.
     versions = sorted(version_util.GetMatchingVersions(all_versions,
                                                        args.versions,
-                                                       args.service))
+                                                       args.service), key=str)
 
     services_to_delete = []
     for service in sorted(services):

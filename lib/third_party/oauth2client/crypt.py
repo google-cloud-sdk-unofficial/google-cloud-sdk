@@ -20,11 +20,7 @@ import logging
 import time
 
 from oauth2client import _helpers
-from oauth2client import _pure_python_crypt
 
-
-RsaSigner = _pure_python_crypt.RsaSigner
-RsaVerifier = _pure_python_crypt.RsaVerifier
 
 CLOCK_SKEW_SECS = 300  # 5 minutes in seconds
 AUTH_TOKEN_LIFETIME_SECS = 300  # 5 minutes in seconds
@@ -51,24 +47,19 @@ except ImportError:  # pragma: NO COVER
     OpenSSLSigner = None
     pkcs12_key_as_pem = _bad_pkcs12_key_as_pem
 
-try:
-    from oauth2client import _pycrypto_crypt
-    PyCryptoSigner = _pycrypto_crypt.PyCryptoSigner
-    PyCryptoVerifier = _pycrypto_crypt.PyCryptoVerifier
-except ImportError:  # pragma: NO COVER
-    PyCryptoVerifier = None
-    PyCryptoSigner = None
-
 
 if OpenSSLSigner:
     Signer = OpenSSLSigner
     Verifier = OpenSSLVerifier
-elif PyCryptoSigner:  # pragma: NO COVER
-    Signer = PyCryptoSigner
-    Verifier = PyCryptoVerifier
 else:  # pragma: NO COVER
-    Signer = RsaSigner
-    Verifier = RsaVerifier
+    try:
+        from oauth2client import _pycrypto_crypt
+        Signer = _pycrypto_crypt.PyCryptoSigner
+        Verifier = _pycrypto_crypt.PyCryptoVerifier
+    except ImportError:  # pragma: NO COVER
+        from oauth2client import _pure_python_crypt
+        Signer = _pure_python_crypt.RsaSigner
+        Verifier = _pure_python_crypt.RsaVerifier
 
 
 def make_signed_jwt(signer, payload, key_id=None):

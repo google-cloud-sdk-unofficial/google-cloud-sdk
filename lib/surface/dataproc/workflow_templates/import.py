@@ -15,7 +15,9 @@
 """Import workflow template command."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import unicode_literals
+
 import sys
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
@@ -25,7 +27,7 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
-SCHEMA_PATH = 'WorkflowTemplate_v1beta2_schema.yaml'
+SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

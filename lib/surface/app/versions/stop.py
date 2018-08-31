@@ -91,7 +91,7 @@ class Stop(base.Command):
       log.warning('No matching versions found.')
 
     errors = []
-    for version in sorted(versions):
+    for version in sorted(versions, key=str):
       try:
         with progress_tracker.ProgressTracker('Stopping [{0}]'.format(version)):
           operations_util.CallAndCollectOpErrors(

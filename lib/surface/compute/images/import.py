@@ -19,9 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os.path
+import string
 import uuid
 
+from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import daisy_utils
+from googlecloudsdk.api_lib.compute import image_utils
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
@@ -105,6 +109,47 @@ def _MakeGcsUri(uri):
   return 'gs://{0}/{1}'.format(obj_ref.bucket, obj_ref.object)
 
 
+def _CheckImageName(image_name):
+  """Checks for a valid GCE image name."""
+  name_message = ('Name must start with a lowercase letter followed by up to '
+                  '63 lowercase letters, numbers, or hyphens, and cannot end '
+                  'with a hyphen.')
+  name_ok = True
+  valid_chars = string.digits + string.ascii_lowercase + '-'
+  if len(image_name) > 64:
+    name_ok = False
+  elif image_name[0] not in string.ascii_lowercase:
+    name_ok = False
+  elif not all(char in valid_chars for char in image_name):
+    name_ok = False
+  elif image_name[-1] == '-':
+    name_ok = False
+
+  if not name_ok:
+    raise exceptions.InvalidArgumentException('IMAGE_NAME', name_message)
+
+
+def _CheckForExistingImage(image_name, compute_holder):
+  """Check that the destination image does not already exist."""
+  _CheckImageName(image_name)
+  image_ref = resources.REGISTRY.Parse(
+      image_name,
+      collection='compute.images',
+      params={'project': properties.VALUES.core.project.GetOrFail})
+
+  image_expander = image_utils.ImageExpander(compute_holder.client,
+                                             compute_holder.resources)
+  try:
+    _ = image_expander.GetImage(image_ref)
+    image_exists = True
+  except utils.ImageNotFoundError:
+    image_exists = False
+
+  if image_exists:
+    message = 'The image [{0}] already exists.'.format(image_name)
+    raise exceptions.InvalidArgumentException('IMAGE_NAME', message)
+
+
 class Import(base.CreateCommand):
   """Import an image into Google Compute Engine."""
 
@@ -153,6 +198,11 @@ class Import(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    # Fail early if the requested image name is invalid or already exists.
+    _CheckImageName(args.image_name)
+    _CheckForExistingImage(args.image_name, compute_holder)
+
     storage_client = storage_api.StorageClient()
     daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(
         storage_client=storage_client)
