@@ -8,6 +8,5 @@
 
   arguments:
     resource:
-      help_text:
-        The Cloud Bigtable instance to remove the IAM policy binding from.
+      help_text: The Cloud Bigtable instance to remove the IAM policy binding from.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:instance

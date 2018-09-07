@@ -50,7 +50,6 @@ EXAMPLE_FORMAT = """\
     """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Compute Engine firewall rules."""
 
@@ -80,18 +79,3 @@ class List(base.ListCommand):
 List.detailed_help = DETAILED_HELP.copy()
 List.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
     RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class BetaList(List):
-  """List Google Compute Engine firewall rules."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_BETA)
-    lister.AddBaseListerArgs(parser)
-
-
-BetaList.detailed_help = DETAILED_HELP.copy()
-BetaList.detailed_help['EXAMPLES'] = EXAMPLE_FORMAT.format(
-    RESOURCE_TYPE, flags.LIST_WITH_ALL_FIELDS_FORMAT_BETA)

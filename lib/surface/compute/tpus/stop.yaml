@@ -1,14 +1,14 @@
 - help_text:
-    brief:  Stop a Cloud TPU.
+    brief: Stop a Cloud TPU.
     DESCRIPTION: |
       Stop a Cloud TPU.
 
   request:
-    collection:  tpu.projects.locations.nodes
+    collection: tpu.projects.locations.nodes
     api_version: v1
     method: stop
     modify_request_hooks:
-      - googlecloudsdk.command_lib.compute.tpus.util:StopRequestHook
+    - googlecloudsdk.command_lib.compute.tpus.util:StopRequestHook
 
   async:
     collection: tpu.projects.locations.operations

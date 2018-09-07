@@ -10,4 +10,3 @@
       help_text: The job you want to show details for.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
       removed_flags: [location]
-

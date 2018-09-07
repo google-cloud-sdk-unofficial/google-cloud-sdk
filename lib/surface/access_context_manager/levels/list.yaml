@@ -11,9 +11,9 @@
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy
 
   output:
-      format: |
-          table(
-              name.basename(),
-              title,
-              format("{0}", basic.yesno(yes="Basic", no="")):label=LEVEL_TYPE
-          )
+    format: |
+      table(
+          name.basename(),
+          title,
+          format("{0}", basic.yesno(yes="Basic", no="")):label=LEVEL_TYPE
+      )

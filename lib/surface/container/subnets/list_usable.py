@@ -24,6 +24,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -33,30 +34,29 @@ def _GetUriFunction(resource):
                                               'compute.subnetworks').SelfLink()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListUsable(base.ListCommand):
-  r"""Returns subnets usable for cluster creation in a specific project.
+  r"""List subnets usable for cluster creation in a specific project.
 
       Usability of subnetworks for cluster creation is dependent on the IAM
       policy of the project's Google Kubernetes Engine Service Account. Use the
-      *--project* flag to evaluate subnet usability in different projects. This
+      `--project` flag to evaluate subnet usability in different projects. This
       list may differ from the list returned by Google Compute Engine's
-      `list-usable` command which returns subnets only usable by the caller.
+      `list-usable` command, which returns subnets only usable by the caller.
 
       To show subnetworks shared from a Shared-VPC host project, use
-      *--network-project* to specify the project which owns the subnetworks.
+      `--network-project` to specify the project that owns the subnetworks.
 
       ## EXAMPLES
 
       List all subnetworks usable for cluster creation in project `my-project`.
 
-          $ gcloud container subnets list-usable \
+          $ {command} \
             --project my-project
 
       List all subnetworks existing in project `my-shared-host-project` usable
       for cluster creation in project `my-service-project`.
 
-          $ gcloud container subnets list-usable \
+          $ {command} \
              --project my-service-project \
              --network-project my-shared-host-project
 
@@ -85,11 +85,27 @@ class ListUsable(base.ListCommand):
         'subnetwork.segment(-5):label=PROJECT',
         'subnetwork.segment(-3):label=REGION',
         'network.segment(-1):label=NETWORK',
-        'subnetwork.segment(-1):label=SUBNET',
-        'ipCidrRange:label=RANGE',
+        'subnetwork.segment(-1):label=SUBNET', 'ipCidrRange:label=RANGE', """
+        secondaryIpRanges:format="table[box](
+          rangeName:label=SECONDARY_RANGE_NAME,
+          ipCidrRange,
+          status.enum(UsableSubnetworkSecondaryRange.Status)
+        )":label=SECONDARY_RANGES
+        """
     ]))
     parser.display_info.AddFormat(display_format)
     parser.display_info.AddUriFunc(_GetUriFunction)
+
+    status_enum = {
+        'UsableSubnetworkSecondaryRange.Status::enum': {
+            'UNKNOWN': 'Unknown',
+            'UNUSED': 'usable for pods or services',
+            'IN_USE_SERVICE': 'unusable',
+            'IN_USE_SHAREABLE_POD': 'usable for pods',
+            'IN_USE_MANAGED_POD': 'unusable'
+        }
+    }
+    parser.display_info.AddTransforms(status_enum)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -107,8 +123,16 @@ class ListUsable(base.ListCommand):
                                           .project.GetOrFail())
 
     try:
-      return adapter.ListUsableSubnets(project_ref,
-                                       args.network_project,
+      resp = adapter.ListUsableSubnets(project_ref, args.network_project,
                                        args.filter).subnetworks
+      # De-duplicate status messages.
+      msg_set = set()
+      for subnet in resp:
+        msg = subnet.statusMessage
+        if msg and msg not in msg_set:
+          msg_set.add(msg)
+          log.warning(msg)
+      return resp
+
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

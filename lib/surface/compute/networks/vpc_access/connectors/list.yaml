@@ -23,11 +23,11 @@
       spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:region
 
   output:
-      format: |
-       table(
-          name.basename():label=CONNECTOR_ID:sort=1,
-          name.segment(3):label=REGION,
-          network,
-          ipCidrRange,
-          status
-        )
+    format: |
+      table(
+         name.basename():label=CONNECTOR_ID:sort=1,
+         name.segment(3):label=REGION,
+         network,
+         ipCidrRange,
+         status
+       )

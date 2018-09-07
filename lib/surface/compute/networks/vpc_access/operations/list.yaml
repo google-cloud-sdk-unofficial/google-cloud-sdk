@@ -25,13 +25,13 @@
       spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:region
 
   output:
-      format: |
-       table(
-          name.basename():label=OPERATION_ID,
-          name.segment(3):label=REGION,
-          metadata.target.basename(),
-          metadata.method:label=METHOD,
-          done,
-          metadata.insertTime.date():label=START_TIME:sort=1,
-          metadata.endTime.date().yesno(no="-")
-        )
+    format: |
+      table(
+         name.basename():label=OPERATION_ID,
+         name.segment(3):label=REGION,
+         metadata.target.basename(),
+         metadata.method:label=METHOD,
+         done,
+         metadata.insertTime.date():label=START_TIME:sort=1,
+         metadata.endTime.date().yesno(no="-")
+       )

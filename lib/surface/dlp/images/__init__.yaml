@@ -20,4 +20,3 @@ image_file:
   help_text: |
     Image file to search for sensitive info. The file type must be one of
     PNG, JPEG, SVG, or BMP.
-

@@ -21,33 +21,32 @@ text_args:
       mutex: true
       required: true
       params:
-        - api_field: googlePrivacyDlpV2DeidentifyContentRequest.item.value
-          arg_name: content-file
-          type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
-          help_text: |
-            Text file to scan for sensitive data to redact. Can also be a CSV
-            file specifying tabular data. For CSV files, up to 50,000 values
-            per request are allowed. To read from stdin pass '-' as the file
-            name.
-        - api_field: googlePrivacyDlpV2DeidentifyContentRequest.item.value
-          arg_name: content
-          help_text: |
-            Text content to redact sensitive data from.
+      - api_field: googlePrivacyDlpV2DeidentifyContentRequest.item.value
+        arg_name: content-file
+        type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+        help_text: |
+          Text file to scan for sensitive data to redact. Can also be a CSV
+          file specifying tabular data. For CSV files, up to 50,000 values
+          per request are allowed. To read from stdin pass '-' as the file
+          name.
+      - api_field: googlePrivacyDlpV2DeidentifyContentRequest.item.value
+        arg_name: content
+        help_text: |
+          Text content to redact sensitive data from.
   inspect_content_arg:
     group:
       mutex: true
       required: true
       params:
-        - api_field: googlePrivacyDlpV2InspectContentRequest.item.value
-          arg_name: content-file
-          type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
-          help_text: |
-            Text file to inspect for sensitive data. Can also be a CSV
-            file specifying tabular data. For CSV files, up to 50,000 values
-            per request are allowed. To read from stdin pass '-' as the file
-            name.
-        - api_field: googlePrivacyDlpV2InspectContentRequest.item.value
-          arg_name: content
-          help_text: |
-            Text content to inspect for sensitive data.
-
+      - api_field: googlePrivacyDlpV2InspectContentRequest.item.value
+        arg_name: content-file
+        type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+        help_text: |
+          Text file to inspect for sensitive data. Can also be a CSV
+          file specifying tabular data. For CSV files, up to 50,000 values
+          per request are allowed. To read from stdin pass '-' as the file
+          name.
+      - api_field: googlePrivacyDlpV2InspectContentRequest.item.value
+        arg_name: content
+        help_text: |
+          Text content to inspect for sensitive data.

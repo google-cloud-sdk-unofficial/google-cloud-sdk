@@ -15,21 +15,21 @@
       is_positional: false
 
   output:
-      format: |
-          table(
-             basic:format="
-               table(format('Conditions are joined with {} operator.
+    format: |
+      table(
+         basic:format="
+           table(format('Conditions are joined with {} operator.
 
-          ', combiningFunction):label='')",
-             basic.conditions:format="
-               table[all-box,title='ACCESS LEVEL CONDITIONS'](
-                   negate:label=NEGATED,
-                   ipSubnetworks.list(separator='
-          '),
-                   members.list(separator='
-          '),
-                   requiredAccessLevels.map().basename().list(separator='
-          ')
-               )
-               "
-          )
+      ', combiningFunction):label='')",
+         basic.conditions:format="
+           table[all-box,title='ACCESS LEVEL CONDITIONS'](
+               negate:label=NEGATED,
+               ipSubnetworks.list(separator='
+      '),
+               members.list(separator='
+      '),
+               requiredAccessLevels.map().basename().list(separator='
+      ')
+           )
+           "
+      )

@@ -20,8 +20,7 @@
       See https://cloud.google.com/iam/docs/managing-policies for details
       of policy role and member types.
 
-  request:
-    &request
+  request: &request
     collection: compute.instanceTemplates
     api_version: beta
     use_relative_name: false
@@ -34,8 +33,7 @@
 
   arguments:
     resource:
-      help_text:
-        The instance template for which to remove IAM policy binding from.
+      help_text: The instance template for which to remove IAM policy binding from.
       spec: !REF googlecloudsdk.command_lib.compute.resources:instance_template
 
 

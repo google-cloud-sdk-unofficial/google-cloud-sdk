@@ -41,3 +41,24 @@ class Composer(base.Group):
 
       $ {command} operations --help
   """
+
+  def Filter(self, context, args):
+    """Modify the context that will be given to this group's commands when run.
+
+    Args:
+      context: {str:object}, A set of key-value pairs that can be used for
+          common initialization among commands.
+      args: argparse.Namespace: The same namespace given to the corresponding
+          .Run() invocation.
+
+    Returns:
+      The refined command context.
+    """
+    # The Composer API performs quota checking based on the resource project, so
+    # user project overrides are not needed. The 'environments run' command
+    # spawns a call to the Kubernetes Engine API, and the 'container' command
+    # group also disables user project quota; removing this line will break
+    # 'composer environments run.'
+    base.DisableUserProjectQuota()
+
+    return context

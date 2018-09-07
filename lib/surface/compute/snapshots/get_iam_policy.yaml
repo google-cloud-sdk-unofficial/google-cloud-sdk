@@ -4,22 +4,21 @@
   help_text:
     brief: Get the IAM policy for a Google Compute Engine snapshot.
     DESCRIPTION: |
-            *{command}* displays the IAM policy associated with a snapshot.
-            If formatted as JSON, the output can be edited and used as
-            a policy file for *set-iam-policy*. The output includes an "etag"
-            field identifying the version emitted and allowing detection of
-            concurrent policy updates; see
-            $ {parent} set-iam-policy for additional details.
+      *{command}* displays the IAM policy associated with a snapshot.
+      If formatted as JSON, the output can be edited and used as
+      a policy file for *set-iam-policy*. The output includes an "etag"
+      field identifying the version emitted and allowing detection of
+      concurrent policy updates; see
+      $ {parent} set-iam-policy for additional details.
     EXAMPLES: |
-            To print the IAM policy for a given snapshot, run:
+      To print the IAM policy for a given snapshot, run:
 
-              $ {command} my-snapshot
+        $ {command} my-snapshot
 
-  request:
-    &request
+  request: &request
     collection: compute.snapshots
     api_version: beta
-    use_relative_name: False
+    use_relative_name: false
 
   arguments:
     resource:

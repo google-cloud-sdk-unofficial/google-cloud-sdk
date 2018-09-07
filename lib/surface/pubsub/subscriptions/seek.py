@@ -27,15 +27,9 @@ from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SeekAlpha(base.Command):
-  """This feature is part of an invite-only release of the Cloud Pub/Sub API.
-
-  Resets a subscription's backlog to a point in time or to a given snapshot.
-  This feature is part of an invitation-only release of the underlying
-  Cloud Pub/Sub API. The command will generate errors unless you have access to
-  this API. This restriction should be relaxed in the near future. Please
-  contact cloud-pubsub@google.com with any questions in the meantime.
+  """Resets a subscription's backlog to a point in time or to a given snapshot.
   """
 
   @staticmethod

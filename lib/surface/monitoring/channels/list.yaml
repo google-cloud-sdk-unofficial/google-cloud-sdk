@@ -5,8 +5,8 @@
   request:
     collection: monitoring.projects.notificationChannels
     modify_request_hooks:
-      - googlecloudsdk.command_lib.monitoring.hooks:ModifyListNotificationChannelsRequest
-      - googlecloudsdk.command_lib.monitoring.hooks:AddOrderByToListRequest
+    - googlecloudsdk.command_lib.monitoring.hooks:ModifyListNotificationChannelsRequest
+    - googlecloudsdk.command_lib.monitoring.hooks:AddOrderByToListRequest
 
   response:
     id_field: name
@@ -16,8 +16,8 @@
       help_text: The project to list notification channels from.
       spec: !REF googlecloudsdk.command_lib.monitoring.resources:project
     params:
-     - arg_name: type
-       help_text: List only notification channels of this type.
+    - arg_name: type
+      help_text: List only notification channels of this type.
 
   output:
-      format: yaml
+    format: yaml

@@ -26,7 +26,7 @@
   request:
     collection: monitoring.projects.alertPolicies
     modify_request_hooks:
-      - googlecloudsdk.command_lib.monitoring.hooks:AddOrderByToListRequest
+    - googlecloudsdk.command_lib.monitoring.hooks:AddOrderByToListRequest
 
   response:
     id_field: name
@@ -37,4 +37,4 @@
       spec: !REF googlecloudsdk.command_lib.monitoring.resources:project
 
   output:
-      format: yaml
+    format: yaml

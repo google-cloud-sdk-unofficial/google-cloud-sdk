@@ -106,8 +106,9 @@ class _BaseDeploy(object):
     parser.add_argument(
         '--validate-only',
         action='store_true',
-        help='If included, the command will only validate the service '
-             'configuration(s). No configuration(s) will be persisted.')
+        help='If included, the command validates the service configuration(s), '
+             'but does not deploy them. The service must exist in order to '
+             'validate the configuration(s).')
 
     parser.add_argument(
         '--force',

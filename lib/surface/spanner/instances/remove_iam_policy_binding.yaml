@@ -8,7 +8,5 @@
 
   arguments:
     resource:
-      help_text:
-        The Cloud Spanner instance to remove the IAM policy binding from.
-      spec:
-        !REF googlecloudsdk.command_lib.spanner.resources:instance
+      help_text: The Cloud Spanner instance to remove the IAM policy binding from.
+      spec: !REF googlecloudsdk.command_lib.spanner.resources:instance

@@ -23,8 +23,10 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
+from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete target HTTPS proxies.
 
@@ -54,5 +56,48 @@ class Delete(base.DeleteCommand):
       requests.append((client.apitools_client.targetHttpsProxies, 'Delete',
                        client.messages.ComputeTargetHttpsProxiesDeleteRequest(
                            **target_https_proxy_ref.AsDict())))
+
+    return client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete target HTTPS proxies.
+
+  *{command}* deletes one or more target HTTPS proxies.
+  """
+
+  TARGET_HTTPS_PROXY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
+        plural=True, include_alpha=True)
+    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleterAlpha)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    target_https_proxy_refs = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(target_https_proxy_refs)
+
+    requests = []
+    for target_https_proxy_ref in target_https_proxy_refs:
+      if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
+          target_https_proxy_ref):
+        requests.append(
+            (client.apitools_client.regionTargetHttpsProxies, 'Delete',
+             client.messages.ComputeRegionTargetHttpsProxiesDeleteRequest(
+                 **target_https_proxy_ref.AsDict())))
+      else:
+        requests.append((client.apitools_client.targetHttpsProxies, 'Delete',
+                         client.messages.ComputeTargetHttpsProxiesDeleteRequest(
+                             **target_https_proxy_ref.AsDict())))
 
     return client.MakeRequests(requests)

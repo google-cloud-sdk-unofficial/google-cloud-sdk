@@ -28,19 +28,19 @@
     id_field: name
 
   output:
-      format: |
-        table(
-          name.basename():label=INSTANCE_NAME:sort=2,
-          name.segment(3):label=REGION,
-          tier,
-          memorySizeGb:label=SIZE_GB,
-          host.yesno(no="-"),
-          port.yesno(no="-"),
-          authorizedNetwork.basename():label=NETWORK,
-          reservedIpRange:label=RESERVED_IP,
-          state:label=STATUS,
-          createTime.date()
-        )
+    format: |
+      table(
+        name.basename():label=INSTANCE_NAME:sort=2,
+        name.segment(3):label=REGION,
+        tier,
+        memorySizeGb:label=SIZE_GB,
+        host.yesno(no="-"),
+        port.yesno(no="-"),
+        authorizedNetwork.basename():label=NETWORK,
+        reservedIpRange:label=RESERVED_IP,
+        state:label=STATUS,
+        createTime.date()
+      )
 
 
 - <<: *beta_command

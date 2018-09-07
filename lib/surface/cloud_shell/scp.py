@@ -28,9 +28,10 @@ FILE_TYPE = arg_parsers.RegexpValidator(
     r'^(cloudshell|localhost):.*$', 'must start with cloudshell: or localhost:')
 
 
-def ToFileReference(path, host):
+def ToFileReference(path, remote):
   if path.startswith('cloudshell:'):
-    return ssh.FileReference.FromPath(path.replace('cloudshell', host, 1))
+    return ssh.FileReference.FromPath(
+        path.replace('cloudshell', str(remote), 1))
   elif path.startswith('localhost:'):
     return ssh.FileReference.FromPath(path.replace('localhost:', '', 1))
   else:
@@ -101,11 +102,10 @@ cloudshell:~/REMOTE-DIR
 
   def Run(self, args):
     connection_info = util.PrepareEnvironment(args)
+    remote = ssh.Remote(host=connection_info.host, user=connection_info.user)
     command = ssh.SCPCommand(
-        sources=[
-            ToFileReference(src, connection_info.host) for src in args.sources
-        ],
-        destination=ToFileReference(args.destination, connection_info.host),
+        sources=[ToFileReference(src, remote) for src in args.sources],
+        destination=ToFileReference(args.destination, remote),
         recursive=args.recurse,
         compress=False,
         port=str(connection_info.port),

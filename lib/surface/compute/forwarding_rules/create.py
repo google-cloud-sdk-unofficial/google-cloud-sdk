@@ -196,7 +196,8 @@ class Create(base.CreateCommand):
       if args.network is not None:
         forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
             args, resources).SelfLink()
-    elif (target_ref.Collection() == 'compute.regionTargetHttpProxies' and
+    elif ((target_ref.Collection() == 'compute.regionTargetHttpProxies' or
+           target_ref.Collection() == 'compute.regionTargetHttpsProxies') and
           args.load_balancing_scheme == 'INTERNAL'):
       forwarding_rule.ports = [str(p) for p in _GetPortList(range_list)]
       if args.subnet is not None:

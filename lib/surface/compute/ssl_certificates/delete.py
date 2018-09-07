@@ -23,8 +23,10 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
+from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine SSL certificates.
 
@@ -57,5 +59,49 @@ class Delete(base.DeleteCommand):
       requests.append((client.apitools_client.sslCertificates, 'Delete',
                        client.messages.ComputeSslCertificatesDeleteRequest(
                            **ssl_certificate_ref.AsDict())))
+
+    return client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete Google Compute Engine SSL certificates.
+
+  *{command}* deletes one or more Google Compute Engine SSL certificates.
+  SSL certificates can only be deleted when no other resources (e.g.,
+  target HTTPS proxies) refer to them.
+  """
+  SSL_CERTIFICATE_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
+        plural=True, include_alpha=True)
+    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='delete')
+    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterAlpha)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    ssl_certificate_refs = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+    utils.PromptForDeletion(ssl_certificate_refs)
+
+    requests = []
+    for ssl_certificate_ref in ssl_certificate_refs:
+      if ssl_certificates_utils.IsRegionalSslCertificatesRef(
+          ssl_certificate_ref):
+        requests.append(
+            (client.apitools_client.regionSslCertificates, 'Delete',
+             client.messages.ComputeRegionSslCertificatesDeleteRequest(
+                 **ssl_certificate_ref.AsDict())))
+      else:
+        requests.append((client.apitools_client.sslCertificates, 'Delete',
+                         client.messages.ComputeSslCertificatesDeleteRequest(
+                             **ssl_certificate_ref.AsDict())))
 
     return client.MakeRequests(requests)

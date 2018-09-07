@@ -10,7 +10,7 @@
   request:
     collection: cloudiot.projects.locations.registries.devices.states
     modify_request_hooks:
-      - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromArg:api_field=numStates,arg_name=limit
+    - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromArg:api_field=numStates,arg_name=limit
 
   arguments:
     resource:

@@ -31,7 +31,6 @@ class UpdateFirewall(base.UpdateCommand):
 
   with_egress_firewall = True
   with_service_account = True
-  with_disabled = False
   with_logging = False
 
   FIREWALL_RULE_ARG = None
@@ -44,8 +43,7 @@ class UpdateFirewall(base.UpdateCommand):
         parser,
         for_update=True,
         with_egress_support=cls.with_egress_firewall,
-        with_service_account=cls.with_service_account,
-        with_disabled=cls.with_disabled)
+        with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
 
   def ValidateArgument(self, messages, args):
@@ -64,8 +62,7 @@ class UpdateFirewall(base.UpdateCommand):
       args_unset = args_unset and all(
           x is None
           for x in (args.source_service_accounts, args.target_service_accounts))
-    if self.with_disabled:
-      args_unset = args_unset and args.disabled is None
+    args_unset = args_unset and args.disabled is None
     if self.with_logging:
       args_unset = (args_unset and args.enable_logging is None)
     if args_unset:
@@ -221,6 +218,10 @@ class UpdateFirewall(base.UpdateCommand):
         targetTags=target_tags,
         sourceServiceAccounts=source_service_accounts,
         targetServiceAccounts=target_service_accounts)
+
+    if args.disabled is not None:
+      new_firewall.disabled = args.disabled
+
     return new_firewall
 
 
@@ -228,7 +229,6 @@ class UpdateFirewall(base.UpdateCommand):
 class BetaUpdateFirewall(UpdateFirewall):
   """Update a firewall rule."""
 
-  with_disabled = True
   with_logging = True
 
   @classmethod
@@ -239,8 +239,7 @@ class BetaUpdateFirewall(UpdateFirewall):
         parser,
         for_update=True,
         with_egress_support=cls.with_egress_firewall,
-        with_service_account=cls.with_service_account,
-        with_disabled=cls.with_disabled)
+        with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
     flags.AddEnableLogging(parser, default=None)
 
@@ -248,8 +247,6 @@ class BetaUpdateFirewall(UpdateFirewall):
     new_firewall = super(BetaUpdateFirewall, self).Modify(
         client, args, existing, cleared_fields)
 
-    if args.disabled is not None:
-      new_firewall.disabled = args.disabled
     if args.enable_logging is None:
       new_firewall.enableLogging = existing.enableLogging
     else:
@@ -269,8 +266,7 @@ class AlphaUpdateFirewall(BetaUpdateFirewall):
         parser,
         for_update=True,
         with_egress_support=cls.with_egress_firewall,
-        with_service_account=cls.with_service_account,
-        with_disabled=cls.with_disabled)
+        with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
     flags.AddEnableLogging(parser, default=None)
 

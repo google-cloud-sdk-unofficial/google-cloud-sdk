@@ -247,6 +247,7 @@ class CreateAlpha(Create):
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.max_pods_per_node = args.max_pods_per_node
     ops.sandbox = args.sandbox
+    ops.node_group = args.node_group
     return ops
 
   @staticmethod
@@ -263,6 +264,7 @@ class CreateAlpha(Create):
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
     flags.AddSandboxFlag(parser, hidden=True)
+    flags.AddNodeGroupFlag(parser)
 
 
 Create.detailed_help = DETAILED_HELP

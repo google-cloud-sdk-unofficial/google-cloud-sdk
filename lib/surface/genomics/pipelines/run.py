@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import base64
 from googlecloudsdk.api_lib import genomics as lib
 from googlecloudsdk.api_lib.genomics import exceptions
 from googlecloudsdk.api_lib.genomics import genomics_util
@@ -58,9 +59,11 @@ def _ValidateAndMergeArgInputs(args):
     files.Error
   """
 
+  is_local_file = {}
+
   # If no inputs from file, then no validation or merge needed
   if not args.inputs_from_file:
-    return args.inputs
+    return args.inputs, is_local_file
 
   # Initialize the merged dictionary
   arg_inputs = {}
@@ -80,8 +83,9 @@ def _ValidateAndMergeArgInputs(args):
   # Read up the inputs-from-file and add the values from the file
   for key, value in six.iteritems(args.inputs_from_file):
     arg_inputs[key] = files.ReadFileContents(value)
+    is_local_file[key] = True
 
-  return arg_inputs
+  return arg_inputs, is_local_file
 
 
 class Run(base.SilentCommand):
@@ -320,7 +324,7 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
       raise exceptions.GenomicsError(
           'Either --pipeline-file or --command-line is required.')
 
-    arg_inputs = _ValidateAndMergeArgInputs(args)
+    arg_inputs, is_local_file = _ValidateAndMergeArgInputs(args)
 
     request = None
     if v2:
@@ -381,6 +385,12 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
                 imageUri=CLOUD_SDK_IMAGE,
                 commands=['/bin/sh', '-c', 'gsutil -q cp %s ${%s}' % (value,
                                                                       name)]))
+          elif name in is_local_file:
+            env[name] = input_generator.Generate()
+            pipeline.actions.insert(0, genomics_messages.Action(
+                imageUri=CLOUD_SDK_IMAGE,
+                commands=['/bin/sh', '-c', 'echo "%s" | base64 -d > ${%s}' %
+                          (base64.b64encode(value), name)]))
           else:
             env[name] = value
 

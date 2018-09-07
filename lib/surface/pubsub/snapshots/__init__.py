@@ -22,14 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Snapshots(base.Group):
-  """These features are part of an invite-only release of the Cloud Pub/Sub API.
-
-  Manage Cloud Pub/Sub snapshots.
-  These features are part of an invitation-only release of the underlying
-  Cloud Pub/Sub API. These commands will generate errors unless you have access
-  to this API. This restriction should be relaxed in the near future. Please
-  contact cloud-pubsub@google.com with any questions in the meantime.
-  """
+  """Manage Cloud Pub/Sub snapshots."""
   pass

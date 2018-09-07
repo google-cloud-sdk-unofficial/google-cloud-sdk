@@ -15,8 +15,8 @@
 """Creates a new Cloud SQL instance."""
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import unicode_literals
+
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
@@ -57,9 +57,9 @@ def AddBaseArgs(parser):
   parser.add_argument(
       '--database-version',
       required=False,
-      default='MYSQL_5_6',
       choices=['MYSQL_5_5', 'MYSQL_5_6', 'MYSQL_5_7', 'POSTGRES_9_6'],
-      help='The database engine type and version.')
+      help=('The database engine type and version. If left unspecified, the '
+            'API defaults will be used.'))
   flags.AddEnableBinLog(parser, show_negated_in_help=False)
   parser.add_argument(
       '--failover-replica-name',

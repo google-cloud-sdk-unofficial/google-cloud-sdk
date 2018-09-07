@@ -24,7 +24,7 @@
     - googlecloudsdk.command_lib.dlp.hooks:SetRequestParent
     - googlecloudsdk.command_lib.dlp.hooks:SetOrderByFromSortBy
   response:
-     id_field: name
+    id_field: name
 
   arguments:
     resource:  # TODO: Remove when (b/79129961) is resolved.

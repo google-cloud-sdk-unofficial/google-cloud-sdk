@@ -11,8 +11,8 @@
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy
 
   output:
-      format: |
-          table(
-              name.basename(),
-              title
-          )
+    format: |
+      table(
+          name.basename(),
+          title
+      )

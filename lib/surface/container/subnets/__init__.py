@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Subnets(base.Group):
   """Manage subnets to be used by Google Kubernetes Engine clusters."""
 

@@ -15,8 +15,8 @@
 
   arguments:
     params:
-      - _COMMON_: args.image_field
-      - _COMMON_: args.max_results_field
+    - _COMMON_: args.image_field
+    - _COMMON_: args.max_results_field
 
   output:
     format: json
@@ -38,14 +38,14 @@
 
   arguments:
     params:
-      - _COMMON_: args.image_field
-      - _COMMON_: args.max_results_field
-      - _COMMON_: args.model_field
-      - api_field: requests.imageContext.webDetectionParams.includeGeoResults
-        arg_name: include-geo-results
-        action: store_true
-        help_text: Whether to include results derived from the geo information
-          in the image.
+    - _COMMON_: args.image_field
+    - _COMMON_: args.max_results_field
+    - _COMMON_: args.model_field
+    - api_field: requests.imageContext.webDetectionParams.includeGeoResults
+      arg_name: include-geo-results
+      action: store_true
+      help_text: Whether to include results derived from the geo information in the
+        image.
 
   output:
     format: json

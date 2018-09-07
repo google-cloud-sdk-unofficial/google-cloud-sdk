@@ -109,7 +109,7 @@ class CreateGA(base.CreateCommand):
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
     flags.AddEnableCdn(parser, default=False)
-    flags.AddSessionAffinity(parser, internal_lb=False)
+    flags.AddSessionAffinity(parser, internal_lb=True)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
@@ -179,6 +179,11 @@ class CreateGA(base.CreateCommand):
     if args.connection_draining_timeout is not None:
       backend_service.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
+
+    if args.session_affinity is not None:
+      backend_service.sessionAffinity = (
+          client.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
@@ -356,6 +361,11 @@ class CreateAlpha(CreateGA):
     backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
                                                    backend_service)
 
+    if args.session_affinity is not None:
+      backend_service.sessionAffinity = (
+          client.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
@@ -480,6 +490,11 @@ class CreateBeta(CreateGA):
           drainingTimeoutSec=args.connection_draining_timeout)
     if args.IsSpecified('custom_request_header'):
       backend_service.customRequestHeaders = args.custom_request_header
+
+    if args.session_affinity is not None:
+      backend_service.sessionAffinity = (
+          client.messages.BackendService.SessionAffinityValueValuesEnum(
+              args.session_affinity))
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,

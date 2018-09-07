@@ -15,7 +15,7 @@
 
   arguments:
     params:
-      - _COMMON_: args.image_field
+    - _COMMON_: args.image_field
 
   output:
     format: json
@@ -37,8 +37,8 @@
 
   arguments:
     params:
-      - _COMMON_: args.image_field
-      - _COMMON_: args.model_field
+    - _COMMON_: args.image_field
+    - _COMMON_: args.model_field
 
   output:
     format: json

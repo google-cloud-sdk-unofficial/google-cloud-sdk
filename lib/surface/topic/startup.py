@@ -43,7 +43,6 @@ class Startup(base.TopicCommand):
   support for 3.4 and up. All `gcloud` commands work under Python 3 except
   for the following command groups:
 
-      * `gcloud app`
       * `gcloud datastore`
       * `gcloud scheduler`
       * `gcloud tasks`

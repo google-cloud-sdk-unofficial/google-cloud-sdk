@@ -7,9 +7,9 @@
   request:
     collection: cloudiot.projects.locations.registries.devices
     modify_request_hooks:
-      - googlecloudsdk.command_lib.iot.util:AddBlockedToRequest
-      - googlecloudsdk.command_lib.iot.util:AddCredentialsToRequest
-      - googlecloudsdk.command_lib.iot.util:AddMetadataToRequest
+    - googlecloudsdk.command_lib.iot.util:AddBlockedToRequest
+    - googlecloudsdk.command_lib.iot.util:AddCredentialsToRequest
+    - googlecloudsdk.command_lib.iot.util:AddMetadataToRequest
 
   arguments:
     additional_arguments_hook: googlecloudsdk.command_lib.iot.flags:_GetCreateFlags

@@ -8,6 +8,5 @@
 
   arguments:
     resource:
-      help_text:
-        The Cloud Spanner database to which to add the IAM policy binding.
+      help_text: The Cloud Spanner database to which to add the IAM policy binding.
       spec: !REF googlecloudsdk.command_lib.spanner.resources:database

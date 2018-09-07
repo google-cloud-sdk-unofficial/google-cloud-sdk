@@ -15,7 +15,7 @@
   help_text:
     brief: Delete a Cloud DLP job.
     DESCRIPTION: |
-           Deletes a Cloud DLP job. The job will be canceled if possible.
+      Deletes a Cloud DLP job. The job will be canceled if possible.
 
   request:
     collection: dlp.projects.dlpJobs

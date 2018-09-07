@@ -29,16 +29,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateAlpha(base.UpdateCommand):
-  """This feature is part of an invite-only release of the Cloud Pub/Sub API.
-
-  Updates an existing Cloud Pub/Sub subscription.
-  This feature is part of an invitation-only release of the underlying
-  Cloud Pub/Sub API. The command will generate errors unless you have access to
-  this API. This restriction should be relaxed in the near future. Please
-  contact cloud-pubsub@google.com with any questions in the meantime.
-  """
+  """Updates an existing Cloud Pub/Sub subscription."""
 
   @classmethod
   def Args(cls, parser):

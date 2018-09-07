@@ -22,7 +22,7 @@
     api_version: v2
 
   response:
-     id_field: name
+    id_field: name
 
   arguments:
     resource:

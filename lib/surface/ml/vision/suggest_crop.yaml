@@ -16,13 +16,13 @@
 
   arguments:
     params:
-      - _COMMON_: args.image_field
-      - api_field: requests.imageContext.cropHintsParams.aspectRatios
-        arg_name: aspect-ratios
-        type: googlecloudsdk.command_lib.ml.vision.flags:AspectRatioType
-        help_text: A list of aspect ratio hints for the suggested bounding box.
-          Aspect ratios may be specified either as a decimal number (ex. 1.333)
-          or as a ratio of width to height (ex 4:3).
+    - _COMMON_: args.image_field
+    - api_field: requests.imageContext.cropHintsParams.aspectRatios
+      arg_name: aspect-ratios
+      type: googlecloudsdk.command_lib.ml.vision.flags:AspectRatioType
+      help_text: A list of aspect ratio hints for the suggested bounding box. Aspect
+        ratios may be specified either as a decimal number (ex. 1.333) or as a ratio
+        of width to height (ex 4:3).
 
   output:
     format: json
@@ -45,14 +45,14 @@
 
   arguments:
     params:
-      - _COMMON_: args.image_field
-      - _COMMON_: args.model_field
-      - api_field: requests.imageContext.cropHintsParams.aspectRatios
-        arg_name: aspect-ratios
-        type: googlecloudsdk.command_lib.ml.vision.flags:AspectRatioType
-        help_text: A list of aspect ratio hints for the suggested bounding box.
-          Aspect ratios may be specified either as a decimal number (ex. 1.333)
-          or as a ratio of width to height (ex 4:3).
+    - _COMMON_: args.image_field
+    - _COMMON_: args.model_field
+    - api_field: requests.imageContext.cropHintsParams.aspectRatios
+      arg_name: aspect-ratios
+      type: googlecloudsdk.command_lib.ml.vision.flags:AspectRatioType
+      help_text: A list of aspect ratio hints for the suggested bounding box. Aspect
+        ratios may be specified either as a decimal number (ex. 1.333) or as a ratio
+        of width to height (ex 4:3).
 
   output:
     format: json

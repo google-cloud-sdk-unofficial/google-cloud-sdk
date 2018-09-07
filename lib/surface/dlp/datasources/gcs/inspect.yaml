@@ -35,32 +35,32 @@
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromArg:api_field=googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.cloudStorageOptions.bytesLimitPerFile,arg_name=file_size_limit
   arguments:
     params:
-      - arg_name: file-size-limit
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.cloudStorageOptions.bytesLimitPerFile
-        type: int
-        default: 1024
-        help_text: |
-          Integer indicating max number of bytes to scan from a file. If a
-          scanned file's size is bigger than this value, then the rest of the
-          bytes are omitted. The default value is 1024.
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:gcs_path
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.cloudStorageOptions
-        is_positional: true
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:max_item_findings
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:min_time
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:max_time
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:jobs_output_group
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.infoTypes
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.minLikelihood
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:include_quote
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.includeQuote
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:max_findings
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.limits.maxFindingsPerRequest
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:exclude_info_types
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.excludeInfoTypes
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:job_id
+    - arg_name: file-size-limit
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.cloudStorageOptions.bytesLimitPerFile
+      type: int
+      default: 1024
+      help_text: |
+        Integer indicating max number of bytes to scan from a file. If a
+        scanned file's size is bigger than this value, then the rest of the
+        bytes are omitted. The default value is 1024.
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:gcs_path
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.cloudStorageOptions
+      is_positional: true
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_item_findings
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_time
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_time
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:jobs_output_group
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.infoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.minLikelihood
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:include_quote
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.includeQuote
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_findings
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.limits.maxFindingsPerRequest
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:exclude_info_types
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.excludeInfoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:job_id
     resource:
       help_text: |
         The Cloud DLP project to create Job In.

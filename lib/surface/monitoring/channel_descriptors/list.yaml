@@ -14,4 +14,4 @@
       spec: !REF googlecloudsdk.command_lib.monitoring.resources:project
 
   output:
-      format: yaml
+    format: yaml

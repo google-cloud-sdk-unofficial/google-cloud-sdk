@@ -15,29 +15,29 @@
   help_text:
     brief: List Cloud DLP jobs.
     DESCRIPTION: |
-       List Cloud DLP jobs.
+      List Cloud DLP jobs.
 
   request:
     collection: dlp.projects.dlpJobs
     api_version: v2
 
   response:
-     id_field: name
+    id_field: name
 
   arguments:
     params:
-      - arg_name: job-type
-        api_field: type
-        is_positional: false
-        required: false
-        help_text: |
-           The type of Cloud DLP jobs to list.
-        default: inspect
-        choices:
-          - arg_value: inspect
-            enum_value: INSPECT_JOB
-          - arg_value: risk-analysis
-            enum_value: RISK_ANALYSIS_JOB
+    - arg_name: job-type
+      api_field: type
+      is_positional: false
+      required: false
+      help_text: |
+        The type of Cloud DLP jobs to list.
+      default: inspect
+      choices:
+      - arg_value: inspect
+        enum_value: INSPECT_JOB
+      - arg_value: risk-analysis
+        enum_value: RISK_ANALYSIS_JOB
 
     resource:  # TODO: Remove when (b/79129961) is resolved.
       help_text: The project to list jobs for.

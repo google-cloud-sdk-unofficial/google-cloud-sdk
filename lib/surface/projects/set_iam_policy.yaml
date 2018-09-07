@@ -18,7 +18,7 @@
   request:
     collection: cloudresourcemanager.projects
     modify_request_hooks:
-      - googlecloudsdk.command_lib.projects.util:SetIamPolicyFromFileHook
+    - googlecloudsdk.command_lib.projects.util:SetIamPolicyFromFileHook
 
   arguments:
     resource:

@@ -30,8 +30,6 @@ from googlecloudsdk.core.console import progress_tracker
 class Create(base.CreateCommand):
   """Create a Google Compute Engine firewall rule."""
 
-  with_disabled = False
-
   FIREWALL_RULE_ARG = None
   NETWORK_ARG = None
 
@@ -46,8 +44,7 @@ class Create(base.CreateCommand):
         parser,
         for_update=False,
         with_egress_support=True,
-        with_service_account=True,
-        with_disabled=cls.with_disabled)
+        with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
     parser.display_info.AddCacheUpdater(flags.FirewallsCompleter)
 
@@ -77,6 +74,9 @@ class Create(base.CreateCommand):
         sourceRanges=args.source_ranges,
         sourceTags=args.source_tags,
         targetTags=args.target_tags)
+
+    if args.disabled is not None:
+      firewall.disabled = args.disabled
 
     firewall.direction = None
     if args.direction and args.direction in ['EGRESS', 'OUT']:
@@ -124,11 +124,9 @@ class Create(base.CreateCommand):
 class BetaCreate(Create):
   """Create a Google Compute Engine firewall rule."""
 
-  with_disabled = True
-
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_BETA)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='create')
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
@@ -137,16 +135,13 @@ class BetaCreate(Create):
         parser,
         for_update=False,
         with_egress_support=True,
-        with_service_account=True,
-        with_disabled=cls.with_disabled)
+        with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
     flags.AddEnableLogging(parser, default=None)
 
   def _CreateFirewall(self, holder, args):
     firewall, project = super(BetaCreate, self)._CreateFirewall(holder, args)
     firewall.enableLogging = args.enable_logging
-    if args.disabled is not None:
-      firewall.disabled = args.disabled
 
     return firewall, project
 
@@ -157,7 +152,7 @@ class AlphaCreate(BetaCreate):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_BETA)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='create')
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
@@ -166,8 +161,7 @@ class AlphaCreate(BetaCreate):
         parser,
         for_update=False,
         with_egress_support=True,
-        with_service_account=True,
-        with_disabled=cls.with_disabled)
+        with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
     flags.AddEnableLogging(parser, default=None)
 

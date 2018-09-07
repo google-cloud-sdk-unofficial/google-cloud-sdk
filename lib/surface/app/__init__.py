@@ -70,7 +70,6 @@ DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
-@base.DisallowPython3  # TODO(b/77808296): Enable for py3.
 class AppengineGA(base.Group):
 
   def Filter(self, context, args):

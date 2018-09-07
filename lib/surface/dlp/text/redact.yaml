@@ -31,41 +31,41 @@
   arguments:
     additional_arguments_hook: googlecloudsdk.command_lib.dlp.hooks:AddOutputFileFlag
     params:
-      - _COMMON_: text_args.redact_content_arg
-      # Need to override shared arg definitions
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
-        api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.infoTypes
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
-        api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.minLikelihood
-      - group:
-          mutex: true
-          required: true
-          params:
-          - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.replaceWithInfoTypeConfig
-            arg_name: replace-with-info-type
-            action: store_true
-            repeated: false
-            default: !!null
-            processor: googlecloudsdk.command_lib.dlp.hooks:GetInfoTypeTransform
-            help_text: |
-              If specified, all sensitive data will be replaced with its infoType.
-              For example, 'email:guest@example.com' would become
-              'email:[EMAIL_ADDRESS]'.
-          - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.redactConfig
-            arg_name: remove-findings
-            action: store_true
-            default: !!null
-            repeated: false
-            processor: googlecloudsdk.command_lib.dlp.hooks:GetRedactTransform
-            help_text: |
-              If specified, all sensitive data will be removed, instead of
-              replaced.
-          - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.replaceConfig
-            arg_name: replacement-text
-            repeated: false
-            processor: googlecloudsdk.command_lib.dlp.hooks:GetReplaceTextTransform
-            help_text: |
-             Text to replace each sensitive data finding with.
+    - _COMMON_: text_args.redact_content_arg
+    # Need to override shared arg definitions
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
+      api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.infoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
+      api_field: googlePrivacyDlpV2DeidentifyContentRequest.inspectConfig.minLikelihood
+    - group:
+        mutex: true
+        required: true
+        params:
+        - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.replaceWithInfoTypeConfig
+          arg_name: replace-with-info-type
+          action: store_true
+          repeated: false
+          default: null
+          processor: googlecloudsdk.command_lib.dlp.hooks:GetInfoTypeTransform
+          help_text: |
+            If specified, all sensitive data will be replaced with its infoType.
+            For example, 'email:guest@example.com' would become
+            'email:[EMAIL_ADDRESS]'.
+        - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.redactConfig
+          arg_name: remove-findings
+          action: store_true
+          default: null
+          repeated: false
+          processor: googlecloudsdk.command_lib.dlp.hooks:GetRedactTransform
+          help_text: |
+            If specified, all sensitive data will be removed, instead of
+            replaced.
+        - api_field: googlePrivacyDlpV2DeidentifyContentRequest.deidentifyConfig.infoTypeTransformations.transformations.primitiveTransformation.replaceConfig
+          arg_name: replacement-text
+          repeated: false
+          processor: googlecloudsdk.command_lib.dlp.hooks:GetReplaceTextTransform
+          help_text: |
+            Text to replace each sensitive data finding with.
     resource:
       help_text: Project to use to redact images.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project_content

@@ -24,16 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """This feature is part of an invite-only release of the Cloud Pub/Sub API.
-
-  Describes a Cloud Pub/Sub snapshot.
-  This feature is part of an invitation-only release of the underlying
-  Cloud Pub/Sub API. The command will generate errors unless you have access to
-  this API. This restriction should be relaxed in the near future. Please
-  contact cloud-pubsub@google.com with any questions in the meantime.
-  """
+  """Describes a Cloud Pub/Sub snapshot."""
 
   @staticmethod
   def Args(parser):

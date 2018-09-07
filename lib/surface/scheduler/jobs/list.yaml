@@ -15,20 +15,20 @@
       removed_flags: [location]
 
   output:
-      format: |
-          table(
-              name.basename():label=ID,
-              name.segment(-3):label=LOCATION,
-              format(
-                  "{0} ({1})",
-                  schedule.schedule,
-                  schedule.timeZone
-              ):label="SCHEDULE (TZ)",
-              format(
-                  "{0}{1}{2}",
-                  pubsubTarget.yesno(yes="Pub/Sub", no=""),
-                  appEngineHttpTarget.yesno(yes="App Engine", no=""),
-                  httpTarget.yesno(yes="HTTP", no="")
-              ):label=TARGET_TYPE,
-              state:label=STATE
-          )
+    format: |
+      table(
+          name.basename():label=ID,
+          name.segment(-3):label=LOCATION,
+          format(
+              "{0} ({1})",
+              schedule.schedule,
+              schedule.timeZone
+          ):label="SCHEDULE (TZ)",
+          format(
+              "{0}{1}{2}",
+              pubsubTarget.yesno(yes="Pub/Sub", no=""),
+              appEngineHttpTarget.yesno(yes="App Engine", no=""),
+              httpTarget.yesno(yes="HTTP", no="")
+          ):label=TARGET_TYPE,
+          state:label=STATE
+      )

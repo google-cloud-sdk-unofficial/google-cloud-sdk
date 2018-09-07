@@ -37,8 +37,8 @@
 
   arguments:
     params:
-      - _COMMON_args
-      - _COMMON_args_v1
+    - _COMMON_args
+    - _COMMON_args_v1
 
   output:
     format: json
@@ -82,8 +82,8 @@
 
   arguments:
     params:
-      - _COMMON_args
-      - _COMMON_args_v1p1beta1
+    - _COMMON_args
+    - _COMMON_args_v1p1beta1
 
   output:
     format: json

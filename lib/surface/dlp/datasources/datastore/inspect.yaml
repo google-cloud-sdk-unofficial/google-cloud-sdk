@@ -15,10 +15,10 @@
   help_text:
     brief: Schedules a job to inspect content in a Cloud Datastore.
     DESCRIPTION: |
-     Schedules a job to inspect content in a Cloud Datastore for sensitive data.
+      Schedules a job to inspect content in a Cloud Datastore for sensitive data.
 
-      See [Inspecting Storage and Databases for Sensitive Data](https://cloud.google.com/dlp/docs/inspecting-storage)
-      for more details.
+       See [Inspecting Storage and Databases for Sensitive Data](https://cloud.google.com/dlp/docs/inspecting-storage)
+       for more details.
     EXAMPLES: |
       The following command creates a job `my-ds-job` to scan records in
       Cloud Datastore table `myds:mykind`:
@@ -33,26 +33,26 @@
     - googlecloudsdk.command_lib.dlp.hooks:SetRequestParent
   arguments:
     params:
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:datastore_kind
-        arg_name: datastore_kind
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.datastoreOptions
-        is_positional: true
-        required: true
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:max_item_findings
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:min_time
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:max_time
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:jobs_output_group
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.infoTypes
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.minLikelihood
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:include_quote
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.includeQuote
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:max_findings
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.limits.maxFindingsPerRequest
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:exclude_info_types
-        api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.excludeInfoTypes
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:job_id
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:datastore_kind
+      arg_name: datastore_kind
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.storageConfig.datastoreOptions
+      is_positional: true
+      required: true
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_item_findings
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_time
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_time
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:jobs_output_group
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.infoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.minLikelihood
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:include_quote
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.includeQuote
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_findings
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.limits.maxFindingsPerRequest
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:exclude_info_types
+      api_field: googlePrivacyDlpV2CreateDlpJobRequest.inspectJob.inspectConfig.excludeInfoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:job_id
     resource:
       help_text: |
         The Cloud DLP project to create Job In.

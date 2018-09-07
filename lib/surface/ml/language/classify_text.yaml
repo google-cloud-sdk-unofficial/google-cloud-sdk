@@ -18,9 +18,9 @@
 
   arguments:
     params:
-      - _COMMON_: args.content_group
-      - _COMMON_: args.content
-      - _COMMON_: args.language
+    - _COMMON_: args.content_group
+    - _COMMON_: args.content
+    - _COMMON_: args.language
 
   output:
     format: json
@@ -45,9 +45,9 @@
 
   arguments:
     params:
-      - _COMMON_: args.content_group
-      - _COMMON_: args.content
-      - _COMMON_: args.language
+    - _COMMON_: args.content_group
+    - _COMMON_: args.content
+    - _COMMON_: args.language
 
   output:
     format: json

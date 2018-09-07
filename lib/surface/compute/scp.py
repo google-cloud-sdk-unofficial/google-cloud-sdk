@@ -84,7 +84,7 @@ def _Args(parser):
       help='Extra flag to be sent to scp. This flag may be repeated.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ScpGA(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
@@ -117,8 +117,8 @@ class ScpGA(base.Command):
     return self._Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ScpAlpha(ScpGA):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ScpBeta(ScpGA):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
   @staticmethod
@@ -157,5 +157,5 @@ class ScpAlpha(ScpGA):
     return self._Run(args, ip_type)
 
 
-ScpAlpha.detailed_help = _DETAILED_HELP
+ScpBeta.detailed_help = _DETAILED_HELP
 ScpGA.detailed_help = _DETAILED_HELP

@@ -24,14 +24,12 @@
 
   arguments:
     params:
-      - _COMMON_: image_file
-      - !REF googlecloudsdk.command_lib.dlp.flags:info_type
-      - !REF googlecloudsdk.command_lib.dlp.flags:min_likelihood
-      - !REF googlecloudsdk.command_lib.dlp.flags:include_quote
-      - !REF googlecloudsdk.command_lib.dlp.flags:exclude_info_types
-      - !REF googlecloudsdk.command_lib.dlp.flags:max_findings
+    - _COMMON_: image_file
+    - !REF googlecloudsdk.command_lib.dlp.flags:info_type
+    - !REF googlecloudsdk.command_lib.dlp.flags:min_likelihood
+    - !REF googlecloudsdk.command_lib.dlp.flags:include_quote
+    - !REF googlecloudsdk.command_lib.dlp.flags:exclude_info_types
+    - !REF googlecloudsdk.command_lib.dlp.flags:max_findings
     resource:
       help_text: Project to use to inspect images.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project_content
-
-

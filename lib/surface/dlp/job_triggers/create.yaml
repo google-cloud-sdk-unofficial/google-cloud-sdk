@@ -33,83 +33,83 @@
 
   arguments:
     params:
-      - arg_name: description
-        api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.description
-        is_positional: false
-        required: false
-        help_text: |
-          User provided description (maximum 256 characters)
-      - arg_name: display-name
-        api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.displayName
-        is_positional: false
-        required: false
-        help_text: |
-          Display name of the job trigger (maximum 100 characters)
-      - api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.limits.maxFindingsPerItem
-        arg_name: max-findings-per-item
-        type: int
-        is_positional: false
-        required: false
-        help_text: |
-            Maximum number of findings that will be returned for each item
-            scanned.
+    - arg_name: description
+      api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.description
+      is_positional: false
+      required: false
+      help_text: |
+        User provided description (maximum 256 characters)
+    - arg_name: display-name
+      api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.displayName
+      is_positional: false
+      required: false
+      help_text: |
+        Display name of the job trigger (maximum 100 characters)
+    - api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.limits.maxFindingsPerItem
+      arg_name: max-findings-per-item
+      type: int
+      is_positional: false
+      required: false
+      help_text: |
+        Maximum number of findings that will be returned for each item
+        scanned.
 
-            If not specified, no limits are applied.
-      - api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.triggers.schedule.recurrencePeriodDuration
-        arg_name: trigger-schedule
-        type: 'googlecloudsdk.calliope.arg_parsers:Duration:'
-        processor: googlecloudsdk.command_lib.dlp.hooks:GetJobScheduleDurationString
-        is_positional: false
-        repeated: false
+        If not specified, no limits are applied.
+    - api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.triggers.schedule.recurrencePeriodDuration
+      arg_name: trigger-schedule
+      type: 'googlecloudsdk.calliope.arg_parsers:Duration:'
+      processor: googlecloudsdk.command_lib.dlp.hooks:GetJobScheduleDurationString
+      is_positional: false
+      repeated: false
+      required: true
+      help_text: |
+        Duration specifying how often the triggered job will be run. A
+        scheduled start time will be skipped if the previous execution has
+        not ended when its scheduled time occurs. Value must be a time
+        duration greater than or equal to 60 minutes and can be no longer
+        than 60 days.
+
+        See `$ gcloud topic datetimes for information on duration formats.`
+    - group:
+        mutex: true
         required: true
-        help_text: |
-           Duration specifying how often the triggered job will be run. A
-           scheduled start time will be skipped if the previous execution has
-           not ended when its scheduled time occurs. Value must be a time
-           duration greater than or equal to 60 minutes and can be no longer
-           than 60 days.
+        params:
+        - arg_name: output-topics
+          api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.actions
+          type: googlecloudsdk.command_lib.dlp.hooks:PubSubTopicAction
+          help_text: |
+            Publishes the results of a Cloud DLP job to one or more Cloud Pub/Sub
+            topics.
 
-           See `$ gcloud topic datetimes for information on duration formats.`
-      - group:
-          mutex: true
-          required: true
-          params:
-          - arg_name: output-topics
-            api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.actions
-            type: googlecloudsdk.command_lib.dlp.hooks:PubSubTopicAction
-            help_text: |
-              Publishes the results of a Cloud DLP job to one or more Cloud Pub/Sub
-              topics.
+            Note: The topic must have given publishing access rights to the
+            DLP API service account executing the Cloud DLP job.
+        - arg_name: output-tables
+          api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.actions
+          type: googlecloudsdk.command_lib.dlp.hooks:BigQueryTableAction
+          help_text: |
+            Publishes results of a Cloud DLP job to one or more BigQuery
+            tables.
 
-              Note: The topic must have given publishing access rights to the
-              DLP API service account executing the Cloud DLP job.
-          - arg_name: output-tables
-            api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.actions
-            type: googlecloudsdk.command_lib.dlp.hooks:BigQueryTableAction
-            help_text: |
-              Publishes results of a Cloud DLP job to one or more BigQuery
-              tables.
-
-              BigQuery tables are uniquely identified by their project_id,
-              dataset_id, and table_id in the format
-              `<project_id>.<dataset_id>.<table_id>`.
-      - group:
-          mutex: true
-          required: true
-          params:
-          - _REF_: googlecloudsdk.command_lib.dlp.flags:datastore_kind
-          - _REF_: googlecloudsdk.command_lib.dlp.flags:gcs_path
-          - _REF_: googlecloudsdk.command_lib.dlp.flags:big_query_table
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
-        api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.infoTypes
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
-        api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.minLikelihood
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:include_quote
-        api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.includeQuote
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:max_findings
-        api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.limits.maxFindingsPerRequest
-      - _REF_: googlecloudsdk.command_lib.dlp.flags:exclude_info_types
-        api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.excludeInfoTypes
+            BigQuery tables are uniquely identified by their project_id,
+            dataset_id, and table_id in the format
+            `<project_id>.<dataset_id>.<table_id>`.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.dlp.flags:datastore_kind
+        - _REF_: googlecloudsdk.command_lib.dlp.flags:gcs_path
+        - _REF_: googlecloudsdk.command_lib.dlp.flags:big_query_table
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:info_type
+      api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.infoTypes
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:min_likelihood
+      api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.minLikelihood
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:include_quote
+      api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.includeQuote
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:max_findings
+      api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.limits.maxFindingsPerRequest
+    - _REF_: googlecloudsdk.command_lib.dlp.flags:exclude_info_types
+      api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.inspectConfig.excludeInfoTypes
     resource:
       help_text: |
         The Cloud DLP job trigger to create. The job trigger name can contain

@@ -46,7 +46,8 @@ def _ApplyEnvVarsArgsToFunction(function, args):
 
 
 def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
-         enable_connected_vpc=False, enable_env_vars=False):
+         enable_connected_vpc=False, enable_env_vars=False,
+         enable_service_account=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
   labels_util.CheckNoDeploymentLabels('--remove-labels', args.remove_labels)
@@ -92,6 +93,9 @@ def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
   if args.memory:
     function.availableMemoryMb = utils.BytesToMb(args.memory)
     updated_fields.append('availableMemoryMb')
+  if enable_service_account and args.service_account:
+    function.serviceAccountEmail = args.service_account
+    updated_fields.append('serviceAccountEmail')
   if enable_runtime:
     if args.IsSpecified('runtime'):
       function.runtime = args.runtime
@@ -128,7 +132,7 @@ def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
 
   # Populate source properties of function based on source args.
   # Only Add source to function if its explicitly provided, a new function,
-  # using a stage budget or deploy of an existing function that previously
+  # using a stage bucket or deploy of an existing function that previously
   # used local source.
   if (args.source or args.stage_bucket or is_new_function or
       function.sourceUploadUrl):
@@ -207,7 +211,9 @@ class DeployAlpha(base.Command):
     env_vars_util.AddUpdateEnvVarsFlags(parser)
     flags.AddMaxInstancesFlag(parser)
     flags.AddConnectedVPCFlag(parser)
+    flags.AddServiceAccountFlag(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack(), enable_max_instances=True,
-                enable_connected_vpc=True, enable_env_vars=True)
+                enable_connected_vpc=True, enable_env_vars=True,
+                enable_service_account=True)

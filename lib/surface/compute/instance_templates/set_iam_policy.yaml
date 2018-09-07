@@ -14,11 +14,10 @@
       See https://cloud.google.com/iam/docs/managing-policies for details of the
       policy file format and contents.
 
-  request:
-    &request
+  request: &request
     collection: compute.instanceTemplates
     api_version: beta
-    use_relative_name: False
+    use_relative_name: false
 
   iam:
     set_iam_policy_request_path: globalSetPolicyRequest

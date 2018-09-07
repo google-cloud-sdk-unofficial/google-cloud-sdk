@@ -30,16 +30,16 @@
     - googlecloudsdk.command_lib.redis.operations_util:FilterListResponse
 
   output:
-      format: |
-       table(
-          name.basename():label=OPERATION_NAME,
-          name.segment(3):label=REGION,
-          metadata.verb:label=TYPE,
-          metadata.target.basename(),
-          done,
-          metadata.createTime.date():sort=1,
-          duration(start=metadata.createTime,end=metadata.endTime,precision=0,calendar=false).slice(2:).join("").yesno(no="<1S"):label=DURATION
-        )
+    format: |
+      table(
+         name.basename():label=OPERATION_NAME,
+         name.segment(3):label=REGION,
+         metadata.verb:label=TYPE,
+         metadata.target.basename(),
+         done,
+         metadata.createTime.date():sort=1,
+         duration(start=metadata.createTime,end=metadata.endTime,precision=0,calendar=false).slice(2:).join("").yesno(no="<1S"):label=DURATION
+       )
 
 
 - <<: *beta_command

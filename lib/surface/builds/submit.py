@@ -245,17 +245,29 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
         raise c_exceptions.InvalidArgumentException(
             '--tag',
             'Tag value must be in the gcr.io/* or *.gcr.io/* namespace.')
-      build_config = messages.Build(
-          images=[args.tag],
-          steps=[
-              messages.BuildStep(
-                  name='gcr.io/cloud-builders/docker',
-                  args=['build', '--no-cache', '-t', args.tag, '.'],
-              ),
-          ],
-          timeout=timeout_str,
-          substitutions=cloudbuild_util.EncodeSubstitutions(
-              args.substitutions, messages))
+      if properties.VALUES.builds.use_kaniko.GetBool():
+        build_config = messages.Build(
+            steps=[
+                messages.BuildStep(
+                    name='gcr.io/kaniko-project/executor:latest',
+                    args=['--destination', args.tag],
+                ),
+            ],
+            timeout=timeout_str,
+            substitutions=cloudbuild_util.EncodeSubstitutions(
+                args.substitutions, messages))
+      else:
+        build_config = messages.Build(
+            images=[args.tag],
+            steps=[
+                messages.BuildStep(
+                    name='gcr.io/cloud-builders/docker',
+                    args=['build', '--no-cache', '-t', args.tag, '.'],
+                ),
+            ],
+            timeout=timeout_str,
+            substitutions=cloudbuild_util.EncodeSubstitutions(
+                args.substitutions, messages))
     elif args.config:
       build_config = config.LoadCloudbuildConfigFromPath(
           args.config, messages, params=args.substitutions)

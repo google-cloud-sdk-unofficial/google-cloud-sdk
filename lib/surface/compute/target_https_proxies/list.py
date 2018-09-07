@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List target HTTPS proxies."""
 
@@ -46,3 +47,36 @@ class List(base.ListCommand):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('target HTTPS proxies')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """List Target HTTPS Proxies.."""
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddCacheUpdater(flags.TargetHttpsProxiesCompleterAlpha)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionTargetHttpsProxies,
+        global_service=client.apitools_client.targetHttpsProxies,
+        aggregation_service=client.apitools_client.targetHttpsProxies)
+
+    return lister.Invoke(request_data, list_implementation)
+
+
+ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
+    'target HTTPS proxies',
+    scopes=[
+        base_classes.ScopeType.global_scope,
+        base_classes.ScopeType.regional_scope
+    ])

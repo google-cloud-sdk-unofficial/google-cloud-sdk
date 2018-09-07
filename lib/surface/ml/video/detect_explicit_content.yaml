@@ -16,14 +16,14 @@
     static_fields:
       features: [EXPLICIT_CONTENT_DETECTION]
     modify_request_hooks:
-      - googlecloudsdk.command_lib.ml.video.util:UpdateRequestWithInput
+    - googlecloudsdk.command_lib.ml.video.util:UpdateRequestWithInput
 
   async:
     _COMMON_: async
 
   arguments:
     params:
-      - _COMMON_args
+    - _COMMON_args
 
   output:
     format: json

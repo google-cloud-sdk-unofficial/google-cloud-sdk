@@ -11,20 +11,14 @@
     params:
     - arg_name: description
       api_field: updateInstanceRequest.instance.displayName
-      help_text:
-        The descriptive name for this instance as it appears in UIs.
-        Must be unique per project and between 4 and 30 characters in length.
+      help_text: The descriptive name for this instance as it appears in UIs. Must
+        be unique per project and between 4 and 30 characters in length.
     - arg_name: nodes
       api_field: updateInstanceRequest.instance.nodeCount
-      help_text:
-        The number of nodes allocated to this instance to update.
+      help_text: The number of nodes allocated to this instance to update.
 
   request:
     collection: spanner.projects.instances
-    method: patch
 
   async:
     collection: spanner.projects.instances.operations
-
-  update:
-    mask_field: updateInstanceRequest.fieldMask
