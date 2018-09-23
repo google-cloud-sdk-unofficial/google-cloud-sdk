@@ -1,16 +1,12 @@
-- &beta_command
-  release_tracks: [BETA]
-
-  help_text:
+- help_text:
     brief: |
       List Memorystore Redis regions
     DESCRIPTION: |
       List all regions where Memorystore Redis API is available.
     EXAMPLES: |
-      The following command lists all the regions where you can create Redis
-      instances:
+      To list all the regions where Redis instances can be created, run:
 
-          $ gcloud alpha redis regions list
+          $ {command}
 
   arguments:
     resource:
@@ -19,7 +15,7 @@
         The project name.
 
   request: &request
-    api_version: v1beta1
+    api_version: v1
     collection: redis.projects.locations
 
   response:
@@ -30,11 +26,3 @@
       table(
         locationId:label=NAME:sort=1
       )
-
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
-  request:
-    <<: *request
-    api_version: v1alpha1

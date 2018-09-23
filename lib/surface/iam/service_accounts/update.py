@@ -52,5 +52,5 @@ class Update(base.Command):
             name=resource_name,
             etag=current.etag,
             displayName=args.display_name))
-    log.UpdatedResource(args.service_account, kind='service account')
+    log.UpdatedResource(args.service_account, kind='serviceAccount')
     return result

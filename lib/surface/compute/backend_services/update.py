@@ -84,7 +84,7 @@ class UpdateGA(base.UpdateCommand):
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
     flags.AddEnableCdn(parser, default=None)
-    flags.AddSessionAffinity(parser, internal_lb=True)
+    flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddCacheKeyIncludeProtocol(parser, default=None)
@@ -322,7 +322,7 @@ class UpdateAlpha(UpdateGA):
     flags.AddCacheKeyIncludeHost(parser, default=None)
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
-    flags.AddSessionAffinity(parser, internal_lb=True)
+    flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
@@ -436,7 +436,7 @@ class UpdateBeta(UpdateGA):
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser, default=None)
-    flags.AddSessionAffinity(parser, internal_lb=True)
+    flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
     AddIapFlag(parser)
     flags.AddCacheKeyIncludeProtocol(parser, default=None)

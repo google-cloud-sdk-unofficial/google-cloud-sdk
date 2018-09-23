@@ -1,7 +1,4 @@
-- &beta_command
-  release_tracks: [BETA]
-
-  help_text:
+- help_text:
     brief: |
       Update Memorystore Redis instances.
     DESCRIPTION: |
@@ -12,9 +9,8 @@
         * The active account does not have permission to update the given
           instance.
     EXAMPLES: |
-      The following command updates a Redis instance with the name
-      `my-redis-instance` to have the display name "Cache for Foo Service"
-      and adds the two labels, `env` and `service`:
+      To update a Redis instance with the name `my-redis-instance` to have the display name
+      "Cache for Foo Service", and add the two labels, `env` and `service`, run:
 
         $ {command} my-redis-instance --display-name="Cache for Foo Service" \
             --update-labels=env=test,service=foo
@@ -40,8 +36,8 @@
   async:
     collection: redis.projects.locations.operations
 
-  request: &request
-    api_version: v1beta1
+  request:
+    api_version: v1
     collection: redis.projects.locations.instances
     modify_request_hooks:
     - googlecloudsdk.command_lib.redis.instances_update_util:ResetDefaultMaskField
@@ -52,11 +48,3 @@
     - googlecloudsdk.command_lib.redis.instances_update_util:RemoveRedisConfigs
     - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRedisConfigs
     - googlecloudsdk.command_lib.redis.instances_update_util:UpdateLabels
-
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
-  request:
-    <<: *request
-    api_version: v1alpha1

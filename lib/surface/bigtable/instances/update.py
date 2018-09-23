@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.bigtable import util as bigtable_util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
@@ -31,21 +30,8 @@ class UpdateInstance(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.ArgAdder(parser).AddInstance().AddInstanceDisplayName()
-
-    # Add removed argument as hidden with error pointing to new command
-    parser.add_argument(
-        '--instance-type',
-        action=actions.DeprecationAction(
-            '--instance-type',
-            removed=True,
-            error=('Upgrading development instances with --instance-type has '
-                   'been removed. Use the bigtable instances upgrade command '
-                   'instead.')),
-        help=('Change the instance type. Note development instances can '
-              'be promoted to production instances, but production '
-              'instances cannot be downgraded to development.'),
-        hidden=True)
+    arguments.ArgAdder(parser).AddInstanceDisplayName()
+    arguments.AddInstanceResourceArg(parser, 'to update', positional=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

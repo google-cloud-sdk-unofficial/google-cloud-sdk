@@ -21,6 +21,5 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Redis(base.Group):
   """Manage Cloud Memorystore Redis resources."""

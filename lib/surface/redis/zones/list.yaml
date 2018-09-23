@@ -1,7 +1,4 @@
-- &beta_command
-  release_tracks: [BETA]
-
-  help_text:
+- help_text:
     brief: |
       List Memorystore Redis zones
     DESCRIPTION: |
@@ -20,8 +17,8 @@
         of: `--filter="region:REGION"`. Run `gcloud topic filters` for more
         information.
 
-  request: &request
-    api_version: v1beta1
+  request:
+    api_version: v1
     collection: redis.projects.locations
 
   response:
@@ -34,11 +31,3 @@
         name:label=ZONE:sort=1,
         region
       )
-
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
-  request:
-    <<: *request
-    api_version: v1alpha1

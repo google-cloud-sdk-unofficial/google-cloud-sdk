@@ -1,7 +1,4 @@
-- &beta_command
-  release_tracks: [BETA]
-
-  help_text:
+- help_text:
     brief: |
       Show metadata for a Memorystore Redis region.
     DESCRIPTION: |
@@ -13,9 +10,9 @@
         * The active account does not have permission to access the given
           region.
     EXAMPLES: |
-      The following command prints metadata for the region `us-central1`
+      To display the metadata for the region `us-central1`, run:
 
-        $ gcloud alpha redis regions describe us-central1
+        $ {command} us-central1
 
   arguments:
     resource:
@@ -24,14 +21,6 @@
         Arguments and flags that specify the Memorystore Redis region you
         want to describe.
 
-  request: &request
-    api_version: v1beta1
-    collection: redis.projects.locations
-
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
   request:
-    <<: *request
-    api_version: v1alpha1
+    api_version: v1
+    collection: redis.projects.locations

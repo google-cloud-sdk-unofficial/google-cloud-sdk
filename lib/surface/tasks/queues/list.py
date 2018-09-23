@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.tasks import queues
+from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import app
 from googlecloudsdk.command_lib.tasks import flags
@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List all queues."""
 
@@ -35,7 +36,17 @@ class List(base.ListCommand):
     list_formats.AddListQueuesFormats(parser)
 
   def Run(self, args):
-    queues_client = queues.Queues()
+    queues_client = GetApiAdapter(self.ReleaseTrack()).queues
     app_location = args.location or app.ResolveAppLocation()
     region_ref = parsers.ParseLocation(app_location)
     return queues_client.List(region_ref, args.limit, args.page_size)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaList(List):
+  """List all queues."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddLocationFlag(parser)
+    list_formats.AddListQueuesFormats(parser, is_alpha=True)

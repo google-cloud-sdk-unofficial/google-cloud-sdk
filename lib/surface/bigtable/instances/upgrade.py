@@ -32,7 +32,8 @@ class UpgradeInstance(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.ArgAdder(parser).AddInstance().AddAsync()
+    arguments.ArgAdder(parser).AddAsync()
+    arguments.AddInstanceResourceArg(parser, 'to upgrade', positional=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -22,4 +22,28 @@ from googlecloudsdk.calliope import base
 
 
 class Instances(base.Group):
-  """Manage Cloud Memorystore Redis instances."""
+  """Manage Cloud Memorystore Redis instances.
+
+  ## EXAMPLES
+
+  To create an instance with the name `my-redis-instance`, run:
+
+    $ {command} create my-redis-instance
+
+  To delete an instance with the name `my-redis-instance`, run:
+
+    $ {command} delete my-redis-instance
+
+  To display the details for an instance with the name `my-redis-instance`, run:
+
+    $ {command} describe my-redis-instance
+
+  To list all the instances, run:
+
+    $ {command} list
+
+  To set the label `env` to `prod` for an instance with the name
+  `my-redis-instance`, run:
+
+    $ {command} my-redis-instance --update-labels=env=prod
+  """

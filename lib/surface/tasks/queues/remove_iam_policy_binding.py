@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.tasks import queues
+from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.tasks import flags
@@ -39,7 +39,7 @@ class RemoveIamPolicyBinding(base.Command):
     iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   def Run(self, args):
-    queues_client = queues.Queues()
+    queues_client = GetApiAdapter(self.ReleaseTrack()).queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     policy = queues_client.GetIamPolicy(queue_ref)
     iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)

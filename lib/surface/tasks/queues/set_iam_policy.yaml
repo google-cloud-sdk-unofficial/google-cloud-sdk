@@ -1,4 +1,5 @@
-- release_tracks: [ALPHA, BETA]
+- &beta_command
+  release_tracks: [BETA]
 
   help_text:
     brief: Set the IAM policy for a queue.
@@ -11,10 +12,18 @@
       for the queue has been subsequently updated.) A policy file that does not
       contain an etag value will replace any existing policy for the queue.
 
-  request:
+  request: &request
     collection: cloudtasks.projects.locations.queues
+    api_version: v2beta3
 
   arguments:
     resource:
       help_text: The queue for which to set the IAM policy.
       spec: !REF googlecloudsdk.command_lib.tasks.resources:queue
+
+- <<: *beta_command
+  release_tracks: [ALPHA]
+
+  request:
+    <<: *request
+    api_version: v2beta2

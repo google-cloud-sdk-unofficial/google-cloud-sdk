@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.tasks import tasks
+from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import flags
 from googlecloudsdk.command_lib.tasks import list_formats
@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.tasks import parsers
 _DEFAULT_PAGE_SIZE = 25
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List tasks."""
 
@@ -39,6 +40,18 @@ class List(base.ListCommand):
     base.PAGE_SIZE_FLAG.SetDefault(parser, _DEFAULT_PAGE_SIZE)
 
   def Run(self, args):
-    tasks_client = tasks.Tasks()
+    tasks_client = GetApiAdapter(self.ReleaseTrack()).tasks
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     return tasks_client.List(queue_ref, args.limit, args.page_size)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaList(List):
+  """List tasks."""
+
+  @staticmethod
+  def Args(parser):
+    list_formats.AddListTasksFormats(parser, is_alpha=True)
+    flags.AddQueueResourceFlag(parser, plural_tasks=True)
+    flags.AddLocationFlag(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, _DEFAULT_PAGE_SIZE)

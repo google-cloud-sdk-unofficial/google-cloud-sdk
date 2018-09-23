@@ -1,7 +1,4 @@
-- &beta_command
-  release_tracks: [BETA]
-
-  help_text:
+- help_text:
     brief: |
       Show metadata for a Memorystore Redis operation.
     DESCRIPTION: |
@@ -13,10 +10,10 @@
       * The active account does not have permission to access the given
         operation.
     EXAMPLES: |
-      The following command prints metadata for an operation with the name
-      in your default region:
+      To display the metadata for an operation named `my-redis-operation` in the default region,
+      run:
 
-        $ {command} operation-1484002552235-425b144f8c3f8-81aa4b49-0830d1e9
+        $ {command} my-redis-operation
 
   arguments:
     resource:
@@ -25,14 +22,6 @@
         Arguments and flags that specify the Memorystore Redis operation you
         want to describe.
 
-  request: &request
-    api_version: v1beta1
-    collection: redis.projects.locations.operations
-
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
   request:
-    <<: *request
-    api_version: v1alpha1
+    api_version: v1
+    collection: redis.projects.locations.operations

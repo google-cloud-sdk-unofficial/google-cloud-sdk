@@ -62,12 +62,8 @@ class SetAutohealing(base.Command):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    messages = client.messages
 
-    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
-               ResolveAsResource)(
-                   args, holder.resources,
-                   default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(client))
     health_check = managed_instance_groups_utils.GetHealthCheckUri(
         holder.resources, args, self.HEALTH_CHECK_ARG)
     auto_healing_policies = (
@@ -77,28 +73,25 @@ class SetAutohealing(base.Command):
     managed_instance_groups_utils.ValidateAutohealingPolicies(
         auto_healing_policies)
 
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = compute_scope.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(client)
+    igm_ref = resource_arg.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=default_scope,
+        scope_lister=scope_lister)
+    igm_resource = messages.InstanceGroupManager(
+        autoHealingPolicies=auto_healing_policies)
+
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = client.apitools_client.instanceGroupManagers
-      request = (
-          client.messages.
-          ComputeInstanceGroupManagersSetAutoHealingPoliciesRequest(
-              project=igm_ref.project,
-              zone=igm_ref.zone,
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersSetAutoHealingRequest=(
-                  client.messages.InstanceGroupManagersSetAutoHealingRequest(
-                      autoHealingPolicies=auto_healing_policies))))
+      request_type = messages.ComputeInstanceGroupManagersPatchRequest
     else:
       service = client.apitools_client.regionInstanceGroupManagers
-      request = (
-          client.messages.
-          ComputeRegionInstanceGroupManagersSetAutoHealingPoliciesRequest(
-              project=igm_ref.project,
-              region=igm_ref.region,
-              instanceGroupManager=igm_ref.Name(),
-              regionInstanceGroupManagersSetAutoHealingRequest=(
-                  client.messages.
-                  RegionInstanceGroupManagersSetAutoHealingRequest(
-                      autoHealingPolicies=auto_healing_policies))))
+      request_type = messages.ComputeRegionInstanceGroupManagersPatchRequest
 
-    return client.MakeRequests([(service, 'SetAutoHealingPolicies', request)])
+    request = request_type(**igm_ref.AsDict())
+    request.instanceGroupManagerResource = igm_resource
+
+    return client.MakeRequests([(service, 'Patch', request)])

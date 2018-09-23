@@ -50,11 +50,14 @@ class SetInstanceTemplate(base.Command):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.
-               ResolveAsResource)(
-                   args, holder.resources,
-                   default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(client))
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+    default_scope = compute_scope.ScopeEnum.ZONE
+    scope_lister = flags.GetDefaultScopeLister(client)
+    igm_ref = resource_arg.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=default_scope,
+        scope_lister=scope_lister)
     template_ref = holder.resources.Parse(
         args.template,
         params={
@@ -62,27 +65,56 @@ class SetInstanceTemplate(base.Command):
         },
         collection='compute.instanceTemplates')
 
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      return self._MakeSetInstanceTemplateRequest(client, igm_ref, template_ref)
+
+    return self._MakePatchRequest(client, igm_ref, template_ref)
+
+  def _MakeSetInstanceTemplateRequest(self, client, igm_ref, template_ref):
+    messages = client.messages
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = client.apitools_client.instanceGroupManagers
-      request = (client.messages.
-                 ComputeInstanceGroupManagersSetInstanceTemplateRequest(
-                     instanceGroupManager=igm_ref.Name(),
-                     instanceGroupManagersSetInstanceTemplateRequest=(
-                         client.messages.
-                         InstanceGroupManagersSetInstanceTemplateRequest(
-                             instanceTemplate=template_ref.SelfLink())),
-                     project=igm_ref.project,
-                     zone=igm_ref.zone))
-    else:
+      request = (
+          messages.ComputeInstanceGroupManagersSetInstanceTemplateRequest(
+              project=igm_ref.project,
+              zone=igm_ref.zone,
+              instanceGroupManager=igm_ref.Name(),
+              instanceGroupManagersSetInstanceTemplateRequest=(
+                  messages.InstanceGroupManagersSetInstanceTemplateRequest(
+                      instanceTemplate=template_ref.SelfLink()))))
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
       service = client.apitools_client.regionInstanceGroupManagers
       request = (
-          client.messages.
-          ComputeRegionInstanceGroupManagersSetInstanceTemplateRequest(
+          messages.ComputeRegionInstanceGroupManagersSetInstanceTemplateRequest(
+              project=igm_ref.project,
+              region=igm_ref.region,
               instanceGroupManager=igm_ref.Name(),
               regionInstanceGroupManagersSetTemplateRequest=(
-                  client.messages.RegionInstanceGroupManagersSetTemplateRequest(
-                      instanceTemplate=template_ref.SelfLink())),
-              project=igm_ref.project,
-              region=igm_ref.region))
+                  messages.RegionInstanceGroupManagersSetTemplateRequest(
+                      instanceTemplate=template_ref.SelfLink()))))
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
 
     return client.MakeRequests([(service, 'SetInstanceTemplate', request)])
+
+  def _MakePatchRequest(self, client, igm_ref, template_ref):
+    messages = client.messages
+
+    igm_resource = messages.InstanceGroupManager(
+        instanceTemplate=template_ref.SelfLink())
+
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      service = client.apitools_client.instanceGroupManagers
+      request_type = messages.ComputeInstanceGroupManagersPatchRequest
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      service = client.apitools_client.regionInstanceGroupManagers
+      request_type = messages.ComputeRegionInstanceGroupManagersPatchRequest
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
+
+    request = request_type(**igm_ref.AsDict())
+    request.instanceGroupManagerResource = igm_resource
+
+    return client.MakeRequests([(service, 'Patch', request)])

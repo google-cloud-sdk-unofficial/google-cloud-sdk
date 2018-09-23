@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
-from googlecloudsdk.api_lib.tasks import queues
+from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.tasks import flags
@@ -39,8 +39,9 @@ class AddIamPolicyBinding(base.Command):
     iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
-    queues_client = queues.Queues()
-    queues_messages = queues_client.api.messages
+    api = GetApiAdapter(self.ReleaseTrack())
+    queues_client = api.queues
+    queues_messages = api.messages
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     try:
       policy = queues_client.GetIamPolicy(queue_ref)

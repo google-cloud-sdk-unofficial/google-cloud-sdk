@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.tasks import tasks
+from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.command_lib.tasks import flags
@@ -37,12 +37,13 @@ class CreatePull(base.CreateCommand):
     flags.AddLocationFlag(parser)
 
   def Run(self, args):
-    tasks_client = tasks.Tasks()
+    api = GetApiAdapter(self.ReleaseTrack())
+    tasks_client = api.tasks
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_ref = parsers.ParseTask(args.task,
                                  queue_ref) if args.task else None
     task_config = parsers.ParseCreateTaskArgs(
-        args, constants.PULL_QUEUE, tasks_client.api.messages)
+        args, constants.PULL_QUEUE, api.messages, is_alpha=True)
     create_response = tasks_client.Create(
         queue_ref, task_ref,
         schedule_time=task_config.scheduleTime,

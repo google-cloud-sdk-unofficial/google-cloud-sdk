@@ -30,7 +30,7 @@ class DeleteInstance(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.ArgAdder(parser).AddInstance(multiple=True)
+    arguments.AddInstancesResourceArg(parser, 'to delete', positional=True)
     parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
   def Run(self, args):

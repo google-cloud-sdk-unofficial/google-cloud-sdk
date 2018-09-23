@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.tasks import queues
+from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.command_lib.tasks import flags
@@ -47,11 +47,16 @@ class UpdatePull(base.UpdateCommand):
     flags.AddUpdatePullQueueFlags(parser)
 
   def Run(self, args):
-    parsers.CheckUpdateArgsSpecified(args, constants.PULL_QUEUE)
-    queues_client = queues.Queues()
+    parsers.CheckUpdateArgsSpecified(args, constants.PULL_QUEUE, is_alpha=True)
+    api = GetApiAdapter(self.ReleaseTrack())
+    queues_client = api.queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args, constants.PULL_QUEUE, queues_client.api.messages, is_update=True)
+        args,
+        constants.PULL_QUEUE,
+        api.messages,
+        is_update=True,
+        is_alpha=True)
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
         queue_ref, retry_config=queue_config.retryConfig)

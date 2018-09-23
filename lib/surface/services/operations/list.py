@@ -43,6 +43,7 @@ done is a boolean value and supports = and != operators.\
 '''
 
 
+@base.Deprecate(is_removed=False)
 class List(base.ListCommand):
   # pylint: disable=line-too-long
   """List operations for a project.

@@ -14,7 +14,9 @@
 # limitations under the License.
 """Sosreport from Google Compute Engine VMs."""
 
-from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base

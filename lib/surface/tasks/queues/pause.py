@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.tasks import queues
+from googlecloudsdk.api_lib.tasks import GetApiAdapter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.command_lib.tasks import flags
@@ -39,7 +39,7 @@ class Pause(base.Command):
     flags.AddLocationFlag(parser)
 
   def Run(self, args):
-    queues_client = queues.Queues()
+    queues_client = GetApiAdapter(self.ReleaseTrack()).queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     queues_client.Pause(queue_ref)

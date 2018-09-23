@@ -21,6 +21,5 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Instances(base.Group):
   """Manage Cloud Bigtable instances."""

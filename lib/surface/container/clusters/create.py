@@ -31,6 +31,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -391,6 +392,7 @@ class CreateBeta(Create):
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser)
+    flags.AddIstioConfigFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddMaintenanceWindowFlag(parser)
@@ -431,8 +433,10 @@ class CreateBeta(Create):
     ops.enable_binauthz = args.enable_binauthz
     ops.enable_tpu = args.enable_tpu
     ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
+    ops.istio_config = args.istio_config
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.default_max_pods_per_node = args.default_max_pods_per_node
+    flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     return ops
 
 
@@ -476,6 +480,14 @@ class CreateAlpha(Create):
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
     flags.AddSecurityProfileForCreateFlags(parser)
+    kms_flag_overrides = {
+        'kms-key': '--database-encryption-key',
+        'kms-keyring': '--database-encryption-key-keyring',
+        'kms-location': '--database-encryption-key-location',
+        'kms-project': '--database-encryption-key-project'
+    }
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser, 'cluster', flag_overrides=kms_flag_overrides)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -504,8 +516,21 @@ class CreateAlpha(Create):
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.security_group = args.security_group
-    flags.ValidateIstioConfigArgs(args.istio_config, args.addons)
+    flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.security_profile = args.security_profile
     ops.security_profile_runtime_rules = args.security_profile_runtime_rules
+    ops.autoprovisioning_config_file = args.autoprovisioning_config_file
+    kms_ref = args.CONCEPTS.kms_key.Parse()
+    if kms_ref:
+      ops.database_encryption = kms_ref.RelativeName()
+    else:
+      # Check for partially specified database-encryption-key.
+      for keyword in [
+          'database-encryption-key', 'database-encryption-key-keyring',
+          'database-encryption-key-location', 'database-encryption-key-project'
+      ]:
+        if getattr(args, keyword.replace('-', '_'), None):
+          raise exceptions.InvalidArgumentException('--database-encryption-key',
+                                                    'not fully specified.')
     return ops

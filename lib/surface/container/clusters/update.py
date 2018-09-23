@@ -77,6 +77,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
             api_adapter.HPA: _ParseAddonDisabled,
             api_adapter.DASHBOARD: _ParseAddonDisabled,
             api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+            api_adapter.ISTIO: _ParseAddonDisabled,
         }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -84,11 +85,13 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED
+{istio}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
-    network_policy=api_adapter.NETWORK_POLICY))
+    network_policy=api_adapter.NETWORK_POLICY,
+    istio=api_adapter.ISTIO,))
 
   else:
     mutex_group.add_argument(
@@ -421,6 +424,7 @@ class UpdateBeta(Update):
     flags.AddEnableBinAuthzFlag(group, hidden=True)
     flags.AddAutoprovisioningFlags(group, hidden=True)
     flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
+    flags.AddIstioConfigFlag(parser)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -434,6 +438,9 @@ class UpdateBeta(Update):
     opts.min_accelerator = args.min_accelerator
     opts.max_accelerator = args.max_accelerator
     opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
+    opts.istio_config = args.istio_config
+    flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+
     return opts
 
 
@@ -472,6 +479,7 @@ class UpdateAlpha(Update):
     flags.AddResourceUsageBigqueryDatasetFlag(group, add_clear_flag=True)
     flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
     flags.AddSecurityProfileForUpdateFlag(group)
+    flags.AddIstioConfigFlag(parser)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -489,4 +497,8 @@ class UpdateAlpha(Update):
         args.clear_resource_usage_bigquery_dataset
     opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     opts.security_profile = args.security_profile
+    opts.autoprovisioning_config_file = args.autoprovisioning_config_file
+    opts.istio_config = args.istio_config
+    flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+
     return opts

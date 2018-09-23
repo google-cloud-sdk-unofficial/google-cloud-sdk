@@ -31,12 +31,13 @@ class CreateInstance(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    (arguments.ArgAdder(parser).AddInstance()
+    (arguments.ArgAdder(parser)
      .AddInstanceDisplayName(required=True)
      .AddCluster().AddClusterNodes(in_instance=True)
      .AddClusterStorage().AddClusterZone(in_instance=True)
      .AddAsync().AddInstanceType(
          default='PRODUCTION', help_text='The type of instance to create.'))
+    arguments.AddInstanceResourceArg(parser, 'to create', positional=True)
     parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
   def Run(self, args):

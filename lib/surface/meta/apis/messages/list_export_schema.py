@@ -15,6 +15,10 @@
 
 """A command that lists a YAML export schema for a message from a given API."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.meta.apis import flags

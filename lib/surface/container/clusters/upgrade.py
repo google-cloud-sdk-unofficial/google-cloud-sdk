@@ -122,6 +122,13 @@ You can find the list of allowed versions for upgrades by running:
       ' supported on Kubernetes Engine. Nodes cannot be upgraded at the same'
       ' time as the master.',
       action='store_true')
+  # Timeout in seconds for the operation, default 2700 seconds (45 minutes)
+  parser.add_argument(
+      '--timeout',
+      type=int,
+      default=2700,
+      hidden=True,
+      help='Timeout (seconds) for waiting on the operation to complete.')
   flags.AddAsyncFlag(parser)
   flags.AddImageTypeFlag(parser, 'cluster/node pool')
   flags.AddImageFlag(parser, hidden=True)
@@ -199,7 +206,8 @@ class Upgrade(base.Command):
 
     if not args.async:
       adapter.WaitForOperation(
-          op_ref, 'Upgrading {0}'.format(cluster_ref.clusterId))
+          op_ref, 'Upgrading {0}'.format(cluster_ref.clusterId),
+          timeout_s=args.timeout)
 
       log.UpdatedResource(cluster_ref)
 

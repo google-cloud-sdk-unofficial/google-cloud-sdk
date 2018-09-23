@@ -19,11 +19,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.services import enable_api
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.services import arg_parsers
 from googlecloudsdk.command_lib.services import common_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -86,7 +84,6 @@ _DETAILED_LEGACY_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Enable(base.SilentCommand):
   """Enables a service for consumption for a project."""
 
@@ -129,38 +126,4 @@ class Enable(base.SilentCommand):
     services_util.PrintOperation(op)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class LegacyEnable(base.SilentCommand):
-  """Enables a service for consumption for a project."""
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    common_flags.available_service_flag(suffix='to enable').AddToParser(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-
-  def Run(self, args):
-    """Run 'services enable'.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      Nothing.
-    """
-    project = properties.VALUES.core.project.Get(required=True)
-    for service_name in args.service:
-      service_name = arg_parsers.GetServiceNameFromArg(service_name)
-      operation = enable_api.EnableServiceApiCall(project, service_name)
-      services_util.ProcessOperationResult(operation, args.async)
-
-
 Enable.detailed_help = _DETAILED_HELP
-LegacyEnable.detailed_help = _DETAILED_LEGACY_HELP

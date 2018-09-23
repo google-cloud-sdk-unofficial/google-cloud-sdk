@@ -58,6 +58,10 @@ If the zone cannot be determined, you will be prompted for it.  Use the
 `--zone` flag to avoid being prompted:
 
   $ {command} --recurse example-instance:~/narnia ~/wardrobe --zone us-central1-a
+
+To specify the project, zone, and recurse all together, run:
+
+  $ {command} --project "my-gcp-project" scp --recurse ~/foo-folder/ gcp-instance-name:~/ --zone "us-east1-b"
 """,
 }
 

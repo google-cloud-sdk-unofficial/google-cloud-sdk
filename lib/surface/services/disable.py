@@ -27,12 +27,10 @@ from googlecloudsdk.command_lib.services import common_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-
 OP_BASE_CMD = 'gcloud beta services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Disable(base.SilentCommand):
   """Disable a service for consumption for a project.
 
@@ -102,66 +100,3 @@ class Disable(base.SilentCommand):
         return
       op = serviceusage.WaitOperation(op.name)
       services_util.PrintOperation(op)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class LegacyDisable(base.SilentCommand):
-  # pylint: disable=line-too-long
-  """Disable a service for consumption for a project.
-
-     This command disables one or more previously-enabled services for consumption.
-
-     To see a list of the enabled services for a project, run:
-
-       $ {parent_command} list
-
-     More information on listing services can be found at:
-     https://cloud.google.com/service-management/list-services and on
-     disabling a service at:
-     https://cloud.google.com/service-management/enable-disable#disabling_services
-
-     ## EXAMPLES
-     To disable a service called `my-consumed-service` for the active
-     project, run:
-
-       $ {command} my-consumed-service
-
-     To run the same command asynchronously (non-blocking), run:
-
-       $ {command} my-consumed-service --async
-  """
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
-
-  def Run(self, args):
-    """Run 'service-management disable'.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      Nothing.
-    """
-    messages = services_util.GetMessagesModule()
-    client = services_util.GetClientInstance()
-
-    project = properties.VALUES.core.project.Get(required=True)
-    for service_name in args.service:
-      service_name = arg_parsers.GetServiceNameFromArg(service_name)
-      request = messages.ServicemanagementServicesDisableRequest(
-          serviceName=service_name,
-          disableServiceRequest=messages.DisableServiceRequest(
-              consumerId='project:' + project))
-      operation = client.services.Disable(request)
-      services_util.ProcessOperationResult(operation, args.async)

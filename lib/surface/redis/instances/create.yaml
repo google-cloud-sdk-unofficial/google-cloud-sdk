@@ -1,18 +1,15 @@
-- &beta_command
-  release_tracks: [BETA]
-
-  help_text:
+- help_text:
     brief: |
       Create a Memorystore Redis instance.
     DESCRIPTION: |
-      Create a new Redis instance with the given name.
+      Create a new Redis instance.
 
       This command can fail for the following reasons:
         * An instance with the same name already exists.
         * The active account does not have permission to create instances.
     EXAMPLES: |
-      The following command creates a basic tier instance with the name
-      `my-redis-instance` in region `us-central1` with memory size of 5 GiB:
+      To create a basic tier instance with the name `my-redis-instance` in region `us-central-1`
+      with memory size of 5 GiB, run:
 
         $ {command} my-redis-instance --region=us-central1 --size=5
 
@@ -26,15 +23,15 @@
     - arg_name: zone
       api_field: instance.locationId
       help_text: |
-        The zone of the Redis instance to create. If not provided the service
-        will pick a random zone in the region. For STANDARD_HA tier, instances
+        The zone of the Redis instance. If not provided the service
+        will pick a random zone in the region. For the standard tier, instances
         will be created across two zones for protection against zonal
         failures. So if --alternative-zone is also provided, it must be
         different from --zone.
     - arg_name: alternative-zone
       api_field: instance.alternativeLocationId
       help_text: |
-        A secondary zone for the Redis instance to create. Only applicable to
+        A secondary zone for the Redis instance. Only applicable to
         the standard tier. This protects the instance against zonal failures
         by provisioning it across two zones. If provided, alternative zone
         must be a different zone from the one provided through `--zone`.
@@ -88,6 +85,7 @@
           - api_field: value
     - arg_name: redis-version
       api_field: instance.redisVersion
+      hidden: true
       metavar: VERSION
       help_text: The version of Redis software.
       choices:
@@ -112,14 +110,6 @@
   async:
     collection: redis.projects.locations.operations
 
-  request: &request
-    api_version: v1beta1
-    collection: redis.projects.locations.instances
-
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
   request:
-    <<: *request
-    api_version: v1alpha1
+    api_version: v1
+    collection: redis.projects.locations.instances
