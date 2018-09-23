@@ -144,6 +144,7 @@ def AddBetaArgs(parser):
   """Declare beta flag and positional arguments for this command parser."""
   flags.AddExternalMasterGroup(parser)
   flags.AddInstanceResizeLimit(parser)
+  flags.AddNetwork(parser)
   labels_util.AddCreateLabelsFlags(parser)
 
 
@@ -267,7 +268,7 @@ class Create(base.Command):
     AddBaseArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(base.Command):
   """Creates a new Cloud SQL instance."""
 
@@ -279,18 +280,3 @@ class CreateBeta(base.Command):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
     AddBetaArgs(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.Command):
-  """Creates a new Cloud SQL instance."""
-
-  def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser)
-    AddBetaArgs(parser)
-    flags.AddNetwork(parser)

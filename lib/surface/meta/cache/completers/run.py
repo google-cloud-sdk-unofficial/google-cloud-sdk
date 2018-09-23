@@ -53,13 +53,15 @@ class _FunctionCompleter(object):
 
 
 def _GetPresentationSpec(resource_spec_path, **kwargs):
+  """Build a presentation spec."""
   resource_spec = module_util.ImportModule(resource_spec_path)
   if callable(resource_spec):
     resource_spec = resource_spec()
   flag_name_overrides = kwargs.pop('flag_name_overrides', '')
   flag_name_overrides = {
       o.split(':')[0]: o.split(':')[1] if ':' in o else ''
-      for o in flag_name_overrides.split(';')}
+      for o in flag_name_overrides.split(';')
+      if o}
   prefixes = kwargs.pop('prefixes', False)
   return presentation_specs.ResourcePresentationSpec(
       kwargs.pop('name', resource_spec.name),

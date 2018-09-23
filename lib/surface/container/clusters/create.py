@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
@@ -410,6 +411,7 @@ class CreateBeta(Create):
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser, hidden=True)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
+    flags.AddMetadataFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -437,6 +439,8 @@ class CreateBeta(Create):
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.default_max_pods_per_node = args.default_max_pods_per_node
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
+    ops.metadata = metadata_utils.ConstructMetadataDict(args.metadata,
+                                                        args.metadata_from_file)
     return ops
 
 
@@ -480,6 +484,7 @@ class CreateAlpha(Create):
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
     flags.AddSecurityProfileForCreateFlags(parser)
+    flags.AddMetadataFlags(parser)
     kms_flag_overrides = {
         'kms-key': '--database-encryption-key',
         'kms-keyring': '--database-encryption-key-keyring',
@@ -521,6 +526,8 @@ class CreateAlpha(Create):
     ops.security_profile = args.security_profile
     ops.security_profile_runtime_rules = args.security_profile_runtime_rules
     ops.autoprovisioning_config_file = args.autoprovisioning_config_file
+    ops.metadata = metadata_utils.ConstructMetadataDict(args.metadata,
+                                                        args.metadata_from_file)
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

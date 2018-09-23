@@ -23,6 +23,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib import info_holder
 from googlecloudsdk.core import log
 from googlecloudsdk.core.diagnostics import network_diagnostics
+from googlecloudsdk.core.diagnostics import property_diagnostics
+
+
+def _RunDiagnostics():
+  network_diagnostics.NetworkDiagnostic().RunChecks()
+  property_diagnostics.PropertyDiagnostic().RunChecks()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -58,7 +64,7 @@ class Info(base.Command):
 
   def Run(self, args):
     if args.run_diagnostics:
-      network_diagnostics.NetworkDiagnostic().RunChecks()
+      _RunDiagnostics()
       return
     holder = info_holder.InfoHolder(
         anonymizer=info_holder.Anonymizer()

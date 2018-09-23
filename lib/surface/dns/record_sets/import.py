@@ -27,7 +27,7 @@ from googlecloudsdk.api_lib.dns import import_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -96,11 +96,12 @@ class Import(base.Command):
       api_version = 'v1beta2'
 
     if not os.path.exists(args.records_file):
-      raise exceptions.ToolException(
-          'no such file [{0}]'.format(args.records_file))
+      raise import_util.RecordsFileNotFound(
+          'Specified record file [{0}] not found.'.format(args.records_file))
     if os.path.isdir(args.records_file):
-      raise exceptions.ToolException(
-          '[{0}] is a directory'.format(args.records_file))
+      raise import_util.RecordsFileIsADirectory(
+          'Specified record file [{0}] is a directory'.format(
+              args.records_file))
 
     dns = apis.GetClientInstance('dns', api_version)
 
@@ -118,7 +119,7 @@ class Import(base.Command):
               project=zone_ref.project,
               managedZone=zone_ref.managedZone))
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error)
+      raise calliope_exceptions.HttpException(error)
 
     # Get the current record-sets.
     current = {}
@@ -140,10 +141,10 @@ class Import(base.Command):
           imported = import_util.RecordSetsFromYamlFile(
               import_file, api_version=api_version)
     except Exception as exp:
-      msg = ('unable to read record-sets from specified records-file [{0}] '
+      msg = ('Unable to read record-sets from specified records-file [{0}] '
              'because [{1}]')
       msg = msg.format(args.records_file, exp.message)
-      raise exceptions.ToolException(msg)
+      raise import_util.UnableToReadRecordsFile(msg)
 
     # Get the change resulting from the imported record-sets.
     change = import_util.ComputeChange(current, imported,

@@ -43,7 +43,8 @@ class AddIamPolicyBinding(base.Command):
   def Args(parser):
     flags.FolderIdArg('to which you want to add a binding').AddToParser(parser)
     iam_util.AddArgsForAddIamPolicyBinding(
-        parser, completer=completers.FoldersIamRolesCompleter)
+        parser,
+        role_completer=completers.FoldersIamRolesCompleter)
 
   # Allow for retries due to ETag-based optimistic concurrency control
   @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)

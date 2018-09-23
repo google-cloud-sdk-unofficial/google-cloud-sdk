@@ -43,9 +43,6 @@ class Create(base.CreateCommand):
 
           For information about the JSON/YAML format of an alerting policy:
           https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.alertPolicies
-
-          *Note:* When specifying the Channel as a YAML/JSON, the use of
-          `channelLabels` as an alternative name for `labels` is supported.
        """
   }
 
@@ -65,7 +62,7 @@ class Create(base.CreateCommand):
                 project defined by the `core/project` property will be used,
                 in that order.
             * Channel Relative Name:
-                `projects/my-project/notificationChannels/channel-id0
+                `projects/my-project/notificationChannels/channel-id0`
             * Channel URI:
                 https://monitoring.googleapis.com/v3/projects/my-project/notificationChannels/channel-id0
             """,

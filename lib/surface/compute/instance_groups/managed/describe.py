@@ -54,6 +54,8 @@ class Describe(base.DescribeCommand):
     elif ref.Collection() == 'compute.regionInstanceGroupManagers':
       service = apitools_client.regionInstanceGroupManagers
       request_type = messages.ComputeRegionInstanceGroupManagersGetRequest
+    else:
+      raise ValueError('Unknown reference type {0}'.format(ref.Collection()))
 
     igm = encoding.MessageToDict(service.Get(request_type(**ref.AsDict())))
     annoted_igm = managed_instance_groups_utils.AddAutoscalersToMigs(

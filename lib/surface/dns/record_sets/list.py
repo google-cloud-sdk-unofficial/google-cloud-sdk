@@ -24,7 +24,6 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
 
@@ -57,10 +56,11 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.GetZoneArg().AddToParser(parser)
-    parser.add_argument(
-        '--name', required=False,
+    name_type_group = parser.add_group()
+    name_type_group.add_argument(
+        '--name', required=True,
         help='Only list record-sets with this exact domain name.')
-    parser.add_argument(
+    name_type_group.add_argument(
         '--type', required=False,
         help='Only list records of this type. If present, the --name parameter '
         'must also be present.')
@@ -89,10 +89,6 @@ class List(base.ListCommand):
             'project': properties.VALUES.core.project.GetOrFail,
         },
         collection='dns.managedZones')
-
-    if args.type and not args.name:
-      raise exceptions.ToolException(
-          '--name should also be provided when --type is used')
 
     return list_pager.YieldFromList(
         dns_client.resourceRecordSets,

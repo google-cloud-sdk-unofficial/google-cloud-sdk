@@ -18,11 +18,31 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class WorkflowTemplates(base.Group):
+  r"""Create and manage Google Cloud Dataproc workflow templates.
+
+  Create and manage Google Cloud Dataproc workflow templates.
+
+  ## EXAMPLES
+
+  To instantiate a workflow template from a file, run:
+
+    $ {command} instantiate-from-file --file template.yaml
+
+  """
+
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class WorkflowTemplates(base.Group):
+class WorkflowTemplatesBeta(base.Group):
   r"""Create and manage Google Cloud Dataproc workflow templates.
 
   Create and manage Google Cloud Dataproc workflow templates.
@@ -36,6 +56,10 @@ class WorkflowTemplates(base.Group):
   To instantiate a workflow template, run:
 
     $ {command} instantiate my_template
+
+  To instantiate a workflow template from a file, run:
+
+    $ {command} instantiate-from-file --file template.yaml
 
   To delete a workflow template, run:
 

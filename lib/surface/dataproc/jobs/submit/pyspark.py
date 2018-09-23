@@ -26,21 +26,22 @@ from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class PySpark(pyspark.PySparkBase, submitter.JobSubmitter):
-  r"""Submit a PySpark job to a cluster.
+  # pylint: disable=line-too-long
+  """Submit a PySpark job to a cluster.
 
   Submit a PySpark job to a cluster.
 
   ## EXAMPLES
-  To submit a PySpark job with a local script, run:
 
-    $ {command} --cluster my_cluster my_script.py
+  To submit a PySpark job with a local script and custom flags, run:
+
+    $ {command} --cluster my_cluster my_script.py -- --custom-flag
 
   To submit a Spark job that runs a script that is already on the cluster, run:
 
-    $ {command} --cluster my_cluster \
-        file:///usr/lib/spark/examples/src/main/python/pi.py \
-        -- 100
+    $ {command} --cluster my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py 100
   """
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):
@@ -62,9 +63,10 @@ class PySparkBeta(pyspark.PySparkBase, submitter.JobSubmitterBeta):
   Submit a PySpark job to a cluster.
 
   ## EXAMPLES
-  To submit a PySpark job with a local script, run:
 
-    $ {command} --cluster my_cluster my_script.py
+  To submit a PySpark job with a local script and custom flags, run:
+
+    $ {command} --cluster my_cluster my_script.py -- --custom-flag
 
   To submit a Spark job that runs a script that is already on the cluster, run:
 
@@ -82,18 +84,3 @@ class PySparkBeta(pyspark.PySparkBase, submitter.JobSubmitterBeta):
                                          messages, args.driver_log_levels),
                                      args)
     submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)
-
-
-PySpark.detailed_help = {
-    'EXAMPLES': """\
-      To submit a PySpark job with a local script, run:
-
-        $ {command} --cluster my_cluster my_script.py
-
-      To submit a Spark job that runs a script that is already on the \
-  cluster, run:
-
-        $ {command} --cluster my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py 100
-      """,
-}
-PySparkBeta.detailed_help = PySpark.detailed_help

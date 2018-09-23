@@ -44,7 +44,8 @@ class AddIamPolicyBinding(orgs_base.OrganizationCommand):
   def Args(parser):
     flags.IdArg('to which you want to add a binding').AddToParser(parser)
     iam_util.AddArgsForAddIamPolicyBinding(
-        parser, completer=completers.OrganizationsIamRolesCompleter)
+        parser,
+        role_completer=completers.OrganizationsIamRolesCompleter)
 
   @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):

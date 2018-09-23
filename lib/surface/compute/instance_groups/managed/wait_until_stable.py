@@ -80,18 +80,21 @@ class WaitUntilStable(base.Command):
     log.out.Print('Group is stable')
 
   def GetRequestForGroup(self, client, group_ref):
-    if group_ref.Collection() == 'compute.regionInstanceGroupManagers':
+    if group_ref.Collection() == 'compute.instanceGroupManagers':
+      service = client.apitools_client.instanceGroupManagers
+      request = service.GetRequestType('Get')(
+          instanceGroupManager=group_ref.Name(),
+          zone=group_ref.zone,
+          project=group_ref.project)
+    elif group_ref.Collection() == 'compute.regionInstanceGroupManagers':
       service = client.apitools_client.regionInstanceGroupManagers
       request = service.GetRequestType('Get')(
           instanceGroupManager=group_ref.Name(),
           region=group_ref.region,
           project=group_ref.project)
     else:
-      service = client.apitools_client.instanceGroupManagers
-      request = service.GetRequestType('Get')(
-          instanceGroupManager=group_ref.Name(),
-          zone=group_ref.zone,
-          project=group_ref.project)
+      raise ValueError('Unknown reference type {0}'.format(
+          group_ref.Collection()))
     return (service, request)
 
   def _GetResources(self, client, group_ref):

@@ -35,10 +35,10 @@ class Read(base.Command):
     base.LIMIT_FLAG.AddToParser(parser)
     parser.add_argument(
         'log_filter', help=('Filter expression that specifies the '
-                            'log entries to return. A detailed guide on'
+                            'log entries to return. A detailed guide on '
                             'basic and advanced filters can be found at: '
                             'https://cloud.google.com/logging/docs/view/'
-                            'overview)'),
+                            'overview'),
         nargs='?')
     order_arg = base.ChoiceArgument(
         '--order',

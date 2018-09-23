@@ -24,20 +24,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import argparse
-import os
-import re
-
-from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
-from googlecloudsdk.core import properties
 
-_ACTIVE_VERSIONS = [
-    'v1beta3',
-    'v1beta4',
-]
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
@@ -55,37 +43,9 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser):
-  parser.add_argument(
-      '--api-version',
-      hidden=True,
-      help='THIS ARGUMENT NEEDS HELP TEXT.',
-      choices=_ACTIVE_VERSIONS,
-      action=actions.StoreProperty(
-          properties.VALUES.api_endpoint_overrides.sql))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SQL(base.Group):
-  """Manage Cloud SQL databases."""
-
-  @staticmethod
-  def Args(parser):
-    _Args(parser)
-
-  def Filter(self, context, args):
-    del context, args
-    base.DisableUserProjectQuota()
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SQLBeta(base.Group):
   """Create and manage Google Cloud SQL databases."""
   detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    _Args(parser)
 
   def Filter(self, context, args):
     del context, args

@@ -65,13 +65,11 @@ class SetIamPolicy(base.Command):
     # This current form is required so gcloud won't break while Compute
     # roll outs the breaking change to SetIamPolicy (b/75971480)
 
-    # TODO(b/36053578): determine how this output should look when empty.
-
     # SetIamPolicy always returns either an error or the newly set policy.
     # If the policy was just set to the empty policy it returns a valid empty
     # policy (just an etag.)
     # It is not possible to have multiple policies for one resource.
-    return client.MakeRequests(
+    result = client.MakeRequests(
         [(client.apitools_client.subnetworks, 'SetIamPolicy',
           client.messages.ComputeSubnetworksSetIamPolicyRequest(
               regionSetPolicyRequest=client.messages.RegionSetPolicyRequest(
@@ -80,3 +78,5 @@ class SetIamPolicy(base.Command):
               project=subnetwork_ref.project,
               region=subnetwork_ref.region,
               resource=subnetwork_ref.subnetwork))])[0]
+    iam_util.LogSetIamPolicy(subnetwork_ref.RelativeName(), 'subnetwork')
+    return result

@@ -74,6 +74,9 @@ class List(base.ListCommand):
               project=igm_ref.project,
               region=igm_ref.region,
           )
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
 
     errors = []
     results = list(

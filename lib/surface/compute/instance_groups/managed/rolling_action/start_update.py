@@ -88,6 +88,12 @@ class StartUpdate(base.Command):
     igm_ref = resource_arg.ResolveAsResource(
         args, resources, default_scope=default_scope, scope_lister=scope_lister)
 
+    if igm_ref.Collection() not in [
+        'compute.instanceGroupManagers', 'compute.regionInstanceGroupManagers'
+    ]:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
+
     update_policy_type = update_instances_utils.ParseUpdatePolicyType(
         '--type', args.type, client.messages)
     max_surge = update_instances_utils.ParseFixedOrPercent(

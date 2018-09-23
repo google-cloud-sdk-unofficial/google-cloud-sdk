@@ -48,7 +48,8 @@ class AddIamPolicyBinding(base.Command):
     flags.AddLocationFlag(parser, 'keyring')
     flags.AddKeyRingArgument(parser, 'whose IAM policy to modify')
     iam_util.AddArgsForAddIamPolicyBinding(
-        parser, completer=completers.KeyRingIamRolesCompleter)
+        parser,
+        role_completer=completers.KeyRingIamRolesCompleter)
 
   def Run(self, args):
     key_ring_ref = flags.ParseKeyRingName(args)

@@ -40,12 +40,7 @@ class Startup(base.TopicCommand):
       * python3
 
   Currently `gcloud` requires Python version 2.7.x and there is experimental
-  support for 3.4 and up. All `gcloud` commands work under Python 3 except
-  for the following command groups:
-
-      * `gcloud datastore`
-      * `gcloud scheduler`
-      * `gcloud tasks`
+  support for 3.4 and up.
 
   Other Python tools shipped in the Cloud SDK do not yet support Python 3,
   including:

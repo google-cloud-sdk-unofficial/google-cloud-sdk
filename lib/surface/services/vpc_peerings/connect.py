@@ -38,23 +38,23 @@ _DETAILED_HELP = {
     'EXAMPLES':
         """\
         To connect a network called `my-network`  on the current project to a
-        service called `your-service` with reserved IP CIDR ranges
+        service called `your-service` with IP CIDR ranges
         `10.197.0.0/20,10.198.0.0/20` for the service to use, run:
 
           $ {command} --network my-network --service your-service \\
-              --reserved-ranges 10.197.0.0/20,10.198.0.0/20
+              --ranges 10.197.0.0/20,10.198.0.0/20
 
         To run the same command asynchronously (non-blocking), run:
 
           $ {command} --network my-network --service your-service \\
-              --reserved-ranges 10.197.0.0/20,10.198.0.0/20 --async
+              --ranges 10.197.0.0/20,10.198.0.0/20 --async
         """,
 }
 
 _SERVICE_HELP = """The service to connect to"""
 _NETWORK_HELP = """The network in the current project to be peered with the \
   service"""
-_RESERVED_RANGES_HELP = """The reserved IP CIDR ranges for service to use"""
+_RANGES_HELP = """IP CIDR ranges for service to use."""
 
 
 class Connect(base.SilentCommand):
@@ -77,10 +77,7 @@ class Connect(base.SilentCommand):
         default='servicenetworking.googleapis.com',
         help=_SERVICE_HELP)
     parser.add_argument(
-        '--reserved-ranges',
-        metavar='RESERVED_RANGES',
-        required=True,
-        help=_RESERVED_RANGES_HELP)
+        '--ranges', metavar='RANGES', required=True, help=_RANGES_HELP)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -95,9 +92,9 @@ class Connect(base.SilentCommand):
     """
     project = properties.VALUES.core.project.Get(required=True)
     project_number = _GetProjectNumber(project)
-    reserved_ranges = args.reserved_ranges.split(',')
+    ranges = args.ranges.split(',')
     op = peering.CreateConnection(project_number, args.service, args.network,
-                                  reserved_ranges)
+                                  ranges)
     if args.async:
       cmd = OP_WAIT_CMD.format(op.name)
       log.status.Print('Asynchronous operation is in progress... '

@@ -79,16 +79,13 @@ class Update(base.UpdateCommand):
           instanceGroupManagerResource=igm_updated_resource,
           project=igm_ref.project,
           zone=igm_ref.zone)
-    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+    else:
       service = client.apitools_client.regionInstanceGroupManagers
       request = client.messages.ComputeRegionInstanceGroupManagersUpdateRequest(
           instanceGroupManager=igm_ref.Name(),
           instanceGroupManagerResource=igm_updated_resource,
           project=igm_ref.project,
           region=igm_ref.region)
-    else:
-      raise ValueError('Unknown reference type {0}'.format(
-          igm_ref.Collection()))
     return client.MakeRequests([(service, 'Update', request)])
 
   def _MakePatchRequest(self, client, igm_ref, igm_updated_resource):
@@ -99,16 +96,13 @@ class Update(base.UpdateCommand):
           instanceGroupManagerResource=igm_updated_resource,
           project=igm_ref.project,
           zone=igm_ref.zone)
-    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+    else:
       service = client.apitools_client.regionInstanceGroupManagers
       request = client.messages.ComputeRegionInstanceGroupManagersPatchRequest(
           instanceGroupManager=igm_ref.Name(),
           instanceGroupManagerResource=igm_updated_resource,
           project=igm_ref.project,
           region=igm_ref.region)
-    else:
-      raise ValueError('Unknown reference type {0}'.format(
-          igm_ref.Collection()))
     return client.MakeRequests([(service, 'Patch', request)])
 
   def Run(self, args):
@@ -120,6 +114,12 @@ class Update(base.UpdateCommand):
                    holder.resources,
                    default_scope=compute_scope.ScopeEnum.ZONE,
                    scope_lister=flags.GetDefaultScopeLister(client))
+
+    if igm_ref.Collection() not in [
+        'compute.instanceGroupManagers', 'compute.regionInstanceGroupManagers'
+    ]:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
 
     instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
         args.GetValue('instance_redistribution_type'), igm_ref)

@@ -61,6 +61,9 @@ class StopProactiveUpdate(base.Command):
     elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
       service = client.apitools_client.regionInstanceGroupManagers
       request_type = messages.ComputeRegionInstanceGroupManagersPatchRequest
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
     request = request_type(**igm_ref.AsDict())
     request.instanceGroupManagerResource = igm_resource
 

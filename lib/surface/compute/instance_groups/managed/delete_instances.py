@@ -71,7 +71,7 @@ class DeleteInstances(base.Command):
                   instances=instances),
               project=igm_ref.project,
               zone=igm_ref.zone), field_name)
-    else:
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
       field_name = 'regionInstanceGroupManagersDeleteInstancesRequest'
       service = client.apitools_client.regionInstanceGroupManagers
       requests = instance_groups_utils.SplitInstancesInRequest(
@@ -83,6 +83,9 @@ class DeleteInstances(base.Command):
                   instances=instances),
               project=igm_ref.project,
               region=igm_ref.region,), field_name)
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
 
     requests = instance_groups_utils.GenerateRequestTuples(
         service, 'DeleteInstances', requests)

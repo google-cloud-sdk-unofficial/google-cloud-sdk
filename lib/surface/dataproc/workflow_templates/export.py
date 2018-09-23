@@ -23,8 +23,9 @@ from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
-from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.core.util import files
+
+SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -52,11 +53,7 @@ class Describe(base.DescribeCommand):
     if args.destination:
       with files.FileWriter(args.destination) as stream:
         util.WriteYaml(
-            message=workflow_template,
-            stream=stream,
-            filter_function=workflow_templates.Filter)
+            message=workflow_template, stream=stream, schema_path=SCHEMA_PATH)
     else:
       util.WriteYaml(
-          message=workflow_template,
-          stream=sys.stdout,
-          filter_function=workflow_templates.Filter)
+          message=workflow_template, stream=sys.stdout, schema_path=SCHEMA_PATH)

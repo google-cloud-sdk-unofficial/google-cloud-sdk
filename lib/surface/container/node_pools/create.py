@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 
+from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
@@ -225,6 +226,7 @@ class CreateBeta(Create):
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
+    flags.AddMetadataFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -232,6 +234,8 @@ class CreateBeta(Create):
     ops.new_scopes_behavior = True
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.max_pods_per_node = args.max_pods_per_node
+    ops.metadata = metadata_utils.ConstructMetadataDict(args.metadata,
+                                                        args.metadata_from_file)
     return ops
 
 
@@ -248,6 +252,8 @@ class CreateAlpha(Create):
     ops.max_pods_per_node = args.max_pods_per_node
     ops.sandbox = args.sandbox
     ops.node_group = args.node_group
+    ops.metadata = metadata_utils.ConstructMetadataDict(args.metadata,
+                                                        args.metadata_from_file)
     return ops
 
   @staticmethod
@@ -265,6 +271,7 @@ class CreateAlpha(Create):
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
     flags.AddSandboxFlag(parser, hidden=True)
     flags.AddNodeGroupFlag(parser)
+    flags.AddMetadataFlags(parser)
 
 
 Create.detailed_help = DETAILED_HELP

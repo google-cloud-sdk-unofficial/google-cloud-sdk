@@ -42,7 +42,8 @@ class RemoveIamPolicyBinding(base.Command):
     parser.add_argument('id', type=str,
                         help='The ID of the dataset.')
     iam_util.AddArgsForRemoveIamPolicyBinding(
-        parser, completer=completers.GenomicsIamRolesCompleter)
+        parser,
+        role_completer=completers.GenomicsIamRolesCompleter)
 
   def Run(self, args):
     apitools_client = genomics_util.GetGenomicsClient()

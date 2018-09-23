@@ -187,42 +187,8 @@ class Create(base.CreateCommand):
     return names, addresses
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Reserve IP addresses.
-
-  *{command}* is used to reserve one or more IP addresses. Once
-  an IP address is reserved, it will be associated with the
-  project until it is released using 'gcloud compute addresses
-  delete'. Ephemeral IP addresses that are in use by resources
-  in the project, can be reserved using the ``--addresses''
-  flag.
-
-  ## EXAMPLES
-  To reserve three IP addresses in the ``us-central1'' region,
-  run:
-
-    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region us-central1
-
-  To reserve ephemeral IP addresses 162.222.181.198 and
-  23.251.146.189 which are being used by virtual machine
-  instances in the ``us-central1'' region, run:
-
-    $ {command} --addresses 162.222.181.198,23.251.146.189 --region us-central1
-
-  In the above invocation, the two addresses will be assigned
-  random names.
-
-  To reserve an IP address from the subnet ``default'' in the ``us-central1''
-  region, run:
-
-    $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
-
-  """
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
   """Reserve IP addresses.
 
   *{command}* is used to reserve one or more IP addresses. Once

@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 
 import os
 
+from googlecloudsdk.api_lib.dns import transaction_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 
@@ -45,8 +45,8 @@ class Abort(base.Command):
 
   def Run(self, args):
     if not os.path.isfile(args.transaction_file):
-      raise exceptions.ToolException(
-          'transaction not found at [{0}]'.format(args.transaction_file))
+      raise transaction_util.TransactionFileNotFound(
+          'Transaction not found at [{0}]'.format(args.transaction_file))
 
     os.remove(args.transaction_file)
 

@@ -194,8 +194,11 @@ class Update(base.UpdateCommand):
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = holder.client.apitools_client.instanceGroupManagers
-    else:
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
       service = holder.client.apitools_client.regionInstanceGroupManagers
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
 
     operation_poller = poller.Poller(service)
     update_result = waiter.WaitFor(operation_poller, operation_ref,

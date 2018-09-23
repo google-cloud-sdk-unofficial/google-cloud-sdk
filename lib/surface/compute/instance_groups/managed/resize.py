@@ -64,21 +64,24 @@ class Resize(base.Command):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    group_ref = self.CreateGroupReference(client, holder.resources, args)
-    if group_ref.Collection() == 'compute.instanceGroupManagers':
+    igm_ref = self.CreateGroupReference(client, holder.resources, args)
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = client.apitools_client.instanceGroupManagers
       request = client.messages.ComputeInstanceGroupManagersResizeRequest(
-          instanceGroupManager=group_ref.Name(),
+          instanceGroupManager=igm_ref.Name(),
           size=args.size,
-          project=group_ref.project,
-          zone=group_ref.zone)
-    else:
+          project=igm_ref.project,
+          zone=igm_ref.zone)
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
       service = client.apitools_client.regionInstanceGroupManagers
       request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
-          instanceGroupManager=group_ref.Name(),
+          instanceGroupManager=igm_ref.Name(),
           size=args.size,
-          project=group_ref.project,
-          region=group_ref.region)
+          project=igm_ref.project,
+          region=igm_ref.region)
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
 
     return client.MakeRequests([(service, 'Resize', request)])
 
@@ -97,19 +100,20 @@ class ResizeBeta(Resize):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    group_ref = self.CreateGroupReference(client, holder.resources, args)
-    if group_ref.Collection() == 'compute.instanceGroupManagers':
+    igm_ref = self.CreateGroupReference(client, holder.resources, args)
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = client.apitools_client.instanceGroupManagers
       method = 'ResizeAdvanced'
       request = (
           client.messages.ComputeInstanceGroupManagersResizeAdvancedRequest(
-              instanceGroupManager=group_ref.Name(),
+              instanceGroupManager=igm_ref.Name(),
               instanceGroupManagersResizeAdvancedRequest=(
                   client.messages.InstanceGroupManagersResizeAdvancedRequest(
                       targetSize=args.size,
-                      noCreationRetries=not args.creation_retries,)),
-              project=group_ref.project,
-              zone=group_ref.zone))
+                      noCreationRetries=not args.creation_retries,
+                  )),
+              project=igm_ref.project,
+              zone=igm_ref.zone))
     else:
       if not args.creation_retries:
         raise exceptions.ConflictingArgumentsException(
@@ -117,10 +121,10 @@ class ResizeBeta(Resize):
       service = client.apitools_client.regionInstanceGroupManagers
       method = 'Resize'
       request = client.messages.ComputeRegionInstanceGroupManagersResizeRequest(
-          instanceGroupManager=group_ref.Name(),
+          instanceGroupManager=igm_ref.Name(),
           size=args.size,
-          project=group_ref.project,
-          region=group_ref.region)
+          project=igm_ref.project,
+          region=igm_ref.region)
 
     return client.MakeRequests([(service, method, request)])
 

@@ -29,7 +29,7 @@ from googlecloudsdk.api_lib.dns import transaction_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -60,8 +60,8 @@ class Start(base.Command):
       api_version = 'v1beta2'
 
     if os.path.isfile(args.transaction_file):
-      raise exceptions.ToolException(
-          'transaction already exists at [{0}]'.format(args.transaction_file))
+      raise transaction_util.TransactionFileAlreadyExists(
+          'Transaction already exists at [{0}]'.format(args.transaction_file))
 
     dns = apis.GetClientInstance('dns', api_version)
 
@@ -79,7 +79,7 @@ class Start(base.Command):
               project=zone_ref.project,
               managedZone=zone_ref.managedZone))
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(error)
+      raise calliope_exceptions.HttpException(error)
 
     # Initialize an empty change
     change = dns.MESSAGES_MODULE.Change()
@@ -103,9 +103,9 @@ class Start(base.Command):
       with files.FileWriter(args.transaction_file) as transaction_file:
         transaction_util.WriteToYamlFile(transaction_file, change)
     except Exception as exp:
-      msg = 'unable to write transaction [{0}] because [{1}]'
+      msg = 'Unable to write transaction [{0}] because [{1}]'
       msg = msg.format(args.transaction_file, exp)
-      raise exceptions.ToolException(msg)
+      raise transaction_util.UnableToAccessTransactionFile(msg)
 
     log.status.Print('Transaction started [{0}].'.format(
         args.transaction_file))

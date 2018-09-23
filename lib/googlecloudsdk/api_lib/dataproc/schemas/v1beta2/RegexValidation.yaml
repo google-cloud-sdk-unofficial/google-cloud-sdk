@@ -1,8 +1,10 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-title: dataproc v1 ManagedGroupConfig export schema
+title: dataproc v1beta2 RegexValidation export schema
 description: A gcloud export/import command YAML validation schema.
 type: object
+required:
+- regexes
 additionalProperties: false
 properties:
   COMMENT:
@@ -23,5 +25,13 @@ properties:
   UNKNOWN:
     type: array
     description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  regexes:
+    description: |-
+      RE2 regular expressions used to validate the parameter's value. The value
+      must match the regex in its entirety (substring matches are not
+      sufficient).
+    type: array
     items:
       type: string

@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.33",
+  "CLI_VERSION": "4.34",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -1221,7 +1221,7 @@
               "attr": {},
               "category": "",
               "default": "",
-              "description": "Causes supported operations (acl ch, acl set, cp, mv, rm, rsync,\nd setmeta) to run in parallel. This can significantly improve\nrformance if you are performing operations on a large number of\nles over a reasonably fast network connection.\nutil performs the specified operation using a combination of\nlti-threading and multi-processing, using a number of threads\nd processors determined by the parallel_thread_count and\nrallel_process_count values set in the boto configuration\nle. You might want to experiment with these values, as the\nst values can vary based on a number of factors, including\ntwork speed, number of CPUs, and available memory.\ning the -m option may make your performance worse if you\ne using a slower network, such as the typical network speeds\nfered by non-business home network plans. It can also make\nur performance worse for cases that perform all operations\ncally (e.g., gsutil rsync, where both source and destination\nLs are on the local disk), because it can \"thrash\" your local\nsk.\n a download or upload operation using parallel transfer fails\nfore the entire transfer is complete (e.g. failing after 300 of\n00 files have been transferred), you will need to restart the\ntire transfer.\nso, although most commands will normally fail upon encountering\n error when the -m flag is disabled, all commands will\nntinue to try all operations when -m is enabled with multiple\nreads or processes, and the number of failed operations (if any)\nll be reported at the end of the command's execution.",
+              "description": "Causes supported operations (acl ch, acl set, cp, mv, rm, rsync,\nd setmeta) to run in parallel. This can significantly improve\nrformance if you are performing operations on a large number of\nles over a reasonably fast network connection.\nutil performs the specified operation using a combination of\nlti-threading and multi-processing, using a number of threads\nd processors determined by the parallel_thread_count and\nrallel_process_count values set in the boto configuration\nle. You might want to experiment with these values, as the\nst values can vary based on a number of factors, including\ntwork speed, number of CPUs, and available memory.\ning the -m option may make your performance worse if you\ne using a slower network, such as the typical network speeds\nfered by non-business home network plans. It can also make\nur performance worse for cases that perform all operations\ncally (e.g., gsutil rsync, where both source and destination\nLs are on the local disk), because it can \"thrash\" your local\nsk.\n a download or upload operation using parallel transfer fails\nfore the entire transfer is complete (e.g. failing after 300 of\n00 files have been transferred), you will need to restart the\ntire transfer.\nso, although most commands will normally fail upon encountering\n error when the -m flag is disabled, all commands will\nntinue to try all operations when -m is enabled with multiple\nreads or processes, and the number of failed operations (if any)\nll be reported as an exception at the end of the command's\necution.",
               "group": "",
               "is_global": false,
               "is_hidden": false,
@@ -1990,6 +1990,20 @@
       "capsule": "Make buckets",
       "commands": {},
       "flags": {
+        "--retention": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "time Specifies the retention policy. Default is no retention\n retention policy. This can only be set on gs://buckets and\n requires using the JSON API.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "--retention",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
         "-c": {
           "attr": {},
           "category": "",
@@ -2057,7 +2071,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "The mb command creates a new bucket. Google Cloud Storage has a single\nnamespace, so you are not allowed to create a bucket with a name already\nin use by another user. You can, however, carve out parts of the bucket name\nspace corresponding to your company's domain name (see \"gsutil help naming\").\n\nIf you don't specify a project ID using the -p option, the bucket is created\nusing the default project ID specified in your gsutil configuration file\n(see \"gsutil help config\"). For more details about projects see \"gsutil help\nprojects\".\n\nThe -c and -l options specify the storage class and location, respectively,\nfor the bucket. Once a bucket is created in a given location and with a\ngiven storage class, it cannot be moved to a different location, and the\nstorage class cannot be changed. Instead, you would need to create a new\nbucket and move the data over and then delete the original bucket.",
+        "DESCRIPTION": "The mb command creates a new bucket. Google Cloud Storage has a single\nnamespace, so you are not allowed to create a bucket with a name already\nin use by another user. You can, however, carve out parts of the bucket name\nspace corresponding to your company's domain name (see \"gsutil help naming\").\n\nIf you don't specify a project ID using the -p option, the bucket is created\nusing the default project ID specified in your gsutil configuration file\n(see \"gsutil help config\"). For more details about projects see \"gsutil help\nprojects\".\n\nThe -c and -l options specify the storage class and location, respectively,\nfor the bucket. Once a bucket is created in a given location and with a\ngiven storage class, it cannot be moved to a different location, and the\nstorage class cannot be changed. Instead, you would need to create a new\nbucket and move the data over and then delete the original bucket.\n\nThe --retention option specifies the retention period for the bucket. For more\ndetails about retention policy see \"gsutil help retention\".",
         "LOCATIONS": "You can specify one of the `available locations\n<https://cloud.google.com/storage/docs/bucket-locations>`_ for a bucket\nwith the -l option.\n\nExamples:\n\n  gsutil mb -l asia gs://some-bucket\n\n  gsutil mb -c regional -l us-east1 gs://some-bucket\n\nIf you don't specify a -l option, the bucket is created in the default\nlocation (US).",
         "STORAGE CLASSES": "You can specify one of the `storage classes\n<https://cloud.google.com/storage/docs/storage-classes>`_ for a bucket\nwith the -c option.\n\nExample:\n\n  gsutil mb -c nearline gs://some-bucket\n\nSee online documentation for\n`pricing <https://cloud.google.com/storage/pricing>`_ and\n`SLA <https://cloud.google.com/storage/sla>`_ details.\n\nIf you don't specify a -c option, the bucket is created with the\ndefault storage class Standard Storage, which is equivalent to Multi-Regional\nStorage or Regional Storage, depending on whether the bucket was created in\na multi-regional location or regional location, respectively."
       }
@@ -2223,8 +2237,8 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The list sub-command provides a list of notification configs belonging to a\ngiven bucket. The listed name of each notification config can be used with\nthe delete sub-command to delete that specific notification config.\n\nNo object change notifications will be listed. Only Cloud Pub/Sub notification\nsubscription configs will be listed.",
-            "EXAMPLES": "Fetch the list of notification configs for the bucket example-bucket:\n\n  gsutil notification list gs://example-bucket\n\nFetch the notification configs in all buckets matching a wildcard:\n\n  gsutil notification list gs://example-*\n\nFetch all of the notification configs for buckets in the default project:\n\n  gsutil notification list gs://*"
+            "DESCRIPTION": "The list sub-command provides a list of notification configs belonging to a\ngiven bucket. The listed name of each notification config can be used with\nthe delete sub-command to delete that specific notification config.\n\nFor listing Object Change Notifications instead of Cloud Pub/Sub notification\nsubscription configs, add a -o flag.",
+            "EXAMPLES": "Fetch the list of notification configs for the bucket example-bucket:\n\n  gsutil notification list gs://example-bucket\n\nThe same as above, but for Object Change Notifications instead of Cloud\nPub/Sub notification subscription configs.\n\n  gsutil notification list -o gs://example-bucket\n\nFetch the notification configs in all buckets matching a wildcard:\n\n  gsutil notification list gs://example-*\n\nFetch all of the notification configs for buckets in the default project:\n\n  gsutil notification list gs://*"
           }
         }
       },
@@ -2330,7 +2344,7 @@
         "DELETE": "The delete sub-command deletes notification configs from a bucket. If a\nnotification config name is passed as a parameter, that notification config\nalone will be deleted. If a bucket name is passed, all notification configs\nassociated with that bucket will be deleted.\n\nCloud Pub/Sub topics associated with this notification config will not be\ndeleted by this command. Those must be deleted separately, for example with\nthe gcloud command `gcloud beta pubsub topics delete`.\n\nObject Change Notification subscriptions cannot be deleted with this command.\nFor that, see the command `gsutil notification stopchannel`.",
         "DESCRIPTION": "The notification command is used to configure Google Cloud Storage support for\nsending notifications to Cloud Pub/Sub as well as to configure the object\nchange notification feature.",
         "EXAMPLES": "Stop the notification event channel with channel identifier channel1 and\nresource identifier SoGqan08XDIFWr1Fv_nGpRJBHh8:\n\n  gsutil notification stopchannel channel1 SoGqan08XDIFWr1Fv_nGpRJBHh8",
-        "LIST": "The list sub-command provides a list of notification configs belonging to a\ngiven bucket. The listed name of each notification config can be used with\nthe delete sub-command to delete that specific notification config.\n\nNo object change notifications will be listed. Only Cloud Pub/Sub notification\nsubscription configs will be listed.",
+        "LIST": "The list sub-command provides a list of notification configs belonging to a\ngiven bucket. The listed name of each notification config can be used with\nthe delete sub-command to delete that specific notification config.\n\nFor listing Object Change Notifications instead of Cloud Pub/Sub notification\nsubscription configs, add a -o flag.",
         "PUB/SUB": "The \"create\", \"list\", and \"delete\" sub-commands deal with configuring Cloud\nStorage integration with Google Cloud Pub/Sub.",
         "STEPS": "Once the create command has succeeded, Cloud Storage will publish a message to\nthe specified Cloud Pub/Sub topic when eligible changes occur. In order to\nreceive these messages, you must create a Pub/Sub subscription for your\nPub/Sub topic. To learn more about creating Pub/Sub subscriptions, see `the\nPub/Sub Subscriber Overview <https://cloud.google.com/pubsub/docs/subscriber>`_.\n\nYou can create a simple Pub/Sub subscription using the ``gcloud`` command-line\ntool. For example, to create a new subscription on the topic \"myNewTopic\" and\nattempt to pull messages from it, you could run:\n\n  gcloud beta pubsub subscriptions create --topic myNewTopic testSubscription\n  gcloud beta pubsub subscriptions pull --auto-ack testSubscription",
         "STOPCHANNEL": "The stopchannel sub-command can be used to stop sending change events to a\nnotification channel.\n\nThe channel_id and resource_id parameters should match the values from the\nresponse of a bucket watch request.",
@@ -2523,7 +2537,7 @@
         "AVAILABILITY": "The perfdiag command ignores the boto num_retries configuration parameter.\nInstead, it always retries on HTTP errors in the 500 range and keeps track of\nhow many 500 errors were encountered during the test. The availability\nmeasurement is reported at the end of the test.\n\nNote that HTTP responses are only recorded when the request was made in a\nsingle process. When using multiple processes or threads, read and write\nthroughput measurements are performed in an external process, so the\navailability numbers reported won't include the throughput measurements.",
         "DESCRIPTION": "The perfdiag command runs a suite of diagnostic tests for a given Google\nStorage bucket.\n\nThe 'url' parameter must name an existing bucket (e.g. gs://foo) to which\nthe user has write permission. Several test files will be uploaded to and\ndownloaded from this bucket. All test files will be deleted at the completion\nof the diagnostic if it finishes successfully.\n\ngsutil performance can be impacted by many factors at the client, server,\nand in-between, such as: CPU speed; available memory; the access path to the\nlocal disk; network bandwidth; contention and error rates along the path\nbetween gsutil and Google; operating system buffering configuration; and\nfirewalls and other network elements. The perfdiag command is provided so\nthat customers can run a known measurement suite when troubleshooting\nperformance problems.",
         "DIAGNOSTIC OUTPUT TO GOOGLE CLOUD STORAGE TEAM": "If the Google Cloud Storage Team asks you to run a performance diagnostic\nplease use the following command, and email the output file (output.json)\nto gs-team@google.com:\n\n  gsutil perfdiag -o output.json gs://your-bucket",
-        "NOTE": "The perfdiag command collects system information. It collects your IP address,\nexecutes DNS queries to Google servers and collects the results, and collects\nnetwork statistics information from the output of netstat -s. It will also\nattempt to connect to your proxy server if you have one configured. None of\nthis information will be sent to Google unless you choose to send it."
+        "NOTE": "The perfdiag command collects system information. It collects your IP address,\nexecutes DNS queries to Google servers and collects the results, collects\nnetwork statistics information from the output of netstat -s, and looks at the\nBIOS product name string. It will also attempt to connect to your proxy server\nif you have one configured, and will look up the location and storage class of\nthe bucket being used for performance testing. None of this information will\nbe sent to Google unless you choose to send it."
       }
     },
     "rb": {
@@ -2612,6 +2626,32 @@
         "DESCRIPTION": "The Requester Pays Configuration feature enables you to configure a Google\nCloud Storage bucket to indicate that the requester will pay all costs\nrelated to accessing the bucket and its objects.\n\nThe gsutil requesterpays command has two sub-commands:",
         "GET": "The \"get\" sub-command gets the requester pays configuration for a\nbucket and displays whether or not it is enabled.",
         "SET": "The \"set\" sub-command requires an additional sub-command, either \"on\" or\n\"off\", which, respectively, will enable or disable requester pays for the\nspecified bucket(s)."
+      }
+    },
+    "retention": {
+      "capsule": "Provides utilities to interact with Retention Policy feature.",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "gsutil",
+        "retention"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "CLEAR": "The \"gsutil retention clear\" command removes an unlocked Retention Policy\nfrom one or more buckets. A locked Retention Policy cannot be removed or\nreduced in duration.",
+        "DESCRIPTION": "",
+        "EVENT": "The \"gsutil retention event\" command will enable or disable a Event-Based\nHold on an object.",
+        "EVENT-DEFAULT": "The \"gsutil retention event-default\" command will sets the default value for\nEvent-Based Hold on one or more buckets.\n\nBy setting the default Event-Based Hold on a bucket, newly created objects\nwill inherit that value as their Event-Based Hold (it is not applied\nretroactively).",
+        "EXAMPLES": "Setting the Temporary Hold on object(s):\n\n    gsutil retention temp set gs://my-bucket/my-object\n\nReleasing the Temporary Hold on object(s):\n\n    gsutil retention temp release gs://my-bucket/my-object\n\nYou can also provide a precondition on object's meta-generation in order to\navoid potential race conditions. You can use gsutil's '-h' option to specify\npreconditions. For example, the following specifies a precondition that checks\nobject's metageneration before setting the Event-Based hold on the object.\n\n    gsutil -h \"x-goog-if-metageneration-match: 1\" \\\n           retention temp set gs://my-bucket/my-object\n\nIf you want to (un)set Temporary Hold on a large number of objects, then\nyou might want to use the gsutil -m option, to perform a parallel update.\nFor example, the following command sets Temporary Hold on objects ending\nwith .jpg in parallel, in the root folder:\n\n    gsutil -m retention temp set gs://bucket/*.jpg",
+        "FORMATS": "<number>s           Specifies retention period of N seconds for\n                    objects in this bucket.\n\n<number>d           Specifies retention period of N days for\n                    objects in this bucket.\n\n<number>m           Specifies retention period of N months for\n                    objects in this bucket.\n\n<number>y           Specifies retention period of N years for\n                    objects in this bucket.\n\nGCS JSON API accepts retention period as number of seconds. Durations provided\nin terms of days, months or years will be converted to their rough equivalent\nvalues in seconds, using the following conversions:\n  - A month is considered to be 31 days or 2,678,400 seconds.\n  - A year is considered to be 365.25 days or 31,557,600 seconds.\nTODO: add link to public documentation about this conversion.\n\nProvided retention period must be greater than 0 and less than 100 years.\nClients may define retention duration only in one form (seconds, days, months\nor years) and not a combination of them. These values are not cumulative.\n\nIt is important to note that, while it is possible to specify durations\nshorter than a day (using seconds), enforcement of such retentions is not\nguaranteed. Such durations may only be used for testing purposes.",
+        "GET": "The \"gsutil retention get\" command retrieves the Retention Policy for given\nbucket and displays a human-readable representation of the configuration.",
+        "LOCK": "The \"gsutil retention lock\" command will PERMANENTLY lock unlocked\nRetention Policy on one or more buckets.\n\n***CAUTION***\n\nA locked Retention Policy cannot be removed from the bucket until bucket is\ndeleted.",
+        "SET": "The \"gsutil retention set\" command will allow you to set or update the\nRetention Policy on one or more buckets.\n\nIf you would like to remove an unlocked Retention Policy from one or more\nbuckets, please use the \"gsutil retention clear\" command.\n\nThe \"set\" sub-command can set retention policy with the following formats:",
+        "TEMP": "The \"gsutil retention temp\" command will enable or disable a Temporary Hold\non an object."
       }
     },
     "rewrite": {
@@ -3501,7 +3541,7 @@
       "attr": {},
       "category": "",
       "default": "",
-      "description": "Causes supported operations (acl ch, acl set, cp, mv, rm, rsync,\nd setmeta) to run in parallel. This can significantly improve\nrformance if you are performing operations on a large number of\nles over a reasonably fast network connection.\nutil performs the specified operation using a combination of\nlti-threading and multi-processing, using a number of threads\nd processors determined by the parallel_thread_count and\nrallel_process_count values set in the boto configuration\nle. You might want to experiment with these values, as the\nst values can vary based on a number of factors, including\ntwork speed, number of CPUs, and available memory.\ning the -m option may make your performance worse if you\ne using a slower network, such as the typical network speeds\nfered by non-business home network plans. It can also make\nur performance worse for cases that perform all operations\ncally (e.g., gsutil rsync, where both source and destination\nLs are on the local disk), because it can \"thrash\" your local\nsk.\n a download or upload operation using parallel transfer fails\nfore the entire transfer is complete (e.g. failing after 300 of\n00 files have been transferred), you will need to restart the\ntire transfer.\nso, although most commands will normally fail upon encountering\n error when the -m flag is disabled, all commands will\nntinue to try all operations when -m is enabled with multiple\nreads or processes, and the number of failed operations (if any)\nll be reported at the end of the command's execution.",
+      "description": "Causes supported operations (acl ch, acl set, cp, mv, rm, rsync,\nd setmeta) to run in parallel. This can significantly improve\nrformance if you are performing operations on a large number of\nles over a reasonably fast network connection.\nutil performs the specified operation using a combination of\nlti-threading and multi-processing, using a number of threads\nd processors determined by the parallel_thread_count and\nrallel_process_count values set in the boto configuration\nle. You might want to experiment with these values, as the\nst values can vary based on a number of factors, including\ntwork speed, number of CPUs, and available memory.\ning the -m option may make your performance worse if you\ne using a slower network, such as the typical network speeds\nfered by non-business home network plans. It can also make\nur performance worse for cases that perform all operations\ncally (e.g., gsutil rsync, where both source and destination\nLs are on the local disk), because it can \"thrash\" your local\nsk.\n a download or upload operation using parallel transfer fails\nfore the entire transfer is complete (e.g. failing after 300 of\n00 files have been transferred), you will need to restart the\ntire transfer.\nso, although most commands will normally fail upon encountering\n error when the -m flag is disabled, all commands will\nntinue to try all operations when -m is enabled with multiple\nreads or processes, and the number of failed operations (if any)\nll be reported as an exception at the end of the command's\necution.",
       "group": "",
       "is_global": true,
       "is_hidden": false,

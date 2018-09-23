@@ -49,7 +49,8 @@ class RemoveIamPolicyBinding(base.Command):
     flags.AddKeyRingArgument(parser,
                              'from which to remove an IAM policy binding')
     iam_util.AddArgsForRemoveIamPolicyBinding(
-        parser, completer=completers.CryptoKeysKeyRingIamRolesCompleter)
+        parser,
+        role_completer=completers.CryptoKeysKeyRingIamRolesCompleter)
 
   def Run(self, args):
     return iam.RemovePolicyBindingFromKeyRing(

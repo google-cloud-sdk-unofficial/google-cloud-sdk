@@ -25,7 +25,6 @@ from googlecloudsdk.api_lib.dns import transaction_util as trans_util
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -97,7 +96,7 @@ class Remove(base.Command):
             type=args.type),
         field='rrsets')]
     if not existing_records or existing_records[0] != record_to_remove:
-      raise exceptions.ToolException('Record to be removed does not exist')
+      raise trans_util.RecordDoesNotExist('Record to be removed does not exist')
 
     change.deletions.append(record_to_remove)
 

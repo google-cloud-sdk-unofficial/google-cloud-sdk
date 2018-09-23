@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.DisallowPython3  # TODO(b/77812635): Enable for py3.
 class Tasks(base.Group):
   """Manage Cloud Tasks queues and tasks."""
 

@@ -103,11 +103,14 @@ class Delete(base.DeleteCommand):
       service = holder.client.apitools_client.instanceGroupManagers
       delete_request = self._GetDeletePerInstanceConfigRequests(
           holder, igm_ref, instances)
-    else:
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
       operation_collection = 'compute.regionOperations'
       service = holder.client.apitools_client.regionInstanceGroupManagers
       delete_request = self._GetRegionDeletePerInstanceConfigRequests(
           holder, igm_ref, instances)
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
 
     operation = service.DeletePerInstanceConfigs(delete_request)
     operation_ref = holder.resources.Parse(

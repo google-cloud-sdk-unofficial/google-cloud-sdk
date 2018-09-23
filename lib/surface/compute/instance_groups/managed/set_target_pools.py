@@ -60,45 +60,78 @@ class SetTargetPools(base.Command):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
     scope_lister = flags.GetDefaultScopeLister(client)
-    group_ref = resource_arg.ResolveAsResource(
-        args, holder.resources, default_scope=default_scope,
+    igm_ref = resource_arg.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=default_scope,
         scope_lister=scope_lister)
-
-    if group_ref.Collection() == 'compute.instanceGroupManagers':
-      region = utils.ZoneNameToRegionName(group_ref.zone)
-    else:
-      region = group_ref.region
+    region = self._GetRegionName(igm_ref)
 
     pool_refs = []
     for target_pool in args.target_pools:
-      pool_refs.append(holder.resources.Parse(
-          target_pool,
-          params={
-              'project': group_ref.project,
-              'region': region
-          },
-          collection='compute.targetPools'))
+      pool_refs.append(
+          holder.resources.Parse(
+              target_pool,
+              params={
+                  'project': igm_ref.project,
+                  'region': region
+              },
+              collection='compute.targetPools'))
     pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
 
-    if group_ref.Collection() == 'compute.instanceGroupManagers':
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      return self._MakeSetTargetPoolsRequest(client, igm_ref, pools)
+    else:
+      return self._MakePatchRequest(client, igm_ref, pools)
+
+  def _GetRegionName(self, igm_ref):
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      return utils.ZoneNameToRegionName(igm_ref.zone)
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      return igm_ref.region
+    else:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
+
+  def _MakeSetTargetPoolsRequest(self, client, igm_ref, pools):
+    messages = client.messages
+
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = client.apitools_client.instanceGroupManagers
       request = (
-          client.messages.ComputeInstanceGroupManagersSetTargetPoolsRequest(
-              instanceGroupManager=group_ref.Name(),
+          messages.ComputeInstanceGroupManagersSetTargetPoolsRequest(
+              project=igm_ref.project,
+              zone=igm_ref.zone,
+              instanceGroupManager=igm_ref.Name(),
               instanceGroupManagersSetTargetPoolsRequest=(
-                  client.messages.InstanceGroupManagersSetTargetPoolsRequest(
-                      targetPools=pools)),
-              project=group_ref.project,
-              zone=group_ref.zone))
+                  messages.InstanceGroupManagersSetTargetPoolsRequest(
+                      targetPools=pools))))
     else:
       service = client.apitools_client.regionInstanceGroupManagers
-      request = (client.messages.
-                 ComputeRegionInstanceGroupManagersSetTargetPoolsRequest(
-                     instanceGroupManager=group_ref.Name(),
-                     regionInstanceGroupManagersSetTargetPoolsRequest=(
-                         client.messages.
-                         RegionInstanceGroupManagersSetTargetPoolsRequest(
-                             targetPools=pools)),
-                     project=group_ref.project,
-                     region=group_ref.region))
+      request = (
+          messages.ComputeRegionInstanceGroupManagersSetTargetPoolsRequest(
+              project=igm_ref.project,
+              region=igm_ref.region,
+              instanceGroupManager=igm_ref.Name(),
+              regionInstanceGroupManagersSetTargetPoolsRequest=(
+                  messages.RegionInstanceGroupManagersSetTargetPoolsRequest(
+                      targetPools=pools))))
+
     return client.MakeRequests([(service, 'SetTargetPools', request)])
+
+  def _MakePatchRequest(self, client, igm_ref, pools):
+    messages = client.messages
+
+    igm_resource = messages.InstanceGroupManager(targetPools=pools)
+
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      service = client.apitools_client.instanceGroupManagers
+      request_type = messages.ComputeInstanceGroupManagersPatchRequest
+    else:
+      service = client.apitools_client.regionInstanceGroupManagers
+      request_type = messages.ComputeRegionInstanceGroupManagersPatchRequest
+
+    request = request_type(**igm_ref.AsDict())
+    request.instanceGroupManagerResource = igm_resource
+
+    return client.MakeRequests([(service, 'Patch', request)])

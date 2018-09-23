@@ -44,7 +44,8 @@ class RemoveIamPolicyBinding(base.Command):
   def Args(parser):
     flags.GetProjectFlag('remove IAM policy binding from').AddToParser(parser)
     iam_util.AddArgsForRemoveIamPolicyBinding(
-        parser, completer=completers.ProjectsIamRolesCompleter)
+        parser,
+        role_completer=completers.ProjectsIamRolesCompleter)
 
   @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):

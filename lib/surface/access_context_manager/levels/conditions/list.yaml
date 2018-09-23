@@ -24,6 +24,7 @@
          basic.conditions:format="
            table[all-box,title='ACCESS LEVEL CONDITIONS'](
                negate:label=NEGATED,
+               devicePolicy.list(),
                ipSubnetworks.list(separator='
       '),
                members.list(separator='

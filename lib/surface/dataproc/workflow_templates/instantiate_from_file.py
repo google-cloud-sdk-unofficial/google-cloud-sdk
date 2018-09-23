@@ -29,9 +29,52 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
+V1_SCHEMA_PATH = 'v1/WorkflowTemplate.yaml'
+V1_BETA2_SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class InstantiateFromFile(base.CreateCommand):
+  """Instantiate a workflow template from a file."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddFileFlag(parser, 'workflow template', 'run')
+    base.ASYNC_FLAG.AddToParser(parser)
+
+  def Run(self, args):
+    dataproc = dp.Dataproc(self.ReleaseTrack())
+    msgs = dataproc.messages
+
+    # Generate uuid for request.
+    instance_id = uuid.uuid4().hex
+    regions_ref = util.ParseRegion(dataproc)
+    # Read template from YAML file and validate it using a schema.
+    with files.FileReader(args.file) as stream:
+      template = util.ReadYaml(
+          message_type=msgs.WorkflowTemplate,
+          stream=stream,
+          schema_path=V1_SCHEMA_PATH)
+
+    # Send instantiate inline request.
+    request = \
+      msgs.DataprocProjectsRegionsWorkflowTemplatesInstantiateInlineRequest(
+          instanceId=instance_id,
+          parent=regions_ref.RelativeName(),
+          workflowTemplate=template)
+    operation = \
+      dataproc.client.projects_regions_workflowTemplates.InstantiateInline(
+          request)
+    if args.async:
+      log.status.Print('Instantiating with operation [{0}].'.format(
+          operation.name))
+      return
+    operation = util.WaitForWorkflowTemplateOperation(dataproc, operation)
+    return operation
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class InstantiateFromFile(base.CreateCommand):
+class InstantiateFromFileBeta(base.CreateCommand):
   """Instantiate a workflow template from a file."""
 
   @staticmethod
@@ -52,10 +95,12 @@ class InstantiateFromFile(base.CreateCommand):
     # Generate uuid for request.
     instance_id = uuid.uuid4().hex
     regions_ref = util.ParseRegion(dataproc)
-    # Read template from YAML file.
+    # Read template from YAML file and validate it using a schema.
     with files.FileReader(args.file) as stream:
       template = util.ReadYaml(
-          message_type=msgs.WorkflowTemplate, stream=stream)
+          message_type=msgs.WorkflowTemplate,
+          stream=stream,
+          schema_path=V1_BETA2_SCHEMA_PATH)
 
     # Send instantiate inline request.
     request = \

@@ -14,7 +14,7 @@
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
       removed_flags: [location]
     params:
-    - _COMMON_args
+    - _REF_googlecloudsdk.command_lib.scheduler.flags:args
     - api_field: job.pubsubTarget.topicName
       arg_name: topic
       required: true

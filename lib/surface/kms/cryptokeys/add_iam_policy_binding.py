@@ -54,7 +54,8 @@ class AddIamPolicyBinding(base.Command):
   def Args(parser):
     flags.AddKeyResourceArgument(parser, 'whose IAM policy to modify')
     iam_util.AddArgsForAddIamPolicyBinding(
-        parser, completer=completers.CryptoKeysIamRolesCompleter)
+        parser,
+        role_completer=completers.CryptoKeysIamRolesCompleter)
 
   def Run(self, args):
     crypto_key_ref = flags.ParseCryptoKeyName(args)

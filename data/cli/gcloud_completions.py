@@ -2833,6 +2833,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "dynamic"
                   }
                 },
+                "get-shielded-vm-identity": {
+                  "commands": {},
+                  "flags": {
+                    "--zone": "dynamic"
+                  }
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -5765,6 +5771,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--max-memory": "value",
                     "--max-nodes": "value",
                     "--max-nodes-per-pool": "value",
+                    "--metadata": "value",
+                    "--metadata-from-file": "value",
                     "--min-accelerator": "value",
                     "--min-cpu": "value",
                     "--min-cpu-platform": "value",
@@ -5992,6 +6000,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--machine-type": "value",
                     "--max-nodes": "value",
                     "--max-pods-per-node": "value",
+                    "--metadata": "value",
+                    "--metadata-from-file": "value",
                     "--min-cpu-platform": "value",
                     "--min-nodes": "value",
                     "--node-labels": "value",
@@ -10255,66 +10265,71 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {
             "jobs": {
               "commands": {
-                "create-app-engine-job": {
-                  "commands": {},
-                  "flags": {
-                    "--description": "value",
-                    "--headers": "value",
-                    "--http-method": [
-                      "delete",
-                      "get",
-                      "head",
-                      "post",
-                      "put"
-                    ],
-                    "--max-attempts": "value",
-                    "--max-backoff": "value",
-                    "--max-doublings": "value",
-                    "--max-retry-duration": "value",
-                    "--message-body": "value",
-                    "--message-body-from-file": "value",
-                    "--min-backoff": "value",
-                    "--relative-url": "value",
-                    "--schedule": "value",
-                    "--service": "value",
-                    "--time-zone": "value"
-                  }
-                },
-                "create-http-job": {
-                  "commands": {},
-                  "flags": {
-                    "--description": "value",
-                    "--headers": "value",
-                    "--http-method": [
-                      "delete",
-                      "get",
-                      "head",
-                      "post",
-                      "put"
-                    ],
-                    "--max-attempts": "value",
-                    "--max-backoff": "value",
-                    "--max-doublings": "value",
-                    "--max-retry-duration": "value",
-                    "--message-body": "value",
-                    "--message-body-from-file": "value",
-                    "--min-backoff": "value",
-                    "--schedule": "value",
-                    "--time-zone": "value",
-                    "--url": "value"
-                  }
-                },
-                "create-pubsub-job": {
-                  "commands": {},
-                  "flags": {
-                    "--attributes": "value",
-                    "--description": "value",
-                    "--message-body": "value",
-                    "--message-body-from-file": "value",
-                    "--schedule": "value",
-                    "--time-zone": "value",
-                    "--topic": "value"
-                  }
+                "create": {
+                  "commands": {
+                    "app-engine": {
+                      "commands": {},
+                      "flags": {
+                        "--description": "value",
+                        "--headers": "value",
+                        "--http-method": [
+                          "delete",
+                          "get",
+                          "head",
+                          "post",
+                          "put"
+                        ],
+                        "--max-attempts": "value",
+                        "--max-backoff": "value",
+                        "--max-doublings": "value",
+                        "--max-retry-duration": "value",
+                        "--message-body": "value",
+                        "--message-body-from-file": "value",
+                        "--min-backoff": "value",
+                        "--relative-url": "value",
+                        "--schedule": "value",
+                        "--service": "value",
+                        "--time-zone": "value"
+                      }
+                    },
+                    "http": {
+                      "commands": {},
+                      "flags": {
+                        "--description": "value",
+                        "--headers": "value",
+                        "--http-method": [
+                          "delete",
+                          "get",
+                          "head",
+                          "post",
+                          "put"
+                        ],
+                        "--max-attempts": "value",
+                        "--max-backoff": "value",
+                        "--max-doublings": "value",
+                        "--max-retry-duration": "value",
+                        "--message-body": "value",
+                        "--message-body-from-file": "value",
+                        "--min-backoff": "value",
+                        "--schedule": "value",
+                        "--time-zone": "value",
+                        "--url": "value"
+                      }
+                    },
+                    "pubsub": {
+                      "commands": {},
+                      "flags": {
+                        "--attributes": "value",
+                        "--description": "value",
+                        "--message-body": "value",
+                        "--message-body-from-file": "value",
+                        "--schedule": "value",
+                        "--time-zone": "value",
+                        "--topic": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
                 },
                 "delete": {
                   "commands": {},
@@ -10407,7 +10422,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--network": "value",
-                    "--reserved-ranges": "value",
+                    "--ranges": "value",
                     "--service": "value"
                   }
                 },
@@ -13140,7 +13155,13 @@ STATIC_COMPLETION_CLI_TREE = {
                       "IPV4",
                       "IPV6"
                     ],
+                    "--network": "value",
                     "--network-tier": "value",
+                    "--prefix-length": "value",
+                    "--purpose": [
+                      "GCE_ENDPOINT",
+                      "VPC_PEERING"
+                    ],
                     "--region": "dynamic",
                     "--subnet": "value"
                   }
@@ -17649,6 +17670,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--master-ipv4-cidr": "value",
                     "--max-nodes": "value",
                     "--max-nodes-per-pool": "value",
+                    "--metadata": "value",
+                    "--metadata-from-file": "value",
                     "--min-cpu-platform": "value",
                     "--min-nodes": "value",
                     "--network": "value",
@@ -17845,6 +17868,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--machine-type": "value",
                     "--max-nodes": "value",
                     "--max-pods-per-node": "value",
+                    "--metadata": "value",
+                    "--metadata-from-file": "value",
                     "--min-cpu-platform": "value",
                     "--min-nodes": "value",
                     "--node-labels": "value",
@@ -22412,7 +22437,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--network": "value",
-                    "--reserved-ranges": "value",
+                    "--ranges": "value",
                     "--service": "value"
                   }
                 },
@@ -23049,6 +23074,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--master-password": "value",
                     "--master-username": "value",
                     "--memory": "value",
+                    "--network": "value",
                     "--pricing-plan": [
                       "PACKAGE",
                       "PER_USE"
@@ -23161,6 +23187,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--maintenance-window-hour": "value",
                     "--memory": "value",
+                    "--network": "value",
                     "--no-backup": "bool",
                     "--pricing-plan": [
                       "PACKAGE",
