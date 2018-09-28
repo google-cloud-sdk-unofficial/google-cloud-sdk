@@ -24,8 +24,8 @@ from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import containeranalysis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
 from googlecloudsdk.command_lib.container.binauthz import flags
+from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
 from googlecloudsdk.core import resources
 
 
@@ -57,8 +57,8 @@ class List(base.ListCommand):
   def Args(cls, parser):
     parser.display_info.AddFormat("""
         table(
-            attestation.pgpSignedAttestation.pgpKeyId,
-            resourceUrl:label=ARTIFACT_URL:sort=1
+            attestation.attestation.pgpSignedAttestation.pgpKeyId,
+            resource.uri:label=ARTIFACT_URL:sort=1
         )
     """)
 

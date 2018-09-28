@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.resource_manager import completers
 import six.moves.http_client
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding for a project.
 

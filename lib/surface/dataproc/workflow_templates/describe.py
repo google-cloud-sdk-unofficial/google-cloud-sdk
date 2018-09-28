@@ -23,14 +23,18 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+def _CommonArgs(parser):
+  flags.AddVersionFlag(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a workflow template."""
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'describe')
-    flags.AddVersionFlag(parser)
+    _CommonArgs(parser)
+    flags.AddTemplateResourceArg(parser, 'describe', api_version='v1')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -41,3 +45,13 @@ class Describe(base.DescribeCommand):
         template_ref, args.version)
 
     return workflow_template
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describe a workflow template."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    flags.AddTemplateResourceArg(parser, 'describe', api_version='v1beta2')

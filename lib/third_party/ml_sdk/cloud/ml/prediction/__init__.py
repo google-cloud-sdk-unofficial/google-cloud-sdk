@@ -42,6 +42,7 @@ from .prediction_utils import SCIKIT_LEARN_FRAMEWORK_NAME
 from .prediction_utils import SESSION_RUN_ENGINE_NAME
 from .prediction_utils import SESSION_RUN_TIME
 from .prediction_utils import SIGNATURE_KEY
+from .prediction_utils import SK_XGB_FRAMEWORK_NAME
 from .prediction_utils import Stats
 from .prediction_utils import TENSORFLOW_FRAMEWORK_NAME
 from .prediction_utils import Timer

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A command that lists a YAML export schema for a message from a given API."""
+"""A command that generates YAML export schemas for a message in a given API."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,11 +25,10 @@ from googlecloudsdk.command_lib.meta.apis import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.apis import export
 from googlecloudsdk.command_lib.util.apis import registry
-from googlecloudsdk.core import log
 
 
-class ListExportSchema(base.DescribeCommand):
-  """List a YAML export schema for a message in a given API.
+class GenerateExportSchemas(base.SilentCommand):
+  """Generate YAML export schemas for a message in a given API.
 
   *gcloud* commands that have "too many" *create*/*update* command flags may
   also provide *export*/*import* commands. *export* lists the current state
@@ -41,13 +40,14 @@ class ListExportSchema(base.DescribeCommand):
   implementation details of some protobuf constructs like enums and
   `additionalProperties`.
 
-  One way of describing an export format is with a JSON schema. A schema
-  documents export format properties and can also be used to validate data on
-  import. Validation is important because users can modify export data before
-  importing it again.
+  One way of describing an export format is with JSON schemas. A schema
+  documents export format properties for a message in an API, and can also be
+  used to validate data on import. Validation is important because users can
+  modify export data before importing it again.
 
-  This command lists a [JSON schema](json-schema.org) (in YAML format, go
-  figure) for a protobuf message in an API.
+  This command generates [JSON schemas](json-schema.org) (in YAML format, go
+  figure) for a protobuf message in an API. A separate schema files is
+  generated for each nested message in the resource message.
 
   ## CAVEATS
 
@@ -57,7 +57,8 @@ class ListExportSchema(base.DescribeCommand):
 
   ## EXAMPLES
 
-  To generate the WorkflowTemplate schema in the dataproc v1beta2 API:
+  To generate the WorkflowTemplate schemas in the current directory from the
+  dataproc v1beta2 API:
 
     $ {command} WorkflowTemplate --api=dataproc --api-version=v1beta2
   """
@@ -68,7 +69,12 @@ class ListExportSchema(base.DescribeCommand):
     flags.API_VERSION_FLAG.AddToParser(parser)
     parser.add_argument(
         'message',
-        help='The name of the message to list the YAML export schema for.')
+        help='The name of the message to generate the YAML export schemas for.')
+    parser.add_argument(
+        '--directory',
+        help=('The path name of the directory to create the YAML export '
+              'schema files in. If not specified then the files are created in '
+              'the current directory.'))
 
   def Run(self, args):
     api = registry.GetAPI(args.api, api_version=args.api_version)
@@ -79,5 +85,5 @@ class ListExportSchema(base.DescribeCommand):
           'message', 'Message [{}] does not exist for API [{} {}]'.format(
               args.message, args.api, api.version))
     message_spec = arg_utils.GetRecursiveMessageSpec(message)
-    text = export.GetExportSchema(api, args.message, message_spec)
-    log.out.write(text)
+    export.GenerateExportSchemas(
+        api, args.message, message_spec, args.directory)

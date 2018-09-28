@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import jobs
-from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import jobs_util
@@ -42,6 +41,6 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     jobs_client = jobs.JobsClient()
-    operations_client = operations.OperationsClient()
-    jobs_util.Update(jobs_client, operations_client, args)
+    updated_job = jobs_util.Update(jobs_client, args)
     log.UpdatedResource(args.job, kind='ml engine job')
+    return updated_job

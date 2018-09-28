@@ -25,10 +25,15 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core.util import files
 
-SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
+V1_SCHEMA_PATH = 'v1/WorkflowTemplate.yaml'
+V1_BETA2_SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+def _CommonArgs(parser):
+  flags.AddVersionFlag(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Export a workflow template.
 
@@ -37,9 +42,9 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'export')
-    flags.AddTemplateDestinationFlag(parser)
-    flags.AddVersionFlag(parser)
+    flags.AddTemplateResourceArg(parser, 'export', api_version='v1')
+    flags.AddTemplateDestinationFlag(parser, V1_SCHEMA_PATH)
+    _CommonArgs(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -50,10 +55,30 @@ class Describe(base.DescribeCommand):
     workflow_template = dataproc.GetRegionsWorkflowTemplate(
         template_ref, args.version)
 
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      schema_path = V1_SCHEMA_PATH
+    else:
+      schema_path = V1_BETA2_SCHEMA_PATH
+
     if args.destination:
       with files.FileWriter(args.destination) as stream:
         util.WriteYaml(
-            message=workflow_template, stream=stream, schema_path=SCHEMA_PATH)
+            message=workflow_template, stream=stream, schema_path=schema_path)
     else:
       util.WriteYaml(
-          message=workflow_template, stream=sys.stdout, schema_path=SCHEMA_PATH)
+          message=workflow_template, stream=sys.stdout, schema_path=schema_path)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Export a workflow template.
+
+  Exports a workflow template's configuration to a file.
+  This configuration can be imported at a later time.
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.AddTemplateResourceArg(parser, 'export', api_version='v1beta2')
+    flags.AddTemplateDestinationFlag(parser, V1_BETA2_SCHEMA_PATH)
+    _CommonArgs(parser)

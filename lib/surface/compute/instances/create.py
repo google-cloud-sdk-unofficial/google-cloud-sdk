@@ -69,29 +69,21 @@ DETAILED_HELP = {
 
 
 def _CommonArgs(parser,
-                # TODO(b/80138906): Release track should not be passed around.
-                release_track,
-                support_public_dns,
                 enable_regional=False,
-                support_local_ssd_size=False,
                 enable_kms=False,
-                supports_resource_policies=False,
-                enable_snapshots=False):
+                enable_snapshots=False,
+                deprecate_maintenance_policy=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
   instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms,
                                     enable_snapshots=enable_snapshots)
-  if support_local_ssd_size:
-    instances_flags.AddLocalSsdArgsWithSize(parser)
-  else:
-    instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
-  deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
-  instances_flags.AddMaintenancePolicyArgs(parser, deprecate_maintenance_policy)
+  instances_flags.AddMaintenancePolicyArgs(
+      parser, deprecate=deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(
@@ -107,17 +99,11 @@ def _CommonArgs(parser,
   instances_flags.AddImageArgs(parser, enable_snapshots=enable_snapshots)
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
-  if support_public_dns:
-    instances_flags.AddPublicDnsArgs(parser, instance=True)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
-  if supports_resource_policies:
-    maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
-
   labels_util.AddCreateLabelsFlags(parser)
-  instances_flags.AddMinCpuPlatformArgs(parser, release_track)
 
   parser.add_argument(
       '--description',
@@ -144,16 +130,12 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(
-        parser,
-        release_track=base.ReleaseTrack.GA,
-        support_public_dns=cls._support_public_dns,
-        enable_kms=cls._support_kms,
-        enable_snapshots=cls._support_snapshots
-    )
+    _CommonArgs(parser)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+    instances_flags.AddLocalSsdArgs(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
 
   def Collection(self):
     return 'compute.instances'
@@ -164,6 +146,10 @@ class Create(base.CreateCommand):
       return None
     ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
     return ref.SelfLink()
+
+  def GetSourceMachineImage(self, args, resources):
+    """Get sourceMachineImage value as required by API."""
+    return None
 
   def _BuildShieldedVMConfigMessage(self, messages, args):
     if (args.IsSpecified('shielded_vm_secure_boot') or
@@ -347,6 +333,10 @@ class Create(base.CreateCommand):
         args, resource_parser)
     skip_defaults = source_instance_template is not None
 
+    source_machine_image = self.GetSourceMachineImage(
+        args, resource_parser)
+    skip_defaults = skip_defaults or source_machine_image is not None
+
     scheduling = instance_utils.GetScheduling(
         args, compute_client, skip_defaults, support_node_affinity=True)
     tags = instance_utils.GetTags(args, compute_client)
@@ -390,39 +380,28 @@ class Create(base.CreateCommand):
       guest_accelerators = instance_utils.GetAccelerators(
           args, compute_client, resource_parser, instance_ref)
 
-      if hasattr(args, 'hostname'):
-        instance = compute_client.messages.Instance(
-            canIpForward=can_ip_forward,
-            deletionProtection=args.deletion_protection,
-            description=args.description,
-            disks=disks,
-            guestAccelerators=guest_accelerators,
-            hostname=args.hostname,
-            labels=labels,
-            machineType=machine_type_uri,
-            metadata=metadata,
-            minCpuPlatform=args.min_cpu_platform,
-            name=instance_ref.Name(),
-            networkInterfaces=network_interfaces,
-            serviceAccounts=project_to_sa[instance_ref.project],
-            scheduling=scheduling,
-            tags=tags)
-      else:
-        instance = compute_client.messages.Instance(
-            canIpForward=can_ip_forward,
-            deletionProtection=args.deletion_protection,
-            description=args.description,
-            disks=disks,
-            guestAccelerators=guest_accelerators,
-            labels=labels,
-            machineType=machine_type_uri,
-            metadata=metadata,
-            minCpuPlatform=args.min_cpu_platform,
-            name=instance_ref.Name(),
-            networkInterfaces=network_interfaces,
-            serviceAccounts=project_to_sa[instance_ref.project],
-            scheduling=scheduling,
-            tags=tags)
+      instance = compute_client.messages.Instance(
+          canIpForward=can_ip_forward,
+          deletionProtection=args.deletion_protection,
+          description=args.description,
+          disks=disks,
+          guestAccelerators=guest_accelerators,
+          labels=labels,
+          machineType=machine_type_uri,
+          metadata=metadata,
+          minCpuPlatform=args.min_cpu_platform,
+          name=instance_ref.Name(),
+          networkInterfaces=network_interfaces,
+          serviceAccounts=project_to_sa[instance_ref.project],
+          scheduling=scheduling,
+          tags=tags)
+
+      # TODO(b/80138906): These features are only exposed in alpha.
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        instance.hostname = args.hostname or None
+
+        instance.allocationAffinity = instance_utils.GetAllocationAffinity(
+            args, compute_client)
 
       resource_policies = getattr(
           args, 'resource_policies', None)
@@ -448,6 +427,9 @@ class Create(base.CreateCommand):
       if source_instance_template:
         request.sourceInstanceTemplate = source_instance_template
 
+      if source_machine_image:
+        request.instance.sourceMachineImage = source_machine_image
+
       requests.append(
           (compute_client.apitools_client.instances, 'Insert', request))
     return requests
@@ -460,6 +442,7 @@ class Create(base.CreateCommand):
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidateAcceleratorArgs(args)
     instances_flags.ValidateNetworkTierArgs(args)
+    instances_flags.ValidateAllocationAffinityGroup(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -528,16 +511,15 @@ class CreateBeta(Create):
   def Args(cls, parser):
     _CommonArgs(
         parser,
-        release_track=base.ReleaseTrack.BETA,
-        support_public_dns=cls._support_public_dns,
         enable_regional=True,
-        enable_kms=cls._support_kms,
-        enable_snapshots=cls._support_snapshots,
+        enable_kms=True,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     instances_flags.AddShieldedVMConfigArgs(parser)
+    instances_flags.AddLocalSsdArgs(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -553,23 +535,32 @@ class CreateAlpha(CreateBeta):
     return instance_utils.GetNetworkInterfacesAlpha(
         args, client, holder, instance_refs, skip_defaults)
 
+  def GetSourceMachineImage(self, args, resources):
+    if not args.IsSpecified('source_machine_image'):
+      return None
+    ref = self.SOURCE_MACHINE_IMAGE.ResolveAsResource(args, resources)
+    return ref.SelfLink()
+
   @classmethod
   def Args(cls, parser):
-
     _CommonArgs(
         parser,
-        release_track=base.ReleaseTrack.ALPHA,
-        support_public_dns=cls._support_public_dns,
         enable_regional=True,
-        support_local_ssd_size=True,
-        enable_kms=cls._support_kms,
-        enable_snapshots=cls._support_snapshots,
-        supports_resource_policies=True)
+        enable_kms=True,
+        enable_snapshots=True,
+        deprecate_maintenance_policy=True)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
+    CreateAlpha.SOURCE_MACHINE_IMAGE = (
+        instances_flags.AddMachineImageArg())
+    CreateAlpha.SOURCE_MACHINE_IMAGE.AddArgument(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddShieldedVMConfigArgs(parser)
     instances_flags.AddHostnameArg(parser)
-
+    instances_flags.AddAllocationAffinityGroup(parser)
+    instances_flags.AddPublicDnsArgs(parser, instance=True)
+    instances_flags.AddLocalSsdArgsWithSize(parser)
+    maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
 Create.detailed_help = DETAILED_HELP

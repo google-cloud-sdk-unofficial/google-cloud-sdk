@@ -21,8 +21,8 @@
           name.segment(-3):label=LOCATION,
           format(
               "{0} ({1})",
-              schedule.schedule,
-              schedule.timeZone
+              schedule,
+              timeZone
           ):label="SCHEDULE (TZ)",
           format(
               "{0}{1}{2}",

@@ -27,10 +27,7 @@ from . import prediction_utils
 # --------------------------
 # prediction.prediction_lib
 # --------------------------
-def create_model(client,
-                 model_path,
-                 framework=prediction_utils.TENSORFLOW_FRAMEWORK_NAME,
-                 **unused_kwargs):
+def create_model(client, model_path, framework=None, **unused_kwargs):
   """Creates and returns the appropriate model.
 
   Creates and returns a Model if no user specified model is
@@ -51,6 +48,7 @@ def create_model(client,
     return custom_model
 
   framework = framework or prediction_utils.TENSORFLOW_FRAMEWORK_NAME
+
   if framework == prediction_utils.TENSORFLOW_FRAMEWORK_NAME:
     from .frameworks import tf_prediction_lib  # pylint: disable=g-import-not-at-top
     model_cls = tf_prediction_lib.TensorFlowModel
@@ -93,14 +91,11 @@ def create_client(framework, model_path, **kwargs):
   return create_client_fn(model_path, **kwargs)
 
 
-def local_predict(
-    model_dir=None,
-    signature_name=None,
-    instances=None,
-    framework=prediction_utils.TENSORFLOW_FRAMEWORK_NAME,
-    **kwargs):
+def local_predict(model_dir=None, signature_name=None, instances=None,
+                  framework=None, **kwargs):
   """Run a prediction locally."""
   instances = prediction_utils.decode_base64(instances)
+  framework = framework or prediction_utils.TENSORFLOW_FRAMEWORK_NAME
   client = create_client(framework, model_dir, **kwargs)
   model = create_model(client, model_dir, framework)
   predictions = model.predict(instances, signature_name=signature_name)

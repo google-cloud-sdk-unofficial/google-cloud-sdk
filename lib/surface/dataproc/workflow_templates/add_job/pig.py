@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import pig
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Pig(pig.PigBase, base.Command):
   """Add a Pig job to the workflow template."""
 

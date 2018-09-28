@@ -61,8 +61,8 @@ class ArgumentError(exceptions.Error):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class ListTagsGAandBETA(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ListTagsGA(base.ListCommand):
   """List tags and digests for the specified image."""
 
   detailed_help = {
@@ -129,8 +129,8 @@ class ListTagsGAandBETA(base.ListCommand):
             repository)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListTagsALPHA(ListTagsGAandBETA, base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListTagsALPHAandBETA(ListTagsGA, base.ListCommand):
   """List tags and digests for the specified image."""
 
   @staticmethod
@@ -143,7 +143,9 @@ class ListTagsALPHA(ListTagsGAandBETA, base.ListCommand):
     """
     # Weird syntax, but this is how to call a static base method from the
     # derived method in Python.
-    super(ListTagsALPHA, ListTagsALPHA).Args(parser)
+    super(ListTagsALPHAandBETA, ListTagsALPHAandBETA).Args(parser)
+
+    # TODO(b/116048537): Refactor these flags to comply with gcloud style.
     parser.add_argument(
         '--show-occurrences',
         action='store_true',

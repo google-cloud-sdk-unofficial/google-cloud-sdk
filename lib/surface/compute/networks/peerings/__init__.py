@@ -21,10 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Peerings(base.Group):
   """List, create, and delete Google Compute Engine network peerings."""
 
 
-Peerings.detailed_help = {
-    'brief': 'List, create, and delete Google Compute Engine network peerings',
-}
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class PeeringsAlpha(base.Group):
+  """List, create, delete, and update Google Compute Engine network peerings."""

@@ -32,19 +32,17 @@ from googlecloudsdk.core import log
 from six.moves import zip
 
 
-def _Args(parser, release_track):
+def _Args(parser, deprecate_maintenance_policy=False):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, True)
   instances_flags.AddCreateDiskArgs(parser)
-  if release_track != base.ReleaseTrack.GA:
-    instances_flags.AddLocalSsdArgsWithSize(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddMachineTypeArgs(parser)
-  deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
-  instances_flags.AddMaintenancePolicyArgs(parser, deprecate_maintenance_policy)
+  instances_flags.AddMaintenancePolicyArgs(
+      parser, deprecate=deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(parser, False)
@@ -56,7 +54,6 @@ def _Args(parser, release_track):
   instances_flags.AddPublicDnsArgs(parser, instance=True)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddImageArgs(parser)
-  instances_flags.AddMinCpuPlatformArgs(parser, release_track)
   labels_util.AddCreateLabelsFlags(parser)
 
   parser.add_argument(
@@ -78,8 +75,9 @@ class CreateWithContainer(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    _Args(parser, release_track=base.ReleaseTrack.GA)
+    _Args(parser)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
 
   def _ValidateArgs(self, args):
     instances_flags.ValidateNetworkTierArgs(args)
@@ -171,8 +169,10 @@ class CreateWithContainerBeta(CreateWithContainer):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    _Args(parser, release_track=base.ReleaseTrack.BETA)
+    _Args(parser)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
+    instances_flags.AddLocalSsdArgsWithSize(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
   def _ValidateBetaArgs(self, args):
     instances_flags.ValidateNetworkTierArgs(args)
@@ -264,9 +264,10 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, release_track=base.ReleaseTrack.ALPHA)
-
+    _Args(parser, deprecate_maintenance_policy=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
+    instances_flags.AddLocalSsdArgsWithSize(parser)
+    instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
     self._ValidateBetaArgs(args)

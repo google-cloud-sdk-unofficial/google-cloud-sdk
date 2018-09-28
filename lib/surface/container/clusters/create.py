@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.compute import metadata_utils
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
@@ -124,8 +125,8 @@ Cannot be used with the "--create-subnetwork" option.
   parser.set_defaults(enable_cloud_monitoring=True)
   parser.add_argument(
       '--disk-size',
-      type=int,
-      help='Size in GB for node VM boot disks. Defaults to 100GB.')
+      type=arg_parsers.BinarySize(lower_bound='10GB'),
+      help='Size for node VM boot disks. Defaults to 100GB.')
   flags.AddBasicAuthFlags(parser)
   parser.add_argument(
       '--max-nodes-per-pool',
@@ -159,6 +160,7 @@ for examples.
   flags.AddIssueClientCertificateFlag(parser)
   flags.AddAcceleratorArgs(parser)
   flags.AddDiskTypeFlag(parser)
+  flags.AddMetadataFlags(parser)
 
 
 def ValidateBasicAuthFlags(args):
@@ -212,13 +214,13 @@ def ParseCreateOptionsBase(args):
     # failing so don't do it.
     enable_autorepair = ((args.image_type or '').lower() in ['', 'cos'])
   flags.WarnForUnspecifiedIpAllocationPolicy(args)
-  cluster_ipv4_cidr = args.cluster_ipv4_cidr
-  enable_master_authorized_networks = args.enable_master_authorized_networks
+  metadata = metadata_utils.ConstructMetadataDict(args.metadata,
+                                                  args.metadata_from_file)
   return api_adapter.CreateClusterOptions(
       accelerators=args.accelerator,
       additional_zones=args.additional_zones,
       addons=args.addons,
-      cluster_ipv4_cidr=cluster_ipv4_cidr,
+      cluster_ipv4_cidr=args.cluster_ipv4_cidr,
       cluster_secondary_range_name=args.cluster_secondary_range_name,
       cluster_version=args.cluster_version,
       node_version=args.node_version,
@@ -233,7 +235,7 @@ def ParseCreateOptionsBase(args):
       enable_ip_alias=args.enable_ip_alias,
       enable_kubernetes_alpha=args.enable_kubernetes_alpha,
       enable_legacy_authorization=args.enable_legacy_authorization,
-      enable_master_authorized_networks=enable_master_authorized_networks,
+      enable_master_authorized_networks=args.enable_master_authorized_networks,
       enable_network_policy=args.enable_network_policy,
       image_type=args.image_type,
       image=args.image,
@@ -249,7 +251,7 @@ def ParseCreateOptionsBase(args):
       min_cpu_platform=args.min_cpu_platform,
       min_nodes=args.min_nodes,
       network=args.network,
-      node_disk_size_gb=args.disk_size,
+      node_disk_size_gb=utils.BytesToGb(args.disk_size),
       node_labels=args.node_labels,
       node_locations=args.node_locations,
       node_machine_type=args.machine_type,
@@ -263,7 +265,8 @@ def ParseCreateOptionsBase(args):
       services_secondary_range_name=args.services_secondary_range_name,
       subnetwork=args.subnetwork,
       tags=args.tags,
-      user=args.username)
+      user=args.username,
+      metadata=metadata)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -319,19 +322,22 @@ class Create(base.CreateCommand):
     cluster_ref = adapter.ParseCluster(args.name, location)
     options = self.ParseCreateOptions(args)
 
+    if options.private_cluster and not (
+        options.enable_master_authorized_networks or
+        options.master_authorized_networks):
+      log.warning(
+          '`--private-cluster` makes the master inaccessible from '
+          'cluster-external IP addresses, by design. To allow limited '
+          'access to the master, see the `--master-authorized-networks` flags '
+          'and our documentation on setting up private clusters: '
+          'https://cloud.google.com'
+          '/kubernetes-engine/docs/how-to/private-clusters'
+      )
+
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(message=constants.KUBERNETES_ALPHA_PROMPT,
                                 throw_if_unattended=True,
                                 cancel_on_no=True)
-
-    if getattr(args, 'region', None):
-      # TODO(b/68496825): Remove this completely after regional clusters beta
-      # launch.
-      if self._release_track == base.ReleaseTrack.ALPHA:
-        console_io.PromptContinue(
-            message=constants.KUBERNETES_REGIONAL_CHARGES_PROMPT,
-            throw_if_unattended=True,
-            cancel_on_no=True)
 
     if options.enable_autorepair is not None:
       log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
@@ -352,7 +358,8 @@ class Create(base.CreateCommand):
 
       operation = adapter.WaitForOperation(
           operation_ref,
-          'Creating cluster {0}'.format(cluster_ref.clusterId),
+          'Creating cluster {0} in {1}'.format(cluster_ref.clusterId,
+                                               cluster_ref.zone),
           timeout_s=args.timeout)
       cluster = adapter.GetCluster(cluster_ref)
     except apitools_exceptions.HttpError as error:
@@ -411,7 +418,6 @@ class CreateBeta(Create):
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser, hidden=True)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
-    flags.AddMetadataFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -439,8 +445,6 @@ class CreateBeta(Create):
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.default_max_pods_per_node = args.default_max_pods_per_node
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
-    ops.metadata = metadata_utils.ConstructMetadataDict(args.metadata,
-                                                        args.metadata_from_file)
     return ops
 
 
@@ -484,7 +488,6 @@ class CreateAlpha(Create):
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
     flags.AddSecurityProfileForCreateFlags(parser)
-    flags.AddMetadataFlags(parser)
     kms_flag_overrides = {
         'kms-key': '--database-encryption-key',
         'kms-keyring': '--database-encryption-key-keyring',
@@ -526,8 +529,6 @@ class CreateAlpha(Create):
     ops.security_profile = args.security_profile
     ops.security_profile_runtime_rules = args.security_profile_runtime_rules
     ops.autoprovisioning_config_file = args.autoprovisioning_config_file
-    ops.metadata = metadata_utils.ConstructMetadataDict(args.metadata,
-                                                        args.metadata_from_file)
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

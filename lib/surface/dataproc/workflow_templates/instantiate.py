@@ -29,16 +29,20 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+def _CommonArgs(parser):
+  flags.AddTimeoutFlag(parser, default='35m')
+  base.ASYNC_FLAG.AddToParser(parser)
+  flags.AddParametersFlag(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Instantiate(base.CreateCommand):
   """Instantiate a workflow template."""
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'run')
-    flags.AddTimeoutFlag(parser, default='35m')
-    flags.AddParametersFlag(parser)
-    base.ASYNC_FLAG.AddToParser(parser)
+    _CommonArgs(parser)
+    flags.AddTemplateResourceArg(parser, 'run', api_version='v1')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -46,7 +50,45 @@ class Instantiate(base.CreateCommand):
     template_ref = args.CONCEPTS.template.Parse()
 
     instantiate_request = dataproc.messages.InstantiateWorkflowTemplateRequest()
-    instantiate_request.instanceId = uuid.uuid4().hex  # request UUID
+    instantiate_request.requestId = uuid.uuid4().hex  # request UUID
+
+    if args.parameters:
+      instantiate_request.parameters = encoding.DictToMessage(
+          args.parameters,
+          msgs.InstantiateWorkflowTemplateRequest.ParametersValue)
+
+    request = msgs.DataprocProjectsRegionsWorkflowTemplatesInstantiateRequest(
+        instantiateWorkflowTemplateRequest=instantiate_request,
+        name=template_ref.RelativeName())
+
+    operation = dataproc.client.projects_regions_workflowTemplates.Instantiate(
+        request)
+    if args.async:
+      log.status.Print('Instantiating [{0}] with operation [{1}].'.format(
+          template_ref.Name(), operation.name))
+      return
+
+    operation = util.WaitForWorkflowTemplateOperation(
+        dataproc, operation, timeout_s=args.timeout)
+    return operation
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class InstantiateBeta(Instantiate):
+  """Instantiate a workflow template."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    flags.AddTemplateResourceArg(parser, 'run', api_version='v1beta2')
+
+  def Run(self, args):
+    dataproc = dp.Dataproc(self.ReleaseTrack())
+    msgs = dataproc.messages
+    template_ref = args.CONCEPTS.template.Parse()
+
+    instantiate_request = dataproc.messages.InstantiateWorkflowTemplateRequest()
+    instantiate_request.requestId = uuid.uuid4().hex  # request UUID
     if args.parameters:
       instantiate_request.parameters = encoding.DictToMessage(
           args.parameters,

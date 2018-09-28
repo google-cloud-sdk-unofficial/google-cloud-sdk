@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A command that generates all DevSite and manpage documents."""
+"""A command that generates and/or updates help document directoriess."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,13 +25,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import walker_util
 from googlecloudsdk.command_lib.meta import help_util
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import pkg_resources
 
 
-class HelpTextOutOfDateError(exceptions.Error):
-  """Help text files out of date for --test."""
+class HelpOutOfDateError(exceptions.Error):
+  """Help documents out of date for --test."""
 
 
 _HELP_HTML_DATA_FILES = [
@@ -106,7 +107,7 @@ def WriteHtmlMenu(command, out):
 
 
 class GenerateHelpDocs(base.Command):
-  """Generate all DevSite and man page help docs.
+  """Generate and/or update help document directories.
 
   The DevSite docs are generated in the --devsite-dir directory with pathnames
   in the reference directory hierarchy. The manpage docs are generated in the
@@ -147,19 +148,26 @@ class GenerateHelpDocs(base.Command):
         '--manpage-dir',
         metavar='DIRECTORY',
         help=('The directory where the generated manpage document subtree will '
-              'be written. If not specified then manpage documents will not be '
-              'generated.'))
+              'be written. The manpage hierarchy is flat with all command '
+              'documents in the manN/ subdirectory. If not specified then '
+              'manpage documents will not be generated.'))
     parser.add_argument(
         '--test',
         action='store_true',
-        help='Show but do not apply --update-help-text-dir actions. Exit with '
-        'non-zero exit status if any help text file must be updated.')
+        help=('Show but do not apply --update actions. Exit with non-zero exit '
+              'status if any help document file must be updated.'))
+    parser.add_argument(
+        '--update',
+        action='store_true',
+        help=('Update destination directories to match the current CLI. '
+              'Documents for commands not present in the current CLI will be '
+              'deleted. Use this flag to update the help text golden files '
+              'after the help_text_test test fails.'))
     parser.add_argument(
         '--update-help-text-dir',
+        hidden=True,
         metavar='DIRECTORY',
-        help=('Update DIRECTORY help text files to match the current CLI. Use '
-              'this flag to update the help text golden files after the '
-              'help_text_test test fails.'))
+        help='Deprecated. Use --update --help-text-dir=DIRECTORY instead.')
     parser.add_argument(
         'restrict',
         metavar='COMMAND/GROUP',
@@ -169,36 +177,60 @@ class GenerateHelpDocs(base.Command):
               'For example: gcloud.alpha gcloud.beta.test'))
 
   def Run(self, args):
-    if args.devsite_dir:
-      walker_util.DevSiteGenerator(self._cli_power_users_only,
-                                   args.devsite_dir).Walk(
-                                       args.hidden, args.restrict)
-    if args.help_text_dir:
-      walker_util.HelpTextGenerator(
-          self._cli_power_users_only, args.help_text_dir).Walk(args.hidden,
-                                                               args.restrict)
-    if args.html_dir:
-      walker_util.HtmlGenerator(
-          self._cli_power_users_only, args.html_dir).Walk(args.hidden,
-                                                          args.restrict)
+    out_of_date = set()
+
+    def Generate(kind, generator, directory, encoding='utf8'):
+      """Runs generator and optionally updates help docs in directory."""
+      console_attr.ResetConsoleAttr(encoding)
+      if not args.update:
+        generator(self._cli_power_users_only, directory).Walk(
+            args.hidden, args.restrict)
+      elif help_util.HelpUpdater(
+          self._cli_power_users_only, directory, generator,
+          test=args.test).Update(args.restrict):
+        out_of_date.add(kind)
+
+    def GenerateHtmlNav(directory):
+      """Generates html nav files in directory."""
       tree = walker_util.CommandTreeGenerator(
           self._cli_power_users_only).Walk(args.hidden, args.restrict)
-      with files.FileWriter(os.path.join(args.html_dir, '_menu_.html')) as out:
+      with files.FileWriter(os.path.join(directory, '_menu_.html')) as out:
         WriteHtmlMenu(tree, out)
       for file_name in _HELP_HTML_DATA_FILES:
         file_contents = pkg_resources.GetResource(
             'googlecloudsdk.api_lib.meta.help_html_data.', file_name)
-        files.WriteBinaryFileContents(os.path.join(args.html_dir, file_name),
+        files.WriteBinaryFileContents(os.path.join(directory, file_name),
                                       file_contents)
-    if args.manpage_dir:
-      walker_util.ManPageGenerator(
-          self._cli_power_users_only, args.manpage_dir).Walk(args.hidden,
-                                                             args.restrict)
+
+    # Handle deprecated flags -- probably burned in a bunch of eng scripts.
+
     if args.update_help_text_dir:
-      # The help text golden files are always ascii.
-      console_attr.ResetConsoleAttr(encoding='ascii')
-      changes = help_util.HelpTextUpdater(
-          self._cli_power_users_only, args.update_help_text_dir,
-          test=args.test).Update(args.restrict)
-      if changes and args.test:
-        raise HelpTextOutOfDateError('Help text files must be updated.')
+      log.warning('[--update-help-text-dir={directory}] is deprecated. Use '
+                  'this instead: --update --help-text-dir={directory}.'.format(
+                      directory=args.update_help_text_dir))
+      args.help_text_dir = args.update_help_text_dir
+      args.update = True
+
+    # Generate/update the destination document directories.
+
+    if args.devsite_dir:
+      Generate('DevSite', walker_util.DevSiteGenerator, args.devsite_dir)
+    if args.help_text_dir:
+      Generate('help text', walker_util.HelpTextGenerator, args.help_text_dir,
+               'ascii')
+    if args.html_dir:
+      Generate('html', walker_util.HtmlGenerator, args.html_dir)
+      GenerateHtmlNav(args.html_dir)
+    if args.manpage_dir:
+      Generate('man page', walker_util.ManPageGenerator, args.manpage_dir)
+
+    # Test update fails with an exception if documents are out of date.
+
+    if out_of_date and args.test:
+      names = sorted(out_of_date)
+      if len(names) > 1:
+        kinds = ' and '.join([', '.join(names[:-1]), names[-1]])
+      else:
+        kinds = names[0]
+      raise HelpOutOfDateError(
+          '{} document files must be updated.'.format(kinds))

@@ -17,7 +17,9 @@ import collections
 from contextlib import contextmanager
 import logging
 import os
+import pickle
 import subprocess
+import sys
 import time
 import timeit
 from ._interfaces import Model
@@ -31,10 +33,15 @@ ENGINE = "Prediction-Engine"
 ENGINE_RUN_TIME = "Prediction-Engine-Run-Time"
 FRAMEWORK = "Framework"
 SCIKIT_LEARN_FRAMEWORK_NAME = "scikit_learn"
+SK_XGB_FRAMEWORK_NAME = "sk_xgb"
 XGBOOST_FRAMEWORK_NAME = "xgboost"
 TENSORFLOW_FRAMEWORK_NAME = "tensorflow"
 PREPROCESS_TIME = "Prediction-Preprocess-Time"
 POSTPROCESS_TIME = "Prediction-Postprocess-Time"
+
+# Default model names
+DEFAULT_MODEL_FILE_NAME_JOBLIB = "model.joblib"
+DEFAULT_MODEL_FILE_NAME_PICKLE = "model.pkl"
 
 # Additional TF keyword arguments
 INPUTS_KEY = "inputs"
@@ -303,3 +310,95 @@ def copy_model_to_local(gcs_path, dest_path):
     raise
   logging.debug("Files copied from %s to %s: took %f seconds", gcs_path,
                 dest_path, time.time() - copy_start_time)
+
+
+def load_joblib_or_pickle_model(model_path):
+  """Loads either a .joblib or .pkl file from GCS or from local.
+
+  Loads one of DEFAULT_MODEL_FILE_NAME_JOBLIB or DEFAULT_MODEL_FILE_NAME_PICKLE
+  files if they exist. This is used for both sklearn and xgboost.
+
+  Arguments:
+    model_path: The path to the directory that contains the model file. This
+      path can be either a local path or a GCS path.
+
+  Raises:
+    PredictionError: If there is a problem while loading the file.
+
+  Returns:
+    A loaded scikit-learn or xgboost predictor object or None if neither
+    DEFAULT_MODEL_FILE_NAME_JOBLIB nor DEFAULT_MODEL_FILE_NAME_PICKLE files are
+    found.
+  """
+  if model_path.startswith("gs://"):
+    copy_model_to_local(model_path, LOCAL_MODEL_PATH)
+    model_path = LOCAL_MODEL_PATH
+
+  try:
+    model_file_name_joblib = os.path.join(model_path,
+                                          DEFAULT_MODEL_FILE_NAME_JOBLIB)
+    model_file_name_pickle = os.path.join(model_path,
+                                          DEFAULT_MODEL_FILE_NAME_PICKLE)
+    if os.path.exists(model_file_name_joblib):
+      model_file_name = model_file_name_joblib
+      try:
+        # Load joblib only when needed. If we put this at the top, we need to
+        # add a dependency to sklearn anywhere that prediction_lib is called.
+        from sklearn.externals import joblib  # pylint: disable=g-import-not-at-top
+      except Exception as e:
+        error_msg = "Could not import sklearn module."
+        logging.critical(error_msg)
+        raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+
+      logging.info("Loading model %s using joblib.", model_file_name)
+      return joblib.load(model_file_name)
+
+    elif os.path.exists(model_file_name_pickle):
+      model_file_name = model_file_name_pickle
+      logging.info("Loading model %s using pickle.", model_file_name)
+      with open(model_file_name, "rb") as f:
+        return pickle.loads(f.read())
+
+    return None
+
+  except Exception as e:
+    raw_error_msg = str(e)
+    if "unsupported pickle protocol" in raw_error_msg:
+      error_msg = (
+          "Could not load the model: {}. {}. Please make sure the model was "
+          "exported using python {}. Otherwise, please specify the correct "
+          "'python_version' parameter when deploying the model.").format(
+              model_file_name, raw_error_msg, sys.version_info[0])
+    else:
+      error_msg = "Could not load the model: {}. {}.".format(
+          model_file_name, raw_error_msg)
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+
+
+def detect_sk_xgb_framework_from_obj(model_obj):
+  """Distinguish scikit-learn and xgboost using model object.
+
+  Arguments:
+    model_obj: A loaded model object
+
+  Raises:
+    PredictionError: If there is a problem detecting framework from object.
+
+  Returns:
+    Either scikit-learn framework or xgboost framework
+  """
+  # detect framework type from model object
+  if "sklearn" in type(model_obj).__module__:
+    return SCIKIT_LEARN_FRAMEWORK_NAME
+  elif "xgboost" in type(model_obj).__module__:
+    return XGBOOST_FRAMEWORK_NAME
+  else:
+    error_msg = (
+        "Invalid model type detected: {}.{}. "
+        "Please make sure the model file is an exported sklearn model, "
+        "xgboost model or pipeline.").format(
+            type(model_obj).__module__,
+            type(model_obj).__name__)
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)

@@ -25,18 +25,22 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+def _CommonArgs(parser):
+  parser.add_argument(
+      '--step-id',
+      metavar='STEP_ID',
+      type=str,
+      help='The step ID of the job in the workflow template to remove.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveJob(base.UpdateCommand):
   """Remove a job from workflow template."""
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'remove job')
-    parser.add_argument(
-        '--step-id',
-        metavar='STEP_ID',
-        type=str,
-        help='The step ID of the job in the workflow template to remove.')
+    _CommonArgs(parser)
+    flags.AddTemplateResourceArg(parser, 'remove job', api_version='v1')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -69,3 +73,13 @@ class RemoveJob(base.UpdateCommand):
     response = dataproc.client.projects_regions_workflowTemplates.Update(
         workflow_template)
     return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveJobBeta(RemoveJob):
+  """Remove a job from workflow template."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    flags.AddTemplateResourceArg(parser, 'remove job', api_version='v1beta2')

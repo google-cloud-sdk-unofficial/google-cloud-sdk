@@ -22,6 +22,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
@@ -31,11 +33,25 @@ from googlecloudsdk.command_lib.sql import import_util
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Sql(base.Command):
-  """Imports data into a Cloud SQL instance from a SQL dump file.
+  """Imports data into a Cloud SQL instance from a SQL dump file."""
 
-  Imports data into a Cloud SQL instance from a SQL dump file in Google Cloud
-  Storage.
-  """
+  detailed_help = {
+      'DESCRIPTION':
+          textwrap.dedent("""\
+          {command} imports data into a Cloud SQL instance from a SQL dump file
+          in Google Cloud Storage.
+
+          For detailed help on importing data into Cloud SQL, refer to this
+          guide: https://cloud.google.com/sql/docs/mysql/import-export/importing
+          """),
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To import data from a SQL dump file into a database, `testdb`, on the
+          specified Cloud SQL instance `test-instance-1`, run:
+
+            $  gcloud sql import sql test-instance-1 gs://test-bucket/test-file.sql.gz --database=testdb
+          """),
+      }
 
   @staticmethod
   def Args(parser):
@@ -49,7 +65,7 @@ class Sql(base.Command):
     import_util.AddBaseImportFlags(parser, filetype='MySQL dump')
     flags.AddDatabase(
         parser,
-        'The database (for example, guestbook) to which the import is'
+        'Database (for example, guestbook) to which the import is'
         ' made. If not set, it is assumed that the database is specified in'
         ' the file to be imported.')
 

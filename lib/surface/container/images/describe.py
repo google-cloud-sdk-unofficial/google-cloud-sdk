@@ -38,7 +38,7 @@ def _CommonArgs(parser):
 
 
 # pylint: disable=line-too-long
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Lists information about the specified image.
 
@@ -83,25 +83,36 @@ class Describe(base.DescribeCommand):
           digest=img_name.digest)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeAlphaAndBeta(Describe):
   """Lists container analysis data for a given image.
 
   Lists container analysis data for a valid image.
 
   ## EXAMPLES
 
-  Describe container analysis data for a specified image:
+  Describe the specified image:
 
     $ {command} gcr.io/myproject/myimage@digest
           OR
     $ {command} gcr.io/myproject/myimage:tag
+
+  Find the digest for a tag:
+
+    $ {command} gcr.io/myproject/myimage:tag --format='value(image_summary.digest)'
+          OR
+    $ {command} gcr.io/myproject/myimage:tag --format='value(image_summary.fully_qualified_digest)'
+
+  See package vulnerabilities found by the Container Analysis API for the specified image:
+
+    $ {command} gcr.io/myproject/myimage@digest --show-package-vulnerability
   """
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
 
+    # TODO(b/116048537): Refactor these flags to comply with gcloud style.
     parser.add_argument(
         '--metadata-filter',
         default='',

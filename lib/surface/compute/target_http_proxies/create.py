@@ -43,10 +43,10 @@ class Create(base.CreateCommand):
 
   *{command}* is used to create target HTTP proxies. A target
   HTTP proxy is referenced by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTP proxy points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests.
+  specify the network traffic that the proxy is responsible for
+  routing. The target HTTP proxy points to a URL map that defines
+  the rules for routing the requests. The URL map's job is to map
+  URLs to backend services which handle the actual requests.
 
   ## EXAMPLES
 
@@ -100,10 +100,10 @@ class CreateAlpha(Create):
 
   *{command}* is used to create target HTTP proxies. A target
   HTTP proxy is referenced by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTP proxy points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests.
+  specify the network traffic that the proxy is responsible for
+  routing. The target HTTP proxy points to a URL map that defines
+  the rules for routing the requests. The URL map's job is to map
+  URLs to backend services which handle the actual requests.
 
   ## EXAMPLES
 

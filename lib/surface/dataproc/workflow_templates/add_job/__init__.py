@@ -26,7 +26,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddJob(base.Group):
   r"""Add Google Cloud Dataproc jobs to workflow template.
 

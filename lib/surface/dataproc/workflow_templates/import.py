@@ -27,10 +27,11 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
-SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
+V1_SCHEMA_PATH = 'v1/WorkflowTemplate.yaml'
+V1_BETA2_SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.UpdateCommand):
   """Import a workflow template.
 
@@ -42,8 +43,8 @@ class Import(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'import')
-    flags.AddTemplateSourceFlag(parser)
+    flags.AddTemplateResourceArg(parser, 'import', api_version='v1')
+    flags.AddTemplateSourceFlag(parser, V1_SCHEMA_PATH)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -56,17 +57,22 @@ class Import(base.UpdateCommand):
     # parent = template_ref.Parent().RelativePath()
     parent = '/'.join(template_ref.RelativeName().split('/')[0:4])
 
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      schema_path = V1_SCHEMA_PATH
+    else:
+      schema_path = V1_BETA2_SCHEMA_PATH
+
     if args.source:
       with files.FileReader(args.source) as stream:
         template = util.ReadYaml(
             message_type=msgs.WorkflowTemplate,
             stream=stream,
-            schema_path=SCHEMA_PATH)
+            schema_path=schema_path)
     else:
       template = util.ReadYaml(
           message_type=msgs.WorkflowTemplate,
           stream=sys.stdin,
-          schema_path=SCHEMA_PATH)
+          schema_path=schema_path)
 
     # Populate id field.
     template.id = template_ref.Name()
@@ -89,3 +95,19 @@ class Import(base.UpdateCommand):
     template.version = old_template.version
     template.name = template_ref.RelativeName()
     return dataproc.client.projects_regions_workflowTemplates.Update(template)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ImportBeta(Import):
+  """Import a workflow template.
+
+  If the specified template resource already exists, it will be overwritten.
+  Otherwise, a new template will be created.
+  To edit an existing template, you can export the template to a file, edit its
+  configuration, and then import the new configuration.
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.AddTemplateResourceArg(parser, 'import', api_version='v1')
+    flags.AddTemplateSourceFlag(parser, V1_BETA2_SCHEMA_PATH)

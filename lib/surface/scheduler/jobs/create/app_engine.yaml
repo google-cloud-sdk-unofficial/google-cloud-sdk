@@ -10,19 +10,19 @@
 
   arguments:
     resource:
-      help_text: The job to create.
+      help_text: Job to create.
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
       removed_flags: [location]
     params:
     - _REF_googlecloudsdk.command_lib.scheduler.flags:args
     - _REF_googlecloudsdk.command_lib.scheduler.flags:retry_args
-    - api_field: job.appEngineHttpTarget.relativeUrl
+    - api_field: job.appEngineHttpTarget.relativeUri
       arg_name: relative-url
       default: /
       type: googlecloudsdk.calliope.arg_parsers:RegexpValidator:pattern=^/.*,description=Must
         begin with [/].)
       help_text: |
-        String, relative URL to use for the request (beginning with "/").
+        Relative URL to use for the request (beginning with "/").
     - api_field: job.appEngineHttpTarget.httpMethod
       arg_name: http-method
       default: post
@@ -39,26 +39,26 @@
         enum_value: DELETE
       help_text: |
         HTTP method to use for the request.
+    # TODO(b/113588592) Convert --version and --service to a resource arg.
     - api_field: job.appEngineHttpTarget.appEngineRouting.version
       arg_name: version
       help_text: |
-        String, ID of the App Engine version to which to send the request.
+        Version of the App Engine service to send the request to.
     - api_field: job.appEngineHttpTarget.appEngineRouting.service
       arg_name: service
       help_text: |
-        String, ID of the App Engine service to which to send the request.
+        ID of the App Engine service to send the request to.
     - api_field: job.appEngineHttpTarget.headers.additionalProperties
       arg_name: headers
       type:
         arg_dict:
-          flatten: True
+          flatten: true
           spec:
-            - api_field: key
-            - api_field: value
+          - api_field: key
+          - api_field: value
       help_text: |-
-        KEY=VALUE pair, HTTP header to include in the request.
-        *Cannot be repeated*. Example:
-
+        KEY=VALUE pairs of HTTP headers to include in the request.
+        *Cannot be repeated*. For example:
         `--headers Accept-Language=en-us,Accept=text/plain`
     - group:
         mutex: true
@@ -66,7 +66,7 @@
         - api_field: job.appEngineHttpTarget.body
           arg_name: message-body
           help_text: |
-            String, a data payload to be included as the body of the HTTP
+            Data payload to be included as the body of the HTTP
             request. May only be given with compatible HTTP methods (PUT
             or POST).
 
@@ -74,6 +74,6 @@
           arg_name: message-body-from-file
           type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:binary=True"
           help_text: |
-            String, a data payload to be included as the body of the HTTP
-            request. May only be given with compatible HTTP methods (PUT
-            or POST).
+            Path to file containing the data payload to be included as the
+            body of the HTTP request. May only be given with compatible HTTP
+            methods (PUT or POST).

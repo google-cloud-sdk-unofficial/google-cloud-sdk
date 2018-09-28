@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.tasks import parsers
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Acknowledge(base.Command):
+class Acknowledge(base.SilentCommand):
   """Acknowledge the lease on a task in a pull queue."""
 
   @staticmethod
@@ -38,4 +38,4 @@ class Acknowledge(base.Command):
     tasks_client = GetApiAdapter(self.ReleaseTrack()).tasks
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_ref = parsers.ParseTask(args.task, queue_ref)
-    return tasks_client.Acknowledge(task_ref, args.schedule_time)
+    tasks_client.Acknowledge(task_ref, args.schedule_time)

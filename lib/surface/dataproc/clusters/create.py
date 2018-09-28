@@ -23,11 +23,9 @@ from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataproc import clusters
-from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -112,37 +110,7 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, beta=True)
-    flags.AddComponentFlag(parser)
-    flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
-
-    parser.add_argument(
-        '--max-idle',
-        type=arg_parsers.Duration(),
-        help="""\
-        The duration before cluster is auto-deleted after last job completes,
-        such as "2h" or "1d".
-        See $ gcloud topic datetimes for information on duration formats.
-        """)
-
-    auto_delete_group = parser.add_mutually_exclusive_group()
-    auto_delete_group.add_argument(
-        '--max-age',
-        type=arg_parsers.Duration(),
-        help="""\
-        The lifespan of the cluster before it is auto-deleted, such as
-        "2h" or "1d".
-        See $ gcloud topic datetimes for information on duration formats.
-        """)
-
-    auto_delete_group.add_argument(
-        '--expiration-time',
-        type=arg_parsers.Datetime.Parse,
-        help="""\
-        The time when cluster will be auto-deleted, such as
-        "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
-        information on time formats.
-        """)
-
+    clusters.BetaArgsForClusterRef(parser)
     # Add gce-pd-kms-key args
     kms_flag_overrides = {'kms-key': '--gce-pd-kms-key',
                           'kms-keyring': '--gce-pd-kms-key-keyring',
@@ -150,35 +118,6 @@ class CreateBeta(Create):
                           'kms-project': '--gce-pd-kms-key-project'}
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'cluster', flag_overrides=kms_flag_overrides)
-
-    for instance_type in ('master', 'worker'):
-      help_msg = """\
-      Attaches accelerators (e.g. GPUs) to the {instance_type}
-      instance(s).
-      """.format(instance_type=instance_type)
-      if instance_type == 'worker':
-        help_msg += """
-      Note:
-      No accelerators will be attached to preemptible workers, because
-      preemptible VMs do not support accelerators.
-      """
-      help_msg += """
-      *type*::: The specific type (e.g. nvidia-tesla-k80 for nVidia Tesla
-      K80) of accelerator to attach to the instances. Use 'gcloud compute
-      accelerator-types list' to learn about all available accelerator
-      types.
-
-      *count*::: The number of pieces of the accelerator to attach to each
-      of the instances. The default value is 1.
-      """
-      parser.add_argument(
-          '--{0}-accelerator'.format(instance_type),
-          type=arg_parsers.ArgDict(spec={
-              'type': str,
-              'count': int,
-          }),
-          metavar='type=TYPE,[count=COUNT]',
-          help=help_msg)
 
   @staticmethod
   def ValidateArgs(args):

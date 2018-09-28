@@ -39,6 +39,12 @@ class InstantiateFromFile(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    region_prop = properties.VALUES.dataproc.region
+    parser.add_argument(
+        '--region',
+        help=region_prop.help_text,
+        # Don't set default, because it would override users' property setting.
+        action=actions.StoreProperty(region_prop))
     flags.AddFileFlag(parser, 'workflow template', 'run')
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -47,7 +53,7 @@ class InstantiateFromFile(base.CreateCommand):
     msgs = dataproc.messages
 
     # Generate uuid for request.
-    instance_id = uuid.uuid4().hex
+    request_id = uuid.uuid4().hex
     regions_ref = util.ParseRegion(dataproc)
     # Read template from YAML file and validate it using a schema.
     with files.FileReader(args.file) as stream:
@@ -59,7 +65,7 @@ class InstantiateFromFile(base.CreateCommand):
     # Send instantiate inline request.
     request = \
       msgs.DataprocProjectsRegionsWorkflowTemplatesInstantiateInlineRequest(
-          instanceId=instance_id,
+          requestId=request_id,
           parent=regions_ref.RelativeName(),
           workflowTemplate=template)
     operation = \

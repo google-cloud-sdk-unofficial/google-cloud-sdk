@@ -110,7 +110,7 @@ def DisplayCompletions(command, out=None):
             args=' '.join(names + flags)))
       else:
         out.write('{identifier}=({args})\n'.format(
-            identifier=ConvertPathToIdentifier(['-GLOBAL-FLAGS-']),
+            identifier=ConvertPathToIdentifier(['-GCLOUD-WIDE-FLAGS-']),
             args=' '.join(flags)))
         out.write('{identifier}=({args})\n'.format(
             identifier=ConvertPathToIdentifier(args),

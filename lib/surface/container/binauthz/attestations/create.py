@@ -24,8 +24,8 @@ from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import containeranalysis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
 from googlecloudsdk.command_lib.container.binauthz import flags
+from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io

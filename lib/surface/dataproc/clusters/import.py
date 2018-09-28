@@ -29,7 +29,6 @@ from googlecloudsdk.core.util import files
 SCHEMA_PATH = 'v1beta2/Cluster.yaml'
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Import(base.UpdateCommand):
   """Import a cluster.

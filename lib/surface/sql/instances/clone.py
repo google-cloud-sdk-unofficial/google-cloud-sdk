@@ -59,8 +59,7 @@ class Clone(base.CreateCommand):
   def Args(cls, parser):
     """Declare flag and positional arguments for the command parser."""
     base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddFormat(
-        cls.GetTrackedAttribute(flags, 'INSTANCES_FORMAT'))
+    parser.display_info.AddFormat(flags.GetInstanceListFormat())
     parser.add_argument(
         'source',
         completer=flags.InstanceCompleter,

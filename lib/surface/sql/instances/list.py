@@ -47,7 +47,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
+    parser.display_info.AddFormat(flags.GetInstanceListFormat())
     parser.display_info.AddUriFunc(_GetUriFromResource)
 
   def Run(self, args):

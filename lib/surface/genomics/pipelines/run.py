@@ -32,7 +32,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 import six
 
-CLOUD_SDK_IMAGE = 'google/cloud-sdk:alpine'
+CLOUD_SDK_IMAGE = 'google/cloud-sdk:slim'
 SHARED_DISK = 'gcloud-shared'
 
 

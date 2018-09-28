@@ -90,7 +90,7 @@ class Create(base.Command):
                         'https://cloud.google.com/compute/docs/instances/'
                         'signing-up-committed-use-discounts#quota'))
     if errors:
-      utils. RaiseToolException(errors)
+      utils.RaiseToolException(errors)
     return result
 
 

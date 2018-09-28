@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import hive
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Hive(hive.HiveBase, base.Command):
   """Add a Hive job to the workflow template."""
 

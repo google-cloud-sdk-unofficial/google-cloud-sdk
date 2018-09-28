@@ -110,6 +110,9 @@ def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
     if args.connected_vpc:
       function.network = args.connected_vpc
       updated_fields.append('network')
+    if args.vpc_connector:
+      function.vpcConnector = args.vpc_connector
+      updated_fields.append('vpcConnector')
 
   # Populate trigger properties of function based on trigger args.
   if args.trigger_http:
@@ -210,7 +213,7 @@ class DeployAlpha(base.Command):
     Deploy.Args(parser)
     env_vars_util.AddUpdateEnvVarsFlags(parser)
     flags.AddMaxInstancesFlag(parser)
-    flags.AddConnectedVPCFlag(parser)
+    flags.AddConnectedVPCMutexGroup(parser)
     flags.AddServiceAccountFlag(parser)
 
   def Run(self, args):

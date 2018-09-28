@@ -212,6 +212,7 @@ class SnapshotDisksBeta(SnapshotDisks):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(
         plural=True)
     labels_util.AddCreateLabelsFlags(parser)
+    flags.AddStorageLocationFlag(parser, 'snapshot')
     _CommonArgs(parser)
 
 

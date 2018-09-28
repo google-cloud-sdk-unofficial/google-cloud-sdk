@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import hadoop
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Hadoop(hadoop.HadoopBase, base.Command):
   """Add a hadoop job to the workflow template."""
   # TODO(b/65846493): clear up multiple inheritance structure all jobs command

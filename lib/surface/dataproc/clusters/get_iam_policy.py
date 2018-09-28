@@ -24,7 +24,7 @@ from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a cluster.
 

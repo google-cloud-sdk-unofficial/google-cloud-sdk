@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.compute import metadata_utils
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import constants
@@ -77,8 +79,8 @@ def _Args(parser):
   flags.AddMachineTypeFlag(parser)
   parser.add_argument(
       '--disk-size',
-      type=int,
-      help='Size in GB for node VM boot disks. Defaults to 100GB.')
+      type=arg_parsers.BinarySize(lower_bound='10GB'),
+      help='Size for node VM boot disks. Defaults to 100GB.')
   flags.AddImageTypeFlag(parser, 'node pool')
   flags.AddImageFlag(parser, hidden=True)
   flags.AddImageProjectFlag(parser, hidden=True)
@@ -100,6 +102,7 @@ for examples.
   flags.AddNodeVersionFlag(parser)
   flags.AddAcceleratorArgs(parser)
   flags.AddDiskTypeFlag(parser)
+  flags.AddMetadataFlags(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -116,10 +119,12 @@ def ParseCreateNodePoolOptionsBase(args):
     # repairs, attempting to enable autorepair for them will result in API call
     # failing so don't do it.
     enable_autorepair = ((args.image_type or '').lower() in ['', 'cos'])
+  metadata = metadata_utils.ConstructMetadataDict(args.metadata,
+                                                  args.metadata_from_file)
   return api_adapter.CreateNodePoolOptions(
       accelerators=args.accelerator,
       machine_type=args.machine_type,
-      disk_size_gb=args.disk_size,
+      disk_size_gb=utils.BytesToGb(args.disk_size),
       scopes=args.scopes,
       node_version=args.node_version,
       enable_cloud_endpoints=args.enable_cloud_endpoints,
@@ -140,7 +145,8 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_autorepair=enable_autorepair,
       enable_autoupgrade=args.enable_autoupgrade,
       service_account=args.service_account,
-      disk_type=args.disk_type)
+      disk_type=args.disk_type,
+      metadata=metadata)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -226,7 +232,6 @@ class CreateBeta(Create):
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
-    flags.AddMetadataFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -234,8 +239,6 @@ class CreateBeta(Create):
     ops.new_scopes_behavior = True
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.max_pods_per_node = args.max_pods_per_node
-    ops.metadata = metadata_utils.ConstructMetadataDict(args.metadata,
-                                                        args.metadata_from_file)
     return ops
 
 
@@ -252,8 +255,6 @@ class CreateAlpha(Create):
     ops.max_pods_per_node = args.max_pods_per_node
     ops.sandbox = args.sandbox
     ops.node_group = args.node_group
-    ops.metadata = metadata_utils.ConstructMetadataDict(args.metadata,
-                                                        args.metadata_from_file)
     return ops
 
   @staticmethod
@@ -271,7 +272,6 @@ class CreateAlpha(Create):
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
     flags.AddSandboxFlag(parser, hidden=True)
     flags.AddNodeGroupFlag(parser)
-    flags.AddMetadataFlags(parser)
 
 
 Create.detailed_help = DETAILED_HELP

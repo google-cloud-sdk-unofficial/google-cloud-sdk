@@ -55,8 +55,6 @@ class Clusters(base.Group):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() != base.ReleaseTrack.BETA:
-      return
     region_prop = properties.VALUES.dataproc.region
     parser.add_argument(
         '--region',

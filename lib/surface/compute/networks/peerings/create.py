@@ -100,8 +100,7 @@ class CreateAlpha(Create):
   def Run(self, args):
     """Issues the request necessary for adding the peering."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    messages = holder.client.messages
-    networks = holder.client.apitools_client.networks
+    client = holder.client
 
     peer_network_ref = resources.REGISTRY.Parse(
         args.peer_network,
@@ -111,13 +110,15 @@ class CreateAlpha(Create):
         },
         collection='compute.networks')
 
-    return networks.AddPeering(
-        messages.ComputeNetworksAddPeeringRequest(
-            network=args.network,
-            networksAddPeeringRequest=messages.NetworksAddPeeringRequest(
-                autoCreateRoutes=args.auto_create_routes,
-                exportCustomRoutes=args.export_custom_routes,
-                importCustomRoutes=args.import_custom_routes,
-                name=args.name,
-                peerNetwork=peer_network_ref.RelativeName()),
-            project=properties.VALUES.core.project.GetOrFail()))
+    request = client.messages.ComputeNetworksAddPeeringRequest(
+        network=args.network,
+        networksAddPeeringRequest=client.messages.NetworksAddPeeringRequest(
+            autoCreateRoutes=args.auto_create_routes,
+            name=args.name,
+            peerNetwork=peer_network_ref.RelativeName(),
+            exportCustomRoutes=args.export_custom_routes,
+            importCustomRoutes=args.import_custom_routes),
+        project=properties.VALUES.core.project.GetOrFail())
+
+    return client.MakeRequests([(client.apitools_client.networks, 'AddPeering',
+                                 request)])

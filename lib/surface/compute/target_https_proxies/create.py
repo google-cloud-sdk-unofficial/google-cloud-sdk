@@ -50,13 +50,13 @@ class Create(base.CreateCommand):
 
     *{command}* is used to create target HTTPS proxies. A target
   HTTPS proxy is referenced by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTPS proxy points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests. The target
-  HTTPS proxy also points to at most 10 SSL certificates used for
-  server-side authentication. The target HTTPS proxy can be associated with
-  at most one SSL policy.
+  specify the network traffic that the proxy is responsible for
+  routing. The target HTTPS proxy points to a URL map that defines
+  the rules for routing the requests. The URL map's job is to map
+  URLs to backend services which handle the actual requests. The
+  target HTTPS proxy also points to at most 10 SSL certificates
+  used for server-side authentication. The target HTTPS proxy can
+  be associated with at most one SSL policy.
   """
 
   SSL_CERTIFICATES_ARG = None
@@ -125,13 +125,13 @@ class CreateAlpha(Create):
 
     *{command}* is used to create target HTTPS proxies. A target
   HTTPS proxy is referenced by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTPS proxy points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests. The target
-  HTTPS proxy also points to at most 10 SSL certificates used for
-  server-side authentication. The target HTTPS proxy can be associated with
-  at most one SSL policy.
+  specify the network traffic that the proxy is responsible for
+  routing. The target HTTPS proxy points to a URL map that defines
+  the rules for routing the requests. The URL map's job is to map
+  URLs to backend services which handle the actual requests. The
+  target HTTPS proxy also points to at most 10 SSL certificates
+  used for server-side authentication. The target HTTPS proxy can
+  be associated with at most one SSL policy.
   """
 
   SSL_CERTIFICATES_ARG = None

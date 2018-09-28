@@ -30,13 +30,13 @@ from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 class Update(base.SilentCommand):
   """Update a target HTTP proxy.
 
-  *{command}* is used to change the URL map of existing
-  target HTTP proxies. A target HTTP proxy is referenced
-  by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTP proxy in turn points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests.
+  *{command}* is used to change the URL map of existing target
+  HTTP proxies. A target HTTP proxy is referenced by one or more
+  forwarding rules which specify the network traffic that the proxy
+  is responsible for routing. The target HTTP proxy points to a URL
+  map that defines the rules for routing the requests. The URL map's
+  job is to map URLs to backend services which handle the actual
+  requests.
   """
 
   TARGET_HTTP_PROXY_ARG = None
@@ -72,13 +72,13 @@ class Update(base.SilentCommand):
 class UpdateAlpha(base.SilentCommand):
   """Update a target HTTP proxy.
 
-  *{command}* is used to change the URL map of existing
-  target HTTP proxies. A target HTTP proxy is referenced
-  by one or more forwarding rules which
-  define which packets the proxy is responsible for routing. The
-  target HTTP proxy in turn points to a URL map that defines the rules
-  for routing the requests. The URL map's job is to map URLs to
-  backend services which handle the actual requests.
+  *{command}* is used to change the URL map of existing target
+  HTTP proxies. A target HTTP proxy is referenced by one or more
+  forwarding rules which specify the network traffic that the proxy
+  is responsible for routing. The target HTTP proxy points to a URL
+  map that defines the rules for routing the requests. The URL map's
+  job is to map URLs to backend services which handle the actual
+  requests.
   """
 
   TARGET_HTTP_PROXY_ARG = None

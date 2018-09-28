@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.binauthz import util as cli_util
 
 
 class List(base.ListCommand):
@@ -31,7 +30,13 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(cli_util.ATTESTATION_AUTHORITY_LIST_FORMAT)
+    parser.display_info.AddFormat("""
+        table[box](
+            name.scope().segment(3):sort=1,
+            userOwnedDrydockNote.noteReference:label=NOTE,
+            userOwnedDrydockNote.publicKeys.len():label=NUM_PUBLIC_KEYS
+        )
+    """)
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())

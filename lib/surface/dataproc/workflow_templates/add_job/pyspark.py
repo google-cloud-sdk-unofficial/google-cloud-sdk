@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Add a PySPark job to the workflow template."""
+"""Add a PySpark job to the workflow template."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,9 +24,8 @@ from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import pyspark
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PySpark(pyspark.PySparkBase, base.Command):
-  """Add a PySPark job to the workflow template."""
+  """Add a PySpark job to the workflow template."""
 
   @staticmethod
   def Args(parser):

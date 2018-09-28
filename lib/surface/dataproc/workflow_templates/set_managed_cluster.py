@@ -20,89 +20,30 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+def _CommonArgs(parser, beta, include_deprecated):
+  parser.add_argument(
+      '--cluster-name',
+      help="""\
+        The name of the managed dataproc cluster.
+        If unspecified, the workflow template ID will be used.""")
+  clusters.ArgsForClusterRef(parser, beta, include_deprecated)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetManagedCluster(base.UpdateCommand):
   """Set a managed cluster for the workflow template."""
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'set managed cluster')
-    flags.AddComponentFlag(parser)
-    parser.add_argument(
-        '--cluster-name',
-        help="""\
-        The name of the managed dataproc cluster.
-        If unspecified, the workflow template ID will be used.""")
-    clusters.ArgsForClusterRef(parser, beta=True)
-    flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
-
-    # TODO(b/70164645): Consolidate these arguments with the other beta args
-    # All arguments for these arguments are duplicated from the cluster creation
-    # beta track. There should be a ArgsForClusterRefBeta method in clusters.py
-    # that is invoked here so that we don't have to duplicate the arguments.
-    parser.add_argument(
-        '--max-idle',
-        type=arg_parsers.Duration(),
-        help="""\
-        The duration before cluster is auto-deleted after last job completes,
-        such as "2h" or "1d".
-        See $ gcloud topic datetimes for information on duration formats.
-        """)
-
-    auto_delete_group = parser.add_mutually_exclusive_group()
-    auto_delete_group.add_argument(
-        '--max-age',
-        type=arg_parsers.Duration(),
-        help="""\
-        The lifespan of the cluster before it is auto-deleted, such as
-        "2h" or "1d".
-        See $ gcloud topic datetimes for information on duration formats.
-        """)
-
-    auto_delete_group.add_argument(
-        '--expiration-time',
-        type=arg_parsers.Datetime.Parse,
-        help="""\
-        The time when cluster will be auto-deleted, such as
-        "2017-08-29T18:52:51.142Z." See $ gcloud topic datetimes for
-        information on time formats.
-        """)
-
-    for instance_type in ('master', 'worker'):
-      help_msg = """\
-      Attaches accelerators (e.g. GPUs) to the {instance_type}
-      instance(s).
-      """.format(instance_type=instance_type)
-      if instance_type == 'worker':
-        help_msg += """
-      Note:
-      No accelerators will be attached to preemptible workers, because
-      preemptible VMs do not support accelerators.
-      """
-      help_msg += """
-      *type*::: The specific type (e.g. nvidia-tesla-k80 for nVidia Tesla
-      K80) of accelerator to attach to the instances. Use 'gcloud compute
-      accelerator-types list' to learn about all available accelerator
-      types.
-
-      *count*::: The number of pieces of the accelerator to attach to each
-      of the instances. The default value is 1.
-      """
-      parser.add_argument(
-          '--{0}-accelerator'.format(instance_type),
-          type=arg_parsers.ArgDict(spec={
-              'type': str,
-              'count': int,
-          }),
-          metavar='type=TYPE,[count=COUNT]',
-          help=help_msg)
+    _CommonArgs(parser, beta=False, include_deprecated=False)
+    flags.AddTemplateResourceArg(
+        parser, 'set managed cluster', api_version='v1')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -122,7 +63,12 @@ class SetManagedCluster(base.UpdateCommand):
 
     beta = self.ReleaseTrack() == base.ReleaseTrack.BETA
     cluster_config = clusters.GetClusterConfig(
-        args, dataproc, template_ref.projectsId, compute_resources, beta)
+        args,
+        dataproc,
+        template_ref.projectsId,
+        compute_resources,
+        beta,
+        include_deprecated=beta)
 
     labels = labels_util.ParseCreateArgs(
         args, dataproc.messages.ManagedCluster.LabelsValue)
@@ -136,3 +82,15 @@ class SetManagedCluster(base.UpdateCommand):
     response = dataproc.client.projects_regions_workflowTemplates.Update(
         workflow_template)
     return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SetManagedClusterBeta(SetManagedCluster):
+  """Set a managed cluster for the workflow template."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, beta=True, include_deprecated=True)
+    flags.AddTemplateResourceArg(
+        parser, 'set managed cluster', api_version='v1beta2')
+    clusters.BetaArgsForClusterRef(parser)

@@ -40,7 +40,7 @@ def AddBaseArgs(parser):
   """Declare flag and positional arguments for this command parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   base.ASYNC_FLAG.AddToParser(parser)
-  parser.display_info.AddFormat(flags.INSTANCES_FORMAT_BETA)
+  parser.display_info.AddFormat(flags.GetInstanceListFormat())
   flags.AddActivationPolicy(parser)
   flags.AddAssignIp(parser, show_negated_in_help=False)
   flags.AddAuthorizedGAEApps(parser)

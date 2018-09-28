@@ -231,9 +231,20 @@ ListBeta.detailed_help = {
 
            $ {command} --regions ""
 
+        To list all operations with names prefixed with `operation`, run:
+
+           $ {command} --filter="name:operation"
+
         To list all operations in the us-central1 and europe-west1
         regions and all operations in the us-central1-a zone, run:
 
            $ {command} --zones us-central1-a --regions us-central1,europe-west1
+
+        To list all operations with a specified target, filter on the targetLink
+        field (run `{command} --format=json` to see a full, well-structured list
+        of available fields). Additionally, use `scope()` which extracts the
+        last part of the URL to get the required target information, and run:
+
+           $ {command} --filter="targetLink.scope():default-12345abc"
         """,
 }

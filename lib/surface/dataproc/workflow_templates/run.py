@@ -37,7 +37,7 @@ class Run(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'run')
+    flags.AddTemplateResourceArg(parser, 'run', api_version='v1beta2')
     flags.AddTimeoutFlag(parser, default='24h')
     base.ASYNC_FLAG.AddToParser(parser)
 

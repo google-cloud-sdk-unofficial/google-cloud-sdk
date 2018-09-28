@@ -21,10 +21,12 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.search_help import search
+from googlecloudsdk.command_lib.search_help import search_util
 
 
+# TODO(b/67707688): Merge this functionality with help.py.
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class HelpSearch(base.Command):
+class HelpSearch(base.ListCommand):
   """Search the help text of gcloud commands.
 
   Search the help text of gcloud commands for a term of interest. Prints the
@@ -34,10 +36,15 @@ class HelpSearch(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(
-        "table(path.join(sep=' '):label='COMMAND', summary:wrap:label='HELP')")
+    parser.display_info.AddTransforms(search_util.GetTransforms())
+    parser.display_info.AddFormat("""
+        table[all-box](
+            path.join(sep=' '):label='COMMAND',
+            summary():wrap)
+        """)
     parser.add_argument('term',
                         help=('Term to search for.'))
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     return search.RunSearch([args.term], self._cli_power_users_only)

@@ -535,8 +535,10 @@ class TensorFlowModel(prediction_utils.BaseModel):
     return self._client.signature_map
 
 
-def create_tf_session_client(model_dir, tags=(tag_constants.SERVING,)):
-  return SessionClient(*load_tf_model(model_dir, tags))
+def create_tf_session_client(model_dir, tags=(tag_constants.SERVING,),
+                             config=None):
+
+  return SessionClient(*load_tf_model(model_dir, tags, config))
 
 
 def encode_base64(instances, outputs_map):

@@ -24,14 +24,18 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+def _CommonArgs(parser):
+  labels_util.AddCreateLabelsFlags(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a workflow template."""
 
   @staticmethod
   def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'create')
-    labels_util.AddCreateLabelsFlags(parser)
+    _CommonArgs(parser)
+    flags.AddTemplateResourceArg(parser, 'create', api_version='v1')
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -55,3 +59,13 @@ class Create(base.CreateCommand):
     template = dataproc.client.projects_regions_workflowTemplates.Create(
         request)
     return template
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a workflow template."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    flags.AddTemplateResourceArg(parser, 'create', api_version='v1beta2')

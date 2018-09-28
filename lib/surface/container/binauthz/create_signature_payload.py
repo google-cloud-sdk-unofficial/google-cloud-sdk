@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.binauthz import binauthz_util as binauthz_command_util
 from googlecloudsdk.command_lib.container.binauthz import flags as binauthz_flags
+from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
 
 
 class CreateSignaturePayload(base.Command):

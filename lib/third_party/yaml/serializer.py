@@ -1,9 +1,9 @@
 
 __all__ = ['Serializer', 'SerializerError']
 
-from error import YAMLError
-from events import *
-from nodes import *
+from .error import YAMLError
+from .events import *
+from .nodes import *
 
 class SerializerError(YAMLError):
     pass

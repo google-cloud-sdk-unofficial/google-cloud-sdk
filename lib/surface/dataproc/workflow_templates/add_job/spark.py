@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import spark
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Spark(spark.SparkBase, base.Command):
   """Add a Spark job to the workflow template."""
 

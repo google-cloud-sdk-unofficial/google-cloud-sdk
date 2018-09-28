@@ -41,6 +41,5 @@ class Delete(base.DeleteCommand):
         message='Namespace {name} will be deleted'.format(name=namespace_name),
         cancel_on_no=True)
 
-    namespace = policy_api.Delete(namespace_name)
+    policy_api.Delete(namespace_name)
     log.DeletedResource(namespace_name)
-    return namespace
