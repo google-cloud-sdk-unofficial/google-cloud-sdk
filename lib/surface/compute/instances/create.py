@@ -124,13 +124,14 @@ def _CommonArgs(parser,
 class Create(base.CreateCommand):
   """Create Google Compute Engine virtual machine instances."""
 
-  _support_kms = False
+  _support_kms = True
+  _support_nvdimm = False
   _support_public_dns = False
   _support_snapshots = False
 
   @classmethod
   def Args(cls, parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, enable_kms=cls._support_kms)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -168,19 +169,22 @@ class Create(base.CreateCommand):
     return instance_utils.GetNetworkInterfaces(
         args, client, holder, instance_refs, skip_defaults)
 
-  def _GetDiskMessagess(
+  def _GetDiskMessages(
       self, args, skip_defaults, instance_refs, compute_client,
       resource_parser, create_boot_disk, boot_disk_size_gb, image_uri,
       csek_keys):
     flags_to_check = [
-        'disk', 'local_ssd', 'boot_disk_type', 'boot_disk_device_name',
-        'boot_disk_auto_delete', 'require_csek_key_create',
+        'disk', 'local_ssd', 'boot_disk_type',
+        'boot_disk_device_name', 'boot_disk_auto_delete',
+        'require_csek_key_create',
     ]
     if self._support_kms:
       flags_to_check.extend([
           'create_disk', 'boot_disk_kms_key', 'boot_disk_kms_project',
           'boot_disk_kms_location', 'boot_disk_kms_keyring',
       ])
+    if self._support_nvdimm:
+      flags_to_check.extend(['local_nvdimm'])
 
     if (skip_defaults and
         not instance_utils.IsAnySpecified(args, *flags_to_check)):
@@ -208,6 +212,17 @@ class Create(base.CreateCommand):
               instance_ref,
               enable_kms=self._support_kms,
               enable_snapshots=self._support_snapshots))
+      local_nvdimms = []
+      if self._support_nvdimm:
+        for x in args.local_nvdimm or []:
+          local_nvdimms.append(
+              instance_utils.CreateLocalNvdimmMessage(
+                  resource_parser,
+                  compute_client.messages,
+                  x.get('size'),
+                  instance_ref.zone,
+                  instance_ref.project)
+          )
       local_ssds = []
       for x in args.local_ssd or []:
         local_ssds.append(
@@ -248,7 +263,7 @@ class Create(base.CreateCommand):
       else:
         existing_boot_disks[boot_disk_ref.zone] = boot_disk_ref
       disks_messages.append(persistent_disks + persistent_create_disks +
-                            local_ssds)
+                            local_nvdimms + local_ssds)
     return disks_messages
 
   def _GetProjectToServiceAccountMap(
@@ -365,7 +380,7 @@ class Create(base.CreateCommand):
           messages=compute_client.messages, args=args)
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
-    disks_messages = self._GetDiskMessagess(
+    disks_messages = self._GetDiskMessages(
         args, skip_defaults, instance_refs, compute_client, resource_parser,
         create_boot_disk, boot_disk_size_gb, image_uri, csek_keys)
 
@@ -499,6 +514,7 @@ class CreateBeta(Create):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_kms = True
+  _support_nvdimm = False
   _support_public_dns = False
   _support_snapshots = False
 
@@ -527,6 +543,7 @@ class CreateAlpha(CreateBeta):
   """Create Google Compute Engine virtual machine instances."""
 
   _support_kms = True
+  _support_nvdimm = True
   _support_public_dns = True
   _support_snapshots = True
 
@@ -561,6 +578,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddAllocationAffinityGroup(parser)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
+    instances_flags.AddLocalNvdimmArgs(parser)
     maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
 Create.detailed_help = DETAILED_HELP

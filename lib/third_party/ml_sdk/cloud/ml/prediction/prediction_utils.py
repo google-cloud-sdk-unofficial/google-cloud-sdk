@@ -43,6 +43,17 @@ POSTPROCESS_TIME = "Prediction-Postprocess-Time"
 DEFAULT_MODEL_FILE_NAME_JOBLIB = "model.joblib"
 DEFAULT_MODEL_FILE_NAME_PICKLE = "model.pkl"
 
+TENSORFLOW_SPECIFIC_MODEL_FILE_NAMES = (
+    "saved_model.pb",
+    "saved_model.pbtxt",
+)
+SCIKIT_LEARN_MODEL_FILE_NAMES = (
+    DEFAULT_MODEL_FILE_NAME_JOBLIB,
+    DEFAULT_MODEL_FILE_NAME_PICKLE,
+)
+XGBOOST_SPECIFIC_MODEL_FILE_NAMES = ("model.bst",)
+
+
 # Additional TF keyword arguments
 INPUTS_KEY = "inputs"
 OUTPUTS_KEY = "outputs"
@@ -402,3 +413,61 @@ def detect_sk_xgb_framework_from_obj(model_obj):
             type(model_obj).__name__)
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+
+
+def _count_num_files_in_path(model_path, specified_file_names):
+  """Count how many specified files exist in model_path.
+
+  Args:
+    model_path: The local path to the directory that contains the model file.
+    specified_file_names: The file names to be checked
+
+  Returns:
+    An integer indicating how many specified_file_names are found in model_path.
+  """
+  num_matches = 0
+  for file_name in specified_file_names:
+    if os.path.exists(os.path.join(model_path, file_name)):
+      num_matches += 1
+
+  return num_matches
+
+
+def detect_framework(model_path):
+  """Detect framework from model_path by analyzing file extensions.
+
+  Args:
+    model_path: The local path to the directory that contains the model file.
+
+  Raises:
+    PredictionError: If framework can not be identified from model path.
+
+  Returns:
+    A string representing the identified framework or None (custom code is
+    assumed in this situation).
+  """
+  num_tensorflow_models = _count_num_files_in_path(
+      model_path, TENSORFLOW_SPECIFIC_MODEL_FILE_NAMES)
+  num_xgboost_models = _count_num_files_in_path(
+      model_path, XGBOOST_SPECIFIC_MODEL_FILE_NAMES)
+  num_sklearn_models = _count_num_files_in_path(model_path,
+                                                SCIKIT_LEARN_MODEL_FILE_NAMES)
+
+  num_matches = num_tensorflow_models + num_xgboost_models + num_sklearn_models
+  if num_matches > 1:
+    error_msg = "Multiple model files are found in the model_path: {}".format(
+        model_path)
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+
+  if num_tensorflow_models == 1:
+    return TENSORFLOW_FRAMEWORK_NAME
+  elif num_xgboost_models == 1:
+    return XGBOOST_FRAMEWORK_NAME
+  elif num_sklearn_models == 1:
+    model_obj = load_joblib_or_pickle_model(model_path)
+    return detect_sk_xgb_framework_from_obj(model_obj)
+  else:
+    logging.warning(("Model files are not found in the model_path."
+                     "Assumed to be custom code."))
+    return None

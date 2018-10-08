@@ -100,7 +100,7 @@ def _GetPropertiesHelp():
   return '\n'.join(lines)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Interactive(base.Command):
   # pylint: disable=line-too-long
   """Start the gcloud interactive shell.
@@ -121,14 +121,15 @@ class Interactive(base.Command):
 
   *Command Input*::
 
-  Commands are typed, completed and edited in this section. The default prompt
+  Commands are typed, completed, and edited in this section. The default prompt
   is "$ ". If a context has been set, then its tokens are prepopulated before
   the cursor.
 
   *Active Help*::
 
-  As you type, this section displays in-line help summaries for commands, flags
+  As you type, this section displays in-line help summaries for commands, flags,
   and arguments. You can toggle active help on and off via the *F2* key.
+  Hit *F8* to display the help text in your browser.
 
   *Status Display*::
 
@@ -143,7 +144,7 @@ class Interactive(base.Command):
   up/down keys to navigate the completions, and `space` or `/` to select the
   highlighted completion.
 
-  Completions for _known_ commands, flags and static flag values are displayed
+  Completions for _known_ commands, flags, and static flag values are displayed
   automatically. Positional and dynamic flag value completions for known
   commands are displayed after `tab` is entered. Known commands include
   `gcloud`, `bq`, `gsutil`, `kubectl`, and any command with a man page that has
@@ -155,6 +156,10 @@ class Interactive(base.Command):
   (arguments that do not start with '-'). The default completer handles '~' path
   notation and embedded _$var_ references, but does not expand their values in
   completions.
+
+  Configure bash completions as you normally would. *{command}* starts up bash
+  in a mode that sources *~/.bashrc* with the environment variable
+  *COSHELL_VERSION* set to a non-empty version value.
 
   Command completion resets with each simple command in the command line. Simple
   commands are separated by '|', ';', '&' and may appear after '$(', '(', '{',
@@ -220,7 +225,7 @@ class Interactive(base.Command):
 
   ### CLI Trees
 
-  *{command}* uses CLI tree data files for typeahead, command line completion
+  *{command}* uses CLI tree data files for typeahead, command line completion,
   and help snippet generation. A few CLI trees are installed with their
   respective Cloud SDK components: *gcloud* (core component), *bq*, *gsutil*,
   and *kubectl*. Trees for commands that have man(1) pages are generated on
@@ -228,13 +233,13 @@ class Interactive(base.Command):
 
   ## EXAMPLES
 
-  Run *{command}* with the command context set to "gcloud ":
+  To set the command context of *{command}* to "gcloud ", run:
 
       {command} --context="gcloud "
 
   ## NOTES
 
-  On Windows install *git*(1) for a *bash*(1) experience. *{command}* will
+  On Windows, install *git*(1) for a *bash*(1) experience. *{command}* will
   then use the *git* (MinGW) *bash* instead of *cmd.exe*.
 
   Please run *$ gcloud feedback* to report bugs or request new features.
@@ -250,8 +255,8 @@ class Interactive(base.Command):
   def Args(parser):
     parser.add_argument(
         '--context',
-        help=('The default command context. This is a string containing a '
-              'command name, flags and arguments. The context is prepopulated '
+        help=('Default command context. This is a string containing a '
+              'command name, flags, and arguments. The context is prepopulated '
               'in each command line. You can inline edit any part of the '
               'context, or ctrl-c to eliminate it.'))
     parser.add_argument(

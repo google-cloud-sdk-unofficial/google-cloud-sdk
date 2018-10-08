@@ -49,8 +49,11 @@ DETAILED_HELP = {
 }
 
 
-def _CommonArgs(parser):
-  """Add parser arguments common to all tracks."""
+def _Args(parser,
+          support_disk_scope=False,
+          support_force_attach=False,
+          support_boot=False):
+  """Add parser arguments to all tracks."""
 
   flags.INSTANCE_ARG.AddArgument(parser)
 
@@ -71,6 +74,26 @@ def _CommonArgs(parser):
       default='rw',
       help='Specifies the mode of the disk.')
 
+  if support_disk_scope:
+    flags.AddDiskScopeFlag(parser)
+
+  if support_force_attach:
+    parser.add_argument(
+        '--force-attach',
+        default=False,
+        action='store_true',
+        help="""\
+Attach the disk to the instance even if it is currently attached to another
+instance. The attachment will succeed even if detaching from the previous
+instance fails at first. The server will continue trying to detach the disk from
+the previous instance in the background.""")
+
+  if support_boot:
+    parser.add_argument(
+        '--boot',
+        action='store_true',
+        help='Attach the disk to the instance as a boot disk.')
+
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
@@ -80,7 +103,7 @@ class AttachDisk(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _Args(parser)
 
   # This function should be overridden by subclasses to customize disk resource
   # creation as necessary for alpha release track.
@@ -112,15 +135,20 @@ class AttachDisk(base.SilentCommand):
     disk_key_or_none = csek_utils.MaybeLookupKeyMessage(csek_keys, disk_ref,
                                                         client.apitools_client)
 
+    attached_disk = client.messages.AttachedDisk(
+        deviceName=args.device_name,
+        mode=mode,
+        source=disk_ref.SelfLink(),
+        type=client.messages.AttachedDisk.TypeValueValuesEnum.PERSISTENT,
+        diskEncryptionKey=disk_key_or_none)
+
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.boot:
+      attached_disk.boot = args.boot
+
     request = client.messages.ComputeInstancesAttachDiskRequest(
         instance=instance_ref.Name(),
         project=instance_ref.project,
-        attachedDisk=client.messages.AttachedDisk(
-            deviceName=args.device_name,
-            mode=mode,
-            source=disk_ref.SelfLink(),
-            type=client.messages.AttachedDisk.TypeValueValuesEnum.PERSISTENT,
-            diskEncryptionKey=disk_key_or_none),
+        attachedDisk=attached_disk,
         zone=instance_ref.zone)
 
     if self.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
@@ -130,23 +158,16 @@ class AttachDisk(base.SilentCommand):
                                  request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AttachDiskAlphaBeta(AttachDisk):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AttachDiskBeta(AttachDisk):
   """Attach a disk to an instance."""
 
   @staticmethod
   def Args(parser):
-    flags.AddDiskScopeFlag(parser)
-    parser.add_argument(
-        '--force-attach',
-        default=False,
-        action='store_true',
-        help="""\
-Attach the disk to the instance even if it is currently attached to another
-instance. The attachment will succeed even if detaching from the previous
-instance fails at first. The server will continue trying to detach the disk from
-the previous instance in the background.""")
-    _CommonArgs(parser)
+    _Args(
+        parser,
+        support_disk_scope=True,
+        support_force_attach=True)
 
   def ParseDiskRef(self, resources, args, instance_ref):
     if args.disk_scope == 'regional':
@@ -157,6 +178,19 @@ the previous instance in the background.""")
                                             instance_ref.project,
                                             instance_ref.zone,
                                             scope)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AttachDiskAlpha(AttachDiskBeta):
+  """Attach a disk to an instance."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(
+        parser,
+        support_disk_scope=True,
+        support_force_attach=True,
+        support_boot=True)
 
 
 AttachDisk.detailed_help = DETAILED_HELP

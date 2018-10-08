@@ -2,8 +2,8 @@
 __all__ = ['BaseRepresenter', 'SafeRepresenter', 'Representer',
     'RepresenterError']
 
-from .error import *
-from .nodes import *
+from error import *
+from nodes import *
 
 import datetime
 
@@ -51,7 +51,7 @@ class BaseRepresenter(object):
             #self.represented_objects[alias_key] = None
             self.object_keeper.append(data)
         data_types = type(data).__mro__
-        if type(data) is getattr(types, 'InstanceType', None):
+        if type(data) is types.InstanceType:
             data_types = self.get_classobj_bases(data.__class__)+list(data_types)
         if data_types[0] in self.yaml_representers:
             node = self.yaml_representers[data_types[0]](self, data)
@@ -478,7 +478,7 @@ Representer.add_representer(types.BuiltinFunctionType,
 Representer.add_representer(types.ModuleType,
         Representer.represent_module)
 
-Representer.add_multi_representer(getattr(types, 'InstanceType', object),
+Representer.add_multi_representer(types.InstanceType,
         Representer.represent_instance)
 
 Representer.add_multi_representer(object,

@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.commitments import allocation_helper
 from googlecloudsdk.command_lib.compute.commitments import flags
 from googlecloudsdk.core import properties
 
@@ -45,7 +46,8 @@ class Create(base.Command):
   def _ValidateArgs(self, args):
     flags.ValidateResourcesArg(args.resources)
 
-  def _MakeCreateRequest(self, args, messages, project, region, commitment_ref):
+  def _MakeCreateRequest(
+      self, args, messages, project, region, commitment_ref, unused_holder):
     commitment = messages.Commitment(
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
@@ -71,7 +73,7 @@ class Create(base.Command):
     region = properties.VALUES.compute.region.Get()
     project = properties.VALUES.core.project.Get()
     create_request = self._MakeCreateRequest(
-        args, messages, project, region, commitment_ref)
+        args, messages, project, region, commitment_ref, holder)
 
     service = holder.client.apitools_client.regionCommitments
     batch_url = holder.client.batch_url
@@ -102,18 +104,20 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
     flags.AddCreateFlags(parser)
+    flags.AddAllocationArgGroup(parser)
     messages = apis.GetMessagesModule('compute', 'alpha')
     flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
 
-  def _MakeCreateRequest(self, args, messages, project, region, commitment_ref):
+  def _MakeCreateRequest(
+      self, args, messages, project, region, commitment_ref, holder):
     commitment_type_flag = flags.GetTypeMapperFlag(messages)
     commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
     commitment = messages.Commitment(
+        allocations=allocation_helper.MakeAllocations(args, messages, holder),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArg(messages, args.resources),
-        type=commitment_type
-    )
+        type=commitment_type)
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,

@@ -30,7 +30,7 @@ from googlecloudsdk.core import resources
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
   """Create a Google Compute Engine router.
 
@@ -129,7 +129,7 @@ class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
                           'Creating router [{0}]'.format(router_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateWithCustomAdvertisements(base.CreateCommand):
   """Create a Google Compute Engine router.
 

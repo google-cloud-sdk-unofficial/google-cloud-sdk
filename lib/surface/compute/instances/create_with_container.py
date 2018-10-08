@@ -267,6 +267,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     _Args(parser, deprecate_maintenance_policy=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
+    instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):

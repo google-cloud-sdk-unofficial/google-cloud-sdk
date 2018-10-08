@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AlphaUpdate(base.UpdateCommand):
   """Update a NAT on a Google Compute Engine router."""
 

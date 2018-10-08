@@ -26,6 +26,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import properties
 
 
@@ -56,6 +57,10 @@ class List(base.ListCommand):
 
     $ {command}
 
+  To see the list of all create cluster operations, run:
+
+    $ {command} --filter='operationType = CREATE'
+
   To see the list of all active operations in a cluster named mycluster, run:
 
     $ {command} --filter='status.state = RUNNING AND clusterName = mycluster'
@@ -83,7 +88,7 @@ class List(base.ListCommand):
               'is specified. The equivalent term in a --filter expression is: '
               '`status.state = ACTIVE`'))
 
-    parser.display_info.AddFormat('table(name:label=OPERATION_NAME, done)')
+    flags.AddListOperationsFormat(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())

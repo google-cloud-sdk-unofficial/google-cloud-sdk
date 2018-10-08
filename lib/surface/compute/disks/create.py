@@ -186,6 +186,8 @@ class Create(base.Command):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.GA)
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser, 'disk', region_fallthrough=True)
 
   def ParseLicenses(self, args):
     """Parse license.
@@ -315,7 +317,7 @@ class Create(base.Command):
     return result
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, supports_kms_keys=True)
 
   def _Run(self, args, supports_kms_keys=False):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

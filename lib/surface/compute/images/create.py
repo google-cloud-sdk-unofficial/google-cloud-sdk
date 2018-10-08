@@ -32,7 +32,7 @@ from googlecloudsdk.core import resources
 import six
 
 
-def _Args(parser, release_track, supports_kms_keys=False):
+def _Args(parser, release_track):
   """Set Args based on Release Track."""
   # GA Args
   parser.display_info.AddFormat(flags.LIST_FORMAT)
@@ -51,14 +51,12 @@ def _Args(parser, release_track, supports_kms_keys=False):
   flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
 
   image_utils.AddGuestOsFeaturesArg(parser, release_track)
+  kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
 
   # Alpha and Beta Args
   if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
-
-  if supports_kms_keys:
-    kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -75,7 +73,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, supports_kms_keys=False):
+  def _Run(self, args):
     """Returns a list of requests necessary for adding images."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -96,9 +94,8 @@ class Create(base.CreateCommand):
           csek_keys.LookupKey(image_ref,
                               raise_if_missing=args.require_csek_key_create),
           client.apitools_client)
-    if supports_kms_keys:
-      image.imageEncryptionKey = kms_utils.MaybeGetKmsKey(
-          args, messages, image.imageEncryptionKey)
+    image.imageEncryptionKey = kms_utils.MaybeGetKmsKey(
+        args, messages, image.imageEncryptionKey)
 
     # Validate parameters.
     if args.source_disk_zone and not args.source_disk:
@@ -189,11 +186,11 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls.ReleaseTrack(), supports_kms_keys=True)
+    _Args(parser, cls.ReleaseTrack())
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args, supports_kms_keys=True)
+    return self._Run(args)
 
 
 Create.detailed_help = {

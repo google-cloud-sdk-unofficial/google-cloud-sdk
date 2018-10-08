@@ -588,6 +588,54 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "allocations": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--accelerator": "value",
+                    "--commitment": "dynamic",
+                    "--commitment-region": "dynamic",
+                    "--description": "value",
+                    "--local-ssd": "value",
+                    "--machine-type": "value",
+                    "--min-cpu-platform": "value",
+                    "--require-specific-allocation": "bool",
+                    "--vm-count": "value",
+                    "--zone": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--zone": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update-resource-shape": {
+                  "commands": {},
+                  "flags": {
+                    "--accelerator": "value",
+                    "--destination": "value",
+                    "--local-ssd": "value",
+                    "--machine-type": "value",
+                    "--min-cpu-platform": "value",
+                    "--vm-count": "value",
+                    "--zone": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "backend-buckets": {
               "commands": {
                 "add-signed-url-key": {
@@ -867,16 +915,25 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
+                    "--accelerator": "value",
+                    "--allocation": "dynamic",
+                    "--allocation-zone": "dynamic",
+                    "--allocations-from-file": "value",
+                    "--local-ssd": "value",
+                    "--machine-type": "value",
+                    "--min-cpu-platform": "value",
                     "--plan": [
                       "12-month",
                       "36-month"
                     ],
                     "--region": "dynamic",
+                    "--require-specific-allocation": "bool",
                     "--resources": "value",
                     "--type": [
                       "general-purpose",
                       "memory-optimized"
-                    ]
+                    ],
+                    "--vm-count": "value"
                   }
                 },
                 "describe": {
@@ -2416,6 +2473,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-family": "value",
                     "--image-project": "value",
                     "--labels": "value",
+                    "--local-nvdimm": "value",
                     "--local-ssd": "value",
                     "--machine-type": "dynamic",
                     "--maintenance-policy": [
@@ -2486,6 +2544,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-family": "value",
                     "--image-project": "value",
                     "--labels": "value",
+                    "--local-nvdimm": "value",
                     "--local-ssd": "value",
                     "--machine-type": "dynamic",
                     "--maintenance-policy": [
@@ -2614,6 +2673,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "attach-disk": {
                   "commands": {},
                   "flags": {
+                    "--boot": "bool",
                     "--csek-key-file": "value",
                     "--device-name": "value",
                     "--disk": "value",
@@ -2663,6 +2723,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-family": "value",
                     "--image-project": "value",
                     "--labels": "value",
+                    "--local-nvdimm": "value",
                     "--local-ssd": "value",
                     "--machine-type": "dynamic",
                     "--maintenance-policy": [
@@ -2743,6 +2804,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-family": "value",
                     "--image-project": "value",
                     "--labels": "value",
+                    "--local-nvdimm": "value",
                     "--local-ssd": "value",
                     "--machine-type": "dynamic",
                     "--maintenance-policy": [
@@ -9657,8 +9719,10 @@ STATIC_COMPLETION_CLI_TREE = {
             "add-iam-policy-binding": {
               "commands": {},
               "flags": {
+                "--condition": "value",
+                "--condition-from-file": "value",
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "create": {
@@ -9709,8 +9773,11 @@ STATIC_COMPLETION_CLI_TREE = {
             "remove-iam-policy-binding": {
               "commands": {},
               "flags": {
+                "--all": "bool",
+                "--condition": "value",
+                "--condition-from-file": "value",
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "set-iam-policy": {
@@ -10414,6 +10481,118 @@ STATIC_COMPLETION_CLI_TREE = {
             "--page-size": "value",
             "--sort-by": "value"
           }
+        },
+        "serverless": {
+          "commands": {
+            "configurations": {
+              "commands": {
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--clear-env-vars": "bool",
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--concurrency": "value",
+                    "--env-vars-file": "value",
+                    "--memory": "value",
+                    "--namespace": "value",
+                    "--region": "value",
+                    "--remove-env-vars": "value",
+                    "--service": "value",
+                    "--set-env-vars": "value",
+                    "--update-env-vars": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "deploy": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--clear-env-vars": "bool",
+                "--cluster": "value",
+                "--cluster-location": "value",
+                "--concurrency": "value",
+                "--env-vars-file": "value",
+                "--image": "value",
+                "--memory": "value",
+                "--namespace": "value",
+                "--region": "value",
+                "--remove-env-vars": "value",
+                "--set-env-vars": "value",
+                "--update-env-vars": "value"
+              }
+            },
+            "revisions": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--namespace": "value",
+                    "--region": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--namespace": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--service": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "services": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--namespace": "value",
+                    "--region": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--namespace": "value",
+                    "--region": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--namespace": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
         },
         "services": {
           "commands": {
@@ -15535,6 +15714,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {}
                 },
+                "get-diagnostics": {
+                  "commands": {},
+                  "flags": {}
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -16034,6 +16217,16 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic"
                   }
                 },
+                "get-nat-mapping-info": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value"
+                  }
+                },
                 "get-status": {
                   "commands": {},
                   "flags": {
@@ -16051,6 +16244,73 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
+                },
+                "nats": {
+                  "commands": {
+                    "create": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--auto-allocate-nat-external-ips": "bool",
+                        "--icmp-idle-timeout": "value",
+                        "--min-ports-per-vm": "value",
+                        "--nat-all-subnet-ip-ranges": "bool",
+                        "--nat-custom-subnet-ip-ranges": "value",
+                        "--nat-external-ip-pool": "value",
+                        "--nat-primary-subnet-ip-ranges": "bool",
+                        "--region": "dynamic",
+                        "--router": "dynamic",
+                        "--tcp-established-idle-timeout": "value",
+                        "--tcp-transitory-idle-timeout": "value",
+                        "--udp-idle-timeout": "value"
+                      }
+                    },
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "dynamic",
+                        "--router": "dynamic"
+                      }
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "dynamic",
+                        "--router": "dynamic"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--region": "dynamic",
+                        "--router": "dynamic"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--auto-allocate-nat-external-ips": "bool",
+                        "--clear-icmp-idle-timeout": "bool",
+                        "--clear-min-ports-per-vm": "bool",
+                        "--clear-tcp-established-idle-timeout": "bool",
+                        "--clear-tcp-transitory-idle-timeout": "bool",
+                        "--clear-udp-idle-timeout": "bool",
+                        "--icmp-idle-timeout": "value",
+                        "--min-ports-per-vm": "value",
+                        "--nat-all-subnet-ip-ranges": "bool",
+                        "--nat-custom-subnet-ip-ranges": "value",
+                        "--nat-external-ip-pool": "value",
+                        "--nat-primary-subnet-ip-ranges": "bool",
+                        "--region": "dynamic",
+                        "--router": "dynamic",
+                        "--tcp-established-idle-timeout": "value",
+                        "--tcp-transitory-idle-timeout": "value",
+                        "--udp-idle-timeout": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
                 },
                 "remove-bgp-peer": {
                   "commands": {},
@@ -20419,6 +20679,12 @@ STATIC_COMPLETION_CLI_TREE = {
             "--skip-diagnostics": "bool"
           }
         },
+        "interactive": {
+          "commands": {},
+          "flags": {
+            "--context": "value"
+          }
+        },
         "iot": {
           "commands": {
             "devices": {
@@ -24644,6 +24910,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--image": "value",
                 "--image-family": "value",
                 "--image-project": "value",
+                "--kms-key": "dynamic",
+                "--kms-keyring": "dynamic",
+                "--kms-location": "dynamic",
+                "--kms-project": "dynamic",
                 "--labels": "value",
                 "--licenses": "value",
                 "--require-csek-key-create": "bool",
@@ -25190,6 +25460,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--family": "value",
                 "--force": "bool",
                 "--guest-os-features": "value",
+                "--kms-key": "dynamic",
+                "--kms-keyring": "dynamic",
+                "--kms-location": "dynamic",
+                "--kms-project": "dynamic",
                 "--labels": "value",
                 "--licenses": "value",
                 "--require-csek-key-create": "bool",
@@ -25609,6 +25883,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--address": "value",
                 "--boot-disk-auto-delete": "bool",
                 "--boot-disk-device-name": "value",
+                "--boot-disk-kms-key": "dynamic",
+                "--boot-disk-kms-keyring": "dynamic",
+                "--boot-disk-kms-location": "dynamic",
+                "--boot-disk-kms-project": "dynamic",
                 "--boot-disk-size": "value",
                 "--boot-disk-type": "value",
                 "--can-ip-forward": "bool",
@@ -25648,6 +25926,63 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--service-account": "value",
                 "--source-instance": "dynamic",
                 "--source-instance-zone": "dynamic",
+                "--subnet": "value",
+                "--tags": "value"
+              }
+            },
+            "create-with-container": {
+              "commands": {},
+              "flags": {
+                "--address": "value",
+                "--boot-disk-auto-delete": "bool",
+                "--boot-disk-device-name": "value",
+                "--boot-disk-size": "value",
+                "--boot-disk-type": "value",
+                "--can-ip-forward": "bool",
+                "--container-arg": "value",
+                "--container-command": "value",
+                "--container-env": "value",
+                "--container-env-file": "value",
+                "--container-image": "value",
+                "--container-mount-host-path": "value",
+                "--container-mount-tmpfs": "value",
+                "--container-privileged": "bool",
+                "--container-restart-policy": [
+                  "always",
+                  "never",
+                  "on-failure"
+                ],
+                "--container-stdin": "bool",
+                "--container-tty": "bool",
+                "--create-disk": "value",
+                "--custom-cpu": "value",
+                "--custom-extensions": "bool",
+                "--custom-memory": "value",
+                "--description": "value",
+                "--disk": "value",
+                "--image": "value",
+                "--image-family": "value",
+                "--image-project": "value",
+                "--labels": "value",
+                "--machine-type": "dynamic",
+                "--maintenance-policy": [
+                  "MIGRATE",
+                  "TERMINATE"
+                ],
+                "--metadata": "value",
+                "--metadata-from-file": "value",
+                "--min-cpu-platform": "value",
+                "--network": "value",
+                "--network-interface": "value",
+                "--network-tier": "value",
+                "--no-address": "bool",
+                "--no-scopes": "bool",
+                "--no-service-account": "bool",
+                "--preemptible": "bool",
+                "--region": "dynamic",
+                "--restart-on-failure": "bool",
+                "--scopes": "value",
+                "--service-account": "value",
                 "--subnet": "value",
                 "--tags": "value"
               }
@@ -25733,6 +26068,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--async": "bool",
                 "--boot-disk-auto-delete": "bool",
                 "--boot-disk-device-name": "value",
+                "--boot-disk-kms-key": "dynamic",
+                "--boot-disk-kms-keyring": "dynamic",
+                "--boot-disk-kms-location": "dynamic",
+                "--boot-disk-kms-project": "dynamic",
                 "--boot-disk-size": "value",
                 "--boot-disk-type": "value",
                 "--can-ip-forward": "bool",
@@ -27892,6 +28231,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-legacy-authorization": "bool",
                 "--enable-master-authorized-networks": "bool",
                 "--enable-network-policy": "bool",
+                "--enable-private-endpoint": "bool",
+                "--enable-private-nodes": "bool",
                 "--image-type": "value",
                 "--issue-client-certificate": "bool",
                 "--labels": "value",
@@ -27899,6 +28240,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--machine-type": "value",
                 "--maintenance-window": "value",
                 "--master-authorized-networks": "value",
+                "--master-ipv4-cidr": "value",
                 "--max-nodes": "value",
                 "--max-nodes-per-pool": "value",
                 "--metadata": "value",
@@ -27942,6 +28284,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "get-credentials": {
               "commands": {},
               "flags": {
+                "--internal-ip": "bool",
                 "--region": "value",
                 "--zone": "value"
               }

@@ -30,95 +30,7 @@ NOT_RUNNING_MSG = '''\
 cluster {0} is not running. The kubernetes API may not be available.'''
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class GetCredentialsGA(base.Command):
-  """Fetch credentials for a running cluster.
-
-  {command} updates a `kubeconfig` file with appropriate credentials and
-  endpoint information to point `kubectl` at a specific cluster in Google
-  Kubernetes Engine.
-
-  It takes a project and a zone as parameters, passed through by set
-  defaults or flags. By default, credentials are written to `HOME/.kube/config`.
-  You can provide an alternate path by setting the `KUBECONFIG` environment
-  variable.
-
-  This command enables switching to a specific cluster, when working
-  with multiple clusters. It can also be used to access a previously created
-  cluster from a new workstation.
-
-  By default, {command} will configure kubectl to automatically refresh its
-  credentials using the same identity as gcloud. If you are running kubectl as
-  part of an application, it is recommended to use [application default
-  credentials](https://cloud.google.com/docs/authentication/production).
-  To configure a `kubeconfig` file to use application default credentials, set
-  the container/use_application_default_credentials
-  [Cloud SDK property](https://cloud.google.com/sdk/docs/properties) to true
-  before running {command}
-
-  See [](https://cloud.google.com/kubernetes-engine/docs/kubectl) for
-  kubectl documentation.
-  """
-  detailed_help = {
-      'EXAMPLES':
-          """\
-          To switch to working on your cluster 'testcluster1', run:
-
-            $ {command} testcluster1 --zone=us-central1-f
-      """,
-  }
-
-  def __init__(self, *args, **kwargs):
-    super(GetCredentialsGA, self).__init__(*args, **kwargs)
-    self._use_internal_ip = False
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
-    """
-    parser.add_argument(
-        'name',
-        help='Name of the cluster to get credentials for.',
-        action=actions.StoreProperty(properties.VALUES.container.cluster))
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Raises:
-      util.Error: if the cluster is unreachable or not running.
-    """
-    util.CheckKubectlInstalled()
-    adapter = self.context['api_adapter']
-    location_get = self.context['location_get']
-    location = location_get(args)
-    cluster_ref = adapter.ParseCluster(args.name, location)
-    log.status.Print('Fetching cluster endpoint and auth data.')
-    # Call DescribeCluster to get auth info and cache for next time
-    cluster = adapter.GetCluster(cluster_ref)
-    auth = cluster.masterAuth
-    # TODO(b/70856999) Make this consistent with the checks in
-    # api_lib/container/kubeconfig.py.
-    missing_creds = not (auth and auth.clientCertificate and auth.clientKey)
-    if missing_creds and not util.ClusterConfig.UseGCPAuthProvider():
-      raise util.Error(
-          'get-credentials requires edit permission on {0}'.format(
-              cluster_ref.projectId))
-    if not adapter.IsRunning(cluster):
-      log.warning(NOT_RUNNING_MSG.format(cluster_ref.clusterId))
-    util.ClusterConfig.Persist(cluster, cluster_ref.projectId,
-                               self._use_internal_ip)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class GetCredentialsBeta(GetCredentialsGA):
+class GetCredentials(base.Command):
   """Fetch credentials for a running cluster.
 
   {command} updates a `kubeconfig` file with appropriate credentials and
@@ -173,6 +85,32 @@ class GetCredentialsBeta(GetCredentialsGA):
         action='store_true')
 
   def Run(self, args):
-    """See GetCredentialsGA.Run."""
-    self._use_internal_ip = args.internal_ip
-    super(GetCredentialsBeta, self).Run(args)
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Raises:
+      util.Error: if the cluster is unreachable or not running.
+    """
+    util.CheckKubectlInstalled()
+    adapter = self.context['api_adapter']
+    location_get = self.context['location_get']
+    location = location_get(args)
+    cluster_ref = adapter.ParseCluster(args.name, location)
+    log.status.Print('Fetching cluster endpoint and auth data.')
+    # Call DescribeCluster to get auth info and cache for next time
+    cluster = adapter.GetCluster(cluster_ref)
+    auth = cluster.masterAuth
+    # TODO(b/70856999) Make this consistent with the checks in
+    # api_lib/container/kubeconfig.py.
+    missing_creds = not (auth and auth.clientCertificate and auth.clientKey)
+    if missing_creds and not util.ClusterConfig.UseGCPAuthProvider():
+      raise util.Error(
+          'get-credentials requires edit permission on {0}'.format(
+              cluster_ref.projectId))
+    if not adapter.IsRunning(cluster):
+      log.warning(NOT_RUNNING_MSG.format(cluster_ref.clusterId))
+    util.ClusterConfig.Persist(cluster, cluster_ref.projectId,
+                               args.internal_ip)

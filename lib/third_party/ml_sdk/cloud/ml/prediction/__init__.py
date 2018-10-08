@@ -32,6 +32,7 @@ from .prediction_utils import BaseModel
 from .prediction_utils import COLUMNARIZE_TIME
 from .prediction_utils import copy_model_to_local
 from .prediction_utils import decode_base64
+from .prediction_utils import detect_framework
 from .prediction_utils import ENCODE_TIME
 from .prediction_utils import ENGINE
 from .prediction_utils import FRAMEWORK

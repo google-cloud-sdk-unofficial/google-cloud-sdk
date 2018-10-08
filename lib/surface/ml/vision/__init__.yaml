@@ -26,7 +26,7 @@ args:
     api_field: requests.image
     arg_name: image_path
     is_positional: true
-    help_text: >
+    help_text: |
       The path to the image to be analyzed. This can be either a local path
       or a URL. If you provide a local file, the contents will be sent
       directly to Google Cloud Vision. If you provide a URL, it must be in
@@ -48,6 +48,6 @@ args:
     api_field: requests.features.model
     arg_name: model-version
     default: builtin/stable
-    help_text: >
+    help_text: |
       The model version to use for the feature. Supported values include
       "builtin/stable" and "builtin/latest".

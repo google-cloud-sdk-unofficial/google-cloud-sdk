@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.routers.nats import flags as nats_flags
 from googlecloudsdk.command_lib.compute.routers.nats import nats_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AlphaDelete(base.DeleteCommand):
   """Remove a NAT from a Google Compute Engine router.
 

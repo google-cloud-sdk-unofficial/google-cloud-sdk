@@ -41,7 +41,8 @@ def _Args(parser, release_track):
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser)
   instances_flags.AddCreateDiskArgs(parser)
-  instances_flags.AddLocalSsdArgsWithSize(parser)
+  if release_track != base.ReleaseTrack.GA:
+    instances_flags.AddLocalSsdArgsWithSize(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=False)
   instances_flags.AddMachineTypeArgs(parser)
@@ -55,7 +56,8 @@ def _Args(parser, release_track):
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddImageArgs(parser)
-  instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+  instances_flags.AddMinCpuPlatformArgs(parser, release_track)
+  instances_flags.AddNetworkTierArgs(parser, instance=True)
   labels_util.AddCreateLabelsFlags(parser)
 
   flags.AddRegionFlag(
@@ -75,19 +77,17 @@ def _Args(parser, release_track):
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateWithContainer(base.CreateCommand):
   """Command for creating VM instance templates hosting Docker images."""
 
   @staticmethod
   def Args(parser):
-    _Args(parser, base.ReleaseTrack.BETA)
-    instances_flags.AddNetworkTierArgs(parser, instance=True)
+    _Args(parser, base.ReleaseTrack.GA)
 
-  def _ValidateBetaArgs(self, args):
+  def _ValidateArgs(self, args):
     instances_flags.ValidateKonletArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
-    instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
@@ -181,7 +181,7 @@ class CreateWithContainer(base.CreateCommand):
     Returns:
       an InstanceTemplate message object
     """
-    self._ValidateBetaArgs(args)
+    self._ValidateArgs(args)
     instances_flags.ValidateNetworkTierArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -244,27 +244,109 @@ class CreateWithContainer(base.CreateCommand):
         instance_template_utils.CreatePersistentCreateDiskMessages(
             holder.client, holder.resources, project,
             getattr(args, 'create_disk', [])))
+    local_nvdimms = []
+    if hasattr(args, 'local_nvdimm'):
+      for x in args.local_nvdimm or []:
+        local_nvdimm = instance_utils.CreateLocalNvdimmMessage(
+            holder.resources,
+            holder.client.messages,
+            x.get('size'))
+        local_nvdimms.append(local_nvdimm)
     local_ssds = []
-    for x in args.local_ssd or []:
-      local_ssd = instance_utils.CreateLocalSsdMessage(
-          holder.resources,
-          holder.client.messages,
-          x.get('device-name'),
-          x.get('interface'),
-          x.get('size'))
-      local_ssds.append(local_ssd)
+    if hasattr(args, 'local_ssd'):
+      for x in args.local_ssd or []:
+        local_ssd = instance_utils.CreateLocalSsdMessage(
+            holder.resources,
+            holder.client.messages,
+            x.get('device-name'),
+            x.get('interface'),
+            x.get('size'))
+        local_ssds.append(local_ssd)
     return (boot_disk_list + persistent_disks +
-            persistent_create_disks + local_ssds)
+            persistent_create_disks + local_nvdimms + local_ssds)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateWithContainerBeta(CreateWithContainer):
+  """Command for creating VM instance templates hosting Docker images."""
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, base.ReleaseTrack.BETA)
+
+  def _ValidateBetaArgs(self, args):
+    instances_flags.ValidateKonletArgs(args)
+    instances_flags.ValidateDiskCommonFlags(args)
+    instances_flags.ValidateLocalSsdFlags(args)
+    instances_flags.ValidateServiceAccountAndScopeArgs(args)
+    if instance_utils.UseExistingBootDisk(args.disk or []):
+      raise exceptions.InvalidArgumentException(
+          '--disk',
+          'Boot disk specified for containerized VM.')
+
+  def Run(self, args):
+    """Issues an InstanceTemplates.Insert request.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+
+    Returns:
+      an InstanceTemplate message object
+    """
+    self._ValidateBetaArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args)
+
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    instance_template_ref = self._GetInstanceTemplateRef(args, holder)
+    image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
+    labels = containers_utils.GetLabelsMessageWithCosVersion(
+        None, image_uri, holder.resources, client.messages.InstanceProperties)
+    argument_labels = labels_util.ParseCreateArgs(
+        args, client.messages.InstanceProperties.LabelsValue)
+    if argument_labels:
+      labels.additionalProperties.extend(argument_labels.additionalProperties)
+
+    metadata = self._GetUserMetadata(args, client, instance_template_ref)
+    network_interface = self._GetNetworkInterface(args, client, holder)
+    scheduling = self._GetScheduling(args, client)
+    service_accounts = self._GetServiceAccounts(args, client)
+    machine_type = self._GetMachineType(args)
+    disks = self._GetDisks(
+        args, client, holder, instance_template_ref, image_uri)
+
+    request = client.messages.ComputeInstanceTemplatesInsertRequest(
+        instanceTemplate=client.messages.InstanceTemplate(
+            properties=client.messages.InstanceProperties(
+                machineType=machine_type,
+                disks=disks,
+                canIpForward=args.can_ip_forward,
+                labels=labels,
+                metadata=metadata,
+                minCpuPlatform=args.min_cpu_platform,
+                networkInterfaces=[network_interface],
+                serviceAccounts=service_accounts,
+                scheduling=scheduling,
+                tags=containers_utils.CreateTagsMessage(
+                    client.messages, args.tags),
+            ),
+            description=args.description,
+            name=instance_template_ref.Name(),
+        ),
+        project=instance_template_ref.project)
+
+    return client.MakeRequests([(client.apitools_client.instanceTemplates,
+                                 'Insert', request)])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateWithContainerAlpha(CreateWithContainer):
+class CreateWithContainerAlpha(CreateWithContainerBeta):
   """Command for creating VM instance templates hosting Docker images."""
 
   @staticmethod
   def Args(parser):
     _Args(parser, base.ReleaseTrack.ALPHA)
-    instances_flags.AddNetworkTierArgs(parser, instance=True)
+    instances_flags.AddLocalNvdimmArgs(parser)
 
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.

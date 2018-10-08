@@ -27,6 +27,7 @@
       table(
          name.basename():label=CONNECTOR_ID:sort=1,
          name.segment(3):label=REGION,
+         type,
          network,
          ipCidrRange,
          status

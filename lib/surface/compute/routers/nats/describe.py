@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.routers.nats import flags as nats_flags
 from googlecloudsdk.command_lib.compute.routers.nats import nats_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AlphaDescribe(base.DescribeCommand):
   """Describe a NAT in a Google Compute Engine router.
   """

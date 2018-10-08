@@ -6,7 +6,7 @@
       `10.240.0.0/29` in the default user project, network and compute/region
       (with other defaults supplied by API):
 
-        $ {command}  my-tpu --range 10.240.0.0/29
+        $ {command}  my-tpu --range 10.240.0.0/29 --network default
 
 
       The following command creates a TPU with ID `my-tpu` with explicit values

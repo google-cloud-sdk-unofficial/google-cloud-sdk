@@ -19,91 +19,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import os
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import walker_util
 from googlecloudsdk.command_lib.meta import help_util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_attr
-from googlecloudsdk.core.util import files
-from googlecloudsdk.core.util import pkg_resources
 
 
 class HelpOutOfDateError(exceptions.Error):
   """Help documents out of date for --test."""
-
-
-_HELP_HTML_DATA_FILES = [
-    'favicon.ico',
-    'index.html',
-    '_menu_.css',
-    '_menu_.js',
-    '_title_.html',
-]
-
-
-def WriteHtmlMenu(command, out):
-  """Writes the command menu tree HTML on out.
-
-  Args:
-    command: dict, The tree (nested dict) of command/group names.
-    out: stream, The output stream.
-  """
-
-  def ConvertPathToIdentifier(path):
-    return '_'.join(path)
-
-  def WalkCommandTree(command, prefix):
-    """Visit each command and group in the CLI command tree.
-
-    Args:
-      command: dict, The tree (nested dict) of command/group names.
-      prefix: [str], The subcommand arg prefix.
-    """
-    level = len(prefix)
-    visibility = 'visible' if level <= 1 else 'hidden'
-    indent = level * 2 + 2
-    name = command.get('_name_')
-    args = prefix + [name]
-    out.write('{indent}<li class="{visibility}" id="{item}" '
-              'onclick="select(event, this.id)">{name}'.format(
-                  indent=' ' * indent, visibility=visibility, name=name,
-                  item=ConvertPathToIdentifier(args)))
-    commands = command.get('commands', []) + command.get('groups', [])
-    if commands:
-      out.write('<ul>\n')
-      for c in sorted(commands, key=lambda x: x['_name_']):
-        WalkCommandTree(c, args)
-      out.write('{indent}</ul>\n'.format(indent=' ' * (indent + 1)))
-      out.write('{indent}</li>\n'.format(indent=' ' * indent))
-    else:
-      out.write('</li>\n'.format(indent=' ' * (indent + 1)))
-
-  out.write("""\
-<html>
-<head>
-<meta name="description" content="man page tree navigation">
-<meta name="generator" content="gcloud meta generate-help-docs --html-dir=.">
-<title> man page tree navigation </title>
-<base href="." target="_blank">
-<link rel="stylesheet" type="text/css" href="_menu_.css">
-<script type="text/javascript" src="_menu_.js"></script>
-</head>
-<body>
-
-<div class="menu">
- <ul>
-""")
-  WalkCommandTree(command, [])
-  out.write("""\
- </ul>
-</div>
-
-</body>
-</html>
-""")
 
 
 class GenerateHelpDocs(base.Command):
@@ -119,7 +44,7 @@ class GenerateHelpDocs(base.Command):
     parser.add_argument(
         '--hidden',
         action='store_true',
-        default=None,
+        default=False,
         help=('Include documents for hidden commands and groups.'))
     parser.add_argument(
         '--devsite-dir',
@@ -132,7 +57,8 @@ class GenerateHelpDocs(base.Command):
         metavar='DIRECTORY',
         help=('The directory where the generated help text reference document '
               'subtree will be written. If not specified then help text '
-              'documents will not be generated.'))
+              'documents will not be generated. The --hidden flag is implied '
+              'for --help-text-dir.'))
     parser.add_argument(
         '--html-dir',
         metavar='DIRECTORY',
@@ -159,6 +85,7 @@ class GenerateHelpDocs(base.Command):
     parser.add_argument(
         '--update',
         action='store_true',
+        default=False,
         help=('Update destination directories to match the current CLI. '
               'Documents for commands not present in the current CLI will be '
               'deleted. Use this flag to update the help text golden files '
@@ -179,28 +106,16 @@ class GenerateHelpDocs(base.Command):
   def Run(self, args):
     out_of_date = set()
 
-    def Generate(kind, generator, directory, encoding='utf8'):
+    def Generate(kind, generator, directory, encoding='utf8', hidden=False):
       """Runs generator and optionally updates help docs in directory."""
       console_attr.ResetConsoleAttr(encoding)
       if not args.update:
         generator(self._cli_power_users_only, directory).Walk(
-            args.hidden, args.restrict)
+            hidden, args.restrict)
       elif help_util.HelpUpdater(
           self._cli_power_users_only, directory, generator,
-          test=args.test).Update(args.restrict):
+          test=args.test, hidden=hidden).Update(args.restrict):
         out_of_date.add(kind)
-
-    def GenerateHtmlNav(directory):
-      """Generates html nav files in directory."""
-      tree = walker_util.CommandTreeGenerator(
-          self._cli_power_users_only).Walk(args.hidden, args.restrict)
-      with files.FileWriter(os.path.join(directory, '_menu_.html')) as out:
-        WriteHtmlMenu(tree, out)
-      for file_name in _HELP_HTML_DATA_FILES:
-        file_contents = pkg_resources.GetResource(
-            'googlecloudsdk.api_lib.meta.help_html_data.', file_name)
-        files.WriteBinaryFileContents(os.path.join(directory, file_name),
-                                      file_contents)
 
     # Handle deprecated flags -- probably burned in a bunch of eng scripts.
 
@@ -214,15 +129,17 @@ class GenerateHelpDocs(base.Command):
     # Generate/update the destination document directories.
 
     if args.devsite_dir:
-      Generate('DevSite', walker_util.DevSiteGenerator, args.devsite_dir)
+      Generate('DevSite', walker_util.DevSiteGenerator, args.devsite_dir,
+               hidden=args.hidden)
     if args.help_text_dir:
       Generate('help text', walker_util.HelpTextGenerator, args.help_text_dir,
-               'ascii')
+               'ascii', hidden=True)
     if args.html_dir:
-      Generate('html', walker_util.HtmlGenerator, args.html_dir)
-      GenerateHtmlNav(args.html_dir)
+      Generate('html', walker_util.HtmlGenerator, args.html_dir,
+               hidden=args.hidden)
     if args.manpage_dir:
-      Generate('man page', walker_util.ManPageGenerator, args.manpage_dir)
+      Generate('man page', walker_util.ManPageGenerator, args.manpage_dir,
+               hidden=args.hidden)
 
     # Test update fails with an exception if documents are out of date.
 

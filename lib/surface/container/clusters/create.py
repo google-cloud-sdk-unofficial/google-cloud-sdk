@@ -73,7 +73,15 @@ def _Args(parser):
     parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
   """
-  parser.add_argument('name', help='The name of this cluster.')
+  parser.add_argument(
+      'name',
+      help="""\
+The name of the cluster to create.
+
+The name may contain only lowercase alphanumerics and '-', must start with a
+letter and end with an alphanumeric, and must be no longer than 40
+characters.
+""")
   # Timeout in seconds for operation
   parser.add_argument(
       '--timeout',
@@ -237,6 +245,8 @@ def ParseCreateOptionsBase(args):
       enable_legacy_authorization=args.enable_legacy_authorization,
       enable_master_authorized_networks=args.enable_master_authorized_networks,
       enable_network_policy=args.enable_network_policy,
+      enable_private_nodes=args.enable_private_nodes,
+      enable_private_endpoint=args.enable_private_endpoint,
       image_type=args.image_type,
       image=args.image,
       image_project=args.image_project,
@@ -246,6 +256,7 @@ def ParseCreateOptionsBase(args):
       local_ssd_count=args.local_ssd_count,
       maintenance_window=args.maintenance_window,
       master_authorized_networks=args.master_authorized_networks,
+      master_ipv4_cidr=args.master_ipv4_cidr,
       max_nodes=args.max_nodes,
       max_nodes_per_pool=args.max_nodes_per_pool,
       min_cpu_platform=args.min_cpu_platform,
@@ -293,6 +304,7 @@ class Create(base.CreateCommand):
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddDeprecatedClusterNodeIdentityFlags(parser)
+    flags.AddPrivateClusterFlags(parser, with_deprecated=False)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
@@ -413,7 +425,7 @@ class CreateBeta(Create):
     flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddPrivateClusterFlags(parser, hidden=False)
+    flags.AddPrivateClusterFlags(parser, with_deprecated=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser, hidden=True)
@@ -434,9 +446,6 @@ class CreateBeta(Create):
     ops.allow_route_overlap = args.allow_route_overlap
     ops.new_scopes_behavior = True
     ops.private_cluster = args.private_cluster
-    ops.enable_private_nodes = args.enable_private_nodes
-    ops.enable_private_endpoint = args.enable_private_endpoint
-    ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.enable_binauthz = args.enable_binauthz
     ops.enable_tpu = args.enable_tpu
@@ -479,7 +488,7 @@ class CreateAlpha(Create):
     flags.AddPreemptibleFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
-    flags.AddPrivateClusterFlags(parser, hidden=False)
+    flags.AddPrivateClusterFlags(parser, with_deprecated=True)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddEnableStackdriverKubernetesFlag(parser)

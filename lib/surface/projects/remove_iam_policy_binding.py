@@ -32,7 +32,7 @@ import six.moves.http_client
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
-  """Remove IAM policy binding for a project.
+  """Remove IAM policy binding from the IAM policy of a project.
 
   Removes a policy binding to the IAM policy of a project, given a project ID
   and the binding.
@@ -53,3 +53,36 @@ class RemoveIamPolicyBinding(base.Command):
     project_ref = command_lib_util.ParseProject(args.id)
     return projects_api.RemoveIamPolicyBinding(project_ref,
                                                args.member, args.role)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveIamPolicyBindingAlpha(base.Command):
+  """Remove IAM policy binding from the IAM policy of a project.
+
+  Removes a policy binding to the IAM policy of a project, given a project ID
+  and the binding. One binding consists of a member, a role and an optional
+  condition.
+  """
+  detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
+      'project', 'example-project-id-1', condition=True)
+
+  @staticmethod
+  def Args(parser):
+    flags.GetProjectFlag('remove IAM policy binding from').AddToParser(parser)
+    iam_util.AddArgsForRemoveIamPolicyBinding(
+        parser,
+        role_completer=completers.ProjectsIamRolesCompleter,
+        add_condition=True)
+
+  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
+  def Run(self, args):
+    project_ref = command_lib_util.ParseProject(args.id)
+    condition = None
+    if args.IsSpecified('condition'):
+      iam_util.ValidateConditionArgument(args.condition,
+                                         iam_util.CONDITION_FORMAT_EXCEPTION)
+      condition = args.condition
+    if args.IsSpecified('condition_from_file'):
+      condition = iam_util.ParseYamlOrJsonCondition(args.condition_from_file)
+    return projects_api.RemoveIamPolicyBindingWithCondition(
+        project_ref, args.member, args.role, condition, args.all)
