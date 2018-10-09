@@ -214,27 +214,20 @@ class Create(base.CreateCommand):
               enable_snapshots=self._support_snapshots))
       local_nvdimms = []
       if self._support_nvdimm:
-        for x in args.local_nvdimm or []:
-          local_nvdimms.append(
-              instance_utils.CreateLocalNvdimmMessage(
-                  resource_parser,
-                  compute_client.messages,
-                  x.get('size'),
-                  instance_ref.zone,
-                  instance_ref.project)
-          )
-      local_ssds = []
-      for x in args.local_ssd or []:
-        local_ssds.append(
-            instance_utils.CreateLocalSsdMessage(
-                resource_parser,
-                compute_client.messages,
-                x.get('device-name'),
-                x.get('interface'),
-                x.get('size'),
-                instance_ref.zone,
-                instance_ref.project)
+        local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
+            args,
+            resource_parser,
+            compute_client.messages,
+            instance_ref.zone,
+            instance_ref.project
         )
+      local_ssds = instance_utils.CreateLocalSsdMessages(
+          args,
+          resource_parser,
+          compute_client.messages,
+          instance_ref.zone,
+          instance_ref.project
+      )
 
       if create_boot_disk:
         if self._support_snapshots:

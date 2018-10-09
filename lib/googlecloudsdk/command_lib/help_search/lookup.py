@@ -45,9 +45,15 @@ SUBSECTIONS = 'subsections'
 SUMMARY = 'summary'
 TEXT = 'text'
 RESULTS = 'results'
+RELEVANCE = 'relevance'
 
 DOT = '.'
 
+# Part of command[RELEASE]
 ALPHA = 'ALPHA'
 BETA = 'BETA'
 GA = 'GA'
+
+# Part of command[PATH]
+ALPHA_PATH = 'alpha'
+BETA_PATH = 'beta'

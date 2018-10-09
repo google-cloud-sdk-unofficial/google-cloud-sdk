@@ -244,24 +244,16 @@ class CreateWithContainer(base.CreateCommand):
         instance_template_utils.CreatePersistentCreateDiskMessages(
             holder.client, holder.resources, project,
             getattr(args, 'create_disk', [])))
-    local_nvdimms = []
-    if hasattr(args, 'local_nvdimm'):
-      for x in args.local_nvdimm or []:
-        local_nvdimm = instance_utils.CreateLocalNvdimmMessage(
-            holder.resources,
-            holder.client.messages,
-            x.get('size'))
-        local_nvdimms.append(local_nvdimm)
-    local_ssds = []
-    if hasattr(args, 'local_ssd'):
-      for x in args.local_ssd or []:
-        local_ssd = instance_utils.CreateLocalSsdMessage(
-            holder.resources,
-            holder.client.messages,
-            x.get('device-name'),
-            x.get('interface'),
-            x.get('size'))
-        local_ssds.append(local_ssd)
+    local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
+        args,
+        holder.resources,
+        holder.client.messages,
+    )
+    local_ssds = instance_utils.CreateLocalSsdMessages(
+        args,
+        holder.resources,
+        holder.client.messages,
+    )
     return (boot_disk_list + persistent_disks +
             persistent_create_disks + local_nvdimms + local_ssds)
 

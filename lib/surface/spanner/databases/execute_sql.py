@@ -40,7 +40,7 @@ DETAILED_HELP = {
 
 @base.UnicodeIsSupported
 class Query(base.Command):
-  """Executes a read-only SQL query against a Cloud Spanner database."""
+  """Executes a SQL query against a Cloud Spanner database."""
   detailed_help = DETAILED_HELP
 
   @staticmethod

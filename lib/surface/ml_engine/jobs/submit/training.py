@@ -26,12 +26,12 @@ from googlecloudsdk.command_lib.ml_engine import jobs_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _AddSubmitTrainingArgs(parser):
+def _AddSubmitTrainingArgs(parser, supports_container=False):
   """Add arguments for `jobs submit training` command."""
   flags.JOB_NAME.AddToParser(parser)
   flags.PACKAGE_PATH.AddToParser(parser)
   flags.PACKAGES.AddToParser(parser)
-  flags.MODULE_NAME.AddToParser(parser)
+  flags.GetModuleNameFlag(required=not supports_container).AddToParser(parser)
   compute_flags.AddRegionFlag(parser, 'machine learning training job',
                               'submit')
   flags.CONFIG.AddToParser(parser)
@@ -61,6 +61,7 @@ def _AddSubmitTrainingArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Train(base.Command):
   """Submit a Cloud Machine Learning training job."""
 
@@ -93,6 +94,16 @@ class Train(base.Command):
     if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
       self.exit_code = 1
     return job
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class TrainAlpha(Train):
+  """Submit a Cloud Machine Learning training job."""
+
+  @staticmethod
+  def Args(parser):
+    _AddSubmitTrainingArgs(parser, supports_container=True)
+    parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
 
 _DETAILED_HELP = {

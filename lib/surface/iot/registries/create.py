@@ -76,17 +76,3 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return _Run(args)
 
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
-  """Create a new device registry."""
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddRegistryResourceArg(parser, 'to create')
-    flags.AddDeviceRegistrySettingsFlagsToParser(parser)
-    flags.AddDeviceRegistryCredentialFlagsToParser(
-        parser, credentials_surface=False)
-
-  def Run(self, args):
-    return _Run(args, supports_deprecated_event_config_flags=True)

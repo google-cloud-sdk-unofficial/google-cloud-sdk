@@ -23,7 +23,7 @@ import copy
 import io
 import re
 
-from googlecloudsdk.command_lib.search_help import lookup
+from googlecloudsdk.command_lib.help_search import lookup
 from googlecloudsdk.core.document_renderers import render_document
 
 import six
@@ -32,13 +32,14 @@ from six.moves import filter
 DEFAULT_SNIPPET_LENGTH = 200
 DOT = '.'
 
-PRIORITIES = {lookup.NAME: 0,
-              lookup.CAPSULE: 1,
-              lookup.SECTIONS: 2,
-              lookup.POSITIONALS: 3,
-              lookup.FLAGS: 4,
-              lookup.COMMANDS: 5,
-              lookup.PATH: 6}
+SUMMARY_PRIORITIES = {
+    lookup.NAME: 0,
+    lookup.CAPSULE: 1,
+    lookup.SECTIONS: 2,
+    lookup.POSITIONALS: 3,
+    lookup.FLAGS: 4,
+    lookup.COMMANDS: 5,
+    lookup.PATH: 6}
 
 
 class TextSlice(object):
@@ -146,7 +147,6 @@ def _BuildExcerpt(text, snips):
       snippet = '...' + snippet
     if snips[-1].end != len(text):
       snippet += '...'
-  # TODO(b/35918584): highlight appearance of terms
   return snippet
 
 
@@ -214,9 +214,9 @@ def _FormatItem(item):
   return '{}::'.format(item)
 
 
-def _Priority(x):
+def _SummaryPriority(x):
   # Ensure the summary is built in the right order.
-  return PRIORITIES.get(x[0], len(PRIORITIES))
+  return SUMMARY_PRIORITIES.get(x[0], len(SUMMARY_PRIORITIES))
 
 
 class SummaryBuilder(object):
@@ -227,7 +227,7 @@ class SummaryBuilder(object):
   of the given locations in a command.
 
   If a lookup is given from terms to where they appear, then the snippets will
-  include the relevant terms.
+  include the relevant terms. Occurrences of search terms will be stylized.
 
   Uses a small amount of simple Cloud SDK markdown.
 
@@ -253,9 +253,9 @@ class SummaryBuilder(object):
   {excerpt of 'myarg' positional help containing 'crocodile'}
 
   4) To get a summary with specific flags, possibly including choices/defaults:
-  GetSummary(command,
-            {'a': 'flags.--my-flag.choices',
-             'b': 'flags.--my-other-flag.default'})
+  SummaryBuilder.GetSummary(command,
+                            {'a': 'flags.--my-flag.choices',
+                             'b': 'flags.--my-other-flag.default'})
 
   # FLAGS
   myflag::
@@ -265,21 +265,24 @@ class SummaryBuilder(object):
 
   Attributes:
     command: dict, a json representation of a command.
-    results: dict, mapping of terms to the locations where they are found. If a
-      '' is used as the key, a snippet of the location starting from the
-      beginning will be used. Locations have segments separated by dots, such as
-      sections.DESCRIPTION. If the first segment is "flags" or "positionals",
-      there must be three segments.
+    found_terms_map: dict, mapping of terms to the locations where they are
+      found, equivalent to the return value of
+      CommandSearchResults.FoundTermsMap(). This map is found under "results"
+      in the command resource returned by help-search. Locations have segments
+      separated by dots, such as sections.DESCRIPTION. If the first segment is
+      "flags" or "positionals", there must be three segments.
     length_per_snippet: int, length of desired substrings to get from text.
   """
 
   _INVALID_LOCATION_MESSAGE = (
       'Attempted to look up a location [{}] that was not found or invalid.')
+  _IMPRECISE_LOCATION_MESSAGE = (
+      'Expected location with three segments, received [{}]')
 
-  def __init__(self, command, results, length_per_snippet=200):
+  def __init__(self, command, found_terms_map, length_per_snippet=200):
     """Create the class."""
     self.command = command
-    self.results = results
+    self.found_terms_map = found_terms_map
     self.length_per_snippet = length_per_snippet
     self._lines = []
 
@@ -287,47 +290,41 @@ class SummaryBuilder(object):
     """Adds flag summary, given location such as ['flags']['--myflag']."""
     flags = self.command.get(location[0], {})
     line = ''
+
+    assert len(location) > 2, self._IMPRECISE_LOCATION_MESSAGE.format(
+        DOT.join(location))
+
+    # Add flag name and description of flag if not added yet.
+    flag = flags.get(location[1])
+    assert flag and not flag[lookup.IS_HIDDEN], (
+        self._INVALID_LOCATION_MESSAGE.format(DOT.join(location)))
     if _FormatHeader(lookup.FLAGS) not in self._lines:
       self._lines.append(_FormatHeader(lookup.FLAGS))
+    if _FormatItem(location[1]) not in self._lines:
+      self._lines.append(_FormatItem(location[1]))
+      desc_line = flag.get(lookup.DESCRIPTION, '')
+      desc_line = _Snip(desc_line, self.length_per_snippet, terms)
+      assert desc_line, self._INVALID_LOCATION_MESSAGE.format(
+          DOT.join(location))
+      line = desc_line
 
-    if len(location) > 1:
-      # Add flag name and description of flag if not added yet.
-      flag = flags.get(location[1])
-      assert flag and not flag[lookup.IS_HIDDEN], (
-          self._INVALID_LOCATION_MESSAGE.format(DOT.join(location)))
-      if _FormatItem(location[1]) not in self._lines:
-        self._lines.append(_FormatItem(location[1]))
-        desc_line = flag.get(lookup.DESCRIPTION, '')
-        desc_line = _Snip(desc_line, self.length_per_snippet, terms)
-        assert desc_line, self._INVALID_LOCATION_MESSAGE.format(
-            DOT.join(location))
-        line = desc_line
-
-      if len(location) > 2:
-        # Add default if needed.
-        if location[2] == lookup.DEFAULT:
-          default = flags.get(location[1]).get(lookup.DEFAULT)
-          if default:
-            if line not in self._lines:
-              self._lines.append(line)
-            if isinstance(default, dict):
-              default = ', '.join([x for x in sorted(default.keys())])
-            elif isinstance(default, list):
-              default = ', '.join([x for x in default])
-            line = 'Default: {}.'.format(default)
-        else:
-          # The other three sub-locations for flags are covered by adding the
-          # snippet of the description.
-          valid_subattributes = [
-              lookup.NAME, lookup.DESCRIPTION, lookup.CHOICES]
-          assert location[2] in valid_subattributes, (
-              self._INVALID_LOCATION_MESSAGE.format(DOT.join(location)))
-
-    # If no specific flag given, get list of all flags.
-    # TODO(b/67707688): Always require a specific flag.
+    # Add default if needed.
+    if location[2] == lookup.DEFAULT:
+      default = flags.get(location[1]).get(lookup.DEFAULT)
+      if default:
+        if line not in self._lines:
+          self._lines.append(line)
+        if isinstance(default, dict):
+          default = ', '.join([x for x in sorted(default.keys())])
+        elif isinstance(default, list):
+          default = ', '.join([x for x in default])
+        line = 'Default: {}.'.format(default)
     else:
-      line = ', '.join(sorted(self.command.get(location[0], {}).keys()))
-      line = _Snip(line, self.length_per_snippet, terms)
+    # The other three sub-locations for flags are covered by adding the
+    # snippet of the description.
+      valid_subattributes = [lookup.NAME, lookup.DESCRIPTION, lookup.CHOICES]
+      assert location[2] in valid_subattributes, (
+          self._INVALID_LOCATION_MESSAGE.format(DOT.join(location)))
 
     if line:
       self._lines.append(line)
@@ -336,23 +333,17 @@ class SummaryBuilder(object):
     """Adds summary of arg, given location such as ['positionals']['myarg']."""
     positionals = self.command.get(lookup.POSITIONALS)
     line = ''
+    assert len(location) > 2, self._IMPRECISE_LOCATION_MESSAGE.format(DOT.join(
+        location))
+    positionals = [p for p in positionals if p[lookup.NAME] == location[1]]
+    assert positionals, self._INVALID_LOCATION_MESSAGE.format(
+        DOT.join(location))
     if _FormatHeader(lookup.POSITIONALS) not in self._lines:
       self._lines.append(_FormatHeader(lookup.POSITIONALS))
-
-    if len(location) > 1:
-      matching_positionals = [p for p in positionals
-                              if p[lookup.NAME] == location[1]]
-      assert matching_positionals, self._INVALID_LOCATION_MESSAGE.format(
-          DOT.join(location))
-      self._lines.append(_FormatItem(location[1]))
-      positional = matching_positionals[0]
-      line = positional.get(lookup.DESCRIPTION, '')
-      line = _Snip(line, self.length_per_snippet, terms)
-
-    # TODO(b/67707688): Always require a specific positional.
-    # If no specific positional given, just add list of all available.
-    else:
-      line = ', '.join(sorted([p[lookup.NAME] for p in positionals]))
+    self._lines.append(_FormatItem(location[1]))
+    positional = positionals[0]
+    line = positional.get(lookup.DESCRIPTION, '')
+    line = _Snip(line, self.length_per_snippet, terms)
 
     if line:
       self._lines.append(line)
@@ -385,7 +376,7 @@ class SummaryBuilder(object):
     Returns:
       str, a markdown summary
     """
-    all_locations = set(self.results.values())
+    all_locations = set(self.found_terms_map.values())
     if lookup.CAPSULE not in all_locations:
       all_locations.add(lookup.CAPSULE)
 
@@ -404,9 +395,9 @@ class SummaryBuilder(object):
 
     # Sort alphabetically first to make sure everything is alphabetical within
     # the same priority.
-    for full_location in sorted(sorted(all_locations), key=_Priority):
+    for full_location in sorted(sorted(all_locations), key=_SummaryPriority):
       location = full_location.split(DOT)
-      terms = {t for t, l in six.iteritems(self.results)
+      terms = {t for t, l in six.iteritems(self.found_terms_map)
                if _Equivalent(l.split(DOT), location) and t}
       if location[0] == lookup.FLAGS:
         self._AddFlagToSummary(location, terms)
@@ -417,12 +408,46 @@ class SummaryBuilder(object):
         continue
       else:
         self._AddGenericSectionToSummary(location, terms)
-    return '\n'.join(self._lines)
+    summary = '\n'.join(self._lines)
+    return Highlight(summary, self.found_terms_map.keys())
 
 
-def GetSummary(command, results, length_per_snippet=DEFAULT_SNIPPET_LENGTH):
+def GetSummary(command, found_terms_map,
+               length_per_snippet=DEFAULT_SNIPPET_LENGTH):
   """Gets a summary of certain attributes of a command."""
-  return SummaryBuilder(command, results, length_per_snippet).GetSummary()
+  return SummaryBuilder(
+      command, found_terms_map, length_per_snippet).GetSummary()
+
+
+# TODO(b/113525269): Use a defined text type -- possibly user input.
+def _Stylize(s):
+  """Stylize a given string. Currently done by converting to upper-case."""
+  return s.upper()
+
+
+def Highlight(text, terms, stylize=None):
+  """Stylize desired terms in a string.
+
+  Returns a copy of the original string with all substrings matching the given
+  terms (with case-insensitive matching) stylized.
+
+  Args:
+    text: str, the original text to be highlighted.
+    terms: [str], a list of terms to be matched.
+    stylize: callable, the function to use to stylize the terms.
+
+  Returns:
+    str, the highlighted text.
+  """
+  if stylize is None:
+    stylize = _Stylize
+  for term in filter(bool, terms):
+    # Find all occurrences of term and stylize them.
+    matches = re.finditer(term, text, re.IGNORECASE)
+    match_strings = set([text[match.start():match.end()] for match in matches])
+    for match_string in match_strings:
+      text = text.replace(match_string, stylize(match_string))
+  return text
 
 
 def ProcessResult(command, results):
@@ -430,7 +455,7 @@ def ProcessResult(command, results):
 
   Args:
     command: dict, json representation of command.
-    results: {str: str}, lookup from terms to where they were found.
+    results: CommandSearchResults, result of searching for each term.
 
   Returns:
     A modified copy of the json command with a summary, and with the dict
@@ -443,7 +468,7 @@ def ProcessResult(command, results):
         for c in new_command[lookup.COMMANDS].values()
         if not c[lookup.IS_HIDDEN]
     ])
-  new_command[lookup.RESULTS] = results
+  new_command[lookup.RESULTS] = results.FoundTermsMap()
   return new_command
 
 
@@ -466,50 +491,69 @@ def LocateTerm(command, term):
   if command[lookup.IS_HIDDEN]:
     return ''
 
-  # Look in name/capsule
+  # Look in name/path
   regexp = re.compile(re.escape(term), re.IGNORECASE)
-  if (regexp.search(command[lookup.NAME])
-      or regexp.search(command[lookup.CAPSULE])):
-    return lookup.CAPSULE
+  if regexp.search(command[lookup.NAME]):
+    return lookup.NAME
+  if regexp.search(' '.join(command[lookup.PATH] + [lookup.NAME])):
+    return lookup.PATH
 
-  # Look in detailed help sections
+  def _Flags(command):
+    return {flag_name: flag for (flag_name, flag)
+            in six.iteritems(command[lookup.FLAGS])
+            if not flag[lookup.IS_HIDDEN] and not flag[lookup.IS_GLOBAL]}
+
+  # Look in flag and positional names
+  for flag_name, flag in sorted(six.iteritems(_Flags(command))):
+    if regexp.search(flag_name):
+      return DOT.join([lookup.FLAGS, flag[lookup.NAME], lookup.NAME])
+  for positional in command[lookup.POSITIONALS]:
+    if regexp.search(positional[lookup.NAME]):
+      return DOT.join([lookup.POSITIONALS, positional[lookup.NAME],
+                       lookup.NAME])
+
+  # Look in other help sections
+  if regexp.search(command[lookup.CAPSULE]):
+    return lookup.CAPSULE
   for section_name, section_desc in sorted(
       six.iteritems(command[lookup.SECTIONS])):
     if regexp.search(section_desc):
       return DOT.join([lookup.SECTIONS, section_name])
 
-  # Look in flags
-  for flag_name, flag in sorted(six.iteritems(command[lookup.FLAGS])):
-    if (flag[lookup.IS_HIDDEN] or
-        flag[lookup.IS_GLOBAL] and not command[lookup.IS_GLOBAL]):
-      continue
-    if (regexp.search(flag[lookup.NAME])
-        or regexp.search(flag[lookup.DESCRIPTION])):
-      return DOT.join([lookup.FLAGS, flag_name])
-    if regexp.search(str(flag[lookup.CHOICES])):
-      return DOT.join([lookup.FLAGS, flag[lookup.NAME], lookup.CHOICES])
-    if regexp.search(str(flag.get(lookup.DEFAULT, ''))):
-      return DOT.join([lookup.FLAGS, flag[lookup.NAME], lookup.DEFAULT])
+  # Look in flag sections
+  for flag_name, flag in sorted(six.iteritems(_Flags(command))):
+    for sub_attribute in [lookup.CHOICES, lookup.DESCRIPTION, lookup.DEFAULT]:
+      if regexp.search(six.text_type(flag.get(sub_attribute, ''))):
+        return DOT.join([lookup.FLAGS, flag[lookup.NAME], sub_attribute])
 
   # Look in positionals
   for positional in command[lookup.POSITIONALS]:
-    if (regexp.search(positional[lookup.NAME])
-        or regexp.search(positional[lookup.DESCRIPTION])):
-      return DOT.join([lookup.POSITIONALS, positional[lookup.NAME]])
+    if regexp.search(positional[lookup.DESCRIPTION]):
+      return DOT.join([lookup.POSITIONALS, positional[lookup.NAME],
+                       positional[lookup.DESCRIPTION]])
 
   # Look in subcommands & path
-  if regexp.search(str([n
-                        for n, c in six.iteritems(command[lookup.COMMANDS])
-                        if not c[lookup.IS_HIDDEN]
-                       ])):
+  if regexp.search(
+      six.text_type([n for n, c in six.iteritems(command[lookup.COMMANDS])
+                     if not c[lookup.IS_HIDDEN]])):
     return lookup.COMMANDS
-  if regexp.search(' '.join(command[lookup.PATH])):
-    return lookup.PATH
+
   return ''
 
 
 def SummaryTransform(r):
-  """Get summary of command with desired terms included."""
+  """A resource transform function to summarize a command search result.
+
+  Uses the "results" attribute of the command to build a summary that includes
+  snippets of the help text of the command that include the searched terms.
+  Occurrences of the search term will be stylized.
+
+  Args:
+    r: a json representation of a command.
+
+  Returns:
+    str, a summary of the command.
+  """
   summary = GetSummary(r, r[lookup.RESULTS])
   md = io.StringIO(summary)
   rendered_summary = io.StringIO()
@@ -525,8 +569,50 @@ def SummaryTransform(r):
   return final_summary
 
 
+def PathTransform(r):
+  """A resource transform to get the command path with search terms stylized.
+
+  Uses the "results" attribute of the command to determine which terms to
+  stylize and the "path" attribute of the command to get the command path.
+
+  Args:
+    r: a json representation of a command.
+
+  Returns:
+    str, the path of the command with search terms stylized.
+  """
+  results = r[lookup.RESULTS]
+  path = ' '.join(r[lookup.PATH])
+  return Highlight(path, results.keys())
+
+
+class CommandSearchResults(object):
+  """Class to hold the results of a search."""
+
+  def __init__(self, results_data):
+    """Create a CommandSearchResults object.
+
+    Args:
+      results_data: {str: str}, a dictionary from terms to the locations where
+        they were found. Empty string values in the dict represent terms that
+        were searched but not found. Locations should be formatted as
+        dot-separated strings representing the location in the command (as
+        created by LocateTerms above).
+    """
+    self._results_data = results_data
+
+  def AllTerms(self):
+    """Gets a list of all terms that were searched."""
+    return self._results_data.keys()
+
+  def FoundTermsMap(self):
+    """Gets a map from all terms that were found to their locations."""
+    return {k: v for (k, v) in six.iteritems(self._results_data) if v}
+
+
 _TRANSFORMS = {
     'summary': SummaryTransform,
+    'commandpath': PathTransform
 }
 
 

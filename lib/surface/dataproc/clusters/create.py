@@ -35,6 +35,13 @@ def _CommonArgs(parser, beta=False):
   base.ASYNC_FLAG.AddToParser(parser)
   parser.add_argument('name', help='The name of this cluster.')
   clusters.ArgsForClusterRef(parser, beta)
+  # Add gce-pd-kms-key args
+  kms_flag_overrides = {'kms-key': '--gce-pd-kms-key',
+                        'kms-keyring': '--gce-pd-kms-key-keyring',
+                        'kms-location': '--gce-pd-kms-key-location',
+                        'kms-project': '--gce-pd-kms-key-project'}
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser, 'cluster', flag_overrides=kms_flag_overrides)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -111,13 +118,6 @@ class CreateBeta(Create):
   def Args(parser):
     _CommonArgs(parser, beta=True)
     clusters.BetaArgsForClusterRef(parser)
-    # Add gce-pd-kms-key args
-    kms_flag_overrides = {'kms-key': '--gce-pd-kms-key',
-                          'kms-keyring': '--gce-pd-kms-key-keyring',
-                          'kms-location': '--gce-pd-kms-key-location',
-                          'kms-project': '--gce-pd-kms-key-project'}
-    kms_resource_args.AddKmsKeyResourceArg(
-        parser, 'cluster', flag_overrides=kms_flag_overrides)
 
   @staticmethod
   def ValidateArgs(args):

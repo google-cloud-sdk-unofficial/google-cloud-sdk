@@ -33,7 +33,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('table(locationId)')
+    parser.display_info.AddFormat('table(locationId, metadata.hsmAvailable)')
     parser.display_info.AddUriFunc(
         cloudkms_base.MakeGetUriFunc(flags.LOCATION_COLLECTION))
 

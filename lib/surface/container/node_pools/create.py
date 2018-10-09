@@ -188,6 +188,15 @@ class Create(base.CreateCommand):
       pool_ref = adapter.ParseNodePool(args.name, location)
       options = self.ParseCreateNodePoolOptions(args)
 
+      if not (options.metadata and
+              'disable-legacy-endpoints' in options.metadata):
+        log.warning('Starting in 1.12, new node pools will be created with '
+                    'their legacy Compute Engine instance metadata APIs '
+                    'disabled by default. To create a node pool with legacy '
+                    'instance metadata endpoints disabled, run '
+                    '`node-pools create` with the flag '
+                    '`--metadata disable-legacy-endpoints=true`.')
+
       if options.enable_autorepair is not None:
         log.status.Print(
             messages.AutoUpdateUpgradeRepairMessage(options.enable_autorepair,

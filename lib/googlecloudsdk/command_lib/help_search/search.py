@@ -20,8 +20,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import cli_tree
-from googlecloudsdk.command_lib.search_help import lookup
-from googlecloudsdk.command_lib.search_help import search_util
+from googlecloudsdk.command_lib.help_search import lookup
+from googlecloudsdk.command_lib.help_search import rater
+from googlecloudsdk.command_lib.help_search import search_util
 
 from six.moves import zip
 
@@ -47,29 +48,18 @@ class Searcher(object):
   def __init__(self, parent, terms):
     self.parent = parent
     self.terms = terms
+    self._rater = rater.CumulativeRater()
 
   def Search(self):
     """Run a search and return a list of processed matching commands.
 
     The search walks the command tree and returns a list of matching commands.
     The commands are modified so that child commands in command groups are
-    replaced with just a list of their names, and include summaries as well.
+    replaced with just a list of their names, and include summaries and
+    "relevance" ratings as well.
 
-    Commands match if:
-    1) All the searcher's terms are found in the command
-    2) At least one term is in the command name or help text as opposed to the
-       ancestry path. For example:
-       - Single term 'foo' matches `gcloud foo` because it
-         occurs in the name of the command group.
-       - Single term 'foo' does not match `gcloud foo bar`
-         because it only occurs in the ancestry path.
-       - Multiple terms ['gcloud', 'foo'] will match `gcloud foo`
-         because one term is in the name, even though the other term is not.
-       - Multiple terms ['gcloud', 'foo'] will not match `gcloud foo bar`
-         (assuming 'gcloud' and 'foo' don't appear in the help text for
-         the command) because both terms occur only in the path.
-    3) The command is in GA (alpha commands are not considered stable, and
-       help text requirements for beta commands are not as strict).
+    Commands match if at least one of the searcher's terms is found in the
+    command.
 
     Returns:
       [dict], a list of the matching commands in json form.
@@ -87,16 +77,18 @@ class Searcher(object):
       Returns:
         [dict], a list of commands that have matched so far.
       """
-      result = self.PossiblyGetResult(current_parent)
+      result = self._PossiblyGetResult(current_parent)
       if result:
         found_commands.append(result)
       for child_command in current_parent.get(lookup.COMMANDS, {}).values():
         found_commands = _WalkTree(child_command, found_commands)
       return found_commands
 
-    return _WalkTree(self.parent, [])
+    found_commands = _WalkTree(self.parent, [])
+    self._rater.RateAll()
+    return found_commands
 
-  def PossiblyGetResult(self, command):
+  def _PossiblyGetResult(self, command):
     """Helper function to determine whether a command contains all terms.
 
     Returns a copy of the command or command group with modifications to the
@@ -109,12 +101,13 @@ class Searcher(object):
     Returns:
       a modified copy of the command if the command is a result, otherwise None.
     """
-    if command[lookup.RELEASE] == lookup.GA:
-      locations = [search_util.LocateTerm(command, term) for term in self.terms]
-      results = dict(zip(self.terms, locations))
-      # Return command only if at least one term is outside its ancestry path.
-      if all(locations) and set(locations) != {lookup.PATH}:
-        new_command = search_util.ProcessResult(command, results)
-        return new_command
+    locations = [search_util.LocateTerm(command, term) for term in self.terms]
+    if any(locations):
+      results = search_util.CommandSearchResults(
+          dict(zip(self.terms, locations)))
+      new_command = search_util.ProcessResult(command, results)
+      self._rater.AddFoundCommand(new_command, results)
+      return new_command
+
 
 

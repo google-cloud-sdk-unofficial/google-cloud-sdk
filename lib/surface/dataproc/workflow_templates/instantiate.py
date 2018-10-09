@@ -53,7 +53,7 @@ class Instantiate(base.CreateCommand):
     instantiate_request.requestId = uuid.uuid4().hex  # request UUID
 
     if args.parameters:
-      instantiate_request.parameters = encoding.DictToMessage(
+      instantiate_request.parameters = encoding.DictToAdditionalPropertyMessage(
           args.parameters,
           msgs.InstantiateWorkflowTemplateRequest.ParametersValue)
 
@@ -90,7 +90,7 @@ class InstantiateBeta(Instantiate):
     instantiate_request = dataproc.messages.InstantiateWorkflowTemplateRequest()
     instantiate_request.requestId = uuid.uuid4().hex  # request UUID
     if args.parameters:
-      instantiate_request.parameters = encoding.DictToMessage(
+      instantiate_request.parameters = encoding.DictToAdditionalPropertyMessage(
           args.parameters,
           msgs.InstantiateWorkflowTemplateRequest.ParametersValue)
 

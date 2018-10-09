@@ -153,9 +153,9 @@ class Create(base.CreateCommand):
 
     if args.set_as_default:
       project_property = properties.FromString('core/project')
-      properties.PersistProperty(project_property, args.id)
+      properties.PersistProperty(project_property, project_id)
       log.status.Print('Updated property [core/project] to [{0}].'
-                       .format(args.id))
+                       .format(project_id))
 
     return operations.ExtractOperationResponse(create_op,
                                                apis.GetMessagesModule(

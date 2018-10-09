@@ -99,7 +99,11 @@ class Deploy(base.Command):
     function_entrypoint = flags.GetFunction(args.function)
 
     msg = ('Deploying {dep_type} to service [{{bold}}{{service}}{{reset}}]'
-           ' in [{{bold}}{{ns}}{{reset}}]')
+           ' in namespace [{{bold}}{{ns}}{{reset}}]')
+    if cluster_ref:
+      msg += ' of cluster [{{{{bold}}}}{}{{{{bold}}}}]'.format(
+          cluster_ref.Name())
+
     if function_entrypoint:
       pretty_print.Info(msg.format(
           dep_type='function [{bold}{function}{reset}]'),

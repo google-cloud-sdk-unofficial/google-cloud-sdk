@@ -76,14 +76,7 @@ class AddIamPolicyBindingAlpha(base.Command):
   @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
-    condition = None
-    if args.IsSpecified('condition'):
-      iam_util.ValidateConditionArgument(args.condition,
-                                         iam_util.CONDITION_FORMAT_EXCEPTION)
-      condition = args.condition
-    if args.IsSpecified('condition_from_file'):
-      condition = iam_util.ParseYamlOrJsonCondition(args.condition_from_file)
-    iam_util.ValidateMutexConditionAndPrimitiveRoles(condition, args.role)
+    condition = iam_util.ValidateAndExtractConditionMutexRole(args)
     return projects_api.AddIamPolicyBindingWithCondition(
         project_ref,
         args.member,

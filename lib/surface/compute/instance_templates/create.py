@@ -366,22 +366,17 @@ def _RunCreate(compute_api,
   else:
     boot_disk_list = []
 
-  local_nvdimms = []
-  if hasattr(args, 'local_nvdimm'):
-    for x in args.local_nvdimm or []:
-      local_nvdimm = instance_utils.CreateLocalNvdimmMessage(
-          compute_api.resources, client.messages, x.get('size'))
-      local_nvdimms.append(local_nvdimm)
+  local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
+      args,
+      compute_api.resources,
+      client.messages,
+  )
 
-  local_ssds = []
-  for x in args.local_ssd or []:
-    local_ssd = instance_utils.CreateLocalSsdMessage(
-        compute_api.resources,
-        client.messages,
-        x.get('device-name'),
-        x.get('interface'),
-        x.get('size'))
-    local_ssds.append(local_ssd)
+  local_ssds = instance_utils.CreateLocalSsdMessages(
+      args,
+      compute_api.resources,
+      client.messages,
+  )
 
   disks = (
       boot_disk_list + persistent_disks + persistent_create_disks +

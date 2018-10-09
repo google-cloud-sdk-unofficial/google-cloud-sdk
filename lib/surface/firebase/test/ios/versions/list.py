@@ -40,7 +40,8 @@ class List(base.ListCommand):
             id:label=OS_VERSION_ID:align=center,
             major_version:align=center,
             minor_version:align=center,
-            tags.list().color(green=default,red=deprecated,yellow=preview)
+            tags.list().color(green=default,red=deprecated,yellow=preview),
+            supported_xcode_version_ids.list(undefined="none", separator=', ')
           )
     """)
     base.URI_FLAG.RemoveFromParser(parser)

@@ -60,7 +60,7 @@ class RunLocal(base.Command):
   def Args(parser):
     """Register flags for this command."""
     flags.PACKAGE_PATH.AddToParser(parser)
-    flags.MODULE_NAME.AddToParser(parser)
+    flags.GetModuleNameFlag().AddToParser(parser)
     flags.DISTRIBUTED.AddToParser(parser)
     flags.PARAM_SERVERS.AddToParser(parser)
     flags.GetJobDirFlag(upload_help=False, allow_local=True).AddToParser(parser)

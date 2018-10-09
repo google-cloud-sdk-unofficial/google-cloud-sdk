@@ -27,7 +27,9 @@ from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
 
-def _Run(args, supports_deprecated_event_config_flags=False):
+def _Run(args,
+         supports_deprecated_event_config_flags=False,
+         supports_log_level=False):
   """Updates a Cloud IoT Device Registry."""
   client = registries.RegistriesClient()
 
@@ -44,12 +46,18 @@ def _Run(args, supports_deprecated_event_config_flags=False):
       args.event_notification_configs, event_pubsub_topic)
   state_pubsub_topic_ref = util.ParsePubsubTopic(args.state_pubsub_topic)
 
+  log_level = None
+  if supports_log_level:
+    log_level = util.ParseLogLevel(
+        args.log_level, client.messages.DeviceRegistry.LogLevelValueValuesEnum)
+
   response = client.Patch(
       registry_ref,
       event_notification_configs=event_notification_configs,
       state_pubsub_topic=state_pubsub_topic_ref,
       mqtt_enabled_state=mqtt_state,
-      http_enabled_state=http_state)
+      http_enabled_state=http_state,
+      log_level=log_level)
   log.UpdatedResource(registry_ref.Name(), 'registry')
   return response
 
@@ -69,7 +77,7 @@ class UpdateGA(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+class UpdateAlphaBeta(base.UpdateCommand):
   """Update a device registry."""
 
   @staticmethod
@@ -77,6 +85,10 @@ class Update(base.UpdateCommand):
     resource_args.AddRegistryResourceArg(parser, 'to update')
     flags.AddDeviceRegistrySettingsFlagsToParser(
         parser, defaults=False)
+    flags.AddLogLevelFlagToParser(parser)
 
   def Run(self, args):
-    return _Run(args, supports_deprecated_event_config_flags=True)
+    return _Run(
+        args,
+        supports_log_level=True,
+        supports_deprecated_event_config_flags=True)

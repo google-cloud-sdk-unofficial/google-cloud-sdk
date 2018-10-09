@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.iot import util
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update an existing device."""
 
@@ -44,5 +45,35 @@ class Update(base.UpdateCommand):
                                   client.messages)
 
     device = client.Patch(device_ref, blocked=args.blocked, metadata=metadata)
+    log.UpdatedResource(device_ref.Name(), 'device')
+    return device
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(base.UpdateCommand):
+  """Update an existing device."""
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddDeviceResourceArg(parser, 'to update')
+    flags.AddDeviceFlagsToParser(parser, default_for_blocked_flags=False)
+    flags.AddLogLevelFlagToParser(parser)
+
+  def Run(self, args):
+    client = devices.DevicesClient()
+
+    device_ref = args.CONCEPTS.device.Parse()
+
+    metadata = util.ParseMetadata(args.metadata, args.metadata_from_file,
+                                  client.messages)
+
+    log_level = util.ParseLogLevel(
+        args.log_level, client.messages.Device.LogLevelValueValuesEnum)
+
+    device = client.Patch(
+        device_ref,
+        blocked=args.blocked,
+        metadata=metadata,
+        log_level=log_level)
     log.UpdatedResource(device_ref.Name(), 'device')
     return device

@@ -119,10 +119,11 @@ class Export(base.Command):
     flags.AddExportDestinationFlag(parser)
 
   def Run(self, args):
+    storage_util.WarnIfWildcardIsPresent(args.source, '--source')
     env_ref = args.CONCEPTS.environment.Parse()
     source_path = posixpath.join(Export.SUBDIR_BASE,
                                  (args.source or '*').strip(posixpath.sep))
     return storage_util.Export(
-        env_ref, [source_path],
+        env_ref, source_path,
         args.destination,
         release_track=self.ReleaseTrack())

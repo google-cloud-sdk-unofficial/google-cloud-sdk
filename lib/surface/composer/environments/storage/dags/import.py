@@ -34,8 +34,6 @@ class Import(base.Command):
   overwritten. If a file exists in the bucket but is not present in the SOURCE,
   it is not removed.
 
-  The SOURCE path can contain wildcards. See `gsutil help wildcards`.
-
   ## EXAMPLES
   Suppose the '/foo' directory in the local filesystem has the following
   structure:
@@ -130,6 +128,7 @@ class Import(base.Command):
     flags.AddImportDestinationFlag(parser, Import.SUBDIR_BASE)
 
   def Run(self, args):
+    storage_util.WarnIfWildcardIsPresent(args.source, '--source')
     env_ref = args.CONCEPTS.environment.Parse()
     gcs_subdir = Import.SUBDIR_BASE
     if args.destination:
@@ -137,4 +136,4 @@ class Import(base.Command):
                                   args.destination.strip(posixpath.sep))
     gcs_subdir = posixpath.join(gcs_subdir, '')
     return storage_util.Import(
-        env_ref, [args.source], gcs_subdir, release_track=self.ReleaseTrack())
+        env_ref, args.source, gcs_subdir, release_track=self.ReleaseTrack())

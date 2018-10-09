@@ -64,7 +64,8 @@ def _IsLocalFile(file_name):
               file_name.startswith('https://'))
 
 
-def _UploadToGcs(is_async, local_path, daisy_bucket, image_uuid):
+def _UploadToGcs(is_async, local_path, daisy_bucket, image_uuid,
+                 storage_client):
   """Uploads a local file to GCS. Returns the gs:// URI to that file."""
   file_name = os.path.basename(local_path).replace(' ', '-')
   dest_path = 'gs://{0}/tmpimage/{1}-{2}'.format(
@@ -74,12 +75,31 @@ def _UploadToGcs(is_async, local_path, daisy_bucket, image_uuid):
                      'imported from Cloud Storage asynchronously.')
   with progress_tracker.ProgressTracker(
       'Copying [{0}] to [{1}]'.format(local_path, dest_path)):
-    retcode = storage_util.RunGsutilCommand('cp', [local_path, dest_path])
+    # TODO(b/109938541): Remove gsutil implementation after the new
+    # implementation seems stable.
+    use_gsutil = properties.VALUES.storage.use_gsutil.GetBool()
+    if use_gsutil:
+      return _UploadToGcsGsutil(local_path, dest_path)
+    else:
+      return _UploadToGcsStorageApi(local_path, dest_path, storage_client)
+
+
+def _UploadToGcsGsutil(local_path, dest_path):
+  """Uploads a local file to GCS using gsutil."""
+  retcode = storage_util.RunGsutilCommand('cp', [local_path, dest_path])
   if retcode != 0:
     log.err.Print('Failed to upload file. See {} for details.'.format(
         log.GetLogFilePath()))
     raise exceptions.FailedSubCommand(
         ['gsutil', 'cp', local_path, dest_path], retcode)
+  return dest_path
+
+
+def _UploadToGcsStorageApi(local_path, dest_path, storage_client):
+  """Uploads a local file to GCS using the gcloud storage api client."""
+  dest_object = storage_util.ObjectReference.FromUrl(dest_path)
+  storage_client.CopyFileToGCS(
+      dest_object.bucket_ref, local_path, dest_object.name)
   return dest_path
 
 
@@ -150,6 +170,7 @@ def _CheckForExistingImage(image_name, compute_holder):
     raise exceptions.InvalidArgumentException('IMAGE_NAME', message)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
   """Import an image into Google Compute Engine."""
 
@@ -240,7 +261,7 @@ class Import(base.CreateCommand):
       # Get the image into the scratch bucket, wherever it is now.
       if _IsLocalFile(args.source_file):
         gcs_uri = _UploadToGcs(args.async, args.source_file,
-                               daisy_bucket, image_uuid)
+                               daisy_bucket, image_uuid, storage_client)
       else:
         source_file = _MakeGcsUri(args.source_file)
         gcs_uri = _CopyToScratchBucket(source_file, image_uuid,
@@ -255,6 +276,8 @@ class Import(base.CreateCommand):
         daisy_vars.append(
             'translate_workflow={}'.format(_GetTranslateWorkflow(args)))
 
+    self._ProcessAdditionalArgs(args, daisy_vars)
+
     # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
     # warning message with a ProgressTracker spinner.
     log.warning('Importing image. This may take up to 2 hours.')
@@ -262,6 +285,27 @@ class Import(base.CreateCommand):
                                      daisy_bucket=daisy_bucket,
                                      user_zone=args.zone,
                                      output_filter=_OUTPUT_FILTER)
+
+  def _ProcessAdditionalArgs(self, args, daisy_vars):
+    """Hook for subclasses to implement additional argument processing."""
+    pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ImportAlpha(Import):
+  """Import an image into Google Compute Engine for Alpha release only."""
+
+  @staticmethod
+  def Args(parser):
+    Import.Args(parser)
+    parser.add_argument(
+        '--no-google-packages',
+        action='store_true',
+        help='Google packages will not be installed on the image.')
+
+  def _ProcessAdditionalArgs(self, args, daisy_vars):
+    if args.no_google_packages:
+      daisy_vars.append('install_gce_packages={}'.format('false'))
 
 Import.detailed_help = {
     'brief': 'Import an image into Google Compute Engine',

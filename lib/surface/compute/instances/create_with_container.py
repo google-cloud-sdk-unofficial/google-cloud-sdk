@@ -32,12 +32,15 @@ from googlecloudsdk.core import log
 from six.moves import zip
 
 
-def _Args(parser, deprecate_maintenance_policy=False):
+def _Args(parser, deprecate_maintenance_policy=False,
+          container_mount_enabled=False):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
-  instances_flags.AddDiskArgs(parser, True)
-  instances_flags.AddCreateDiskArgs(parser)
+  instances_flags.AddDiskArgs(
+      parser, True, container_mount_enabled=container_mount_enabled)
+  instances_flags.AddCreateDiskArgs(
+      parser, container_mount_enabled=container_mount_enabled)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddMachineTypeArgs(parser)
@@ -174,7 +177,7 @@ class CreateWithContainerBeta(CreateWithContainer):
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
-  def _ValidateBetaArgs(self, args):
+  def _ValidateArgs(self, args):
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateKonletArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
@@ -204,7 +207,7 @@ class CreateWithContainerBeta(CreateWithContainer):
     return image_uri
 
   def Run(self, args):
-    self._ValidateBetaArgs(args)
+    self._ValidateArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -264,18 +267,27 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, deprecate_maintenance_policy=True)
+    _Args(parser, deprecate_maintenance_policy=True,
+          container_mount_enabled=True)
+
     instances_flags.AddNetworkTierArgs(parser, instance=True)
+    instances_flags.AddContainerMountDiskFlag(parser)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
   def Run(self, args):
-    self._ValidateBetaArgs(args)
+    self._ValidateArgs(args)
     instances_flags.ValidatePublicDnsFlags(args)
     instances_flags.ValidatePublicPtrFlags(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
+        holder,
+        args.container_mount_disk,
+        args.disk,
+        args.create_disk)
+
     client = holder.client
     source_instance_template = instance_utils.GetSourceInstanceTemplate(
         args, holder.resources, self.SOURCE_INSTANCE_TEMPLATE)
@@ -299,10 +311,12 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateKonletMetadataMessage(
-          client.messages, args, instance_ref.Name(), user_metadata)
+          client.messages, args, instance_ref.Name(), user_metadata,
+          container_mount_disk_enabled=True,
+          container_mount_disk=container_mount_disk)
       disks = instance_utils.CreateDiskMessages(
           holder, args, boot_disk_size_gb, image_uri, instance_ref,
-          skip_defaults)
+          skip_defaults, match_container_mount_disks=True)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,

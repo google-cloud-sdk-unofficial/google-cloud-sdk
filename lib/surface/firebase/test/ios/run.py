@@ -58,12 +58,12 @@ class Run(base.ListCommand):
           """,
       'EXAMPLES':
           """\
-          To invoke an xctest test lasting up to five minutes against the
-          default device environment, run:
+          To invoke an XCTest lasting up to five minutes against the default
+          device environment, run:
 
             $ {command} --test XCTEST_ZIP --timeout 5m
 
-          To invoke an xctest test against an iPad 5 running iOS 11.2, run:
+          To invoke an XCTest against an iPad 5 running iOS 11.2, run:
 
             $ {command} --test XCTEST_ZIP --device model=ipad5,version=11.2
 
@@ -74,6 +74,10 @@ class Run(base.ListCommand):
               --device model=iphone7 \
               --device model=ipadmini4,version=11.2 \
               --device model=iphonese
+
+          To run your XCTest using a specific version of Xcode, say 9.4.1, run:
+
+            $ {command} --test XCTEST_ZIP --xcode-version=9.4.1
 
           All test arguments for a given test may alternatively be stored in an
           argument group within a YAML-formatted argument file. The _ARG_FILE_

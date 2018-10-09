@@ -209,6 +209,13 @@ def ParseCreateOptionsBase(args):
                 '`--[no-]issue-client-certificate` flag.')
 
   flags.MungeBasicAuthFlags(args)
+
+  if args.IsSpecified('issue_client_certificate') and not (
+      args.IsSpecified('enable_basic_auth') or args.IsSpecified('username')):
+    log.warning('If `--issue-client-certificate` is specified but '
+                '`--enable-basic-auth` or `--username` is not, our API will '
+                'treat that as `--no-enable-basic-auth`.')
+
   if (args.IsSpecified('enable_cloud_endpoints') and
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
@@ -345,6 +352,15 @@ class Create(base.CreateCommand):
           'https://cloud.google.com'
           '/kubernetes-engine/docs/how-to/private-clusters'
       )
+
+    if not (options.metadata and
+            'disable-legacy-endpoints' in options.metadata):
+      log.warning('Starting in 1.12, default node pools in new clusters '
+                  'will have their legacy Compute Engine instance metadata '
+                  'endpoints disabled by default. To create a cluster with '
+                  'legacy instance metadata endpoints disabled in the default '
+                  'node pool, run `clusters create` with the flag '
+                  '`--metadata disable-legacy-endpoints=true`.')
 
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(message=constants.KUBERNETES_ALPHA_PROMPT,
@@ -492,7 +508,7 @@ class CreateAlpha(Create):
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddEnableStackdriverKubernetesFlag(parser)
-    flags.AddManagedPodIdentityFlag(parser)
+    flags.AddManagedPodIdentityFlags(parser)
     flags.AddResourceUsageBigqueryDatasetFlag(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
@@ -531,6 +547,8 @@ class CreateAlpha(Create):
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.default_max_pods_per_node = args.default_max_pods_per_node
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
+    ops.managed_pod_identity_federating_sa = \
+            args.managed_pod_identity_federating_sa
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.security_group = args.security_group
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)

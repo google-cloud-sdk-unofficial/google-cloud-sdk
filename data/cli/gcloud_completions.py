@@ -1852,6 +1852,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--data-disk": "bool",
                     "--log-location": "value",
+                    "--no-google-packages": "bool",
                     "--os": [
                       "centos-6",
                       "centos-7",
@@ -2784,6 +2785,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--container-env": "value",
                     "--container-env-file": "value",
                     "--container-image": "value",
+                    "--container-mount-disk": "value",
                     "--container-mount-host-path": "value",
                     "--container-mount-tmpfs": "value",
                     "--container-privileged": "bool",
@@ -3129,6 +3131,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--container-env": "value",
                     "--container-env-file": "value",
                     "--container-image": "value",
+                    "--container-mount-disk": "value",
                     "--container-mount-host-path": "value",
                     "--container-mount-tmpfs": "value",
                     "--container-privileged": "bool",
@@ -7399,6 +7402,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--sort-by": "value",
                         "--test": "value",
                         "--timeout": "value",
+                        "--xcode-version": "value",
                         "--xctestrun-file": "value"
                       }
                     },
@@ -7966,6 +7970,15 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "help": {
+          "commands": {},
+          "flags": {
+            "--filter": "value",
+            "--limit": "value",
+            "--page-size": "value",
+            "--sort-by": "value"
+          }
+        },
         "iam": {
           "commands": {
             "list-grantable-roles": {
@@ -8191,6 +8204,22 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {
             "devices": {
               "commands": {
+                "commands": {
+                  "commands": {
+                    "send": {
+                      "commands": {},
+                      "flags": {
+                        "--command-data": "value",
+                        "--command-file": "value",
+                        "--device": "dynamic",
+                        "--region": "value",
+                        "--registry": "dynamic",
+                        "--subfolder": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
                 "configs": {
                   "commands": {
                     "describe": {
@@ -8239,6 +8268,12 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--blocked": "bool",
+                    "--log-level": [
+                      "debug",
+                      "error",
+                      "info",
+                      "none"
+                    ],
                     "--metadata": "value",
                     "--metadata-from-file": "value",
                     "--public-key": "value",
@@ -8362,6 +8397,12 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--blocked": "bool",
+                    "--log-level": [
+                      "debug",
+                      "error",
+                      "info",
+                      "none"
+                    ],
                     "--metadata": "value",
                     "--metadata-from-file": "value",
                     "--region": "value",
@@ -8388,6 +8429,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-mqtt-config": "bool",
                     "--event-notification-config": "value",
                     "--event-pubsub-topic": "value",
+                    "--log-level": [
+                      "debug",
+                      "error",
+                      "info",
+                      "none"
+                    ],
                     "--public-key-path": "value",
                     "--region": "value",
                     "--state-pubsub-topic": "value"
@@ -8491,6 +8538,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-mqtt-config": "bool",
                     "--event-notification-config": "value",
                     "--event-pubsub-topic": "value",
+                    "--log-level": [
+                      "debug",
+                      "error",
+                      "info",
+                      "none"
+                    ],
                     "--region": "value",
                     "--state-pubsub-topic": "value"
                   }
@@ -9673,6 +9726,8 @@ STATIC_COMPLETION_CLI_TREE = {
             "add-iam-policy-binding": {
               "commands": {},
               "flags": {
+                "--condition": "value",
+                "--condition-from-file": "value",
                 "--member": "value",
                 "--role": "dynamic"
               }
@@ -9703,6 +9758,9 @@ STATIC_COMPLETION_CLI_TREE = {
             "remove-iam-policy-binding": {
               "commands": {},
               "flags": {
+                "--all": "bool",
+                "--condition": "value",
+                "--condition-from-file": "value",
                 "--member": "value",
                 "--role": "value"
               }
@@ -13138,6 +13196,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network": "value",
                     "--node-count": "value",
                     "--oauth-scopes": "value",
+                    "--python-version": [
+                      "2",
+                      "3"
+                    ],
                     "--service-account": "value",
                     "--subnetwork": "value",
                     "--tags": "value",
@@ -16903,6 +16965,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--certificate": "value",
                     "--description": "value",
+                    "--domains": "value",
                     "--private-key": "value"
                   }
                 },
@@ -20464,6 +20527,15 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "help": {
+          "commands": {},
+          "flags": {
+            "--filter": "value",
+            "--limit": "value",
+            "--page-size": "value",
+            "--sort-by": "value"
+          }
+        },
         "iam": {
           "commands": {
             "list-grantable-roles": {
@@ -20689,6 +20761,22 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {
             "devices": {
               "commands": {
+                "commands": {
+                  "commands": {
+                    "send": {
+                      "commands": {},
+                      "flags": {
+                        "--command-data": "value",
+                        "--command-file": "value",
+                        "--device": "dynamic",
+                        "--region": "value",
+                        "--registry": "dynamic",
+                        "--subfolder": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
                 "configs": {
                   "commands": {
                     "describe": {
@@ -20736,6 +20824,12 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--blocked": "bool",
+                    "--log-level": [
+                      "debug",
+                      "error",
+                      "info",
+                      "none"
+                    ],
                     "--metadata": "value",
                     "--metadata-from-file": "value",
                     "--public-key": "value",
@@ -20858,6 +20952,12 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--blocked": "bool",
+                    "--log-level": [
+                      "debug",
+                      "error",
+                      "info",
+                      "none"
+                    ],
                     "--metadata": "value",
                     "--metadata-from-file": "value",
                     "--region": "value",
@@ -20884,6 +20984,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-mqtt-config": "bool",
                     "--event-notification-config": "value",
                     "--event-pubsub-topic": "value",
+                    "--log-level": [
+                      "debug",
+                      "error",
+                      "info",
+                      "none"
+                    ],
                     "--public-key-path": "value",
                     "--region": "value",
                     "--state-pubsub-topic": "value"
@@ -20987,6 +21093,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-mqtt-config": "bool",
                     "--event-notification-config": "value",
                     "--event-pubsub-topic": "value",
+                    "--log-level": [
+                      "debug",
+                      "error",
+                      "info",
+                      "none"
+                    ],
                     "--region": "value",
                     "--state-pubsub-topic": "value"
                   }
@@ -28614,6 +28726,10 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--bucket": "value",
+                "--gce-pd-kms-key": "dynamic",
+                "--gce-pd-kms-key-keyring": "dynamic",
+                "--gce-pd-kms-key-location": "dynamic",
+                "--gce-pd-kms-key-project": "dynamic",
                 "--image": "value",
                 "--image-version": "value",
                 "--initialization-action-timeout": "value",
