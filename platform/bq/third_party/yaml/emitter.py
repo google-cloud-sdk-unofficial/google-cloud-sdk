@@ -9,8 +9,8 @@
 
 __all__ = ['Emitter', 'EmitterError']
 
-from .error import YAMLError
-from .events import *
+from error import YAMLError
+from events import *
 
 class EmitterError(YAMLError):
     pass

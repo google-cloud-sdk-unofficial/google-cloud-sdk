@@ -109,9 +109,11 @@ for more information.""")
             version,
             split))
 
-    fmt = 'list[title="Setting the following traffic allocations:"]'
+    fmt = 'list[title="Setting the following traffic allocation:"]'
     resource_printer.Print(display_allocations, fmt, out=log.status)
-    log.status.Print('Any other versions on the specified services will '
+    log.status.Print(
+        'NOTE: Splitting traffic by {0}.'.format(args.split_by))
+    log.status.Print('Any other versions of the specified service will '
                      'receive zero traffic.')
     console_io.PromptContinue(cancel_on_no=True)
 

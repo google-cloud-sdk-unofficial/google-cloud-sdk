@@ -9,6 +9,7 @@ import abc
 import collections
 import datetime
 import hashlib
+import httplib
 import itertools
 import json
 import logging
@@ -177,6 +178,8 @@ def _ParseJobIdentifier(identifier):
             match.groupdict().get('location', None),
             match.groupdict().get('job_id', None))
   return (None, None, None)
+
+
 
 
 def ConfigurePythonLogger(apilog=None):
@@ -678,8 +681,15 @@ class BigqueryClient(object):
           if discovery_url is None:
             discovery_url = self.GetDiscoveryUrl().format(
                 api='bigquery', apiVersion=self.api_version)
-          _, discovery_document = http.request(discovery_url)
-        except (httplib2.HttpLib2Error, googleapiclient.errors.HttpError), e:
+          logging.info('Requesting discovery document from %s', discovery_url)
+          response_metadata, discovery_document = http.request(discovery_url)
+          if response_metadata.get('status') >= '400':
+            msg = 'Got %s response from discovery url: %s' % (
+                response_metadata.get('status'), discovery_url)
+            logging.error('%s:\n%s', msg, discovery_document)
+            raise BigqueryCommunicationError(msg)
+        except (httplib2.HttpLib2Error, googleapiclient.errors.HttpError,
+                httplib.HTTPException), e:
           # We can't find the specified server. This can be thrown for
           # multiple reasons, so inspect the error.
           if hasattr(e, 'content'):
@@ -743,6 +753,7 @@ class BigqueryClient(object):
       self._op_transfer_client = self.BuildApiClient(
       discovery_url=discovery_url)
     return self._op_transfer_client
+
 
 
 
@@ -832,6 +843,21 @@ class BigqueryClient(object):
       return project_id, dataset_id
 
   @staticmethod
+  def _ShiftInformationSchema(dataset_id, table_id):
+    """Moves "INFORMATION_SCHEMA" to table_id for dataset qualified tables."""
+    if not dataset_id or not table_id:
+      return dataset_id, table_id
+
+    dataset_parts = dataset_id.split('.')
+    if dataset_parts[-1] != 'INFORMATION_SCHEMA' or table_id in (
+        'SCHEMATA', 'SCHEMATA_OPTIONS'):
+      # We don't shift unless INFORMATION_SCHEMA is present and table_id is for
+      # a dataset qualified table.
+      return dataset_id, table_id
+
+    return '.'.join(dataset_parts[:-1]), 'INFORMATION_SCHEMA.' + table_id
+
+  @staticmethod
   def _ParseIdentifier(identifier):
     """Parses identifier into a tuple of (possibly empty) identifiers.
 
@@ -866,6 +892,9 @@ class BigqueryClient(object):
       # Return this as a table_id.
       dataset_id = ''
       table_id = dataset_and_table_id
+
+    dataset_id, table_id = BigqueryClient._ShiftInformationSchema(
+        dataset_id, table_id)
 
     return project_id, dataset_id, table_id
 
@@ -981,6 +1010,7 @@ class BigqueryClient(object):
     raise BigqueryError('Cannot determine job described by %s' % (
         identifier,))
 
+
   def GetObjectInfo(self, reference):
     """Get all data returned by the server about a specific object."""
     # Projects are handled separately, because we only have
@@ -1048,6 +1078,7 @@ class BigqueryClient(object):
     transfer_client = self.GetTransferV1ApiClient()
     return transfer_client.projects().locations().transferConfigs().runs().get(
         name=identifier).execute()
+
 
 
   def ReadSchemaAndRows(self, table_dict, start_row=None, max_rows=None,
@@ -1549,6 +1580,7 @@ class BigqueryClient(object):
       if key in BigqueryClient.columns_to_include_for_transfer_run:
         result[key] = value
     return result
+
 
   @staticmethod
   def ConstructObjectReference(object_info):
@@ -2069,10 +2101,17 @@ class BigqueryClient(object):
     except BigqueryNotFoundError:
       return False
 
-  def CreateDataset(self, reference, ignore_existing=False, description=None,
-                    display_name=None, acl=None,
-                    default_table_expiration_ms=None,
-                    data_location=None):
+  def CreateDataset(
+      self,
+      reference,
+      ignore_existing=False,
+      description=None,
+      display_name=None,
+      acl=None,
+      default_table_expiration_ms=None,
+      default_partition_expiration_ms=None,
+      data_location=None,
+      labels=None):
     """Create a dataset corresponding to DatasetReference.
 
     Args:
@@ -2084,9 +2123,12 @@ class BigqueryClient(object):
       acl: an optional ACL for the dataset, as a list of dicts.
       default_table_expiration_ms: Default expiration time to apply to
         new tables in this dataset.
+      default_partition_expiration_ms: Default partition expiration time to
+        apply to new partitioned tables in this dataset.
       data_location: Location where the data in this dataset should be
         stored. Must be either 'EU' or 'US'. If specified, the project that
         owns the dataset must be enabled for data location.
+      labels: An optional dict of labels.
 
     Raises:
       TypeError: if reference is not a DatasetReference.
@@ -2105,8 +2147,14 @@ class BigqueryClient(object):
       body['access'] = acl
     if default_table_expiration_ms is not None:
       body['defaultTableExpirationMs'] = default_table_expiration_ms
+    if default_partition_expiration_ms is not None:
+      body['defaultPartitionExpirationMs'] = default_partition_expiration_ms
     if data_location is not None:
       body['location'] = data_location
+    if labels:
+      body['labels'] = {}
+      for label_key, label_value in labels.items():
+        body['labels'][label_key] = label_value
     try:
       self.apiclient.datasets().insert(
           body=body,
@@ -2413,21 +2461,22 @@ class BigqueryClient(object):
           'Data source \'%s\' does not'
           ' support refresh window days.' % data_source)
 
-  def UpdateTable(self,
-                  reference,
-                  schema=None,
-                  description=None,
-                  display_name=None,
-                  expiration=None,
-                  view_query=None,
-                  external_data_config=None,
-                  view_udf_resources=None,
-                  use_legacy_sql=None,
-                  labels_to_set=None,
-                  label_keys_to_remove=None,
-                  time_partitioning=None,
-                  etag=None,
-                  encryption_configuration=None):
+  def UpdateTable(
+      self,
+      reference,
+      schema=None,
+      description=None,
+      display_name=None,
+      expiration=None,
+      view_query=None,
+      external_data_config=None,
+      view_udf_resources=None,
+      use_legacy_sql=None,
+      labels_to_set=None,
+      label_keys_to_remove=None,
+      time_partitioning=None,
+      etag=None,
+      encryption_configuration=None):
     """Updates a table.
 
     Args:
@@ -2512,6 +2561,7 @@ class BigqueryClient(object):
       display_name=None,
       acl=None,
       default_table_expiration_ms=None,
+      default_partition_expiration_ms=None,
       labels_to_set=None,
       label_keys_to_remove=None,
       etag=None):
@@ -2524,6 +2574,9 @@ class BigqueryClient(object):
       acl: an optional ACL for the dataset, as a list of dicts.
       default_table_expiration_ms: optional number of milliseconds for the
         default expiration duration for new tables created in this dataset.
+      default_partition_expiration_ms: optional number of milliseconds for the
+        default partition expiration duration for new partitioned tables created
+        in this dataset.
       labels_to_set: an optional dict of labels to set on this dataset.
       label_keys_to_remove: an optional list of label keys to remove from this
         dataset.
@@ -2550,6 +2603,11 @@ class BigqueryClient(object):
       dataset['access'] = acl
     if default_table_expiration_ms is not None:
       dataset['defaultTableExpirationMs'] = default_table_expiration_ms
+    if default_partition_expiration_ms is not None:
+      if default_partition_expiration_ms == 0:
+        dataset['defaultPartitionExpirationMs'] = None
+      else:
+        dataset['defaultPartitionExpirationMs'] = default_partition_expiration_ms
     if 'labels' not in dataset:
       dataset['labels'] = {}
     if labels_to_set:
@@ -3124,10 +3182,12 @@ class BigqueryClient(object):
   ## Wrappers for job types
   #################################
 
-  def RunQuery(self, **kwds):
+  def RunQuery(self, start_row, max_rows, **kwds):
     """Run a query job synchronously, and return the result.
 
     Args:
+      start_row: first row to read.
+      max_rows: number of rows to read.
       **kwds: Passed on to self.Query.
 
     Returns:
@@ -3138,7 +3198,9 @@ class BigqueryClient(object):
     new_kwds['sync'] = True
     job = self.Query(**new_kwds)
 
-    return self.ReadSchemaAndJobRows(job['jobReference'])
+    return self.ReadSchemaAndJobRows(job['jobReference'],
+                                     start_row=start_row,
+                                     max_rows=max_rows)
 
   def RunQueryRpc(self,
                   query,
@@ -3877,4 +3939,5 @@ class ApiClientHelper(object):
     # an unnecessary line that would have tried to print a reference in other
     # cases, i.e. datasets, tables, etc.
     typename = None
+
 

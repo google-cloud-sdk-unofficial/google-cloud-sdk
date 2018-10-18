@@ -2,10 +2,10 @@
 
 __all__ = ['BaseDumper', 'SafeDumper', 'Dumper']
 
-from .emitter import *
-from .serializer import *
-from .representer import *
-from .resolver import *
+from emitter import *
+from serializer import *
+from representer import *
+from resolver import *
 
 class BaseDumper(Emitter, Serializer, BaseRepresenter, BaseResolver):
 

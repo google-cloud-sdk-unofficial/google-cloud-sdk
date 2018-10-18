@@ -102,7 +102,6 @@ class HelpBeta(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddTransforms(search_util.GetTransforms())
-    # TODO(b/67707688): Add pager to this table.
     parser.display_info.AddFormat("""
         table[all-box,pager](
             commandpath():label='COMMAND',

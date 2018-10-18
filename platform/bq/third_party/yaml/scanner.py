@@ -27,8 +27,8 @@
 
 __all__ = ['Scanner', 'ScannerError']
 
-from .error import MarkedYAMLError
-from .tokens import *
+from error import MarkedYAMLError
+from tokens import *
 
 class ScannerError(MarkedYAMLError):
     pass

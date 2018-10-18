@@ -60,8 +60,7 @@ class Cancel(base.Command):
           collection='cloudbuild.projects.builds')
       cancelled_build = client.projects_builds.Cancel(
           messages.CloudbuildProjectsBuildsCancelRequest(
-              projectId=build_ref.projectId,
-              id=build_ref.id))
+              projectId=build_ref.projectId, id=build_ref.id))
       log.status.write('Cancelled [{r}].\n'.format(r=str(build_ref)))
       cancelled.append(cancelled_build)
     return cancelled

@@ -67,8 +67,7 @@ class Info(base.Command):
       _RunDiagnostics()
       return
     holder = info_holder.InfoHolder(
-        anonymizer=info_holder.Anonymizer()
-        if args.anonymize else info_holder.NoopAnonymizer())
+        anonymizer=info_holder.Anonymizer() if args.anonymize else None)
     return holder
 
   def Display(self, args, info):

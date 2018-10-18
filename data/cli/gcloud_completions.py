@@ -2886,6 +2886,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "dynamic"
                   }
                 },
+                "get-guest-attributes": {
+                  "commands": {},
+                  "flags": {
+                    "--query-path": "value",
+                    "--zone": "value"
+                  }
+                },
                 "get-iam-policy": {
                   "commands": {},
                   "flags": {
@@ -4824,6 +4831,14 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "start-iap-tunnel": {
+              "commands": {},
+              "flags": {
+                "--local-host-port": "value",
+                "--network-interface": "value",
+                "--zone": "dynamic"
+              }
+            },
             "target-http-proxies": {
               "commands": {
                 "create": {
@@ -5854,6 +5869,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoscaling": "bool",
                     "--enable-autoupgrade": "bool",
                     "--enable-basic-auth": "bool",
+                    "--enable-binauthz": "bool",
                     "--enable-cloud-endpoints": "bool",
                     "--enable-cloud-logging": "bool",
                     "--enable-cloud-monitoring": "bool",
@@ -5975,6 +5991,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoprovisioning": "bool",
                     "--enable-autoscaling": "bool",
                     "--enable-basic-auth": "bool",
+                    "--enable-binauthz": "bool",
                     "--enable-legacy-authorization": "bool",
                     "--enable-master-authorized-networks": "bool",
                     "--enable-network-policy": "bool",
@@ -7746,6 +7763,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--cpus": "value",
                     "--disk-size": "value",
                     "--docker-image": "value",
+                    "--env-vars": "value",
                     "--inputs": "value",
                     "--inputs-from-file": "value",
                     "--labels": "value",
@@ -9780,7 +9798,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--condition": "value",
                 "--condition-from-file": "value",
                 "--member": "value",
-                "--role": "dynamic"
+                "--role": "value"
               }
             },
             "create": {
@@ -9835,7 +9853,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--condition": "value",
                 "--condition-from-file": "value",
                 "--member": "value",
-                "--role": "dynamic"
+                "--role": "value"
               }
             },
             "set-iam-policy": {
@@ -10544,6 +10562,29 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {
             "configurations": {
               "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--namespace": "value",
+                    "--region": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--namespace": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
                 "update": {
                   "commands": {},
                   "flags": {
@@ -10896,6 +10937,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "execute-sql": {
                   "commands": {},
                   "flags": {
+                    "--enable-partitioned-dml": "bool",
                     "--instance": "value",
                     "--query-mode": [
                       "NORMAL",
@@ -15444,6 +15486,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "dynamic"
                   }
                 },
+                "get-guest-attributes": {
+                  "commands": {},
+                  "flags": {
+                    "--query-path": "value",
+                    "--zone": "value"
+                  }
+                },
                 "get-iam-policy": {
                   "commands": {},
                   "flags": {
@@ -18022,6 +18071,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoscaling": "bool",
                     "--enable-autoupgrade": "bool",
                     "--enable-basic-auth": "bool",
+                    "--enable-binauthz": "bool",
                     "--enable-cloud-endpoints": "bool",
                     "--enable-cloud-logging": "bool",
                     "--enable-cloud-monitoring": "bool",
@@ -18130,6 +18180,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--complete-ip-rotation": "bool",
                     "--enable-autoscaling": "bool",
                     "--enable-basic-auth": "bool",
+                    "--enable-binauthz": "bool",
                     "--enable-legacy-authorization": "bool",
                     "--enable-master-authorized-networks": "bool",
                     "--enable-network-policy": "bool",
@@ -19667,10 +19718,22 @@ STATIC_COMPLETION_CLI_TREE = {
                       "on",
                       "transfer"
                     ],
-                    "--ksk-algorithm": "value",
+                    "--ksk-algorithm": [
+                      "ecdsap256sha256",
+                      "ecdsap384sha384",
+                      "rsasha1",
+                      "rsasha256",
+                      "rsasha512"
+                    ],
                     "--ksk-key-length": "value",
                     "--labels": "value",
-                    "--zsk-algorithm": "value",
+                    "--zsk-algorithm": [
+                      "ecdsap256sha256",
+                      "ecdsap384sha384",
+                      "rsasha1",
+                      "rsasha256",
+                      "rsasha512"
+                    ],
                     "--zsk-key-length": "value"
                   }
                 },
@@ -19706,11 +19769,23 @@ STATIC_COMPLETION_CLI_TREE = {
                       "on",
                       "transfer"
                     ],
-                    "--ksk-algorithm": "value",
+                    "--ksk-algorithm": [
+                      "ecdsap256sha256",
+                      "ecdsap384sha384",
+                      "rsasha1",
+                      "rsasha256",
+                      "rsasha512"
+                    ],
                     "--ksk-key-length": "value",
                     "--remove-labels": "value",
                     "--update-labels": "value",
-                    "--zsk-algorithm": "value",
+                    "--zsk-algorithm": [
+                      "ecdsap256sha256",
+                      "ecdsap384sha384",
+                      "rsasha1",
+                      "rsasha256",
+                      "rsasha512"
+                    ],
                     "--zsk-key-length": "value"
                   }
                 }
@@ -23179,6 +23254,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "execute-sql": {
                   "commands": {},
                   "flags": {
+                    "--enable-partitioned-dml": "bool",
                     "--instance": "value",
                     "--query-mode": [
                       "NORMAL",
@@ -25295,6 +25371,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "PROXY_V1"
                     ],
                     "--request-path": "value",
+                    "--response": "value",
                     "--timeout": "value",
                     "--unhealthy-threshold": "value"
                   }
@@ -25313,6 +25390,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "PROXY_V1"
                     ],
                     "--request-path": "value",
+                    "--response": "value",
                     "--timeout": "value",
                     "--unhealthy-threshold": "value"
                   }
@@ -25392,6 +25470,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "PROXY_V1"
                     ],
                     "--request-path": "value",
+                    "--response": "value",
                     "--timeout": "value",
                     "--unhealthy-threshold": "value"
                   }
@@ -25410,6 +25489,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "PROXY_V1"
                     ],
                     "--request-path": "value",
+                    "--response": "value",
                     "--timeout": "value",
                     "--unhealthy-threshold": "value"
                   }
@@ -28740,6 +28820,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--master-machine-type": "value",
                 "--metadata": "value",
                 "--network": "value",
+                "--no-address": "bool",
                 "--num-master-local-ssds": "value",
                 "--num-masters": "value",
                 "--num-preemptible-workers": "value",
@@ -29276,6 +29357,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--master-machine-type": "value",
                 "--metadata": "value",
                 "--network": "value",
+                "--no-address": "bool",
                 "--num-master-local-ssds": "value",
                 "--num-masters": "value",
                 "--num-preemptible-workers": "value",
@@ -29727,10 +29809,22 @@ STATIC_COMPLETION_CLI_TREE = {
                   "on",
                   "transfer"
                 ],
-                "--ksk-algorithm": "value",
+                "--ksk-algorithm": [
+                  "ecdsap256sha256",
+                  "ecdsap384sha384",
+                  "rsasha1",
+                  "rsasha256",
+                  "rsasha512"
+                ],
                 "--ksk-key-length": "value",
                 "--labels": "value",
-                "--zsk-algorithm": "value",
+                "--zsk-algorithm": [
+                  "ecdsap256sha256",
+                  "ecdsap384sha384",
+                  "rsasha1",
+                  "rsasha256",
+                  "rsasha512"
+                ],
                 "--zsk-key-length": "value"
               }
             },
@@ -29766,11 +29860,23 @@ STATIC_COMPLETION_CLI_TREE = {
                   "on",
                   "transfer"
                 ],
-                "--ksk-algorithm": "value",
+                "--ksk-algorithm": [
+                  "ecdsap256sha256",
+                  "ecdsap384sha384",
+                  "rsasha1",
+                  "rsasha256",
+                  "rsasha512"
+                ],
                 "--ksk-key-length": "value",
                 "--remove-labels": "value",
                 "--update-labels": "value",
-                "--zsk-algorithm": "value",
+                "--zsk-algorithm": [
+                  "ecdsap256sha256",
+                  "ecdsap384sha384",
+                  "rsasha1",
+                  "rsasha256",
+                  "rsasha512"
+                ],
                 "--zsk-key-length": "value"
               }
             }

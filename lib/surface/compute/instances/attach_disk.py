@@ -57,8 +57,6 @@ def _Args(parser,
 
   flags.INSTANCE_ARG.AddArgument(parser)
 
-  # TODO(b/69955187): Add note about matching with name in order to mount to
-  # container.
   parser.add_argument(
       '--device-name',
       help=('An optional name that indicates the disk name the guest '

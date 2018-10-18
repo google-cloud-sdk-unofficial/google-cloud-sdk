@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.compute.health_checks import flags
 
 def _Run(args,
          holder,
-         supports_response=False,
          supports_port_specification=False,
          include_alpha=False):
   """Issues the request necessary for adding the health check."""
@@ -44,10 +43,9 @@ def _Run(args,
       port=args.port,
       portName=args.port_name,
       requestPath=args.request_path,
-      proxyHeader=proxy_header)
+      proxyHeader=proxy_header,
+      response=args.response)
 
-  if supports_response:
-    http_health_check.response = args.response
   if supports_port_specification:
     health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
         args, http_health_check)
@@ -101,6 +99,7 @@ class Create(base.CreateCommand):
         port_specification=supports_port_specification,
         use_serving_port=supports_use_serving_port)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP')
+    health_checks_utils.AddHttpRelatedResponseArg(parser)
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha
                                         if regionalized else
                                         completers.HealthChecksCompleter)
@@ -125,13 +124,11 @@ class CreateBeta(Create):
         supports_port_specification=supports_port_specification,
         supports_use_serving_port=supports_use_serving_port,
         regionalized=regionalized)
-    health_checks_utils.AddHttpRelatedResponseArg(parser)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(
-        args, holder, supports_response=True, supports_port_specification=True)
+    return _Run(args, holder, supports_port_specification=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -149,7 +146,6 @@ class CreateAlpha(CreateBeta):
     return _Run(
         args,
         holder,
-        supports_response=True,
         supports_port_specification=True,
         include_alpha=True)
 

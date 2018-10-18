@@ -30,7 +30,7 @@ class DescribeBase(object):
 
   @staticmethod
   def Args(parser):
-    dns_keys.AddDescribeFlags(parser)
+    dns_keys.AddDescribeFlags(parser, is_beta=True)
 
   def Run(self, args):
     keys = dns_keys.Keys.FromApiVersion(self.GetApiVersion())

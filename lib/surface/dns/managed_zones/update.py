@@ -90,7 +90,7 @@ class UpdateGA(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    messages = apis.GetMessagesModule('dns', 'v1beta2')
+    messages = apis.GetMessagesModule('dns', 'v1')
     _CommonArgs(parser, messages)
 
   def Run(self, args):

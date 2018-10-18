@@ -24,7 +24,12 @@ from googlecloudsdk.command_lib.help_search import search
 from googlecloudsdk.command_lib.help_search import search_util
 
 
-# TODO(b/67707688): Deprecate in favor of gcloud help.
+_DEPRECATION_WARNING = (
+    '`search-help` is deprecated. Please use `gcloud beta help` instead.')
+
+
+# TODO(b/112529035): Clean up this command after deprecation period.
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class HelpSearch(base.ListCommand):
   """Search the help text of gcloud commands.

@@ -44,6 +44,7 @@ class Update(base.UpdateCommand):
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
     health_checks_utils.AddHttpRelatedUpdateArgs(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTPS')
+    health_checks_utils.AddHttpRelatedResponseArg(parser)
 
   def _GetGetRequest(self, client, health_check_ref):
     """Returns a request for fetching the existing health check."""
@@ -101,6 +102,14 @@ class Update(base.UpdateCommand):
       proxy_header = (
           client.messages.HTTPSHealthCheck.ProxyHeaderValueValuesEnum(
               args.proxy_header))
+
+    if args.response:
+      response = args.response
+    elif args.response is None:
+      response = existing_check.httpsHealthCheck.response
+    else:
+      response = None
+
     new_health_check = client.messages.HealthCheck(
         name=existing_check.name,
         description=description,
@@ -111,7 +120,8 @@ class Update(base.UpdateCommand):
             portName=port_name,
             requestPath=(args.request_path or
                          existing_check.httpsHealthCheck.requestPath),
-            proxyHeader=proxy_header),
+            proxyHeader=proxy_header,
+            response=response),
         checkIntervalSec=(args.check_interval or
                           existing_check.checkIntervalSec),
         timeoutSec=args.timeout or existing_check.timeoutSec,
@@ -133,7 +143,7 @@ class Update(base.UpdateCommand):
                       or args.unhealthy_threshold
                       or args.proxy_header)
     if (args.description is None and args.host is None and
-        args.port_name is None and args_unset):
+        args.response is None and args.port_name is None and args_unset):
       raise exceptions.ToolException('At least one property must be modified.')
 
   def Run(self, args):
@@ -170,40 +180,6 @@ class UpdateBeta(Update):
   arguments passed in will be updated on the health check. Other
   attributes will remain unaffected.
   """
-
-  @staticmethod
-  def Args(parser):
-    Update.Args(parser)
-    health_checks_utils.AddHttpRelatedResponseArg(parser)
-
-  def Modify(self, client, args, existing_check):
-    """Returns a modified HealthCheck message."""
-    new_health_check = super(UpdateBeta, self).Modify(client, args,
-                                                      existing_check)
-
-    if args.response:
-      response = args.response
-    elif args.response is None:
-      response = existing_check.httpsHealthCheck.response
-    else:
-      response = None
-
-    new_health_check.httpsHealthCheck.response = response
-    return new_health_check
-
-  def ValidateArgs(self, args):
-    health_checks_utils.CheckProtocolAgnosticArgs(args)
-
-    args_unset = not (args.port
-                      or args.request_path
-                      or args.check_interval
-                      or args.timeout
-                      or args.healthy_threshold
-                      or args.unhealthy_threshold
-                      or args.proxy_header)
-    if (args.description is None and args.host is None and args.response is None
-        and args.port_name is None and args_unset):
-      raise exceptions.ToolException('At least one property must be modified.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

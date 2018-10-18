@@ -2,8 +2,8 @@
 
 __all__ = ['BaseResolver', 'Resolver']
 
-from .error import *
-from .nodes import *
+from error import *
+from nodes import *
 
 import re
 

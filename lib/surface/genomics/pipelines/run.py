@@ -171,6 +171,13 @@ class Run(base.SilentCommand):
             used. Stdout and stderr logs from the run are also generated and
             output as `-stdout.log` and `-stderr.log`.''')
 
+    parser.add_argument(
+        '--env-vars',
+        category=base.COMMONLY_USED_FLAGS,
+        metavar='NAME=VALUE',
+        type=arg_parsers.ArgDict(),
+        help='''List of key-value pairs to set as environment variables.''')
+
     labels_util.AddCreateLabelsFlags(parser)
 
     parser.add_argument(
@@ -402,6 +409,9 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
               imageUri=CLOUD_SDK_IMAGE,
               commands=['/bin/sh', '-c', 'gsutil -q cp ${%s} %s' % (name,
                                                                     value)]))
+      if args.env_vars:
+        for name, value in args.env_vars.items():
+          env[name] = value
 
       # Merge any existing pipeline arguments into the generated environment and
       # update the pipeline.

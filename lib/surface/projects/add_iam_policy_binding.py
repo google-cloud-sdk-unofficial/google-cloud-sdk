@@ -54,31 +54,3 @@ class AddIamPolicyBinding(base.Command):
     return projects_api.AddIamPolicyBinding(project_ref, args.member, args.role)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddIamPolicyBindingAlpha(base.Command):
-  """Add IAM policy binding for a project.
-
-  Adds a policy binding to the IAM policy of a project, given a project ID and
-  the binding. One binding consists of a member, a role, and an optional
-  condition.
-  """
-  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
-      'project', 'example-project-id-1', condition=True)
-
-  @staticmethod
-  def Args(parser):
-    flags.GetProjectFlag('add IAM policy binding to').AddToParser(parser)
-    iam_util.AddArgsForAddIamPolicyBinding(
-        parser,
-        role_completer=completers.ProjectsIamRolesCompleter,
-        add_condition=True)
-
-  @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
-  def Run(self, args):
-    project_ref = command_lib_util.ParseProject(args.id)
-    condition = iam_util.ValidateAndExtractConditionMutexRole(args)
-    return projects_api.AddIamPolicyBindingWithCondition(
-        project_ref,
-        args.member,
-        args.role,
-        condition)

@@ -69,8 +69,8 @@ class Submit(base.CreateCommand):
 
   _machine_type_flag_map = arg_utils.ChoiceEnumMapper(
       '--machine-type',
-      (cloudbuild_util.GetMessagesModule())
-      .BuildOptions.MachineTypeValueValuesEnum,
+      (cloudbuild_util.GetMessagesModule()
+      ).BuildOptions.MachineTypeValueValuesEnum,
       # TODO(b/69962368): remove this custom mapping when we can exclude
       # UNSPECIFIED from the proto.
       custom_mappings={
@@ -85,7 +85,7 @@ class Submit(base.CreateCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     source = parser.add_mutually_exclusive_group()
     source.add_argument(

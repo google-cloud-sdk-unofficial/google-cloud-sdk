@@ -135,8 +135,10 @@ Resize.detailed_help = {
         *{command}* resize a managed instance group to a provided size.
 
 If you resize down, the Instance Group Manager service deletes instances from
-the group until the group reaches the desired size. To understand in what order
-instances will be deleted, see the API documentation.
+the group until the group reaches the desired size. Instances are deleted
+in arbitrary order but the Instance Group Manager takes into account some
+considerations before it chooses which instance to delete. For more information,
+see https://cloud.google.com/compute/docs/reference/rest/v1/instanceGroupManagers/resize.
 
 If you resize up, the service adds instances to the group using the current
 instance template until the group reaches the desired size.

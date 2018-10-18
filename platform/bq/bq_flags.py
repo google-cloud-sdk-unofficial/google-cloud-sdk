@@ -17,12 +17,9 @@ flags.DEFINE_string(
     'https://www.googleapis.com',
     'API endpoint to talk to.'
 )
-flags.DEFINE_string(
-    'api_version', 'v2',
-    'API version to use.')
-flags.DEFINE_boolean(
-    'debug_mode', False,
-    'Show tracebacks on Python exceptions.')
+flags.DEFINE_string('api_version', 'v2', 'API version to use.')
+flags.DEFINE_boolean('debug_mode', False,
+                     'Show tracebacks on Python exceptions.')
 flags.DEFINE_string(
     'trace',
     None,
@@ -30,8 +27,7 @@ flags.DEFINE_string(
     'to include in api requests.'
 )
 flags.DEFINE_string(
-    'httplib2_debuglevel',
-    None,
+    'httplib2_debuglevel', None,
     'Instruct httplib2 to print debugging messages by setting debuglevel to '
     'the given value.')
 
@@ -42,38 +38,33 @@ flags.DEFINE_string(
     'flag on the command line. If the --bigqueryrc flag is not specified, the '
     'BIGQUERYRC environment variable is used. If that is not specified, the '
     'path "~/.bigqueryrc" is used.')
-flags.DEFINE_string(
-    'discovery_file', '',
-    'Filename for JSON document to read for discovery.')
+flags.DEFINE_string('discovery_file', '',
+                    'Filename for JSON document to read for discovery.')
 
 flags.DEFINE_boolean(
     'disable_ssl_validation', False,
     'Disables HTTPS certificates validation. This is off by default.')
-flags.DEFINE_string(
-    'ca_certificates_file', '',
-    'Location of CA certificates file.')
+flags.DEFINE_string('ca_certificates_file', '',
+                    'Location of CA certificates file.')
 flags.DEFINE_string(
     'proxy_address', '',
     'The name or IP address of the proxy host to use for connecting to GCP.')
-flags.DEFINE_string(
-    'proxy_port', '',
-    'The port number to use to connect to the proxy host.')
+flags.DEFINE_string('proxy_port', '',
+                    'The port number to use to connect to the proxy host.')
 flags.DEFINE_string(
     'proxy_username', '',
     'The user name to use when authenticating with proxy host.')
-flags.DEFINE_string(
-    'proxy_password', '',
-    'The password to use when authenticating with proxy host.')
+flags.DEFINE_string('proxy_password', '',
+                    'The password to use when authenticating with proxy host.')
 
 flags.DEFINE_boolean(
-    'synchronous_mode', True,
+    'synchronous_mode',
+    True,
     'If True, wait for command completion before returning, and use the '
     'job completion status for error codes. If False, simply create the '
     'job, and use the success of job creation as the error code.',
     short_name='sync')
-flags.DEFINE_string(
-    'project_id', '',
-    'Default project to use for requests.')
+flags.DEFINE_string('project_id', '', 'Default project to use for requests.')
 flags.DEFINE_string(
     'dataset_id', '',
     'Default dataset reference to use for requests (Ignored when not '
@@ -97,19 +88,18 @@ flags.DEFINE_boolean(
     'configuration. This will prevent the same job from running multiple times '
     'accidentally.')
 flags.DEFINE_boolean(
-    'quiet', False,
+    'quiet',
+    False,
     'If True, ignore status updates while jobs are running.',
     short_name='q')
 flags.DEFINE_boolean(
-    'headless',
-    False,
+    'headless', False,
     'Whether this bq session is running without user interaction. This '
     'affects behavior that expects user interaction, like whether '
     'debug_mode will break into the debugger and lowers the frequency '
     'of informational printing.')
 flags.DEFINE_enum(
-    'format', None,
-    ['none', 'json', 'prettyjson', 'csv', 'sparse', 'pretty'],
+    'format', None, ['none', 'json', 'prettyjson', 'csv', 'sparse', 'pretty'],
     'Format for command output. Options include:'
     '\n pretty: formatted table output'
     '\n sparse: simpler table output'
@@ -123,18 +113,11 @@ flags.DEFINE_multistring(
     'job_property', None,
     'Additional key-value pairs to include in the properties field of '
     'the job configuration')  # No period: Multistring adds flagspec suffix.
-flags.DEFINE_integer(
-    'max_rows_per_request', None,
-    'Specifies the max number of rows to return per read.')
+flags.DEFINE_integer('max_rows_per_request', None,
+                     'Specifies the max number of rows to return per read.')
 
 flags.DEFINE_boolean(
     'enable_gdrive', None,
     'When set to true, requests new OAuth token with GDrive scope. '
     'When set to false, requests new OAuth token without GDrive scope.')
 
-
-def ResolveApiInfoFromFlags():
-  """Determine an api and api_version."""
-  api_version = FLAGS.api_version
-  api = FLAGS.api
-  return {'api': api, 'api_version': api_version}

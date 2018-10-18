@@ -118,7 +118,8 @@ class DeployBeta(base.SilentCommand):
         parallel_build=True,
         flex_image_build_option=deploy_util.GetFlexImageBuildOption(
             default_strategy=deploy_util.FlexImageBuildOptions.ON_SERVER),
-        disable_build_cache=args.no_cache)
+        disable_build_cache=args.no_cache,
+        dispatch_admin_api=True)
 
 
 DeployGA.detailed_help = _DETAILED_HELP

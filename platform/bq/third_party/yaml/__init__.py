@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-from .error import *
+from error import *
 
-from .tokens import *
-from .events import *
-from .nodes import *
+from tokens import *
+from events import *
+from nodes import *
 
-from .loader import *
-from .dumper import *
+from loader import *
+from dumper import *
 
-__version__ = '3.12'
+__version__ = '3.13'
 
 try:
     from cyaml import *
