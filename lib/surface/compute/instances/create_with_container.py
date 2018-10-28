@@ -174,6 +174,7 @@ class CreateWithContainerBeta(CreateWithContainer):
     """Register parser args."""
     _Args(parser)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
+    instances_flags.AddContainerMountDiskFlag(parser)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -210,6 +211,11 @@ class CreateWithContainerBeta(CreateWithContainer):
     self._ValidateArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
+        holder,
+        args.container_mount_disk,
+        args.disk,
+        args.create_disk)
     client = holder.client
     source_instance_template = instance_utils.GetSourceInstanceTemplate(
         args, holder.resources, self.SOURCE_INSTANCE_TEMPLATE)
@@ -233,10 +239,12 @@ class CreateWithContainerBeta(CreateWithContainer):
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateKonletMetadataMessage(
-          client.messages, args, instance_ref.Name(), user_metadata)
+          client.messages, args, instance_ref.Name(), user_metadata,
+          container_mount_disk_enabled=True,
+          container_mount_disk=container_mount_disk)
       disks = instance_utils.CreateDiskMessages(
           holder, args, boot_disk_size_gb, image_uri, instance_ref,
-          skip_defaults)
+          skip_defaults, match_container_mount_disks=True)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,

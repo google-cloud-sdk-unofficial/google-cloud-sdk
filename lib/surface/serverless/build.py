@@ -31,7 +31,7 @@ class Build(base.Command):
           {description}
           """,
       'EXAMPLES': """\
-          To build your application:
+          To build your container image:
 
               $ {command}
           """,

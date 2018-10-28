@@ -36,8 +36,7 @@ class Deploy(base.Command):
 
   detailed_help = {
       'DESCRIPTION': """\
-          Deploys apps, functions and container images to Google Serverless
-          Engine.
+          Deploys container images to Google Serverless Engine.
           """,
       'EXAMPLES': """\
           To deploy an app to the service my-backend, navigate to the app's

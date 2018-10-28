@@ -58,8 +58,11 @@ class Create(base.Command):
 
     parser.add_argument('output',
                         metavar='OUTPUT-FILE',
+                        type=iam_util.GetIamOutputFileValidator(),
                         help='The path where the resulting private key should '
-                        'be written.')
+                        'be written. File system write permission will be '
+                        'checked on the specified path prior to the key '
+                        'creation.')
 
   def Run(self, args):
     client, messages = util.GetClientAndMessages()

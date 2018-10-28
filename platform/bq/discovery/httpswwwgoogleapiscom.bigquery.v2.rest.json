@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20181009",
+ "revision": "20181016",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -1974,6 +1974,11 @@
     "numLongTermBytes": {
      "type": "string",
      "description": "[Output-only] The number of bytes in the table that are considered \"long-term storage\".",
+     "format": "int64"
+    },
+    "numPhysicalBytes": {
+     "type": "string",
+     "description": "[Output-only] [Experimental] The physical size of this table in bytes, excluding any data in the streaming buffer. This includes compression and storage used for time travel.",
      "format": "int64"
     },
     "numRows": {

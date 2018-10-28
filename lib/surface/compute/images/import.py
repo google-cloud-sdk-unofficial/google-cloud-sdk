@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import abc
 import os.path
 import string
 import uuid
@@ -35,6 +36,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
+
+import six
 
 _OS_CHOICES = {'debian-8': 'debian/translate_debian_8.wf.json',
                'debian-9': 'debian/translate_debian_9.wf.json',
@@ -170,6 +173,15 @@ def _CheckForExistingImage(image_name, compute_holder):
     raise exceptions.InvalidArgumentException('IMAGE_NAME', message)
 
 
+def _CreateImportStager(storage_client, args):
+  if args.source_image:
+    return ImportFromImageStager(storage_client, args)
+  elif _IsLocalFile(args.source_file):
+    return ImportFromLocalFileStager(storage_client, args)
+  else:
+    return ImportFromGSFileStager(storage_client, args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
   """Import an image into Google Compute Engine."""
@@ -245,17 +257,17 @@ class Import(base.CreateCommand):
     else:
       # If the file is an OVA file, print a warning.
       if args.source_file.endswith('.ova'):
-        log.warning('The specified input file may contain more than one '
-                    'virtual disk. Only the first vmdk disk will be '
-                    'imported. ')
+        log.warning(
+            'The specified input file may contain more than one virtual disk. '
+            'Only the first vmdk disk will be imported.')
       elif (args.source_file.endswith('.tar.gz')
             or args.source_file.endswith('.tgz')):
         raise exceptions.BadFileException(
-            '"gcloud compute images import" does not support compressed '
+            '`gcloud compute images import` does not support compressed '
             'archives. Please extract your image and try again.\n If you got '
             'this file by exporting an image from Compute Engine (e.g. by '
-            'using "gcloud compute images export") then you can instead use '
-            '"gcloud compute images create" to create your image from your '
+            'using `gcloud compute images export`) then you can instead use '
+            '`gcloud compute images create` to create your image from your '
             '.tar.gz file.')
 
       # Get the image into the scratch bucket, wherever it is now.
@@ -303,9 +315,167 @@ class ImportAlpha(Import):
         action='store_true',
         help='Google packages will not be installed on the image.')
 
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    # Fail early if the requested image name is invalid or already exists.
+    _CheckImageName(args.image_name)
+    _CheckForExistingImage(args.image_name, compute_holder)
+
+    storage_client = storage_api.StorageClient()
+    import_stager = _CreateImportStager(storage_client, args)
+    daisy_vars, workflow = import_stager.Stage()
+
+    self._ProcessAdditionalArgs(args, daisy_vars)
+
+    # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
+    # warning message with a ProgressTracker spinner.
+    log.warning('Importing image. This may take up to 2 hours.')
+    return daisy_utils.RunDaisyBuild(
+        args, workflow, ','.join(daisy_vars),
+        daisy_bucket=import_stager.GetDaisyBucket(), user_zone=args.zone,
+        output_filter=_OUTPUT_FILTER)
+
   def _ProcessAdditionalArgs(self, args, daisy_vars):
     if args.no_google_packages:
       daisy_vars.append('install_gce_packages={}'.format('false'))
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseImportStager(object):
+  """Base class for image import stager.
+
+  An abstract class which is responsible for preparing import parameters, such
+  as Daisy parameters and workflow, as well as creating Daisy scratch bucket in
+  the appropriate location.
+  """
+
+  def __init__(self, storage_client, args):
+    self.storage_client = storage_client
+    self.args = args
+
+    self._CreateDaisyBucket()
+
+  def _CreateDaisyBucket(self):
+    # Create Daisy bucket in default GS location (US Multi-regional)
+    # This is default behaviour for all types of import except from a file in GS
+    self.daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(
+        storage_client=self.storage_client)
+
+  def GetDaisyBucket(self):
+    """Returns the name of Daisy scratch bucket.
+
+    Returns:
+      A string. Name of the Daisy scratch bucket used for running import.
+    """
+    return self.daisy_bucket
+
+  def Stage(self):
+    """Prepares import for execution and returns daisy variables/workflow.
+
+    Returns:
+      Tuple (daisy_vars, workflow).
+      daisy_vars - array of strings, Daisy variables.
+      workflow - str, Daisy workflow.
+    """
+    daisy_vars = []
+    self._BuildDaisyVars(daisy_vars)
+    return daisy_vars, self._GetDaisyWorkflow()
+
+  def _BuildDaisyVars(self, daisy_workflow):
+    daisy_workflow.append('image_name={}'.format(self.args.image_name))
+
+  @abc.abstractmethod
+  def _GetDaisyWorkflow(self):
+    raise NotImplementedError
+
+
+class ImportFromImageStager(BaseImportStager):
+  """Image import stager from an existing image."""
+
+  def _BuildDaisyVars(self, daisy_vars):
+    super(ImportFromImageStager, self)._BuildDaisyVars(daisy_vars)
+    daisy_vars.append(
+        'translate_workflow={}'.format(_GetTranslateWorkflow(self.args)))
+
+    ref = resources.REGISTRY.Parse(
+        self.args.source_image, collection='compute.images',
+        params={'project': properties.VALUES.core.project.GetOrFail})
+    # source_name should be of the form 'global/images/image-name'.
+    source_name = ref.RelativeName()[len(ref.Parent().RelativeName() + '/'):]
+    daisy_vars.append('source_image={}'.format(source_name))
+
+  def _GetDaisyWorkflow(self):
+    return _IMPORT_FROM_IMAGE_WORKFLOW
+
+
+class BaseImportFromFileStager(BaseImportStager):
+  """Abstract image import stager for import from a file."""
+
+  def _BuildDaisyVars(self, daisy_vars):
+    super(BaseImportFromFileStager, self)._BuildDaisyVars(daisy_vars)
+    # Import and (maybe) translate from the scratch bucket.
+    daisy_vars.append('source_disk_file={}'.format(self.gcs_uri))
+    if not self.args.data_disk:
+      daisy_vars.append(
+          'translate_workflow={}'.format(_GetTranslateWorkflow(self.args)))
+
+  def _GetDaisyWorkflow(self):
+    if self.args.data_disk:
+      return _IMPORT_WORKFLOW
+    else:
+      return _IMPORT_AND_TRANSLATE_WORKFLOW
+
+  def Stage(self):
+    # If the file is an OVA file, print a warning.
+    if self.args.source_file.endswith('.ova'):
+      log.warning(
+          'The specified input file may contain more than one virtual disk. '
+          'Only the first vmdk disk will be imported.')
+    elif (self.args.source_file.endswith('.tar.gz')
+          or self.args.source_file.endswith('.tgz')):
+      raise exceptions.BadFileException(
+          '`gcloud compute images import` does not support compressed '
+          'archives. Please extract your image and try again.\n If you got '
+          'this file by exporting an image from Compute Engine (e.g. by '
+          'using `gcloud compute images export`) then you can instead use '
+          '`gcloud compute images create` to create your image from your '
+          '.tar.gz file.')
+
+    self.gcs_uri = self._CopySourceFileToScratchBucket()
+    return super(BaseImportFromFileStager, self).Stage()
+
+  @abc.abstractmethod
+  def _CopySourceFileToScratchBucket(self):
+    raise NotImplementedError
+
+
+class ImportFromLocalFileStager(BaseImportFromFileStager):
+  """Image import stager from a local file."""
+
+  def _CopySourceFileToScratchBucket(self):
+    return _UploadToGcs(
+        self.args.async, self.args.source_file, self.daisy_bucket, uuid.uuid4(),
+        self.storage_client)
+
+
+class ImportFromGSFileStager(BaseImportFromFileStager):
+  """Image import stager from a file in GCS."""
+
+  def __init__(self, storage_client, args):
+    self.source_file_gcs_uri = _MakeGcsUri(args.source_file)
+    super(ImportFromGSFileStager, self).__init__(storage_client, args)
+
+  def _CreateDaisyBucket(self):
+    # Create a Daisy bucket in the same region as the source file in GS.
+    self.daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(
+        storage_client=self.storage_client,
+        bucket_location=self.storage_client.GetBucketLocationForFile(
+            self.source_file_gcs_uri))
+
+  def _CopySourceFileToScratchBucket(self):
+    return _CopyToScratchBucket(
+        self.source_file_gcs_uri, uuid.uuid4(), self.storage_client,
+        self.daisy_bucket)
 
 Import.detailed_help = {
     'brief': 'Import an image into Google Compute Engine',

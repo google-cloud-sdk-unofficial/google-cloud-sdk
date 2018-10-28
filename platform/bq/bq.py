@@ -88,7 +88,9 @@ JobIdGenerator = bigquery_client.JobIdGenerator
 JobIdGeneratorIncrementing = bigquery_client.JobIdGeneratorIncrementing
 JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
-
+ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
+SlotPoolReference = bigquery_client.ApiClientHelper.SlotPoolReference
+ReservationGrantReference = bigquery_client.ApiClientHelper.ReservationGrantReference  # pylint: disable=line-too-long
 # pylint: enable=g-bad-name
 
 
@@ -1198,7 +1200,7 @@ class _Load(BigqueryCmd):
     flags.DEFINE_boolean(
         'replace',
         False,
-        'If true erase existing contents before loading new data.',
+        'If true existing data is erased when new data is loaded.',
         flag_values=fv)
     flags.DEFINE_string(
         'quote',
@@ -2258,6 +2260,21 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'TransferState '
         'for details',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation',
+        None,
+        'List all reservations for the given project and location.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'slot_pool',
+        None,
+        'List all slot pools for the given reservation.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_grant', None,
+        'List all reservation grants for given project/location or '
+        'reservation.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
@@ -2282,6 +2299,9 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           --run_attempt='LATEST' projects/p/locations/l/transferConfigs/c
       bq ls --transfer_log --message_type='messageTypes:INFO,ERROR'
           projects/p/locations/l/transferConfigs/c/runs/r
+      bq ls --reservation_grant --project_id=proj --location='us'
+      bq ls --reservation_grant --project_id=proj --location='us' --reservation
+          <reservation_ref>
     """
 
     # pylint: disable=g-doc-exception
@@ -2347,6 +2367,59 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           min_creation_time=self.min_creation_time,
           max_creation_time=self.max_creation_time,
           page_token=page_token)
+    elif self.reservation_grant:
+      try:
+        if self.reservation:
+          object_type = ReservationGrantReference
+          reference = client.GetReservationReference(
+              identifier, FLAGS.location, ' ')
+          response = client.ListReservationGrantsForReservation(
+              reference, self.max_results, self.page_token)
+        else:
+          object_type = ReservationGrantReference
+          reference = client.GetReservationGrantReference(
+              identifier=identifier, default_location=FLAGS.location,
+              default_reservation_grant_id=' ')
+          response = client.ListReservationGrants(
+              reference, self.max_results, self.page_token)
+        if 'reservationGrants' in response:
+          results = response['reservationGrants']
+        if 'nextPageToken' in response:
+          _PrintPageToken(response)
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to list reservation grants '%s': %s" % (identifier, e))
+    elif self.reservation:
+      if self.slot_pool:
+        object_type = SlotPoolReference
+        reference = client.GetReservationReference(identifier, FLAGS.location)
+        try:
+          response = client.ListSlotPools(
+              reference, self.max_results, self.page_token)
+        except BaseException as e:
+          raise bigquery_client.BigqueryError(
+              "Failed to list slots pools in '%s': %s" % (identifier, e))
+        if 'slotPools' in response:
+          results = response['slotPools']
+        else:
+          print 'No slot pools found.'
+          results = None
+      else:
+        object_type = ReservationReference
+        reference = client.GetReservationReference(
+            identifier, FLAGS.location, ' ')
+        try:
+          response = client.ListReservations(
+              reference, self.max_results, self.page_token)
+        except BaseException as e:
+          raise bigquery_client.BigqueryError(
+              "Failed to list reservations '%s': %s" % (identifier, e))
+        if 'reservations' in response:
+          results = response['reservations']
+        else:
+          print 'No reservations found.'
+      if 'nextPageToken' in response:
+        _PrintPageToken(response)
     elif self.transfer_config:
       object_type = TransferConfigReference
       reference = client.GetProjectReference(
@@ -2475,6 +2548,19 @@ class _Delete(BigqueryCmd):
         'Remove dataset and any tables it may contain.',
         short_name='r',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation',
+        None,
+        'Deletes the reservation described by this identifier.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'slot_pool',
+        None,
+        'Deletes the slot pool described by this identifier.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_grant', None, 'Delete a reservation grant.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier):
@@ -2491,6 +2577,7 @@ class _Delete(BigqueryCmd):
       bq rm ds.table
       bq rm -r -f old_dataset
       bq rm --transfer_config=projects/p/locations/l/transferConfigs/c
+      bq rm --reservation_grant --project_id=proj --location=us query_proj_dev
     """
 
     client = Client.Get()
@@ -2509,6 +2596,33 @@ class _Delete(BigqueryCmd):
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier)
+    elif self.reservation:
+      if self.slot_pool:
+        try:
+          reference = client.GetSlotPoolReference(
+              identifier=identifier, default_location=FLAGS.location)
+          client.DeleteSlotPool(reference)
+          print "Slot pool '%s' successfully deleted." % identifier
+        except BaseException as e:
+          raise bigquery_client.BigqueryError(
+              "Failed to delete slot pool in '%s': %s" % (identifier, e))
+      else:
+        try:
+          reference = client.GetReservationReference(identifier, FLAGS.location)
+          client.DeleteReservation(reference, self.force)
+          print "Reservation '%s' successfully deleted." % identifier
+        except BaseException as e:
+          raise bigquery_client.BigqueryError(
+              "Failed to delete reservation '%s': %s" % (identifier, e))
+    elif self.reservation_grant:
+      try:
+        reference = client.GetReservationGrantReference(
+            identifier=identifier, default_location=FLAGS.location)
+        client.DeleteReservationGrant(reference)
+        print "Reservation grant '%s' successfully deleted." % identifier
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to delete reservation grant '%s': %s" % (identifier, e))
     else:
       reference = client.GetReference(identifier)
       _Typecheck(reference, (DatasetReference, TableReference),
@@ -2703,6 +2817,44 @@ def _ParseClustering(clustering_fields=None):
     return None
 
 
+def _ParseRangePartitioning(range_partitioning_spec=None):
+  """Parses range partitioning from the arguments.
+
+  Args:
+    range_partitioning_spec: specification for range partitioning in the format
+    of field,start,end,interval.
+  Returns:
+    Range partitioning if range_partitioning_spec is not None, otherwise None.
+  Raises:
+    UsageError: when the spec fails to parse.
+  """
+
+  range_partitioning = {}
+  key_field = 'field'
+  key_range = 'range'
+  key_range_start = 'start'
+  key_range_end = 'end'
+  key_range_interval = 'interval'
+
+  if range_partitioning_spec is not None:
+    parts = range_partitioning_spec.split(',')
+    if len(parts) != 4:
+      raise app.UsageError(
+          'Error parsing range_partitioning. range_partitioning should be in '
+          'the format of "field,start,end,interval"')
+    range_partitioning[key_field] = parts[0]
+    range_spec = {}
+    range_spec[key_range_start] = parts[1]
+    range_spec[key_range_end] = parts[2]
+    range_spec[key_range_interval] = parts[3]
+    range_partitioning[key_range] = range_spec
+
+  if range_partitioning:
+    return range_partitioning
+  else:
+    return None
+
+
 class _Make(BigqueryCmd):
   usage = """mk [-d] <identifier>  OR  mk [-t] <identifier> [<schema>]"""
 
@@ -2885,6 +3037,57 @@ class _Make(BigqueryCmd):
         'partitioning. Data will be first partitioned and subsequently "'
         'clustered on these fields.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation',
+        None,
+        'Creates a reservation described by this identifier. Reservation '
+        'hierarchies can be specified by separating reservations with a slash.'
+        'For example foo/bar/baz.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'slot_pool',
+        None,
+        'Creates a slot pool in the specified reservation. You do not need to '
+        'specify a slot pool id, this will be assigned automatically.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'slots',
+        0,
+        'The number of slots associated with the reservation subtree rooted at '
+        'this reservation node.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_parent',
+        True,
+        'If true, any query using this reservation will also be submitted to '
+        'the parent reservation.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'plan',
+        None, ['ADHOC', 'ONE_DAY', 'THIRTY_DAYS'],
+        'Commitment plan for this slot pool. Plans cannot be deleted before '
+        'their commitment period is over. Options include:'
+        '\n ADHOC'
+        '\n ONE_DAY'
+        '\n THIRTY_DAYS',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_grant',
+        None,
+        'Create a reservation grant.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'job_type',
+        None, ['QUERY', 'PIPELINE'],
+        'Type of jobs to create reservation grant for. Options include:'
+        '\n QUERY'
+        '\n PIPELINE',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'reservation_id', None,
+        'Reservation ID used to create reservation grant for. '
+        'Used in conjuction with --reservation_grant.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -2905,6 +3108,8 @@ class _Make(BigqueryCmd):
           -p='{"param":"value"}' --data_source=source
       bq mk --transfer_run --start_time={start_time} --end_time={end_time}
           projects/p/locations/l/transferConfigs/c
+      bq mk ---reservation_grant -project_id=proj --location=us
+          --reservation_id=project:us.dev --job_type=QUERY
     """
 
     client = Client.Get()
@@ -2918,6 +3123,41 @@ class _Make(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.view:
       reference = client.GetTableReference(identifier)
+    elif self.reservation:
+      object_info = None
+      reference = client.GetReservationReference(identifier, FLAGS.location)
+      if self.slot_pool:
+        try:
+          result = client.CreateSlotPool(reference, self.slots, self.plan)
+        except BaseException as e:
+          raise bigquery_client.BigqueryError(
+              "Failed to create slot pool in '%s': %s" % (identifier, e))
+        if result['done']:
+          object_info = result['response']
+          reference = client.GetSlotPoolReference(
+              path=object_info['name'], default_location=FLAGS.location)
+        else:
+          print 'Slot pool creation is pending: %s' % result['name']
+      else:
+        try:
+          object_info = client.CreateReservation(reference, self.slots,
+                                                 self.use_parent)
+        except BaseException as e:
+          raise bigquery_client.BigqueryError(
+              "Failed to create reservation '%s': %s" % (identifier, e))
+      if object_info is not None:
+        _PrintObjectInfo(object_info, reference, custom_format='show')
+    elif self.reservation_grant:
+      try:
+        reference = client.GetReservationGrantReference(
+            identifier=identifier, default_location=FLAGS.location,
+            default_reservation_grant_id=' ')
+        object_info = client.CreateReservationGrant(
+            reference, self.reservation_id, self.job_type)
+        _PrintObjectInfo(object_info, reference, custom_format='show')
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to create reservation grant '%s': %s" % (identifier, e))
     elif self.transfer_config:
       transfer_client = client.GetTransferV1ApiClient()
       reference = 'projects/' + (client.GetProjectReference().projectId)
@@ -3095,6 +3335,23 @@ class _Update(BigqueryCmd):
         short_name='t',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'reservation',
+        None,
+        'Updates a reservation described by this identifier.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'slots',
+        None,
+        'The number of slots associated with the reservation subtree rooted at '
+        'this reservation node.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_parent',
+        None,
+        'If true, any query using this reservation will also be submitted to '
+        'the parent reservation.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'transfer_config',
         False,
         'Updates a transfer configuration for a configuration resource name.',
@@ -3270,6 +3527,15 @@ class _Update(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
+    elif self.reservation:
+      try:
+        reference = client.GetReservationReference(identifier, FLAGS.location)
+        object_info = client.UpdateReservation(
+            reference, self.slots, self.use_parent)
+        _PrintObjectInfo(object_info, reference, custom_format='show')
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to update reservation '%s': %s" % (identifier, e))
     elif self.transfer_config:
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferConfigReference(
@@ -3307,12 +3573,13 @@ class _Update(BigqueryCmd):
       _UpdateDataset(
           client,
           reference,
-          self.description,
-          self.source,
-          default_table_exp_ms,
-          labels_to_set,
-          label_keys_to_remove,
-          self.etag)
+          description=self.description,
+          source=self.source,
+          default_table_expiration_ms=default_table_exp_ms,
+          default_partition_expiration_ms=default_partition_exp_ms,
+          labels_to_set=labels_to_set,
+          label_keys_to_remove=label_keys_to_remove,
+          etag=self.etag)
       print "Dataset '%s' successfully updated." % (reference,)
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -3427,12 +3694,12 @@ def RetrieveAuthorizationCode(reference, data_source, transfer_client):
 def _UpdateDataset(
     client,
     reference,
-    description,
-    source,
-    default_table_expiration_ms,
-    default_partition_expiration_ms,
-    labels_to_set,
-    label_keys_to_remove,
+    description=None,
+    source=None,
+    default_table_expiration_ms=None,
+    default_partition_expiration_ms=None,
+    labels_to_set=None,
+    label_keys_to_remove=None,
     etag=None):
   """Updates a dataset.
 
@@ -3526,6 +3793,16 @@ class _Show(BigqueryCmd):
         False,
         'Show information about the particular transfer run.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation',
+        None,
+        'Shows details for the reservation described by this identifier.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'slot_pool',
+        None,
+        'Shows details for the slot pool described by this identifier.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
@@ -3566,6 +3843,14 @@ class _Show(BigqueryCmd):
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferRunReference(transferRunName=formatted_identifier)
       object_info = client.GetTransferRun(formatted_identifier)
+    elif self.reservation:
+      if self.slot_pool:
+        reference = client.GetSlotPoolReference(
+            identifier=identifier, default_location=FLAGS.location)
+        object_info = client.GetSlotPool(reference)
+      else:
+        reference = client.GetReservationReference(identifier, FLAGS.location)
+        object_info = client.GetReservation(reference)
     elif self.encryption_service_account:
       object_info = client.apiclient.projects().getServiceAccount(
           projectId=client.GetProjectReference().projectId).execute()

@@ -170,11 +170,13 @@ class CreateAlpha(base.CreateCommand):
     _AddCreateArgs(parser)
     flags.ALPHA_MACHINE_TYPE.AddToParser(parser)
     flags.AddUserCodeArgs(parser)
+    flags.GetAcceleratorFlag().AddToParser(parser)
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
     labels = versions_util.ParseCreateLabels(versions_client, args)
     framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
+    accelerator = flags.ParseAcceleratorFlag(args.accelerator)
     return versions_util.Create(versions_client,
                                 operations.OperationsClient(),
                                 args.version,
@@ -190,4 +192,5 @@ class CreateAlpha(base.CreateCommand):
                                 framework=framework,
                                 python_version=args.python_version,
                                 model_class=args.model_class,
-                                package_uris=args.package_uris)
+                                package_uris=args.package_uris,
+                                accelerator_config=accelerator)

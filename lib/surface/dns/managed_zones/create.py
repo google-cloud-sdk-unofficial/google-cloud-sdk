@@ -126,28 +126,63 @@ class CreateBeta(base.CreateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
+    flags.GetManagedZoneNetworksArg().AddToParser(parser)
+    flags.GetManagedZoneVisibilityArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
+    # We explicitly want to allow --networks='' as a valid option and we need
+    # to differentiate between that option and not passing --networks at all.
+    if args.visibility == 'public' and args.IsSpecified('networks'):
+      raise exceptions.InvalidArgumentException(
+          '--networks',
+          'If --visibility is set to public (default), setting networks is '
+          'not allowed.')
+    if args.visibility == 'private' and args.networks is None:
+      raise exceptions.RequiredArgumentException(
+          '--networks', ("""\
+           If --visibility is set to private, a list of networks must be
+           provided.'
+         NOTE: You can provide an empty value ("") for private zones that
+          have NO network binding.
+          """))
+
     dns = apis.GetClientInstance('dns', 'v1beta2')
     messages = apis.GetMessagesModule('dns', 'v1beta2')
+    registry = util.GetRegistry('v1beta2')
 
-    zone_ref = util.GetRegistry('v1beta2').Parse(
+    zone_ref = registry.Parse(
         args.dns_zone,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
+        params={'project': properties.VALUES.core.project.GetOrFail},
         collection='dns.managedZones')
 
+    visibility = messages.ManagedZone.VisibilityValueValuesEnum(args.visibility)
+    visibility_config = None
+    if visibility == messages.ManagedZone.VisibilityValueValuesEnum.private:
+      # Handle explicitly empty networks case (--networks='')
+      networks = args.networks if args.networks != [''] else []
+      network_urls = [
+          registry.Parse(
+              n,
+              collection='compute.networks',
+              params={'project': zone_ref.project}).SelfLink()
+          for n in networks]
+      network_configs = [
+          messages.ManagedZonePrivateVisibilityConfigNetwork(
+              networkUrl=nurl)
+          for nurl in network_urls]
+      visibility_config = messages.ManagedZonePrivateVisibilityConfig(
+          networks=network_configs)
+
     dnssec_config = _MakeDnssecConfig(args, messages)
-
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
-
     zone = messages.ManagedZone(name=zone_ref.managedZone,
                                 dnsName=util.AppendTrailingDot(args.dns_name),
                                 description=args.description,
                                 dnssecConfig=dnssec_config,
-                                labels=labels)
+                                labels=labels,
+                                visibility=visibility,
+                                privateVisibilityConfig=visibility_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,

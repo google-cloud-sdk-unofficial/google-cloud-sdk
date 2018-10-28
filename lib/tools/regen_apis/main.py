@@ -20,12 +20,12 @@ from __future__ import unicode_literals
 
 import argparse
 import logging
-import os
 import pprint
 import sys
 
 from googlecloudsdk.api_lib.regen import generate
 from googlecloudsdk.core import yaml
+from googlecloudsdk.core.util import files
 import six
 
 
@@ -49,7 +49,7 @@ def main(argv=None):
                       help='Regeneration config filename.')
 
   parser.add_argument('--base-dir',
-                      default=os.getcwd(),
+                      default=files.GetCWD(),
                       help='Regeneration config filename.')
 
   parser.add_argument('--api',

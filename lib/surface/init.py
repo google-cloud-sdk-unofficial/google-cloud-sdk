@@ -35,6 +35,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.diagnostics import network_diagnostics
 from googlecloudsdk.core.resource import resource_projector
+from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
 import six
@@ -419,7 +420,7 @@ https://console.developers.google.com/apis page.
                 'file')
       return
 
-    boto_path = platforms.ExpandHomePath(os.path.join('~', '.boto'))
+    boto_path = files.ExpandHomeDir(os.path.join('~', '.boto'))
     if os.path.exists(boto_path):
       log.debug('Not configuring default .boto file. File already '
                 'exists at [{boto_path}].'.format(boto_path=boto_path))

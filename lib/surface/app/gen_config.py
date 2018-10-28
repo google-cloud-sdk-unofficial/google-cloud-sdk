@@ -59,7 +59,7 @@ def _Args(parser):
       'source_dir',
       nargs='?',
       help='The source directory to fingerprint.',
-      default=os.getcwd())
+      default=files.GetCWD())
   parser.add_argument(
       '--config',
       default=None,

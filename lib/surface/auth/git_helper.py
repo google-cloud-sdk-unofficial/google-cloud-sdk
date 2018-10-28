@@ -203,6 +203,7 @@ class GitHelper(base.Command):
     """Warn on stderr if ~/.netrc contains redundant credentials."""
 
     def Check(p):
+      """Warn about other credential helpers that will be ignored."""
       if not os.path.exists(p):
         return
       try:
@@ -216,5 +217,5 @@ be used, but you may want to remove them to avoid confusion.
       # pylint:disable=broad-except, If something went wrong, forget about it.
       except Exception:
         pass
-    Check(os.path.expanduser(os.path.join('~', '.netrc')))
-    Check(os.path.expanduser(os.path.join('~', '_netrc')))
+    Check(files.ExpandHomeDir(os.path.join('~', '.netrc')))
+    Check(files.ExpandHomeDir(os.path.join('~', '_netrc')))

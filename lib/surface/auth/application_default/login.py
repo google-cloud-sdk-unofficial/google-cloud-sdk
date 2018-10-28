@@ -35,6 +35,11 @@ from oauth2client import client
 class Login(base.Command):
   r"""Acquire new user credentials to use for Application Default Credentials.
 
+  Note: Consider using a service account and the complementary `gcloud auth
+  activate-service-account` to authorize access to Google Cloud Platform. For
+  details on authorizing with a service account, see
+  https://cloud.google.com/sdk/docs/authorizing#authorizing_with_a_service_account.
+
   Obtains user access credentials via a web flow and puts them in the
   well-known location for Application Default Credentials to use them as a
   proxy for a service account.

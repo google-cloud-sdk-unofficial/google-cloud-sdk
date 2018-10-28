@@ -24,11 +24,11 @@ from googlecloudsdk.calliope import base
 DETAILED_HELP = {
     'brief': 'Manage your Serverless applications.',
     'DESCRIPTION': """
-        The gcloud serverless command group lets you deploy apps, functions and
-        containers to Google Serverless Engine.
+        The gcloud serverless command group lets you deploy container images
+        to Google Serverless Engine.
         """,
     'EXAMPLES': """\
-        To deploy your application, use the `gcloud serverless deploy` command:
+        To deploy your container, use the `gcloud serverless deploy` command:
 
           $ gcloud serverless deploy <service-name> --image <image_name>
 
@@ -40,7 +40,7 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Serverless(base.Group):
-  """Manage your Serverless applications."""
+  """Manage your Serverless resources."""
 
   detailed_help = DETAILED_HELP
 

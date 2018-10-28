@@ -26,6 +26,7 @@ This command is deprecated and will be removed on or after 2018-10-31. Please
 use `gcloud builds` instead."""
 
 
+@base.Hidden
 @base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
 class Builds(base.Group):
   """Create and manage builds."""

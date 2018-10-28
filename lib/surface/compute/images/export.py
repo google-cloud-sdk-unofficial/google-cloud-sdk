@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import daisy_utils
 from googlecloudsdk.api_lib.compute import image_utils
+from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.core import properties
@@ -30,6 +31,7 @@ _EXTERNAL_WORKFLOW = '../workflows/export/image_export_ext.wf.json'
 _OUTPUT_FILTER = ['[Daisy', '[image-export', '  image', 'ERROR']
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Export(base.CreateCommand):
   """Export a Google Compute Engine image."""
 
@@ -107,9 +109,23 @@ class Export(base.CreateCommand):
           args.network.lower())
 
     tags = ['gce-daisy-image-export']
-    return daisy_utils.RunDaisyBuild(args, workflow, variables,
-                                     tags=tags, user_zone=args.zone,
-                                     output_filter=_OUTPUT_FILTER)
+    return daisy_utils.RunDaisyBuild(
+        args, workflow, variables, tags=tags, user_zone=args.zone,
+        output_filter=_OUTPUT_FILTER, daisy_bucket=self._GetDaisyBucket(args))
+
+  def _GetDaisyBucket(self, args):
+    return None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ExportAlpha(Export):
+
+  def _GetDaisyBucket(self, args):
+    storage_client = storage_api.StorageClient()
+    return daisy_utils.GetAndCreateDaisyBucket(
+        storage_client=storage_client,
+        bucket_location=storage_client.GetBucketLocationForFile(
+            args.destination_uri))
 
 Export.detailed_help = {
     'brief': 'Export a Google Compute Engine image',

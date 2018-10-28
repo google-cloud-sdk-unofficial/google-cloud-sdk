@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Ios(base.Group):
   """Command group for iOS application testing."""
 

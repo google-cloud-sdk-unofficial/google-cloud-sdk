@@ -450,6 +450,7 @@ class CreateBeta(Create):
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.enable_autoprovisioning = args.enable_autoprovisioning
+    ops.autoprovisioning_config_file = args.autoprovisioning_config_file
     ops.min_cpu = args.min_cpu
     ops.max_cpu = args.max_cpu
     ops.min_memory = args.min_memory
@@ -525,6 +526,7 @@ class CreateAlpha(Create):
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.enable_autoprovisioning = args.enable_autoprovisioning
+    ops.autoprovisioning_config_file = args.autoprovisioning_config_file
     ops.min_cpu = args.min_cpu
     ops.max_cpu = args.max_cpu
     ops.min_memory = args.min_memory
@@ -555,7 +557,6 @@ class CreateAlpha(Create):
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.security_profile = args.security_profile
     ops.security_profile_runtime_rules = args.security_profile_runtime_rules
-    ops.autoprovisioning_config_file = args.autoprovisioning_config_file
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

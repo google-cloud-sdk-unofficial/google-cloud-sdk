@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List all iOS models available for testing."""
 

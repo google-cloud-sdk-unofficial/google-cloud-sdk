@@ -19,25 +19,26 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import atexit
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import constants
 from googlecloudsdk.api_lib.sql import exceptions
+from googlecloudsdk.api_lib.sql import instances as instances_api_util
 from googlecloudsdk.api_lib.sql import network
 from googlecloudsdk.api_lib.sql import operations
-from googlecloudsdk.api_lib.sql import validate
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib import info_holder
+from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.command_lib.sql import flags as sql_flags
-from googlecloudsdk.core import execution_utils
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.sql import instances as instances_command_util
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import retry
 from googlecloudsdk.core.util import text
+import six
 import six.moves.http_client
 
 DETAILED_HELP = {
@@ -158,13 +159,12 @@ def AddBaseArgs(parser):
 
 
 def RunConnectCommand(args, supports_database=False):
-  """Connects to a Cloud SQL instance.
+  """Connects to a Cloud SQL instance directly.
 
   Args:
-    args: argparse.Namespace, The arguments that this command was invoked
-        with.
+    args: argparse.Namespace, The arguments that this command was invoked with.
     supports_database: Whether or not the `--database` flag needs to be
-        accounted for.
+      accounted for.
 
   Returns:
     If no exception is raised this method does not return. A new process is
@@ -180,11 +180,7 @@ def RunConnectCommand(args, supports_database=False):
   sql_client = client.sql_client
   sql_messages = client.sql_messages
 
-  validate.ValidateInstanceName(args.instance)
-  instance_ref = client.resource_parser.Parse(
-      args.instance,
-      params={'project': properties.VALUES.core.project.GetOrFail},
-      collection='sql.instances')
+  instance_ref = instances_command_util.GetInstanceRef(args, client)
 
   acl_name = _WhitelistClientIP(instance_ref, sql_client, sql_messages,
                                 client.resource_parser)
@@ -239,22 +235,77 @@ def RunConnectCommand(args, supports_database=False):
   sql_args.extend([flags['user'], sql_user])
   sql_args.append(flags['password'])
 
-  # Check for database name.
-  if supports_database and args.IsSpecified('database'):
-    try:
-      sql_args.extend([flags['database'], args.database])
-    except KeyError:
-      raise calliope_exceptions.InvalidArgumentException(
-          '--database',
-          'This instance does not support the database argument.')
+  if supports_database:
+    sql_args.extend(instances_command_util.GetDatabaseArgs(args, flags))
 
-  try:
-    log.status.write(
-        'Connecting to database with SQL user [{0}].'.format(sql_user))
-    execution_utils.Exec(sql_args)
-  except OSError:
-    log.error('Failed to execute command "{0}"'.format(' '.join(sql_args)))
-    log.Print(info_holder.InfoHolder())
+  instances_command_util.ConnectToInstance(sql_args, sql_user)
+
+
+def RunBetaConnectCommand(args, supports_database=False):
+  """Connects to a Cloud SQL instance through the Cloud SQL Proxy.
+
+  Args:
+    args: argparse.Namespace, The arguments that this command was invoked with.
+    supports_database: Whether or not the `--database` flag needs to be
+      accounted for.
+
+  Returns:
+    If no exception is raised this method does not return. A new process is
+    started and the original one is killed.
+  Raises:
+    HttpException: An http error response was received while executing api
+        request.
+    SqlClientNotFoundError: A local SQL client could not be found.
+    ConnectionError: An error occurred while trying to connect to the instance.
+  """
+  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  sql_client = client.sql_client
+  sql_messages = client.sql_messages
+
+  instance_ref = instances_command_util.GetInstanceRef(args, client)
+
+  instance_info = sql_client.instances.Get(
+      sql_messages.SqlInstancesGetRequest(
+          project=instance_ref.project, instance=instance_ref.instance))
+
+  if not instances_api_util.IsInstanceV2(instance_info):
+    # The Cloud SQL Proxy does not support V1 instances.
+    return RunConnectCommand(args, supports_database)
+
+  # If the instance is V2, keep going with the proxy.
+  util.EnsureComponentIsInstalled('cloud_sql_proxy', '`sql connect` command')
+
+  # Check for the mysql or psql executable based on the db version.
+  db_type = instance_info.databaseVersion.split('_')[0]
+  exe_name = constants.DB_EXE.get(db_type, 'mysql')
+  exe = files.FindExecutableOnPath(exe_name)
+  if not exe:
+    raise exceptions.SqlClientNotFoundError(
+        '{0} client not found.  Please install a {1} client and make sure '
+        'it is in PATH to be able to connect to the database instance.'.format(
+            exe_name.title(), exe_name))
+
+  # Start the Cloud SQL Proxy and wait for it to be ready to accept connections.
+  port = six.text_type(args.port)
+  proxy_process = instances_api_util.StartCloudSqlProxy(instance_info, port)
+  atexit.register(proxy_process.kill)
+
+  # Determine what SQL user to connect with.
+  sql_user = constants.DEFAULT_SQL_USER[exe_name]
+  if args.user:
+    sql_user = args.user
+
+  # We have everything we need, time to party!
+  flags = constants.EXE_FLAGS[exe_name]
+  sql_args = [exe_name, flags['hostname'], '127.0.0.1', flags['port'], port]
+  sql_args.extend([flags['user'], sql_user])
+  sql_args.append(flags['password'])
+
+  if supports_database:
+    sql_args.extend(instances_command_util.GetDatabaseArgs(args, flags))
+
+  instances_command_util.ConnectToInstance(sql_args, sql_user)
+  proxy_process.kill()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -275,7 +326,11 @@ class Connect(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ConnectBeta(base.Command):
-  """Connects to a Cloud SQL instance."""
+  """Connects to a Cloud SQL instance.
+
+  Connects to Cloud SQL V2 instances through the Cloud SQL Proxy. Connects to
+  Cloud SQL V1 instances directly.
+  """
 
   detailed_help = DETAILED_HELP
 
@@ -284,7 +339,13 @@ class ConnectBeta(base.Command):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
     sql_flags.AddDatabase(parser, 'The PostgreSQL database to connect to.')
+    parser.add_argument(
+        '--port',
+        type=arg_parsers.BoundedInt(lower_bound=1, upper_bound=65535),
+        default=constants.DEFAULT_PROXY_PORT_NUMBER,
+        help=('Port number that gcloud will use to connect to the Cloud SQL '
+              'Proxy through localhost.'))
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
-    return RunConnectCommand(args, supports_database=True)
+    return RunBetaConnectCommand(args, supports_database=True)

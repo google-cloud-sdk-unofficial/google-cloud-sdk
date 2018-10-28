@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe an iOS model."""
 

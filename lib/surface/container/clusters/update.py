@@ -431,6 +431,7 @@ class UpdateBeta(Update):
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.enable_binauthz = args.enable_binauthz
     opts.enable_autoprovisioning = args.enable_autoprovisioning
+    opts.autoprovisioning_config_file = args.autoprovisioning_config_file
     opts.min_cpu = args.min_cpu
     opts.max_cpu = args.max_cpu
     opts.min_memory = args.min_memory
@@ -484,6 +485,7 @@ class UpdateAlpha(Update):
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_autoprovisioning = args.enable_autoprovisioning
+    opts.autoprovisioning_config_file = args.autoprovisioning_config_file
     opts.min_cpu = args.min_cpu
     opts.max_cpu = args.max_cpu
     opts.min_memory = args.min_memory
@@ -497,7 +499,6 @@ class UpdateAlpha(Update):
         args.clear_resource_usage_bigquery_dataset
     opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     opts.security_profile = args.security_profile
-    opts.autoprovisioning_config_file = args.autoprovisioning_config_file
     opts.istio_config = args.istio_config
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
 

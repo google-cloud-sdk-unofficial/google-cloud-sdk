@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateContainer(base.UpdateCommand):
   """Command for updating VM instances running container images."""
 
@@ -87,7 +87,7 @@ UpdateContainer.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateContainerAlpha(UpdateContainer):
   """Command for updating VM instances running container images."""
 

@@ -34,7 +34,6 @@ from googlecloudsdk.core import log
 
 
 @base.UnicodeIsSupported
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Run(base.ListCommand):
   """Invoke a test in Firebase Test Lab for iOS and view test results."""
 

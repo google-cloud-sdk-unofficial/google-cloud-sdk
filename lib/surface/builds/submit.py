@@ -408,14 +408,6 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
         build_config.options = messages.BuildOptions()
       build_config.options.diskSizeGb = int(disk_size)
 
-    if not build_config.options or not build_config.options.logging or \
-        build_config.options.logging == \
-        messages.BuildOptions.LoggingValueValuesEnum.LOGGING_UNSPECIFIED:
-      log.warning("""\
-Using default logging option. Google Cloud Build logging will default to GCS_ONLY on or after January 8, 2019.
-For more information, see: https://cloud.google.com/cloud-build/docs/api/reference/rest/v1/projects.builds#loggingmode.
-""")
-
     log.debug('submitting build: ' + repr(build_config))
 
     # Start the build.

@@ -68,6 +68,8 @@ class Tail(base.Command):
                                    args.version, args.level)
 
     log.status.Print('Waiting for new log entries...')
-    log_fetcher = stream.LogFetcher(filters=filters, polling_interval=1)
+    log_fetcher = stream.LogFetcher(filters=filters,
+                                    polling_interval=1,
+                                    num_prev_entries=100)
     for log_entry in log_fetcher.YieldLogs():
       log.out.Print(printer.Format(log_entry))

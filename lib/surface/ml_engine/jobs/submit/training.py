@@ -71,6 +71,9 @@ class Train(base.Command):
     parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, supports_container_training=False):
     stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
     scale_tier = jobs_util.ScaleTierFlagMap().GetEnumForChoice(args.scale_tier)
     scale_tier_name = scale_tier.name if scale_tier else None
@@ -89,7 +92,8 @@ class Train(base.Command):
         python_version=args.python_version,
         labels=labels,
         stream_logs=stream_logs,
-        user_args=args.user_args)
+        user_args=args.user_args,
+        supports_container_training=supports_container_training)
     # If the job itself failed, we will return a failure status.
     if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
       self.exit_code = 1
@@ -104,6 +108,9 @@ class TrainAlpha(Train):
   def Args(parser):
     _AddSubmitTrainingArgs(parser, supports_container=True)
     parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
+
+  def Run(self, args):
+    return self._Run(args, supports_container_training=True)
 
 
 _DETAILED_HELP = {
