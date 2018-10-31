@@ -16,8 +16,8 @@ from ruamel.yaml.error import (MarkedYAMLError, MarkedYAMLFutureWarning,
 from ruamel.yaml.nodes import *                               # NOQA
 from ruamel.yaml.nodes import (SequenceNode, MappingNode, ScalarNode)
 from ruamel.yaml.compat import (utf8, builtins_module, to_str, PY2, PY3,  # NOQA
-                                ordereddict, text_type, nprint, version_tnf, Hashable,
-                                MutableSequence, MutableMapping)
+                                ordereddict, text_type, nprint, nprintf, version_tnf,
+                                Hashable, MutableSequence, MutableMapping)
 from ruamel.yaml.comments import *                               # NOQA
 from ruamel.yaml.comments import (CommentedMap, CommentedOrderedMap, CommentedSet,
                                   CommentedKeySeq, CommentedSeq, TaggedScalar,
@@ -133,9 +133,10 @@ class BaseConstructor(object):
             old_deep = self.deep_construct
             self.deep_construct = True
         if node in self.recursive_objects:
-            raise ConstructorError(
-                None, None, 'found unconstructable recursive node', node.start_mark
-            )
+            return self.recursive_objects[node]
+            # raise ConstructorError(
+            #     None, None, 'found unconstructable recursive node', node.start_mark
+            # )
         self.recursive_objects[node] = None
         constructor = None  # type: Any
         tag_suffix = None
@@ -914,9 +915,10 @@ class Constructor(SafeConstructor):
         # Format:
         #   !!python/object:module.name { ... state ... }
         instance = self.make_python_instance(suffix, node, newobj=True)
+        self.recursive_objects[node] = instance
         yield instance
-        # deep = hasattr(instance, '__setstate__')
-        state = self.construct_mapping(node, deep=False)
+        deep = hasattr(instance, '__setstate__')
+        state = self.construct_mapping(node, deep=deep)
         self.set_python_instance_state(instance, state)
 
     def construct_python_object_apply(self, suffix, node, newobj=False):

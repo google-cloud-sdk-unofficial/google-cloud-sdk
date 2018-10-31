@@ -422,7 +422,7 @@ class UpdateBeta(Update):
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
-    flags.AddAutoprovisioningFlags(group, hidden=True)
+    flags.AddAutoprovisioningFlags(group)
     flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
     flags.AddIstioConfigFlag(parser)
 

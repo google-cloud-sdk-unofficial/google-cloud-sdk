@@ -32,7 +32,7 @@ class SetDefaultServiceAccount(base.SilentCommand):
 
   The project's default service account is used when a new instance is
   created unless a custom service account is set via --scopes or
-  --no-scopes. Existing existances are not effected.
+  --no-scopes. Existing instances are not affected.
 
   For example,
 

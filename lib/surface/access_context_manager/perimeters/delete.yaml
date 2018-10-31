@@ -1,9 +1,11 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: Delete a service perimeter.
     DESCRIPTION: Delete a service perimeter in a given access policy.
 
   request:
-    collection: accesscontextmanager.accessPolicies.accessZones
+    collection: accesscontextmanager.accessPolicies.servicePerimeters
 
   async:
     collection: accesscontextmanager.operations

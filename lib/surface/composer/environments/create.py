@@ -207,7 +207,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    Create.Args(parser)
 
     # Adding beta arguments
     parser.add_argument(
@@ -284,3 +284,19 @@ class CreateBeta(Create):
         python_version=args.python_version,
         image_version=self.image_version,
         release_track=self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create and initialize a Cloud Composer environment.
+
+  If run asynchronously with `--async`, exits after printing an operation
+  that can be used to poll the status of the creation operation via:
+
+    {top_command} composer operations describe
+  """
+
+  @staticmethod
+  def Args(parser):
+    CreateBeta.Args(parser)
+    # TODO(b/111771819) Adding alpha arguments, e.g. --executor

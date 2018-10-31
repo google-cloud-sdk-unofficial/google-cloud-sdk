@@ -55,7 +55,7 @@ class List(base.ListCommand):
         resource_args.CLUSTER_PRESENTATION,
         namespace_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
-        'table(name:label=REVISION,service_name:label=SERVICE,'
+        'table(name:label=REVISION,service_name:label=SERVICE,author,'
         'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label=CREATED,ready)')
 
   def Run(self, args):

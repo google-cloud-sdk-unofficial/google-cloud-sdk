@@ -444,7 +444,7 @@ class CreateBeta(Create):
     flags.AddPrivateClusterFlags(parser, with_deprecated=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
-    flags.AddAutoprovisioningFlags(parser, hidden=True)
+    flags.AddAutoprovisioningFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
@@ -514,6 +514,7 @@ class CreateAlpha(Create):
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
     flags.AddSecurityProfileForCreateFlags(parser)
+    flags.AddInitialNodePoolNameArg(parser, hidden=False)
     kms_flag_overrides = {
         'kms-key': '--database-encryption-key',
         'kms-keyring': '--database-encryption-key-keyring',
@@ -549,14 +550,14 @@ class CreateAlpha(Create):
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.default_max_pods_per_node = args.default_max_pods_per_node
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
-    ops.managed_pod_identity_federating_sa = \
-            args.managed_pod_identity_federating_sa
+    ops.federating_service_account = args.federating_service_account
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.security_group = args.security_group
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.security_profile = args.security_profile
     ops.security_profile_runtime_rules = args.security_profile_runtime_rules
+    ops.node_pool_name = args.node_pool_name
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

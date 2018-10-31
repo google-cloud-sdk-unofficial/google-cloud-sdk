@@ -23,7 +23,15 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AccessContextManager(base.Group):
+class AccessContextManagerAlpha(base.Group):
+  """Manage Access Context Manager resources.
+
+  Policy API for configuring context aware access features and access zones.
+  """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AccessContextManagerBeta(base.Group):
   """Manage Access Context Manager resources.
 
   Policy API for configuring context aware access features and access zones.

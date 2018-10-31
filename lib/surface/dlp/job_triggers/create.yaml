@@ -83,13 +83,11 @@
 
             Note: The topic must have given publishing access rights to the
             DLP API service account executing the Cloud DLP job.
-        - arg_name: output-tables
+        - arg_name: output-table
           api_field: googlePrivacyDlpV2CreateJobTriggerRequest.jobTrigger.inspectJob.actions
           type: googlecloudsdk.command_lib.dlp.hooks:BigQueryTableAction
           help_text: |
-            Publishes results of a Cloud DLP job to one or more BigQuery
-            tables.
-
+            Publishes results of a Cloud DLP job a BigQuery table.
             BigQuery tables are uniquely identified by their project_id,
             dataset_id, and table_id in the format
             `<project_id>.<dataset_id>.<table_id>`.

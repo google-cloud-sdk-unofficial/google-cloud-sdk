@@ -25,6 +25,8 @@ import timeit
 from ._interfaces import Model
 import six
 
+from tensorflow.python.framework import dtypes
+
 
 # --------------------------
 # prediction.common
@@ -267,6 +269,41 @@ class BaseModel(Model):
     """
     pass
 
+  def get_signature(self, signature_name=None):
+    """Gets model signature of inputs and outputs.
+
+    Currently only used for Tensorflow model. May be extended for use with
+    XGBoost and Sklearn in the future.
+
+    Args:
+      signature_name: str of name of signature
+
+    Returns:
+      (str, SignatureDef): signature key, SignatureDef
+    """
+    return None, None
+
+
+def should_base64_decode(framework, model, signature_name):
+  """Determines if base64 decoding is required.
+
+  Returns False if framework is not TF.
+  Returns True if framework is TF and is a user model.
+  Returns True if framework is TF and model contains a str input.
+  Returns False if framework is TF and model does not contain str input.
+
+  Args:
+    framework: ML framework of prediction app
+    model: model object
+    signature_name: str of name of signature
+  Returns:
+    bool
+
+  """
+  return (framework == TENSORFLOW_FRAMEWORK_NAME and
+          (not isinstance(model, BaseModel) or
+           does_signature_contain_str(model.get_signature(signature_name)[1])))
+
 
 def decode_base64(data):
   if isinstance(data, list):
@@ -278,6 +315,27 @@ def decode_base64(data):
       return {k: decode_base64(v) for k, v in six.iteritems(data)}
   else:
     return data
+
+
+def does_signature_contain_str(signature=None):
+  """Return true if input signature contains a string dtype.
+
+  This is used to determine if we should proceed with base64 decoding.
+
+  Args:
+    signature: SignatureDef protocol buffer
+
+  Returns:
+    bool
+  """
+
+  # if we did not receive a signature we assume the model could require
+  # a string in it's input
+  if signature is None:
+    return True
+
+  return any(v.dtype == dtypes.string.as_datatype_enum
+             for v in signature.inputs.values())
 
 
 def copy_model_to_local(gcs_path, dest_path):

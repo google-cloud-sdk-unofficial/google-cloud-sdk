@@ -311,9 +311,9 @@ class ImportAlpha(Import):
   def Args(parser):
     Import.Args(parser)
     parser.add_argument(
-        '--no-google-packages',
+        '--no-guest-environment',
         action='store_true',
-        help='Google packages will not be installed on the image.')
+        help='Google Guest Environment will not be installed on the image.')
 
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -336,7 +336,7 @@ class ImportAlpha(Import):
         output_filter=_OUTPUT_FILTER)
 
   def _ProcessAdditionalArgs(self, args, daisy_vars):
-    if args.no_google_packages:
+    if args.no_guest_environment:
       daisy_vars.append('install_gce_packages={}'.format('false'))
 
 

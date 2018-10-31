@@ -161,7 +161,7 @@ For more details, see:
 https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
 """)
 
-    build_config = parser.add_mutually_exclusive_group(required=True)
+    build_config = parser.add_mutually_exclusive_group()
     build_config.add_argument(
         '--tag',
         '-t',
@@ -177,7 +177,8 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
     )
     build_config.add_argument(
         '--config',
-        help='The .yaml or .json file to use for build configuration.',
+        default='cloudbuild.yaml',  # By default, find this in the current dir
+        help='The YAML or JSON file to use as the build configuration file.',
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""
@@ -239,7 +240,7 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
     else:
       timeout_str = None
 
-    if args.tag:
+    if args.tag is not None:
       if (properties.VALUES.builds.check_tag.GetBool() and
           'gcr.io/' not in args.tag):
         raise c_exceptions.InvalidArgumentException(
@@ -268,9 +269,16 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
             timeout=timeout_str,
             substitutions=cloudbuild_util.EncodeSubstitutions(
                 args.substitutions, messages))
-    elif args.config:
+    elif args.config is not None:
+      if not args.config:
+        raise c_exceptions.InvalidArgumentException(
+            '--config', 'Config file path must not be empty.')
       build_config = config.LoadCloudbuildConfigFromPath(
           args.config, messages, params=args.substitutions)
+    else:
+      raise c_exceptions.OneOfArgumentsRequiredException(
+          ['--tag', '--config'],
+          'Requires either a docker tag or a config file.')
 
     # If timeout was set by flag, overwrite the config file.
     if timeout_str:

@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: Show details about an access level.
     DESCRIPTION: Show details about an access level in a given access policy.
 

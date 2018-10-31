@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.accesscontextmanager import common
 from googlecloudsdk.command_lib.accesscontextmanager import policies
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update an existing access policy."""
 

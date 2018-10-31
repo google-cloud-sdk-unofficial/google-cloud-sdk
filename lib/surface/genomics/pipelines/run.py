@@ -355,7 +355,7 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
       if args.memory or args.cpus:
         # Default to n1-standard1 sizes.
         virtual_machine.machineType = 'custom-%d-%d' % (
-            args.cpus or 1, (args.memory or 3.84) * 1000)
+            args.cpus or 1, (args.memory or 3.75) * 1024)
 
       if args.preemptible:
         virtual_machine.preemptible = args.preemptible
@@ -390,8 +390,8 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
             env[name] = input_generator.Generate()
             pipeline.actions.insert(0, genomics_messages.Action(
                 imageUri=CLOUD_SDK_IMAGE,
-                commands=['/bin/sh', '-c', 'gsutil -q cp %s ${%s}' % (value,
-                                                                      name)]))
+                commands=['/bin/sh', '-c', 'gsutil -m -q cp %s ${%s}' %
+                          (value, name)]))
           elif name in is_local_file:
             env[name] = input_generator.Generate()
             pipeline.actions.insert(0, genomics_messages.Action(
@@ -407,8 +407,8 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
           env[name] = output_generator.Generate()
           pipeline.actions.append(genomics_messages.Action(
               imageUri=CLOUD_SDK_IMAGE,
-              commands=['/bin/sh', '-c', 'gsutil -q cp ${%s} %s' % (name,
-                                                                    value)]))
+              commands=['/bin/sh', '-c', 'gsutil -m -q cp ${%s} %s' % (name,
+                                                                       value)]))
       if args.env_vars:
         for name, value in args.env_vars.items():
           env[name] = value
@@ -438,7 +438,7 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
         pipeline.actions.append(genomics_messages.Action(
             imageUri=CLOUD_SDK_IMAGE,
             commands=['/bin/sh', '-c',
-                      'gsutil -q cp /google/logs/output ' + args.logging],
+                      'gsutil -m -q cp /google/logs/output ' + args.logging],
             flags=[(genomics_messages.Action
                     .FlagsValueListEntryValuesEnum.ALWAYS_RUN)]))
 

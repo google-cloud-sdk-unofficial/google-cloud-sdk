@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: Show details about an access policy.
     DESCRIPTION: Show details about a given access policy.
 

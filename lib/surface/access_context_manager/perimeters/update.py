@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.accesscontextmanager import perimeters
 from googlecloudsdk.command_lib.util.args import repeated
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update an existing access zone."""
 
@@ -41,7 +42,8 @@ class Update(base.UpdateCommand):
         perimeter_ref,
         description=args.description,
         title=args.title,
-        zone_type=perimeters.GetTypeEnumMapper().GetEnumForChoice(args.type),
+        perimeter_type=perimeters.GetTypeEnumMapper().GetEnumForChoice(
+            args.type),
         resources=perimeters.ParseResources(args, result),
         restricted_services=perimeters.ParseRestrictedServices(args, result),
         unrestricted_services=perimeters.ParseUnrestrictedServices(

@@ -1,9 +1,11 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: Show details about a service perimeter.
     DESCRIPTION: Show details about an service perimeter in a given access policy.
 
   request:
-    collection: accesscontextmanager.accessPolicies.accessZones
+    collection: accesscontextmanager.accessPolicies.servicePerimeters
 
   arguments:
     resource:

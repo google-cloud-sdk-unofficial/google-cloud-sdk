@@ -1,4 +1,6 @@
-- command_type: DESCRIBE
+- release_tracks: [ALPHA, BETA]
+
+  command_type: DESCRIBE
   help_text:
     brief: List conditions for an access level.
     DESCRIPTION: List conditions for a basic access level.

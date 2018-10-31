@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+
+  help_text:
     brief: Delete an access level.
     DESCRIPTION: Delete an access level in a given access policy.
 

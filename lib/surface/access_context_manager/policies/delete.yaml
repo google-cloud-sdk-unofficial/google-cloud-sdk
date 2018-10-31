@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: Delete an access policy.
     DESCRIPTION: Delete a given access policy.
 

@@ -156,6 +156,9 @@ class Emitter(object):
         self.column = 0
         self.whitespace = True
         self.indention = True
+        self.compact_seq_seq = True   # dash after dash
+        self.compact_seq_map = True   # key after dash
+        # self.compact_ms = False   # dash after key, only when excplicit key with ?
         self.no_newline = None  # type: Optional[bool]  # set if directly after `- `
 
         # Whether the document requires an explicit document indicator
@@ -404,14 +407,17 @@ class Emitter(object):
             if isinstance(self.event, ScalarEvent):
                 self.expect_scalar()
             elif isinstance(self.event, SequenceStartEvent):
+                # nprintf('@', self.indention, self.no_newline, self.column)
+                i2, n2 = self.indention, self.no_newline  # NOQA
                 if self.event.comment:
                     if self.event.flow_style is False and self.event.comment:
                         if self.write_post_comment(self.event):
                             self.indention = False
                             self.no_newline = True
                     if self.write_pre_comment(self.event):
-                        self.indention = False
-                        self.no_newline = True
+                        pass
+                        self.indention = i2
+                        self.no_newline = not self.indention
                 if (
                     self.flow_level
                     or self.canonical
@@ -593,7 +599,12 @@ class Emitter(object):
 
     def expect_block_sequence(self):
         # type: () -> None
-        indentless = self.mapping_context and not self.indention
+        if self.mapping_context:
+            indentless = not self.indention
+        else:
+            indentless = False
+            if not self.compact_seq_seq and self.column != 0:
+                self.write_line_break()
         self.increase_indent(flow=False, sequence=True, indentless=indentless)
         self.state = self.expect_first_block_sequence_item
 
@@ -626,6 +637,8 @@ class Emitter(object):
 
     def expect_block_mapping(self):
         # type: () -> None
+        if not self.mapping_context and not (self.compact_seq_map or self.column == 0):
+            self.write_line_break()
         self.increase_indent(flow=False, sequence=False)
         self.state = self.expect_first_block_mapping_key
 
@@ -1486,9 +1499,10 @@ class Emitter(object):
                         else:
                             self.write_line_break(br)
                     if ch is not None:
-                        if _indent:
-                            self.stream.write(u' ' * _indent)
-                        elif not self.root_context or self.requested_indent:
+                        if self.root_context:
+                            idnx = self.indent if self.indent is not None else 0
+                            self.stream.write(u' ' * (_indent + idnx))
+                        else:
                             self.write_indent()
                     start = end
             else:
@@ -1573,11 +1587,11 @@ class Emitter(object):
                 breaks = ch in u'\n\x85\u2028\u2029'
             end += 1
 
-    def write_comment(self, comment):
-        # type: (Any) -> None
+    def write_comment(self, comment, pre=False):
+        # type: (Any, bool) -> None
         value = comment.value
-        # nprint('{:02d} {:02d} {!r}'.format(self.column, comment.start_mark.column, value))
-        if value[-1] == '\n':
+        # nprintf('{:02d} {:02d} {!r}'.format(self.column, comment.start_mark.column, value))
+        if not pre and value[-1] == '\n':
             value = value[:-1]
         try:
             # get original column position
@@ -1606,7 +1620,8 @@ class Emitter(object):
             self.stream.write(value)
         except TypeError:
             raise
-        self.write_line_break()
+        if not pre:
+            self.write_line_break()
 
     def write_pre_comment(self, event):
         # type: (Any) -> bool
@@ -1620,7 +1635,7 @@ class Emitter(object):
                     continue
                 if self.column != 0:
                     self.write_line_break()
-                self.write_comment(comment)
+                self.write_comment(comment, pre=True)
                 if isinstance(event, start_events):
                     comment.pre_done = True
         except TypeError:

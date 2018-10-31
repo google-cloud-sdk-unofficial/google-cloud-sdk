@@ -1,9 +1,11 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: List service perimeters.
     DESCRIPTION: List all service access zones in an access policy object.
 
   request:
-    collection: accesscontextmanager.accessPolicies.accessZones
+    collection: accesscontextmanager.accessPolicies.servicePerimeters
 
   arguments:
     resource:

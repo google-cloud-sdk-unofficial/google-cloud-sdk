@@ -1,13 +1,15 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: Create a new service perimeter.
     DESCRIPTION: Create a new service perimeter in a given access policy.
 
   request:
-    collection: accesscontextmanager.accessPolicies.accessZones
+    collection: accesscontextmanager.accessPolicies.servicePerimeters
     modify_request_hooks:
     - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddImplicitServiceWildcard
     - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevels
-    - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=accessZone.name
+    - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=servicePerimeter.name
 
   async:
     collection: accesscontextmanager.operations
@@ -17,15 +19,15 @@
       help_text: The service perimeter to create.
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:perimeter
     params:
-    - api_field: accessZone.description
+    - api_field: servicePerimeter.description
       arg_name: description
       required: false
       help_text: Long-form description of service perimeter.
-    - api_field: accessZone.title
+    - api_field: servicePerimeter.title
       arg_name: title
       required: true
       help_text: Short human-readable title for the service perimeter.
-    - api_field: accessZone.resources
+    - api_field: servicePerimeter.status.resources
       arg_name: resources
       required: true
       help_text: |
@@ -34,13 +36,13 @@
     - group:
         mutex: true
         params:
-        - api_field: accessZone.unrestrictedServices
+        - api_field: servicePerimeter.status.unrestrictedServices
           arg_name: unrestricted-services
           metavar: SERVICE
           help_text: |
             Comma-separated list of services to which the perimeter boundary
             *does not* apply (for example, `storage.googleapis.com`).
-        - api_field: accessZone.restrictedServices
+        - api_field: servicePerimeter.status.restrictedServices
           arg_name: restricted-services
           metavar: SERVICE
           help_text: |
@@ -55,7 +57,7 @@
           Cloud Storage service, but *not* any other services.
 
     - arg_name: access-levels
-      api_field: accessZone.accessLevels
+      api_field: servicePerimeter.status.accessLevels
       metavar: LEVEL
       # Added in AddAccessLevels hook because a type wouldn't have access to
       # the policy of the service perimeter
@@ -63,21 +65,21 @@
       help_text: |
         Comma-separated list of IDs for access levels (in the same policy)
         that an intra-perimeter request must satisfy to be allowed.
-    - api_field: accessZone.zoneType
+    - api_field: servicePerimeter.perimeterType
       arg_name: perimeter-type
       help_text: |
         Type of the perimeter.
       default: regular
       choices:
       - arg_value: regular
-        enum_value: ZONE_TYPE_REGULAR
+        enum_value: PERIMETER_TYPE_REGULAR
         help_text: |
           Allows resources within this service perimeter to import and export
           data amongst themselves.
 
           A project may belong to at most one regular service perimeter.
       - arg_value: bridge
-        enum_value: ZONE_TYPE_BRIDGE
+        enum_value: PERIMETER_TYPE_BRIDGE
         help_text: |
           Allows resources in different regular service perimeters to import
           and export data between each other.
