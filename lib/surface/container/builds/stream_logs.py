@@ -29,8 +29,14 @@ DEPRECATED_WARNING_MESSAGE = """\
 This command is deprecated and will be removed on or after 2018-10-31. Please
 use `gcloud builds log --stream` instead."""
 
+DEPRECATED_ERROR_MESSAGE = """\
+This command has been replaced by `gcloud builds log --stream`."""
 
-@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
+
+@base.Deprecate(
+    is_removed=True,
+    warning=DEPRECATED_WARNING_MESSAGE,
+    error=DEPRECATED_ERROR_MESSAGE)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StreamLogs(base.Command):
   """Stream the logs for a build."""

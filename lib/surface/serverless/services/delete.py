@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.serverless import connection_context
 from googlecloudsdk.command_lib.serverless import flags
 from googlecloudsdk.command_lib.serverless import resource_args
 from googlecloudsdk.command_lib.serverless import serverless_operations
@@ -28,7 +29,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete a service."""
 
@@ -58,7 +58,7 @@ class Delete(base.Command):
 
   def Run(self, args):
     """Delete a service."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
+    conn_context = connection_context.GetConnectionContext(args)
     service_ref = flags.GetService(args)
     console_io.PromptContinue(
         message='Service [{service}] will be deleted.'.format(
@@ -66,6 +66,6 @@ class Delete(base.Command):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    with serverless_operations.Connect(cluster_ref) as client:
+    with serverless_operations.Connect(conn_context) as client:
       client.DeleteService(service_ref)
     log.DeletedResource(service_ref.servicesId, 'service')

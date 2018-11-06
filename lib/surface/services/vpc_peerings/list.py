@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.services import peering
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util as projects_util
@@ -75,13 +74,9 @@ class List(base.DescribeCommand):
       The list of connections.
     """
     project = properties.VALUES.core.project.Get(required=True)
-    project_number = _GetProjectNumber(project)
+    project_number = projects_util.GetProjectNumber(project)
     conns = peering.ListConnections(project_number, args.service, args.network)
     return iter(conns)
 
 
 List.detailed_help = _DETAILED_HELP
-
-
-def _GetProjectNumber(project_id):
-  return projects_api.Get(projects_util.ParseProject(project_id)).projectNumber

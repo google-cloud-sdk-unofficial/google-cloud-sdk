@@ -235,6 +235,18 @@ class Create(base.CreateCommand):
           '--load-balancing-scheme',
           'Only target instances and backend services should be specified as '
           'a target for internal load balancing.')
+    elif args.load_balancing_scheme == 'INTERNAL_MANAGED':
+      forwarding_rule.portRange = (
+          _ResolvePortRange(args.port_range, range_list))
+      if args.subnet is not None:
+        if not args.subnet_region:
+          args.subnet_region = forwarding_rule_ref.region
+        forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
+            args, resources).SelfLink()
+      if args.network is not None:
+        forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
+            args, resources).SelfLink()
+      forwarding_rule.target = target_ref.SelfLink()
     else:
       forwarding_rule.portRange = (
           _ResolvePortRange(args.port_range, range_list))
@@ -388,6 +400,7 @@ def _GetPortList(range_list):
 
 
 def _GetLoadBalancingScheme(args, messages):
+  """Get load balancing scheme."""
   if args.load_balancing_scheme == 'INTERNAL':
     return messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.INTERNAL
   elif args.load_balancing_scheme == 'EXTERNAL':
@@ -395,6 +408,9 @@ def _GetLoadBalancingScheme(args, messages):
   elif args.load_balancing_scheme == 'INTERNAL_SELF_MANAGED':
     return (messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.
             INTERNAL_SELF_MANAGED)
+  elif args.load_balancing_scheme == 'INTERNAL_MANAGED':
+    return (messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum
+            .INTERNAL_MANAGED)
   return None
 
 

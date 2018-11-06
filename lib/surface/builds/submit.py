@@ -29,7 +29,6 @@ from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.cloudbuild import snapshot
 from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.api_lib.storage import storage_api
-from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -379,9 +378,7 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
                                object=gcs_source_staging.object,
                            ))
           staged_source_obj = gcs_client.CopyFileToGCS(
-              storage_util.BucketReference.FromBucketUrl(
-                  gcs_source_staging.bucket), args.source,
-              gcs_source_staging.object)
+              args.source, gcs_source_staging)
           build_config.source = messages.Source(
               storageSource=messages.StorageSource(
                   bucket=staged_source_obj.bucket,

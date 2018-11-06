@@ -33,7 +33,7 @@ class Filters(base.TopicCommand):
           textwrap.dedent("""\
           {description}
 
-          === Filter Expressions ===
+          ### Filter Expressions
 
           A filter expression is a Boolean function that selects the resources
           to print from a list of resources. Expressions are composed
@@ -222,27 +222,25 @@ class Filters(base.TopicCommand):
 
           This table shows : operator pattern matching:
 
-          [format="csv",options="header"]
-          |========
-          PATTERN,VALUE,MATCHES,DEPRECATED_MATCHES
-          abc```*```,abcpdqxyz,True,True
-          abc,abcpdqxyz,False,True
-          pdq```*```,abcpdqxyz,False,False
-          pdq,abcpdqxyz,False,True
-          xyz```*```,abcpdqxyz,False,False
-          xyz,abcpdqxyz,False,True
-          ```*```,abcpdqxyz,True,True
-          ```*```,<None>,False,False
-          ```*```,<''>,False,False
-          ```*```,<otherwise>,True,True
-          abc```*```,abc.pdq.xyz,True,True
-          abc,abc.pdq.xyz,True,True
-          abc.pdq,abc.pdq.xyz,True,True
-          pdq```*```,abc.pdq.xyz,True,False
-          pdq,abc.pdq.xyz,True,True
-          pdq.xyz,abc.pdq.xyz,True,True
-          xyz```*```,abc.pdq.xyz,True,False
-          xyz,abc.pdq.xyz,True,True
-          |========
+          PATTERN | VALUE | MATCHES | DEPRECATED_MATCHES
+          --- | --- | --- | ---
+          abc* | abcpdqxyz | True | True
+          abc | abcpdqxyz | False | True
+          pdq* | abcpdqxyz | False | False
+          pdq | abcpdqxyz | False | True
+          xyz* | abcpdqxyz | False | False
+          xyz | abcpdqxyz | False | True
+          * | abcpdqxyz | True | True
+          * | <None> | False | False
+          * | <''> | False | False
+          * | <otherwise> | True | True
+          abc* | abc.pdq.xyz | True | True
+          abc | abc.pdq.xyz | True | True
+          abc.pdq | abc.pdq.xyz | True | True
+          pdq* | abc.pdq.xyz | True | False
+          pdq | abc.pdq.xyz | True | True
+          pdq.xyz | abc.pdq.xyz | True | True
+          xyz* | abc.pdq.xyz | True | False
+          xyz | abc.pdq.xyz | True | True
           """),
   }

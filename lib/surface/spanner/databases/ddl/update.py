@@ -23,9 +23,10 @@ from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
+from googlecloudsdk.core import log
 
 
-class Create(base.Command):
+class Update(base.UpdateCommand):
   """Update the DDL for a Cloud Spanner database."""
 
   @staticmethod
@@ -52,5 +53,6 @@ class Create(base.Command):
     op = databases.UpdateDdl(args.CONCEPTS.database.Parse(),
                              flags.SplitDdlIntoStatements(args.ddl or []))
     if args.async:
-      return op
-    return database_operations.Await(op, 'DDL updating')
+      return log.status.Print(
+          'Schema update in progress. Operation name={}'.format(op.name))
+    return database_operations.Await(op, 'Schema updating')

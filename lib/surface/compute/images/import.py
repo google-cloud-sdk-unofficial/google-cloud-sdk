@@ -44,7 +44,7 @@ _OS_CHOICES = {'debian-8': 'debian/translate_debian_8.wf.json',
                'centos-6': 'enterprise_linux/translate_centos_6.wf.json',
                'centos-7': 'enterprise_linux/translate_centos_7.wf.json',
                'rhel-6': 'enterprise_linux/translate_rhel_6_licensed.wf.json',
-               'rhel-7': 'enterprise_linux/translate_centos_7_licensed.wf.json',
+               'rhel-7': 'enterprise_linux/translate_rhel_7_licensed.wf.json',
                'rhel-6-byol': 'enterprise_linux/translate_rhel_6_byol.wf.json',
                'rhel-7-byol': 'enterprise_linux/translate_rhel_7_byol.wf.json',
                'ubuntu-1404': 'ubuntu/translate_ubuntu_1404.wf.json',
@@ -101,8 +101,7 @@ def _UploadToGcsGsutil(local_path, dest_path):
 def _UploadToGcsStorageApi(local_path, dest_path, storage_client):
   """Uploads a local file to GCS using the gcloud storage api client."""
   dest_object = storage_util.ObjectReference.FromUrl(dest_path)
-  storage_client.CopyFileToGCS(
-      dest_object.bucket_ref, local_path, dest_object.name)
+  storage_client.CopyFileToGCS(local_path, dest_object)
   return dest_path
 
 
@@ -332,7 +331,8 @@ class ImportAlpha(Import):
     log.warning('Importing image. This may take up to 2 hours.')
     return daisy_utils.RunDaisyBuild(
         args, workflow, ','.join(daisy_vars),
-        daisy_bucket=import_stager.GetDaisyBucket(), user_zone=args.zone,
+        daisy_bucket=import_stager.GetDaisyBucket(),
+        user_zone=properties.VALUES.compute.zone.Get(),
         output_filter=_OUTPUT_FILTER)
 
   def _ProcessAdditionalArgs(self, args, daisy_vars):

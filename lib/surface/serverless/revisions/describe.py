@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.serverless import connection_context
 from googlecloudsdk.command_lib.serverless import flags
 from googlecloudsdk.command_lib.serverless import resource_args
 from googlecloudsdk.command_lib.serverless import serverless_operations
@@ -26,7 +27,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Obtain details about revisions."""
 
@@ -58,10 +58,10 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Show details about a revision."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
+    conn_context = connection_context.GetConnectionContext(args)
     revision_ref = args.CONCEPTS.revision.Parse()
 
-    with serverless_operations.Connect(cluster_ref) as client:
+    with serverless_operations.Connect(conn_context) as client:
       wrapped_revision = client.GetRevision(revision_ref)
 
     if not wrapped_revision:

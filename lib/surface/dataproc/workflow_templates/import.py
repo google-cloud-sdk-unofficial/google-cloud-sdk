@@ -18,20 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import sys
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
+from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.console import console_io
-from googlecloudsdk.core.util import files
-
-V1_SCHEMA_PATH = 'v1/WorkflowTemplate.yaml'
-V1_BETA2_SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Import(base.UpdateCommand):
   """Import a workflow template.
 
@@ -41,10 +36,24 @@ class Import(base.UpdateCommand):
   configuration, and then import the new configuration.
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'import', api_version='v1')
-    flags.AddTemplateSourceFlag(parser, V1_SCHEMA_PATH)
+  @classmethod
+  def GetApiVersion(cls):
+    """Returns the API version based on the release track."""
+    if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
+      return 'v1beta2'
+    return 'v1'
+
+  @classmethod
+  def GetSchemaPath(cls, for_help=False):
+    """Returns the resource schema path."""
+    return export_util.GetSchemaPath(
+        'dataproc', cls.GetApiVersion(), 'WorkflowTemplate', for_help=for_help)
+
+  @classmethod
+  def Args(cls, parser):
+    flags.AddTemplateResourceArg(
+        parser, 'import', api_version=cls.GetApiVersion())
+    export_util.AddImportFlags(parser, cls.GetSchemaPath(for_help=True))
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -57,22 +66,10 @@ class Import(base.UpdateCommand):
     # parent = template_ref.Parent().RelativePath()
     parent = '/'.join(template_ref.RelativeName().split('/')[0:4])
 
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      schema_path = V1_SCHEMA_PATH
-    else:
-      schema_path = V1_BETA2_SCHEMA_PATH
-
-    if args.source:
-      with files.FileReader(args.source) as stream:
-        template = util.ReadYaml(
-            message_type=msgs.WorkflowTemplate,
-            stream=stream,
-            schema_path=schema_path)
-    else:
-      template = util.ReadYaml(
-          message_type=msgs.WorkflowTemplate,
-          stream=sys.stdin,
-          schema_path=schema_path)
+    data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
+    template = export_util.Import(message_type=msgs.WorkflowTemplate,
+                                  stream=data,
+                                  schema_path=self.GetSchemaPath())
 
     # Populate id field.
     template.id = template_ref.Name()
@@ -95,19 +92,3 @@ class Import(base.UpdateCommand):
     template.version = old_template.version
     template.name = template_ref.RelativeName()
     return dataproc.client.projects_regions_workflowTemplates.Update(template)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ImportBeta(Import):
-  """Import a workflow template.
-
-  If the specified template resource already exists, it will be overwritten.
-  Otherwise, a new template will be created.
-  To edit an existing template, you can export the template to a file, edit its
-  configuration, and then import the new configuration.
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'import', api_version='v1')
-    flags.AddTemplateSourceFlag(parser, V1_BETA2_SCHEMA_PATH)

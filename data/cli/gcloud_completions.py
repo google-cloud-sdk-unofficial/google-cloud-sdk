@@ -248,7 +248,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -300,7 +300,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -989,6 +989,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--load-balancing-scheme": [
                       "EXTERNAL",
                       "INTERNAL",
+                      "INTERNAL_MANAGED",
                       "INTERNAL_SELF_MANAGED"
                     ],
                     "--port-name": "value",
@@ -1515,6 +1516,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--load-balancing-scheme": [
                       "EXTERNAL",
                       "INTERNAL",
+                      "INTERNAL_MANAGED",
                       "INTERNAL_SELF_MANAGED"
                     ],
                     "--network": "value",
@@ -1578,6 +1580,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--load-balancing-scheme": [
                       "EXTERNAL",
                       "INTERNAL",
+                      "INTERNAL_MANAGED",
                       "INTERNAL_SELF_MANAGED"
                     ],
                     "--network": "value",
@@ -2070,6 +2073,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-project": "value",
                     "--log-location": "value",
                     "--network": "value",
+                    "--subnet": "value",
                     "--timeout": "value",
                     "--zone": "dynamic"
                   }
@@ -2683,7 +2687,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -2843,7 +2847,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -4760,7 +4764,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--member": "value",
-                        "--role": "value",
+                        "--role": "dynamic",
                         "--zone": "value"
                       }
                     },
@@ -4819,7 +4823,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--member": "value",
-                        "--role": "value",
+                        "--role": "dynamic",
                         "--zone": "value"
                       }
                     },
@@ -4848,7 +4852,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--member": "value",
                         "--region": "value",
-                        "--role": "value"
+                        "--role": "dynamic"
                       }
                     },
                     "create": {
@@ -4902,7 +4906,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--member": "value",
                         "--region": "value",
-                        "--role": "value"
+                        "--role": "dynamic"
                       }
                     },
                     "set-iam-policy": {
@@ -5502,6 +5506,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network": "value",
                     "--preemptible": "bool",
                     "--range": "value",
+                    "--use-service-networking": "bool",
                     "--zone": "value"
                   }
                 },
@@ -8675,9 +8680,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
                     "--region": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -8778,9 +8785,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
                     "--region": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -10045,7 +10055,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--condition": "value",
                 "--condition-from-file": "value",
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "create": {
@@ -10100,7 +10110,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--condition": "value",
                 "--condition-from-file": "value",
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "set-iam-policy": {
@@ -10168,7 +10178,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -10247,7 +10257,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "seek": {
@@ -10283,7 +10293,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -10350,7 +10360,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -10900,6 +10910,34 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "routes": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--namespace": "value",
+                    "--region": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--namespace": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "services": {
               "commands": {
                 "delete": {
@@ -11134,7 +11172,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--instance": "dynamic",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -11220,7 +11258,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--instance": "dynamic",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "sessions": {
@@ -11282,7 +11320,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -11325,7 +11363,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -13460,7 +13498,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -13512,7 +13550,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -15522,7 +15560,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -15672,7 +15710,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -15769,6 +15807,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--deletion-protection": "bool",
                     "--description": "value",
                     "--disk": "value",
+                    "--hostname": "value",
                     "--image": "value",
                     "--image-family": "value",
                     "--image-project": "value",
@@ -17248,7 +17287,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--member": "value",
-                        "--role": "value",
+                        "--role": "dynamic",
                         "--zone": "value"
                       }
                     },
@@ -17307,7 +17346,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--member": "value",
-                        "--role": "value",
+                        "--role": "dynamic",
                         "--zone": "value"
                       }
                     },
@@ -17336,7 +17375,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--member": "value",
                         "--region": "value",
-                        "--role": "value"
+                        "--role": "dynamic"
                       }
                     },
                     "create": {
@@ -17386,7 +17425,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--member": "value",
                         "--region": "value",
-                        "--role": "value"
+                        "--role": "dynamic"
                       }
                     },
                     "set-iam-policy": {
@@ -21494,7 +21533,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--member": "value",
                     "--region": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -21597,7 +21636,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--member": "value",
                     "--region": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -22715,7 +22754,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "delete": {
@@ -22756,7 +22795,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "set-iam-policy": {
@@ -22821,7 +22860,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -22900,7 +22939,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "seek": {
@@ -22936,7 +22975,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -22993,7 +23032,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -23649,7 +23688,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--instance": "dynamic",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -23735,7 +23774,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--instance": "dynamic",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "sessions": {
@@ -23797,7 +23836,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -23840,7 +23879,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -24711,7 +24750,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "create": {
@@ -24763,7 +24802,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "set-iam-policy": {

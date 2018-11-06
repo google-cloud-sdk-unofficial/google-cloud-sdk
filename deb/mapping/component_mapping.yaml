@@ -12,7 +12,6 @@ cbt: google-cloud-sdk-cbt
 cloud-build-local: google-cloud-sdk-cloud-build-local
 cloud_sql_proxy: unavailable
 cloud-datastore-emulator: google-cloud-sdk-datastore-emulator
-container-builder-local: unavailable
 core: google-cloud-sdk
 datalab: google-cloud-sdk-datalab
 docker-credential-gcr: unavailable

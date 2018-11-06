@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class Build(base.Command):
   """Remote build a Serverless image artifact from source code."""

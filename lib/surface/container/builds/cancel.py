@@ -29,8 +29,14 @@ DEPRECATED_WARNING_MESSAGE = """\
 This command is deprecated and will be removed on or after 2018-10-31. Please
 use `gcloud builds cancel` instead."""
 
+DEPRECATED_ERROR_MESSAGE = """\
+This command has been replaced by `gcloud builds cancel`."""
 
-@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
+
+@base.Deprecate(
+    is_removed=True,
+    warning=DEPRECATED_WARNING_MESSAGE,
+    error=DEPRECATED_ERROR_MESSAGE)
 class Cancel(base.Command):
   """Cancel an ongoing build."""
 

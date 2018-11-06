@@ -404,10 +404,11 @@ class Create(base.CreateCommand):
           scheduling=scheduling,
           tags=tags)
 
+      if hasattr(args, 'hostname'):
+        instance.hostname = args.hostname
+
       # TODO(b/80138906): These features are only exposed in alpha.
       if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        instance.hostname = args.hostname or None
-
         instance.allocationAffinity = instance_utils.GetAllocationAffinity(
             args, compute_client)
 
@@ -527,6 +528,7 @@ class CreateBeta(Create):
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     instances_flags.AddShieldedVMConfigArgs(parser)
+    instances_flags.AddHostnameArg(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 

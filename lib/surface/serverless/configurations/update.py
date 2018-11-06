@@ -20,6 +20,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.serverless import connection_context
 from googlecloudsdk.command_lib.serverless import exceptions
 from googlecloudsdk.command_lib.serverless import flags
 from googlecloudsdk.command_lib.serverless import pretty_print
@@ -29,7 +30,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update Serverless environment variables and other configuration settings.
   """
@@ -64,10 +64,10 @@ class Update(base.Command):
 
   def Run(self, args):
     """Update environment variables."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
+    conn_context = connection_context.GetConnectionContext(args)
     service_ref = flags.GetService(args)
 
-    with serverless_operations.Connect(cluster_ref) as client:
+    with serverless_operations.Connect(conn_context) as client:
       changes = flags.GetConfigurationChanges(args)
       if not changes:
         raise exceptions.NoConfigurationChangeError(

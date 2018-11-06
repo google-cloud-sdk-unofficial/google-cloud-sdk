@@ -145,7 +145,8 @@ class Create(base.Command):
     self.subnetwork = None
     if args.machine_type:
       self.machine_type = parsers.ParseMachineType(
-          args.machine_type, fallback_zone=self.zone_ref.Name()
+          args.machine_type,
+          fallback_zone=self.zone_ref.Name()
           if self.zone_ref else None).RelativeName()
     if args.network:
       self.network = parsers.ParseNetwork(args.network).RelativeName()
@@ -223,8 +224,7 @@ class CreateBeta(Create):
 
     mutex_group = parser.add_mutually_exclusive_group()
     airflow_version_type = arg_parsers.RegexpValidator(
-        r'^(\d+\.\d+(?:\.\d+)?)',
-        'must be in the form X.Y[.Z].')
+        r'^(\d+\.\d+(?:\.\d+)?)', 'must be in the form X.Y[.Z].')
     mutex_group.add_argument(
         '--airflow-version',
         type=airflow_version_type,
@@ -299,4 +299,36 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     CreateBeta.Args(parser)
-    # TODO(b/111771819) Adding alpha arguments, e.g. --executor
+
+    # Adding alpha arguments
+    parser.add_argument(
+        '--airflow-executor-type',
+        hidden=True,
+        choices={
+            'CELERY': 'Task instances will run by CELERY executor',
+            'KUBERNETES': 'Task instances will run by KUBERNETES executor'
+        },
+        help="""The type of executor by which task instances are run on Airflow;
+        currently supported executor types are CELERY and KUBERNETES.
+        Defaults to CELERY. Cannot be updated.""")
+
+  def GetOperationMessage(self, args):
+    """See base class."""
+    return environments_api_util.Create(
+        self.env_ref,
+        args.node_count,
+        labels=args.labels,
+        location=self.zone,
+        machine_type=self.machine_type,
+        network=self.network,
+        subnetwork=self.subnetwork,
+        env_variables=args.env_variables,
+        airflow_config_overrides=args.airflow_configs,
+        service_account=args.service_account,
+        oauth_scopes=args.oauth_scopes,
+        tags=args.tags,
+        disk_size_gb=args.disk_size >> 30,
+        python_version=args.python_version,
+        image_version=self.image_version,
+        airflow_executor_type=args.airflow_executor_type,
+        release_track=self.ReleaseTrack())

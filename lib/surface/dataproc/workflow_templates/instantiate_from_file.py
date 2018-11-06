@@ -21,16 +21,14 @@ from __future__ import unicode_literals
 import uuid
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
+from googlecloudsdk.api_lib.dataproc import util as dp_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
+from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.util import files
-
-V1_SCHEMA_PATH = 'v1/WorkflowTemplate.yaml'
-V1_BETA2_SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -54,13 +52,14 @@ class InstantiateFromFile(base.CreateCommand):
 
     # Generate uuid for request.
     request_id = uuid.uuid4().hex
-    regions_ref = util.ParseRegion(dataproc)
+    regions_ref = dp_util.ParseRegion(dataproc)
     # Read template from YAML file and validate it using a schema.
-    with files.FileReader(args.file) as stream:
-      template = util.ReadYaml(
-          message_type=msgs.WorkflowTemplate,
-          stream=stream,
-          schema_path=V1_SCHEMA_PATH)
+    data = console_io.ReadFromFileOrStdin(args.file or '-', binary=False)
+    template = export_util.Import(message_type=msgs.WorkflowTemplate,
+                                  stream=data,
+                                  schema_path=export_util.GetSchemaPath(
+                                      'dataproc',
+                                      message_name='WorkflowTemplate'))
 
     # Send instantiate inline request.
     request = \
@@ -75,7 +74,7 @@ class InstantiateFromFile(base.CreateCommand):
       log.status.Print('Instantiating with operation [{0}].'.format(
           operation.name))
       return
-    operation = util.WaitForWorkflowTemplateOperation(dataproc, operation)
+    operation = dp_util.WaitForWorkflowTemplateOperation(dataproc, operation)
     return operation
 
 
@@ -100,13 +99,15 @@ class InstantiateFromFileBeta(base.CreateCommand):
 
     # Generate uuid for request.
     instance_id = uuid.uuid4().hex
-    regions_ref = util.ParseRegion(dataproc)
+    regions_ref = dp_util.ParseRegion(dataproc)
     # Read template from YAML file and validate it using a schema.
-    with files.FileReader(args.file) as stream:
-      template = util.ReadYaml(
-          message_type=msgs.WorkflowTemplate,
-          stream=stream,
-          schema_path=V1_BETA2_SCHEMA_PATH)
+    data = console_io.ReadFromFileOrStdin(args.file or '-', binary=False)
+    template = export_util.Import(message_type=msgs.WorkflowTemplate,
+                                  stream=data,
+                                  schema_path=export_util.GetSchemaPath(
+                                      'dataproc',
+                                      api_version='v1beta2',
+                                      message_name='WorkflowTemplate'))
 
     # Send instantiate inline request.
     request = \
@@ -121,5 +122,5 @@ class InstantiateFromFileBeta(base.CreateCommand):
       log.status.Print('Instantiating with operation [{0}].'.format(
           operation.name))
       return
-    operation = util.WaitForWorkflowTemplateOperation(dataproc, operation)
+    operation = dp_util.WaitForWorkflowTemplateOperation(dataproc, operation)
     return operation

@@ -20,31 +20,39 @@ from __future__ import unicode_literals
 
 import sys
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
+from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
-V1_SCHEMA_PATH = 'v1/WorkflowTemplate.yaml'
-V1_BETA2_SCHEMA_PATH = 'v1beta2/WorkflowTemplate.yaml'
 
-
-def _CommonArgs(parser):
-  flags.AddVersionFlag(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Export a workflow template.
 
   Exports a workflow template's configuration to a file.
-  This configuration can be imported at a later time."""
+  This configuration can be imported at a later time.
+  """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'export', api_version='v1')
-    flags.AddTemplateDestinationFlag(parser, V1_SCHEMA_PATH)
-    _CommonArgs(parser)
+  @classmethod
+  def GetApiVersion(cls):
+    """Returns the API version based on the release track."""
+    if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
+      return 'v1beta2'
+    return 'v1'
+
+  @classmethod
+  def GetSchemaPath(cls, for_help=False):
+    """Returns the resource schema path."""
+    return export_util.GetSchemaPath(
+        'dataproc', cls.GetApiVersion(), 'WorkflowTemplate', for_help=for_help)
+
+  @classmethod
+  def Args(cls, parser):
+    flags.AddTemplateResourceArg(
+        parser, 'export', api_version=cls.GetApiVersion())
+    export_util.AddExportFlags(parser, cls.GetSchemaPath(for_help=True))
+    flags.AddVersionFlag(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -55,30 +63,12 @@ class Describe(base.DescribeCommand):
     workflow_template = dataproc.GetRegionsWorkflowTemplate(
         template_ref, args.version)
 
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      schema_path = V1_SCHEMA_PATH
-    else:
-      schema_path = V1_BETA2_SCHEMA_PATH
-
     if args.destination:
       with files.FileWriter(args.destination) as stream:
-        util.WriteYaml(
-            message=workflow_template, stream=stream, schema_path=schema_path)
+        export_util.Export(message=workflow_template,
+                           stream=stream,
+                           schema_path=self.GetSchemaPath())
     else:
-      util.WriteYaml(
-          message=workflow_template, stream=sys.stdout, schema_path=schema_path)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(Describe):
-  """Export a workflow template.
-
-  Exports a workflow template's configuration to a file.
-  This configuration can be imported at a later time.
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'export', api_version='v1beta2')
-    flags.AddTemplateDestinationFlag(parser, V1_BETA2_SCHEMA_PATH)
-    _CommonArgs(parser)
+      export_util.Export(message=workflow_template,
+                         stream=sys.stdout,
+                         schema_path=self.GetSchemaPath())

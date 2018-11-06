@@ -115,8 +115,6 @@ class Update(base.UpdateCommand):
         'destination': destination,
         'filter': log_filter,
         'includeChildren': sink.includeChildren,
-        'startTime': sink.startTime,
-        'endTime': sink.endTime
     }
 
     # Check for legacy configuration, and let users decide if they still want

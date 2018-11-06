@@ -20,11 +20,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
-from googlecloudsdk.core.util import files
+from googlecloudsdk.command_lib.export import util as export_util
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -48,9 +48,7 @@ class CreateFromFile(base.CreateCommand):
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
-
-    # Read cluster from YAML file.
-    with files.FileReader(args.file) as stream:
-      cluster = util.ReadYaml(
-          message_type=dataproc.messages.Cluster, stream=stream)
+    data = console_io.ReadFromFileOrStdin(args.file or '-', binary=False)
+    cluster = export_util.Import(message_type=dataproc.messages.Cluster,
+                                 stream=data)
     return clusters.CreateCluster(dataproc, cluster, args.async, args.timeout)

@@ -73,8 +73,8 @@ def _CommonArgs(parser):
       metavar='SNAPSHOT_NAME',
       help="""\
       Names to assign to the created snapshots. Without this option, the
-      name of each snapshot will be a random 16-character
-      hexadecimal number that starts with a letter. The values of
+      name of each snapshot will be a random 12-character alphanumeric
+      string that starts with a letter. The values of
       this option run parallel to the disks specified. For example,
 
           {command} my-disk-1 my-disk-2 my-disk-3 --snapshot-names snapshot-1,snapshot-2,snapshot-3

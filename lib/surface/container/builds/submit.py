@@ -29,7 +29,6 @@ from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.api_lib.cloudbuild import snapshot
 from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.api_lib.storage import storage_api
-from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -50,6 +49,9 @@ DEPRECATED_WARNING_MESSAGE = """\
 This command is deprecated and will be removed on or after 2018-10-31. Please
 use `gcloud builds submit` instead."""
 
+DEPRECATED_ERROR_MESSAGE = """\
+This command has been replaced by `gcloud builds submit`."""
+
 
 class FailedBuildException(core_exceptions.Error):
   """Exception for builds that did not succeed."""
@@ -60,7 +62,10 @@ class FailedBuildException(core_exceptions.Error):
               id=build.id, status=build.status))
 
 
-@base.Deprecate(is_removed=False, warning=DEPRECATED_WARNING_MESSAGE)
+@base.Deprecate(
+    is_removed=True,
+    warning=DEPRECATED_WARNING_MESSAGE,
+    error=DEPRECATED_ERROR_MESSAGE)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Submit(base.CreateCommand):
@@ -76,8 +81,8 @@ class Submit(base.CreateCommand):
 
   _machine_type_flag_map = arg_utils.ChoiceEnumMapper(
       '--machine-type',
-      (cloudbuild_util.GetMessagesModule())
-      .BuildOptions.MachineTypeValueValuesEnum,
+      (cloudbuild_util.GetMessagesModule()
+      ).BuildOptions.MachineTypeValueValuesEnum,
       # TODO(b/69962368): remove this custom mapping when we can exclude
       # UNSPECIFIED from the proto.
       custom_mappings={
@@ -92,7 +97,7 @@ class Submit(base.CreateCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     source = parser.add_mutually_exclusive_group()
     source.add_argument(
@@ -367,9 +372,7 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
                                object=gcs_source_staging.object,
                            ))
           staged_source_obj = gcs_client.CopyFileToGCS(
-              storage_util.BucketReference.FromBucketUrl(
-                  gcs_source_staging.bucket), args.source,
-              gcs_source_staging.object)
+              args.source, gcs_source_staging)
           build_config.source = messages.Source(
               storageSource=messages.StorageSource(
                   bucket=staged_source_obj.bucket,
