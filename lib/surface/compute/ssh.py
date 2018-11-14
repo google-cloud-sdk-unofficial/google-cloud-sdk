@@ -38,6 +38,8 @@ from googlecloudsdk.core.util import retry
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
+  category = 'Tools'
+
   @staticmethod
   def Args(parser):
     """Set up arguments for this command.

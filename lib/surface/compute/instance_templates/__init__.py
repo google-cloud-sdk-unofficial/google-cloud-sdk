@@ -30,3 +30,6 @@ class InstanceTemplates(base.Group):
   [](https://cloud.google.com/compute/docs/instance-templates)
 
   """
+
+
+InstanceTemplates.category = 'Instances'

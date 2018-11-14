@@ -40,11 +40,22 @@ class Delete(base.DeleteCommand):
         command invocation.
 
     Returns:
-      Some value that we want to have printed later.
+      Database delete response, which is empty.
+
+    Raises:
+      HttpException when the database is not found.
     """
     database_ref = args.CONCEPTS.database.Parse()
     console_io.PromptContinue(
         'You are about to delete database: [{}]'.format(database_ref.Name()),
         throw_if_unattended=True,
         cancel_on_no=True)
-    return databases.Delete(database_ref)
+
+    # The delete API returns a 200 regardless of whether the database being
+    # deleted exists. In order to show users feedback for incorrectly
+    # entered database names, we have to make a request to check if the database
+    # exists. If the database exists, it's deleted, otherwise, we display the
+    # error from databases.Get.
+    database = databases.Get(database_ref)
+    if database:
+      return databases.Delete(database_ref)

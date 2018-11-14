@@ -42,6 +42,8 @@ class DmV2(base.Group):
   found here: https://cloud.google.com/deployment-manager/docs/
   """
 
+  category = 'Management Tools'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

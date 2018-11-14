@@ -37,3 +37,5 @@ class Topic(base.Group):
 
     $ gcloud topic --help
   """
+
+  category = 'SDK Tools'

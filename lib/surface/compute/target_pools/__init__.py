@@ -23,3 +23,6 @@ from googlecloudsdk.calliope import base
 
 class TargetPools(base.Group):
   """Control Compute Engine target pools for network load balancing."""
+
+
+TargetPools.category = 'Load Balancing'

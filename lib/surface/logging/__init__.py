@@ -26,6 +26,8 @@ from googlecloudsdk.calliope import base
 class Logging(base.Group):
   """Manage Stackdriver Logging."""
 
+  category = 'Management Tools'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

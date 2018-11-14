@@ -67,6 +67,8 @@ class Init(base.Command):
   To sync the configuration, re-run {command}
   """
 
+  category = 'SDK Tools'
+
   @staticmethod
   def Args(parser):
     parser.add_argument(

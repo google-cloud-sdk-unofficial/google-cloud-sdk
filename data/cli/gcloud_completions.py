@@ -3795,7 +3795,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--network": "dynamic",
                         "--purpose": [
                           "INTERNAL_HTTPS_LOAD_BALANCER",
-                          "PRIVATE_RFC_1918"
+                          "PRIVATE"
                         ],
                         "--range": "value",
                         "--region": "dynamic",
@@ -4080,6 +4080,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--guest-flush": "bool",
                     "--hourly-schedule": "value",
                     "--max-retention-days": "value",
+                    "--on-source-disk-delete": [
+                      "apply-retention-policy",
+                      "keep-auto-snapshots"
+                    ],
                     "--region": "dynamic",
                     "--snapshot-labels": "value",
                     "--start-time": "value",
@@ -4302,7 +4306,12 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
+                        "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
+                        "--log-filter": [
+                          "ERRORS_ONLY",
+                          "TRANSLATIONS_ONLY"
+                        ],
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
@@ -4342,11 +4351,17 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
                         "--clear-icmp-idle-timeout": "bool",
+                        "--clear-log-filter": "bool",
                         "--clear-min-ports-per-vm": "bool",
                         "--clear-tcp-established-idle-timeout": "bool",
                         "--clear-tcp-transitory-idle-timeout": "bool",
                         "--clear-udp-idle-timeout": "bool",
+                        "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
+                        "--log-filter": [
+                          "ERRORS_ONLY",
+                          "TRANSLATIONS_ONLY"
+                        ],
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
@@ -6079,6 +6094,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-private-nodes": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-tpu": "bool",
+                    "--enable-tpu-service-networking": "bool",
                     "--image-type": "value",
                     "--issue-client-certificate": "bool",
                     "--istio-config": "value",
@@ -8876,7 +8892,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--location": "dynamic",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--location": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -8917,7 +8935,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--location": "dynamic",
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--location": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -8936,8 +8957,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--keyring": "dynamic",
-                    "--location": "dynamic",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--keyring": "value",
+                    "--location": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -9011,8 +9034,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--keyring": "dynamic",
-                    "--location": "dynamic",
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--keyring": "value",
+                    "--location": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -10768,8 +10794,13 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--attributes": "value",
                         "--description": "value",
+                        "--max-backoff": "value",
+                        "--max-doublings": "value",
+                        "--max-retry-attempts": "value",
+                        "--max-retry-duration": "value",
                         "--message-body": "value",
                         "--message-body-from-file": "value",
+                        "--min-backoff": "value",
                         "--schedule": "value",
                         "--time-zone": "value",
                         "--topic": "value"
@@ -10883,6 +10914,15 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "revisions": {
               "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--cluster-location": "value",
+                    "--namespace": "value",
+                    "--region": "value"
+                  }
+                },
                 "describe": {
                   "commands": {},
                   "flags": {
@@ -15769,6 +15809,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "attach-disk": {
                   "commands": {},
                   "flags": {
+                    "--boot": "bool",
                     "--csek-key-file": "value",
                     "--device-name": "value",
                     "--disk": "value",
@@ -16976,6 +17017,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network": "value",
                     "--next-hop-address": "value",
                     "--next-hop-gateway": "dynamic",
+                    "--next-hop-ilb": "value",
+                    "--next-hop-ilb-region": "value",
                     "--next-hop-instance": "value",
                     "--next-hop-instance-zone": "value",
                     "--next-hop-vpn-tunnel": "value",
@@ -19032,6 +19075,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--no-address": "bool",
                     "--num-master-local-ssds": "value",
                     "--num-masters": "value",
+                    "--num-preemptible-worker-local-ssds": "value",
                     "--num-preemptible-workers": "value",
                     "--num-worker-local-ssds": "value",
                     "--num-workers": "value",
@@ -19612,6 +19656,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--no-address": "bool",
                     "--num-master-local-ssds": "value",
                     "--num-masters": "value",
+                    "--num-preemptible-worker-local-ssds": "value",
                     "--num-preemptible-workers": "value",
                     "--num-worker-local-ssds": "value",
                     "--num-workers": "value",
@@ -21697,7 +21742,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--location": "dynamic",
+                    "--location": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -21738,7 +21783,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--location": "dynamic",
+                    "--location": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -21757,8 +21802,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--keyring": "dynamic",
-                    "--location": "dynamic",
+                    "--keyring": "value",
+                    "--location": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -21811,8 +21856,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--keyring": "dynamic",
-                    "--location": "dynamic",
+                    "--keyring": "value",
+                    "--location": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -23456,8 +23501,13 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--attributes": "value",
                         "--description": "value",
+                        "--max-backoff": "value",
+                        "--max-doublings": "value",
+                        "--max-retry-attempts": "value",
+                        "--max-retry-duration": "value",
                         "--message-body": "value",
                         "--message-body-from-file": "value",
+                        "--min-backoff": "value",
                         "--schedule": "value",
                         "--time-zone": "value",
                         "--topic": "value"
@@ -27624,6 +27674,16 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "dynamic"
               }
             },
+            "get-nat-mapping-info": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--region": "dynamic",
+                "--sort-by": "value"
+              }
+            },
             "get-status": {
               "commands": {},
               "flags": {
@@ -27641,6 +27701,73 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--sort-by": "value",
                 "--uri": "bool"
               }
+            },
+            "nats": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--auto-allocate-nat-external-ips": "bool",
+                    "--icmp-idle-timeout": "value",
+                    "--min-ports-per-vm": "value",
+                    "--nat-all-subnet-ip-ranges": "bool",
+                    "--nat-custom-subnet-ip-ranges": "value",
+                    "--nat-external-ip-pool": "value",
+                    "--nat-primary-subnet-ip-ranges": "bool",
+                    "--region": "dynamic",
+                    "--router": "dynamic",
+                    "--tcp-established-idle-timeout": "value",
+                    "--tcp-transitory-idle-timeout": "value",
+                    "--udp-idle-timeout": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--router": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--router": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--router": "dynamic"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--auto-allocate-nat-external-ips": "bool",
+                    "--clear-icmp-idle-timeout": "bool",
+                    "--clear-min-ports-per-vm": "bool",
+                    "--clear-tcp-established-idle-timeout": "bool",
+                    "--clear-tcp-transitory-idle-timeout": "bool",
+                    "--clear-udp-idle-timeout": "bool",
+                    "--icmp-idle-timeout": "value",
+                    "--min-ports-per-vm": "value",
+                    "--nat-all-subnet-ip-ranges": "bool",
+                    "--nat-custom-subnet-ip-ranges": "value",
+                    "--nat-external-ip-pool": "value",
+                    "--nat-primary-subnet-ip-ranges": "bool",
+                    "--region": "dynamic",
+                    "--router": "dynamic",
+                    "--tcp-established-idle-timeout": "value",
+                    "--tcp-transitory-idle-timeout": "value",
+                    "--udp-idle-timeout": "value"
+                  }
+                }
+              },
+              "flags": {}
             },
             "remove-bgp-peer": {
               "commands": {},
@@ -31462,7 +31589,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "add-iam-policy-binding": {
               "commands": {},
               "flags": {
-                "--location": "dynamic",
+                "--location": "value",
                 "--member": "value",
                 "--role": "dynamic"
               }
@@ -31503,7 +31630,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "remove-iam-policy-binding": {
               "commands": {},
               "flags": {
-                "--location": "dynamic",
+                "--location": "value",
                 "--member": "value",
                 "--role": "dynamic"
               }
@@ -31522,8 +31649,8 @@ STATIC_COMPLETION_CLI_TREE = {
             "add-iam-policy-binding": {
               "commands": {},
               "flags": {
-                "--keyring": "dynamic",
-                "--location": "dynamic",
+                "--keyring": "value",
+                "--location": "value",
                 "--member": "value",
                 "--role": "dynamic"
               }
@@ -31576,8 +31703,8 @@ STATIC_COMPLETION_CLI_TREE = {
             "remove-iam-policy-binding": {
               "commands": {},
               "flags": {
-                "--keyring": "dynamic",
-                "--location": "dynamic",
+                "--keyring": "value",
+                "--location": "value",
                 "--member": "value",
                 "--role": "dynamic"
               }
@@ -32968,6 +33095,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "execute-sql": {
               "commands": {},
               "flags": {
+                "--enable-partitioned-dml": "bool",
                 "--instance": "value",
                 "--query-mode": [
                   "NORMAL",
@@ -33723,6 +33851,10 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {},
           "flags": {}
         },
+        "flags-file": {
+          "commands": {},
+          "flags": {}
+        },
         "formats": {
           "commands": {},
           "flags": {}
@@ -33758,6 +33890,7 @@ STATIC_COMPLETION_CLI_TREE = {
   "flags": {
     "--account": "value",
     "--configuration": "value",
+    "--flags-file": "value",
     "--flatten": "value",
     "--format": "value",
     "--help": "bool",

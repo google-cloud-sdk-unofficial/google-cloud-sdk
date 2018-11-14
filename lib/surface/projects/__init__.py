@@ -43,6 +43,8 @@ class Projects(base.Group):
   https://cloud.google.com/resource-manager/docs/creating-managing-projects
   """
 
+  category = 'Management Tools'
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddUriFunc(util.ProjectsUriFunc)

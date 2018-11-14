@@ -39,6 +39,8 @@ class Organizations(base.Group):
   https://cloud.google.com/resource-manager/docs/creating-managing-organization
   """
 
+  category = 'Management Tools'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

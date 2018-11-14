@@ -65,6 +65,8 @@ class Components(base.Group):
     $ {command} update --version 1.2.3
   """
 
+  category = 'SDK Tools'
+
   @staticmethod
   def Args(parser):
     """Sets args for gcloud components."""

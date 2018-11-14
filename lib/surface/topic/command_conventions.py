@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 # references to it in error messages and other help messages as there are no
 # tests to catch such changes.
 class CommandConventions(base.TopicCommand):
-  """gcloud command conventions supplementary help.
+  r"""gcloud command conventions supplementary help.
 
   *gcloud* command design follows a common set of principles and conventions.
   This document describes them in detail.
@@ -142,6 +142,15 @@ class CommandConventions(base.TopicCommand):
   command examples use the first form to make intentions clear. The *=*
   form also has a diagnostic bonus: it is an error to specify a value
   for a Boolean flag.
+
+  ### Complex Flag Values
+
+  Complex flag values that contain command interpreter special characters may
+  be difficult to specify on the command line. The *--flags-file*=_YAML-FILE_
+  flag solves this problem by allowing command line flags to be specified in a
+  YAML/JSON file. String, numeric, list and dict flag values are specified
+  using YAML/JSON notation and quoting rules. See $ gcloud topic flags-file
+  for more information.
 
   ### Output
 

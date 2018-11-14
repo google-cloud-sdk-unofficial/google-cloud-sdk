@@ -30,6 +30,8 @@ class Iot(base.Group):
   Commands for managing Google Cloud IoT resources.
   """
 
+  category = 'Internet of Things'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

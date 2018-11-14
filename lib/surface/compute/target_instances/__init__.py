@@ -25,6 +25,8 @@ class TargetInstances(base.Group):
   """Read and manipulate Google Compute Engine virtual target instances."""
 
 
+TargetInstances.category = 'Instances'
+
 TargetInstances.detailed_help = {
     'brief': (
         'Read and manipulate Google Compute Engine virtual target instances'),

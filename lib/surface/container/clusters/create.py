@@ -420,7 +420,7 @@ class CreateBeta(Create):
     group = parser.add_mutually_exclusive_group()
     _AddAdditionalZonesFlag(group, deprecated=True)
     flags.AddNodeLocationsFlag(group)
-    flags.AddAddonsFlags(parser)
+    flags.AddBetaAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
@@ -446,6 +446,9 @@ class CreateBeta(Create):
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
+    # TODO(b/118979273): unhide the flags once the beta launch of GKE resource
+    # usage export is ready.
+    flags.AddResourceUsageExportFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -470,6 +473,8 @@ class CreateBeta(Create):
     ops.istio_config = args.istio_config
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.default_max_pods_per_node = args.default_max_pods_per_node
+    ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
+    ops.enable_network_egress_metering = args.enable_network_egress_metering
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     return ops
 
@@ -507,10 +512,10 @@ class CreateAlpha(Create):
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddPrivateClusterFlags(parser, with_deprecated=True)
     flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddTpuFlags(parser, hidden=False)
+    flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddManagedPodIdentityFlags(parser)
-    flags.AddResourceUsageBigqueryDatasetFlag(parser)
+    flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
     flags.AddSecurityProfileForCreateFlags(parser)
@@ -546,6 +551,7 @@ class CreateAlpha(Create):
     ops.new_scopes_behavior = True
     ops.enable_tpu = args.enable_tpu
     ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
+    ops.enable_tpu_service_networking = args.enable_tpu_service_networking
     ops.istio_config = args.istio_config
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.default_max_pods_per_node = args.default_max_pods_per_node
@@ -558,6 +564,7 @@ class CreateAlpha(Create):
     ops.security_profile = args.security_profile
     ops.security_profile_runtime_rules = args.security_profile_runtime_rules
     ops.node_pool_name = args.node_pool_name
+    ops.enable_network_egress_metering = args.enable_network_egress_metering
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

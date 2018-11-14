@@ -26,3 +26,6 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class Tpus(base.Group):
   """List, create, and delete Cloud TPUs."""
+
+
+Tpus.category = 'Instances'

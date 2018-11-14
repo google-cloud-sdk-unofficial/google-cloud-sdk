@@ -99,6 +99,8 @@ class HelpBeta(base.ListCommand):
     $ {command} --sort-by=name -- project
   """
 
+  category = 'SDK Tools'
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddTransforms(search_util.GetTransforms())

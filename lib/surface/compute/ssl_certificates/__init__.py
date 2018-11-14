@@ -29,3 +29,6 @@ class SslCertificates(base.Group):
 
   [](https://cloud.google.com/load-balancing/docs/ssl-certificates)
   """
+
+
+SslCertificates.category = 'Load Balancing'

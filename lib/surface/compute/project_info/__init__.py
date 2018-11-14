@@ -25,6 +25,8 @@ class ProjectInfo(base.Group):
   """Read and manipulate project-level data like quotas and metadata."""
 
 
+ProjectInfo.category = 'Tools'
+
 ProjectInfo.detailed_help = {
     'DESCRIPTION': """
         Read and manipulate project-level data like quotas and metadata.

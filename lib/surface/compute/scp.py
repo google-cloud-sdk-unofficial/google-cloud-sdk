@@ -61,7 +61,7 @@ If the zone cannot be determined, you will be prompted for it.  Use the
 
 To specify the project, zone, and recurse all together, run:
 
-  $ {command} --project "my-gcp-project" scp --recurse ~/foo-folder/ gcp-instance-name:~/ --zone "us-east1-b"
+  $ {command} --project "my-gcp-project" --zone "us-east1-b" --recurse ~/foo-folder/ gcp-instance-name:~/
 """,
 }
 
@@ -91,6 +91,8 @@ def _Args(parser):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ScpGA(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
+
+  category = 'Tools'
 
   @staticmethod
   def Args(parser):
@@ -124,6 +126,8 @@ class ScpGA(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ScpBeta(ScpGA):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
+
+  category = 'Tools'
 
   @staticmethod
   def Args(parser):

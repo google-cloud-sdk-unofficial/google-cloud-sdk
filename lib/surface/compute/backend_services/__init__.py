@@ -25,6 +25,8 @@ class BackendServices(base.Group):
   """List, create, and delete backend services."""
 
 
+BackendServices.category = 'Load Balancing'
+
 BackendServices.detailed_help = {
     'brief': 'List, create, and delete backend services',
 }

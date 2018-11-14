@@ -69,6 +69,8 @@ class Debug(base.Group):
     "default-test" by description.
   """
 
+  category = 'Management Tools'
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddTransforms(transforms.GetTransforms())

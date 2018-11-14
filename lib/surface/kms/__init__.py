@@ -42,6 +42,8 @@ class CloudKms(base.Group):
   https://cloud.google.com/kms/docs/
   """
 
+  category = 'Identity and Security'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

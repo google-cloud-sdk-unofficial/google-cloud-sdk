@@ -424,6 +424,9 @@ class UpdateBeta(Update):
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
     flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
+    # TODO(b/118979273): unhide the flags once the beta launch of GKE resource
+    # usage export is ready.
+    flags.AddResourceUsageExportFlags(group, add_clear_flag=True, hidden=True)
     flags.AddIstioConfigFlag(parser)
 
   def ParseUpdateOptions(self, args, locations):
@@ -440,6 +443,10 @@ class UpdateBeta(Update):
     opts.max_accelerator = args.max_accelerator
     opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     opts.istio_config = args.istio_config
+    opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
+    opts.clear_resource_usage_bigquery_dataset = \
+        args.clear_resource_usage_bigquery_dataset
+    opts.enable_network_egress_metering = args.enable_network_egress_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
 
     return opts
@@ -477,7 +484,7 @@ class UpdateAlpha(Update):
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
-    flags.AddResourceUsageBigqueryDatasetFlag(group, add_clear_flag=True)
+    flags.AddResourceUsageExportFlags(group, add_clear_flag=True)
     flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
     flags.AddSecurityProfileForUpdateFlag(group)
     flags.AddIstioConfigFlag(parser)
@@ -500,6 +507,7 @@ class UpdateAlpha(Update):
     opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     opts.security_profile = args.security_profile
     opts.istio_config = args.istio_config
+    opts.enable_network_egress_metering = args.enable_network_egress_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
 
     return opts

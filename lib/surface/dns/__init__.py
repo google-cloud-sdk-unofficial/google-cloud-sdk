@@ -53,6 +53,8 @@ class DNS(base.Group):
     $ {command} project-info describe --help
   """
 
+  category = 'Networking'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

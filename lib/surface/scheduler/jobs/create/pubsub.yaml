@@ -15,6 +15,7 @@
       removed_flags: [location]
     params:
     - _REF_googlecloudsdk.command_lib.scheduler.flags:args
+    - _REF_googlecloudsdk.command_lib.scheduler.flags:retry_args
     - api_field: job.pubsubTarget.topicName
       arg_name: topic
       required: true

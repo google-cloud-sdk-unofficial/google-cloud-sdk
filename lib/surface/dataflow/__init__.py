@@ -54,6 +54,8 @@ class Dataflow(base.Group):
   here: https://cloud.google.com/dataflow/docs/
   """
 
+  category = 'Data Analytics'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

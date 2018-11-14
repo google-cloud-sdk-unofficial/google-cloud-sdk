@@ -24,6 +24,7 @@ import signal
 import sys
 import time
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_completer
 from googlecloudsdk.calliope import parser_errors
@@ -48,7 +49,17 @@ class Test(base.Command):
         nargs='*',
         completer=completers.TestCompleter,
         help='command_lib.compute.TestCompleter instance name test.')
-    scenarios = parser.add_mutually_exclusive_group()
+    scenarios = parser.add_group(mutex=True, required=True)
+    scenarios.add_argument(
+        '--arg-dict',
+        type=arg_parsers.ArgDict(),
+        metavar='ATTRIBUTES',
+        help='ArgDict flag value test.')
+    scenarios.add_argument(
+        '--arg-list',
+        type=arg_parsers.ArgList(),
+        metavar='ITEMS',
+        help='ArgList flag value test.')
     scenarios.add_argument(
         '--argumenterror-outside-argparse',
         action='store_true',
@@ -92,6 +103,12 @@ class Test(base.Command):
         '--uncaught-exception',
         action='store_true',
         help='Trigger an exception that is not caught.')
+
+  def _RunArgDict(self, args):
+    return args.arg_dict
+
+  def _RunArgList(self, args):
+    return args.arg_list
 
   def _RunArgumenterrorOutsideArgparse(self, args):
     raise parser_errors.RequiredError(argument='--some-flag')
@@ -140,21 +157,26 @@ class Test(base.Command):
     raise ValueError('Catch me if you can.')
 
   def Run(self, args):
-    if args.argumenterror_outside_argparse:
-      self._RunArgumenterrorOutsideArgparse(args)
+    if args.arg_dict:
+      r = self._RunArgDict(args)
+    elif args.arg_list:
+      r = self._RunArgList(args)
+    elif args.argumenterror_outside_argparse:
+      r = self._RunArgumenterrorOutsideArgparse(args)
     elif args.core_exception:
-      self._RunCoreException(args)
+      r = self._RunCoreException(args)
     elif args.exec_file:
-      self._RunExecFile(args)
+      r = self._RunExecFile(args)
     elif args.interrupt:
-      self._RunInterrupt(args)
+      r = self._RunInterrupt(args)
     elif args.is_interactive:
-      self._RunIsInteractive(args)
+      r = self._RunIsInteractive(args)
     elif args.prompt_completer:
-      self._RunPromptCompleter(args)
+      r = self._RunPromptCompleter(args)
     elif args.progress_tracker:
-      self._RunProgressTracker(args)
+      r = self._RunProgressTracker(args)
     elif args.sleep:
-      self._RunSleep(args)
+      r = self._RunSleep(args)
     elif args.uncaught_exception:
-      self._RunUncaughtException(args)
+      r = self._RunUncaughtException(args)
+    return r

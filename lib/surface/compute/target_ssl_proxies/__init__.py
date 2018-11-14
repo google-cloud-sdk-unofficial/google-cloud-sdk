@@ -25,6 +25,8 @@ class TargetSSLProxies(base.Group):
   """List, create, and delete target SSL proxies."""
 
 
+TargetSSLProxies.category = 'Networking'
+
 TargetSSLProxies.detailed_help = {
     'brief': 'List, create, and delete target SSL proxies',
 }

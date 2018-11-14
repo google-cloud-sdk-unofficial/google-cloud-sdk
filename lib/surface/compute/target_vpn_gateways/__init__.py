@@ -29,6 +29,8 @@ class TargetVpnGateways(base.Group):
   detailed_help = None
 
 
+TargetVpnGateways.category = 'Networking'
+
 TargetVpnGateways.detailed_help = {
     'brief': (
         'Read and manipulate Google Compute Engine VPN Gateways'),

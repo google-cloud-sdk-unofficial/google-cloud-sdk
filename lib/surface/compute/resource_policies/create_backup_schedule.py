@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags
@@ -35,6 +36,7 @@ class CreateBackupSchedule(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    messages = apis.GetMessagesModule('compute', 'alpha')
     flags.MakeResourcePolicyArg().AddArgument(parser)
     flags.AddCommonArgs(parser)
     flags.AddCycleFrequencyArgs(
@@ -44,7 +46,7 @@ class CreateBackupSchedule(base.CreateCommand):
         cadence_help='Snapshot schedule',
         supports_weekly=True,
         supports_hourly=True)
-    flags.AddBackupScheduleArgs(parser)
+    flags.AddBackupScheduleArgs(parser, messages)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
@@ -66,4 +68,3 @@ class CreateBackupSchedule(base.CreateCommand):
 
     service = holder.client.apitools_client.resourcePolicies
     return client.MakeRequests([(service, 'Insert', create_request)])[0]
-

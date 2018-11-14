@@ -30,6 +30,8 @@ def _GetUri(resource):
 class Spanner(base.Group):
   """Command groups for Cloud Spanner."""
 
+  category = 'Databases'
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddUriFunc(_GetUri)

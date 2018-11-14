@@ -25,6 +25,8 @@ from googlecloudsdk.calliope import base
 class Builds(base.Group):
   """Create and manage builds for Google Cloud Build."""
 
+  category = 'Management Tools'
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddTransforms(transforms.GetTransforms())

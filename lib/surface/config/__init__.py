@@ -54,6 +54,8 @@ class Config(base.Group):
   {properties}
   """
 
+  category = 'SDK Tools'
+
   detailed_help = {
       'properties': properties.VALUES.GetHelpString(),
   }

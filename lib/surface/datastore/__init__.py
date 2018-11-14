@@ -50,6 +50,8 @@ class Datastore(base.Group):
     $ {command} cleanup-indexes index.yaml
   """
 
+  category = 'Databases'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

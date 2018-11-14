@@ -23,4 +23,6 @@ from googlecloudsdk.calliope import base
 
 class Interconnects(base.Group):
   """Read and manipulate  Google Compute Engine interconnects."""
-  pass
+
+
+Interconnects.category = 'Networking'

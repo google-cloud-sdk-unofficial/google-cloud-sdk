@@ -25,6 +25,8 @@ from googlecloudsdk.calliope import base
 class Pubsub(base.Group):
   """Manage Cloud Pub/Sub topics and subscriptions."""
 
+  category = 'Data Analytics'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

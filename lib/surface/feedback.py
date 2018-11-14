@@ -139,6 +139,8 @@ class Feedback(base.Command):
   form fields on that page.
   """
 
+  category = 'SDK Tools'
+
   @staticmethod
   def Args(parser):
     parser.add_argument(

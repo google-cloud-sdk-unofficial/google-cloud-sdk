@@ -25,6 +25,8 @@ class Zones(base.Group):
   """List Google Compute Engine zones."""
 
 
+Zones.category = 'Info'
+
 Zones.detailed_help = {
     'brief': 'List Google Compute Engine zones'
 }

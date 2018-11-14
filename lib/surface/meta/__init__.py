@@ -26,3 +26,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Meta(base.Group):
   """Cloud meta introspection commands."""
+
+  category = 'SDK Tools'

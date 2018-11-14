@@ -26,6 +26,8 @@ class Diagnose(base.Group):
   """Debugging tools for Google Compute Engine virtual machine instances."""
 
 
+Diagnose.category = 'Instances'
+
 Diagnose.detailed_help = {
     'brief': (
         'Debugging tools for Google Compute Engine virtual machine instances.'),

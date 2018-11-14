@@ -45,6 +45,9 @@ DETAILED_HELP = {
 
 class SQL(base.Group):
   """Create and manage Google Cloud SQL databases."""
+
+  category = 'Databases'
+
   detailed_help = DETAILED_HELP
 
   def Filter(self, context, args):

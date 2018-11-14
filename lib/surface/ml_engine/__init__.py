@@ -45,6 +45,8 @@ class MlEngine(base.Group):
   https://cloud.google.com/ml/docs/
   """
 
+  category = 'AI and Machine Learning'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

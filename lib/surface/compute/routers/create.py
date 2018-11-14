@@ -30,7 +30,6 @@ from googlecloudsdk.core import resources
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
   """Create a Google Compute Engine router.
 
@@ -86,100 +85,6 @@ class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
       # Create an empty bgp field if not generated yet.
       if args.asn is None:
         router_resource.bgp = messages.RouterBgp()
-      for attr, value in six.iteritems(attrs):
-        if value is not None:
-          setattr(router_resource.bgp, attr, value)
-
-    result = service.Insert(
-        messages.ComputeRoutersInsertRequest(
-            router=router_resource,
-            region=router_ref.region,
-            project=router_ref.project))
-
-    operation_ref = resources.REGISTRY.Parse(
-        result.name,
-        collection='compute.regionOperations',
-        params={
-            'project': router_ref.project,
-            'region': router_ref.region,
-        })
-
-    if args.async:
-      # Override the networks list format with the default operations format
-      if not args.IsSpecified('format'):
-        args.format = 'none'
-      log.CreatedResource(
-          operation_ref,
-          kind='router [{0}]'.format(router_ref.Name()),
-          is_async=True,
-          details='Run the [gcloud compute operations describe] command '
-          'to check the status of this operation.')
-      return result
-
-    target_router_ref = holder.resources.Parse(
-        router_ref.Name(),
-        collection='compute.routers',
-        params={
-            'project': router_ref.project,
-            'region': router_ref.region,
-        })
-
-    operation_poller = poller.Poller(service, target_router_ref)
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Creating router [{0}]'.format(router_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateWithCustomAdvertisements(base.CreateCommand):
-  """Create a Google Compute Engine router.
-
-     *{command}* is used to create a router to provide dynamic routing to VPN
-     tunnels and interconnects.
-  """
-
-  ROUTER_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    """See base.CreateCommand."""
-
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
-        'The network for this router')
-    cls.NETWORK_ARG.AddArgument(parser)
-    cls.ROUTER_ARG = flags.RouterArgument()
-    cls.ROUTER_ARG.AddArgument(parser, operation_type='create')
-    base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddCreateRouterArgs(parser)
-    flags.AddReplaceCustomAdvertisementArgs(parser, 'router')
-    parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
-
-  def Run(self, args):
-    """See base.CreateCommand."""
-
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    messages = holder.client.messages
-    service = holder.client.apitools_client.routers
-
-    router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
-
-    router_resource = messages.Router(
-        name=router_ref.Name(),
-        description=args.description,
-        network=network_ref.SelfLink(),
-        bgp=messages.RouterBgp(asn=args.asn))
-
-    if router_utils.HasReplaceAdvertisementFlags(args):
-      mode, groups, ranges = router_utils.ParseAdvertisements(
-          messages=messages, resource_class=messages.RouterBgp, args=args)
-
-      attrs = {
-          'advertiseMode': mode,
-          'advertisedGroups': groups,
-          'advertisedIpRanges': ranges,
-      }
-
       for attr, value in six.iteritems(attrs):
         if value is not None:
           setattr(router_resource.bgp, attr, value)

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.serverless import connection_context
 from googlecloudsdk.command_lib.serverless import flags
 from googlecloudsdk.command_lib.serverless import resource_args
 from googlecloudsdk.command_lib.serverless import serverless_operations
@@ -56,9 +57,9 @@ class Describe(base.Command):
 
   def Run(self, args):
     """Obtain details about a given route."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
+    conn_context = connection_context.GetConnectionContext(args)
     route_ref = args.CONCEPTS.route.Parse()
-    with serverless_operations.Connect(cluster_ref) as client:
+    with serverless_operations.Connect(conn_context) as client:
       conf = client.GetRoute(route_ref)
     if not conf:
       raise flags.ArgumentError(

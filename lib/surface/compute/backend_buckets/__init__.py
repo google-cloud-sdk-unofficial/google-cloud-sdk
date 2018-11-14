@@ -31,6 +31,8 @@ class BackendBuckets(base.Group):
   """
 
 
+BackendBuckets.category = 'Load Balancing'
+
 BackendBuckets.detailed_help = {
     'brief': 'Read and manipulate backend buckets',
 }

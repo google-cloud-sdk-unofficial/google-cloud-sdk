@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20181016",
+ "revision": "20181101",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -1014,6 +1014,10 @@
      "default": "\"",
      "pattern": ".?"
     },
+    "rangePartitioning": {
+     "$ref": "RangePartitioning",
+     "description": "[Experimental] Range partitioning specification for this table. Only one of timePartitioning and rangePartitioning should be specified."
+    },
     "schema": {
      "$ref": "TableSchema",
      "description": "[Optional] The schema for the destination table. The schema can be omitted if the destination table already exists, or if you're loading data from Google Cloud Datastore."
@@ -1051,11 +1055,11 @@
     },
     "timePartitioning": {
      "$ref": "TimePartitioning",
-     "description": "Time-based partitioning specification for the destination table."
+     "description": "Time-based partitioning specification for the destination table. Only one of timePartitioning and rangePartitioning should be specified."
     },
     "useAvroLogicalTypes": {
      "type": "boolean",
-     "description": "If sourceFormat is set to \"AVRO\", indicates whether to enable interpreting logical types into their corresponding types (ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER). The default value will be true once this feature launches, but can be set now in preparation."
+     "description": "[Optional] If sourceFormat is set to \"AVRO\", indicates whether to enable interpreting logical types into their corresponding types (ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER)."
     },
     "writeDisposition": {
      "type": "string",
@@ -1131,6 +1135,10 @@
       "$ref": "QueryParameter"
      }
     },
+    "rangePartitioning": {
+     "$ref": "RangePartitioning",
+     "description": "[Experimental] Range partitioning specification for this table. Only one of timePartitioning and rangePartitioning should be specified."
+    },
     "schemaUpdateOptions": {
      "type": "array",
      "description": "Allows the schema of the destination table to be updated as a side effect of the query job. Schema update options are supported in two cases: when writeDisposition is WRITE_APPEND; when writeDisposition is WRITE_TRUNCATE and the destination table is a partition of a table, specified by partition decorators. For normal tables, WRITE_TRUNCATE will always overwrite the schema. One or more of the following values are specified: ALLOW_FIELD_ADDITION: allow adding a nullable field to the schema. ALLOW_FIELD_RELAXATION: allow relaxing a required field in the original schema to nullable.",
@@ -1147,7 +1155,7 @@
     },
     "timePartitioning": {
      "$ref": "TimePartitioning",
-     "description": "Time-based partitioning specification for the destination table."
+     "description": "Time-based partitioning specification for the destination table. Only one of timePartitioning and rangePartitioning should be specified."
     },
     "useLegacySql": {
      "type": "boolean",
@@ -1878,6 +1886,37 @@
     }
    }
   },
+  "RangePartitioning": {
+   "id": "RangePartitioning",
+   "type": "object",
+   "properties": {
+    "field": {
+     "type": "string",
+     "description": "[Experimental] [Required] The table is partitioned by this field. The field must be a top-level NULLABLE/REQUIRED field. The only supported type is INTEGER/INT64."
+    },
+    "range": {
+     "type": "object",
+     "description": "[Experimental] [Required] Defines the ranges for range partitioning.",
+     "properties": {
+      "end": {
+       "type": "string",
+       "description": "[Experimental] [Required] The end of range partitioning, exclusive.",
+       "format": "int64"
+      },
+      "interval": {
+       "type": "string",
+       "description": "[Experimental] [Required] The width of each interval.",
+       "format": "int64"
+      },
+      "start": {
+       "type": "string",
+       "description": "[Experimental] [Required] The start of range partitioning, inclusive.",
+       "format": "int64"
+      }
+     }
+    }
+   }
+  },
   "Streamingbuffer": {
    "id": "Streamingbuffer",
    "type": "object",
@@ -1905,7 +1944,7 @@
    "properties": {
     "clustering": {
      "$ref": "Clustering",
-     "description": "[Beta] Clustering specification for the table. Must be specified with time-based partitioning, data in the table will be first partitioned and subsequently clustered."
+     "description": "[Experimental] Clustering specification for the table. Must be specified with partitioning, data in the table will be first partitioned and subsequently clustered."
     },
     "creationTime": {
      "type": "string",
@@ -1986,6 +2025,15 @@
      "description": "[Output-only] The number of rows of data in this table, excluding any data in the streaming buffer.",
      "format": "uint64"
     },
+    "rangePartitioning": {
+     "$ref": "RangePartitioning",
+     "description": "[Experimental] Range partitioning specification for this table. Only one of timePartitioning and rangePartitioning should be specified."
+    },
+    "requirePartitionFilter": {
+     "type": "boolean",
+     "description": "[Experimental] [Optional] If set to true, queries over this table require a partition filter that can be used for partition elimination to be specified.",
+     "default": "false"
+    },
     "schema": {
      "$ref": "TableSchema",
      "description": "[Optional] Describes the schema of this table."
@@ -2004,7 +2052,7 @@
     },
     "timePartitioning": {
      "$ref": "TimePartitioning",
-     "description": "Time-based partitioning specification for this table."
+     "description": "Time-based partitioning specification for this table. Only one of timePartitioning and rangePartitioning should be specified."
     },
     "type": {
      "type": "string",

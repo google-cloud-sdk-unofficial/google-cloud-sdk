@@ -70,12 +70,7 @@ class Submit(base.CreateCommand):
       '--machine-type',
       (cloudbuild_util.GetMessagesModule()
       ).BuildOptions.MachineTypeValueValuesEnum,
-      # TODO(b/69962368): remove this custom mapping when we can exclude
-      # UNSPECIFIED from the proto.
-      custom_mappings={
-          'N1_HIGHCPU_32': 'n1-highcpu-32',
-          'N1_HIGHCPU_8': 'n1-highcpu-8'
-      },
+      include_filter=lambda s: str(s) != 'UNSPECIFIED',
       help_str='Machine type used to run the build.')
 
   @staticmethod

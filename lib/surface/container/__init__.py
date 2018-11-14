@@ -40,6 +40,8 @@ class Container(base.Group):
   can be found here: https://cloud.google.com/kubernetes-engine/docs/
   """
 
+  category = 'Compute'
+
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.
 
@@ -61,6 +63,8 @@ class Container(base.Group):
 class ContainerBeta(Container):
   """Deploy and manage clusters of machines for running containers."""
 
+  category = 'Compute'
+
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.
 
@@ -81,6 +85,8 @@ class ContainerBeta(Container):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ContainerAlpha(Container):
   """Deploy and manage clusters of machines for running containers."""
+
+  category = 'Compute'
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

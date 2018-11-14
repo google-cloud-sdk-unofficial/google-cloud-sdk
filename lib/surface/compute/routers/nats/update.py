@@ -30,9 +30,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AlphaUpdate(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a NAT on a Google Compute Engine router."""
+  with_logging = False
 
   @classmethod
   def Args(cls, parser):
@@ -44,7 +45,8 @@ class AlphaUpdate(base.UpdateCommand):
     compute_flags.AddRegionFlag(parser, 'NAT', operation_type='create')
 
     nats_flags.AddNatNameArg(parser, operation_type='create')
-    nats_flags.AddCommonNatArgs(parser)
+    nats_flags.AddCommonNatArgs(
+        parser, for_create=False, with_logging=cls.with_logging)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -58,7 +60,8 @@ class AlphaUpdate(base.UpdateCommand):
 
     # Retrieve specified NAT and update base fields.
     existing_nat = nats_utils.FindNatOrRaise(replacement, args.name)
-    nat = nats_utils.UpdateNatMessage(existing_nat, args, holder)
+    nat = nats_utils.UpdateNatMessage(
+        existing_nat, args, holder, with_logging=self.with_logging)
 
     cleared_fields = []
     if args.clear_min_ports_per_vm:
@@ -113,9 +116,43 @@ class AlphaUpdate(base.UpdateCommand):
             nat.name, router_ref.Name()))
 
 
-AlphaUpdate.detailed_help = {
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(Update):
+  """Update a NAT on a Google Compute Engine router."""
+
+  with_logging = True
+
+
+Update.detailed_help = {
     'DESCRIPTION':
         """
         *{command}* is used to update a NAT in a Google Compute Engine router.
-    """
+        """,
+    'EXAMPLES':
+        """\
+        Change subnetworks and IP address resources associated with NAT:
+
+          $ {command} nat1 --router=my-router
+            --nat-external-ip-pool=ip-address2,ip-address3
+            --nat-custom-subnet-ip-ranges=subnet-2,subnet-3:secondary-range-2
+
+        Change minimum default ports allocated per VM associated with NAT:
+
+          $ {command} nat1 --router=my-router --min-default-ports-per-vm=128
+
+        Change connection timeouts associated with NAT:
+
+          $ {command} nat1 --router=my-router
+            --udp-mapping-idle-timeout=60s
+            --icmp-mapping-idle-timeout=60s
+            --tcp-established-connection-idle-timeout=60s
+            --tcp-transitory-connection-idle-timeout=60s
+
+        Reset connection timeouts associated NAT to default values:
+
+          $ {command} nat1 --router=my-router
+            --clear-udp-mapping-idle-timeout --clear-icmp-mapping-idle-timeout
+            --clear-tcp-established-connection-idle-timeout
+            --clear-tcp-transitory-connection-idle-timeout
+        """
 }

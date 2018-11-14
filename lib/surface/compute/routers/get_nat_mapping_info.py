@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import textwrap
-
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -28,8 +26,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags as routers_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AlphaGetNatMappingInfo(base.ListCommand):
+class GetNatMappingInfo(base.ListCommand):
   """Display NAT Mapping information in a router."""
 
   ROUTER_ARG = None
@@ -65,10 +62,12 @@ class AlphaGetNatMappingInfo(base.ListCommand):
     )
 
 
-AlphaGetNatMappingInfo.detailed_help = {
+GetNatMappingInfo.detailed_help = {
     'DESCRIPTION':
-        textwrap.dedent("""\
-        $ {command} shows a mapping of IP:port-ranges allocated to each VM's
-        interface that is configured to use NAT via the specified router.
-    """)
+        """
+        $ {command}
+
+        shows a mapping of IP:port-ranges
+        allocated to each VM's interface that is configured to use NAT via the
+        specified router."""
 }

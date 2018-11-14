@@ -24,6 +24,9 @@ from googlecloudsdk.calliope import base
 class Routes(base.Group):
   """Read and manipulate routes."""
 
+
+Routes.category = 'Networking'
+
 Routes.detailed_help = {
     'brief': 'Read and manipulate routes',
 }

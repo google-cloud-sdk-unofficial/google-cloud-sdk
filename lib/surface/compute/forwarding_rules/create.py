@@ -290,7 +290,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
-  _support_flex_port = False
+  _support_flex_port = True
   _support_global_access = False
   _support_network_in_global_request = False
 

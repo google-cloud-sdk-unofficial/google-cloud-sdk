@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.serverless import connection_context
 from googlecloudsdk.command_lib.serverless import flags
+from googlecloudsdk.command_lib.serverless import pretty_print
 from googlecloudsdk.command_lib.serverless import resource_args
 from googlecloudsdk.command_lib.serverless import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -46,7 +47,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionArg(parser)
+    flags.AddRegionArgWithDefault(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
@@ -57,9 +58,13 @@ class List(base.ListCommand):
         resource_args.CLUSTER_PRESENTATION,
         namespace_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
-        'table(metadata.name:label=CONFIGURATION,'
+        'table('
+        '{ready_column},'
+        'metadata.name:label=CONFIGURATION,'
+        'region:label=REGION,'
         'status.latestCreatedRevisionName:label="LATEST REVISION",'
-        'status.latestReadyRevisionName:label="LATEST READY REVISION")')
+        'status.latestReadyRevisionName:label="READY REVISION")'.format(
+            ready_column=pretty_print.READY_COLUMN))
 
   def Run(self, args):
     """List available configurations."""

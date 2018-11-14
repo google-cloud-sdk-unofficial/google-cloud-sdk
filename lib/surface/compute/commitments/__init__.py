@@ -23,3 +23,6 @@ from googlecloudsdk.calliope import base
 
 class Commitments(base.Group):
   """Manage Google Compute Engine commitments."""
+
+
+Commitments.category = 'Instances'

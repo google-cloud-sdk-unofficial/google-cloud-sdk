@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 DETAILED_HELP = {
     'DESCRIPTION': """\
         The gcloud oslogin command group lets you manage your Google
-        OS Login profile. OS Login profiles can be used to store infomation
+        OS Login profile. OS Login profiles can be used to store information
         such as Posix account information and SSH keys used for other Google
         Cloud Platform products such as Google Compute Engine.
         """,
@@ -34,4 +34,5 @@ DETAILED_HELP = {
 
 class Oslogin(base.Group):
   """Create and manipulate Google Compute Engine OS Login resources."""
+  category = 'Tools'
   detailed_help = DETAILED_HELP

@@ -1289,6 +1289,13 @@ class _Load(BigqueryCmd):
         'expiration.',
         flag_values=fv)
     flags.DEFINE_string(
+        'range_partitioning',
+        None, 'Enables range partitioning on the table. The format should be '
+        '"field,start,end,interval". The table will be partitioned based on the'
+        ' value of the field. Field must be a top-level, non-repeated INT64 '
+        'field. Start, end, and interval are INT64 values defining the ranges.',
+        flag_values=fv)
+    flags.DEFINE_string(
         'time_partitioning_field',
         None,
         'Enables time based partitioning on the table and the table will be '
@@ -1313,6 +1320,13 @@ class _Load(BigqueryCmd):
         'Comma separated field names. Can only be specified with time based '
         'partitioning. Data will be first partitioned and subsequently "'
         'clustered on these fields.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_avro_logical_types',
+        None,
+        'If sourceFormat is set to "AVRO", indicates whether to enable '
+        'interpreting logical types into their corresponding types '
+        '(ie. TIMESTAMP), instead of only using their raw types (ie. INTEGER).',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -1372,7 +1386,7 @@ class _Load(BigqueryCmd):
       opts['location'] = FLAGS.location
     if self.replace:
       opts['write_disposition'] = 'WRITE_TRUNCATE'
-    if self.field_delimiter:
+    if self.field_delimiter is not None:
       opts['field_delimiter'] = _NormalizeFieldDelimiter(self.field_delimiter)
     if self.quote is not None:
       opts['quote'] = _NormalizeFieldDelimiter(self.quote)
@@ -1394,6 +1408,9 @@ class _Load(BigqueryCmd):
         self.require_partition_filter)
     if time_partitioning is not None:
       opts['time_partitioning'] = time_partitioning
+    range_partitioning = _ParseRangePartitioning(self.range_partitioning)
+    if range_partitioning:
+      opts['range_partitioning'] = range_partitioning
     clustering = _ParseClustering(self.clustering_fields)
     if clustering:
       opts['clustering'] = clustering
@@ -1401,6 +1418,8 @@ class _Load(BigqueryCmd):
       opts['destination_encryption_configuration'] = {
           'kmsKeyName': self.destination_kms_key
       }
+    if self.use_avro_logical_types is not None:
+      opts['use_avro_logical_types'] = self.use_avro_logical_types
     job = client.Load(table_reference, source, schema=schema, **opts)
     if FLAGS.sync:
       _PrintJobMessages(client.FormatJobInfo(job))
@@ -1725,6 +1744,13 @@ class _Query(BigqueryCmd):
         'partitioning is enabled without this value, the table will be '
         'partitioned based on the loading time.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'range_partitioning',
+        None, 'Enables range partitioning on the table. The format should be '
+        '"field,start,end,interval". The table will be partitioned based on the'
+        ' value of the field. Field must be a top-level, non-repeated INT64 '
+        'field. Start, end, and interval are INT64 values defining the ranges.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'require_partition_filter',
         None,
@@ -1803,6 +1829,9 @@ class _Query(BigqueryCmd):
         self.require_partition_filter)
     if time_partitioning is not None:
       kwds['time_partitioning'] = time_partitioning
+    range_partitioning = _ParseRangePartitioning(self.range_partitioning)
+    if range_partitioning:
+      kwds['range_partitioning'] = range_partitioning
     clustering = _ParseClustering(self.clustering_fields)
     if clustering:
       kwds['clustering'] = clustering
@@ -3037,6 +3066,14 @@ class _Make(BigqueryCmd):
         'partitioning. Data will be first partitioned and subsequently "'
         'clustered on these fields.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'range_partitioning',
+        None,
+        'Enables range partitioning on the table. The format should be '
+        '"field,start,end,interval". The table will be partitioned based on the'
+        ' value of the field. Field must be a top-level, non-repeated INT64 '
+        'field. Start, end, and interval are INT64 values defining the ranges.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'reservation',
         None,
@@ -3297,6 +3334,7 @@ class _Make(BigqueryCmd):
           None,
           self.require_partition_filter)
       clustering = _ParseClustering(self.clustering_fields)
+      range_partitioning = _ParseRangePartitioning(self.range_partitioning)
       client.CreateTable(
           reference,
           ignore_existing=True,
@@ -3310,6 +3348,8 @@ class _Make(BigqueryCmd):
           labels=labels,
           time_partitioning=time_partitioning,
           clustering=clustering,
+          range_partitioning=range_partitioning,
+          require_partition_filter=self.require_partition_filter,
           destination_kms_key=(self.destination_kms_key))
       print "%s '%s' successfully created." % (
           object_name,
@@ -3491,6 +3531,14 @@ class _Update(BigqueryCmd):
         'Whether to require partition filter for queries over this table. '
         'Only apply to partitioned table.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'range_partitioning',
+        None,
+        'Enables range partitioning on the table. The format should be '
+        '"field,start,end,interval". The table will be partitioned based on the'
+        ' value of the field. Field must be a top-level, non-repeated INT64 '
+        'field. Start, end, and interval are INT64 values defining the ranges.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -3617,6 +3665,7 @@ class _Update(BigqueryCmd):
       time_partitioning = _ParseTimePartitioning(
           self.time_partitioning_type, self.time_partitioning_expiration,
           self.time_partitioning_field, None, self.require_partition_filter)
+      range_partitioning = _ParseRangePartitioning(self.range_partitioning)
 
       encryption_configuration = None
       if self.destination_kms_key:
@@ -3634,6 +3683,8 @@ class _Update(BigqueryCmd):
           labels_to_set=labels_to_set,
           label_keys_to_remove=label_keys_to_remove,
           time_partitioning=time_partitioning,
+          range_partitioning=range_partitioning,
+          require_partition_filter=self.require_partition_filter,
           etag=self.etag,
           encryption_configuration=encryption_configuration)
 

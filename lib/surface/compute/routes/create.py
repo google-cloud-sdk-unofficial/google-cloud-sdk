@@ -134,7 +134,7 @@ def _Args(parser, support_next_hop_ilb=False):
   parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new route.
 
@@ -262,8 +262,8 @@ class Create(base.CreateCommand):
                                  request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Create a new route.
 
     *{command}* is used to create routes. A route is a rule that

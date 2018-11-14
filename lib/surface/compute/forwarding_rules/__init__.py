@@ -23,3 +23,6 @@ from googlecloudsdk.calliope import base
 
 class ForwardingRules(base.Group):
   """Read and manipulate traffic forwarding rules to network load balancers."""
+
+
+ForwardingRules.category = 'Load Balancing'

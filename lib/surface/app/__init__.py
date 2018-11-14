@@ -72,6 +72,8 @@ DETAILED_HELP = {
                     base.ReleaseTrack.GA)
 class AppengineGA(base.Group):
 
+  category = 'Compute'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

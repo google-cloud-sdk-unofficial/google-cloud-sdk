@@ -77,7 +77,7 @@ def _AddArgs(cls, parser, include_alpha=False):
     parser.add_argument(
         '--purpose',
         choices={
-            'PRIVATE_RFC_1918':
+            'PRIVATE':
                 'Regular user created or automatically created subnet.',
             'INTERNAL_HTTPS_LOAD_BALANCER':
                 'Reserved for Internal HTTP(S) Load Balancing.'

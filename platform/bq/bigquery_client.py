@@ -878,6 +878,9 @@ class BigqueryClient(object):
       max_retries = 3
       iterations = 0
       while iterations < max_retries and discovery_document is None:
+        if iterations > 0:
+          # Wait briefly before retrying with exponentially increasing wait.
+          time.sleep(2 ** iterations)
         try:
           if discovery_url is None:
             discovery_url = self.GetDiscoveryUrl().format(
@@ -912,8 +915,6 @@ class BigqueryClient(object):
           # Don't retry in this case.
           raise BigqueryCommunicationError(
               'Invalid API name or version: %s' % (str(e),))
-        # Wait briefly before retrying with exponentially increasing wait.
-        time.sleep(2 ** iterations)
         iterations += 1
     try:
       return discovery.build_from_document(
@@ -963,26 +964,11 @@ class BigqueryClient(object):
     """Return the apiclient that supports reservation operations."""
     path = reservationserver_address
     if path is None:
-      path = self.reservation_path
-    if path is None:
       path = 'https://bigqueryreservation.googleapis.com'
-    if reservationserver_bns_address is None:
-      reservationserver_bns_address = self.reservation_bns
-
     if not self._op_reservation_client:
       discovery_url = (path + '/$discovery/rest?version=v1alpha1')
-      http = None
-      if reservationserver_bns_address:
-        http = self.GetHttpForHttpOverRpc([
-            http_multiplexer.HTTPDelegate(
-                re.compile(path + '|.*reservation.*.googleapis.com.*'),
-                http_over_rpc.HTTPOverRPC(
-                    reservationserver_bns_address, channel_timeout_secs=20))
-        ])
       self._op_reservation_client = self.BuildApiClient(
-          discovery_url=discovery_url,
-          default_http=http,
-          cache_key='reservation')
+      discovery_url=discovery_url)
     return self._op_reservation_client
 
   #################################
@@ -1138,7 +1124,7 @@ class BigqueryClient(object):
         return ApiClientHelper.ProjectReference.Create(projectId=project_id)
     except ValueError:
       pass
-    if project_id is '':
+    if project_id == '':
       raise BigqueryClientError('Please provide a project ID.')
     else:
       raise BigqueryClientError('Cannot determine project described by %s' % (
@@ -1715,7 +1701,7 @@ class BigqueryClient(object):
     elif reference_type == ApiClientHelper.TransferRunReference:
       if print_format == 'show':
         for column in BigqueryClient.columns_to_include_for_transfer_run:
-          if column is not 'name':
+          if column != 'name':
             formatter.AddColumns((column,))
       elif print_format == 'list':
         for column in BigqueryClient.columns_to_include_for_transfer_run:
@@ -2798,6 +2784,8 @@ class BigqueryClient(object):
       labels=None,
       time_partitioning=None,
       clustering=None,
+      range_partitioning=None,
+      require_partition_filter=None,
       destination_kms_key=None):
     """Create a table corresponding to TableReference.
 
@@ -2821,6 +2809,10 @@ class BigqueryClient(object):
       time_partitioning: if set, enables time based partitioning on the table
         and configures the partitioning.
       clustering: if set, enables and configures clustering on the table.
+      range_partitioning: if set, enables range partitioning on the table and
+        configures the partitioning.
+      require_partition_filter: if set, partition filter is required for
+        queires over this table.
       destination_kms_key: User specified KMS key for encryption.
 
     Raises:
@@ -2855,6 +2847,10 @@ class BigqueryClient(object):
         body['timePartitioning'] = time_partitioning
       if clustering is not None:
         body['clustering'] = clustering
+      if range_partitioning is not None:
+        body['rangePartitioning'] = range_partitioning
+      if require_partition_filter is not None:
+        body['requirePartitionFilter'] = require_partition_filter
       if destination_kms_key is not None:
         body['encryptionConfiguration'] = {'kmsKeyName': destination_kms_key}
       self.apiclient.tables().insert(
@@ -3961,6 +3957,7 @@ class BigqueryClient(object):
       time_partitioning=None,
       destination_encryption_configuration=None,
       clustering=None,
+      range_partitioning=None,
       **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -4009,6 +4006,8 @@ class BigqueryClient(object):
           destination table.
       destination_encryption_configuration: Optional. Allows user to encrypt the
           table created from a query job with a Cloud KMS key.
+      range_partitioning: Optional. Provides range partitioning specification
+          for the destination table.
       **kwds: Passed on to self.ExecuteJob.
 
     Raises:
@@ -4053,7 +4052,8 @@ class BigqueryClient(object):
         query_parameters=query_parameters,
         time_partitioning=time_partitioning,
         clustering=clustering,
-        min_completion_ratio=min_completion_ratio)
+        min_completion_ratio=min_completion_ratio,
+        range_partitioning=range_partitioning)
     request = {'query': query_config}
     _ApplyParameters(request, dry_run=dry_run,
                      labels=labels)
@@ -4082,6 +4082,8 @@ class BigqueryClient(object):
       time_partitioning=None,
       clustering=None,
       destination_encryption_configuration=None,
+      use_avro_logical_types=None,
+      range_partitioning=None,
       **kwds):
     """Load the given data into BigQuery.
 
@@ -4127,6 +4129,12 @@ class BigqueryClient(object):
           destination table.
       destination_encryption_configuration: Optional. Allows user to encrypt the
           table created from a load job with Cloud KMS key.
+      use_avro_logical_types: Optional. Allows user to override default
+          behaviour for Avro logical types. If this is set, Avro fields with
+          logical types will be interpreted into their corresponding types (ie.
+          TIMESTAMP), instead of only using their raw types (ie. INTEGER).
+      range_partitioning: Optional. Provides range partitioning specification
+          for the destination table.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -4142,6 +4150,8 @@ class BigqueryClient(object):
       upload_file = sources[0]
     if schema is not None:
       load_config['schema'] = {'fields': BigqueryClient.ReadSchema(schema)}
+    if use_avro_logical_types is not None:
+      load_config['useAvroLogicalTypes'] = use_avro_logical_types
     if destination_encryption_configuration:
       load_config['destinationEncryptionConfiguration'] = (
           destination_encryption_configuration)
@@ -4163,7 +4173,8 @@ class BigqueryClient(object):
         null_marker=null_marker,
         time_partitioning=time_partitioning,
         clustering=clustering,
-        autodetect=autodetect)
+        autodetect=autodetect,
+        range_partitioning=range_partitioning)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
 

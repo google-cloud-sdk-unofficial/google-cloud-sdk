@@ -19,7 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.serverless import connection_context
 from googlecloudsdk.command_lib.serverless import flags
+from googlecloudsdk.command_lib.serverless import pretty_print
 from googlecloudsdk.command_lib.serverless import resource_args
 from googlecloudsdk.command_lib.serverless import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -55,11 +57,14 @@ class List(base.ListCommand):
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         namespace_presentation]).AddToParser(parser)
-    parser.display_info.AddFormat('table(metadata.name:label=ROUTE)')
+    parser.display_info.AddFormat("""table(
+    {ready_column},
+    metadata.name:label=ROUTE)
+    """.format(ready_column=pretty_print.READY_COLUMN))
 
   def Run(self, args):
     """List available routes."""
-    cluster_ref = args.CONCEPTS.cluster.Parse()
+    conn_context = connection_context.GetConnectionContext(args)
     namespace_ref = args.CONCEPTS.namespace.Parse()
-    with serverless_operations.Connect(cluster_ref) as client:
+    with serverless_operations.Connect(conn_context) as client:
       return client.ListRoutes(namespace_ref)

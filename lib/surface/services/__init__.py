@@ -43,6 +43,8 @@ class Services(base.Group):
     $ {command} disable --help
   """
 
+  category = 'API Platform and Ecosystems'
+
   def Filter(self, context, args):
     del context, args
     # Don't ever take this off. Use gcloud quota so that you can enable APIs

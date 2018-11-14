@@ -32,6 +32,8 @@ class Instances(base.Group):
   """Read and manipulate Google Compute Engine virtual machine instances."""
 
 
+Instances.category = 'Instances'
+
 Instances.detailed_help = {
     'brief': (
         'Read and manipulate Google Compute Engine virtual machine instances'),

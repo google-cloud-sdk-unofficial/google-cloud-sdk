@@ -28,3 +28,6 @@ class InstanceGroups(base.Group):
   differences between managed and unmanaged instances, some commands (such as
   `delete`) are in the managed or unmanaged subgroups.
   """
+
+
+InstanceGroups.category = 'Instances'

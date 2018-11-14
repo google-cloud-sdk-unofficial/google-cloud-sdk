@@ -107,15 +107,19 @@ class AttachDisk(base.SilentCommand):
   def Args(parser):
     _Args(parser)
 
-  # This function should be overridden by subclasses to customize disk resource
-  # creation as necessary for alpha release track.
-  def ParseDiskRef(self, resources, args, instance_ref):
-    return instance_utils.ParseDiskResource(resources, args.disk,
-                                            instance_ref.project,
-                                            instance_ref.zone,
-                                            compute_scopes.ScopeEnum.ZONE)
+  def ParseDiskRef(self, resources, args, instance_ref, support_disk_scope):
+    if support_disk_scope and args.disk_scope == 'regional':
+      scope = compute_scopes.ScopeEnum.REGION
+    else:
+      scope = compute_scopes.ScopeEnum.ZONE
+    return instance_utils.ParseDiskResource(
+        resources, args.disk, instance_ref.project, instance_ref.zone, scope)
 
-  def Run(self, args):
+  def _Run(self,
+           args,
+           support_disk_scope=False,
+           support_force_attach=False,
+           support_boot=False):
     """Invokes a request for attaching a disk to an instance."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -124,7 +128,8 @@ class AttachDisk(base.SilentCommand):
         args, holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(client))
 
-    disk_ref = self.ParseDiskRef(holder.resources, args, instance_ref)
+    disk_ref = self.ParseDiskRef(holder.resources, args, instance_ref,
+                                 support_disk_scope)
 
     if args.mode == 'rw':
       mode = client.messages.AttachedDisk.ModeValueValuesEnum.READ_WRITE
@@ -144,7 +149,7 @@ class AttachDisk(base.SilentCommand):
         type=client.messages.AttachedDisk.TypeValueValuesEnum.PERSISTENT,
         diskEncryptionKey=disk_key_or_none)
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.boot:
+    if support_boot and args.boot:
       attached_disk.boot = args.boot
 
     request = client.messages.ComputeInstancesAttachDiskRequest(
@@ -153,15 +158,18 @@ class AttachDisk(base.SilentCommand):
         attachedDisk=attached_disk,
         zone=instance_ref.zone)
 
-    if self.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+    if support_force_attach and args.force_attach:
       request.forceAttach = args.force_attach
 
     return client.MakeRequests([(client.apitools_client.instances, 'AttachDisk',
                                  request)])
 
+  def Run(self, args):
+    return self._Run(args)
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AttachDiskBeta(AttachDisk):
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class AttachDiskAlphaBeta(AttachDisk):
   """Attach a disk to an instance."""
 
   @staticmethod
@@ -169,27 +177,12 @@ class AttachDiskBeta(AttachDisk):
     _Args(
         parser,
         support_disk_scope=True,
-        support_force_attach=True)
+        support_force_attach=True,
+        support_boot=True)
 
-  def ParseDiskRef(self, resources, args, instance_ref):
-    if args.disk_scope == 'regional':
-      scope = compute_scopes.ScopeEnum.REGION
-    else:
-      scope = compute_scopes.ScopeEnum.ZONE
-    return instance_utils.ParseDiskResource(resources, args.disk,
-                                            instance_ref.project,
-                                            instance_ref.zone,
-                                            scope)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AttachDiskAlpha(AttachDiskBeta):
-  """Attach a disk to an instance."""
-
-  @staticmethod
-  def Args(parser):
-    _Args(
-        parser,
+  def Run(self, args):
+    return self._Run(
+        args,
         support_disk_scope=True,
         support_force_attach=True,
         support_boot=True)

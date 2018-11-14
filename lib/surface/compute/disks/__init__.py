@@ -25,6 +25,8 @@ class Disks(base.Group):
   """Read and manipulate Google Compute Engine disks."""
 
 
+Disks.category = 'Disks'
+
 Disks.detailed_help = {
     'brief': 'Read and manipulate Google Compute Engine disks',
 }

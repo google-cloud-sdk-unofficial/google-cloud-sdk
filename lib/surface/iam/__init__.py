@@ -42,5 +42,7 @@ class Iam(base.Group):
      https://cloud.google.com/iam/docs/
   """
 
+  category = 'Identity and Security'
+
   def Filter(self, context, args):
     base.DisableUserProjectQuota()

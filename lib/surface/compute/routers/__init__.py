@@ -25,6 +25,8 @@ class Routers(base.Group):
   """List, create, and delete Google Compute Engine routers."""
 
 
+Routers.category = 'Networking'
+
 Routers.detailed_help = {
     'brief': 'List, create, and delete Google Compute Engine routers',
 }

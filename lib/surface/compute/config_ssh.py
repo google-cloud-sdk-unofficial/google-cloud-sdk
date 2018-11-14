@@ -259,6 +259,8 @@ class ConfigSSH(base.Command):
   flag is given, the generated key will have an empty passphrase).
   """
 
+  category = 'Tools'
+
   @staticmethod
   def Args(parser):
     """Set up arguments for this command.

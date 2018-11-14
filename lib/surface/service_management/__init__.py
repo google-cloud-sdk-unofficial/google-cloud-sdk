@@ -39,6 +39,8 @@ class ServiceManagement(base.Group):
   found here: https://cloud.google.com/service-management/docs/
   """
 
+  category = 'API Platform and Ecosystems'
+
   def Filter(self, context, args):
     """Context() is a filter function that can update the context.
 

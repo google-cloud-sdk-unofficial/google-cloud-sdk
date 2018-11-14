@@ -33,6 +33,8 @@ from googlecloudsdk.core import properties
 class Functions(base.Group):
   """Manage Google Cloud Functions."""
 
+  category = 'Compute'
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddTransforms(transforms.GetTransforms())

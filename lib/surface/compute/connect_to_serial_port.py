@@ -66,6 +66,8 @@ class ConnectToSerialPort(base.Command):
   one is generated using ssh-keygen.
   """
 
+  category = 'Tools'
+
   @staticmethod
   def Args(parser):
     """Set up arguments for this command.

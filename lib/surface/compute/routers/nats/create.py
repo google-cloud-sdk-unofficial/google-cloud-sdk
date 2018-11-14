@@ -30,9 +30,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AlphaCreate(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Add a NAT to a Google Compute Engine router."""
+
+  with_logging = False
 
   @classmethod
   def Args(cls, parser):
@@ -44,7 +46,8 @@ class AlphaCreate(base.CreateCommand):
     compute_flags.AddRegionFlag(parser, 'NAT', operation_type='create')
 
     nats_flags.AddNatNameArg(parser, operation_type='create')
-    nats_flags.AddCommonNatArgs(parser, for_create=True)
+    nats_flags.AddCommonNatArgs(
+        parser, for_create=True, with_logging=cls.with_logging)
 
   def Run(self, args):
     """See base.CreateCommand."""
@@ -58,7 +61,8 @@ class AlphaCreate(base.CreateCommand):
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
-    nat = nats_utils.CreateNatMessage(args, holder)
+    nat = nats_utils.CreateNatMessage(
+        args, holder, with_logging=self.with_logging)
 
     replacement.nats.append(nat)
 
@@ -101,9 +105,40 @@ class AlphaCreate(base.CreateCommand):
             nat.name, router_ref.Name()))
 
 
-AlphaCreate.detailed_help = {
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(Create):
+  """Add a NAT to a Google Compute Engine router."""
+
+  with_logging = True
+
+
+Create.detailed_help = {
     'DESCRIPTION':
         """
         *{command}* is used to create a NAT on a Google Compute Engine router.
-    """
+        """,
+    'EXAMPLES':
+        """\
+        Auto-allocate NAT for all IP addresses of all subnets in the region:
+
+          $ {command} nat1 --router=my-router
+            --auto-allocate-nat-external-ips --nat-all-subnet-ip-ranges
+
+        Specify IP addresses for NAT:
+        Each IP address is the name of a reserved static IP address resource in
+        the same region.
+
+          $ {command} nat1 --router=my-router
+            --nat-external-ip-pool=ip-address1,ip-address2
+
+        Specify subnet ranges for NAT:
+
+        By default, NAT works for all primary and secondary IP ranges for all
+        subnets in the region for the given VPC network. You can restrict which
+        subnet primary and secondary ranges can use NAT.
+
+          $ {command} nat1 --router=my-router
+            --auto-allocate-nat-external-ips
+            --nat-custom-subnet-ip-ranges=subnet-1,subnet-3:secondary-range-1
+        """
 }

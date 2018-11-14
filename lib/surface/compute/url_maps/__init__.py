@@ -25,6 +25,8 @@ class URLMaps(base.Group):
   """List, create, and delete URL maps."""
 
 
+URLMaps.category = 'Networking'
+
 URLMaps.detailed_help = {
     'brief': 'List, create, and delete URL maps',
 }

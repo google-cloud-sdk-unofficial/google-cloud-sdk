@@ -55,6 +55,8 @@ class Auth(base.Group):
     $ gcloud auth revoke test@gmail.com
   """
 
+  category = 'Identity and Security'
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

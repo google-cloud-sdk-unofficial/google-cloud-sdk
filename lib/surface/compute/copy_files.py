@@ -33,6 +33,8 @@ DEPRECATION_WARNING = (
 class CopyFiles(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
+  category = 'Tools'
+
   @staticmethod
   def Args(parser):
     """Set up arguments for this command.

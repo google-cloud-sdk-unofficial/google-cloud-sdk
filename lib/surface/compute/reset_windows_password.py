@@ -131,6 +131,8 @@ class ResetWindowsPassword(base.UpdateCommand):
   Google Compute Engine project containing the Windows instance.
   """
 
+  category = 'Tools'
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat('[private]text')

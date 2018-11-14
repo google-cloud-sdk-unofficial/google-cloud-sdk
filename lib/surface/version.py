@@ -34,6 +34,8 @@ class Version(base.Command):
   components and prints a message if updates are available.
   """
 
+  category = 'SDK Tools'
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat('flattened[no-pad,separator=" "]')

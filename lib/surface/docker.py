@@ -94,6 +94,8 @@ class Docker(base.Command):
 
   """
 
+  category = 'Compute'
+
   detailed_help = {
       'registry': constants.DEFAULT_REGISTRY,
   }
