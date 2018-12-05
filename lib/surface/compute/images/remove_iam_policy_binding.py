@@ -52,12 +52,9 @@ class RemoveIamPolicyBinding(base.Command):
         resource=image_ref.image, project=image_ref.project)
     policy = client.apitools_client.images.GetIamPolicy(get_request)
     iam_util.RemoveBindingFromIamPolicy(policy, args.member, args.role)
-    # TODO(b/78371568): Construct the GlobalSetPolicyRequest directly
-    # out of the parsed policy.
     set_request = client.messages.ComputeImagesSetIamPolicyRequest(
         globalSetPolicyRequest=client.messages.GlobalSetPolicyRequest(
-            bindings=policy.bindings,
-            etag=policy.etag),
+            policy=policy),
         resource=image_ref.image,
         project=image_ref.project)
     return client.apitools_client.images.SetIamPolicy(set_request)

@@ -3073,6 +3073,8 @@ class BigqueryClient(object):
       labels_to_set=None,
       label_keys_to_remove=None,
       time_partitioning=None,
+      range_partitioning=None,
+      require_partition_filter=None,
       etag=None,
       encryption_configuration=None):
     """Updates a table.
@@ -3096,6 +3098,10 @@ class BigqueryClient(object):
         table.
       time_partitioning: if set, enables time based partitioning on the table
         and configures the partitioning.
+      range_partitioning: if set, enables range partitioning on the table and
+        configures the partitioning.
+      require_partition_filter: if set, partition filter is required for
+        queries over this table.
       etag: if set, checks that etag in the existing table matches.
       encryption_configuration: Updates the encryption configuration.
 
@@ -3141,6 +3147,10 @@ class BigqueryClient(object):
         table['labels'][label_key] = None
     if time_partitioning is not None:
       table['timePartitioning'] = time_partitioning
+    if range_partitioning is not None:
+      table['rangePartitioning'] = range_partitioning
+    if require_partition_filter is not None:
+      table['requirePartitionFilter'] = require_partition_filter
 
     request = self.apiclient.tables().patch(body=table, **dict(reference))
 

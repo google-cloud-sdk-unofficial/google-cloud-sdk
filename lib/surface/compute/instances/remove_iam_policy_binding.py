@@ -63,8 +63,7 @@ class RemoveIamPolicyBinding(base.Command):
         [(client.apitools_client.instances, 'SetIamPolicy',
           client.messages.ComputeInstancesSetIamPolicyRequest(
               zoneSetPolicyRequest=client.messages.ZoneSetPolicyRequest(
-                  bindings=policy.bindings,
-                  etag=policy.etag),
+                  policy=policy),
               project=instance_ref.project,
               resource=instance_ref.instance,
               zone=instance_ref.zone))])[0]

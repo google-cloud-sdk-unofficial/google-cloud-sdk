@@ -30,32 +30,7 @@ from googlecloudsdk.core import log
 _DEFAULT_LIMIT = 5
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Help(base.Command):
-  """Prints detailed help messages for the specified commands.
-
-  This command prints a detailed help message for the commands specified
-  after the ``help'' operand.
-  """
-
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        'command',
-        nargs='*',
-        help="""\
-        Sequence of group and command names with no flags.
-        """)
-
-  def Run(self, args):
-    # --document=style=help to signal the metrics.Help() 'help' label in
-    # actions.RenderDocumentAction().Action().
-    self.ExecuteCommandDoNotUse(args.command + ['--document=style=help'])
-    return None
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class HelpBeta(base.ListCommand):
+class Help(base.ListCommand):
   """Search gcloud help text.
 
   If a full gcloud command is specified after the ``help'' operand, {command}
@@ -116,28 +91,28 @@ class HelpBeta(base.ListCommand):
         'command',
         nargs='*',
         help="""\
-        Sequence of names representing a gcloud group or command name.
+Sequence of names representing a gcloud group or command name.
 
-        If the arguments provide the name of a gcloud command, the full help
-        text of that command will be displayed. Otherwise, all arguments will
-        be considered search terms and used to search through all of gcloud's
-        help text.
-        """)
+If the arguments provide the name of a gcloud command, the full help
+text of that command will be displayed. Otherwise, all arguments will
+be considered search terms and used to search through all of gcloud's
+help text.
+""")
 
     parser.add_argument(
         'search_terms',
         nargs=argparse.REMAINDER,
         help="""\
-        Search terms. The command will return a list of gcloud commands that are
-        relevant to the searched term. If this argument is provided, the command
-        will always return a list of search results rather than displaying help
-        text of a single command.
+Search terms. The command will return a list of gcloud commands that are
+relevant to the searched term. If this argument is provided, the command
+will always return a list of search results rather than displaying help
+text of a single command.
 
-        For example, to search for commands that relate to the term `project` or
-        `folder`, run:
+For example, to search for commands that relate to the term `project` or
+`folder`, run:
 
-          $ {command} -- project folder
-        """)
+  $ {command} -- project folder
+""")
 
   def Run(self, args):
     if not args.search_terms:

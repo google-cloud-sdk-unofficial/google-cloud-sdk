@@ -19,10 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import argparse
-import os
-import textwrap
-
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import completers as resource_manager_completers
@@ -45,6 +41,28 @@ class Gcloud(base.Group):
         category=base.COMMONLY_USED_FLAGS,
         help='Google Cloud Platform user account to use for invocation.',
         action=actions.StoreProperty(properties.VALUES.core.account))
+
+    # Ideally this would be on the alpha group (since it's alpha) but there are
+    # a bunch of problems with doing that. Global flags are treated differently
+    # than other flags and flags on the Alpha group are not treated as global.
+    # The result is that the flag shows up on every man page as if it was part
+    # of the individual command (which is undesirable and breaks every surface
+    # spec).
+    parser.add_argument(
+        '--impersonate-service-account',
+        metavar='SERVICE_ACCOUNT_EMAIL',
+        hidden=True,
+        help='(ALPHA) For this gcloud invocation, all API requests will be '
+             'made as the given service account instead of the currently '
+             'selected account. This is done without needing to create, '
+             'download, and activate a key for the account. In order to '
+             'perform operations as the service account, your currently '
+             'selected account must have an IAM role that includes the '
+             'iam.serviceAccounts.getAccessToken permission for the service '
+             'account. The roles/iam.serviceAccountTokenCreator role has '
+             'this permission or you may create a custom role.',
+        action=actions.StoreProperty(
+            properties.VALUES.auth.impersonate_service_account))
 
     parser.add_argument(
         '--project',

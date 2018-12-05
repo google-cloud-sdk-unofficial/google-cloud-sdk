@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.endpoints import config_reporter
 from googlecloudsdk.api_lib.endpoints import exceptions
 from googlecloudsdk.api_lib.endpoints import services_util
 from googlecloudsdk.api_lib.services import enable_api
+from googlecloudsdk.api_lib.services import exceptions as services_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
@@ -194,6 +195,24 @@ class _BaseDeploy(object):
     # Child classes must override this; otherwise, we'll always return False
     return False
 
+  def AttemptToEnableService(self, service_name, is_async):
+    """Attempt to enable a service. If lacking permission, log a warning.
+
+    Args:
+      service_name: The service to enable.
+      is_async: If true, return immediately instead of waiting for the operation
+          to finish.
+    """
+    project_id = properties.VALUES.core.project.Get(required=True)
+    try:
+      # Enable the produced service.
+      enable_api.EnableService(project_id, service_name, is_async)
+    except services_exceptions.EnableServicePermissionDeniedException:
+      log.warning(('Attempted to enable service [{0}] on project [{1}], but '
+                   'did not have required permissions. Please ensure this '
+                   'service is enabled before using your Endpoints '
+                   'service.').format(service_name, project_id))
+
   def Run(self, args):
     """Run 'endpoints services deploy'.
 
@@ -309,12 +328,8 @@ class _BaseDeploy(object):
           'Support for uploading uncompiled .proto files is deprecated and '
           'will soon be removed. Use compiled descriptor sets (.pb) instead.')
 
-    # Check to see if the Endpoints meta service needs to be enabled.
-    enable_api.EnableServiceIfDisabled(
-        properties.VALUES.core.project.Get(required=True),
-        services_util.GetEndpointsServiceName(),
-        args.async)
     # Check if we need to create the service.
+    was_service_created = False
     if not services_util.DoesServiceExist(self.service_name):
       project_id = properties.VALUES.core.project.Get(required=True)
       # Deploying, even with validate-only, cannot succeed without the service
@@ -329,6 +344,7 @@ class _BaseDeploy(object):
                 service_name=self.service_name, project_id=project_id)):
           return None
       services_util.CreateService(self.service_name, project_id)
+      was_service_created = True
 
     if config_files:
       push_config_result = services_util.PushMultipleServiceConfigFiles(
@@ -372,11 +388,10 @@ class _BaseDeploy(object):
       rollout_operation = client.services_rollouts.Create(rollout_create)
       services_util.ProcessOperationResult(rollout_operation, args.async)
 
-      # Check to see if the service is already enabled
-      enable_api.EnableServiceIfDisabled(
-          properties.VALUES.core.project.Get(required=True),
-          self.service_name,
-          args.async)
+      if was_service_created:
+        self.AttemptToEnableService(
+            services_util.GetEndpointsServiceName(), args.async)
+        self.AttemptToEnableService(self.service_name, args.async)
 
     return push_config_result
 

@@ -60,11 +60,6 @@ class SetIamPolicy(base.Command):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    # TODO(b/78371568): Construct the RegionSetPolicyRequest directly
-    # out of the parsed policy instead of setting 'bindings' and 'etags'.
-    # This current form is required so gcloud won't break while Compute
-    # roll outs the breaking change to SetIamPolicy (b/75971480)
-
     # SetIamPolicy always returns either an error or the newly set policy.
     # If the policy was just set to the empty policy it returns a valid empty
     # policy (just an etag.)
@@ -73,8 +68,7 @@ class SetIamPolicy(base.Command):
         [(client.apitools_client.subnetworks, 'SetIamPolicy',
           client.messages.ComputeSubnetworksSetIamPolicyRequest(
               regionSetPolicyRequest=client.messages.RegionSetPolicyRequest(
-                  bindings=policy.bindings,
-                  etag=policy.etag),
+                  policy=policy),
               project=subnetwork_ref.project,
               region=subnetwork_ref.region,
               resource=subnetwork_ref.subnetwork))])[0]

@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.help_search import search_util
 
 
 _DEPRECATION_WARNING = (
-    '`search-help` is deprecated. Please use `gcloud beta help` instead.')
+    '`search-help` is deprecated. Please use `gcloud help` instead.')
 
 
 # TODO(b/112529035): Clean up this command after deprecation period.

@@ -86,4 +86,5 @@ class UpdateAlpha(base.UpdateCommand):
         flow_sampling=args.flow_sampling,
         metadata=args.metadata,
         set_role_active=getattr(args, 'role', None) == 'ACTIVE',
-        drain_timeout_seconds=args.drain_timeout)
+        drain_timeout_seconds=args.drain_timeout,
+        enable_private_ipv6_access=args.enable_private_ipv6_access)

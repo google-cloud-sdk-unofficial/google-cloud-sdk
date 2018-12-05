@@ -68,6 +68,9 @@ class Move(base.UpdateCommand):
     if args.async:
       return operation
     else:
+      if operation.done and not operation.name:
+        log.status.Print('No changes necessary.')
+        return
       finished_op = operations.WaitForOperation(operation)
       result = operations.ExtractOperationResponse(finished_op, messages.Folder)
       log.UpdatedResource(result)

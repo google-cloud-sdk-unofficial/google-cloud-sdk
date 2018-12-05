@@ -20,26 +20,26 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.api_lib.spanner import databases
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.command_lib.spanner import write_util
 from googlecloudsdk.core import resources
 
-DETAILED_HELP = {
-    'EXAMPLES':
-        """\
-      To insert a row with SingerId=1,SingName=abc in table Singers under
-        my-database and my-instance, run:
-
-          $ {command}  --table=Singers --database=my-database
-            --instance=my-instance --data=SingerId=1,SingerName=abc
-""",
-}
-
 
 class Insert(base.Command):
-  """Insert a row in a Cloud Spanner database."""
-  detailed_help = DETAILED_HELP
+  # pylint:disable=line-too-long
+  """Insert a row in a Cloud Spanner database.
+
+  ## EXAMPLES
+
+  To insert a row with SingerId=1,SingName=abc in table Singers under
+  my-database and my-instance, run:
+
+    $ {command} --table=Singers --database=my-database --instance=my-instance --data=SingerId=1,SingerName=abc
+
+    $ {command} --table=Singers --database=my-database --instance=my-instance --flags-file=path/to/file.yaml
+  """
 
   @staticmethod
   def Args(parser):
@@ -55,8 +55,11 @@ class Insert(base.Command):
     parser.add_argument(
         '--data',
         required=True,
-        type=str,
-        help='The column names and values of a row which will be added.')
+        metavar='COLUMN_NAME=VALUE',
+        type=arg_parsers.ArgDict(),
+        help='The column names and values for the row being added. '
+        'For complicated input values, such as arrays, use the `--flags-file` '
+        'flag. See $ gcloud topic flags-file for more information.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
@@ -67,9 +70,9 @@ class Insert(base.Command):
     # user wants to delete.
     ddl = databases.GetDdl(database_ref)
     table = write_util.Table.FromDdl(ddl, args.table)
+    data = write_util.ValidateArrayInput(table, args.data)
 
-    mutation = database_sessions.MutationFactory.Insert(
-        table, write_util.RowDataParser(args.data))
+    mutation = database_sessions.MutationFactory.Insert(table, data)
 
     # To commit a transaction in a session, we need to create one and delete it
     # at the end.

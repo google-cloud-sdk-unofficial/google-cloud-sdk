@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.deployment_manager import dm_write
 from googlecloudsdk.core import log
 
 # Number of seconds (approximately) to wait for each operation to complete.
-OPERATION_TIMEOUT = 20 * 60  # 20 mins
+OPERATION_TIMEOUT = 120 * 60  # 2 hr
 
 
 @dm_base.UseDmApi(dm_base.DmApiVersion.V2)

@@ -314,6 +314,23 @@ class ImportAlpha(Import):
         action='store_true',
         help='Google Guest Environment will not be installed on the image.')
 
+    parser.add_argument(
+        '--network',
+        help=('Name of the network in your project to use for the image import.'
+              ' The network must have access to Google Cloud Storage. If not '
+              'specified, the network named `default` is used.'),
+    )
+
+    parser.add_argument(
+        '--subnet',
+        help=('Name of the subnetwork in your project to use for the image '
+              'import. If the network resource is in legacy mode, do not '
+              'provide this property. If the network is in auto subnet mode, '
+              'providing the subnetwork is optional. If the network is in '
+              'custom subnet mode, then this field should be specified. '
+              'Region or zone should be specified if this field is specified.'),
+    )
+
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     # Fail early if the requested image name is invalid or already exists.
@@ -329,8 +346,9 @@ class ImportAlpha(Import):
     # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
     # warning message with a ProgressTracker spinner.
     log.warning('Importing image. This may take up to 2 hours.')
+    tags = ['gce-daisy-image-import']
     return daisy_utils.RunDaisyBuild(
-        args, workflow, ','.join(daisy_vars),
+        args, workflow, ','.join(daisy_vars), tags=tags,
         daisy_bucket=import_stager.GetDaisyBucket(),
         user_zone=properties.VALUES.compute.zone.Get(),
         output_filter=_OUTPUT_FILTER)
@@ -338,6 +356,8 @@ class ImportAlpha(Import):
   def _ProcessAdditionalArgs(self, args, daisy_vars):
     if args.no_guest_environment:
       daisy_vars.append('install_gce_packages={}'.format('false'))
+    daisy_vars.extend(daisy_utils.ExtractNetworkAndSubnetDaisyVariables(
+        args, daisy_utils.ImageOperation.IMPORT))
 
 
 @six.add_metaclass(abc.ABCMeta)

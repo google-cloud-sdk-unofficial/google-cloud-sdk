@@ -491,23 +491,23 @@ def _GetFormatterFromFlags(secondary_format='sparse'):
 def _PrintDryRunInfo(job):
   """Prints the dry run info."""
   num_bytes = job['statistics']['query']['totalBytesProcessed']
-  cost_accuracy = job['statistics']['query'].get('dryRunCostAccuracy',
-                                                 'PRECISE')
+  num_bytes_accuracy = job['statistics']['query'].get(
+      'totalBytesProcessedAccuracy', 'PRECISE')
   if FLAGS.format in ['prettyjson', 'json']:
     _PrintFormattedJsonObject(job)
   elif FLAGS.format == 'csv':
     print num_bytes
   else:
-    if cost_accuracy == 'PRECISE':
+    if num_bytes_accuracy == 'PRECISE':
       print(
           'Query successfully validated. Assuming the tables are not modified, '
           'running this query will process %s bytes of data.' % (num_bytes,))
-    elif cost_accuracy == 'LOWER_BOUND':
+    elif num_bytes_accuracy == 'LOWER_BOUND':
       print(
           'Query successfully validated. Assuming the tables are not modified, '
           'running this query will process lower bound of %s bytes of data.' %
           (num_bytes,))
-    elif cost_accuracy == 'UPPER_BOUND':
+    elif num_bytes_accuracy == 'UPPER_BOUND':
       print(
           'Query successfully validated. Assuming the tables are not modified, '
           'running this query will process upper bound of %s bytes of data.' %

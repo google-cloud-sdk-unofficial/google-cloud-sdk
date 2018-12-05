@@ -32,10 +32,9 @@
           https://cloud.google.com/pubsub/docs/publisher#publish
         params:
         - arg_name: message-body
-          type: googlecloudsdk.command_lib.scheduler.util:ParseMessageBody
           help_text: Body of the message.
         - arg_name: message-body-from-file
-          type: googlecloudsdk.command_lib.scheduler.util:ParseMessageBodyFromFile
+          type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
           help_text: Path to a file containing the body of the message.
     - arg_name: attributes
       api_field: job.pubsubTarget.attributes

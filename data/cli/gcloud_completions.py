@@ -247,6 +247,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -299,6 +301,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -2093,6 +2098,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--data-disk": "bool",
                     "--log-location": "value",
+                    "--network": "value",
                     "--no-guest-environment": "bool",
                     "--os": [
                       "centos-6",
@@ -2111,6 +2117,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--source-file": "value",
                     "--source-image": "dynamic",
+                    "--subnet": "value",
                     "--timeout": "value",
                     "--zone": "dynamic"
                   }
@@ -3787,6 +3794,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--description": "value",
                         "--enable-flow-logs": "bool",
                         "--enable-private-ip-google-access": "bool",
+                        "--enable-private-ipv6-access": "bool",
                         "--flow-sampling": "value",
                         "--metadata": [
                           "exclude-all-metadata",
@@ -3879,6 +3887,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--drain-timeout": "value",
                         "--enable-flow-logs": "bool",
                         "--enable-private-ip-google-access": "bool",
+                        "--enable-private-ipv6-access": "bool",
                         "--flow-sampling": "value",
                         "--metadata": [
                           "exclude-all-metadata",
@@ -7230,6 +7239,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--legacy": "bool"
               }
             },
+            "firestore": {
+              "commands": {
+                "start": {
+                  "commands": {},
+                  "flags": {
+                    "--host-port": "value",
+                    "--rules": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "pubsub": {
               "commands": {
                 "env-init": {
@@ -7316,8 +7337,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "check-iam-policy": {
@@ -7363,8 +7386,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "undelete": {
@@ -8346,8 +8372,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -8434,8 +8462,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -10734,119 +10765,7 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
-        "scheduler": {
-          "commands": {
-            "jobs": {
-              "commands": {
-                "create": {
-                  "commands": {
-                    "app-engine": {
-                      "commands": {},
-                      "flags": {
-                        "--description": "value",
-                        "--headers": "value",
-                        "--http-method": [
-                          "delete",
-                          "get",
-                          "head",
-                          "post",
-                          "put"
-                        ],
-                        "--max-backoff": "value",
-                        "--max-doublings": "value",
-                        "--max-retry-attempts": "value",
-                        "--max-retry-duration": "value",
-                        "--message-body": "value",
-                        "--message-body-from-file": "value",
-                        "--min-backoff": "value",
-                        "--relative-url": "value",
-                        "--schedule": "value",
-                        "--service": "value",
-                        "--time-zone": "value"
-                      }
-                    },
-                    "http": {
-                      "commands": {},
-                      "flags": {
-                        "--description": "value",
-                        "--headers": "value",
-                        "--http-method": [
-                          "delete",
-                          "get",
-                          "head",
-                          "post",
-                          "put"
-                        ],
-                        "--max-backoff": "value",
-                        "--max-doublings": "value",
-                        "--max-retry-attempts": "value",
-                        "--max-retry-duration": "value",
-                        "--message-body": "value",
-                        "--message-body-from-file": "value",
-                        "--min-backoff": "value",
-                        "--schedule": "value",
-                        "--time-zone": "value",
-                        "--uri": "value"
-                      }
-                    },
-                    "pubsub": {
-                      "commands": {},
-                      "flags": {
-                        "--attributes": "value",
-                        "--description": "value",
-                        "--max-backoff": "value",
-                        "--max-doublings": "value",
-                        "--max-retry-attempts": "value",
-                        "--max-retry-duration": "value",
-                        "--message-body": "value",
-                        "--message-body-from-file": "value",
-                        "--min-backoff": "value",
-                        "--schedule": "value",
-                        "--time-zone": "value",
-                        "--topic": "value"
-                      }
-                    }
-                  },
-                  "flags": {}
-                },
-                "delete": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "describe": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                },
-                "run": {
-                  "commands": {},
-                  "flags": {}
-                }
-              },
-              "flags": {}
-            }
-          },
-          "flags": {}
-        },
-        "search-help": {
-          "commands": {},
-          "flags": {
-            "--filter": "value",
-            "--limit": "value",
-            "--page-size": "value",
-            "--sort-by": "value"
-          }
-        },
-        "serverless": {
+        "run": {
           "commands": {
             "configurations": {
               "commands": {
@@ -11017,6 +10936,118 @@ STATIC_COMPLETION_CLI_TREE = {
             }
           },
           "flags": {}
+        },
+        "scheduler": {
+          "commands": {
+            "jobs": {
+              "commands": {
+                "create": {
+                  "commands": {
+                    "app-engine": {
+                      "commands": {},
+                      "flags": {
+                        "--description": "value",
+                        "--headers": "value",
+                        "--http-method": [
+                          "delete",
+                          "get",
+                          "head",
+                          "post",
+                          "put"
+                        ],
+                        "--max-backoff": "value",
+                        "--max-doublings": "value",
+                        "--max-retry-attempts": "value",
+                        "--max-retry-duration": "value",
+                        "--message-body": "value",
+                        "--message-body-from-file": "value",
+                        "--min-backoff": "value",
+                        "--relative-url": "value",
+                        "--schedule": "value",
+                        "--service": "value",
+                        "--time-zone": "value"
+                      }
+                    },
+                    "http": {
+                      "commands": {},
+                      "flags": {
+                        "--description": "value",
+                        "--headers": "value",
+                        "--http-method": [
+                          "delete",
+                          "get",
+                          "head",
+                          "post",
+                          "put"
+                        ],
+                        "--max-backoff": "value",
+                        "--max-doublings": "value",
+                        "--max-retry-attempts": "value",
+                        "--max-retry-duration": "value",
+                        "--message-body": "value",
+                        "--message-body-from-file": "value",
+                        "--min-backoff": "value",
+                        "--schedule": "value",
+                        "--time-zone": "value",
+                        "--uri": "value"
+                      }
+                    },
+                    "pubsub": {
+                      "commands": {},
+                      "flags": {
+                        "--attributes": "value",
+                        "--description": "value",
+                        "--max-backoff": "value",
+                        "--max-doublings": "value",
+                        "--max-retry-attempts": "value",
+                        "--max-retry-duration": "value",
+                        "--message-body": "value",
+                        "--message-body-from-file": "value",
+                        "--min-backoff": "value",
+                        "--schedule": "value",
+                        "--time-zone": "value",
+                        "--topic": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "run": {
+                  "commands": {},
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "search-help": {
+          "commands": {},
+          "flags": {
+            "--filter": "value",
+            "--limit": "value",
+            "--page-size": "value",
+            "--sort-by": "value"
+          }
         },
         "services": {
           "commands": {
@@ -12175,8 +12206,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--location": "value",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create-app-engine-queue": {
@@ -12238,8 +12272,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--location": "value",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "resume": {
@@ -13171,6 +13209,29 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--logs": "value",
                     "--service": "value"
                   }
+                }
+              },
+              "flags": {}
+            },
+            "migrate-config": {
+              "commands": {
+                "cron-xml-to-yaml": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "datastore-indexes-xml-to-yaml": {
+                  "commands": {},
+                  "flags": {
+                    "--generated-indexes-file": "value"
+                  }
+                },
+                "dispatch-xml-to-yaml": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "queue-xml-to-yaml": {
+                  "commands": {},
+                  "flags": {}
                 }
               },
               "flags": {}
@@ -20498,6 +20559,18 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--legacy": "bool"
               }
             },
+            "firestore": {
+              "commands": {
+                "start": {
+                  "commands": {},
+                  "flags": {
+                    "--host-port": "value",
+                    "--rules": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "pubsub": {
               "commands": {
                 "env-init": {
@@ -20577,7 +20650,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "check-iam-policy": {
@@ -20624,7 +20697,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "undelete": {
@@ -21229,7 +21302,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create": {
@@ -21317,7 +21390,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "set-iam-policy": {
@@ -24664,8 +24737,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--location": "value",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "create-app-engine-queue": {
@@ -24720,8 +24794,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--location": "value",
                     "--member": "value",
-                    "--role": "value"
+                    "--role": "dynamic"
                   }
                 },
                 "resume": {
@@ -30676,7 +30751,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "check-iam-policy": {
@@ -30723,7 +30798,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "undelete": {
@@ -31058,7 +31133,12 @@ STATIC_COMPLETION_CLI_TREE = {
     },
     "help": {
       "commands": {},
-      "flags": {}
+      "flags": {
+        "--filter": "value",
+        "--limit": "value",
+        "--page-size": "value",
+        "--sort-by": "value"
+      }
     },
     "iam": {
       "commands": {
@@ -31149,7 +31229,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "create": {
@@ -31226,7 +31306,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "set-iam-policy": {

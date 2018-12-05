@@ -56,14 +56,9 @@ class SetIamPolicy(base.Command):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
     policy = iam_util.ParsePolicyFile(args.policy_file, client.messages.Policy)
-
-    # TODO(b/78371568): Construct the GlobalSetPolicyRequest directly
-    # out of the parsed policy instead of setting 'bindings' and 'etags'.
-    # This current form is required so gcloud won't break while Compute
-    # roll outs the breaking change to SetIamPolicy (b/75971480)
     request = client.messages.ComputeImagesSetIamPolicyRequest(
         globalSetPolicyRequest=client.messages.GlobalSetPolicyRequest(
-            bindings=policy.bindings,
-            etag=policy.etag),
-        resource=image_ref.image, project=image_ref.project)
+            policy=policy),
+        resource=image_ref.image,
+        project=image_ref.project)
     return client.apitools_client.images.SetIamPolicy(request)

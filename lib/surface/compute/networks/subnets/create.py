@@ -135,6 +135,12 @@ def _AddArgs(cls, parser, include_alpha=False):
         """)
     metadata_argument.AddToParser(parser)
 
+    parser.add_argument(
+        '--enable-private-ipv6-access',
+        action='store_true',
+        default=None,
+        help=('Enable/disable private IPv6 access for the subnet.'))
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -185,6 +191,8 @@ class Create(base.CreateCommand):
       if args.metadata:
         subnetwork.metadata = messages.Subnetwork.MetadataValueValuesEnum(
             convert_to_enum(args.metadata))
+      if args.enable_private_ipv6_access is not None:
+        subnetwork.enablePrivateV6Access = args.enable_private_ipv6_access
 
     return subnetwork
 

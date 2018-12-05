@@ -52,14 +52,9 @@ class SetIamPolicy(base.Command):
     client = holder.client
     disk_ref = SetIamPolicy.disk_arg.ResolveAsResource(args, holder.resources)
     policy = iam_util.ParsePolicyFile(args.policy_file, client.messages.Policy)
-    # TODO(b/78371568): Construct the ZoneSetPolicyRequest directly
-    # out of the parsed policy instead of setting 'bindings' and 'etags'.
-    # This current form is required so gcloud won't break while Compute
-    # roll outs the breaking change to SetIamPolicy (b/75971480)
     request = client.messages.ComputeDisksSetIamPolicyRequest(
         zoneSetPolicyRequest=client.messages.ZoneSetPolicyRequest(
-            bindings=policy.bindings,
-            etag=policy.etag),
+            policy=policy),
         resource=disk_ref.disk,
         zone=disk_ref.zone,
         project=disk_ref.project)

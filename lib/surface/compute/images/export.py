@@ -155,24 +155,10 @@ class ExportAlpha(Export):
             args.destination_uri))
 
   def _ProcessNetworkArgs(self, args, variables):
-    add_network_variable = False
-    if args.subnet:
-      variables += """,export_subnet=regions/{0}/subnetworks/{1}""".format(
-          daisy_utils.GetSubnetRegion(), args.subnet.lower())
-
-      # network variable should be empty string in case subnet is specified
-      # and network is not. Otherwise, Daisy will default network to
-      # `global/networks/default` which will fail except for default networks
-      network_full_path = ''
-      add_network_variable = True
-
-    if args.network:
-      add_network_variable = True
-      network_full_path = 'global/networks/{0}'.format(args.network.lower())
-
-    if add_network_variable:
-      variables += """,export_network={0}""".format(network_full_path)
-
+    network_vars = daisy_utils.ExtractNetworkAndSubnetDaisyVariables(
+        args, daisy_utils.ImageOperation.EXPORT)
+    if network_vars:
+      variables += ',' + ','.join(network_vars)
     return variables
 
 

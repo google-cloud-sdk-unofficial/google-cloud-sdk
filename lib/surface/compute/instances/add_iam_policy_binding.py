@@ -58,14 +58,11 @@ class AddIamPolicyBinding(base.Command):
               project=instance_ref.project))])[0]
     iam_util.AddBindingToIamPolicy(client.messages.Binding, policy, args.member,
                                    args.role)
-    # TODO(b/78371568): Construct the ZoneSetPolicyRequest directly
-    # out of the parsed policy.
     return client.MakeRequests(
         [(client.apitools_client.instances, 'SetIamPolicy',
           client.messages.ComputeInstancesSetIamPolicyRequest(
               zoneSetPolicyRequest=client.messages.ZoneSetPolicyRequest(
-                  bindings=policy.bindings,
-                  etag=policy.etag),
+                  policy=policy),
               project=instance_ref.project,
               resource=instance_ref.instance,
               zone=instance_ref.zone))])[0]
