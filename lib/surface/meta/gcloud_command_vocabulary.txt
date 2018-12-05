@@ -25,7 +25,6 @@ attach-disk
 cancel
 cancel-deployment
 categories
-cleanup-indexes
 clone
 command
 config-ssh

@@ -48,9 +48,8 @@ def _Run(args,
 
   if supports_response:
     http2_health_check.response = args.response
-  if supports_port_specification:
-    health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
-        args, http2_health_check)
+  health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
+      args, http2_health_check, supports_port_specification)
 
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
     request = messages.ComputeRegionHealthChecksInsertRequest(
@@ -89,18 +88,13 @@ class Create(base.CreateCommand):
   """Create a HTTP2 health check to monitor load balanced instances."""
 
   @staticmethod
-  def Args(parser,
-           support_port_specification=False,
-           supports_use_serving_port=True,
-           regionalized=False):
+  def Args(parser, supports_use_serving_port=True, regionalized=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.HealthCheckArgument(
         'HTTP2', include_alpha=regionalized).AddArgument(
             parser, operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(
-        parser,
-        port_specification=support_port_specification,
-        use_serving_port=supports_use_serving_port)
+        parser, use_serving_port=supports_use_serving_port)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP2')
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha
@@ -120,11 +114,7 @@ class CreateAlpha(Create):
 
   @staticmethod
   def Args(parser):
-    Create.Args(
-        parser,
-        support_port_specification=True,
-        supports_use_serving_port=True,
-        regionalized=True)
+    Create.Args(parser, regionalized=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""

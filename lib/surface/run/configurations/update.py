@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 class Update(base.Command):
-  """Update Serverless environment variables and other configuration settings.
+  """Update Cloud Run environment variables and other configuration settings.
   """
 
   detailed_help = {

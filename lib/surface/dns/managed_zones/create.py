@@ -129,15 +129,22 @@ class CreateBeta(base.CreateCommand):
     flags.GetManagedZoneNetworksArg().AddToParser(parser)
     flags.GetManagedZoneVisibilityArg().AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
+    flags.GetForwardingTargetsArg().AddToParser(parser)
 
   def Run(self, args):
     # We explicitly want to allow --networks='' as a valid option and we need
     # to differentiate between that option and not passing --networks at all.
-    if args.visibility == 'public' and args.IsSpecified('networks'):
-      raise exceptions.InvalidArgumentException(
-          '--networks',
-          'If --visibility is set to public (default), setting networks is '
-          'not allowed.')
+    if args.visibility == 'public':
+      if args.IsSpecified('networks'):
+        raise exceptions.InvalidArgumentException(
+            '--networks',
+            'If --visibility is set to public (default), setting networks is '
+            'not allowed.')
+      if args.IsSpecified('forwarding_targets'):
+        raise exceptions.InvalidArgumentException(
+            '--forwarding-targets',
+            'If --visibility is set to public, setting --forwarding-targets is '
+            'not allowed.')
     if args.visibility == 'private' and args.networks is None:
       raise exceptions.RequiredArgumentException(
           '--networks', ("""\
@@ -174,15 +181,23 @@ class CreateBeta(base.CreateCommand):
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
           networks=network_configs)
 
+    if args.forwarding_targets:
+      forward_config = command_util.ParseManagedZoneForwardingConfig(
+          args.forwarding_targets, messages)
+    else:
+      forward_config = None
+
     dnssec_config = _MakeDnssecConfig(args, messages)
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
-    zone = messages.ManagedZone(name=zone_ref.managedZone,
-                                dnsName=util.AppendTrailingDot(args.dns_name),
-                                description=args.description,
-                                dnssecConfig=dnssec_config,
-                                labels=labels,
-                                visibility=visibility,
-                                privateVisibilityConfig=visibility_config)
+    zone = messages.ManagedZone(
+        name=zone_ref.managedZone,
+        dnsName=util.AppendTrailingDot(args.dns_name),
+        description=args.description,
+        dnssecConfig=dnssec_config,
+        labels=labels,
+        visibility=visibility,
+        forwardingConfig=forward_config,
+        privateVisibilityConfig=visibility_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,

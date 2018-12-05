@@ -46,8 +46,7 @@ def _ApplyEnvVarsArgsToFunction(function, args):
 
 
 def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
-         enable_connected_vpc=False, enable_env_vars=False,
-         enable_service_account=False):
+         enable_connected_vpc=False, enable_service_account=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
   labels_util.CheckNoDeploymentLabels('--remove-labels', args.remove_labels)
@@ -147,8 +146,8 @@ def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
                                    args.remove_labels, args.clear_labels):
     updated_fields.append('labels')
 
-  if enable_env_vars:
-    updated_fields.extend(_ApplyEnvVarsArgsToFunction(function, args))
+  # Apply environment variables args to function
+  updated_fields.extend(_ApplyEnvVarsArgsToFunction(function, args))
 
   if is_new_function:
     return api_util.CreateFunction(function,
@@ -185,6 +184,9 @@ class Deploy(base.Command):
 
     flags.AddRuntimeFlag(parser)
 
+    # Add args for specifying environment variables
+    env_vars_util.AddUpdateEnvVarsFlags(parser)
+
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack())
 
@@ -197,10 +199,10 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    env_vars_util.AddUpdateEnvVarsFlags(parser)
+    flags.AddServiceAccountFlag(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack(), enable_env_vars=True)
+    return _Run(args, track=self.ReleaseTrack(), enable_service_account=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -211,12 +213,10 @@ class DeployAlpha(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    env_vars_util.AddUpdateEnvVarsFlags(parser)
     flags.AddMaxInstancesFlag(parser)
     flags.AddConnectedVPCMutexGroup(parser)
     flags.AddServiceAccountFlag(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack(), enable_max_instances=True,
-                enable_connected_vpc=True, enable_env_vars=True,
-                enable_service_account=True)
+                enable_connected_vpc=True, enable_service_account=True)

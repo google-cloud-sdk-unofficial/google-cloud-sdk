@@ -424,9 +424,7 @@ class UpdateBeta(Update):
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
     flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
-    # TODO(b/118979273): unhide the flags once the beta launch of GKE resource
-    # usage export is ready.
-    flags.AddResourceUsageExportFlags(group, add_clear_flag=True, hidden=True)
+    flags.AddResourceUsageExportFlags(group, add_clear_flag=True)
     flags.AddIstioConfigFlag(parser)
 
   def ParseUpdateOptions(self, args, locations):

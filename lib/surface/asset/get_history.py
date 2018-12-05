@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2013 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,23 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""The gcloud datstore cleanup-indexes command."""
+"""Command to get history of assets."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.asset import client_util
 from googlecloudsdk.calliope import base
-from surface.datastore.indexes import cleanup
-
-_DEPRECATION_WARNING = """\
-`cleanup-indexes` is deprecated. Please use `gcloud datastore indexes cleanup` instead.
-"""
+from googlecloudsdk.command_lib.asset import flags
 
 
-# TODO(b/112529035): Clean up this command after 3 months of deprecation.
-@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CleanupIndexes(cleanup.Cleanup):
-  """Clean up Datastore indexes."""
+class GetHistory(base.Command):
+  """Get history of assets that overlaps a time window."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddOrganizationArgs(parser)
+    flags.AddAssetNamesArgs(parser)
+    flags.AddContentTypeArgs(parser, required=True)
+    flags.AddStartTimeArgs(parser)
+    flags.AddEndTimeArgs(parser)
+
+  def Run(self, args):
+    return client_util.MakeGetAssetsHistoryHttpRequests(args)

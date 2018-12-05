@@ -39,10 +39,12 @@ class Update(base.UpdateCommand):
   HEALTH_CHECK_ARG = None
 
   @classmethod
-  def Args(cls, parser):
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTP')
+  def Args(cls, parser, supports_use_serving_port=False, include_alpha=False):
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
+        'HTTP', include_alpha=include_alpha)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
+    health_checks_utils.AddHttpRelatedUpdateArgs(parser,
+                                                 supports_use_serving_port)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP')
     health_checks_utils.AddHttpRelatedResponseArg(parser)
 
@@ -63,7 +65,7 @@ class Update(base.UpdateCommand):
                 healthCheckResource=replacement,
                 project=health_check_ref.project))
 
-  def Modify(self, client, args, existing_check):
+  def Modify(self, client, args, existing_check, supports_port_specification):
     """Returns a modified HealthCheck message."""
     # We do not support using 'update http' with a health check of a
     # different protocol.
@@ -90,12 +92,10 @@ class Update(base.UpdateCommand):
     else:
       host = None
 
-    if args.port_name:
-      port_name = args.port_name
-    elif args.port_name is None:
-      port_name = existing_check.httpHealthCheck.portName
-    else:
-      port_name = None
+    port, port_name, port_specification = health_checks_utils.\
+      HandlePortRelatedFlagsForUpdate(
+          args, existing_check.httpHealthCheck,
+          supports_port_specification)
 
     proxy_header = existing_check.httpHealthCheck.proxyHeader
     if args.proxy_header is not None:
@@ -115,7 +115,7 @@ class Update(base.UpdateCommand):
         type=client.messages.HealthCheck.TypeValueValuesEnum.HTTP,
         httpHealthCheck=client.messages.HTTPHealthCheck(
             host=host,
-            port=args.port or existing_check.httpHealthCheck.port,
+            port=port,
             portName=port_name,
             requestPath=(args.request_path or
                          existing_check.httpHealthCheck.requestPath),
@@ -129,9 +129,12 @@ class Update(base.UpdateCommand):
         unhealthyThreshold=(args.unhealthy_threshold or
                             existing_check.unhealthyThreshold),
     )
+    if supports_port_specification:
+      new_health_check.httpHealthCheck.portSpecification = port_specification
+
     return new_health_check
 
-  def ValidateArgs(self, args):
+  def ValidateArgs(self, args, supports_port_specification):
     health_checks_utils.CheckProtocolAgnosticArgs(args)
 
     args_unset = not (args.port
@@ -141,22 +144,25 @@ class Update(base.UpdateCommand):
                       or args.healthy_threshold
                       or args.unhealthy_threshold
                       or args.proxy_header)
+    if supports_port_specification:
+      args_unset = args_unset and not args.use_serving_port
     if (args.description is None and args.host is None and
         args.response is None and args.port_name is None and args_unset):
       raise exceptions.ToolException('At least one property must be modified.')
 
-  def Run(self, args):
+  def Run(self, args, supports_port_specification=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    self.ValidateArgs(args)
+    self.ValidateArgs(args, supports_port_specification)
     health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
         args, holder.resources)
     get_request = self._GetGetRequest(client, health_check_ref)
 
     objects = client.MakeRequests([get_request])
 
-    new_object = self.Modify(client, args, objects[0])
+    new_object = self.Modify(client, args, objects[0],
+                             supports_port_specification)
 
     # If existing object is equal to the proposed object or if
     # Modify() returns None, then there is no work to be done, so we
@@ -180,6 +186,16 @@ class UpdateBeta(Update):
   attributes will remain unaffected.
   """
 
+  @staticmethod
+  def Args(parser, supports_use_serving_port=True, include_alpha=False):
+    Update.Args(
+        parser,
+        supports_use_serving_port=supports_use_serving_port,
+        include_alpha=include_alpha)
+
+  def Run(self, args):
+    return Update.Run(self, args, supports_port_specification=True)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
@@ -190,13 +206,9 @@ class UpdateAlpha(UpdateBeta):
   attributes will remain unaffected.
   """
 
-  @classmethod
-  def Args(cls, parser):
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTP', include_alpha=True)
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
-    health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP')
-    health_checks_utils.AddHttpRelatedResponseArg(parser)
+  @staticmethod
+  def Args(parser):
+    UpdateBeta.Args(parser, supports_use_serving_port=True, include_alpha=True)
 
   def _GetRegionalGetRequest(self, client, health_check_ref):
     """Returns a request for fetching the existing health check."""
@@ -219,7 +231,7 @@ class UpdateAlpha(UpdateBeta):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    self.ValidateArgs(args)
+    self.ValidateArgs(args, supports_port_specification=True)
     health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
         args, holder.resources)
     if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
@@ -229,7 +241,8 @@ class UpdateAlpha(UpdateBeta):
 
     objects = client.MakeRequests([get_request])
 
-    new_object = self.Modify(client, args, objects[0])
+    new_object = self.Modify(
+        client, args, objects[0], supports_port_specification=True)
 
     # If existing object is equal to the proposed object or if
     # Modify() returns None, then there is no work to be done, so we

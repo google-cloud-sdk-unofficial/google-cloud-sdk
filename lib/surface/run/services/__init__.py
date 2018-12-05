@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud serverless services group."""
+"""The gcloud run services group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,9 +22,9 @@ from googlecloudsdk.calliope import base
 
 
 class Services(base.Group):
-  """View and manage your Prime services.
+  """View and manage your Cloud Run services.
 
-  This set of commands can be used to view and manage your existing Prime
+  This set of commands can be used to view and manage your existing Cloud Run
   services.
 
   To create new deployments, use `{parent_command} deploy`.

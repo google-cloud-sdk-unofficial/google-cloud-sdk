@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Sends a command to a device.
@@ -35,6 +35,6 @@
             `--command-file` flag instead.
 
     resource:
-      help_text: The device you want to show the configuration for.
+      help_text: The device you want to send commands to.
       spec: !REF googlecloudsdk.command_lib.iot.resources:device
       is_positional: false

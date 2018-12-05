@@ -41,9 +41,8 @@ def _Run(args, holder, supports_port_specification=False, include_alpha=False):
       portName=args.port_name,
       proxyHeader=proxy_header)
 
-  if supports_port_specification:
-    health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
-        args, ssl_health_check)
+  health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
+      args, ssl_health_check, supports_port_specification)
 
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
     request = messages.ComputeRegionHealthChecksInsertRequest(
@@ -83,7 +82,6 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls,
            parser,
-           supports_port_specification=False,
            supports_use_serving_port=False,
            regionalized=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -92,7 +90,6 @@ class Create(base.CreateCommand):
             parser, operation_type='create')
     health_checks_utils.AddTcpRelatedCreationArgs(
         parser,
-        port_specification=supports_port_specification,
         use_serving_port=supports_use_serving_port)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'SSL')
 
@@ -108,12 +105,10 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser,
-           supports_port_specification=False,
            supports_use_serving_port=True,
            regionalized=False):
     Create.Args(
         parser,
-        supports_port_specification=supports_port_specification,
         supports_use_serving_port=supports_use_serving_port,
         regionalized=regionalized)
 
@@ -129,7 +124,7 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    CreateBeta.Args(parser, supports_port_specification=True, regionalized=True)
+    CreateBeta.Args(parser, regionalized=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""

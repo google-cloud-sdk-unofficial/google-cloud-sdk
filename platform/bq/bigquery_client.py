@@ -1044,7 +1044,9 @@ class BigqueryClient(object):
 
   @staticmethod
   def ValidatePrintFormat(print_format):
-    if print_format not in ['show', 'list', 'view', 'make']:
+    if print_format not in [
+        'show', 'list', 'view', 'materialized_view', 'make'
+    ]:
       raise ValueError('Unknown format: %s' % (print_format,))
 
   @staticmethod
@@ -1741,6 +1743,8 @@ class BigqueryClient(object):
           formatter.AddColumns(('kmsKeyName',))
       if print_format == 'view':
         formatter.AddColumns(('Query',))
+      if print_format == 'materialized_view':
+        formatter.AddColumns(('Query',))
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
       formatter.AddColumns(object_info.keys())
     elif reference_type == ApiClientHelper.ReservationReference:
@@ -2052,6 +2056,8 @@ class BigqueryClient(object):
       result['Type'] = result['type']
       if 'view' in result and 'query' in result['view']:
         result['Query'] = result['view']['query']
+      if 'materializedView' in result and 'query' in result['materializedView']:
+        result['Query'] = result['materializedView']['query']
       if result['type'] == 'EXTERNAL':
         if 'externalDataConfiguration' in result:
           result['Total URIs'] = len(
@@ -2778,6 +2784,7 @@ class BigqueryClient(object):
       display_name=None,
       expiration=None,
       view_query=None,
+      materialized_view_query=None,
       external_data_config=None,
       view_udf_resources=None,
       use_legacy_sql=None,
@@ -2799,6 +2806,7 @@ class BigqueryClient(object):
       expiration: optional expiration time in milliseconds since the epoch for
         tables or views.
       view_query: an optional Sql query for views.
+      materialized_view_query: an optional Standard SQL query for materialized views.
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
@@ -2839,6 +2847,9 @@ class BigqueryClient(object):
         body['view'] = view_args
         if use_legacy_sql is not None:
           view_args['useLegacySql'] = use_legacy_sql
+      if materialized_view_query is not None:
+        materialized_view_args = {'query': materialized_view_query}
+        body['materializedView'] = materialized_view_args
       if external_data_config is not None:
         body['externalDataConfiguration'] = external_data_config
       if labels is not None:
@@ -3067,6 +3078,7 @@ class BigqueryClient(object):
       display_name=None,
       expiration=None,
       view_query=None,
+      materialized_view_query=None,
       external_data_config=None,
       view_udf_resources=None,
       use_legacy_sql=None,
@@ -3087,6 +3099,7 @@ class BigqueryClient(object):
       expiration: optional expiration time in milliseconds since the epoch for
         tables or views. Specifying 0 removes expiration time.
       view_query: an optional Sql query to update a view.
+      materialized_view_query: an optional Standard SQL query for materialized views.
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
@@ -3101,7 +3114,7 @@ class BigqueryClient(object):
       range_partitioning: if set, enables range partitioning on the table and
         configures the partitioning.
       require_partition_filter: if set, partition filter is required for
-        queries over this table.
+        queires over this table.
       etag: if set, checks that etag in the existing table matches.
       encryption_configuration: Updates the encryption configuration.
 
@@ -3135,6 +3148,9 @@ class BigqueryClient(object):
       if use_legacy_sql is not None:
         view_args['useLegacySql'] = use_legacy_sql
       table['view'] = view_args
+    if materialized_view_query is not None:
+      materialized_view_args = {'query': materialized_view_query}
+      table['materializedView'] = materialized_view_args
     if external_data_config is not None:
       table['externalDataConfiguration'] = external_data_config
     if 'labels' not in table:

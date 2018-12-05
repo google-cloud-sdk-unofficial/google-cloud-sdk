@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import scp_utils
 from googlecloudsdk.command_lib.util.ssh import ip
 
@@ -123,11 +124,9 @@ class ScpGA(base.Command):
     return self._Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ScpBeta(ScpGA):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
-
-  category = 'Tools'
 
   @staticmethod
   def Args(parser):
@@ -136,7 +135,7 @@ class ScpBeta(ScpGA):
     Args:
       parser: An argparse.ArgumentParser.
     """
-    _Args(parser)
+    super(ScpBeta, ScpBeta).Args(parser)
     parser.add_argument(
         '--internal-ip',
         default=False,
@@ -165,5 +164,21 @@ class ScpBeta(ScpGA):
     return self._Run(args, ip_type)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ScpAlpha(ScpBeta):
+  """Copy files to and from Google Compute Engine virtual machines via scp."""
+
+  @staticmethod
+  def Args(parser):
+    """Set up arguments for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser.
+    """
+    super(ScpAlpha, ScpAlpha).Args(parser)
+    iap_tunnel.AddConnectionHelperArgs(parser)
+
+
+ScpAlpha.detailed_help = _DETAILED_HELP
 ScpBeta.detailed_help = _DETAILED_HELP
 ScpGA.detailed_help = _DETAILED_HELP

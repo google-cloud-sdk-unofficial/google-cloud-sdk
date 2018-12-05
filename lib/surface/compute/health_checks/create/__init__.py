@@ -22,9 +22,9 @@ from googlecloudsdk.calliope import base
 
 
 class HealthChecksCreate(base.Group):
-  """Create health checks for load balanced instances."""
+  """Create (non-legacy) health checks for load balanced instances."""
 
 
 HealthChecksCreate.detailed_help = {
-    'brief': ('Create health checks for load balanced instances')
+    'brief': ('Create (non-legacy) health checks for load balanced instances')
 }

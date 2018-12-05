@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud serverless revisions group."""
+"""The gcloud run revisions group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,9 +22,9 @@ from googlecloudsdk.calliope import base
 
 
 class Revisions(base.Group):
-  """View and manage your Serverless revisions.
+  """View and manage your Cloud Run revisions.
 
-  This set of commands can be used to view and manage your existing Serverless
+  This set of commands can be used to view and manage your existing Cloud Run
   revisions.
   """
 

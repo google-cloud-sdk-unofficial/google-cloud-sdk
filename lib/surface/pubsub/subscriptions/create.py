@@ -43,6 +43,13 @@ def _Run(args, enable_labels=False, legacy_output=False):
   if retention_duration:
     retention_duration = util.FormatDuration(retention_duration)
 
+  no_expiration = False
+  expiration_period = getattr(args, 'expiration_period', None)
+  if expiration_period:
+    if expiration_period == subscriptions.NEVER_EXPIRATION_PERIOD_VALUE:
+      no_expiration = True
+      expiration_period = None
+
   labels = None
   if enable_labels:
     labels = labels_util.ParseCreateArgs(
@@ -54,7 +61,9 @@ def _Run(args, enable_labels=False, legacy_output=False):
     try:
       result = client.Create(subscription_ref, topic_ref, args.ack_deadline,
                              push_config, retain_acked_messages,
-                             retention_duration, labels=labels)
+                             retention_duration, labels=labels,
+                             no_expiration=no_expiration,
+                             expiration_period=expiration_period)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(subscription_ref.RelativeName(),

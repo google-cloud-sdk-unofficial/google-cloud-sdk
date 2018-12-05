@@ -50,8 +50,8 @@ class UpdateAlpha(base.UpdateCommand):
         command invocation.
 
     Returns:
-      A serialized object (dict) describing the results of the operation.
-      This description fits the Resource described in the ResourceRegistry under
+      A serialized object (dict) describing the results of the operation. This
+      description fits the Resource described in the ResourceRegistry under
       'pubsub.projects.subscriptions'.
 
     Raises:
@@ -64,6 +64,14 @@ class UpdateAlpha(base.UpdateCommand):
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args, client.messages.Subscription.LabelsValue,
         orig_labels_thunk=lambda: client.Get(subscription_ref).labels)
+
+    no_expiration = False
+    expiration_period = getattr(args, 'expiration_period', None)
+    if expiration_period:
+      if expiration_period == subscriptions.NEVER_EXPIRATION_PERIOD_VALUE:
+        no_expiration = True
+        expiration_period = None
+
     try:
       result = client.Patch(
           subscription_ref,
@@ -71,7 +79,9 @@ class UpdateAlpha(base.UpdateCommand):
           push_config=util.ParsePushConfig(args.push_endpoint),
           retain_acked_messages=args.retain_acked_messages,
           labels=labels_update.GetOrNone(),
-          message_retention_duration=args.message_retention_duration)
+          message_retention_duration=args.message_retention_duration,
+          no_expiration=no_expiration,
+          expiration_period=expiration_period)
     except subscriptions.NoFieldsSpecifiedError:
       if not any(args.IsSpecified(arg) for arg in ('clear_labels',
                                                    'update_labels',

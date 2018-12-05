@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deploy an app, function or container to Serverless Engine."""
+"""Deploy an app, function or container to Cloud Run."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,11 +32,11 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 class Deploy(base.Command):
-  """Deploy an app, function or container to Serverless Engine."""
+  """Deploy an app, function or container to Cloud Run."""
 
   detailed_help = {
       'DESCRIPTION': """\
-          Deploys container images to Google Serverless Engine.
+          Deploys container images to Google Cloud Run.
           """,
       'EXAMPLES': """\
           To deploy an app to the service my-backend, navigate to the app's
@@ -61,7 +61,7 @@ class Deploy(base.Command):
           and will offer to save it as a default. To view the current default,
           run:
 
-              $ gcloud config get-value serverless/region
+              $ gcloud config get-value run/region
 
           To override the default region, you may use the --region flag:
 
@@ -89,7 +89,7 @@ class Deploy(base.Command):
         service_presentation]).AddToParser(parser)
 
   def Run(self, args):
-    """Deploy an app, function or container to Serverless Engine."""
+    """Deploy an app, function or container to Cloud Run."""
     source_ref = flags.GetSourceRef(args.source, args.image)
     config_changes = flags.GetConfigurationChanges(args)
 

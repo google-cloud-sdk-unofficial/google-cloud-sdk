@@ -32,7 +32,7 @@ from googlecloudsdk.core.util import files
 
 
 class Export(base.Command):
-  """Export your record-sets into a file.
+  r"""Export your record-sets into a file.
 
   This command exports the record-sets contained within the specified
   managed-zone into a file.
@@ -51,7 +51,8 @@ class Export(base.Command):
 
   Similarly, to import record-sets into a BIND zone formatted zone file, run:
 
-    $ {command} pathto.zonefile --zone-file-format --zone examplezonename
+    $ gcloud dns record-sets import pathto.zonefile --zone-file-format \
+      --zone examplezonename
   """
 
   @staticmethod

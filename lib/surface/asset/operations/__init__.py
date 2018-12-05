@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,31 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for cloud builds."""
+"""Command group for CloudAsset operations."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.cloudbuild import transforms
 from googlecloudsdk.calliope import base
 
-DEPRECATED_WARNING_MESSAGE = """\
-This command is deprecated and will be removed on or after 2018-10-31. Please
-use `gcloud builds` instead."""
 
-DEPRECATED_ERROR_MESSAGE = """\
-This command has been replaced with `gcloud builds`."""
-
-
-@base.Hidden
-@base.Deprecate(
-    is_removed=True,
-    warning=DEPRECATED_WARNING_MESSAGE,
-    error=DEPRECATED_ERROR_MESSAGE)
-class Builds(base.Group):
-  """Create and manage builds."""
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddTransforms(transforms.GetTransforms())
+class Operations(base.Group):
+  """Manage CloudAsset operations."""

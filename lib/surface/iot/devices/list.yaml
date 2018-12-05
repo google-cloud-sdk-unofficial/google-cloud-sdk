@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List devices.
@@ -25,6 +25,19 @@
       arg_name: device-num-ids
       help_text: |
         If given, show only devices with one of the provided numerical IDs.
+    - api_field: gatewayListOptions_gatewayType
+      arg_name: device-type
+      required: false
+      choices:
+      - arg_value: gateway
+        enum_value: GATEWAY
+      - arg_value: non-gateway
+        enum_value: NON_GATEWAY
+      help_text: |
+        If specified, show only devices of that type. If left  unspecified,
+        show devices of any type.
+
 
   output:
-    format: table(id, numId, blocked)
+    format: table(id, numId, blocked,
+                  gatewayConfig.gatewayType, gatewayConfig.gatewayAuthMethod)

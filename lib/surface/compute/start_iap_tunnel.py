@@ -28,14 +28,9 @@ from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
-import portpicker
 
 
 class ArgumentError(exceptions.Error):
-  pass
-
-
-class LocalHostPortUnavailableError(exceptions.Error):
   pass
 
 
@@ -51,7 +46,7 @@ class StartIapTunnel(base.Command):
 
   @staticmethod
   def Args(parser):
-    iap_tunnel.BaseIapTunnelHelper.Args(parser)
+    iap_tunnel.AddProxyServerHelperArgs(parser)
     flags.INSTANCE_ARG.AddArgument(parser)
     parser.add_argument(
         'instance_port',
@@ -112,12 +107,9 @@ class StartIapTunnel(base.Command):
     return interface
 
   def _GetLocalHostPort(self, args):
-    local_port = (int(args.local_host_port.port)
-                  if args.local_host_port.port else 0)
-    if not local_port:
-      local_port = portpicker.pick_unused_port()
-      log.Print('Picking local unused port [%d].' % local_port)
-    if not portpicker.is_port_free(local_port):
-      raise LocalHostPortUnavailableError('Local port [%d] is not available.' %
-                                          local_port)
+    port_arg = (int(args.local_host_port.port)
+                if args.local_host_port.port else 0)
+    local_port = iap_tunnel.DetermineLocalPort(port_arg=port_arg)
+    if not port_arg:
+      log.out.Print('Picking local unused port [%d].' % local_port)
     return args.local_host_port.host, local_port

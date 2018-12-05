@@ -28,7 +28,16 @@ from googlecloudsdk.core import resources
 
 
 class Delete(base.DeleteCommand):
-  """Delete a row in a Cloud Spanner database."""
+  # pylint:disable=line-too-long
+  """Delete a row in a Cloud Spanner database.
+
+  ## EXAMPLES
+
+  To delete a row with primary keys of SingerId=1,SingName=abc in table Singers
+  under my-database and my-instance, run:
+
+      $ {command} --table=Singers --database=my-database --instance=my-instance --keys=1,abc
+  """
 
   @staticmethod
   def Args(parser):

@@ -42,7 +42,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTP2')
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
+    health_checks_utils.AddHttpRelatedUpdateArgs(parser, use_serving_port=True)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP2')
 
@@ -107,19 +107,17 @@ class Update(base.UpdateCommand):
     else:
       host = None
 
-    if args.port_name:
-      port_name = args.port_name
-    elif args.port_name is None:
-      port_name = existing_check.http2HealthCheck.portName
-    else:
-      port_name = None
-
     if args.response:
       response = args.response
     elif args.response is None:
       response = existing_check.http2HealthCheck.response
     else:
       response = None
+
+    port, port_name, port_specification = health_checks_utils.\
+        HandlePortRelatedFlagsForUpdate(
+            args, existing_check.http2HealthCheck,
+            supports_port_specification=True)
 
     proxy_header = existing_check.http2HealthCheck.proxyHeader
     if args.proxy_header is not None:
@@ -132,8 +130,9 @@ class Update(base.UpdateCommand):
         type=client.messages.HealthCheck.TypeValueValuesEnum.HTTP2,
         http2HealthCheck=client.messages.HTTP2HealthCheck(
             host=host,
-            port=args.port or existing_check.http2HealthCheck.port,
+            port=port,
             portName=port_name,
+            portSpecification=port_specification,
             requestPath=(args.request_path or
                          existing_check.http2HealthCheck.requestPath),
             proxyHeader=proxy_header,
@@ -155,13 +154,10 @@ class Update(base.UpdateCommand):
 
     health_checks_utils.CheckProtocolAgnosticArgs(args)
 
-    args_unset = not (args.port
-                      or args.request_path
-                      or args.check_interval
-                      or args.timeout
-                      or args.healthy_threshold
-                      or args.unhealthy_threshold
-                      or args.proxy_header)
+    args_unset = not (args.port or args.request_path or args.check_interval or
+                      args.timeout or args.healthy_threshold or
+                      args.unhealthy_threshold or args.proxy_header or
+                      args.use_serving_port)
     if (args.description is None and args.host is None and
         args.response is None and args.port_name is None and args_unset):
       raise exceptions.ToolException('At least one property must be modified.')
@@ -211,6 +207,6 @@ class UpdateAlpha(Update):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
         'HTTP2', include_alpha=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
+    health_checks_utils.AddHttpRelatedUpdateArgs(parser, use_serving_port=True)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP2')

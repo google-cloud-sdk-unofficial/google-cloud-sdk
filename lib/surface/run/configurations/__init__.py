@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud serverless envvars group."""
+"""The gcloud run envvars group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class Configurations(base.Group):
-  """View and manage your Serverless configurations."""
+  """View and manage your Cloud Run configurations."""
 
   detailed_help = {
       'EXAMPLES': """\

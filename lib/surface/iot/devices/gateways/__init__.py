@@ -12,24 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Common resource attributes that can be reused."""
+
+"""The gateways command group for the Cloud IoT CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope.concepts import concepts
-from googlecloudsdk.calliope.concepts import deps
-from googlecloudsdk.core import properties
+from googlecloudsdk.calliope import base
 
 
-# TODO(b/78851830): clean up the usage and use
-# concept.DEFAULT_PROJECT_ATTRIBUTE_CONFIG instead.
-PROJECT_ATTRIBUTE_CONFIG = concepts.ResourceParameterAttributeConfig(
-    name='project',
-    help_text='The Cloud project for the {resource}.',
-    fallthroughs=[
-        # Typically argument fallthroughs should be configured at the command
-        # level, but the --project flag is currently available in every command.
-        deps.ArgFallthrough('--project'),
-        deps.PropertyFallthrough(properties.VALUES.core.project)])
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Gateways(base.Group):
+  """Manage Cloud IoT Core Gateway Associations."""

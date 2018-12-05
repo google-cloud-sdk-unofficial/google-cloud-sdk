@@ -28,7 +28,6 @@ from googlecloudsdk.core import log
 
 
 def _Run(args,
-         supports_deprecated_event_config_flags=False,
          supports_log_level=False):
   """Updates a Cloud IoT Device Registry."""
   client = registries.RegistriesClient()
@@ -39,11 +38,8 @@ def _Run(args,
   http_state = util.ParseEnableHttpConfig(args.enable_http_config,
                                           client=client)
 
-  event_pubsub_topic = None
-  if supports_deprecated_event_config_flags:
-    event_pubsub_topic = args.event_pubsub_topic
   event_notification_configs = util.ParseEventNotificationConfig(
-      args.event_notification_configs, event_pubsub_topic)
+      args.event_notification_configs)
   state_pubsub_topic_ref = util.ParsePubsubTopic(args.state_pubsub_topic)
 
   log_level = None
@@ -62,22 +58,10 @@ def _Run(args,
   return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateGA(base.UpdateCommand):
-  """Update a device registry."""
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddRegistryResourceArg(parser, 'to update')
-    flags.AddDeviceRegistrySettingsFlagsToParser(
-        parser, defaults=False, include_deprecated=False)
-
-  def Run(self, args):
-    return _Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlphaBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a device registry."""
 
   @staticmethod
@@ -90,5 +74,4 @@ class UpdateAlphaBeta(base.UpdateCommand):
   def Run(self, args):
     return _Run(
         args,
-        supports_log_level=True,
-        supports_deprecated_event_config_flags=True)
+        supports_log_level=True)

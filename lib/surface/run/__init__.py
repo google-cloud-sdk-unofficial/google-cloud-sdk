@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud serverless group."""
+"""The gcloud run group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,25 +22,25 @@ from googlecloudsdk.calliope import base
 
 
 DETAILED_HELP = {
-    'brief': 'Manage your Serverless applications.',
+    'brief': 'Manage your Cloud Run applications.',
     'DESCRIPTION': """
-        The gcloud serverless command group lets you deploy container images
-        to Google Serverless Engine.
+        The gcloud run command group lets you deploy container images
+        to Google Cloud Run.
         """,
     'EXAMPLES': """\
-        To deploy your container, use the `gcloud serverless deploy` command:
+        To deploy your container, use the `gcloud run deploy` command:
 
-          $ gcloud serverless deploy <service-name> --image <image_name>
+          $ gcloud run deploy <service-name> --image <image_name>
 
         For more information, run:
-          $ gcloud serverless deploy --help
+          $ gcloud run deploy --help
         """
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Serverless(base.Group):
-  """Manage your Serverless resources."""
+  """Manage your Cloud Run resources."""
 
   detailed_help = DETAILED_HELP
 

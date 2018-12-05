@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 class Build(base.Command):
-  """Remote build a Serverless image artifact from source code."""
+  """Remote build a Cloud Run image artifact from source code."""
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -41,5 +41,5 @@ class Build(base.Command):
     pass
 
   def Run(self, args):
-    """Remote build a Serverless image artifact from source code."""
+    """Remote build a Cloud Run image artifact from source code."""
     pass

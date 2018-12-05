@@ -28,7 +28,6 @@ _DEPRECATION_WARNING = (
     '`search-help` is deprecated. Please use `gcloud help` instead.')
 
 
-# TODO(b/112529035): Clean up this command after deprecation period.
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class HelpSearch(base.ListCommand):

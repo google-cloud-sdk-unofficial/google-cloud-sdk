@@ -36,7 +36,10 @@ def _CommonArgs(parser, messages):
   labels_util.AddUpdateLabelsFlags(parser)
 
 
-def _Update(zones_client, args, private_visibility_config=None):
+def _Update(zones_client,
+            args,
+            private_visibility_config=None,
+            forwarding_config=None):
   """Helper function to perform the update."""
   zone_ref = args.CONCEPTS.zone.Parse()
 
@@ -49,13 +52,14 @@ def _Update(zones_client, args, private_visibility_config=None):
   kwargs = {}
   if private_visibility_config:
     kwargs['private_visibility_config'] = private_visibility_config
+  if forwarding_config:
+    kwargs['forwarding_config'] = forwarding_config
   return zones_client.Patch(
       zone_ref,
       dnssec_config=dnssec_config,
       description=args.description,
       labels=labels_update.GetOrNone(),
-      **kwargs
-  )
+      **kwargs)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -101,10 +105,16 @@ class UpdateBeta(base.UpdateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
     flags.GetManagedZoneNetworksArg().AddToParser(parser)
+    flags.GetForwardingTargetsArg().AddToParser(parser)
 
   def Run(self, args):
     zones_client = managed_zones.Client.FromApiVersion('v1beta2')
     messages = zones_client.messages
+
+    forwarding_config = None
+    if args.forwarding_targets:
+      forwarding_config = command_util.ParseManagedZoneForwardingConfig(
+          args.forwarding_targets, messages)
 
     visibility_config = None
     if args.networks:
@@ -112,15 +122,20 @@ class UpdateBeta(base.UpdateCommand):
       network_urls = [
           util.GetRegistry('v1beta2').Parse(
               n,
-              params={'project': properties.VALUES.core.project.GetOrFail},
-              collection='compute.networks').SelfLink()
-          for n in networks]
+              params={
+                  'project': properties.VALUES.core.project.GetOrFail
+              },
+              collection='compute.networks').SelfLink() for n in networks
+      ]
       network_configs = [
-          messages.ManagedZonePrivateVisibilityConfigNetwork(
-              networkUrl=nurl)
-          for nurl in network_urls]
+          messages.ManagedZonePrivateVisibilityConfigNetwork(networkUrl=nurl)
+          for nurl in network_urls
+      ]
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
           networks=network_configs)
 
     return _Update(
-        zones_client, args, private_visibility_config=visibility_config)
+        zones_client,
+        args,
+        private_visibility_config=visibility_config,
+        forwarding_config=forwarding_config)

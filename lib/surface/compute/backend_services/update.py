@@ -80,6 +80,10 @@ class UpdateGA(base.UpdateCommand):
     cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
+    cls.SECURITY_POLICY_ARG = (
+        security_policy_flags.SecurityPolicyArgumentForTargetResource(
+            resource='backend service'))
+    cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
@@ -209,6 +213,7 @@ class UpdateGA(base.UpdateCommand):
         args.IsSpecified('iap'),
         args.port_name,
         args.protocol,
+        args.security_policy is not None,
         args.session_affinity is not None,
         args.IsSpecified('signed_url_cache_max_age'),
         args.timeout is not None,

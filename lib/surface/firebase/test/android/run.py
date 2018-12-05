@@ -48,7 +48,7 @@ class _BaseRun(object):
             and builds an activity map with associated screenshots and video.
           - *instrumentation*: runs automated unit or integration tests written
             using a testing framework. Firebase Test Lab for Android currently
-            supports the Espresso, Robotium and UI Automator 2.0 testing
+            supports the Espresso and UI Automator 2.0 testing
             frameworks.
           - *game-loop*: executes a special intent built into the game app (a
             "demo mode") that simulates the actions of a real player. This test

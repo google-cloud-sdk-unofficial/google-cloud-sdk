@@ -47,9 +47,8 @@ def _Run(args,
       proxyHeader=proxy_header,
       response=args.response)
 
-  if supports_port_specification:
-    health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
-        args, https_health_check)
+  health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
+      args, https_health_check, supports_port_specification)
 
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
     request = messages.ComputeRegionHealthChecksInsertRequest(
@@ -84,12 +83,11 @@ def _Run(args,
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a HTTPS health check to monitor load balanced instances."""
+  """Create HTTPS non-legacy health check to monitor load balanced instances."""
 
   @classmethod
   def Args(cls,
            parser,
-           supports_port_specification=False,
            supports_use_serving_port=False,
            regionalized=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -98,7 +96,6 @@ class Create(base.CreateCommand):
             parser, operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(
         parser,
-        port_specification=supports_port_specification,
         use_serving_port=supports_use_serving_port)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTPS')
     health_checks_utils.AddHttpRelatedResponseArg(parser)
@@ -114,16 +111,14 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create a HTTPS health check to monitor load balanced instances."""
+  """Create HTTPS non-legacy health check to monitor load balanced instances."""
 
   @staticmethod
   def Args(parser,
-           supports_port_specification=False,
            supports_use_serving_port=True,
            regionalized=False):
     Create.Args(
         parser,
-        supports_port_specification=supports_port_specification,
         supports_use_serving_port=supports_use_serving_port,
         regionalized=regionalized)
 
@@ -135,11 +130,11 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create a HTTPS health check to monitor load balanced instances."""
+  """Create HTTPS non-legacy health check to monitor load balanced instances."""
 
   @staticmethod
   def Args(parser):
-    CreateBeta.Args(parser, supports_port_specification=True, regionalized=True)
+    CreateBeta.Args(parser, regionalized=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
@@ -154,10 +149,11 @@ class CreateAlpha(CreateBeta):
 Create.detailed_help = {
     'brief': ('Create a HTTPS health check to monitor load balanced instances'),
     'DESCRIPTION': """\
-        *{command}* is used to create a HTTPS health check. HTTPS health checks
-        monitor instances in a load balancer controlled by a target pool. All
-        arguments to the command are optional except for the name of the health
-        check. Note, by default, this health check monitors TCP port 80.
+        *{command}* is used to create an HTTPS non-legacy health check. HTTPS
+        health checks monitor instances in a load balancer controlled by a
+        target pool. All arguments to the command are optional except for the
+        name of the health check. Note, by default, this health check monitors
+        TCP port 80.
         For more information on load balancing, see
         [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
         """,

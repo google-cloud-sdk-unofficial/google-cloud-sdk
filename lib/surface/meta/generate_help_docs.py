@@ -71,6 +71,13 @@ class GenerateHelpDocs(base.Command):
               'tree. If not specified then the HTML manpage site will not be '
               'generated.'))
     parser.add_argument(
+        '--linter-dir',
+        metavar='DIRECTORY',
+        help=('The directory where the generated documentation linter errors '
+              'for the help text reference document subtree will be written. '
+              'If not specified then documentation linter documents will not '
+              'be generated.'))
+    parser.add_argument(
         '--manpage-dir',
         metavar='DIRECTORY',
         help=('The directory where the generated manpage document subtree will '
@@ -139,6 +146,9 @@ class GenerateHelpDocs(base.Command):
                hidden=args.hidden)
     if args.manpage_dir:
       Generate('man page', walker_util.ManPageGenerator, args.manpage_dir,
+               hidden=args.hidden)
+    if args.linter_dir:
+      Generate('command linter', walker_util.LinterGenerator, args.linter_dir,
                hidden=args.hidden)
 
     # Test update fails with an exception if documents are out of date.

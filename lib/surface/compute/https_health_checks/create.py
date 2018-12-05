@@ -26,13 +26,16 @@ from googlecloudsdk.command_lib.compute.https_health_checks import flags
 
 
 class CreateHttpsHealthCheck(base.CreateCommand):
-  """Create an HTTPS health check to monitor load balanced instances.
+  """Create an HTTPS legacy health check to monitor load balanced instances.
 
-    *{command}* is used to create an HTTPS health check. HTTPS health checks
-  monitor instances in a load balancer controlled by a target pool. All
-  arguments to the command are optional except for the name of the health
-  check. For more information on load balancing, see
-  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+    *{command}* is used to create a legacy health check with a health check type
+    of HTTPS. HTTPS health checks monitor instances in a load balancer
+    controlled by a target pool. All arguments to the command are optional
+    except for the name of the health check. For more information on load
+    balancing, see
+    [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/).
+    Note, creating a legacy health check is recommended only for a network load
+    balancer.
   """
 
   HTTPS_HEALTH_CHECKS_ARG = None

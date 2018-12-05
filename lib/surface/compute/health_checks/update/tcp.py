@@ -27,7 +27,7 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a TCP health check.
 
@@ -39,10 +39,11 @@ class Update(base.UpdateCommand):
   HEALTH_CHECK_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, supports_use_serving_port=False):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('TCP')
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddTcpRelatedUpdateArgs(parser)
+    health_checks_utils.AddTcpRelatedUpdateArgs(parser,
+                                                supports_use_serving_port)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'TCP')
 
   def _GetGetRequest(self, client, health_check_ref):
@@ -62,7 +63,7 @@ class Update(base.UpdateCommand):
                 healthCheckResource=replacement,
                 project=health_check_ref.project))
 
-  def Modify(self, client, args, existing_check):
+  def Modify(self, client, args, existing_check, supports_port_specification):
     """Returns a modified HealthCheck message."""
     # We do not support using 'update tcp' with a health check of a
     # different protocol.
@@ -82,12 +83,10 @@ class Update(base.UpdateCommand):
     else:
       description = None
 
-    if args.port_name:
-      port_name = args.port_name
-    elif args.port_name is None:
-      port_name = existing_check.tcpHealthCheck.portName
-    else:
-      port_name = None
+    port, port_name, port_specification = health_checks_utils. \
+      HandlePortRelatedFlagsForUpdate(
+          args, existing_check.tcpHealthCheck,
+          supports_port_specification)
 
     if args.request:
       request = args.request
@@ -114,7 +113,7 @@ class Update(base.UpdateCommand):
         tcpHealthCheck=client.messages.TCPHealthCheck(
             request=request,
             response=response,
-            port=args.port or existing_check.tcpHealthCheck.port,
+            port=port,
             portName=port_name,
             proxyHeader=proxy_header),
         checkIntervalSec=(args.check_interval or
@@ -125,9 +124,12 @@ class Update(base.UpdateCommand):
         unhealthyThreshold=(args.unhealthy_threshold or
                             existing_check.unhealthyThreshold),
     )
+    if supports_port_specification:
+      new_health_check.tcpHealthCheck.portSpecification = port_specification
+
     return new_health_check
 
-  def Run(self, args):
+  def Run(self, args, supports_port_specification=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -139,6 +141,8 @@ class Update(base.UpdateCommand):
                       or args.healthy_threshold
                       or args.unhealthy_threshold
                       or args.proxy_header)
+    if supports_port_specification:
+      args_unset = args_unset and not args.use_serving_port
     if (args.description is None and args.request is None and
         args.response is None and args.port_name is None and args_unset):
       raise exceptions.ToolException('At least one property must be modified.')
@@ -149,7 +153,8 @@ class Update(base.UpdateCommand):
 
     objects = client.MakeRequests([get_request])
 
-    new_object = self.Modify(client, args, objects[0])
+    new_object = self.Modify(client, args, objects[0],
+                             supports_port_specification)
 
     # If existing object is equal to the proposed object or if
     # Modify() returns None, then there is no work to be done, so we
@@ -164,8 +169,25 @@ class Update(base.UpdateCommand):
         [self._GetSetRequest(client, health_check_ref, new_object)])
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a TCP health check.
+
+  *{command}* is used to update an existing TCP health check. Only
+  arguments passed in will be updated on the health check. Other
+  attributes will remain unaffected.
+  """
+
+  @staticmethod
+  def Args(parser, supports_use_serving_port=True):
+    Update.Args(parser, supports_use_serving_port=supports_use_serving_port)
+
+  def Run(self, args):
+    return Update.Run(self, args, supports_port_specification=True)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBeta):
   """Update a TCP health check.
 
   *{command}* is used to update an existing TCP health check. Only
@@ -179,7 +201,7 @@ class UpdateAlpha(Update):
   def Args(cls, parser):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('TCP', include_alpha=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddTcpRelatedUpdateArgs(parser)
+    health_checks_utils.AddTcpRelatedUpdateArgs(parser, use_serving_port=True)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'TCP')
 
   def _GetRegionalGetRequest(self, client, health_check_ref):
@@ -207,7 +229,7 @@ class UpdateAlpha(Update):
 
     args_unset = not (args.port or args.check_interval or args.timeout or
                       args.healthy_threshold or args.unhealthy_threshold or
-                      args.proxy_header)
+                      args.proxy_header or args.use_serving_port)
     if (args.description is None and args.request is None and
         args.response is None and args.port_name is None and args_unset):
       raise exceptions.ToolException('At least one property must be modified.')
@@ -222,7 +244,8 @@ class UpdateAlpha(Update):
 
     objects = client.MakeRequests([get_request])
 
-    new_object = self.Modify(client, args, objects[0])
+    new_object = self.Modify(
+        client, args, objects[0], supports_port_specification=True)
 
     # If existing object is equal to the proposed object or if
     # Modify() returns None, then there is no work to be done, so we

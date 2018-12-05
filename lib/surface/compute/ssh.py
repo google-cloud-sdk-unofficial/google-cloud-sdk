@@ -26,15 +26,18 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util.ssh import containers
+from googlecloudsdk.command_lib.util.ssh import ip
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
@@ -172,12 +175,27 @@ class Ssh(base.Command):
     tty = containers.GetTty(args.container, command_list)
     remote_command = containers.GetRemoteCommand(args.container, command_list)
 
-    cmd = ssh.SSHCommand(remote, identity_file=identity_file,
-                         options=options, extra_flags=extra_flags,
-                         remote_command=remote_command, tty=tty,
-                         remainder=remainder)
+    target_remote = remote
+    port = ssh_utils.DEFAULT_SSH_PORT
+    ip_type = (
+        ip.IpTypeEnum.INTERNAL if args.internal_ip else ip.IpTypeEnum.EXTERNAL)
+    tunnel_helper = None
+    interface = None
+    if hasattr(args, 'tunnel_through_iap') and args.tunnel_through_iap:
+      tunnel_helper, interface = ssh_utils.CreateIapTunnelHelper(
+          args, instance_ref, instance, ip_type)
+      tunnel_helper.StartListener()
+      target_remote = ssh.Remote('localhost', user)
+      port = tunnel_helper.GetLocalPort()
+
+    cmd = ssh.SSHCommand(
+        target_remote, port=str(port), identity_file=identity_file,
+        options=options, extra_flags=extra_flags, remote_command=remote_command,
+        tty=tty, remainder=remainder)
     if args.dry_run:
       log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
+      if tunnel_helper:
+        tunnel_helper.StopListener()
       return
 
     if args.plain or use_oslogin:
@@ -187,26 +205,53 @@ class Ssh(base.Command):
           client, remote.user, instance, project)
 
     if keys_newly_added:
-      poller = ssh.SSHPoller(
-          remote, identity_file=identity_file, options=options,
-          extra_flags=extra_flags,
-          max_wait_ms=ssh_utils.SSH_KEY_PROPAGATION_TIMEOUT_SEC)
+      poller_tunnel_helper = None
+      if tunnel_helper:
+        poller_tunnel_helper, _ = ssh_utils.CreateIapTunnelHelper(
+            args, instance_ref, instance, ip_type, interface=interface)
+        poller_tunnel_helper.StartListener(accept_multiple_connections=True)
+      poller = ssh_utils.CreateSSHPoller(
+          remote, identity_file, options, poller_tunnel_helper,
+          extra_flags=extra_flags)
+
       log.status.Print('Waiting for SSH key to propagate.')
       # TODO(b/35355795): Don't force_connect
       try:
         poller.Poll(ssh_helper.env, force_connect=True)
       except retry.WaitException:
+        if tunnel_helper:
+          tunnel_helper.StopListener()
         raise ssh_utils.NetworkError()
+      finally:
+        if poller_tunnel_helper:
+          poller_tunnel_helper.StopListener()
 
-    if args.internal_ip:
+    if args.internal_ip and not tunnel_helper:
+      # The IAP Tunnel connection uses instance name and network interface name,
+      # so do not need to additionally verify the instance.  Also, the
+      # SSHCommand used within the function does not support IAP Tunnels.
       ssh_helper.PreliminarilyVerifyInstance(instance.id, remote, identity_file,
                                              options)
 
-    return_code = cmd.Run(ssh_helper.env, force_connect=True)
+    try:
+      # Errors from SSH itself result in an ssh.CommandError being raised
+      return_code = cmd.Run(ssh_helper.env, force_connect=True)
+    finally:
+      if tunnel_helper:
+        tunnel_helper.StopListener()
     if return_code:
-      # Can't raise an exception because we don't want any "ERROR" message
-      # printed; the output from `ssh` will be enough.
+      # This is the return code of the remote command.  Problems with SSH itself
+      # will result in ssh.CommandError being raised above.
       sys.exit(return_code)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SshAlpha(Ssh):
+
+  @staticmethod
+  def Args(parser):
+    super(SshAlpha, SshAlpha).Args(parser)
+    iap_tunnel.AddConnectionHelperArgs(parser)
 
 
 def DetailedHelp():

@@ -172,7 +172,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    _Args(parser)
+    _Args(parser, container_mount_enabled=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddContainerMountDiskFlag(parser)
     instances_flags.AddLocalSsdArgsWithSize(parser)

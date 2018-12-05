@@ -446,9 +446,7 @@ class CreateBeta(Create):
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
-    # TODO(b/118979273): unhide the flags once the beta launch of GKE resource
-    # usage export is ready.
-    flags.AddResourceUsageExportFlags(parser, hidden=True)
+    flags.AddResourceUsageExportFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)

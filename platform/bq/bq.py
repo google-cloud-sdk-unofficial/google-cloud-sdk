@@ -3014,6 +3014,11 @@ class _Make(BigqueryCmd):
         'evaluate immediately as a User-Defined Function resource used '
         'by the view.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'materialized_view',
+        None,
+        '[Experimental] Create materialized view with this Standard SQL query.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'use_legacy_sql',
         None,
@@ -3140,6 +3145,8 @@ class _Make(BigqueryCmd):
       bq mk -t new_dataset.newtable name:integer,value:string
       bq mk --view='select 1 as num' new_dataset.newview
          (--view_udf_resource=path/to/file.js)
+      bq mk --materialized_view='select sum(x) as sum_x from dataset.table'
+          new_dataset.newview
       bq mk -d --data_location=EU new_dataset
       bq mk --transfer_config --target_dataset=dataset --display_name=name
           -p='{"param":"value"}' --data_source=source
@@ -3153,12 +3160,15 @@ class _Make(BigqueryCmd):
 
     if self.d and self.t:
       raise app.UsageError('Cannot specify both -d and -t.')
-    if ValidateAtMostOneSelected(self.schema, self.view):
+    if ValidateAtMostOneSelected(self.schema, self.view,
+                                 self.materialized_view):
       raise app.UsageError('Cannot specify more than one of'
-                           ' --schema or --view.')
+                           ' --schema or --view or --materialized_view.')
     if self.t:
       reference = client.GetTableReference(identifier)
     elif self.view:
+      reference = client.GetTableReference(identifier)
+    elif self.materialized_view:
       reference = client.GetTableReference(identifier)
     elif self.reservation:
       object_info = None
@@ -3294,6 +3304,8 @@ class _Make(BigqueryCmd):
       object_name = 'Table'
       if self.view:
         object_name = 'View'
+      if self.materialized_view:
+        object_name = 'Materialized View'
       if client.TableExists(reference):
         message = ("%s '%s' could not be created; a table with this name "
                    'already exists.') % (
@@ -3320,6 +3332,7 @@ class _Make(BigqueryCmd):
       if self.expiration:
         expiration = int(self.expiration + time.time()) * 1000
       view_query_arg = self.view or None
+      materialized_view_query_arg = self.materialized_view or None
       external_data_config = None
       if self.external_table_definition is not None:
         external_data_config = _GetExternalDataConfig(
@@ -3342,6 +3355,7 @@ class _Make(BigqueryCmd):
           description=self.description,
           expiration=expiration,
           view_query=view_query_arg,
+          materialized_view_query=materialized_view_query_arg,
           view_udf_resources=view_udf_resources,
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
@@ -3475,6 +3489,11 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string('view', '', 'SQL query of a view.', flag_values=fv)
     flags.DEFINE_string(
+        'materialized_view',
+        None,
+        'Standard SQL query of a materialized view.',
+        flag_values=fv)
+    flags.DEFINE_string(
         'external_table_definition',
         None,
         'Specifies a table definition to use to update an external table. '
@@ -3565,13 +3584,15 @@ class _Update(BigqueryCmd):
     client = Client.Get()
     if self.d and self.t:
       raise app.UsageError('Cannot specify both -d and -t.')
-    if ValidateAtMostOneSelected(self.schema, self.view):
+    if ValidateAtMostOneSelected(self.schema, self.view,
+                                 self.materialized_view):
       raise app.UsageError('Cannot specify more than one of'
-                           ' --schema or --view.')
-
+                           ' --schema or --view or --materialized_view.')
     if self.t:
       reference = client.GetTableReference(identifier)
     elif self.view:
+      reference = client.GetTableReference(identifier)
+    elif self.materialized_view:
       reference = client.GetTableReference(identifier)
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
@@ -3605,6 +3626,8 @@ class _Update(BigqueryCmd):
         raise app.UsageError('Cannot specify schema with a dataset.')
       if self.view:
         raise app.UsageError('Cannot specify view with a dataset.')
+      if self.materialized_view:
+        raise app.UsageError('Cannot specify materialized view with a dataset.')
       if self.expiration:
         raise app.UsageError('Cannot specify an expiration for a dataset.')
       if self.external_table_definition is not None:
@@ -3633,6 +3656,8 @@ class _Update(BigqueryCmd):
       object_name = 'Table'
       if self.view:
         object_name = 'View'
+      if self.materialized_view:
+        object_name = 'Materialized View'
       if self.source:
         raise app.UsageError(
             '%s update does not support --source.' % object_name)
@@ -3659,6 +3684,7 @@ class _Update(BigqueryCmd):
           schema = external_data_config['schema']['fields']
         del external_data_config['schema']
       view_query_arg = self.view or None
+      materialized_view_query_arg = self.materialized_view or None
       view_udf_resources = None
       if self.view_udf_resource:
         view_udf_resources = _ParseUdfResources(self.view_udf_resource)
@@ -3677,6 +3703,7 @@ class _Update(BigqueryCmd):
           description=self.description,
           expiration=expiration,
           view_query=view_query_arg,
+          materialized_view_query=materialized_view_query_arg,
           view_udf_resources=view_udf_resources,
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
@@ -3824,6 +3851,12 @@ class _Show(BigqueryCmd):
         'Show view specific details instead of general table details.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'materialized_view',
+        False,
+        'Show materialized view specific details instead of general table '
+        'details.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'schema',
         False,
         'Show only the schema instead of general table details.',
@@ -3864,6 +3897,7 @@ class _Show(BigqueryCmd):
       bq show dataset
       bq show [--schema] dataset.table
       bq show [--view] dataset.view
+      bq show [--materialized_view] dataset.materialized_view
       bq show --transfer_config projects/p/locations/l/transferConfigs/c
       bq show --transfer_run projects/p/locations/l/transferConfigs/c/runs/r
       bq show --encryption_service_account
@@ -3879,6 +3913,9 @@ class _Show(BigqueryCmd):
     elif self.view:
       reference = client.GetTableReference(identifier)
       custom_format = 'view'
+    elif self.materialized_view:
+      reference = client.GetTableReference(identifier)
+      custom_format = 'materialized_view'
     elif self.schema:
       if FLAGS.format not in [None, 'prettyjson', 'json']:
         raise app.UsageError(

@@ -62,7 +62,7 @@ class Publish(base.Command):
           To publish messages in a batch to a specific Cloud Pub/Sub topic,
           run:
 
-            $ {command} mytopic "Hello World!" --attribute KEY1=VAL1,KEY2=VAL2
+            $ {command} mytopic --message "Hello World!" --attribute KEY1=VAL1,KEY2=VAL2
       """
   }
 

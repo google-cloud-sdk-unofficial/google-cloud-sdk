@@ -22,8 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
 class Datastore(base.Group):
   """Manage your Cloud Datastore indexes.
 
@@ -43,11 +41,11 @@ class Datastore(base.Group):
 
   To create new indexes from a file, run:
 
-    $ {command} create-indexes index.yaml
+    $ {command} indexes create index.yaml
 
   To clean up unused indexes from a file, run:
 
-    $ {command} cleanup-indexes index.yaml
+    $ {command} indexes cleanup index.yaml
   """
 
   category = 'Databases'

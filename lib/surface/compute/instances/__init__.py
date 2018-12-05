@@ -21,13 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.CommandSuggestion('connect-to-serial-port',
-                        'compute connect-to-serial-port')
-@base.CommandSuggestion('copy-files', 'compute copy-files')
-@base.CommandSuggestion('reset-windows-password',
-                        'compute reset-windows-password')
-@base.CommandSuggestion('scp', 'compute scp')
-@base.CommandSuggestion('ssh', 'compute ssh')
 class Instances(base.Group):
   """Read and manipulate Google Compute Engine virtual machine instances."""
 
