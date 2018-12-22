@@ -26,9 +26,10 @@ from googlecloudsdk.core.diagnostics import network_diagnostics
 from googlecloudsdk.core.diagnostics import property_diagnostics
 
 
-def _RunDiagnostics():
+def _RunDiagnostics(ignore_hidden_property_whitelist):
   network_diagnostics.NetworkDiagnostic().RunChecks()
-  property_diagnostics.PropertyDiagnostic().RunChecks()
+  property_diagnostics.PropertyDiagnostic(ignore_hidden_property_whitelist)\
+      .RunChecks()
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -41,7 +42,8 @@ class Info(base.Command):
        including the Google Cloud Platform account, project and directory paths
        for logs.
 
-     - {command} --run-diagnostics checks network connectivity.
+     - {command} --run-diagnostics checks network connectivity and hidden
+       properties.
 
      - {command} --show-log prints the contents of the most recent log file.
   """
@@ -55,10 +57,16 @@ class Info(base.Command):
         '--show-log',
         action='store_true',
         help='Print the contents of the last log file.')
-    mode.add_argument(
+    diagnostics = mode.add_group()
+    diagnostics.add_argument(
         '--run-diagnostics',
         action='store_true',
         help='Run diagnostics on your installation of the Cloud SDK.')
+    diagnostics.add_argument(
+        '--ignore-hidden-property-whitelist',
+        action='store_true',
+        hidden=True,
+        help='Ignore the hidden property whitelist.')
     parser.add_argument(
         '--anonymize',
         action='store_true',
@@ -67,7 +75,7 @@ class Info(base.Command):
 
   def Run(self, args):
     if args.run_diagnostics:
-      _RunDiagnostics()
+      _RunDiagnostics(args.ignore_hidden_property_whitelist)
       return None
     return info_holder.InfoHolder(
         anonymizer=info_holder.Anonymizer() if args.anonymize else None)

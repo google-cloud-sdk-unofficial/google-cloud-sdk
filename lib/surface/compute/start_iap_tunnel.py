@@ -38,11 +38,14 @@ class NoInterfacesError(exceptions.Error):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StartIapTunnel(base.Command):
-  """Starts a tunnel to the Cloud Identity-Aware Proxy through which another
-     process can create a connection (eg. SSH, RDP) to a Google Compute Engine
-     instance."""
+  """Starts an IAP TCP Fordwarding tunnel over WebSocket connection.
+
+  Starts a tunnel to the Cloud Identity-Aware Proxy through which another
+  process can create a connection (eg. SSH, RDP) to a Google Compute Engine
+  instance.
+  """
 
   @staticmethod
   def Args(parser):
@@ -107,8 +110,8 @@ class StartIapTunnel(base.Command):
     return interface
 
   def _GetLocalHostPort(self, args):
-    port_arg = (int(args.local_host_port.port)
-                if args.local_host_port.port else 0)
+    port_arg = (
+        int(args.local_host_port.port) if args.local_host_port.port else 0)
     local_port = iap_tunnel.DetermineLocalPort(port_arg=port_arg)
     if not port_arg:
       log.out.Print('Picking local unused port [%d].' % local_port)

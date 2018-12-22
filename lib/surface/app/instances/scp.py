@@ -111,7 +111,7 @@ class Scp(base.Command):
 
     connection_details = ssh_common.PopulatePublicKey(
         api_client, args.service, args.version, remote.host,
-        keys.GetPublicKey())
+        keys.GetPublicKey(), self.ReleaseTrack())
 
     # Update all remote references
     remote.host = connection_details.remote.host

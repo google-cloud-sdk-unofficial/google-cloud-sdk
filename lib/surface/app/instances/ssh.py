@@ -111,7 +111,8 @@ class SshGa(base.Command):
     keys.EnsureKeysExist(overwrite=False)
     connection_details = ssh_common.PopulatePublicKey(api_client, service,
                                                       version, instance,
-                                                      keys.GetPublicKey())
+                                                      keys.GetPublicKey(),
+                                                      self.ReleaseTrack())
     remote_command = containers.GetRemoteCommand(args.container, args.command)
     tty = containers.GetTty(args.container, args.command)
     cmd = ssh.SSHCommand(

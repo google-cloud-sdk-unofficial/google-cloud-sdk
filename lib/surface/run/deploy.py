@@ -39,33 +39,18 @@ class Deploy(base.Command):
           Deploys container images to Google Cloud Run.
           """,
       'EXAMPLES': """\
-          To deploy an app to the service my-backend, navigate to the app's
-          source directory, and run:
+          To deploy a container to the service `my-backend` on Cloud Run:
 
-              $ {command} my-backend
-
-          To deploy a function named my_func, defined in ./index.js:
-
-              $ {command} my_func --function
-
-          To deploy a container, run:
-
-              $ {command} my-custom-app --image gcr.io/my/image
+              $ {command} my-backend --image gcr.io/my/image
 
           You may also omit the service name. Then a prompt will be displayed
           with a suggested default value:
 
-              $ {command}
+              $ {command} --image gcr.io/my/image
 
-          The first time you deploy, gcloud will ask for a destination region,
-          and will offer to save it as a default. To view the current default,
-          run:
+          To deploy to Cloud Run on Kubernetes Engine, you need to specify a cluster:
 
-              $ gcloud config get-value run/region
-
-          To override the default region, you may use the --region flag:
-
-              $ {command} --region us-east
+              $ {command} --image gcr.io/my/image --cluster my-cluster
           """,
   }
 

@@ -6138,6 +6138,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-tpu": "bool",
                     "--enable-tpu-service-networking": "bool",
+                    "--enable-vertical-pod-autoscaling": "bool",
                     "--image-type": "value",
                     "--issue-client-certificate": "bool",
                     "--istio-config": "value",
@@ -6253,6 +6254,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
                     "--enable-pod-security-policy": "bool",
+                    "--enable-vertical-pod-autoscaling": "bool",
                     "--generate-password": "bool",
                     "--istio-config": "value",
                     "--logging-service": "value",
@@ -7345,9 +7347,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {
                 "describe": {
                   "commands": {},
-                  "flags": {
-                    "--full": "bool"
-                  }
+                  "flags": {}
                 },
                 "list": {
                   "commands": {},
@@ -7975,6 +7975,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -8015,6 +8017,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "remove-iam-policy-binding": {
                   "commands": {},
                   "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
                     "--member": "value",
                     "--role": "dynamic"
                   }
@@ -10184,7 +10189,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--condition": "value",
                 "--condition-from-file": "value",
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "set-iam-policy": {
@@ -15310,6 +15315,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-project": "value",
                     "--log-location": "value",
                     "--network": "value",
+                    "--subnet": "value",
                     "--timeout": "value",
                     "--zone": "dynamic"
                   }
@@ -15329,6 +15335,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--data-disk": "bool",
                     "--log-location": "value",
+                    "--network": "value",
+                    "--no-guest-environment": "bool",
                     "--os": [
                       "centos-6",
                       "centos-7",
@@ -15346,6 +15354,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--source-file": "value",
                     "--source-image": "dynamic",
+                    "--subnet": "value",
                     "--timeout": "value",
                     "--zone": "dynamic"
                   }
@@ -17801,6 +17810,14 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "start-iap-tunnel": {
+              "commands": {},
+              "flags": {
+                "--local-host-port": "value",
+                "--network-interface": "value",
+                "--zone": "dynamic"
+              }
+            },
             "target-http-proxies": {
               "commands": {
                 "create": {
@@ -18733,6 +18750,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-private-nodes": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-tpu": "bool",
+                    "--enable-vertical-pod-autoscaling": "bool",
                     "--image-type": "value",
                     "--issue-client-certificate": "bool",
                     "--istio-config": "value",
@@ -18844,6 +18862,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
                     "--enable-pod-security-policy": "bool",
+                    "--enable-vertical-pod-autoscaling": "bool",
                     "--generate-password": "bool",
                     "--istio-config": "value",
                     "--logging-service": "value",
@@ -20517,6 +20536,47 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "policies": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--alternative-name-servers": "value",
+                    "--description": "value",
+                    "--enable-inbound-forwarding": "bool",
+                    "--networks": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--alternative-name-servers": "value",
+                    "--description": "value",
+                    "--enable-inbound-forwarding": "bool",
+                    "--networks": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "project-info": {
               "commands": {
                 "describe": {
@@ -20774,9 +20834,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {
                 "describe": {
                   "commands": {},
-                  "flags": {
-                    "--full": "bool"
-                  }
+                  "flags": {}
                 },
                 "list": {
                   "commands": {},
@@ -23064,7 +23122,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--member": "value",
-                "--role": "value"
+                "--role": "dynamic"
               }
             },
             "set-iam-policy": {
@@ -25285,6 +25343,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--network": "value",
                 "--node-count": "value",
                 "--oauth-scopes": "value",
+                "--python-version": [
+                  "2",
+                  "3"
+                ],
                 "--service-account": "value",
                 "--subnetwork": "value",
                 "--tags": "value",
@@ -25533,7 +25595,13 @@ STATIC_COMPLETION_CLI_TREE = {
                   "IPV4",
                   "IPV6"
                 ],
+                "--network": "value",
                 "--network-tier": "value",
+                "--prefix-length": "value",
+                "--purpose": [
+                  "GCE_ENDPOINT",
+                  "VPC_PEERING"
+                ],
                 "--region": "dynamic",
                 "--subnet": "value"
               }
@@ -31031,9 +31099,7 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {
             "describe": {
               "commands": {},
-              "flags": {
-                "--full": "bool"
-              }
+              "flags": {}
             },
             "list": {
               "commands": {},
@@ -33047,7 +33113,7 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {},
           "flags": {
             "--member": "value",
-            "--role": "value"
+            "--role": "dynamic"
           }
         },
         "set-iam-policy": {
@@ -34341,6 +34407,10 @@ STATIC_COMPLETION_CLI_TREE = {
           "flags": {}
         },
         "startup": {
+          "commands": {},
+          "flags": {}
+        },
+        "uninstall": {
           "commands": {},
           "flags": {}
         }

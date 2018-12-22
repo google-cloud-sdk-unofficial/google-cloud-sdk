@@ -101,8 +101,13 @@ group, thereby reducing the targetSize of the group. Once instances have been
 abandoned, the currentSize of the group is automatically reduced as well to
 reflect the change.
 
-Abandoning an instance does not delete the underlying virtual machine instances,
-but just removes the instances from the instance group. If you would like the
-delete the underlying instances, use the delete-instances command instead.
+Abandoning an instance does not reboot or delete the underlying virtual machine
+instances, but just removes the instances from the instance group. If you would
+like the delete the underlying instances, use the `delete-instances` command
+instead.
+
+For a more detailed overview of how abandoning instances from a managed instance
+group works, refer to this section:
+https://cloud.google.com/compute/docs/instance-groups/creating-groups-of-managed-instances#abandoning_instances
 """,
 }

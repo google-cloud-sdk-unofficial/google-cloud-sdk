@@ -181,7 +181,7 @@ def _CreateImportStager(storage_client, args):
     return ImportFromGSFileStager(storage_client, args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
   """Import an image into Google Compute Engine."""
 
@@ -302,9 +302,9 @@ class Import(base.CreateCommand):
     pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ImportAlpha(Import):
-  """Import an image into Google Compute Engine for Alpha release only."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ImportAlphaBeta(Import):
+  """Import an image into Google Compute Engine for Alpha and Beta releases."""
 
   @staticmethod
   def Args(parser):

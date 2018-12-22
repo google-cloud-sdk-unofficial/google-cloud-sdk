@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils as compute_utils
+from googlecloudsdk.api_lib.compute import disks_util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags
@@ -43,15 +43,13 @@ class DisksRemoveResourcePolicies(base.UpdateCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    messages = client.messages
+    client = holder.client.apitools_client
+    messages = holder.client.messages
 
     disk_ref = disks_flags.MakeDiskArgZonalOrRegional(
         plural=False).ResolveAsResource(args, holder.resources)
-    if disk_ref.Collection() == 'compute.regionDisks':
-      disk_region = disk_ref.region
-    else:
-      disk_region = compute_utils.ZoneNameToRegionName(disk_ref.zone)
+    disk_info = api_util.GetDiskInfo(disk_ref, client, messages)
+    disk_region = disk_info.GetDiskRegionName()
 
     resource_policies = []
     for policy in args.resource_policies:
@@ -62,23 +60,5 @@ class DisksRemoveResourcePolicies(base.UpdateCommand):
           region=disk_region)
       resource_policies.append(resource_policy_ref.SelfLink())
 
-    if disk_ref.Collection() == 'compute.regionDisks':
-      remove_request = messages.ComputeRegionDisksRemoveResourcePoliciesRequest(
-          disk=disk_ref.Name(),
-          project=disk_ref.project,
-          region=disk_ref.region,
-          regionDisksRemoveResourcePoliciesRequest=
-          messages.RegionDisksRemoveResourcePoliciesRequest(
-              resourcePolicies=resource_policies))
-      return client.MakeRequests([(client.apitools_client.regionDisks,
-                                   'RemoveResourcePolicies', remove_request)])
-    else:
-      remove_request = messages.ComputeDisksRemoveResourcePoliciesRequest(
-          disk=disk_ref.Name(),
-          project=disk_ref.project,
-          zone=disk_ref.zone,
-          disksRemoveResourcePoliciesRequest=
-          messages.DisksRemoveResourcePoliciesRequest(
-              resourcePolicies=resource_policies))
-      return client.MakeRequests([(client.apitools_client.disks,
-                                   'RemoveResourcePolicies', remove_request)])
+    return disk_info.MakeRemoveResourcePoliciesRequest(resource_policies,
+                                                       holder.client)

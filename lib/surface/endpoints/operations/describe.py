@@ -13,19 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""service-management operations describe command."""
+"""endpoints operations describe command."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import sys
-
 from googlecloudsdk.api_lib.endpoints import services_util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.endpoints import arg_parsers
 from googlecloudsdk.command_lib.endpoints import common_flags
-from googlecloudsdk.core import log
 
 
 MAX_RESPONSE_BYTES = 1000
@@ -38,10 +36,6 @@ class Describe(base.DescribeCommand):
      This command will return information about an operation given the name
      of that operation.
 
-     The amount of information inside an operation can be very large, so by
-     default, only a summary is returned. If you want the entire operation
-     resource, you can include the `--full` flag.
-
      Note that the `operations/` prefix of the operation name is optional
      and may be omitted.
 
@@ -50,10 +44,6 @@ class Describe(base.DescribeCommand):
      `operations/serviceConfigs.my-service.1`, run:
 
        $ {command} serviceConfigs.my-service.1
-
-     To get the full operation resource, run:
-
-       $ {command} serviceConfigs.my-service.1 --full
   """
   # pylint: enable=line-too-long
 
@@ -72,15 +62,19 @@ class Describe(base.DescribeCommand):
         ':(metadata.startTime.date(format="%Y-%m-%d %H:%M:%S %Z", tz=LOCAL)) '
         '[transforms] default')
 
+    # TODO(b/33273839): remove after this has been released for >90 days
     parser.add_argument(
         '--full',
-        action='store_true',
+        action=actions.DeprecationAction(
+            '--full',
+            warn=('The `--full` flag is deprecated and has no effect.')),
         default=False,
+        hidden=True,
         help=('Print the entire operation resource, which could be large. '
-              'By default, a summary will be printed instead.'))
+              'By default, this behavior is enabled.'))
 
   def Run(self, args):
-    """Run 'service-management operations describe'.
+    """Run 'endpoints operations describe'.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
@@ -98,12 +92,6 @@ class Describe(base.DescribeCommand):
         operationsId=operation_id,)
 
     operation = client.operations.Get(request)
-
-    if (sys.getsizeof(str(operation.response)) > MAX_RESPONSE_BYTES and
-        not args.full):
-      log.warning('Response portion of operation resource redacted. '
-                  'Use --full to see the whole Operation.\n')
-      operation.response = None
 
     # Set async to True because we don't need to wait for the operation
     # to complete to check the status of it.

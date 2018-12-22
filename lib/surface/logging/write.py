@@ -110,7 +110,7 @@ Write.detailed_help = {
 
         To create a high severity log entry, run:
 
-          $ {command} LOG_NAME "Urgent message" --severity=alert
+          $ {command} LOG_NAME "Urgent message" --severity=ALERT
 
         To create a structured log, run:
 

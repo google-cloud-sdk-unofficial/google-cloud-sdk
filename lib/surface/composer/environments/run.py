@@ -69,6 +69,22 @@ class Run(base.Command):
         help='Command line arguments to the subcommand.',
         example='{command} myenv trigger_dag -- some_dag --run_id=foo')
 
+  def BypassConfirmationPrompt(self, args):
+    """Bypasses confirmations with "yes" responses.
+
+    Prevents certain Airflow CLI subcommands from presenting a confirmation
+    prompting (which can hang the gcloud CLI). When necessary, bypass
+    confirmations with a "yes" response.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+    """
+    prompting_subcommands = ['resetdb', 'delete_dag']
+    if args.subcommand in prompting_subcommands and set(
+        args.cmd_args).isdisjoint({'-y', '--yes'}):
+      args.cmd_args.append('--yes')
+
   def Run(self, args):
     running_state = (
         api_util.GetMessagesModule(release_track=self.ReleaseTrack())
@@ -89,6 +105,7 @@ class Run(base.Command):
     with command_util.TemporaryKubeconfig(cluster_location_id, cluster_id):
       pod = command_util.GetGkePod(pod_substr=WORKER_POD_SUBSTR)
 
+      self.BypassConfirmationPrompt(args)
       kubectl_args = [
           'exec', pod, '-tic', WORKER_CONTAINER, 'airflow', args.subcommand
       ]

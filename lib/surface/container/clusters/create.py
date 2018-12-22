@@ -445,7 +445,7 @@ class CreateBeta(Create):
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser)
-    flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
+    flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddResourceUsageExportFlags(parser)
 
   def ParseCreateOptions(self, args):
@@ -515,9 +515,10 @@ class CreateAlpha(Create):
     flags.AddManagedPodIdentityFlags(parser)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
-    flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
+    flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddSecurityProfileForCreateFlags(parser)
     flags.AddInitialNodePoolNameArg(parser, hidden=False)
+    flags.AddEnablePrivateIpv6AccessFlag(parser, hidden=True)
     kms_flag_overrides = {
         'kms-key': '--database-encryption-key',
         'kms-keyring': '--database-encryption-key-keyring',
@@ -563,6 +564,7 @@ class CreateAlpha(Create):
     ops.security_profile_runtime_rules = args.security_profile_runtime_rules
     ops.node_pool_name = args.node_pool_name
     ops.enable_network_egress_metering = args.enable_network_egress_metering
+    ops.enable_private_ipv6_access = args.enable_private_ipv6_access
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

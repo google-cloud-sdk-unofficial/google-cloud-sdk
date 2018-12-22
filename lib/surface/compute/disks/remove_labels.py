@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import disks_util as api_util
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -29,8 +30,6 @@ from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
 class RemoveLabels(base.UpdateCommand):
   """remove-labels command for disks."""
 
@@ -50,24 +49,13 @@ class RemoveLabels(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
-
     disk_ref = self.DISK_ARG.ResolveAsResource(
-        args, holder.resources,
+        args,
+        holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
-
     remove_labels = labels_util.GetUpdateLabelsDictFromArgs(args)
-
-    if disk_ref.Collection() == 'compute.disks':
-      service = client.disks
-      request_type = messages.ComputeDisksGetRequest
-    elif disk_ref.Collection() == 'compute.regionDisks':
-      service = client.regionDisks
-      request_type = messages.ComputeRegionDisksGetRequest
-    else:
-      raise ValueError('Unexpected resource argument of {}'
-                       .format(disk_ref.Collection()))
-
-    disk = service.Get(request_type(**disk_ref.AsDict()))
+    disk_info = api_util.GetDiskInfo(disk_ref, client, messages)
+    disk = disk_info.GetDiskResource()
 
     if args.all:
       # removing all existing labels from the disk.
@@ -75,37 +63,19 @@ class RemoveLabels(base.UpdateCommand):
       if disk.labels:
         for label in disk.labels.additionalProperties:
           remove_labels[label.key] = label.value
-
     labels_diff = labels_util.Diff(subtractions=remove_labels)
-    if disk_ref.Collection() == 'compute.disks':
-      operation_collection = 'compute.zoneOperations'
-      labels_update = labels_diff.Apply(
-          messages.ZoneSetLabelsRequest.LabelsValue, disk.labels)
-      request = messages.ComputeDisksSetLabelsRequest(
-          project=disk_ref.project,
-          resource=disk_ref.disk,
-          zone=disk_ref.zone,
-          zoneSetLabelsRequest=messages.ZoneSetLabelsRequest(
-              labelFingerprint=disk.labelFingerprint,
-              labels=labels_update.GetOrNone()))
-    else:
-      operation_collection = 'compute.regionOperations'
-      labels_update = labels_diff.Apply(
-          messages.RegionSetLabelsRequest.LabelsValue, disk.labels)
-      request = messages.ComputeRegionDisksSetLabelsRequest(
-          project=disk_ref.project,
-          resource=disk_ref.disk,
-          region=disk_ref.region,
-          regionSetLabelsRequest=messages.RegionSetLabelsRequest(
-              labelFingerprint=disk.labelFingerprint,
-              labels=labels_update.GetOrNone()))
 
+    set_label_req = disk_info.GetSetLabelsRequestMessage()
+    labels_update = labels_diff.Apply(set_label_req.LabelsValue, disk.labels)
+    request = disk_info.GetSetDiskLabelsRequestMessage(
+        disk, labels_update.GetOrNone())
     if not labels_update.needs_update:
       return disk
 
+    service = disk_info.GetService()
     operation = service.SetLabels(request)
     operation_ref = holder.resources.Parse(
-        operation.selfLink, collection=operation_collection)
+        operation.selfLink, collection=disk_info.GetOperationCollection())
 
     operation_poller = poller.Poller(service)
     return waiter.WaitFor(

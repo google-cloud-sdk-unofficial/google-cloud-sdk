@@ -402,8 +402,8 @@ https://console.developers.google.com/apis page.
         'interact with. And run `gcloud help COMMAND` to get help on any '
         'gcloud command.')
     log.status.Print(
-        '* Run `gcloud topic -h` to learn about advanced features of the SDK '
-        'like arg files and output formatting')
+        '* Run `gcloud topic --help` to learn about advanced features of the '
+        'SDK like arg files and output formatting')
 
   def _CreateConfiguration(self):
     configuration_name = console_io.PromptResponse(

@@ -81,7 +81,7 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Export(base.CreateCommand):
   """Export a Google Compute Engine image."""
 
@@ -131,9 +131,9 @@ class Export(base.CreateCommand):
     return variables
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ExportAlpha(Export):
-  """Export a Google Compute Engine image for Alpha release track."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ExportAlphaBeta(Export):
+  """Export a Google Compute Engine image for Alpha and Beta release tracks."""
 
   @staticmethod
   def Args(parser):

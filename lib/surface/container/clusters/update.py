@@ -423,7 +423,7 @@ class UpdateBeta(Update):
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
-    flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
+    flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddResourceUsageExportFlags(group, add_clear_flag=True)
     flags.AddIstioConfigFlag(parser)
 
@@ -483,7 +483,7 @@ class UpdateAlpha(Update):
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddResourceUsageExportFlags(group, add_clear_flag=True)
-    flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
+    flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddSecurityProfileForUpdateFlag(group)
     flags.AddIstioConfigFlag(parser)
 

@@ -40,7 +40,7 @@ class GetCredentials(base.Command):
   It takes a project and a zone as parameters, passed through by set
   defaults or flags. By default, credentials are written to `HOME/.kube/config`.
   You can provide an alternate path by setting the `KUBECONFIG` environment
-  variable.
+  variable. If `KUBECONFIG` contains multiple paths, the first one is used.
 
   This command enables switching to a specific cluster, when working
   with multiple clusters. It can also be used to access a previously created

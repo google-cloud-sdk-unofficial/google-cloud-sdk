@@ -23,6 +23,7 @@
 
   request:
     collection: servicemanagement.services
+    use_relative_name: false
 
   arguments:
     resource:

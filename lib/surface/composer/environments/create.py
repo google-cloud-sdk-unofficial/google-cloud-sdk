@@ -114,6 +114,17 @@ information on how to structure KEYs and VALUEs, run
       metavar='KEY=VALUE',
       action=arg_parsers.UpdateAction)
 
+  parser.add_argument(
+      '--python-version',
+      type=str,
+      choices={
+          '2': 'Created environment will use Python 2',
+          '3': 'Created environment will use Python 3'
+      },
+      help='The Python version to be used within the created environment. '
+      'Supplied value should represent the desired major Python version. '
+      'Cannot be updated.')
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -193,6 +204,7 @@ class Create(base.Command):
         oauth_scopes=args.oauth_scopes,
         tags=args.tags,
         disk_size_gb=args.disk_size >> 30,
+        python_version=args.python_version,
         release_track=self.ReleaseTrack())
 
 
@@ -211,17 +223,6 @@ class CreateBeta(Create):
     Create.Args(parser)
 
     # Adding beta arguments
-    parser.add_argument(
-        '--python-version',
-        type=str,
-        choices={
-            '2': 'Created environment will use Python 2',
-            '3': 'Created environment will use Python 3'
-        },
-        help='The Python version to be used within the created environment. '
-        'Supplied value should represent the desired major Python version. '
-        'Cannot be updated.')
-
     mutex_group = parser.add_mutually_exclusive_group()
     airflow_version_type = arg_parsers.RegexpValidator(
         r'^(\d+\.\d+(?:\.\d+)?)', 'must be in the form X.Y[.Z].')

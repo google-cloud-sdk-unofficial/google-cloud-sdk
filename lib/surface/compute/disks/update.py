@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import disks_util as api_util
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -121,47 +122,6 @@ class UpdateAlphaBeta(base.UpdateCommand):
   """
   DISK_ARG = None
 
-  def GetLabelsReplacementRequest(
-      self, disk_ref, disk, messages, labels_diff):
-    if disk_ref.Collection() == 'compute.disks':
-      labels_update = labels_diff.Apply(
-          messages.ZoneSetLabelsRequest.LabelsValue, disk.labels)
-      if labels_update.needs_update:
-        return messages.ComputeDisksSetLabelsRequest(
-            project=disk_ref.project,
-            resource=disk_ref.disk,
-            zone=disk_ref.zone,
-            zoneSetLabelsRequest=messages.ZoneSetLabelsRequest(
-                labelFingerprint=disk.labelFingerprint,
-                labels=labels_update.labels))
-    else:
-      labels_update = labels_diff.Apply(
-          messages.RegionSetLabelsRequest.LabelsValue, disk.labels)
-      if labels_update.needs_update:
-        return messages.ComputeRegionDisksSetLabelsRequest(
-            project=disk_ref.project,
-            resource=disk_ref.disk,
-            region=disk_ref.region,
-            regionSetLabelsRequest=messages.RegionSetLabelsRequest(
-                labelFingerprint=disk.labelFingerprint,
-                labels=labels_update.labels))
-    return None
-
-  def GetOperationCollection(self, disk_ref):
-    if disk_ref.Collection() == 'compute.disks':
-      return 'compute.zoneOperations'
-    return 'compute.regionOperations'
-
-  def GetDisksService(self, disk_ref, client):
-    if disk_ref.Collection() == 'compute.disks':
-      return client.disks
-    return client.regionDisks
-
-  def GetDiskGetRequest(self, disk_ref, messages):
-    if disk_ref.Collection() == 'compute.disks':
-      return messages.ComputeDisksGetRequest(**disk_ref.AsDict())
-    return messages.ComputeRegionDisksGetRequest(**disk_ref.AsDict())
-
   @classmethod
   def Args(cls, parser):
     cls.DISK_ARG = disks_flags.MakeDiskArgZonalOrRegional(plural=False)
@@ -172,24 +132,25 @@ class UpdateAlphaBeta(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
-
     disk_ref = self.DISK_ARG.ResolveAsResource(
         args, holder.resources,
         scope_lister=flags.GetDefaultScopeLister(holder.client))
+    disk_info = api_util.GetDiskInfo(disk_ref, client, messages)
+    disk = disk_info.GetDiskResource()
+
     labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
 
-    service = self.GetDisksService(disk_ref, client)
-    disk = service.Get(self.GetDiskGetRequest(disk_ref, messages))
+    set_label_req = disk_info.GetSetLabelsRequestMessage()
+    labels_update = labels_diff.Apply(set_label_req.LabelsValue, disk.labels)
+    request = disk_info.GetSetDiskLabelsRequestMessage(
+        disk, labels_update.GetOrNone())
 
-    set_labels_request = self.GetLabelsReplacementRequest(
-        disk_ref, disk, messages, labels_diff)
-
-    if not set_labels_request:
+    if not labels_update.needs_update:
       return disk
-
-    operation = service.SetLabels(set_labels_request)
+    service = disk_info.GetService()
+    operation = service.SetLabels(request)
     operation_ref = holder.resources.Parse(
-        operation.selfLink, collection=self.GetOperationCollection(disk_ref))
+        operation.selfLink, collection=disk_info.GetOperationCollection())
 
     operation_poller = poller.Poller(service)
     return waiter.WaitFor(

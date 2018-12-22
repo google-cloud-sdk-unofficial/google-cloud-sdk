@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
@@ -30,17 +31,15 @@ class Create(base.Command):
   """Create a Google Compute Engine network peering."""
 
   @staticmethod
-  def Args(parser):
+  def ArgsCommon(parser):
 
-    parser.add_argument(
-        'name',
-        help='The name of the peering.')
+    parser.add_argument('name', help='The name of the peering.')
 
     parser.add_argument(
         '--network',
         required=True,
         help='The name of the network in the current project to be peered '
-             'with the peer network.')
+        'with the peer network.')
 
     parser.add_argument(
         '--peer-network',
@@ -51,16 +50,19 @@ class Create(base.Command):
         '--peer-project',
         required=False,
         help='The name of the project for the peer network.  If not specified, '
-             'defaults to current project.')
+        'defaults to current project.')
 
+  @staticmethod
+  def Args(parser):
+    Create.ArgsCommon(parser)
     parser.add_argument(
         '--auto-create-routes',
         action='store_true',
         default=False,
         required=False,
         help='If set, will automatically create routes for the network '
-             'peering.  Note that a backend error will be returned if this is '
-             'not set.')
+        'peering.  Note that a backend error will be returned if this is '
+        'not set.')
 
   def Run(self, args):
     """Issues the request necessary for adding the peering."""
@@ -93,9 +95,23 @@ class CreateAlpha(Create):
 
   @staticmethod
   def Args(parser):
-    super(CreateAlpha, CreateAlpha).Args(parser)
+    super(CreateAlpha, CreateAlpha).ArgsCommon(parser)
     flags.AddImportCustomRoutesFlag(parser)
     flags.AddExportCustomRoutesFlag(parser)
+
+    action = actions.DeprecationAction(
+        'auto-create-routes',
+        warn='Flag --auto-create-routes is deprecated and will '
+        'be removed in a future release.',
+        action='store_true')
+    parser.add_argument(
+        '--auto-create-routes',
+        action=action,
+        default=False,
+        required=False,
+        help='If set, will automatically create routes for the '
+        'network peering. Flag auto-create-routes is deprecated. Peer network '
+        'subnet routes are always created in a network when peered.')
 
   def Run(self, args):
     """Issues the request necessary for adding the peering."""
@@ -113,11 +129,12 @@ class CreateAlpha(Create):
     request = client.messages.ComputeNetworksAddPeeringRequest(
         network=args.network,
         networksAddPeeringRequest=client.messages.NetworksAddPeeringRequest(
-            autoCreateRoutes=args.auto_create_routes,
-            name=args.name,
-            peerNetwork=peer_network_ref.RelativeName(),
-            exportCustomRoutes=args.export_custom_routes,
-            importCustomRoutes=args.import_custom_routes),
+            networkPeering=client.messages.NetworkPeering(
+                name=args.name,
+                network=peer_network_ref.RelativeName(),
+                exportCustomRoutes=args.export_custom_routes,
+                importCustomRoutes=args.import_custom_routes,
+                exchangeSubnetRoutes=True)),
         project=properties.VALUES.core.project.GetOrFail())
 
     return client.MakeRequests([(client.apitools_client.networks, 'AddPeering',
