@@ -30,17 +30,22 @@ class Add(base.Command):
 
   This command appends a record-set addition to the transaction.
 
+  For a guide detailing how to manage records, see:
+  https://cloud.google.com/dns/records/
+
   ## EXAMPLES
 
-  To add an A record, run:
+  To add an A record with an IP address of "1.2.3.4", domain name of
+  "my.domain.", and a managed zone "MANAGED_ZONE", run:
 
-    $ {command} --zone MANAGED_ZONE --name my.domain. --ttl 1234 \
-        --type A "1.2.3.4"
+    $ {command} "1.2.3.4" --name my.domain. --ttl 1234 \
+        --type A --zone MANAGED_ZONE
 
-  To add a TXT record with multiple data values, run:
+  To add a TXT record with multiple data values while specifying time to
+  live as 14400 seconds, run:
 
-    $ {command} --zone MANAGED_ZONE --name my.domain. --ttl 2345 \
-        --type TXT "Hello world" "Bye world"
+    $ {command} "Hello world" "Bye world" --name my.domain.
+        --ttl 14400 --type TXT --zone MANAGED_ZONE
   """
 
   @staticmethod
@@ -48,16 +53,18 @@ class Add(base.Command):
     flags.GetZoneArg().AddToParser(parser)
     parser.add_argument(
         '--name', required=True,
-        help='DNS name of the record-set to add.')
+        help='DNS or domain name of the record-set to add.')
     parser.add_argument(
         '--ttl', required=True, type=int,
-        help='TTL for the record-set to add.')
+        help='TTL (time to live) for the record-set to add.')
     parser.add_argument(
         '--type', required=True,
-        help='Type of the record-set to add.')
+        help='DNS record type of the record-set to add.')
     parser.add_argument(
         'data', nargs='+',
-        help='DNS data (Address/CNAME/MX info, etc.) of the record-set to add.')
+        help='DNS data (Address/CNAME/MX info, etc.) of the record-set to add. '
+             'This is RDATA; the format of this information varies depending '
+             'on the type and class of the resource record.')
 
   def Run(self, args):
     api_version = 'v1'

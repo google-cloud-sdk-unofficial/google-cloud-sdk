@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """The command group for container policy."""
 
 from __future__ import absolute_import
@@ -25,7 +24,7 @@ from googlecloudsdk.command_lib.projects import util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Policy(base.Group):
-  """Manage Kubernetes Policies
+  """Manage Kubernetes Policies.
 
   Commands for Kubernetes Policy Management.
   """

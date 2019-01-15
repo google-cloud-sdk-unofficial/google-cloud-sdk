@@ -1,50 +1,61 @@
 - &beta_command
   release_tracks: [BETA]
   help_text:
-    brief: Add an IAM policy binding to an instance template.
+    brief: Add IAM policy binding to a Google Compute Engine instance template.
     DESCRIPTION: |
-      Add an IAM policy binding to an instance template.
+      Add an IAM policy binding to a Google Compute Engine instance template.
+
     EXAMPLES: |
-      The following command will add an IAM policy binding for the role
-      of 'roles/compute.admin' for the user 'test-user@gmail.com' on an instance
-      template with identifier 'my-template':
+      To add an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
+      with instance template 'my-template', run:
 
         $ {command} my-template --member='user:test-user@gmail.com' --role='roles/compute.admin'
 
-      For a service account `test-proj1@example.domain.com`,
-      the following command will add an IAM policy binding for the role of
-      'roles/compute.admin' to the given service account:
-
-        $ {command} test-proj1@example.domain.com --member='serviceAccount:test-proj1@example.domain.com' --role='roles/compute.admin'
-
-      The following command will add an IAM policy binding for the role of
-      'roles/compute.admin' for all authenticated users on an instance template
-      with identifier 'my-template':
-
-        $ {command} my-template --member='allAuthenticatedUsers' --role='roles/compute.admin'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details
-      of policy role and member types.
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
 
   request: &request
     collection: compute.instanceTemplates
     api_version: beta
-    use_relative_name: false
 
-  iam:
+  arguments:
+    resource:
+      help_text: The instance template for which to add IAM policy binding to.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:instance_template
+
+  iam: &iam
     set_iam_policy_request_path: globalSetPolicyRequest
     message_type_overrides:
       policy: Policy
       set_iam_policy_request: ComputeInstanceTemplatesSetIamPolicyRequest
 
-  arguments:
-    resource:
-      help_text: The instance template to which to add an IAM policy binding.
-      spec: !REF googlecloudsdk.command_lib.compute.resources:instance_template
-
-
 - <<: *beta_command
   release_tracks: [ALPHA]
+
   request:
     <<: *request
     api_version: alpha
+
+  help_text:
+    brief: Add IAM policy binding to a Google Compute Engine instance template.
+    DESCRIPTION: |
+      Add an IAM policy binding to the IAM policy of a Google Compute Engine instance template. One binding consists of a member,
+      a role, and an optional condition.
+
+    EXAMPLES: |
+      To add an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
+      with instance template 'my-template', run:
+
+        $ {command} my-template --member='user:test-user@gmail.com' --role='roles/compute.admin'
+
+      To add an IAM policy binding which expires at the end of the year 2018 for the role of
+      'roles/compute.admin' and the user 'test-user@gmail.com' with instance template 'my-template', run:
+
+        $ {command} my-template --member='user:test-user@gmail.com' --role='roles/compute.admin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  iam:
+    <<: *iam
+    enable_condition: true

@@ -31,7 +31,6 @@ class UpdateFirewall(base.UpdateCommand):
 
   with_egress_firewall = True
   with_service_account = True
-  with_logging = False
 
   FIREWALL_RULE_ARG = None
 
@@ -45,6 +44,7 @@ class UpdateFirewall(base.UpdateCommand):
         with_egress_support=cls.with_egress_firewall,
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
+    flags.AddEnableLogging(parser, default=None)
 
   def ValidateArgument(self, messages, args):
     self.new_allowed = firewalls_utils.ParseRules(
@@ -63,8 +63,7 @@ class UpdateFirewall(base.UpdateCommand):
           x is None
           for x in (args.source_service_accounts, args.target_service_accounts))
     args_unset = args_unset and args.disabled is None
-    if self.with_logging:
-      args_unset = (args_unset and args.enable_logging is None)
+    args_unset = (args_unset and args.enable_logging is None)
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
@@ -204,6 +203,11 @@ class UpdateFirewall(base.UpdateCommand):
     else:
       cleared_fields.append('targetServiceAccounts')
 
+    if args.IsSpecified('enable_logging'):
+      log_config = client.messages.FirewallLogConfig(enable=args.enable_logging)
+    else:
+      log_config = existing.logConfig
+
     new_firewall = client.messages.Firewall(
         name=existing.name,
         direction=direction,
@@ -217,7 +221,8 @@ class UpdateFirewall(base.UpdateCommand):
         destinationRanges=destination_ranges,
         targetTags=target_tags,
         sourceServiceAccounts=source_service_accounts,
-        targetServiceAccounts=target_service_accounts)
+        targetServiceAccounts=target_service_accounts,
+        logConfig=log_config)
 
     if args.disabled is not None:
       new_firewall.disabled = args.disabled
@@ -228,8 +233,6 @@ class UpdateFirewall(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaUpdateFirewall(UpdateFirewall):
   """Update a firewall rule."""
-
-  with_logging = True
 
   @classmethod
   def Args(cls, parser):
@@ -242,16 +245,6 @@ class BetaUpdateFirewall(UpdateFirewall):
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
     flags.AddEnableLogging(parser, default=None)
-
-  def Modify(self, client, args, existing, cleared_fields):
-    new_firewall = super(BetaUpdateFirewall, self).Modify(
-        client, args, existing, cleared_fields)
-
-    if args.enable_logging is None:
-      new_firewall.enableLogging = existing.enableLogging
-    else:
-      new_firewall.enableLogging = args.enable_logging
-    return new_firewall
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

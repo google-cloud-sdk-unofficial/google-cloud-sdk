@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Abort operation command."""
 
 from __future__ import absolute_import
@@ -43,7 +42,7 @@ class Cancel(base.Command):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument('operation_id', help='The operation id to cancel.')
 
@@ -75,15 +74,17 @@ class Cancel(base.Command):
     try:
       adapter.CancelOperation(op_ref)
       log.status.Print(
-          CANCEL_OPERATION_MESSAGE
-          .format(args.operation_id, args.operation_id))
+          CANCEL_OPERATION_MESSAGE.format(args.operation_id, args.operation_id))
       return adapter.GetOperation(op_ref)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
 
+
 Cancel.detailed_help = {
-    'brief': 'Cancel a running operation.',
-    'DESCRIPTION': """
+    'brief':
+        'Cancel a running operation.',
+    'DESCRIPTION':
+        """
         Cancel a running operation.
 
 Cancel is a best-effort method for aborting a running operation. Operations that

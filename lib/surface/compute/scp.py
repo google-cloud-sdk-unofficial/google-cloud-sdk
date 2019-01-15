@@ -124,7 +124,7 @@ class ScpGA(base.Command):
     return self._Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ScpBeta(ScpGA):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
@@ -136,7 +136,8 @@ class ScpBeta(ScpGA):
       parser: An argparse.ArgumentParser.
     """
     super(ScpBeta, ScpBeta).Args(parser)
-    parser.add_argument(
+    mutex_scope = parser.add_mutually_exclusive_group()
+    mutex_scope.add_argument(
         '--internal-ip',
         default=False,
         action='store_true',
@@ -154,6 +155,8 @@ class ScpBeta(ScpGA):
         [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
         """)
 
+    iap_tunnel.AddConnectionHelperArgs(parser, mutex_scope)
+
   def Run(self, args):
     """See scp_utils.BaseScpCommand.Run."""
 
@@ -164,21 +167,5 @@ class ScpBeta(ScpGA):
     return self._Run(args, ip_type)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ScpAlpha(ScpBeta):
-  """Copy files to and from Google Compute Engine virtual machines via scp."""
-
-  @staticmethod
-  def Args(parser):
-    """Set up arguments for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser.
-    """
-    super(ScpAlpha, ScpAlpha).Args(parser)
-    iap_tunnel.AddConnectionHelperArgs(parser)
-
-
-ScpAlpha.detailed_help = _DETAILED_HELP
 ScpBeta.detailed_help = _DETAILED_HELP
 ScpGA.detailed_help = _DETAILED_HELP

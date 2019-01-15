@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Describe Attestor command."""
 
 from __future__ import absolute_import
@@ -33,9 +32,7 @@ class Describe(base.DescribeCommand):
     flags.AddConcepts(
         parser,
         flags.GetAttestorPresentationSpec(
-            positional=True,
-            group_help='The attestor to describe.'
-        ),
+            positional=True, group_help='The attestor to describe.'),
     )
 
   def Run(self, args):

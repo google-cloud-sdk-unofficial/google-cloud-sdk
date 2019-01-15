@@ -38,7 +38,7 @@
 
   arguments:
     resource:
-      help_text: The Servive Account to which to add the IAM policy binding.
+      help_text: The Service Account to which to add the IAM policy binding.
       spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
 
 - <<: *ga_command

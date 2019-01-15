@@ -38,7 +38,7 @@ class Resize(base.Command):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument('name', help='The name of this cluster.')
     parser.add_argument(
@@ -55,7 +55,6 @@ class Resize(base.Command):
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
-
     """
     adapter = self.context['api_adapter']
     location_get = self.context['location_get']
@@ -70,20 +69,21 @@ class Resize(base.Command):
       # ResizeNodePool(...) below.
       cluster = adapter.GetCluster(cluster_ref)
       cluster_name = cluster.name
-    except (exceptions.HttpException,
-            apitools_exceptions.HttpForbiddenError,
+    except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
       log.warning(('Problem loading details of cluster to resize:\n\n{}\n\n'
-                   'You can still attempt to resize the cluster.\n')
-                  .format(console_attr.SafeText(error)))
+                   'You can still attempt to resize the cluster.\n').format(
+                       console_attr.SafeText(error)))
 
     if cluster is not None:
       pool_name = adapter.FindNodePool(cluster, args.node_pool).name
 
     console_io.PromptContinue(
         message=('Pool [{pool}] for [{cluster_name}] will be resized to '
-                 '{new_size}.')
-        .format(pool=pool_name, cluster_name=cluster_name, new_size=args.size),
+                 '{new_size}.').format(
+                     pool=pool_name,
+                     cluster_name=cluster_name,
+                     new_size=args.size),
         throw_if_unattended=True,
         cancel_on_no=True)
 

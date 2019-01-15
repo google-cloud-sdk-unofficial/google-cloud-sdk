@@ -30,12 +30,14 @@ class List(base.ListCommand):
   """List existing images."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           The container images list command of gcloud lists metadata about
           existing container images in a specified repository. Repositories
           must be hosted by the Google Container Registry.
       """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           List the images in a specified repository:
 
             $ {command} --repository=gcr.io/myproject
@@ -53,7 +55,7 @@ class List(base.ListCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument(
         '--repository',
@@ -84,8 +86,7 @@ class List(base.ListCommand):
       project_id = properties.VALUES.core.project.Get(required=True)
       # Handle domain-scoped projects...
       project_id = project_id.replace(':', '/', 1)
-      repository_arg = 'gcr.io/{0}'.format(
-          project_id)
+      repository_arg = 'gcr.io/{0}'.format(project_id)
       self._epilog = 'Only listing images in {0}. '.format(repository_arg)
       self._epilog += 'Use --repository to list images in other repositories.'
 
@@ -98,9 +99,10 @@ class List(base.ListCommand):
 
     http_obj = http.Http()
     with util.WrapExpectedDockerlessErrors(repository):
-      with docker_image.FromRegistry(basic_creds=util.CredentialProvider(),
-                                     name=repository,
-                                     transport=http_obj) as r:
+      with docker_image.FromRegistry(
+          basic_creds=util.CredentialProvider(),
+          name=repository,
+          transport=http_obj) as r:
         images = [{'name': _DisplayName(c)} for c in r.children()]
         return images
 

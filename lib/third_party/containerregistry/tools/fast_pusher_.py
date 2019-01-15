@@ -44,7 +44,8 @@ parser = argparse.ArgumentParser(
     description='Push images to a Docker Registry, faaaaaast.')
 
 parser.add_argument(
-    '--name', action='store', help=('The name of the docker image to push.'))
+    '--name', action='store', help='The name of the docker image to push.',
+    required=True)
 
 # The name of this flag was chosen for compatibility with docker_pusher.py
 parser.add_argument(
@@ -79,6 +80,12 @@ parser.add_argument(
 parser.add_argument(
     '--oci', action='store_true', help='Push the image with an OCI Manifest.')
 
+parser.add_argument(
+    '--client-config-dir',
+    action='store',
+    help='The path to the directory where the client configuration files are '
+    'located. Overiddes the value from DOCKER_CONFIG')
+
 _THREADS = 8
 
 
@@ -108,10 +115,6 @@ def main():
   logging_setup.DefineCommandLineArgs(parser)
   args = parser.parse_args()
   logging_setup.Init(args=args)
-
-  if not args.name:
-    logging.fatal('--name is a required arguments.')
-    sys.exit(1)
 
   # This library can support push-by-digest, but the likelihood of a user
   # correctly providing us with the digest without using this library
@@ -147,6 +150,11 @@ def main():
   if len(args.digest or []) != len(args.layer or []):
     logging.fatal('--digest and --layer must have matching lengths.')
     sys.exit(1)
+
+  # If the user provided a client config directory, instruct the keychain
+  # resolver to use it to look for the docker client config
+  if args.client_config_dir is not None:
+    docker_creds.DefaultKeychain.setCustomConfigDir(args.client_config_dir)
 
   retry_factory = retry.Factory()
   retry_factory = retry_factory.WithSourceTransportCallable(httplib2.Http)

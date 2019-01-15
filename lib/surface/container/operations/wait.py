@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Wait operations command."""
 
 from __future__ import absolute_import
@@ -35,7 +34,7 @@ class Wait(base.Command):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument('operation_id', help='The operation id to poll.')
 

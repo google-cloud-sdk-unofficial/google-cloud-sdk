@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Update Attestor public key command."""
 
 from __future__ import absolute_import
@@ -40,14 +39,16 @@ class Update(base.UpdateCommand):
                 'The attestor on which the public key should be updated.'),
         ),
     )
-    parser.add_argument('public_key_fingerprint',
-                        help='The fingerprint of the public key to update.')
-    parser.add_argument('--public-key-file',
-                        type=arg_parsers.BufferedFileInput(),
-                        help='The path to the file containing the '
-                             'new ASCII-armored PGP public key.')
-    parser.add_argument('--comment',
-                        help='The comment describing the public key.')
+    parser.add_argument(
+        'public_key_fingerprint',
+        help='The fingerprint of the public key to update.')
+    parser.add_argument(
+        '--public-key-file',
+        type=arg_parsers.BufferedFileInput(),
+        help='The path to the file containing the '
+        'new ASCII-armored PGP public key.')
+    parser.add_argument(
+        '--comment', help='The comment describing the public key.')
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())
@@ -57,5 +58,7 @@ class Update(base.UpdateCommand):
     # TODO(b/71700164): Validate the contents of the public key file.
 
     return attestors_client.UpdateKey(
-        attestor_ref, args.public_key_fingerprint,
-        key_content=args.public_key_file, comment=args.comment)
+        attestor_ref,
+        args.public_key_fingerprint,
+        key_content=args.public_key_file,
+        comment=args.comment)

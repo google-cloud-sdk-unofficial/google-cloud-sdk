@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """List usable subnets command."""
 
 from __future__ import absolute_import
@@ -68,7 +67,7 @@ class ListUsable(base.ListCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
 
     parser.add_argument(
@@ -118,9 +117,9 @@ class ListUsable(base.ListCommand):
       Some value that we want to have printed later.
     """
     adapter = self.context['api_adapter']
-    project_ref = adapter.registry.Create('container.projects',
-                                          projectsId=properties.VALUES.core
-                                          .project.GetOrFail())
+    project_ref = adapter.registry.Create(
+        'container.projects',
+        projectsId=properties.VALUES.core.project.GetOrFail())
 
     try:
       resp = adapter.ListUsableSubnets(project_ref, args.network_project,

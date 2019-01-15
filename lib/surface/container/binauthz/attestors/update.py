@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Update Attestor command."""
 
 from __future__ import absolute_import
@@ -33,13 +32,12 @@ class Update(base.UpdateCommand):
     flags.AddConcepts(
         parser,
         flags.GetAttestorPresentationSpec(
-            positional=True,
-            group_help='The attestor to update.'
-        ),
+            positional=True, group_help='The attestor to update.'),
     )
-    parser.add_argument('--description',
-                        required=False,
-                        help='The new description for the attestor')
+    parser.add_argument(
+        '--description',
+        required=False,
+        help='The new description for the attestor')
 
   def Run(self, args):
     attestor_ref = args.CONCEPTS.attestor.Parse()

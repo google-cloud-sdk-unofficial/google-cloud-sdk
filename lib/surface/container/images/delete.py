@@ -79,7 +79,7 @@ class Delete(base.DeleteCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     flags.AddTagOrDigestPositional(parser, verb='delete')
 

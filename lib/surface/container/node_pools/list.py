@@ -26,13 +26,14 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import properties
 
-
 DETAILED_HELP = {
-    'DESCRIPTION': """\
+    'DESCRIPTION':
+        """\
         *{command}* displays all node pools in the Google Kubernetes Engine
         cluster.
         """,
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
         To list all node pools in the cluster "sample-cluster" in table form,
         run:
 
@@ -50,7 +51,7 @@ class List(base.ListCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     flags.AddNodePoolClusterFlag(parser, 'The name of the cluster.')
     parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)

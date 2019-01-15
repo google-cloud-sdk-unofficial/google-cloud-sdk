@@ -24,32 +24,32 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   r"""Update Google Compute Engine managed instance groups.
 
-  *{command}* allows to update StatefulPolicy for a managed instance group.
+  *{command}* allows you to specify or modify the StatefulPolicy and
+  AutoHealingPolicy for an existing managed instance group.
+
   Stateful Policy defines what stateful resources should be preserved for the
   group. When instances in the group are removed or recreated, those stateful
-  properties are always applied to them. This command allows to change the
-  preserved resources by adding more disks or removing existing disks and to
-  turn on and off preserving instance names.
+  properties are always applied to them. This command allows you to change the
+  preserved resources by adding more disks or removing existing disks and allows
+  you to turn on and off preserving instance names.
 
-  Example:
+  When updating the AutoHealingPolicy, you may specify the health check, initial
+  delay, or both. If the field is unspecified, its value won't be modified. If
+  `--health-check` is specified, the health check will be used to monitor the
+  health of your application. Whenever the health check signal for the instance
+  becomes `UNHEALTHY`, the autohealing action (`RECREATE`) on an instance will
+  be performed.
 
-    $ {command} example-group --add-stateful-disks my-disk-1,my-disk-2 \
-    --remove-stateful-disks my-disk-0
-
-  will for each instance mark disk `my-disk-0` as not stateful and disks
-  `my-disk-1` and `my-disk-2` as stateful. That means that disks `my-disk-1`
-  and `my-disk-2` will be preserved when the instances get recreated or
-  restarted, while disk `my-disk-0` will not be preserved anymore.
-
-  When there are any disks marked as stateful, the instances automatically
-  will be assigned stateful names as well. You cannot turn off stateful names
-  without marking all disks as non-stateful.
+  If no health check is specified, the instance autohealing will be triggered by
+  the instance status only (i.e. the autohealing action (`RECREATE`) on an
+  instance will be performed if `instance.status` is not `RUNNING`).
   """
 
   @staticmethod
@@ -58,6 +58,29 @@ class Update(base.UpdateCommand):
         parser, operation_type='update')
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
+
+    autohealing_group = parser.add_mutually_exclusive_group()
+    autohealing_group.add_argument(
+        '--clear-autohealing',
+        action='store_true',
+        default=None,
+        help="""\
+        Clears all autohealing policy fields for the managed instance group.
+        """)
+    autohealing_params_group = autohealing_group.add_group()
+    auto_healing_utils.AddAutohealingArgs(autohealing_params_group)
+
+  def _GetValidatedAutohealingPolicies(self, holder, client, args,
+                                       igm_resource):
+    health_check = managed_instance_groups_utils.GetHealthCheckUri(
+        holder.resources, args)
+    auto_healing_policies = (
+        managed_instance_groups_utils.ModifyAutohealingPolicies(
+            igm_resource.autoHealingPolicies, client.messages, args,
+            health_check))
+    managed_instance_groups_utils.ValidateAutohealingPolicies(
+        auto_healing_policies)
+    return auto_healing_policies
 
   def _UpdateStatefulPolicy(self, client, device_names):
     preserved_disks = [
@@ -105,6 +128,11 @@ class Update(base.UpdateCommand):
           region=igm_ref.region)
     return client.MakeRequests([(service, 'Patch', request)])
 
+  def _StatefulArgsSet(self, args):
+    return (args.IsSpecified('stateful_names') or
+            args.IsSpecified('add_stateful_disks') or
+            args.IsSpecified('remove_stateful_disks'))
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -135,6 +163,16 @@ class Update(base.UpdateCommand):
                          client, args.GetValue('instance_redistribution_type'),
                          igm_resource.updatePolicy)
 
+    auto_healing_policies = self._GetValidatedAutohealingPolicies(
+        holder, client, args, igm_resource)
+
+    if not self._StatefulArgsSet(args):
+      igm_updated_resource = client.messages.InstanceGroupManager(
+          updatePolicy=update_policy)
+      if auto_healing_policies is not None:
+        igm_updated_resource.autoHealingPolicies = auto_healing_policies
+      return self._MakePatchRequest(client, igm_ref, igm_updated_resource)
+
     if not device_names:
       # TODO(b/70314588): Use Patch instead of manual Update.
       if args.IsSpecified(
@@ -143,10 +181,14 @@ class Update(base.UpdateCommand):
       elif igm_resource.statefulPolicy or args.GetValue('stateful_names'):
         igm_resource.statefulPolicy = self._UpdateStatefulPolicy(client, [])
       igm_resource.updatePolicy = update_policy
+      if auto_healing_policies is not None:
+        igm_resource.autoHealingPolicies = auto_healing_policies
       return self._MakeUpdateRequest(client, igm_ref, igm_resource)
 
     stateful_policy = self._UpdateStatefulPolicy(client, device_names)
     igm_updated_resource = client.messages.InstanceGroupManager(
         statefulPolicy=stateful_policy, updatePolicy=update_policy)
+    if auto_healing_policies is not None:
+      igm_updated_resource.autoHealingPolicies = auto_healing_policies
 
     return self._MakePatchRequest(client, igm_ref, igm_updated_resource)

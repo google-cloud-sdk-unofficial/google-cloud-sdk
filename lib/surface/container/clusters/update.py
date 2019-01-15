@@ -72,13 +72,14 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
   if release_track in [base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA]:
     mutex_group.add_argument(
         '--update-addons',
-        type=arg_parsers.ArgDict(spec={
-            api_adapter.INGRESS: _ParseAddonDisabled,
-            api_adapter.HPA: _ParseAddonDisabled,
-            api_adapter.DASHBOARD: _ParseAddonDisabled,
-            api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
-            api_adapter.ISTIO: _ParseAddonDisabled,
-        }),
+        type=arg_parsers.ArgDict(
+            spec={
+                api_adapter.INGRESS: _ParseAddonDisabled,
+                api_adapter.HPA: _ParseAddonDisabled,
+                api_adapter.DASHBOARD: _ParseAddonDisabled,
+                api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+                api_adapter.ISTIO: _ParseAddonDisabled,
+            }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
@@ -91,17 +92,19 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
-    istio=api_adapter.ISTIO,))
+    istio=api_adapter.ISTIO,
+    ))
 
   else:
     mutex_group.add_argument(
         '--update-addons',
-        type=arg_parsers.ArgDict(spec={
-            api_adapter.INGRESS: _ParseAddonDisabled,
-            api_adapter.HPA: _ParseAddonDisabled,
-            api_adapter.DASHBOARD: _ParseAddonDisabled,
-            api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
-        }),
+        type=arg_parsers.ArgDict(
+            spec={
+                api_adapter.INGRESS: _ParseAddonDisabled,
+                api_adapter.HPA: _ParseAddonDisabled,
+                api_adapter.DASHBOARD: _ParseAddonDisabled,
+                api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+            }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
@@ -112,7 +115,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
-    network_policy=api_adapter.NETWORK_POLICY,))
+    network_policy=api_adapter.NETWORK_POLICY,
+    ))
 
   mutex_group.add_argument(
       '--generate-password',
@@ -171,7 +175,7 @@ class Update(base.UpdateCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     _AddCommonArgs(parser)
     group = parser.add_mutually_exclusive_group(required=True)
@@ -179,8 +183,8 @@ class Update(base.UpdateCommand):
     _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.GA)
     flags.AddNodeLocationsFlag(group_locations)
     flags.AddClusterAutoscalingFlags(parser, group)
-    flags.AddMasterAuthorizedNetworksFlags(parser,
-                                           enable_group_for_update=group)
+    flags.AddMasterAuthorizedNetworksFlags(
+        parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddStartCredentialRotationFlag(group)
@@ -221,12 +225,11 @@ class Update(base.UpdateCommand):
       cluster_name = cluster.name
       cluster_node_count = cluster.currentNodeCount
       cluster_zone = cluster.zone
-    except (exceptions.HttpException,
-            apitools_exceptions.HttpForbiddenError,
+    except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
       log.warning(('Problem loading details of cluster to update:\n\n{}\n\n'
-                   'You can still attempt updates to the cluster.\n')
-                  .format(console_attr.SafeText(error)))
+                   'You can still attempt updates to the cluster.\n').format(
+                       console_attr.SafeText(error)))
 
     # locations will be None if additional-zones was specified, an empty list
     # if it was specified with no argument, or a populated list if zones were
@@ -379,8 +382,8 @@ to completion."""
 
       log.UpdatedResource(cluster_ref)
       cluster_url = util.GenerateClusterUrl(cluster_ref)
-      log.status.Print(
-          'To inspect the contents of your cluster, go to: ' + cluster_url)
+      log.status.Print('To inspect the contents of your cluster, go to: ' +
+                       cluster_url)
 
       if (args.start_ip_rotation or args.complete_ip_rotation or
           args.start_credential_rotation or args.complete_credential_rotation):
@@ -405,12 +408,12 @@ class UpdateBeta(Update):
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
     group_logging_monitoring = group.add_group()
-    flags.AddLoggingServiceFlag(group_logging_monitoring,
-                                enable_kubernetes=True)
-    flags.AddMonitoringServiceFlag(group_logging_monitoring,
-                                   enable_kubernetes=True)
-    flags.AddMasterAuthorizedNetworksFlags(parser,
-                                           enable_group_for_update=group)
+    flags.AddLoggingServiceFlag(
+        group_logging_monitoring, enable_kubernetes=True)
+    flags.AddMonitoringServiceFlag(
+        group_logging_monitoring, enable_kubernetes=True)
+    flags.AddMasterAuthorizedNetworksFlags(
+        parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddStartCredentialRotationFlag(group)
@@ -464,12 +467,12 @@ class UpdateAlpha(Update):
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
     group_logging_monitoring = group.add_group()
-    flags.AddLoggingServiceFlag(group_logging_monitoring,
-                                enable_kubernetes=True)
-    flags.AddMonitoringServiceFlag(group_logging_monitoring,
-                                   enable_kubernetes=True)
-    flags.AddMasterAuthorizedNetworksFlags(parser,
-                                           enable_group_for_update=group)
+    flags.AddLoggingServiceFlag(
+        group_logging_monitoring, enable_kubernetes=True)
+    flags.AddMonitoringServiceFlag(
+        group_logging_monitoring, enable_kubernetes=True)
+    flags.AddMasterAuthorizedNetworksFlags(
+        parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddStartCredentialRotationFlag(group)

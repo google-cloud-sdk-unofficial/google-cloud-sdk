@@ -61,14 +61,17 @@ def _Args(parser):
   """Register flags for this command.
 
   Args:
-    parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
+    parser: An argparse.ArgumentParser-like object. It is mocked out in order to
+      capture some information, but behaves like an ArgumentParser.
   """
   flags.AddNodePoolNameArg(parser, 'The name of the node pool to create.')
   flags.AddNodePoolClusterFlag(parser, 'The cluster to add the node pool to.')
   # Timeout in seconds for operation
   parser.add_argument(
-      '--timeout', type=int, default=1800, hidden=True,
+      '--timeout',
+      type=int,
+      default=1800,
+      hidden=True,
       help='THIS ARGUMENT NEEDS HELP TEXT.')
   parser.add_argument(
       '--num-nodes',
@@ -86,7 +89,8 @@ def _Args(parser):
   flags.AddImageProjectFlag(parser, hidden=True)
   flags.AddImageFamilyFlag(parser, hidden=True)
   flags.AddNodeLabelsFlag(parser, for_node_pool=True)
-  flags.AddTagsFlag(parser, """\
+  flags.AddTagsFlag(
+      parser, """\
 Applies the given Compute Engine tags (comma separated) on all nodes in the new
 node-pool. Example:
 

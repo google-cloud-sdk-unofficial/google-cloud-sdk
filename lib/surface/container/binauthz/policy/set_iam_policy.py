@@ -43,8 +43,10 @@ class SetIamPolicy(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument('policy_file', help=('The JSON or YAML '
-                                             'file containing the IAM policy.'))
+    parser.add_argument(
+        'policy_file',
+        help=('The JSON or YAML '
+              'file containing the IAM policy.'))
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())

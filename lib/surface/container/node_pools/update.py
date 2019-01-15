@@ -27,12 +27,13 @@ from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
 
-
 DETAILED_HELP = {
-    'DESCRIPTION': """\
+    'DESCRIPTION':
+        """\
         *{command}* updates a node pool in a Google Kubernetes Engine cluster.
         """,
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
         To turn on node auto repair in "node-pool-1" in the cluster
         "sample-cluster", run:
 
@@ -45,8 +46,8 @@ def _Args(parser):
   """Register flags for this command.
 
   Args:
-    parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
+    parser: An argparse.ArgumentParser-like object. It is mocked out in order to
+      capture some information, but behaves like an ArgumentParser.
   """
   flags.AddNodePoolNameArg(parser, 'The name of the node pool.')
   flags.AddNodePoolClusterFlag(parser, 'The name of the cluster.')
@@ -66,8 +67,8 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    node_management_group = parser.add_argument_group('Node management',
-                                                      required=True)
+    node_management_group = parser.add_argument_group(
+        'Node management', required=True)
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
 
@@ -96,12 +97,14 @@ class Update(base.UpdateCommand):
     options = self.ParseUpdateNodePoolOptions(args)
 
     if options.enable_autorepair is not None:
-      log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
-          options.enable_autorepair, 'autorepair'))
+      log.status.Print(
+          messages.AutoUpdateUpgradeRepairMessage(options.enable_autorepair,
+                                                  'autorepair'))
 
     if options.enable_autoupgrade is not None:
-      log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
-          options.enable_autoupgrade, 'autoupgrade'))
+      log.status.Print(
+          messages.AutoUpdateUpgradeRepairMessage(options.enable_autoupgrade,
+                                                  'autoupgrade'))
     try:
       operation_ref = adapter.UpdateNodePool(pool_ref, options)
 
@@ -165,5 +168,6 @@ class UpdateAlpha(Update):
         min_nodes=args.min_nodes,
         enable_autoprovisioning=args.enable_autoprovisioning)
     return ops
+
 
 Update.detailed_help = DETAILED_HELP

@@ -21,11 +21,10 @@ tied to some of Boto's core functionality) and oauth2client.
 from __future__ import absolute_import
 from __future__ import print_function
 
-import pkgutil
 import os
+import pkgutil
 import tempfile
 import textwrap
-import sys
 
 import boto
 from boto import config
@@ -123,14 +122,6 @@ def ConfigureNoOpAuthIfNeeded():
       from gslib import no_op_auth_plugin  # pylint: disable=unused-variable
 
 
-def GetBotoConfigFileList():
-  """Returns list of boto config files that exist."""
-  config_paths = BotoConfigLocations
-  if 'AWS_CREDENTIAL_FILE' in os.environ:
-    config_paths.append(os.environ['AWS_CREDENTIAL_FILE'])
-  return [cfg_path for cfg_path in config_paths if os.path.exists(cfg_path)]
-
-
 def GetCertsFile():
   return configured_certs_file
 
@@ -142,24 +133,39 @@ def GetCleanupFiles():
 
 def GetConfigFilePaths():
   """Returns a list of the path(s) to the boto config file(s) to be loaded."""
-  config_paths = []
-  # The only case in which we load multiple boto configurations is
-  # when the BOTO_CONFIG environment variable is not set and the
-  # BOTO_PATH environment variable is set with multiple path values.
-  # Otherwise, we stop when we find the first readable config file.
-  # This predicate was taken from the boto.pyami.config module.
-  should_look_for_multiple_configs = (
-      'BOTO_CONFIG' not in os.environ and
-      'BOTO_PATH' in os.environ)
-  for path in BotoConfigLocations:
+  potential_config_paths = BotoConfigLocations
+
+  # When Boto's pyami.config.Config class is initialized, it attempts to read
+  # this file, transform it into valid Boto config syntax, and load credentials
+  # from it, but it does not add this file to BotoConfigLocations.
+  if 'AWS_CREDENTIAL_FILE' in os.environ:
+    potential_config_paths.append(os.environ['AWS_CREDENTIAL_FILE'])
+  # Provider-specific config files, like the one below, are checked for and
+  # loaded when Boto's Provider class is initialized. These aren't listed in
+  # BotoConfigLocations, but can still affect what credentials are loaded, so
+  # we display them in our config list to make auth'n debugging easier.
+  aws_cred_file = os.path.join(os.path.expanduser('~'), '.aws', 'credentials')
+  if os.path.isfile(aws_cred_file):
+    potential_config_paths.append(aws_cred_file)
+
+  # Only return credential files which we have permission to read (and thus can
+  # actually load credentials from).
+  readable_config_paths = []
+  for path in potential_config_paths:
     try:
       with open(path, 'r'):
-        config_paths.append(path)
-        if not should_look_for_multiple_configs:
-          break
+        readable_config_paths.append(path)
     except IOError:
       pass
-  return config_paths
+  return readable_config_paths
+
+
+def GetFriendlyConfigFilePaths():
+  """Like GetConfigFilePaths but returns a not-found message if paths empty."""
+  readable_config_paths = GetConfigFilePaths()
+  if len(readable_config_paths) == 0:
+    readable_config_paths.append('No config found')
+  return readable_config_paths
 
 
 def GetGsutilStateDir():
@@ -360,9 +366,6 @@ def MonkeyPatchBoto():
   import gcs_oauth2_boto_plugin
   # pylint: enable=g-import-not-at-top
 
-  # TODO(boto-2.49.0): Remove when we pull in the next version of Boto.
-  boto.s3.key.Key.should_retry = _PatchedShouldRetryMethod
-
   # TODO(https://github.com/boto/boto/issues/3831): Remove this if the GitHub
   # issue is ever addressed.
   orig_get_plugin_method = boto.plugin.get_plugin
@@ -413,61 +416,3 @@ def UsingCrcmodExtension(crcmod):
   return (boto.config.get('GSUtil', 'test_assume_fast_crcmod', None) or
           (getattr(crcmod, 'crcmod', None) and
            getattr(crcmod.crcmod, '_usingExtension', None)))
-
-
-# TODO(boto-2.49.0): Remove when we pull in the next version of Boto.
-def _PatchedShouldRetryMethod(self, response, chunked_transfer=False):
-  """Replaces boto.s3.key's should_retry() to handle KMS-encrypted objects."""
-  provider = self.bucket.connection.provider
-
-  if not chunked_transfer:
-      if response.status in [500, 503]:
-          # 500 & 503 can be plain retries.
-          return True
-
-      if response.getheader('location'):
-          # If there's a redirect, plain retry.
-          return True
-
-  if 200 <= response.status <= 299:
-      self.etag = response.getheader('etag')
-      md5 = self.md5
-      if isinstance(md5, bytes):
-          md5 = md5.decode('utf-8')
-
-      # If you use customer-provided encryption keys, the ETag value that
-      # Amazon S3 returns in the response will not be the MD5 of the
-      # object.
-      amz_server_side_encryption_customer_algorithm = response.getheader(
-          'x-amz-server-side-encryption-customer-algorithm', None)
-      # The same is applicable for KMS-encrypted objects in gs buckets.
-      goog_customer_managed_encryption = response.getheader(
-          'x-goog-encryption-kms-key-name', None)
-      if (amz_server_side_encryption_customer_algorithm is None and
-              goog_customer_managed_encryption is None):
-          if self.etag != '"%s"' % md5:
-              raise provider.storage_data_error(
-                  'ETag from S3 did not match computed MD5. '
-                  '%s vs. %s' % (self.etag, self.md5))
-
-      return True
-
-  if response.status == 400:
-      # The 400 must be trapped so the retry handler can check to
-      # see if it was a timeout.
-      # If ``RequestTimeout`` is present, we'll retry. Otherwise, bomb
-      # out.
-      body = response.read()
-      err = provider.storage_response_error(
-          response.status,
-          response.reason,
-          body
-      )
-
-      if err.error_code in ['RequestTimeout']:
-          raise boto.exception.PleaseRetryException(
-              "Saw %s, retrying" % err.error_code,
-              response=response
-          )
-
-  return False

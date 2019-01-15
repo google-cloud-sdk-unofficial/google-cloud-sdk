@@ -173,12 +173,14 @@ class _BaseDeploy(object):
     for change in changes:
       if change.advices:
         if num_changes_with_advice < NUM_ADVICE_TO_PRINT:
-          log_func(services_util.PushAdvisorConfigChangeToString(change))
+          log_func('%s\n',
+                   services_util.PushAdvisorConfigChangeToString(change))
         num_changes_with_advice += 1
 
     if num_changes_with_advice > NUM_ADVICE_TO_PRINT:
-      log_func('%s total changes with advice found, check config report file '
-               'for full list.', num_changes_with_advice)
+      log_func(
+          '%s total changes with advice found, check config report file '
+          'for full list.\n', num_changes_with_advice)
 
     return num_changes_with_advice
 
@@ -207,11 +209,14 @@ class _BaseDeploy(object):
     try:
       # Enable the produced service.
       enable_api.EnableService(project_id, service_name, is_async)
+      # The above command will print a message to the human user, but it needs a
+      # newline when the command is successful.
+      log.status.Print('\n')
     except services_exceptions.EnableServicePermissionDeniedException:
       log.warning(('Attempted to enable service [{0}] on project [{1}], but '
                    'did not have required permissions. Please ensure this '
                    'service is enabled before using your Endpoints '
-                   'service.').format(service_name, project_id))
+                   'service.\n').format(service_name, project_id))
 
   def Run(self, args):
     """Run 'endpoints services deploy'.
@@ -326,7 +331,7 @@ class _BaseDeploy(object):
     if give_proto_deprecate_warning:
       log.warning(
           'Support for uploading uncompiled .proto files is deprecated and '
-          'will soon be removed. Use compiled descriptor sets (.pb) instead.')
+          'will soon be removed. Use compiled descriptor sets (.pb) instead.\n')
 
     # Check if we need to create the service.
     was_service_created = False
@@ -399,9 +404,9 @@ class _BaseDeploy(object):
     # Print this to screen not to the log because the output is needed by the
     # human user. Only print this when not doing a validate-only run.
     if resources_were_displayed and not self.validate_only:
-      log.status.Print(
-          ('\nService Configuration [{0}] uploaded for '
-           'service [{1}]\n').format(self.service_config_id, self.service_name))
+      log.status.Print(('Service Configuration [{0}] uploaded for '
+                        'service [{1}]\n').format(self.service_config_id,
+                                                  self.service_name))
 
       management_url = GenerateManagementUrl(self.service_name)
       log.status.Print('To manage your API, go to: ' + management_url)
@@ -499,9 +504,9 @@ class DeployBetaAlpha(_BaseDeploy, base.Command):
         self.service_name, self.service_config_id, log_func)
     if num_advices > 0:
       if force:
-        log_func(FORCE_ADVICE_STRING)
+        log_func(('{0}\n').format(FORCE_ADVICE_STRING))
       else:
-        log_func(ADVICE_STRING)
+        log_func(('{0}\n').format(ADVICE_STRING))
         return True
 
     return False

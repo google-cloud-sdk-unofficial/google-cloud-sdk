@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """The command group for cloud container operations."""
 
 from __future__ import absolute_import
@@ -45,9 +44,9 @@ class Operations(base.Group):
 
     Args:
       context: {str:object}, A set of key-value pairs that can be used for
-          common initialization among commands.
+        common initialization among commands.
       args: argparse.Namespace: The same namespace given to the corresponding
-          .Run() invocation.
+        .Run() invocation.
 
     Returns:
       The refined command context.

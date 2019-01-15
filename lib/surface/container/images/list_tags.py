@@ -95,7 +95,7 @@ class ListTagsGA(base.ListCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     flags.AddImagePositional(parser, verb='list tags for')
     base.SORT_BY_FLAG.SetDefault(parser, _DEFAULT_SORT_BY)
@@ -124,9 +124,7 @@ class ListTagsGA(base.ListCommand):
           name=repository,
           transport=http_obj) as image:
         manifests = image.manifests()
-        return util.TransformManifests(
-            manifests,
-            repository)
+        return util.TransformManifests(manifests, repository)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -139,7 +137,7 @@ class ListTagsALPHAandBETA(ListTagsGA, base.ListCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     # Weird syntax, but this is how to call a static base method from the
     # derived method in Python.
@@ -200,7 +198,8 @@ class ListTagsALPHAandBETA(ListTagsGA, base.ListCommand):
               'https://%s@%s' % (args.image_name, k) for k in heapq.nlargest(
                   args.show_occurrences_from,
                   manifests,
-                  key=lambda k: manifests[k]['timeCreatedMs'])]
+                  key=lambda k: manifests[k]['timeCreatedMs'])
+          ]
         return util.TransformManifests(
             manifests,
             repository,

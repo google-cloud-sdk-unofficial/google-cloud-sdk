@@ -72,7 +72,8 @@ def _CommonArgs(parser,
                 enable_regional=False,
                 enable_kms=False,
                 enable_snapshots=False,
-                deprecate_maintenance_policy=False):
+                deprecate_maintenance_policy=False,
+                supports_display_device=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
@@ -100,6 +101,8 @@ def _CommonArgs(parser,
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
+  if supports_display_device:
+    instances_flags.AddDisplayDeviceArg(parser)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
@@ -128,6 +131,7 @@ class Create(base.CreateCommand):
   _support_nvdimm = False
   _support_public_dns = False
   _support_snapshots = False
+  _support_display_device = False
 
   @classmethod
   def Args(cls, parser):
@@ -439,6 +443,11 @@ class Create(base.CreateCommand):
       if source_machine_image:
         request.instance.sourceMachineImage = source_machine_image
 
+      if (self._support_display_device and
+          args.IsSpecified('enable_display_device')):
+        request.instance.displayDevice = compute_client.messages.DisplayDevice(
+            enableDisplay=args.enable_display_device)
+
       requests.append(
           (compute_client.apitools_client.instances, 'Insert', request))
     return requests
@@ -446,6 +455,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     instances_flags.ValidateDiskFlags(args, enable_kms=self._support_kms,
                                       enable_snapshots=self._support_snapshots)
+    instances_flags.ValidateImageFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
@@ -511,6 +521,7 @@ class CreateBeta(Create):
   _support_nvdimm = False
   _support_public_dns = False
   _support_snapshots = False
+  _support_display_device = False
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -541,6 +552,7 @@ class CreateAlpha(CreateBeta):
   _support_nvdimm = True
   _support_public_dns = True
   _support_snapshots = True
+  _support_display_device = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -560,7 +572,8 @@ class CreateAlpha(CreateBeta):
         enable_regional=True,
         enable_kms=True,
         enable_snapshots=True,
-        deprecate_maintenance_policy=True)
+        deprecate_maintenance_policy=True,
+        supports_display_device=True)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

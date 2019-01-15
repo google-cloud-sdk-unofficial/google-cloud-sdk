@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Remove Attestor public key command."""
 
 from __future__ import absolute_import
@@ -39,8 +38,9 @@ class Remove(base.Command):
                 'The attestor from which the public key should be removed.'),
         ),
     )
-    parser.add_argument('public_key_fingerprint',
-                        help='The fingerprint of the public key to remove.')
+    parser.add_argument(
+        'public_key_fingerprint',
+        help='The fingerprint of the public key to remove.')
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())

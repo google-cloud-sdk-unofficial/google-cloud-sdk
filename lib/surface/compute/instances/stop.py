@@ -32,7 +32,7 @@ from googlecloudsdk.core import log
 class Stop(base.SilentCommand):
   """Stop a virtual machine instance.
 
-  *{command}* is used stop a Google Compute Engine virtual machine.
+  *{command}* is used to stop a Google Compute Engine virtual machine.
   Stopping a VM performs a clean shutdown, much like invoking the shutdown
   functionality of a workstation or laptop. Stopping a VM with a local SSD
   is not supported and will result in an API error.

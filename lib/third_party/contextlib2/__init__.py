@@ -4,7 +4,6 @@ import sys
 import warnings
 from collections import deque
 from functools import wraps
-import types
 
 __all__ = ["contextmanager", "closing", "ContextDecorator", "ExitStack",
            "redirect_stdout", "redirect_stderr", "suppress"]
@@ -103,6 +102,9 @@ class _GeneratorContextManager(ContextDecorator):
                 # raised inside the "with" statement from being suppressed.
                 return exc is not value
             except RuntimeError as exc:
+                # Don't re-raise the passed in exception
+                if exc is value:
+                    return False
                 # Likewise, avoid suppressing if a StopIteration exception
                 # was passed to throw() and later wrapped into a RuntimeError
                 # (see PEP 479).
@@ -289,6 +291,20 @@ else:
         exc_type, exc_value, exc_tb = exc_details
         exec ("raise exc_type, exc_value, exc_tb")
 
+# Handle old-style classes if they exist
+try:
+    from types import InstanceType
+except ImportError:
+    # Python 3 doesn't have old-style classes
+    _get_type = type
+else:
+    # Need to handle old-style context managers on Python 2
+    def _get_type(obj):
+        obj_type = type(obj)
+        if obj_type is InstanceType:
+            return obj.__class__ # Old-style class
+        return obj_type # New-style class
+
 # Inspired by discussions on http://bugs.python.org/issue13585
 class ExitStack(object):
     """Context manager for dynamic management of a stack of exit callbacks
@@ -329,7 +345,7 @@ class ExitStack(object):
         """
         # We use an unbound method rather than a bound method to follow
         # the standard lookup behaviour for special methods
-        _cb_type = type(exit)
+        _cb_type = _get_type(exit)
         try:
             exit_method = _cb_type.__exit__
         except AttributeError:
@@ -359,13 +375,7 @@ class ExitStack(object):
         returns the result of the __enter__ method.
         """
         # We look up the special methods on the type to match the with statement
-        _cm_type = type(cm)
-        if hasattr(types, 'InstanceType') and  _cm_type == types.InstanceType:
-          # Python 2 only:
-          # If it's an old-style class, we need to get its class a different
-          # way. See  https://docs.python.org/2/reference/datamodel.html
-          # for more details.
-          _cm_type = cm.__class__
+        _cm_type = _get_type(cm)
         _exit = _cm_type.__exit__
         result = _cm_type.__enter__(cm)
         self._push_cm_exit(cm, _exit)

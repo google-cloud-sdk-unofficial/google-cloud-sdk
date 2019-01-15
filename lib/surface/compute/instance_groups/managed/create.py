@@ -29,7 +29,6 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
-from googlecloudsdk.command_lib.compute.health_checks import flags as health_checks_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
@@ -80,7 +79,7 @@ class CreateGA(base.CreateCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
-    _AddInstanceGroupManagerArgs(parser=parser)
+    _AddInstanceGroupManagerArgs(parser)
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
@@ -230,17 +229,11 @@ class CreateGA(base.CreateCommand):
 class CreateBeta(CreateGA):
   """Create Google Compute Engine managed instance groups."""
 
-  HEALTH_CHECK_ARG = health_checks_flags.HealthCheckArgument(
-      '', '--health-check', required=False)
-
   @classmethod
   def Args(cls, parser):
-    health_check_group = parser.add_mutually_exclusive_group()
-    cls.HEALTH_CHECK_ARG.AddArgument(health_check_group)
     parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
-    _AddInstanceGroupManagerArgs(parser=parser)
-    auto_healing_utils.AddAutohealingArgs(
-        parser=parser, health_check_group=health_check_group)
+    _AddInstanceGroupManagerArgs(parser)
+    auto_healing_utils.AddAutohealingArgs(parser)
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
@@ -281,7 +274,7 @@ class CreateBeta(CreateGA):
     instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
         args, holder.resources)
     health_check = managed_instance_groups_utils.GetHealthCheckUri(
-        holder.resources, args, self.HEALTH_CHECK_ARG)
+        holder.resources, args)
     auto_healing_policies = (
         managed_instance_groups_utils.CreateAutohealingPolicies(
             client.messages, health_check, args.initial_delay))
@@ -306,17 +299,11 @@ class CreateBeta(CreateGA):
 class CreateAlpha(CreateBeta):
   """Create Google Compute Engine managed instance groups."""
 
-  HEALTH_CHECK_ARG = health_checks_flags.HealthCheckArgument(
-      '', '--health-check', required=False)
-
   @classmethod
   def Args(cls, parser):
-    health_check_group = parser.add_mutually_exclusive_group()
-    cls.HEALTH_CHECK_ARG.AddArgument(health_check_group)
     parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser=parser)
-    auto_healing_utils.AddAutohealingArgs(
-        parser=parser, health_check_group=health_check_group)
+    auto_healing_utils.AddAutohealingArgs(parser)
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
@@ -345,7 +332,7 @@ class CreateAlpha(CreateBeta):
         args, holder.resources)
     instance_groups_flags.ValidateManagedInstanceGroupStatefulProperties(args)
     health_check = managed_instance_groups_utils.GetHealthCheckUri(
-        holder.resources, args, self.HEALTH_CHECK_ARG)
+        holder.resources, args)
     auto_healing_policies = (
         managed_instance_groups_utils.CreateAutohealingPolicies(
             client.messages, health_check, args.initial_delay))

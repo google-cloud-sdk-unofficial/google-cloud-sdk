@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Add Attestor public key command."""
 
 from __future__ import absolute_import
@@ -40,13 +39,14 @@ class Add(base.Command):
                 'The attestor to which the public key should be added.'),
         ),
     )
-    parser.add_argument('--public-key-file',
-                        type=arg_parsers.BufferedFileInput(),
-                        help='The path to the file containing the '
-                             'ASCII-armored PGP public key to add.',
-                        required=True)
-    parser.add_argument('--comment',
-                        help='The comment describing the public key.')
+    parser.add_argument(
+        '--public-key-file',
+        type=arg_parsers.BufferedFileInput(),
+        help='The path to the file containing the '
+        'ASCII-armored PGP public key to add.',
+        required=True)
+    parser.add_argument(
+        '--comment', help='The comment describing the public key.')
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())
@@ -56,5 +56,5 @@ class Add(base.Command):
 
     # TODO(b/71700164): Validate the contents of the public key file.
 
-    return attestors_client.AddKey(
-        attestor_ref, args.public_key_file, args.comment)
+    return attestors_client.AddKey(attestor_ref, args.public_key_file,
+                                   args.comment)

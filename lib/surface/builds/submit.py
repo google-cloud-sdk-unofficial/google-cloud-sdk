@@ -66,6 +66,19 @@ class Submit(base.CreateCommand):
   separate component: `gcloud components install cloud-build-local`.
   """
 
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+
+          When the `builds/use_kaniko` property is `True`, builds submitted with
+          `--tag` will use Kaniko
+          (https://github.com/GoogleContainerTools/kaniko) to execute builds.
+          Kaniko executes directives in a Dockerfile, with remote layer caching
+          for faster builds. By default, Kaniko will cache layers for 6 hours.
+          To override this, set the `builds/kaniko_cache_ttl` property.
+      """,
+  }
+
   _machine_type_flag_map = arg_utils.ChoiceEnumMapper(
       '--machine-type',
       (cloudbuild_util.GetMessagesModule()
@@ -174,6 +187,17 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
         default='cloudbuild.yaml',  # By default, find this in the current dir
         help='The YAML or JSON file to use as the build configuration file.',
     )
+
+    parser.add_argument(
+        '--no-cache',
+        action='store_true',
+        help='If set, disable layer caching when building with Kaniko.\n'
+        '\n'
+        'This has the same effect as setting the builds/kaniko_cache_ttl '
+        'property to 0 for this build.  This can be useful in cases where '
+        'Dockerfile builds are non-deterministic and a non-deterministic '
+        'result should not be cached.'
+    )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""
           table(
@@ -241,17 +265,28 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
             '--tag',
             'Tag value must be in the gcr.io/* or *.gcr.io/* namespace.')
       if properties.VALUES.builds.use_kaniko.GetBool():
+        if args.no_cache:
+          ttl = '0h'
+        else:
+          ttl = '{}h'.format(properties.VALUES.builds.kaniko_cache_ttl.Get())
         build_config = messages.Build(
             steps=[
                 messages.BuildStep(
-                    name='gcr.io/kaniko-project/executor:latest',
-                    args=['--destination', args.tag],
+                    name=properties.VALUES.builds.kaniko_image.Get(),
+                    args=['--destination', args.tag,
+                          '--cache', 'true',
+                          '--cache-ttl', ttl],
                 ),
             ],
             timeout=timeout_str,
             substitutions=cloudbuild_util.EncodeSubstitutions(
                 args.substitutions, messages))
       else:
+        if args.no_cache:
+          raise c_exceptions.InvalidArgumentException(
+              'no-cache',
+              'Cannot specify --no-cache if builds/use_kaniko property is '
+              'False')
         build_config = messages.Build(
             images=[args.tag],
             steps=[
@@ -264,6 +299,9 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
             substitutions=cloudbuild_util.EncodeSubstitutions(
                 args.substitutions, messages))
     elif args.config is not None:
+      if args.no_cache:
+        raise c_exceptions.ConflictingArgumentsException(
+            '--config', '--no-cache')
       if not args.config:
         raise c_exceptions.InvalidArgumentException(
             '--config', 'Config file path must not be empty.')

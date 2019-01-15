@@ -38,7 +38,8 @@ class _BaseRun(object):
   """Invoke a test in Firebase Test Lab for Android and view test results."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           *{command}* invokes and monitors tests in Firebase Test Lab for
           Android.
 
@@ -79,16 +80,25 @@ class _BaseRun(object):
           use the --device flag. For example, to invoke a robo test against a
           virtual, generic MDPI Nexus device in landscape orientation, run:
 
-            $ {command} --app APP_APK --device model=NexusLowRes,orientation=landscape
+            $ {command} --app APP_APK \
+--device model=NexusLowRes,orientation=landscape
 
           To invoke an instrumentation test against a physical Nexus 6 device
           (MODEL_ID: shamu) which is running Android API level 21 in French, run:
 
-            $ {command} --app APP_APK --test TEST_APK --device model=shamu,version=21,locale=fr
+            $ {command} --app APP_APK --test TEST_APK \
+--device model=shamu,version=21,locale=fr
 
           To test against multiple devices, specify --device more than once:
 
-            $ {command} --app APP_APK --test TEST_APK --device model=Nexus4,version=19 --device model=Nexus4,version=21 --device model=NexusLowRes,version=25
+            $ {command} --app APP_APK --test TEST_APK \
+--device model=Nexus4,version=19 --device model=Nexus4,version=21 \
+--device model=NexusLowRes,version=25
+
+          To invoke a robo test on an Android App Bundle, pass the .aab file
+          using the --app flag.
+
+            $ {command} --app bundle.aab
 
           You may also use the legacy dimension flags (deprecated) to specify
           which devices to use. Firebase Test Lab will run tests against every
@@ -101,7 +111,10 @@ class _BaseRun(object):
           comprehensive matrix of virtual and physical devices, OS versions,
           locales and orientations, run:
 
-            $ {command} --app APP_APK --timeout 5m --device-ids=shamu,NexusLowRes,Nexus5,g3,zeroflte --os-version-ids=19,21,22,23,24,25 --locales=en_GB,es,fr,ru,zh --orientations=portrait,landscape
+            $ {command} --app APP_APK --timeout 5m \
+--device-ids=shamu,NexusLowRes,Nexus5,g3,zeroflte \
+--os-version-ids=19,21,22,23,24,25 \
+--locales=en_GB,es,fr,ru,zh --orientations=portrait,landscape
 
           The above command will generate a test matrix with a total of 300 test
           executions, but only the subset of executions with valid dimension
@@ -130,13 +143,15 @@ class _BaseRun(object):
           For example, to run a robo test using a specific Google Cloud Storage
           location to hold the raw test results, run:
 
-            $ {command} --app APP_APK --results-bucket=gs://my-bucket --results-dir=my/test/results/<unique-value>
+            $ {command} --app APP_APK --results-bucket=gs://my-bucket \
+--results-dir=my/test/results/<unique-value>
 
           To run an instrumentation test and specify a custom name under which
           the history of your tests will be collected and displayed in the
           Firebase console, run:
 
-            $ {command} --app APP_APK --test TEST_APK --results-history-name='Excelsior App Test History'
+            $ {command} --app APP_APK --test TEST_APK \
+--results-history-name='Excelsior App Test History'
 
           Argument Files
 

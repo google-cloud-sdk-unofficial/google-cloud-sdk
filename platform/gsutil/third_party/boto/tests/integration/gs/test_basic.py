@@ -51,6 +51,12 @@ CORS_DOC = ('<CorsConfig><Cors><Origins><Origin>origin1.example.com'
             '<ResponseHeader>bar</ResponseHeader></ResponseHeaders>'
             '</Cors></CorsConfig>')
 
+ENCRYPTION_CONFIG_WITH_KEY = (
+    '<?xml version="1.0" encoding="UTF-8"?>\n'
+    '<EncryptionConfiguration>'
+    '<DefaultKmsKeyName>%s</DefaultKmsKeyName>'
+    '</EncryptionConfiguration>')
+
 LIFECYCLE_EMPTY = ('<?xml version="1.0" encoding="UTF-8"?>'
                    '<LifecycleConfiguration></LifecycleConfiguration>')
 LIFECYCLE_DOC = ('<?xml version="1.0" encoding="UTF-8"?>'
@@ -72,6 +78,10 @@ LIFECYCLE_CONDITIONS_FOR_DELETE_RULE = {
     'IsLive': 'true',
     'MatchesStorageClass': ['STANDARD']}
 LIFECYCLE_CONDITIONS_FOR_SET_STORAGE_CLASS_RULE = {'Age': '366'}
+
+BILLING_EMPTY = {'BillingConfiguration': {}}
+BILLING_ENABLED = {'BillingConfiguration': {'RequesterPays': 'Enabled'}}
+BILLING_DISABLED = {'BillingConfiguration': {'RequesterPays': 'Disabled'}}
 
 # Regexp for matching project-private default object ACL.
 PROJECT_PRIVATE_RE = ('\s*<AccessControlList>\s*<Entries>\s*<Entry>'
@@ -452,3 +462,69 @@ class GSBasicTest(GSTestCase):
         uri.configure_lifecycle(lifecycle_config)
         xml = uri.get_lifecycle_config().to_xml()
         self.assertEqual(xml, LIFECYCLE_DOC)
+
+    def test_billing_config_bucket(self):
+        """Test setting and getting of billing config on Bucket."""
+        # create a new bucket
+        bucket = self._MakeBucket()
+        bucket_name = bucket.name
+        # get billing config and make sure it's empty
+        billing = bucket.get_billing_config()
+        self.assertEqual(billing, BILLING_EMPTY)
+        # set requester pays to enabled
+        bucket.configure_billing(requester_pays=True)
+        billing = bucket.get_billing_config()
+        self.assertEqual(billing, BILLING_ENABLED)
+        # set requester pays to disabled
+        bucket.configure_billing(requester_pays=False)
+        billing = bucket.get_billing_config()
+        self.assertEqual(billing, BILLING_DISABLED)
+
+    def test_billing_config_storage_uri(self):
+        """Test setting and getting of billing config with storage_uri."""
+        # create a new bucket
+        bucket = self._MakeBucket()
+        bucket_name = bucket.name
+        uri = storage_uri('gs://' + bucket_name)
+        # get billing config and make sure it's empty
+        billing = uri.get_billing_config()
+        self.assertEqual(billing, BILLING_EMPTY)
+        # set requester pays to enabled
+        uri.configure_billing(requester_pays=True)
+        billing = uri.get_billing_config()
+        self.assertEqual(billing, BILLING_ENABLED)
+        # set requester pays to disabled
+        uri.configure_billing(requester_pays=False)
+        billing = uri.get_billing_config()
+        self.assertEqual(billing, BILLING_DISABLED)
+
+    def test_encryption_config_bucket(self):
+        """Test setting and getting of EncryptionConfig on gs Bucket objects."""
+        # Create a new bucket.
+        bucket = self._MakeBucket()
+        bucket_name = bucket.name
+        # Get EncryptionConfig and make sure it's empty.
+        encryption_config = bucket.get_encryption_config()
+        self.assertIsNone(encryption_config.default_kms_key_name)
+        # Testing set functionality would require having an existing Cloud KMS
+        # key. Since we can't hardcode a key name or dynamically create one, we
+        # only test here that we're creating the correct XML document to send to
+        # GCS.
+        xmldoc = bucket._construct_encryption_config_xml(
+            default_kms_key_name='dummykey')
+        self.assertEqual(xmldoc, ENCRYPTION_CONFIG_WITH_KEY % 'dummykey')
+        # Test that setting an empty encryption config works.
+        bucket.set_encryption_config()
+
+    def test_encryption_config_storage_uri(self):
+        """Test setting and getting of EncryptionConfig with storage_uri."""
+        # Create a new bucket.
+        bucket = self._MakeBucket()
+        bucket_name = bucket.name
+        uri = storage_uri('gs://' + bucket_name)
+        # Get EncryptionConfig and make sure it's empty.
+        encryption_config = uri.get_encryption_config()
+        self.assertIsNone(encryption_config.default_kms_key_name)
+
+        # Test that setting an empty encryption config works.
+        uri.set_encryption_config()

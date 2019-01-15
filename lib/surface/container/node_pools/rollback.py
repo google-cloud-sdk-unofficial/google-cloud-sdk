@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Rollback node pool command."""
 
 from __future__ import absolute_import
@@ -38,14 +37,13 @@ class Rollback(base.Command):
 
     Args:
       parser: an argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
 
     flags.AddAsyncFlag(parser)
     flags.AddNodePoolNameArg(parser, 'The name of the node pool to rollback.')
     flags.AddNodePoolClusterFlag(
-        parser,
-        'The cluster from which to rollback the node pool.')
+        parser, 'The cluster from which to rollback the node pool.')
     parser.add_argument(
         '--timeout',
         type=int,
@@ -73,13 +71,11 @@ class Rollback(base.Command):
     pool_ref = adapter.ParseNodePool(args.name, location)
 
     console_io.PromptContinue(
-        message=
-        'Node Pool: [{node_pool_id}], of Cluster: [{cluster_name}] will be '
-        'rolled back to previous configuration. This operation is long-running '
-        'and will block other operations on the cluster (including delete) '
-        'until it has run to completion.'
-        .format(node_pool_id=pool_ref.nodePoolId,
-                cluster_name=pool_ref.clusterId),
+        message='Node Pool: [{node_pool_id}], of Cluster: [{cluster_name}] '
+        'will be rolled back to previous configuration. This operation is '
+        'long-running and will block other operations on the cluster '
+        '(including delete) until it has run to completion.'.format(
+            node_pool_id=pool_ref.nodePoolId, cluster_name=pool_ref.clusterId),
         throw_if_unattended=True,
         cancel_on_no=True)
 
@@ -91,7 +87,8 @@ class Rollback(base.Command):
 
       if not args.async:
         adapter.WaitForOperation(
-            op_ref, 'Rolling back {0}'.format(pool_ref.nodePoolId),
+            op_ref,
+            'Rolling back {0}'.format(pool_ref.nodePoolId),
             timeout_s=args.timeout)
 
     except apitools_exceptions.HttpError as error:
@@ -100,9 +97,12 @@ class Rollback(base.Command):
     log.UpdatedResource(pool_ref)
     return op_ref
 
+
 Rollback.detailed_help = {
-    'brief': 'Rollback a node-pool upgrade.',
-    'DESCRIPTION': """
+    'brief':
+        'Rollback a node-pool upgrade.',
+    'DESCRIPTION':
+        """
         Rollback a node-pool upgrade.
 
 Rollback is a method used after a canceled or failed node-pool upgrade. It

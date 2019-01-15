@@ -81,28 +81,35 @@ class Deploy(base.Command):
     conn_context = connection_context.GetConnectionContext(args)
     service_ref = flags.GetService(args)
     function_entrypoint = flags.GetFunction(args.function)
-    msg = ('Deploying {dep_type} to service [{{bold}}{{service}}{{reset}}]'
-           ' in {ns_label} [{{bold}}{{ns}}{{reset}}]')
+    msg = ('Deploying {dep_type} to {operator} '
+           'service [{{bold}}{service}{{reset}}]'
+           ' in {ns_label} [{{bold}}{ns}{{reset}}]')
 
     msg += conn_context.location_label
 
     if function_entrypoint:
-      pretty_print.Info(
-          msg.format(ns_label=conn_context.ns_label,
-                     dep_type='function [{bold}{function}{reset}]'),
+      dep_type = 'function [{{bold}}{}{{reset}}]'.format(function_entrypoint)
+      pretty_print.Info(msg.format(
+          operator=conn_context.operator,
+          ns_label=conn_context.ns_label,
+          dep_type=dep_type,
           function=function_entrypoint,
           service=service_ref.servicesId,
-          ns=service_ref.namespacesId)
+          ns=service_ref.namespacesId))
     elif source_ref.source_type is source_ref.SourceType.IMAGE:
       pretty_print.Info(msg.format(
-          ns_label=conn_context.ns_label, dep_type='container'),
-                        service=service_ref.servicesId,
-                        ns=service_ref.namespacesId)
+          operator=conn_context.operator,
+          ns_label=conn_context.ns_label,
+          dep_type='container',
+          service=service_ref.servicesId,
+          ns=service_ref.namespacesId))
     else:
       pretty_print.Info(msg.format(
-          ns_label=conn_context.ns_label, dep_type='app'),
-                        service=service_ref.servicesId,
-                        ns=service_ref.namespacesId)
+          operator=conn_context.operator,
+          ns_label=conn_context.ns_label,
+          dep_type='app',
+          service=service_ref.servicesId,
+          ns=service_ref.namespacesId))
 
     with serverless_operations.Connect(conn_context) as operations:
       if not (source_ref.source_type is source_ref.SourceType.IMAGE
@@ -118,8 +125,9 @@ class Deploy(base.Command):
       url = operations.GetServiceUrl(service_ref)
       conf = operations.GetConfiguration(service_ref)
 
-    msg = ('{{bold}}Service [{serv}] revision [{rev}] has been deployed'
-           ' and is serving traffic at{{reset}} {url}')
+    msg = (
+        'Service [{{bold}}{serv}{{reset}}] revision [{{bold}}{rev}{{reset}}] '
+        'has been deployed and is serving traffic at {{bold}}{url}{{reset}}')
     msg = msg.format(
         serv=service_ref.servicesId,
         rev=conf.status.latestReadyRevisionName,

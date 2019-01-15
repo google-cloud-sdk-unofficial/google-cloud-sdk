@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Delete node pool command."""
 
 from __future__ import absolute_import
@@ -28,15 +27,16 @@ from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
-
 DETAILED_HELP = {
-    'DESCRIPTION': """\
+    'DESCRIPTION':
+        """\
         *{command}* deletes a node pool from a Google Kubernetes Engine cluster.
         This command does not gracefully drain the nodes prior to deleting them.
         Use "kubectl drain NODE_NAME" to drain each node to have containers
         running on these nodes terminate gracefully.
         """,
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
         To delete the "node-pool-1" node pool from the cluster
         "sample-cluster", run:
 
@@ -54,7 +54,7 @@ class Delete(base.DeleteCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     # TODO(b/28639250): Support remote completion when the SDK supports it.
     flags.AddNodePoolNameArg(parser, 'The name of the node pool to delete.')
@@ -66,8 +66,7 @@ class Delete(base.DeleteCommand):
         help='THIS ARGUMENT NEEDS HELP TEXT.')
     flags.AddAsyncFlag(parser)
     flags.AddNodePoolClusterFlag(
-        parser,
-        'The cluster from which to delete the node pool.')
+        parser, 'The cluster from which to delete the node pool.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -87,10 +86,10 @@ class Delete(base.DeleteCommand):
 
     console_io.PromptContinue(
         message=('The following node pool will be deleted.\n'
-                 '[{name}] in cluster [{clusterId}] in [{zone}]')
-        .format(name=pool_ref.nodePoolId,
-                clusterId=pool_ref.clusterId,
-                zone=adapter.Zone(pool_ref)),
+                 '[{name}] in cluster [{clusterId}] in [{zone}]').format(
+                     name=pool_ref.nodePoolId,
+                     clusterId=pool_ref.clusterId,
+                     zone=adapter.Zone(pool_ref)),
         throw_if_unattended=True,
         cancel_on_no=True)
 

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Get Server Config."""
 
 from __future__ import absolute_import
@@ -51,8 +50,8 @@ class GetServerConfig(base.Command):
     project_id = properties.VALUES.core.project.Get(required=True)
     location = self.location_get(args)
 
-    log.status.Print('Fetching server config for {location}'.format(
-        location=location))
+    log.status.Print(
+        'Fetching server config for {location}'.format(location=location))
     return adapter.GetServerConfig(project_id, location)
 
 
@@ -65,9 +64,9 @@ class GetServerConfigAlphaBeta(GetServerConfig):
 
     Args:
       context: {str:object}, A set of key-value pairs that can be used for
-          common initialization among commands.
+        common initialization among commands.
       args: argparse.Namespace: The same namespace given to the corresponding
-          .Run() invocation.
+        .Run() invocation.
 
     Returns:
       The refined command context.

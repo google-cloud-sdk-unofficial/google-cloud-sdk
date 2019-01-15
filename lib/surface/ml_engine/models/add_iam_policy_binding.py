@@ -1,3 +1,4 @@
+# TODO(b/120788962) migrate the implementation to declarative.
 # -*- coding: utf-8 -*- #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
@@ -25,6 +26,7 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
   r"""Add IAM policy binding to a model.
 
@@ -54,3 +56,33 @@ class AddIamPolicyBinding(base.Command):
   def Run(self, args):
     return models_util.AddIamPolicyBinding(models.ModelsClient(), args.model,
                                            args.member, args.role)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddIamPolicyBindingAlpha(base.Command):
+  """Adds IAM policy binding to a model.
+
+  Adds a policy binding to the IAM policy of a ML engine model, given a model ID
+  and the binding. One binding consists of a member, a role, and an optional
+  condition.
+  """
+  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
+      'model', 'my_model', role='roles/ml.admin', condition=True)
+
+  @staticmethod
+  def Args(parser):
+    flags.GetModelName().AddToParser(parser)
+    iam_util.AddArgsForAddIamPolicyBinding(
+        parser,
+        flags.MlEngineIamRolesCompleter,
+        add_condition=True)
+
+  def Run(self, args):
+    condition = iam_util.ValidateAndExtractCondition(args)
+    iam_util.ValidateMutexConditionAndPrimitiveRoles(condition, args.role)
+    return models_util.AddIamPolicyBindingWithCondition(
+        models.ModelsClient(),
+        args.model,
+        args.member,
+        args.role,
+        condition)

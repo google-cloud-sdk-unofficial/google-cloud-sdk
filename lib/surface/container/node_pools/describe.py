@@ -39,7 +39,7 @@ class Describe(base.DescribeCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     flags.AddNodePoolNameArg(parser, 'The name of the node pool.')
     flags.AddNodePoolClusterFlag(parser, 'The name of the cluster.')

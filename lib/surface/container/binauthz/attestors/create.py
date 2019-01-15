@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Create Attestor command."""
 
 from __future__ import absolute_import
@@ -56,9 +55,8 @@ class Create(base.CreateCommand):
                 """),
         ),
     )
-    parser.add_argument('--description',
-                        required=False,
-                        help='A description for the attestor')
+    parser.add_argument(
+        '--description', required=False, help='A description for the attestor')
 
   def Run(self, args):
     attestor_ref = args.CONCEPTS.attestor.Parse()

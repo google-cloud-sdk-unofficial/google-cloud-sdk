@@ -43,11 +43,15 @@ class SetIamPolicy(base.Command):
   @classmethod
   def Args(cls, parser):
     # TODO(b/77985971): Make this a resource.
-    parser.add_argument('attestor_name', help=('The name of the attestor '
-                                               'whose IAM policy will be '
-                                               'updated.'))
-    parser.add_argument('policy_file', help=('The JSON or YAML '
-                                             'file containing the IAM policy.'))
+    parser.add_argument(
+        'attestor_name',
+        help=('The name of the attestor '
+              'whose IAM policy will be '
+              'updated.'))
+    parser.add_argument(
+        'policy_file',
+        help=('The JSON or YAML '
+              'file containing the IAM policy.'))
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())

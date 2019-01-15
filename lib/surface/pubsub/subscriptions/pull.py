@@ -62,7 +62,12 @@ class Pull(base.ListCommand):
 
           By default, this command returns only one message from the
           subscription. Use the `--limit` flag to specify the max messages to
-          return."""
+          return.
+
+          Please note that this command is not guaranteed to return all the
+          messages in your backlog or the maximum specified in the --limit
+          argument.  Receiving fewer messages than available occasionally
+          is normal."""
   }
 
   @staticmethod

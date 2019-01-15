@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Upgrade cluster command."""
 
 from __future__ import absolute_import
@@ -36,21 +35,21 @@ from googlecloudsdk.core.util.semver import SemVer
 
 class UpgradeHelpText(object):
   """Upgrade available help text messages."""
-  UPGRADE_AVAILABLE = '''
+  UPGRADE_AVAILABLE = """
 * - There is an upgrade available for your cluster(s).
-'''
+"""
 
-  SUPPORT_ENDING = '''
+  SUPPORT_ENDING = """
 ** - The current version of your cluster(s) will soon be out of support, please upgrade.
-'''
+"""
 
-  UNSUPPORTED = '''
+  UNSUPPORTED = """
 *** - The current version of your cluster(s) is unsupported, please upgrade.
-'''
+"""
 
-  UPGRADE_COMMAND = '''
+  UPGRADE_COMMAND = """
 To upgrade nodes to the latest available version, run
-  $ gcloud container clusters upgrade {name}'''
+  $ gcloud container clusters upgrade {name}"""
 
 
 class VersionVerifier(object):
@@ -92,13 +91,11 @@ def _Args(parser):
   """Register flags for this command.
 
   Args:
-    parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
+    parser: An argparse.ArgumentParser-like object. It is mocked out in order to
+      capture some information, but behaves like an ArgumentParser.
   """
   parser.add_argument(
-      'name',
-      metavar='NAME',
-      help='The name of the cluster to upgrade.')
+      'name', metavar='NAME', help='The name of the cluster to upgrade.')
   flags.AddClusterVersionFlag(
       parser,
       help="""\
@@ -112,9 +109,7 @@ You can find the list of allowed versions for upgrades by running:
 
   $ gcloud container get-server-config
 """)
-  parser.add_argument(
-      '--node-pool',
-      help='The node pool to upgrade.')
+  parser.add_argument('--node-pool', help='The node pool to upgrade.')
   parser.add_argument(
       '--master',
       help='Upgrade the cluster\'s master to the latest version of Kubernetes'
@@ -164,22 +159,20 @@ class Upgrade(base.Command):
 
     try:
       cluster = adapter.GetCluster(cluster_ref)
-    except (exceptions.HttpException,
-            apitools_exceptions.HttpForbiddenError,
+    except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
       log.warning(('Problem loading details of cluster to upgrade:\n\n{}\n\n'
-                   'You can still attempt to upgrade the cluster.\n')
-                  .format(console_attr.SafeText(error)))
+                   'You can still attempt to upgrade the cluster.\n').format(
+                       console_attr.SafeText(error)))
       cluster = None
 
     try:
       server_conf = adapter.GetServerConfig(project_id, location)
-    except (exceptions.HttpException,
-            apitools_exceptions.HttpForbiddenError,
+    except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
       log.warning(('Problem loading server config:\n\n{}\n\n'
-                   'You can still attempt to upgrade the cluster.\n')
-                  .format(console_attr.SafeText(error)))
+                   'You can still attempt to upgrade the cluster.\n').format(
+                       console_attr.SafeText(error)))
       server_conf = None
 
     upgrade_message = container_command_util.ClusterUpgradeMessage(
@@ -192,9 +185,7 @@ class Upgrade(base.Command):
         concurrent_node_count=concurrent_node_count)
 
     console_io.PromptContinue(
-        message=upgrade_message,
-        throw_if_unattended=True,
-        cancel_on_no=True)
+        message=upgrade_message, throw_if_unattended=True, cancel_on_no=True)
 
     options = self.ParseUpgradeOptions(args)
 
@@ -205,13 +196,16 @@ class Upgrade(base.Command):
 
     if not args.async:
       adapter.WaitForOperation(
-          op_ref, 'Upgrading {0}'.format(cluster_ref.clusterId),
+          op_ref,
+          'Upgrading {0}'.format(cluster_ref.clusterId),
           timeout_s=args.timeout)
 
       log.UpdatedResource(cluster_ref)
 
+
 Upgrade.detailed_help = {
-    'DESCRIPTION': """\
+    'DESCRIPTION':
+        """\
       Upgrades the Kubernetes version of an existing container cluster.
 
       This command upgrades the Kubernetes version of the *nodes* or *master* of
@@ -224,16 +218,18 @@ Upgrade.detailed_help = {
 
       *By running this command, all of the cluster's nodes will be deleted and*
       *recreated one at a time.* While persistent Kubernetes resources, such as
-      pods backed by replication controllers, will be rescheduled onto new nodes,
-      a small cluster may experience a few minutes where there are insufficient
-      nodes available to run all of the scheduled Kubernetes resources.
+      pods backed by replication controllers, will be rescheduled onto new
+      nodes, a small cluster may experience a few minutes where there are
+      insufficient nodes available to run all of the scheduled Kubernetes
+      resources.
 
       *Please ensure that any data you wish to keep is stored on a persistent*
       *disk before upgrading the cluster.* Ephemeral Kubernetes resources--in
       particular, pods without replication controllers--will be lost, while
       persistent Kubernetes resources will get rescheduled.
     """,
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
       Upgrade the nodes of <cluster> to the Kubernetes version of the cluster's
       master.
 

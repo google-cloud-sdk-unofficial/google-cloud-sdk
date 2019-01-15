@@ -19,11 +19,37 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import batch_helper
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.peerings import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+
+
+def _MakeRequests(client, requests, is_async):
+  """Helper for making asynchronous or synchronous peering creation requests."""
+  if is_async:
+    responses, errors = batch_helper.MakeRequests(
+        requests=requests,
+        http=client.apitools_client.http,
+        batch_url=client.batch_url)
+    if not errors:
+      for operation in responses:
+        log.status.write('Creating network peering for [{0}]\n'.format(
+            operation.targetLink))
+        log.status.write('Monitor its progress at [{0}]\n'.format(
+            operation.selfLink))
+    else:
+      utils.RaiseToolException(errors)
+  else:
+    # We want to run through the generator that MakeRequests returns in order
+    # to actually make the requests.
+    responses = client.MakeRequests(requests)
+
+  return responses
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
@@ -51,6 +77,8 @@ class Create(base.Command):
         required=False,
         help='The name of the project for the peer network.  If not specified, '
         'defaults to current project.')
+
+    base.ASYNC_FLAG.AddToParser(parser)
 
   @staticmethod
   def Args(parser):
@@ -85,8 +113,8 @@ class Create(base.Command):
             peerNetwork=peer_network_ref.RelativeName()),
         project=properties.VALUES.core.project.GetOrFail())
 
-    return client.MakeRequests([(client.apitools_client.networks, 'AddPeering',
-                                 request)])
+    requests = [(client.apitools_client.networks, 'AddPeering', request)]
+    return _MakeRequests(client, requests, args.async)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -137,5 +165,5 @@ class CreateAlpha(Create):
                 exchangeSubnetRoutes=True)),
         project=properties.VALUES.core.project.GetOrFail())
 
-    return client.MakeRequests([(client.apitools_client.networks, 'AddPeering',
-                                 request)])
+    requests = [(client.apitools_client.networks, 'AddPeering', request)]
+    return _MakeRequests(client, requests, args.async)

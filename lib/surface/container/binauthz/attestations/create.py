@@ -77,8 +77,7 @@ class Create(base.CreateCommand):
               be able to read this attestor and must have the
               `containeranalysis.notes.attachOccurrence` permission for the
               Attestor's underlying Note resource (usually via the
-              `containeranalysis.notes.attacher` role).""")
-        ),
+              `containeranalysis.notes.attacher` role).""")),
     )
 
     parser.add_argument(
@@ -98,8 +97,7 @@ class Create(base.CreateCommand):
     )
     normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
         args.artifact_url)
-    signature = console_io.ReadFromFileOrStdin(
-        args.signature_file, binary=True)
+    signature = console_io.ReadFromFileOrStdin(args.signature_file, binary=True)
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
     api_version = apis.GetApiVersion(self.ReleaseTrack())

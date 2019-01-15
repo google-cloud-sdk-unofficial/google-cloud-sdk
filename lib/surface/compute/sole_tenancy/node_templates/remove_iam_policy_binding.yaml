@@ -1,36 +1,27 @@
 - &beta_command
   release_tracks: [BETA]
   help_text:
-    brief: Remove an IAM policy binding from a node template.
+    brief: Remove IAM policy binding of a Google Compute Engine node template.
     DESCRIPTION: |
-      Remove an IAM policy binding from a node template.
+      Remove an IAM policy binding of a Google Compute Engine node template.
+
     EXAMPLES: |
-      The following command will remove an IAM policy binding for the role
-      of 'roles/compute.admin' for the user 'test-user@gmail.com' on node
-      template with identifier 'my-node-template'
+      To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
+      with node template 'my-node-template' and region 'us-central1', run:
 
-        $ {command} my-node-template --member='user:test-user@gmail.com' --role='roles/compute.admin'
+        $ {command} my-node-template --region='us-central1' --member='user:test-user@gmail.com' --role='roles/compute.admin'
 
-      The following command will remove an IAM policy binding for the role
-      of 'roles/compute.admin' from all authenticated users on node template
-      'my-node-template':
-
-        $ {command} my-node-template --member='allAuthenticatedUsers' --role='roles/compute.admin'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details
-      of policy role and member types.
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
 
   request: &request
     collection: compute.nodeTemplates
     api_version: beta
-    use_relative_name: false
-
-  iam:
+  iam: &iam
     set_iam_policy_request_path: regionSetPolicyRequest
     message_type_overrides:
       policy: Policy
       set_iam_policy_request: ComputeNodeTemplatesSetIamPolicyRequest
-
   arguments:
     resource:
       help_text: The node template for which to remove IAM policy binding from.
@@ -38,6 +29,31 @@
 
 - <<: *beta_command
   release_tracks: [ALPHA]
+
   request:
     <<: *request
     api_version: alpha
+
+  help_text:
+    brief: Remove IAM policy binding of a Google Compute Engine node template.
+    DESCRIPTION: |
+      Remove an IAM policy binding from the IAM policy of a Google Compute Engine node template. One binding consists of a member,
+      a role, and an optional condition.
+
+    EXAMPLES: |
+      To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
+      with node template 'my-node-template' and region 'us-central1', run:
+
+        $ {command} my-node-template --region='us-central1' --member='user:test-user@gmail.com' --role='roles/compute.admin'
+
+      To remove an IAM policy binding which expires at the end of the year 2018 for the role of
+      'roles/compute.admin' and the user 'test-user@gmail.com' with node template 'my-node-template' and region 'us-central1', run:
+
+        $ {command} my-node-template --region='us-central1' --member='user:test-user@gmail.com' --role='roles/compute.admin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  iam:
+    <<: *iam
+    enable_condition: true

@@ -91,13 +91,8 @@ List.detailed_help = {
 
           $ {command} --global
 
-        To list all of the regional addresses in a project, run:
+        To list all of the addresses from the ``us-central1'' region, run:
 
-          $ {command} --regions
-
-        To list all of the addresses from the ``us-central1'' and the
-        ``europe-west1'' regions, run:
-
-          $ {command} --regions us-central1,europe-west1
+          $ {command} --filter=region:us-central1
         """,
 }

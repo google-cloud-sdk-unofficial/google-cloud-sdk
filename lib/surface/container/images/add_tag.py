@@ -74,11 +74,14 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddTagOrDigestPositional(parser, arg_name='src_image',
-                                   verb='add tags for', repeated=False)
-    flags.AddTagOrDigestPositional(parser, arg_name='dest_image',
-                                   verb='be the new tags', repeated=True,
-                                   tags_only=True)
+    flags.AddTagOrDigestPositional(
+        parser, arg_name='src_image', verb='add tags for', repeated=False)
+    flags.AddTagOrDigestPositional(
+        parser,
+        arg_name='dest_image',
+        verb='be the new tags',
+        repeated=True,
+        tags_only=True)
 
   def Run(self, args):
     # pylint: disable=missing-docstring
@@ -114,15 +117,17 @@ class Create(base.CreateCommand):
         cancel_on_no=True)
     creds = util.CredentialProvider()
     with util.WrapExpectedDockerlessErrors():
-      with docker_image_list.FromRegistry(
-          src_name, creds, http_obj) as manifest_list:
+      with docker_image_list.FromRegistry(src_name, creds,
+                                          http_obj) as manifest_list:
         if manifest_list.exists():
           Push(manifest_list, dest_names, creds, http_obj, src_name,
                v2_2_session.Push)
           return
 
       with v2_2_image.FromRegistry(
-          src_name, creds, http_obj,
+          src_name,
+          creds,
+          http_obj,
           accepted_mimes=docker_http.SUPPORTED_MANIFEST_MIMES) as v2_2_img:
         if v2_2_img.exists():
           Push(v2_2_img, dest_names, creds, http_obj, src_name,

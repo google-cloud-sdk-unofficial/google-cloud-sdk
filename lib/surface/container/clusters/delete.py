@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Delete cluster command."""
 
 from __future__ import absolute_import
@@ -55,7 +54,7 @@ class Delete(base.DeleteCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument(
         'names',
@@ -87,11 +86,11 @@ class Delete(base.DeleteCommand):
     for name in args.names:
       cluster_refs.append(adapter.ParseCluster(name, location))
     console_io.PromptContinue(
-        message=util.ConstructList(
-            'The following clusters will be deleted.',
-            ['[{name}] in [{zone}]'.format(name=ref.clusterId,
-                                           zone=adapter.Zone(ref))
-             for ref in cluster_refs]),
+        message=util.ConstructList('The following clusters will be deleted.', [
+            '[{name}] in [{zone}]'.format(
+                name=ref.clusterId, zone=adapter.Zone(ref))
+            for ref in cluster_refs
+        ]),
         throw_if_unattended=True,
         cancel_on_no=True)
 
@@ -124,8 +123,8 @@ class Delete(base.DeleteCommand):
             log.warning(error)
 
           if properties.VALUES.container.cluster.Get() == cluster_ref.clusterId:
-            properties.PersistProperty(
-                properties.VALUES.container.cluster, None)
+            properties.PersistProperty(properties.VALUES.container.cluster,
+                                       None)
           log.DeletedResource(cluster_ref)
         except apitools_exceptions.HttpError as error:
           errors.append(exceptions.HttpException(error, util.HTTP_ERROR_FORMAT))
@@ -133,5 +132,5 @@ class Delete(base.DeleteCommand):
           errors.append(error)
 
     if errors:
-      raise util.Error(util.ConstructList(
-          'Some requests did not succeed:', errors))
+      raise util.Error(
+          util.ConstructList('Some requests did not succeed:', errors))

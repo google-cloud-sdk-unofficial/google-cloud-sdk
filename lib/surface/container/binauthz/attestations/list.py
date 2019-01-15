@@ -75,8 +75,7 @@ class List(base.ListCommand):
               The Attestor whose Container Analysis Note will be queried
               for attestations. Note that the caller must have the
               `containeranalysis.notes.listOccurrences` permission on the note
-              being queried.""")
-        ),
+              being queried.""")),
     )
 
   def Run(self, args):

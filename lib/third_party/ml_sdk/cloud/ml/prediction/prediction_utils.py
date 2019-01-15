@@ -38,6 +38,7 @@ SCIKIT_LEARN_FRAMEWORK_NAME = "scikit_learn"
 SK_XGB_FRAMEWORK_NAME = "sk_xgb"
 XGBOOST_FRAMEWORK_NAME = "xgboost"
 TENSORFLOW_FRAMEWORK_NAME = "tensorflow"
+CUSTOM_FRAMEWORK_NAME = "custom"
 PREPROCESS_TIME = "Prediction-Preprocess-Time"
 POSTPROCESS_TIME = "Prediction-Postprocess-Time"
 

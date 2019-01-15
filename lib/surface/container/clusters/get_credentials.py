@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Fetch cluster credentials."""
 
 from __future__ import absolute_import
@@ -25,9 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-
-NOT_RUNNING_MSG = '''\
-cluster {0} is not running. The kubernetes API may not be available.'''
+NOT_RUNNING_MSG = """\
+cluster {0} is not running. The kubernetes API may not be available."""
 
 
 class GetCredentials(base.Command):
@@ -73,7 +71,7 @@ class GetCredentials(base.Command):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument(
         'name',
@@ -107,10 +105,8 @@ class GetCredentials(base.Command):
     # api_lib/container/kubeconfig.py.
     missing_creds = not (auth and auth.clientCertificate and auth.clientKey)
     if missing_creds and not util.ClusterConfig.UseGCPAuthProvider():
-      raise util.Error(
-          'get-credentials requires edit permission on {0}'.format(
-              cluster_ref.projectId))
+      raise util.Error('get-credentials requires edit permission on {0}'.format(
+          cluster_ref.projectId))
     if not adapter.IsRunning(cluster):
       log.warning(NOT_RUNNING_MSG.format(cluster_ref.clusterId))
-    util.ClusterConfig.Persist(cluster, cluster_ref.projectId,
-                               args.internal_ip)
+    util.ClusterConfig.Persist(cluster, cluster_ref.projectId, args.internal_ip)

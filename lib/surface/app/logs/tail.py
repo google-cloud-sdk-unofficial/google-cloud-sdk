@@ -46,7 +46,7 @@ class Tail(base.Command):
 
           To show only the logs from the request log for Flex apps, run:
 
-            $ {command} --logs=nginx.requests
+            $ {command} --logs=nginx.request
       """
   }
 

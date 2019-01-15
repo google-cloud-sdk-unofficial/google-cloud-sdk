@@ -31,13 +31,101 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util.ssh import containers
-from googlecloudsdk.command_lib.util.ssh import ip
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+def ArgsHaveTunnelThroughIap(args):
+  """Determine if the current track has this flag and if it is also enabled."""
+  return hasattr(args, 'tunnel_through_iap') and args.tunnel_through_iap
+
+
+def AddCommandArg(parser):
+  parser.add_argument(
+      '--command',
+      help="""\
+      A command to run on the virtual machine.
+
+      Runs the command on the target instance and then exits.
+      """)
+
+
+def AddSSHArgs(parser):
+  """Additional flags and positional args to be passed to *ssh(1)*."""
+  parser.add_argument(
+      '--ssh-flag',
+      action='append',
+      help="""\
+      Additional flags to be passed to *ssh(1)*. It is recommended that flags
+      be passed using an assignment operator and quotes. This flag will
+      replace occurences of ``%USER%'' and ``%INSTANCE%'' with their
+      dereferenced values. Example:
+
+        $ {command} example-instance --zone us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:%INSTANCE%:80"
+
+      is equivalent to passing the flags ``--vvv'' and ``-L
+      80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
+      'example-instance' is 162.222.181.197.
+      """)
+
+  parser.add_argument(
+      'user_host',
+      completer=completers.InstancesCompleter,
+      metavar='[USER@]INSTANCE',
+      help="""\
+      Specifies the instance to SSH into.
+
+      ``USER'' specifies the username with which to SSH. If omitted,
+      $USER from the environment is selected.
+
+      ``INSTANCE'' specifies the name of the virtual machine instance to SSH
+      into.
+      """)
+
+  parser.add_argument(
+      'ssh_args',
+      nargs=argparse.REMAINDER,
+      help="""\
+          Flags and positionals passed to the underlying ssh implementation.
+          """,
+      example="""\
+        $ {command} example-instance --zone us-central1-a -- -vvv -L 80:%INSTANCE%:80
+      """)
+
+
+def AddContainerArg(parser):
+  parser.add_argument(
+      '--container',
+      help="""\
+          The name or ID of a container inside of the virtual machine instance
+          to connect to. This only applies to virtual machines that are using
+          a Google Container-Optimized virtual machine image. For more
+          information, see [](https://cloud.google.com/compute/docs/containers).
+          """)
+
+
+def AddInternalIPArg(parser):
+  parser.add_argument(
+      '--internal-ip',
+      default=False,
+      action='store_true',
+      help="""\
+        Connect to instances using their internal IP addresses rather than their
+        external IP addresses. Use this to connect from one instance to another
+        on the same VPC network, over a VPN connection, or between two peered
+        VPC networks.
+
+        For this connection to work, you must configure your networks and
+        firewall to allow SSH connections to the internal IP address of
+        the instance to which you want to connect.
+
+        To learn how to use this flag, see
+        [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
+        """)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
@@ -51,82 +139,10 @@ class Ssh(base.Command):
       parser: An argparse.ArgumentParser.
     """
     ssh_utils.BaseSSHCLIHelper.Args(parser)
-
-    parser.add_argument(
-        '--command',
-        help="""\
-        A command to run on the virtual machine.
-
-        Runs the command on the target instance and then exits.
-        """)
-
-    parser.add_argument(
-        '--ssh-flag',
-        action='append',
-        help="""\
-        Additional flags to be passed to *ssh(1)*. It is recommended that flags
-        be passed using an assignment operator and quotes. This flag will
-        replace occurences of ``%USER%'' and ``%INSTANCE%'' with their
-        dereferenced values. Example:
-
-          $ {command} example-instance --zone us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:%INSTANCE%:80"
-
-        is equivalent to passing the flags ``--vvv'' and ``-L
-        80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
-        'example-instance' is 162.222.181.197.
-        """)
-
-    parser.add_argument(
-        '--container',
-        help="""\
-            The name or ID of a container inside of the virtual machine instance
-            to connect to. This only applies to virtual machines that are using
-            a Google Container-Optimized virtual machine image. For more
-            information, see [](https://cloud.google.com/compute/docs/containers).
-            """)
-
-    parser.add_argument(
-        'user_host',
-        completer=completers.InstancesCompleter,
-        metavar='[USER@]INSTANCE',
-        help="""\
-        Specifies the instance to SSH into.
-
-        ``USER'' specifies the username with which to SSH. If omitted,
-        $USER from the environment is selected.
-
-        ``INSTANCE'' specifies the name of the virtual machine instance to SSH
-        into.
-        """)
-
-    parser.add_argument(
-        'ssh_args',
-        nargs=argparse.REMAINDER,
-        help="""\
-            Flags and positionals passed to the underlying ssh implementation.
-            """,
-        example="""\
-          $ {command} example-instance --zone us-central1-a -- -vvv -L 80:%INSTANCE%:80
-        """)
-
-    parser.add_argument(
-        '--internal-ip',
-        default=False,
-        action='store_true',
-        help="""\
-          Connect to instances using their internal IP addresses rather than their
-          external IP addresses. Use this to connect from one instance to another
-          on the same VPC network, over a VPN connection, or between two peered
-          VPC networks.
-
-          For this connection to work, you must configure your networks and
-          firewall to allow SSH connections to the internal IP address of
-          the instance to which you want to connect.
-
-          To learn how to use this flag, see
-          [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
-          """)
-
+    AddCommandArg(parser)
+    AddSSHArgs(parser)
+    AddContainerArg(parser)
+    AddInternalIPArg(parser)
     flags.AddZoneFlag(
         parser, resource_type='instance', operation_type='connect to')
 
@@ -150,11 +166,10 @@ class Ssh(base.Command):
       public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
       user, use_oslogin = ssh.CheckForOsloginAndGetUser(
           instance, project, user, public_key, self.ReleaseTrack())
-    if args.internal_ip:
+    if args.internal_ip or ArgsHaveTunnelThroughIap(args):
       ip_address = ssh_utils.GetInternalIPAddress(instance)
     else:
       ip_address = ssh_utils.GetExternalIPAddress(instance)
-
     remote = ssh.Remote(ip_address, user)
 
     identity_file = None
@@ -175,23 +190,26 @@ class Ssh(base.Command):
     tty = containers.GetTty(args.container, command_list)
     remote_command = containers.GetRemoteCommand(args.container, command_list)
 
-    target_remote = remote
-    port = ssh_utils.DEFAULT_SSH_PORT
-    ip_type = (
-        ip.IpTypeEnum.INTERNAL if args.internal_ip else ip.IpTypeEnum.EXTERNAL)
-    tunnel_helper = None
-    interface = None
-    if hasattr(args, 'tunnel_through_iap') and args.tunnel_through_iap:
-      tunnel_helper, interface = ssh_utils.CreateIapTunnelHelper(
-          args, instance_ref, instance, ip_type)
-      tunnel_helper.StartListener()
-      target_remote = ssh.Remote('localhost', user)
-      port = tunnel_helper.GetLocalPort()
+    # Do not include default port since that will prevent users from
+    # specifying a custom port (b/121998342).
+    ssh_cmd_args = {'remote': remote,
+                    'identity_file': identity_file,
+                    'options': options,
+                    'extra_flags': extra_flags,
+                    'remote_command': remote_command,
+                    'tty': tty,
+                    'remainder': remainder}
 
-    cmd = ssh.SSHCommand(
-        target_remote, port=str(port), identity_file=identity_file,
-        options=options, extra_flags=extra_flags, remote_command=remote_command,
-        tty=tty, remainder=remainder)
+    tunnel_helper = None
+    if ArgsHaveTunnelThroughIap(args):
+      tunnel_helper = ssh_utils.CreateIapTunnelHelper(args, instance_ref,
+                                                      instance)
+      tunnel_helper.StartListener()
+      ssh_cmd_args['remote'] = ssh.Remote('localhost', user)
+      ssh_cmd_args['port'] = str(tunnel_helper.GetLocalPort())
+
+    cmd = ssh.SSHCommand(**ssh_cmd_args)
+
     if args.dry_run:
       log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
       if tunnel_helper:
@@ -207,8 +225,8 @@ class Ssh(base.Command):
     if keys_newly_added:
       poller_tunnel_helper = None
       if tunnel_helper:
-        poller_tunnel_helper, _ = ssh_utils.CreateIapTunnelHelper(
-            args, instance_ref, instance, ip_type, interface=interface)
+        poller_tunnel_helper = ssh_utils.CreateIapTunnelHelper(
+            args, instance_ref, instance)
         poller_tunnel_helper.StartListener(accept_multiple_connections=True)
       poller = ssh_utils.CreateSSHPoller(
           remote, identity_file, options, poller_tunnel_helper,
@@ -245,13 +263,22 @@ class Ssh(base.Command):
       sys.exit(return_code)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SshAlpha(Ssh):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class SshBeta(Ssh):
+  """SSH into a virtual machine instance (Beta)."""
 
   @staticmethod
   def Args(parser):
-    super(SshAlpha, SshAlpha).Args(parser)
-    iap_tunnel.AddConnectionHelperArgs(parser)
+    ssh_utils.BaseSSHCLIHelper.Args(parser)
+    AddCommandArg(parser)
+    AddSSHArgs(parser)
+    AddContainerArg(parser)
+    flags.AddZoneFlag(
+        parser, resource_type='instance', operation_type='connect to')
+
+    mutex_scope = parser.add_mutually_exclusive_group()
+    AddInternalIPArg(mutex_scope)
+    iap_tunnel.AddConnectionHelperArgs(parser, mutex_scope)
 
 
 def DetailedHelp():

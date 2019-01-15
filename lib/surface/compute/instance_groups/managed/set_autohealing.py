@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
-from googlecloudsdk.command_lib.compute.health_checks import flags as health_checks_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 
@@ -35,27 +34,17 @@ class SetAutohealing(base.Command):
     *{command}* updates the autohealing policy for an existing managed
   instance group.
 
-  If --http-health-check or --https-health-check is specified, the resulting
-  autohealing policy will be triggered by the health-check i.e. the autohealing
-  action (RECREATE) on an instance will be performed if the health-check signals
-  that the instance is UNHEALTHY. If neither --http-health-check nor
-  --https-health-check is specified, the resulting autohealing policy will be
-  triggered by instance's status i.e. the autohealing action (RECREATE) on an
-  instance will be performed if the instance.status is not RUNNING.
-  --initial-delay specifies the length of the period during which IGM will
-  refrain from autohealing the instance even if the instance is reported as not
-  RUNNING or UNHEALTHY. This value must be from range [0, 3600].
+  If health check is specified, the resulting autohealing policy will be
+  triggered by the health-check signal i.e. the autohealing action (RECREATE) on
+  an instance will be performed if the health-check signals that the instance is
+  UNHEALTHY. If no health check is specified, the resulting autohealing policy
+  will be triggered by instance's status i.e. the autohealing action (RECREATE)
+  on an instance will be performed if the instance.status is not RUNNING.
   """
-
-  HEALTH_CHECK_ARG = health_checks_flags.HealthCheckArgument(
-      '', '--health-check', required=False)
 
   @classmethod
   def Args(cls, parser):
-    health_check_group = parser.add_mutually_exclusive_group()
-    cls.HEALTH_CHECK_ARG.AddArgument(health_check_group)
-    auto_healing_utils.AddAutohealingArgs(
-        parser=parser, health_check_group=health_check_group)
+    auto_healing_utils.AddAutohealingArgs(parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -65,7 +54,7 @@ class SetAutohealing(base.Command):
     messages = client.messages
 
     health_check = managed_instance_groups_utils.GetHealthCheckUri(
-        holder.resources, args, self.HEALTH_CHECK_ARG)
+        holder.resources, args)
     auto_healing_policies = (
         managed_instance_groups_utils.CreateAutohealingPolicies(
             client.messages, health_check, args.initial_delay))

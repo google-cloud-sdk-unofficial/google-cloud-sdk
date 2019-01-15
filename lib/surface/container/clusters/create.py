@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Create cluster command."""
 
 from __future__ import absolute_import
@@ -70,8 +69,8 @@ def _Args(parser):
   """Register flags for this command.
 
   Args:
-    parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
+    parser: An argparse.ArgumentParser-like object. It is mocked out in order to
+      capture some information, but behaves like an ArgumentParser.
   """
   parser.add_argument(
       'name',
@@ -150,7 +149,8 @@ Cannot be used with the "--create-subnetwork" option.
   flags.AddImageProjectFlag(parser, hidden=True)
   flags.AddImageFamilyFlag(parser, hidden=True)
   flags.AddNodeLabelsFlag(parser)
-  flags.AddTagsFlag(parser, """\
+  flags.AddTagsFlag(
+      parser, """\
 Applies the given Compute Engine tags (comma separated) on all nodes in the new
 node-pool. Example:
 
@@ -350,8 +350,7 @@ class Create(base.CreateCommand):
           'access to the master, see the `--master-authorized-networks` flags '
           'and our documentation on setting up private clusters: '
           'https://cloud.google.com'
-          '/kubernetes-engine/docs/how-to/private-clusters'
-      )
+          '/kubernetes-engine/docs/how-to/private-clusters')
 
     if not (options.metadata and
             'disable-legacy-endpoints' in options.metadata):
@@ -363,17 +362,20 @@ class Create(base.CreateCommand):
                   '`--metadata disable-legacy-endpoints=true`.')
 
     if options.enable_kubernetes_alpha:
-      console_io.PromptContinue(message=constants.KUBERNETES_ALPHA_PROMPT,
-                                throw_if_unattended=True,
-                                cancel_on_no=True)
+      console_io.PromptContinue(
+          message=constants.KUBERNETES_ALPHA_PROMPT,
+          throw_if_unattended=True,
+          cancel_on_no=True)
 
     if options.enable_autorepair is not None:
-      log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
-          options.enable_autorepair, 'autorepair'))
+      log.status.Print(
+          messages.AutoUpdateUpgradeRepairMessage(options.enable_autorepair,
+                                                  'autorepair'))
 
     if options.enable_autoupgrade is not None:
-      log.status.Print(messages.AutoUpdateUpgradeRepairMessage(
-          options.enable_autoupgrade, 'autoupgrade'))
+      log.status.Print(
+          messages.AutoUpdateUpgradeRepairMessage(options.enable_autoupgrade,
+                                                  'autoupgrade'))
 
     if options.accelerators is not None:
       log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
@@ -395,8 +397,8 @@ class Create(base.CreateCommand):
 
     log.CreatedResource(cluster_ref)
     cluster_url = util.GenerateClusterUrl(cluster_ref)
-    log.status.Print(
-        'To inspect the contents of your cluster, go to: ' + cluster_url)
+    log.status.Print('To inspect the contents of your cluster, go to: ' +
+                     cluster_url)
     if operation.detail:
       # Non-empty detail on a DONE create operation should be surfaced as
       # a warning to end user.

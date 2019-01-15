@@ -46,6 +46,7 @@ class Create(base.CreateCommand):
         with_egress_support=True,
         with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
+    flags.AddEnableLogging(parser, default=None)
     parser.display_info.AddCacheUpdater(flags.FirewallsCompleter)
 
   def _CreateFirewall(self, holder, args):
@@ -105,6 +106,10 @@ class Create(base.CreateCommand):
 
     firewall.sourceServiceAccounts = args.source_service_accounts
     firewall.targetServiceAccounts = args.target_service_accounts
+
+    if args.enable_logging is not None:
+      log_config = client.messages.FirewallLogConfig(enable=args.enable_logging)
+      firewall.logConfig = log_config
     return firewall, firewall_ref.project
 
   def Run(self, args):
@@ -138,12 +143,6 @@ class BetaCreate(Create):
         with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
     flags.AddEnableLogging(parser, default=None)
-
-  def _CreateFirewall(self, holder, args):
-    firewall, project = super(BetaCreate, self)._CreateFirewall(holder, args)
-    firewall.enableLogging = args.enable_logging
-
-    return firewall, project
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -37,7 +37,8 @@ class List(base.ListCommand):
 
   def Run(self, args):
     queues_client = GetApiAdapter(self.ReleaseTrack()).queues
-    app_location = args.location or app.ResolveAppLocation()
+    app_location = args.location or app.ResolveAppLocation(
+        parsers.ParseProject())
     region_ref = parsers.ParseLocation(app_location)
     return queues_client.List(region_ref, args.limit, args.page_size)
 

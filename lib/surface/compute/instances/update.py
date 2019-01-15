@@ -61,6 +61,10 @@ class Update(base.UpdateCommand):
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, supports_shielded_vm=False,
+           supports_display_device=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -75,6 +79,7 @@ class Update(base.UpdateCommand):
     min_cpu_platform_operation_ref = None
     deletion_protection_operation_ref = None
     shielded_vm_config_ref = None
+    display_device_ref = None
 
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
@@ -104,9 +109,7 @@ class Update(base.UpdateCommand):
         'Setting deletion protection of instance [{0}] to [{1}]',
         instance_ref.Name(), args.deletion_protection) or result
 
-    # TODO(b/80138906): Release track should not be used like this.
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
-                               base.ReleaseTrack.BETA]:
+    if supports_shielded_vm:
       if (args.IsSpecified('shielded_vm_secure_boot') or
           args.IsSpecified('shielded_vm_vtpm') or
           args.IsSpecified('shielded_vm_integrity_monitoring')):
@@ -124,6 +127,16 @@ class Update(base.UpdateCommand):
             operation_poller, shielded_vm_integrity_policy_ref,
             'Setting shieldedVMIntegrityPolicy of instance [{0}]',
             instance_ref.Name()) or result
+
+    if supports_display_device and args.IsSpecified('enable_display_device'):
+      display_device_ref = self._GetDisplayDeviceOperationRef(
+          args.enable_display_device,
+          instance_ref,
+          holder)
+      result = self._WaitForResult(
+          operation_poller, display_device_ref,
+          'Updating display device of instance [{0}]',
+          instance_ref.Name()) or result
 
     return result
 
@@ -220,6 +233,20 @@ class Update(base.UpdateCommand):
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
+  def _GetDisplayDeviceOperationRef(self, display_device, instance_ref, holder):
+    client = holder.client.apitools_client
+    messages = holder.client.messages
+    request = messages.ComputeInstancesUpdateDisplayDeviceRequest(
+        displayDevice=messages.DisplayDevice(
+            enableDisplay=display_device),
+        project=instance_ref.project,
+        instance=instance_ref.instance,
+        zone=instance_ref.zone)
+
+    operation = client.instances.UpdateDisplayDevice(request)
+    return holder.resources.Parse(
+        operation.selfLink, collection='compute.zoneOperations')
+
   def _WaitForResult(self, operation_poller, operation_ref, message, *args):
     if operation_ref:
       return waiter.WaitFor(
@@ -241,6 +268,9 @@ class UpdateBeta(Update):
         parser, use_default_value=False, for_update=True)
     flags.AddShieldedVMIntegrityPolicyArgs(parser)
 
+  def Run(self, args):
+    return self._Run(args, supports_shielded_vm=True)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
@@ -255,6 +285,12 @@ class UpdateAlpha(Update):
     flags.AddShieldedVMConfigArgs(
         parser, use_default_value=False, for_update=True)
     flags.AddShieldedVMIntegrityPolicyArgs(parser)
+    flags.AddDisplayDeviceArg(parser, is_update=True)
+
+  def Run(self, args):
+    return self._Run(args,
+                     supports_shielded_vm=True,
+                     supports_display_device=True)
 
 
 Update.detailed_help = DETAILED_HELP

@@ -32,7 +32,8 @@ from googlecloudsdk.core import resources
 import six
 
 
-def _Args(parser, release_track):
+def _Args(parser, release_track, supports_force_create=False,
+          supports_storage_location=False):
   """Set Args based on Release Track."""
   # GA Args
   parser.display_info.AddFormat(flags.LIST_FORMAT)
@@ -54,9 +55,12 @@ def _Args(parser, release_track):
   kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
 
   # Alpha and Beta Args
-  if release_track in (base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA):
+  if supports_force_create:
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
+
+  if supports_storage_location:
+    compute_flags.AddStorageLocationFlag(parser, 'image')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -73,7 +77,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args):
+  def _Run(self, args, supports_storage_location=False):
     """Returns a list of requests necessary for adding images."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -156,6 +160,9 @@ class Create(base.CreateCommand):
         guest_os_feature_messages.append(guest_os_feature)
       image.guestOsFeatures = guest_os_feature_messages
 
+    if (supports_storage_location and args.IsSpecified('storage_location')):
+      image.storageLocations = [args.storage_location]
+
     request = messages.ComputeImagesInsertRequest(
         image=image,
         project=image_ref.project)
@@ -176,7 +183,7 @@ class Create(base.CreateCommand):
                                  request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create Google Compute Engine images."""
 
@@ -186,11 +193,26 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls.ReleaseTrack())
+    _Args(parser, cls.ReleaseTrack(), supports_force_create=True)
+    parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Google Compute Engine images."""
+
+  _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser,
+          cls.ReleaseTrack(),
+          supports_force_create=True,
+          supports_storage_location=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, supports_storage_location=True)
 
 
 Create.detailed_help = {

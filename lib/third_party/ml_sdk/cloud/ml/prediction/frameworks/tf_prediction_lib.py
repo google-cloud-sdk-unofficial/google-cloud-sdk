@@ -11,10 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Utilities for running predictions for TF framework."""
+"""Utilities for running predictions for TF framework.
+
+Note that we avoid importing tensorflow and tensorflow.contrib at the top.
+This is because this module gets loaded for other frameworks as well,
+and loading xgboost after tensorflow.contrib causes an error.
+More context: b/71906188#comment20.
+"""
 import base64
 import collections
 import logging
+import os
 
 from .. import custom_code_utils
 from .. import prediction_utils
@@ -27,15 +34,20 @@ import tensorflow.contrib  # pylint: disable=unused-import
 
 from tensorflow.python.client import session as tf_session
 from tensorflow.python.framework import dtypes
+from tensorflow.python.lib.io import file_io
 from tensorflow.python.saved_model import loader
 from tensorflow.python.saved_model import signature_constants
 from tensorflow.python.saved_model import tag_constants
 from tensorflow.python.util import compat
 
-
 # --------------------------
 # prediction.frameworks.tf_prediction_lib
 # --------------------------
+_CUSTOM_OP_DIRECTORY_NAME = "assets.extra"
+_CUSTOM_OP_SUFFIX = "*.so"
+_CUSTOM_OP_LOCAL_DIR = "/tmp/custom_ops/"
+
+
 def columnarize(instances):
   """Columnarize inputs.
 
@@ -183,13 +195,15 @@ def load_tf_model(model_path, tags=(tag_constants.SERVING,), config=None):
   Raises:
     PredictionError: if the model could not be loaded.
   """
+  _load_tf_custom_op(model_path)
   if loader.maybe_saved_model_directory(model_path):
     try:
       logging.info("Importing tensorflow.contrib in load_tf_model")
-      # pylint: disable=redefined-outer-name,unused-variable,g-import-not-at-top
+
+      # pylint: disable=g-import-not-at-top
       import tensorflow as tf
       from tensorflow.python.framework.ops import Graph
-      # pylint: enable=redefined-outer-name,unused-variable,g-import-not-at-top
+      # pylint: enable=g-import-not-at-top
       if tf.__version__.startswith("1.0"):
         session = tf_session.Session(target="", graph=None, config=config)
       else:
@@ -345,7 +359,7 @@ class SessionClient(TensorFlowClient):
         # case of ModelServer.
         outputs = self._session.run(fetches=fetches, feed_dict=unaliased)
       except Exception as e:
-        logging.error("Exception during running the graph: " + str(e))
+        logging.error("Exception during running the graph: %s", e)
         raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
                               "Exception during running the graph: " + str(e))
 
@@ -438,7 +452,7 @@ class TensorFlowModel(prediction_utils.BaseModel):
       try:
         preprocessed = self._preprocess_fn(preprocessed, **kwargs)
       except Exception as e:
-        logging.error("Exception during preprocessing: " + str(e))
+        logging.error("Exception during preprocessing: %s", e)
         raise PredictionError(PredictionError.INVALID_INPUTS,
                               "Exception during preprocessing: " + str(e))
     return self._get_columns(preprocessed, stats, signature)
@@ -593,3 +607,33 @@ def _encode_str_tensor(data, tensor_name):
     return {"b64": compat.as_text(base64.b64encode(data))}
   else:
     return compat.as_text(data)
+
+
+def _load_tf_custom_op(model_path):
+  """Loads a custom TF OP (in .so format) from /assets.extra directory."""
+  assets_dir = os.path.join(model_path, _CUSTOM_OP_DIRECTORY_NAME)
+  if file_io.is_directory(assets_dir):
+    custom_ops_pattern = os.path.join(assets_dir, _CUSTOM_OP_SUFFIX)
+    for custom_op_path_original in file_io.get_matching_files(
+        custom_ops_pattern):
+      logging.info("Found custom op file: %s", custom_op_path_original)
+      if custom_op_path_original.startswith("gs://"):
+        if not os.path.isdir(_CUSTOM_OP_LOCAL_DIR):
+          os.makedirs(_CUSTOM_OP_LOCAL_DIR)
+        custom_op_path_local = os.path.join(
+            _CUSTOM_OP_LOCAL_DIR, os.path.basename(custom_op_path_original))
+        logging.info("Copying custop op from: %s to: %s",
+                     custom_op_path_original, custom_op_path_local)
+        file_io.copy(custom_op_path_original, custom_op_path_local, True)
+      else:
+        custom_op_path_local = custom_op_path_original
+      try:
+        import tensorflow as tf  # pylint: disable=g-import-not-at-top
+        logging.info("Loading custom op: %s", custom_op_path_local)
+        logging.info("TF Version: %s", tf.__version__)
+        tf.load_op_library(custom_op_path_local)
+      except RuntimeError as e:
+        logging.exception(
+            "Failed to load custom op: %s with error: %s. Prediction "
+            "will likely fail due to missing operations.", custom_op_path_local,
+            e)

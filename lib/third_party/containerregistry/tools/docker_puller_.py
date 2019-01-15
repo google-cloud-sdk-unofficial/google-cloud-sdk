@@ -30,6 +30,7 @@ from containerregistry.client.v2_2 import save
 from containerregistry.client.v2_2 import v2_compat
 from containerregistry.tools import logging_setup
 from containerregistry.tools import patched
+from containerregistry.tools import platform_args
 from containerregistry.transport import retry
 from containerregistry.transport import transport_pool
 
@@ -43,16 +44,16 @@ parser.add_argument(
     '--name',
     action='store',
     help=('The name of the docker image to pull and save. '
-          'Supports fully-qualified tag or digest references.'))
+          'Supports fully-qualified tag or digest references.'),
+    required=True)
 
 parser.add_argument(
-    '--tarball', action='store', help='Where to save the image tarball.')
+    '--tarball', action='store', help='Where to save the image tarball.',
+    required=True)
+
+platform_args.AddArguments(parser)
 
 _DEFAULT_TAG = 'i-was-a-digest'
-
-_PROCESSOR_ARCHITECTURE = 'amd64'
-
-_OPERATING_SYSTEM = 'linux'
 
 
 # Today save.tarball expects a tag, which is emitted into one or more files
@@ -78,10 +79,6 @@ def main():
   logging_setup.DefineCommandLineArgs(parser)
   args = parser.parse_args()
   logging_setup.Init(args=args)
-
-  if not args.name or not args.tarball:
-    logging.fatal('--name and --tarball are required arguments.')
-    sys.exit(1)
 
   retry_factory = retry.Factory()
   retry_factory = retry_factory.WithSourceTransportCallable(httplib2.Http)
@@ -115,10 +112,7 @@ def main():
       logging.info('Pulling manifest list from %r ...', name)
       with image_list.FromRegistry(name, creds, transport) as img_list:
         if img_list.exists():
-          platform = image_list.Platform({
-              'architecture': _PROCESSOR_ARCHITECTURE,
-              'os': _OPERATING_SYSTEM,
-          })
+          platform = platform_args.FromArgs(args)
           # pytype: disable=wrong-arg-types
           with img_list.resolve(platform) as default_child:
             save.tarball(_make_tag_if_digest(name), default_child, tar)

@@ -79,10 +79,7 @@ class SetTargetPools(base.Command):
               collection='compute.targetPools'))
     pools = [pool_ref.SelfLink() for pool_ref in pool_refs]
 
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      return self._MakeSetTargetPoolsRequest(client, igm_ref, pools)
-    else:
-      return self._MakePatchRequest(client, igm_ref, pools)
+    return self._MakePatchRequest(client, igm_ref, pools)
 
   def _GetRegionName(self, igm_ref):
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
@@ -92,32 +89,6 @@ class SetTargetPools(base.Command):
     else:
       raise ValueError('Unknown reference type {0}'.format(
           igm_ref.Collection()))
-
-  def _MakeSetTargetPoolsRequest(self, client, igm_ref, pools):
-    messages = client.messages
-
-    if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = client.apitools_client.instanceGroupManagers
-      request = (
-          messages.ComputeInstanceGroupManagersSetTargetPoolsRequest(
-              project=igm_ref.project,
-              zone=igm_ref.zone,
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersSetTargetPoolsRequest=(
-                  messages.InstanceGroupManagersSetTargetPoolsRequest(
-                      targetPools=pools))))
-    else:
-      service = client.apitools_client.regionInstanceGroupManagers
-      request = (
-          messages.ComputeRegionInstanceGroupManagersSetTargetPoolsRequest(
-              project=igm_ref.project,
-              region=igm_ref.region,
-              instanceGroupManager=igm_ref.Name(),
-              regionInstanceGroupManagersSetTargetPoolsRequest=(
-                  messages.RegionInstanceGroupManagersSetTargetPoolsRequest(
-                      targetPools=pools))))
-
-    return client.MakeRequests([(service, 'SetTargetPools', request)])
 
   def _MakePatchRequest(self, client, igm_ref, pools):
     messages = client.messages

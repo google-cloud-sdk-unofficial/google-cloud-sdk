@@ -40,7 +40,7 @@ def _CommonArgs(parser):
 # pylint: disable=line-too-long
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Lists information about the specified image.
+  r"""Lists information about the specified image.
 
   ## EXAMPLES
 
@@ -52,9 +52,11 @@ class Describe(base.DescribeCommand):
 
   Find the digest for a tag:
 
-    $ {command} gcr.io/myproject/myimage:tag --format='value(image_summary.digest)'
+    $ {command} gcr.io/myproject/myimage:tag \
+      --format='value(image_summary.digest)'
           OR
-    $ {command} gcr.io/myproject/myimage:tag --format='value(image_summary.fully_qualified_digest)'
+    $ {command} gcr.io/myproject/myimage:tag \
+      --format='value(image_summary.fully_qualified_digest)'
 
   """
 
@@ -85,7 +87,7 @@ class Describe(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeAlphaAndBeta(Describe):
-  """Lists container analysis data for a given image.
+  r"""Lists container analysis data for a given image.
 
   Lists container analysis data for a valid image.
 
@@ -99,11 +101,14 @@ class DescribeAlphaAndBeta(Describe):
 
   Find the digest for a tag:
 
-    $ {command} gcr.io/myproject/myimage:tag --format='value(image_summary.digest)'
+    $ {command} gcr.io/myproject/myimage:tag \
+      --format='value(image_summary.digest)'
           OR
-    $ {command} gcr.io/myproject/myimage:tag --format='value(image_summary.fully_qualified_digest)'
+    $ {command} gcr.io/myproject/myimage:tag \
+      --format='value(image_summary.fully_qualified_digest)'
 
-  See package vulnerabilities found by the Container Analysis API for the specified image:
+  See package vulnerabilities found by the Container Analysis API for the
+  specified image:
 
     $ {command} gcr.io/myproject/myimage@digest --show-package-vulnerability
   """
@@ -175,36 +180,31 @@ class DescribeAlphaAndBeta(Describe):
           occ_filter = filter_from_flags
         else:
           occ_filter = '({occf}) AND ({flagf})'.format(
-              occf=args.metadata_filter,
-              flagf=filter_from_flags)
+              occf=args.metadata_filter, flagf=filter_from_flags)
       else:
         occ_filter = args.metadata_filter
 
       with util.WrapExpectedDockerlessErrors(args.image_name):
         img_name = util.GetDigestFromName(args.image_name)
         data = util.TransformContainerAnalysisData(
-            img_name, occ_filter,
+            img_name,
+            occ_filter,
             deployments=(args.show_deployment or args.show_all_metadata))
         # Clear out fields that weren't asked for and have no data.
-        if (not data.build_details_summary.build_details
-            and not args.show_build_details
-            and not args.show_all_metadata):
+        if (not data.build_details_summary.build_details and
+            not args.show_build_details and not args.show_all_metadata):
           del data.build_details_summary
-        if (not data.package_vulnerability_summary.vulnerabilities
-            and not args.show_package_vulnerability
-            and not args.show_all_metadata):
+        if (not data.package_vulnerability_summary.vulnerabilities and
+            not args.show_package_vulnerability and not args.show_all_metadata):
           del data.package_vulnerability_summary
-        if (not data.discovery_summary.discovery
-            and not args.show_package_vulnerability
-            and not args.show_all_metadata):
+        if (not data.discovery_summary.discovery and
+            not args.show_package_vulnerability and not args.show_all_metadata):
           del data.discovery_summary
-        if (not data.image_basis_summary.base_images
-            and not args.show_image_basis
-            and not args.show_all_metadata):
+        if (not data.image_basis_summary.base_images and
+            not args.show_image_basis and not args.show_all_metadata):
           del data.image_basis_summary
-        if (not data.deployment_summary.deployments
-            and not args.show_deployment
-            and not args.show_all_metadata):
+        if (not data.deployment_summary.deployments and
+            not args.show_deployment and not args.show_all_metadata):
           del data.deployment_summary
         return data
     else:

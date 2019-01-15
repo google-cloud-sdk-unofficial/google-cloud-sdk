@@ -58,7 +58,7 @@ class Untag(base.DeleteCommand):
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
+        to capture some information, but behaves like an ArgumentParser.
     """
     flags.AddTagOrDigestPositional(parser, verb='untag', tags_only=True)
 
@@ -94,8 +94,8 @@ class Untag(base.DeleteCommand):
               'Image could not be found: [{}]'.format(str(tag)))
 
       if not tags:
-        log.warning('No tags found matching image names [%s].', ', '.join(
-            args.image_names))
+        log.warning('No tags found matching image names [%s].',
+                    ', '.join(args.image_names))
         return
       for tag, digest in six.iteritems(digests):
         log.status.Print('Tag: [{}]'.format(str(tag)))
@@ -134,5 +134,5 @@ class Untag(base.DeleteCommand):
     # calling Delete on an image referenced by tag only deletes the tag
     docker_session.Delete(
         creds=util.CredentialProvider(), name=tag, transport=http_obj)
-    log.DeletedResource(
-        '[{tag}] (referencing [{digest}])'.format(tag=tag, digest=digests[tag]))
+    log.DeletedResource('[{tag}] (referencing [{digest}])'.format(
+        tag=tag, digest=digests[tag]))

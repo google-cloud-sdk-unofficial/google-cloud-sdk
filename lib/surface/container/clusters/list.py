@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """List clusters command."""
 
 from __future__ import absolute_import
@@ -56,6 +55,7 @@ class List(base.ListCommand):
 
     def sort_key(cluster):
       return (cluster.zone, cluster.name)
+
     try:
       clusters = adapter.ListClusters(project, location)
       clusters.clusters = sorted(clusters.clusters, key=sort_key)
