@@ -1,7 +1,7 @@
 - release_tracks: [BETA, GA]
   help_text:
     brief: Get transcripts of short (less than 60 seconds) audio from an audio file.
-    DESCRIPTION: |
+    description: |
       Get a transcript of an audio file that is less than 60 seconds. You can use
       an audio file that is on your local drive or a Google Cloud Storage URL.
 
@@ -24,7 +24,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Get transcripts of short (less than 60 seconds) audio from an audio file.
-    DESCRIPTION: |
+    description: |
       Get a transcript of an audio file that is less than 60 seconds. You can use
       an audio file that is on your local drive or a Google Cloud Storage URL.
 

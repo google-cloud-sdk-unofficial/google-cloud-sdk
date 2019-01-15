@@ -2,9 +2,9 @@
   help_text:
     brief: |
       Describe an instance.
-    DESCRIPTION: |
+    description: |
       Describes the given instance.
-    EXAMPLES: |
+    examples: |
       The following will describe the instance named 'instance1' for the active project:
 
         $ {command} instance1

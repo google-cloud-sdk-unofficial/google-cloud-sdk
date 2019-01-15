@@ -1,6 +1,6 @@
 - help_text:
     brief: Show details about a job.
-    DESCRIPTION: Show details about a job.
+    description: Show details about a job.
 
   request:
     collection: cloudscheduler.projects.locations.jobs

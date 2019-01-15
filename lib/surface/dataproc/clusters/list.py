@@ -108,7 +108,7 @@ class List(base.ListCommand):
         projectId=project, region=region, filter=backend_filter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListBeta(List):
   """View a list of clusters in a project.
 

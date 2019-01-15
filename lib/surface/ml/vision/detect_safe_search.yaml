@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect explicit content in an image.
-    DESCRIPTION: |
+    description: |
       Safe Search Detection detects adult content, violent content, medical
       content and spoof content in an image.
 
@@ -25,7 +25,7 @@
 
   help_text:
     brief: Detect explicit content in an image.
-    DESCRIPTION: |
+    description: |
       Safe Search Detection detects adult content, violent content, medical
       content and spoof content in an image.
 

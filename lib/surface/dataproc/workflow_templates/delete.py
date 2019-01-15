@@ -49,7 +49,7 @@ class Delete(base.DeleteCommand):
     dataproc.client.projects_regions_workflowTemplates.Delete(request)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeleteBeta(Delete):
   """Delete a workflow template."""
 

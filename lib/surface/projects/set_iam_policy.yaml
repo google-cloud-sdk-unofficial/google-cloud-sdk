@@ -2,11 +2,11 @@
 
   help_text:
     brief: Set IAM policy for a project.
-    DESCRIPTION: |
+    description: |
       Sets the IAM policy for a project, given a project ID and a file encoded
       in JSON or YAML that contains the IAM policy.
 
-    EXAMPLES: |
+    examples: |
       The following command reads an IAM policy defined in a JSON file
       `policy.json` and sets it for a project with the ID
       `example-project-id-1`:

@@ -14,7 +14,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Finds potentially sensitive data in image content.
-    DESCRIPTION: |
+    description: |
       Finds potentially sensitive data in image content.
 
   request:

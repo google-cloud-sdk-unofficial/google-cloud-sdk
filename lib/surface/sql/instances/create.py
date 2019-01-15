@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
+from googlecloudsdk.api_lib.sql import instances as api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -72,12 +73,6 @@ def AddBaseArgs(parser):
       help=('First Generation instances only. The App Engine app this '
             'instance should follow. It must be in the same region as '
             'the instance.'))
-  # TODO(b/73362466): Add `--zone` and deprecate `--gce-zone`.
-  parser.add_argument(
-      '--gce-zone',
-      required=False,
-      help=('The preferred Compute Engine zone (e.g. us-central1-a, '
-            'us-central1-b, etc.).'))
   parser.add_argument(
       'instance',
       type=command_validate.InstanceNameRegexpValidator(),
@@ -101,14 +96,18 @@ def AddBaseArgs(parser):
       help=('First Generation instances only. The pricing plan for this '
             'instance.'))
   # TODO(b/31989340): add remote completion
-  # TODO(b/73362466): Make zone and region mutually exclusive.
-  parser.add_argument(
+  # TODO(b/73362371): Make specifying a location required.
+  location_group = parser.add_mutually_exclusive_group()
+  location_group.add_argument(
       '--region',
       required=False,
       default='us-central',
-      help=('The regional location (e.g. asia-east1, us-east1). See the full '
+      help=('Regional location (e.g. asia-east1, us-east1). See the full '
             'list of regions at '
             'https://cloud.google.com/sql/docs/instance-locations.'))
+  flags.AddZone(location_group, help_text=(
+      'Preferred Compute Engine zone (e.g. us-central1-a, '
+      'us-central1-b, etc.).'))
   parser.add_argument(
       '--replica-type',
       choices=['READ', 'FAILOVER'],
@@ -128,16 +127,7 @@ def AddBaseArgs(parser):
       choices=['SSD', 'HDD'],
       default=None,
       help='The storage type for the instance. The default is SSD.')
-  parser.add_argument(
-      '--tier',
-      '-t',
-      required=False,
-      help=('The tier for this instance. For Second Generation instances, '
-            'TIER is the instance\'s machine type (e.g., db-n1-standard-1). '
-            'For PostgreSQL instances, only shared-core machine types '
-            '(e.g., db-f1-micro) apply. The default tier is db-n1-standard-1. '
-            'A complete list of tiers is available here: '
-            'https://cloud.google.com/sql/pricing'))
+  flags.AddTier(parser)
 
 
 def AddBetaArgs(parser):
@@ -210,6 +200,16 @@ def RunBaseCreateCommand(args, release_track):
           args,
           instance_ref=instance_ref,
           release_track=release_track))
+
+  # TODO(b/122660263): Remove when V1 instances are no longer supported.
+  # V1 instances are deprecated. Prompt to continue if one is being created.
+  if api_util.IsInstanceV1(instance_resource):
+    log.warning(
+        'First Generation instances will be automatically upgraded '
+        'to Second Generation starting March 4th, 2020, and First Generation '
+        'will be fully decommissioned on March 25, 2020. We recommend you '
+        'create a Second Generation instance.')
+    console_io.PromptContinue(cancel_on_no=True)
 
   if args.pricing_plan == 'PACKAGE':
     console_io.PromptContinue(

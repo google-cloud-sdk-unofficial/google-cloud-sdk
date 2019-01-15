@@ -1,37 +1,36 @@
-- &ga_command
-  release_tracks: [BETA]
-  help_text:
-    brief: Add IAM policy binding to a device registry.
-    DESCRIPTION: |
-      Add an IAM policy binding to a device registry.
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Add IAM policy binding to a device registry.
+  description: |
+    Add an IAM policy binding to a device registry.
 
-    EXAMPLES: |
-      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      with registry 'my-registry' and region 'us-central1', run:
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with registry 'my-registry' and region 'us-central1', run:
 
-        $ {command} my-registry --region='us-central1' --member='user:test-user@gmail.com' --role='roles/editor'
+      $ {command} my-registry --region='us-central1' --member='user:test-user@gmail.com' --role='roles/editor'
 
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
 
-  request:
-    collection: cloudiot.projects.locations.registries
+request:
+  collection: cloudiot.projects.locations.registries
 
-  arguments:
-    resource:
-      help_text: The device registry for which to add IAM policy binding to.
-      spec: !REF googlecloudsdk.command_lib.iot.resources:registry
+arguments:
+  resource:
+    help_text: The device registry for which to add IAM policy binding to.
+    spec: !REF googlecloudsdk.command_lib.iot.resources:registry
 
-- <<: *ga_command
+ALPHA:
   release_tracks: [ALPHA]
 
   help_text:
     brief: Add IAM policy binding to a device registry.
-    DESCRIPTION: |
+    description: |
       Add an IAM policy binding to the IAM policy of a device registry. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
       with registry 'my-registry' and region 'us-central1', run:
 

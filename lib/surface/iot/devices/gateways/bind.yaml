@@ -1,6 +1,6 @@
 - help_text:
     brief: Associate a device with a gateway.
-    DESCRIPTION: Associate a device with a gateway.
+    description: Associate a device with a gateway.
 
   request:
     collection: cloudiot.projects.locations.registries

@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Update a BigQuery dataset.
-    DESCRIPTION:  Update a BigQuery dataset.
-    EXAMPLES: |
+    description:  Update a BigQuery dataset.
+    examples: |
       The following command updates the description on a dataset with ID `my-dataset`
 
         $ {command}  my-dataset --description 'My New Dataset Description'

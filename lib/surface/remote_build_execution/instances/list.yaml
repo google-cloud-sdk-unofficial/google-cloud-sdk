@@ -2,9 +2,9 @@
   help_text:
     brief: |
       List instances in given project.
-    DESCRIPTION: |
+    description: |
       Lists all the instances for a given project.
-    EXAMPLES: |
+    examples: |
       The following will list all instances for the active project:
 
         $ {command}

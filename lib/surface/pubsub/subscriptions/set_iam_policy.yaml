@@ -2,7 +2,7 @@
 
   help_text:
     brief: Set the IAM policy for a Cloud Pub/Sub Subscription.
-    DESCRIPTION: |
+    description: |
       This command replaces the existing IAM policy for a subscription, given a
       subscription and a file encoded in JSON or YAML that contains the IAM
       policy.
@@ -13,7 +13,7 @@
       if the policy for the subscription has been subsequently updated.) A
       policy file that does not contain an etag value will replace any existing
       policy for the subscription.
-    EXAMPLES: |
+    examples: |
       The following command will read an IAM policy defined in a JSON file
       `policy.json` and set it for a subscription `my-sub`
 

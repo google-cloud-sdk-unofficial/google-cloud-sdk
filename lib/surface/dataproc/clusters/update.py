@@ -215,7 +215,7 @@ class Update(base.UpdateCommand):
     return cluster
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update labels and/or the number of worker nodes in a cluster.
 

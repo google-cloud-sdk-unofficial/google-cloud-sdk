@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect popular product logos within an image.
-    DESCRIPTION: |
+    description: |
       Detect popular product logos within an image.
 
   request:
@@ -25,7 +25,7 @@
 
   help_text:
     brief: Detect popular product logos within an image.
-    DESCRIPTION: |
+    description: |
       Detect popular product logos within an image.
 
   request:

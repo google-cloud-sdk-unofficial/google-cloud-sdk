@@ -47,7 +47,7 @@ class Describe(base.DescribeCommand):
     return workflow_template
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeBeta(Describe):
   """Describe a workflow template."""
 

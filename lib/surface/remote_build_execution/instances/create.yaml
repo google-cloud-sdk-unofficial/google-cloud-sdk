@@ -2,10 +2,10 @@
   help_text:
     brief: |
       Creates a Remote Build Execution instance.
-    DESCRIPTION: |
+    description: |
       Creates a Remote Build Execution instance, which contains a remote cache and can contain
       worker pools for execution of build and test actions.
-    EXAMPLES: |
+    examples: |
       The following creates an instance named 'new_instance':
 
         $ {command} new_instance

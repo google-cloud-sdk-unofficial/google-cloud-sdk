@@ -1,6 +1,6 @@
 - help_text:
     brief: Start a Cloud TPU.
-    DESCRIPTION: |
+    description: |
       Start a Cloud TPU.
 
   request:

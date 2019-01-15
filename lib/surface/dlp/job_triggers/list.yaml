@@ -14,7 +14,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: List Cloud DLP job triggers.
-    DESCRIPTION: |
+    description: |
       List Cloud DLP job triggers.
 
   request:
@@ -27,9 +27,10 @@
     id_field: name
 
   arguments:
-    resource:  # TODO: Remove when (b/79129961) is resolved.
+    resource:
       help_text: The project to list job triggers for.
       spec: !REF googlecloudsdk.command_lib.dlp.resources:project
+      removed_flags: [project]
 
 
   output:

@@ -14,13 +14,13 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Schedules a job to inspect content in a Google Cloud Storage bucket.
-    DESCRIPTION: |
+    description: |
       Schedules a job to inspect content in a Google Cloud Storage bucket for
       sensitive data.
 
       See [Inspecting Storage and Databases for Sensitive Data](https://cloud.google.com/dlp/docs/inspecting-storage)
       for more details.
-    EXAMPLES: |
+    examples: |
       The following command creates a job `my-gcs-job` to scan files in the
       Google Cloud Storage path `gs://testproject/dlp/*`:
 

@@ -1,7 +1,7 @@
 - help_text:
 
     brief: List all the annotations of a taxonomy.
-    DESCRIPTION: List all the annotations of a taxonomy.
+    description: List all the annotations of a taxonomy.
 
   request:
     collection: categorymanager.projects.taxonomies.annotations

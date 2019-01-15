@@ -2,7 +2,7 @@
 
   help_text:
     brief: List access policies.
-    DESCRIPTION: List access policies.
+    description: List access policies.
 
   request:
     collection: accesscontextmanager.accessPolicies

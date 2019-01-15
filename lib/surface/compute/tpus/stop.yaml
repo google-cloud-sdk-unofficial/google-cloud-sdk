@@ -1,6 +1,6 @@
 - help_text:
     brief: Stop a Cloud TPU.
-    DESCRIPTION: |
+    description: |
       Stop a Cloud TPU.
 
   request:

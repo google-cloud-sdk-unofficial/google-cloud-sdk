@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect general labels for videos.
-    DESCRIPTION: |
+    description: |
       Detect general categories in videos, such as modes of transportation or
       animals. Use the --detection-mode flag to control whether labels are
       detected for shots, frames, or both.

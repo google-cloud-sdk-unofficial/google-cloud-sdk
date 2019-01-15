@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: List all BigQuery jobs in a project.
-    DESCRIPTION:  List all BigQuery jobs in a project.
-    EXAMPLES: |
+    description:  List all BigQuery jobs in a project.
+    examples: |
       The following command list all jobs in current project (for all users)
 
         $ {command}  --show-all-users

@@ -1,37 +1,34 @@
-- &ga_command
-  release_tracks: [BETA, GA]
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Add IAM policy binding to a Cloud Spanner database.
+  description: |
+    Add an IAM policy binding to a Cloud Spanner database.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with database 'my-database' and instance 'my-instance', run:
+
+      $ {command} my-database --instance='my-instance' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: spanner.projects.instances.databases
+
+arguments:
+  resource:
+    help_text: The Cloud Spanner database to which to add the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.spanner.resources:database
+
+ALPHA:
   help_text:
     brief: Add IAM policy binding to a Cloud Spanner database.
-    DESCRIPTION: |
-      Add an IAM policy binding to a Cloud Spanner database.
-
-    EXAMPLES: |
-      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      with database 'my-database' and instance 'my-instance', run:
-
-        $ {command} my-database --instance='my-instance' --member='user:test-user@gmail.com' --role='roles/editor'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  request:
-    collection: spanner.projects.instances.databases
-
-  arguments:
-    resource:
-      help_text: The Cloud Spanner database to which to add the IAM policy binding.
-      spec: !REF googlecloudsdk.command_lib.spanner.resources:database
-
-- <<: *ga_command
-  release_tracks: [ALPHA]
-
-  help_text:
-    brief: Add IAM policy binding to a Cloud Spanner database.
-    DESCRIPTION: |
+    description: |
       Add an IAM policy binding to the IAM policy of Cloud Spanner database. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
       with database 'my-database' and instance 'my-instance', run:
 

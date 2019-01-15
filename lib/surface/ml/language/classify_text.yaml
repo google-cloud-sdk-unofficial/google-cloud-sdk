@@ -2,7 +2,7 @@
 
   help_text:
     brief: Classifies input document into categories.
-    DESCRIPTION: |
+    description: |
       Classifies input document into categories. Returns a list of categories
       representing the document. Only the most relevant categories a document
       are returned e.g. if  `/Science` and `/Science/Astronomy` both apply to a
@@ -29,7 +29,7 @@
 
   help_text:
     brief: Classifies input document into categories.
-    DESCRIPTION: |
+    description: |
       Classifies input document into categories. Returns a list of categories
       representing the document. Only the most relevant categories a document
       are returned e.g. if  `/Science` and `/Science/Astronomy` both apply to a

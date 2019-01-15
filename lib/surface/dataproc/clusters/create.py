@@ -110,7 +110,7 @@ class Create(base.CreateCommand):
                                                  messages.Cluster.LabelsValue)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a cluster."""
 

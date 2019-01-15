@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect popular natural and man-made structures within an image.
-    DESCRIPTION: |
+    description: |
       Google Cloud Vision will recognize landmarks in an image, such as "Palace
       of Fine Arts."
 
@@ -26,7 +26,7 @@
 
   help_text:
     brief: Detect popular natural and man-made structures within an image.
-    DESCRIPTION: |
+    description: |
       Google Cloud Vision will recognize landmarks in an image, such as "Palace
       of Fine Arts."
 

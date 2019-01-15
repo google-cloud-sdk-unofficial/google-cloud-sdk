@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Import(base.UpdateCommand):
   """Import a workflow template.
 

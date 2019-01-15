@@ -2,7 +2,7 @@
 
   help_text:
     brief: Lists all of the devices bound to the gateway.
-    DESCRIPTION: Lists all of the devices bound to the gateway.
+    description: Lists all of the devices bound to the gateway.
 
   request:
     collection: cloudiot.projects.locations.registries.devices

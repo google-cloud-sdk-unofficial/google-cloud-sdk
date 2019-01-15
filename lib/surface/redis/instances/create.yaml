@@ -1,13 +1,13 @@
 - help_text:
     brief: |
       Create a Memorystore Redis instance.
-    DESCRIPTION: |
+    description: |
       Create a new Redis instance.
 
       This command can fail for the following reasons:
         * An instance with the same name already exists.
         * The active account does not have permission to create instances.
-    EXAMPLES: |
+    examples: |
       To create a basic tier instance with the name `my-redis-instance` in region `us-central-1`
       with memory size of 5 GiB, run:
 

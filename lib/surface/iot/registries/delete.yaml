@@ -2,7 +2,7 @@
 
   help_text:
     brief: Delete a device registry.
-    DESCRIPTION: Delete a device registry.
+    description: Delete a device registry.
 
   request:
     collection: cloudiot.projects.locations.registries

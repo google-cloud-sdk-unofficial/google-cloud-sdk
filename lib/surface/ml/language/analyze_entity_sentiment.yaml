@@ -2,7 +2,7 @@
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify entity-level sentiment.
-    DESCRIPTION: |
+    description: |
       Entity level sentiment combines both entity analysis and sentiment analysis
       and attempts to determine the sentiment (positive or negative) expressed
       about entities within the text.
@@ -28,7 +28,7 @@
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify entity-level sentiment.
-    DESCRIPTION: |
+    description: |
       Entity level sentiment combines both entity analysis and sentiment analysis
       and attempts to determine the sentiment (positive or negative) expressed
       about entities within the text.

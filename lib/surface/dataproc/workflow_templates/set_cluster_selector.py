@@ -68,7 +68,7 @@ class SetClusterSelector(base.UpdateCommand):
     return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetClusterSelectorBeta(SetClusterSelector):
   """Set cluster selector for the workflow template."""
 

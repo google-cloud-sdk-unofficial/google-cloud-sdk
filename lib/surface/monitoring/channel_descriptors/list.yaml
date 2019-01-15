@@ -1,6 +1,6 @@
 - help_text:
     brief: List notification channel descriptors.
-    DESCRIPTION: List notification channel descriptors.
+    description: List notification channel descriptors.
 
   request:
     collection: monitoring.projects.notificationChannelDescriptors

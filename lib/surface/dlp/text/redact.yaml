@@ -14,9 +14,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Redact potentially sensitive data from text content.
-    DESCRIPTION: |
+    description: |
       Redacts potentially sensitive data from text content.
-    EXAMPLES: |
+    examples: |
       To redact email addresses from a file named my-data.csv and write the
       redacted contents to my-redacted-data.csv, run:
 

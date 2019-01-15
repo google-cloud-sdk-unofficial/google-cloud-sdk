@@ -1,6 +1,6 @@
 - help_text:
     brief: Get default taxonomy store
-    DESCRIPTION: |
+    description: |
       Get default taxonomy store
 
   request:

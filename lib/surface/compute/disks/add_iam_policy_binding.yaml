@@ -1,48 +1,45 @@
-- &beta_command
-  release_tracks: [BETA]
-  help_text:
-    brief: Add IAM policy binding to a Google Compute Engine disk.
-    DESCRIPTION: |
-      Add an IAM policy binding to a Google Compute Engine disk.
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Add IAM policy binding to a Google Compute Engine disk.
+  description: |
+    Add an IAM policy binding to a Google Compute Engine disk.
 
-    EXAMPLES: |
-      To add an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
-      with disk 'my-disk' and zone 'ZONE', run:
+  examples: |
+    To add an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
+    with disk 'my-disk' and zone 'ZONE', run:
 
-        $ {command} my-disk --zone='ZONE' --member='user:test-user@gmail.com' --role='roles/compute.securityAdmin'
+      $ {command} my-disk --zone='ZONE' --member='user:test-user@gmail.com' --role='roles/compute.securityAdmin'
 
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
 
-  request: &request
-    collection: compute.disks
-    api_version: beta
-
-  arguments:
-    resource:
-      help_text: The disk for which to add IAM policy binding to.
-      spec: !REF googlecloudsdk.command_lib.compute.resources:disk
-
-  iam: &iam
-    set_iam_policy_request_path: zoneSetPolicyRequest
-    message_type_overrides:
-      policy: Policy
-      set_iam_policy_request: ComputeDisksSetIamPolicyRequest
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
-  request:
-    <<: *request
+request:
+  collection: compute.disks
+  api_version: beta
+  ALPHA:
     api_version: alpha
 
+arguments:
+  resource:
+    help_text: The disk for which to add IAM policy binding to.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:disk
+
+iam:
+  set_iam_policy_request_path: zoneSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeDisksSetIamPolicyRequest
+  ALPHA:
+    enable_condition: true
+
+ALPHA:
   help_text:
     brief: Add IAM policy binding to a Google Compute Engine disk.
-    DESCRIPTION: |
+    description: |
       Add an IAM policy binding to the IAM policy of a Google Compute Engine disk. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To add an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
       with disk 'my-disk' and zone 'ZONE', run:
 
@@ -55,7 +52,3 @@
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.
-
-  iam:
-    <<: *iam
-    enable_condition: true

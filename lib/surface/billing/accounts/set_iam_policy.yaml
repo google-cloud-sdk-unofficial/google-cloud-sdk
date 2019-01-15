@@ -3,11 +3,11 @@
   help_text:
     brief: Set the IAM policy for a Cloud Billing account.
 
-    DESCRIPTION: |
+    description: |
       *{command}* sets the IAM policy for a Cloud Billing account given an
       account ID and a JSON or YAML file that describes the IAM policy.
 
-    EXAMPLES: |
+    examples: |
       The following command reads an IAM policy defined in the JSON file
       `policy.json` and sets it for a Billing account ID *123456-789876-543210*:
 

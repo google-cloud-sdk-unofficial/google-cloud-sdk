@@ -1,7 +1,7 @@
 - help_text:
     brief: List alerting policies.
-    DESCRIPTION: List alerting policies.
-    EXAMPLES: |
+    description: List alerting policies.
+    examples: |
       To order your results first by the team key in user_labels and
       then the policy's display name:
 

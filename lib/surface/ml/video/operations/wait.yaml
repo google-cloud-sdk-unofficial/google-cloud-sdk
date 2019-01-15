@@ -2,7 +2,7 @@
 
   help_text:
     brief: Poll long-running video analysis operation until it completes.
-    DESCRIPTION: |
+    description: |
       Poll a long-running video analysis operation until it completes. When
       the operation is complete, this command will display the results of the
       analysis.

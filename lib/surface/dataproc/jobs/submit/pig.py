@@ -38,7 +38,10 @@ class Pig(pig.PigBase, submitter.JobSubmitter):
 
   To submit a Pig job with inline queries, run:
 
-    $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
+    $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt'
+    AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word"
+    -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE
+    group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
   """
 
   @staticmethod
@@ -53,7 +56,7 @@ class Pig(pig.PigBase, submitter.JobSubmitter):
     submitter.JobSubmitter.ConfigureJob(messages, job, args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class PigBeta(pig.PigBase, submitter.JobSubmitterBeta):
   """Submit a Pig job to a cluster.
 
@@ -67,7 +70,10 @@ class PigBeta(pig.PigBase, submitter.JobSubmitterBeta):
 
   To submit a Pig job with inline queries, run:
 
-    $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
+    $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt'
+    AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word"
+    -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE
+    group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
   """
 
   @staticmethod

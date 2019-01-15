@@ -2,7 +2,7 @@
 
   help_text:
     brief: Create a new access policy.
-    DESCRIPTION: Create a new access policy.
+    description: Create a new access policy.
 
   request:
     collection: accesscontextmanager.accessPolicies

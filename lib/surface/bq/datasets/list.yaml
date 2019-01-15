@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: List all BigQuery datasets in a project.
-    DESCRIPTION:  List all BigQuery datasets in a project.
-    EXAMPLES: |
+    description:  List all BigQuery datasets in a project.
+    examples: |
       The following command list all datasets in current project (including hidden)
 
         $ {command}  --all

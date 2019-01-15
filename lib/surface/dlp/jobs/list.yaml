@@ -14,7 +14,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: List Cloud DLP jobs.
-    DESCRIPTION: |
+    description: |
       List Cloud DLP jobs.
 
   request:

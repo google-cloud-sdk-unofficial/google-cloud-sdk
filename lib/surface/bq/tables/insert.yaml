@@ -14,9 +14,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief:   Insert records specified into an existing table.
-    DESCRIPTION: |-
+    description: |-
         Insert records specified into an existing table.
-    EXAMPLES: |
+    examples: |
       The following command inserts rows from `data_file.json` into `my-table` in `my-dataset`:
 
         $ {command} --table /projects/myproject/datasets/my-dataset/tables/my-table --data data_file.json

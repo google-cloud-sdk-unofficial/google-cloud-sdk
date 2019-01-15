@@ -1,6 +1,6 @@
 - help_text:
     brief: Trigger an on-demand execution of a job.
-    DESCRIPTION: Trigger an on-demand execution of a job.
+    description: Trigger an on-demand execution of a job.
 
   request:
     collection: cloudscheduler.projects.locations.jobs

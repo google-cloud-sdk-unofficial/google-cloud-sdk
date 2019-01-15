@@ -2,7 +2,7 @@
 
   help_text:
     brief: Create a new device.
-    DESCRIPTION: Create a new device.
+    description: Create a new device.
 
   request:
     collection: cloudiot.projects.locations.registries.devices
@@ -43,7 +43,7 @@
 
   help_text:
     brief: Create a new device.
-    DESCRIPTION: Create a new device.
+    description: Create a new device.
 
   request:
     collection: cloudiot.projects.locations.registries.devices

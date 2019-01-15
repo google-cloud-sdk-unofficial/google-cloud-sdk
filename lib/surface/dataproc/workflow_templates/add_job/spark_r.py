@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import spark_r
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SparkR(spark_r.SparkRBase, base.Command):
   """Add a SparkR job to the workflow template."""
 

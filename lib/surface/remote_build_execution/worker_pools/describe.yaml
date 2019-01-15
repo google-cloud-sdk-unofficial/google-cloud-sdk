@@ -2,11 +2,11 @@
   help_text:
     brief: |
       Describe a worker pool.
-    DESCRIPTION: |
+    description: |
       Display the configuration of the specified worker pool.  Shows the current state of the
       worker pool, how many workers are in the pool, as well as the machine configuration for
       those workers (the Compute Engine machine-type as well as disk size).
-    EXAMPLES: |
+    examples: |
       The following command describes the worker pool called 'pool' from the instance called
       'default_instance':
 

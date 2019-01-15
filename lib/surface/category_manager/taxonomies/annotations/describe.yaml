@@ -1,6 +1,6 @@
 - help_text:
     brief: Get the details of an annotation.
-    DESCRIPTION: |
+    description: |
       Displays a view of all the fields and values of an annotation.
 
   request:

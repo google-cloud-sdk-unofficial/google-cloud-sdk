@@ -2,7 +2,7 @@
 
   help_text:
     brief: Delete an access level.
-    DESCRIPTION: Delete an access level in a given access policy.
+    description: Delete an access level in a given access policy.
 
   request:
     collection: accesscontextmanager.accessPolicies.accessLevels

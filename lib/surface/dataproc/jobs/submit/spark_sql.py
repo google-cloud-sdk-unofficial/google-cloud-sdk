@@ -54,7 +54,7 @@ class SparkSql(spark_sql.SparkSqlBase, submitter.JobSubmitter):
     submitter.JobSubmitter.ConfigureJob(messages, job, args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SparkSqlBeta(spark_sql.SparkSqlBase, submitter.JobSubmitterBeta):
   """Submit a Spark SQL job to a cluster.
 

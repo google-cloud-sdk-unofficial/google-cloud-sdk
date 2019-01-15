@@ -1,6 +1,6 @@
 - help_text:
     brief: Describe a notification channel.
-    DESCRIPTION: Describe a notification channel.
+    description: Describe a notification channel.
 
   request:
     collection: monitoring.projects.notificationChannels

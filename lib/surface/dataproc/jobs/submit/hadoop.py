@@ -63,7 +63,7 @@ class Hadoop(hadoop.HadoopBase, submitter.JobSubmitter):
     submitter.JobSubmitter.ConfigureJob(messages, job, args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class HadoopBeta(hadoop.HadoopBase, submitter.JobSubmitterBeta):
   r"""Submit a Hadoop job to a cluster.
 

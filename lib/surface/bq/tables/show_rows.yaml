@@ -14,9 +14,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Display selected rows in a specified table or view.
-    DESCRIPTION: |-
+    description: |-
       Display selected rows in a specified table or view.
-    EXAMPLES: |
+    examples: |
       The following command displays 150 rows of `my-table` in `my-dataset` starting from row 10:
 
         $ {command}  --table /projects/myproject/datasets/my-dataset/tables/my-table --limit 150 --start 10

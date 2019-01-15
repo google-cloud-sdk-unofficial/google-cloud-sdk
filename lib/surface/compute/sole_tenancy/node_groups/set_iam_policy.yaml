@@ -1,38 +1,35 @@
-- &beta_command
-  release_tracks: [BETA]
+release_tracks: [ALPHA, BETA, GA]
 
-  help_text:
-    brief: Set the IAM policy for a Google Compute Engine node group.
-    DESCRIPTION: |
-      Sets the IAM policy for the given node group as defined in a JSON or YAML file.
+help_text:
+  brief: Set the IAM policy for a Google Compute Engine node group.
+  description: |
+    Sets the IAM policy for the given node group as defined in a JSON or YAML file.
 
-    EXAMPLES: |
-      The following command will read am IAM policy defined in a JSON file
-      'policy.json' and set it for the node group `my-node-group`:
+  examples: |
+    The following command will read am IAM policy defined in a JSON file
+    'policy.json' and set it for the node group `my-node-group`:
 
-      $ {command} my-node-group policy.json
+    $ {command} my-node-group policy.json
 
-      See https://cloud.google.com/iam/docs/managing-policies for details of the
-      policy file format and contents.
+    See https://cloud.google.com/iam/docs/managing-policies for details of the
+    policy file format and contents.
 
-  request: &request
-    collection: compute.nodeGroups
+request:
+  collection: compute.nodeGroups
+  api_version: v1
+  use_relative_name: false
+  BETA:
     api_version: beta
-    use_relative_name: false
-
-  iam:
-    set_iam_policy_request_path: zoneSetPolicyRequest
-    message_type_overrides:
-      policy: Policy
-      set_iam_policy_request: ComputeNodeGroupsSetIamPolicyRequest
-
-  arguments:
-    resource:
-      help_text: The node group to set the IAM policy for.
-      spec: !REF googlecloudsdk.command_lib.compute.resources:node_group
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-  request:
-    <<: *request
+  ALPHA:
     api_version: alpha
+
+iam:
+  set_iam_policy_request_path: zoneSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeNodeGroupsSetIamPolicyRequest
+
+arguments:
+  resource:
+    help_text: The node group to set the IAM policy for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:node_group

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Set the IAM policy for a Cloud Pub/Sub Topic.
-    DESCRIPTION: |
+    description: |
       This command replaces the existing IAM policy for a topic, given a topic
       and a file encoded in JSON or YAML that contains the IAM policy. If the
       given policy file specifies an "etag" value, then the replacement will
@@ -10,7 +10,7 @@
       obtained via `get-iam-policy` will prevent the replacement if the policy
       for the topic has been subsequently updated.) A policy file that does not
       contain an etag value will replace any existing policy for the topic.
-    EXAMPLES: |
+    examples: |
       The following command will read an IAM policy defined in a JSON file
       'policy.json' and set it for a topic with identifier 'my-topic'
 

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Show details about a Cloud Storage bucket.
-    DESCRIPTION: Show details about a Cloud Storage bucket.
+    description: Show details about a Cloud Storage bucket.
 
   request:
     collection: storage.buckets

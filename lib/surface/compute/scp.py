@@ -30,8 +30,8 @@ _DETAILED_HELP = {
               'virtual machines via scp.'),
     'DESCRIPTION': """
 *{command}* securely copies files between a virtual machine instance and your
-local machine using the scp command. **This command does not work for Windows
-VMs.**
+local machine using the scp command.
+*This command does not work for Windows VMs.*
 
 In order to set up a successful transfer, follow these guidelines:
 *   Prefix remote file names with the virtual machine instance

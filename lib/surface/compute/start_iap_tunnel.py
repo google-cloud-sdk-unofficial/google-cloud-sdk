@@ -110,9 +110,10 @@ class StartIapTunnel(base.Command):
     return interface
 
   def _GetLocalHostPort(self, args):
+    local_host_arg = args.local_host_port.host or 'localhost'
     port_arg = (
         int(args.local_host_port.port) if args.local_host_port.port else 0)
     local_port = iap_tunnel.DetermineLocalPort(port_arg=port_arg)
     if not port_arg:
       log.out.Print('Picking local unused port [%d].' % local_port)
-    return args.local_host_port.host, local_port
+    return local_host_arg, local_port

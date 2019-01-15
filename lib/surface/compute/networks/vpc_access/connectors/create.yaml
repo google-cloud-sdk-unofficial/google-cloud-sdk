@@ -1,13 +1,13 @@
 - help_text:
     brief: |
       Create a VPC Access connector.
-    DESCRIPTION: |
+    description: |
       Create a new VPC Access connector with the given name.
 
       This command can fail for the following reasons:
         * An instance with the same name already exists.
         * The active account does not have permission to create instances.
-    EXAMPLES: |
+    examples: |
       The following command creates a VPC Access connector of type `extended` with
       name `my-vpc-connector` in region `us-central1` in network `my-network`
       with IP CIDR range of `10.132.0.0/28`.

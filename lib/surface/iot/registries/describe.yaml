@@ -2,7 +2,7 @@
 
   help_text:
     brief: Show details about a device registry.
-    DESCRIPTION: Show details about a device registry.
+    description: Show details about a device registry.
 
   request:
     collection: cloudiot.projects.locations.registries

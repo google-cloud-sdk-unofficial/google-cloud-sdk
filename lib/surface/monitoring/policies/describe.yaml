@@ -1,6 +1,6 @@
 - help_text:
     brief: Describe an  alerting policy.
-    DESCRIPTION: Describe an alerting policy.
+    description: Describe an alerting policy.
 
   request:
     collection: monitoring.projects.alertPolicies

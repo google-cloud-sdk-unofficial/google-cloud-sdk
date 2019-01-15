@@ -1,8 +1,8 @@
 - release_tracks: [BETA, GA]
   help_text:
     brief: Create a new Cloud TPU.
-    DESCRIPTION: Create a new Cloud TPU.
-    EXAMPLES: |
+    description: Create a new Cloud TPU.
+    examples: |
       The following command creates a TPU with ID `my-tpu` and CIDR range
       `10.240.0.0/29` in the default user project, network and compute/region
       (with other defaults supplied by API):
@@ -47,8 +47,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Create a new Cloud TPU.
-    DESCRIPTION: Create a new Cloud TPU.
-    EXAMPLES: |
+    description: Create a new Cloud TPU.
+    examples: |
       The following command creates a TPU with ID `my-tpu` and CIDR range
       `10.240.0.0/29` in the default user project, network and compute/region
       (with other defaults supplied by API):

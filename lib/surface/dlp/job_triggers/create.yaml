@@ -14,9 +14,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Creates a Cloud DLP job trigger.
-    DESCRIPTION: |
+    description: |
       Creates a Cloud DLP job trigger.
-    EXAMPLES: |
+    examples: |
       The following command creates a job trigger named `my_job_trigger`:
 
         $ {command} my_job_trigger --display-name Daily_Inspect_Trigger --description 'My New Trigger' --input-table myproject.mydataset.input --output-topics my-topic --max-findings-per-item 3 --max-findings 1000 --info-types PHONE_NUMBER,US_DRIVERS_LICENSE --min-likelihood very-likely --include-quote --exclude-info-types --trigger-schedule 8400s

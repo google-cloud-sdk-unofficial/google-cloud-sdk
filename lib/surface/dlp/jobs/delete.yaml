@@ -14,7 +14,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Delete a Cloud DLP job.
-    DESCRIPTION: |
+    description: |
       Deletes a Cloud DLP job. The job will be canceled if possible.
 
   request:

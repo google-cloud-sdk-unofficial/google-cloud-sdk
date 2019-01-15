@@ -1,52 +1,51 @@
-- &ga_command
-  release_tracks: [BETA, GA]
-  help_text:
-    brief: Add an IAM policy binding to an IAM Service Account.
-    DESCRIPTION: |
-      Add an IAM policy binding to an IAM Service Account.
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Add an IAM policy binding to an IAM Service Account.
+  description: |
+    Add an IAM policy binding to an IAM Service Account.
 
-      When managing IAM roles, you can treat a service account either as a
-      resource or as an identity. This command is to add iam policy bindings to a
-      service account resource. There are other gcloud commands to manage IAM
-      policies for other types of resources. For example, to manage IAM policies
-      on a project, use the $ gcloud projects commands.
-    EXAMPLES: |
-      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      on a service account with identifier 'my-iam-account@somedomain.com', run:
+    When managing IAM roles, you can treat a service account either as a
+    resource or as an identity. This command is to add iam policy bindings to a
+    service account resource. There are other gcloud commands to manage IAM
+    policies for other types of resources. For example, to manage IAM policies
+    on a project, use the $ gcloud projects commands.
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    on a service account with identifier 'my-iam-account@somedomain.com', run:
 
-        $ {command} my-iam-account@somedomain.com --member='user:test-user@gmail.com' --role='roles/editor'
+      $ {command} my-iam-account@somedomain.com --member='user:test-user@gmail.com' --role='roles/editor'
 
-      To add an IAM policy binding for the role of 'roles/editor' to the service
-      account 'test-proj1@example.domain.com', run:
+    To add an IAM policy binding for the role of 'roles/editor' to the service
+    account 'test-proj1@example.domain.com', run:
 
-        $ {command} test-proj1@example.domain.com \
-            --member='serviceAccount:test-proj1@example.domain.com' \
-            --role='roles/editor'
+      $ {command} test-proj1@example.domain.com \
+          --member='serviceAccount:test-proj1@example.domain.com' \
+          --role='roles/editor'
 
-      To add an IAM policy binding for the role of 'roles/editor' for all
-      authenticated users on a service account with identifier
-      'my-iam-account@somedomain.com', run:
+    To add an IAM policy binding for the role of 'roles/editor' for all
+    authenticated users on a service account with identifier
+    'my-iam-account@somedomain.com', run:
 
-        $ {command} my-iam-account@somedomain.com --member='allAuthenticatedUsers' \
-            --role='roles/editor'
+      $ {command} my-iam-account@somedomain.com --member='allAuthenticatedUsers' \
+          --role='roles/editor'
 
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
 
-  request:
-    collection: iam.projects.serviceAccounts
+request:
+  collection: iam.projects.serviceAccounts
 
-  arguments:
-    resource:
-      help_text: The Service Account to which to add the IAM policy binding.
-      spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
+arguments:
+  resource:
+    help_text: The Service Account to which to add the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
 
-- <<: *ga_command
+ALPHA:
   release_tracks: [ALPHA]
 
   help_text:
     brief: Add an IAM policy binding to an IAM Service Account.
-    DESCRIPTION: |
+    description: |
       Add an IAM policy binding to a IAM Service Account. One binding consists of a member,
       a role, and an optional condition.
 
@@ -56,7 +55,7 @@
       policies for other types of resources. For example, to manage IAM policies
       on a project, use the $ gcloud projects commands.
 
-    EXAMPLES: |
+    examples: |
       To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
       on a service account with identifier 'my-iam-account@somedomain.com', run:
 

@@ -2,10 +2,10 @@
   help_text:
     brief: |
       Delete a given instance and all contained worker pools.
-    DESCRIPTION: |
+    description: |
       Deletes the instance, as well as all worker pools, cached build inputs and cached build
       artifacts contained within that instance.
-    EXAMPLES: |
+    examples: |
       The following will delete the instance named 'instance_to_delete':
 
         $ {command} instance_to_delete

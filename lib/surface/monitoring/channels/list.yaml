@@ -1,6 +1,6 @@
 - help_text:
     brief: List notification channels.
-    DESCRIPTION: List notification channels.
+    description: List notification channels.
 
   request:
     collection: monitoring.projects.notificationChannels

@@ -1,6 +1,6 @@
 - help_text:
     brief: Describe a Cloud TPU Location.
-    DESCRIPTION: |
+    description: |
       Describe a Cloud TPU Location.
 
 

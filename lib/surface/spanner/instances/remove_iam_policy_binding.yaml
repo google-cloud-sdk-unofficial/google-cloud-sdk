@@ -1,37 +1,34 @@
-- &ga_command
-  release_tracks: [BETA, GA]
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Remove IAM policy binding of a Cloud Spanner instance.
+  description: |
+    Remove an IAM policy binding of a Cloud Spanner instance.
+
+  examples: |
+    To Remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with instance 'my-instance', run:
+
+      $ {command} my-instance --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: spanner.projects.instances
+
+arguments:
+  resource:
+    help_text: The Cloud Spanner instance to remove the IAM policy binding from.
+    spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
+
+ALPHA:
   help_text:
     brief: Remove IAM policy binding of a Cloud Spanner instance.
-    DESCRIPTION: |
-      Remove an IAM policy binding of a Cloud Spanner instance.
-
-    EXAMPLES: |
-      To Remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      with instance 'my-instance', run:
-
-        $ {command} my-instance --member='user:test-user@gmail.com' --role='roles/editor'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  request:
-    collection: spanner.projects.instances
-
-  arguments:
-    resource:
-      help_text: The Cloud Spanner instance to remove the IAM policy binding from.
-      spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
-
-- <<: *ga_command
-  release_tracks: [ALPHA]
-
-  help_text:
-    brief: Remove IAM policy binding of a Cloud Spanner instance.
-    DESCRIPTION: |
+    description: |
       Remove an IAM policy binding from the IAM policy of a Cloud Spanner instance. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
       with instance 'my-instance', run:
 

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect faces within an image.
-    DESCRIPTION: |
+    description: |
       Detect faces within an image.
 
   request:
@@ -25,7 +25,7 @@
 
   help_text:
     brief: Detect faces within an image.
-    DESCRIPTION: |
+    description: |
       Detect faces within an image.
 
   request:

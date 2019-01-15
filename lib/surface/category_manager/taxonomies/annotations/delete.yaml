@@ -1,6 +1,6 @@
 - help_text:
     brief: Delete an annotation and all of its child annotations.
-    DESCRIPTION: |
+    description: |
       Delete an annotation and all of its child annotations.
 
   request:

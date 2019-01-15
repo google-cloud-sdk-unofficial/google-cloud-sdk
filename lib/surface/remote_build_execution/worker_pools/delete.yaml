@@ -2,9 +2,9 @@
   help_text:
     brief: |
       Delete a worker pool from a specified instance.
-    DESCRIPTION: |
+    description: |
       Delete a worker pool from a specified instance.
-    EXAMPLES: |
+    examples: |
       The following command deletes the workerpool called 'pool' from the instance called
       'default_instance':
 

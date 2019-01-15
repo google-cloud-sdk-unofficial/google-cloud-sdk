@@ -1,37 +1,34 @@
-- &beta_command
-  release_tracks: [BETA]
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Add IAM policy binding for a tasks queue.
+  description: |
+     Add an IAM policy binding to a tasks queue's access policy.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with queue 'my-queue' and location='my-location', run:
+
+      $ {command} my-queue --location='my-location' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: cloudtasks.projects.locations.queues
+
+arguments:
+  resource:
+    help_text: The task queue for which to add IAM policy binding to.
+    spec: !REF googlecloudsdk.command_lib.tasks.resources:queue
+
+ALPHA:
   help_text:
     brief: Add IAM policy binding for a tasks queue.
-    DESCRIPTION: |
-       Add an IAM policy binding to a tasks queue's access policy.
-
-    EXAMPLES: |
-      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      with queue 'my-queue' and location='my-location', run:
-
-        $ {command} my-queue --location='my-location' --member='user:test-user@gmail.com' --role='roles/editor'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  request:
-    collection: cloudtasks.projects.locations.queues
-
-  arguments:
-    resource:
-      help_text: The task queue for which to add IAM policy binding to.
-      spec: !REF googlecloudsdk.command_lib.tasks.resources:queue
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
-  help_text:
-    brief: Add IAM policy binding for a tasks queue.
-    DESCRIPTION: |
+    description: |
       Add an IAM policy binding to a tasks queue's access policy. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
       with queue 'my-queue' and location='my-location', run:
 

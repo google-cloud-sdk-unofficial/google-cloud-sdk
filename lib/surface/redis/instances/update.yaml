@@ -1,14 +1,14 @@
 - help_text:
     brief: |
       Update Memorystore Redis instances.
-    DESCRIPTION: |
+    description: |
       Update the metadata and/or configuration parameters of a Redis instance.
 
       This command can fail for the following reasons:
         * The instance specified does not exist.
         * The active account does not have permission to update the given
           instance.
-    EXAMPLES: |
+    examples: |
       To update a Redis instance with the name `my-redis-instance` to have the display name
       "Cache for Foo Service", and add the two labels, `env` and `service`, run:
 

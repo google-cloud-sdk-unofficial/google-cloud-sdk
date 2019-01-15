@@ -2,11 +2,11 @@
 
   help_text:
     brief: Set the IAM policy for a model.
-    DESCRIPTION: |
+    description: |
       Sets the IAM policy for the given model as defined in a JSON or YAML file.
 
 
-    EXAMPLES: |
+    examples: |
       The following command will read am IAM policy defined in a JSON file
       'policy.json' and set it for the model `my_model`:
 

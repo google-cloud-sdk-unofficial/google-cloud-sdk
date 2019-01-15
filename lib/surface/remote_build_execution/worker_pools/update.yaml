@@ -2,11 +2,11 @@
   help_text:
     brief: |
       Update a Remote Build Execution worker pool.
-    DESCRIPTION: |
+    description: |
       Updates the configuration of a Remote Build Execution worker pool.  This can be used to
       change the size of the worker pool, change the type of machine, or adjust the disk size of the
       worker VMs.
-    EXAMPLES: |
+    examples: |
       The following command adjusts the nubmer of workers to 50 in a pool called 'pool1' contained
       in the instance 'default_instance':
 

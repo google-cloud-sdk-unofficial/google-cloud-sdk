@@ -51,8 +51,7 @@ DETAILED_HELP = {
 
 def _Args(parser,
           support_disk_scope=False,
-          support_force_attach=False,
-          support_boot=False):
+          support_force_attach=False):
   """Add parser arguments to all tracks."""
 
   flags.INSTANCE_ARG.AddArgument(parser)
@@ -76,6 +75,11 @@ def _Args(parser,
       default='rw',
       help='Specifies the mode of the disk.')
 
+  parser.add_argument(
+      '--boot',
+      action='store_true',
+      help='Attach the disk to the instance as a boot disk.')
+
   if support_disk_scope:
     flags.AddDiskScopeFlag(parser)
 
@@ -89,12 +93,6 @@ Attach the disk to the instance even if it is currently attached to another
 instance. The attachment will succeed even if detaching from the previous
 instance fails at first. The server will continue trying to detach the disk from
 the previous instance in the background.""")
-
-  if support_boot:
-    parser.add_argument(
-        '--boot',
-        action='store_true',
-        help='Attach the disk to the instance as a boot disk.')
 
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
@@ -118,8 +116,7 @@ class AttachDisk(base.SilentCommand):
   def _Run(self,
            args,
            support_disk_scope=False,
-           support_force_attach=False,
-           support_boot=False):
+           support_force_attach=False):
     """Invokes a request for attaching a disk to an instance."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -149,7 +146,7 @@ class AttachDisk(base.SilentCommand):
         type=client.messages.AttachedDisk.TypeValueValuesEnum.PERSISTENT,
         diskEncryptionKey=disk_key_or_none)
 
-    if support_boot and args.boot:
+    if args.boot:
       attached_disk.boot = args.boot
 
     request = client.messages.ComputeInstancesAttachDiskRequest(
@@ -177,15 +174,13 @@ class AttachDiskAlphaBeta(AttachDisk):
     _Args(
         parser,
         support_disk_scope=True,
-        support_force_attach=True,
-        support_boot=True)
+        support_force_attach=True)
 
   def Run(self, args):
     return self._Run(
         args,
         support_disk_scope=True,
-        support_force_attach=True,
-        support_boot=True)
+        support_force_attach=True)
 
 
 AttachDisk.detailed_help = DETAILED_HELP

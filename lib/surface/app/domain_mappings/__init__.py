@@ -33,11 +33,9 @@ class DomainMappings(base.Group):
   custom domains, such as `example.com`, instead of the default `appspot.com`
   address. You can use a custom domain with or without SSL.
 
-  App Engine Domain Mappings allow an application to be served via one or many
-  custom domains, such as `example.com`, instead of the default `appspot.com`
-  address. You can use a custom domain with or without SSL. Use the AUTOMATIC
-  management type to automatically provision an SSL certificate for your domain.
-  Use the MANUAL management type to provide your own certificate or omit SSL.
+  Use the AUTOMATIC management type to automatically provision an SSL
+  certificate for your domain. Use the MANUAL management type to provide
+  your own certificate or omit SSL.
   """
 
   detailed_help = {

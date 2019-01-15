@@ -2,7 +2,7 @@
 
   help_text:
     brief: Show details about a service perimeter.
-    DESCRIPTION: Show details about an service perimeter in a given access policy.
+    description: Show details about an service perimeter in a given access policy.
 
   request:
     collection: accesscontextmanager.accessPolicies.servicePerimeters

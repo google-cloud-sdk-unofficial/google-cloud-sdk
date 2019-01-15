@@ -22,10 +22,12 @@ from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
+from googlecloudsdk.api_lib.sql import instances as instance_api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import instances as instance_command_util
 from googlecloudsdk.core import properties
 import six.moves.http_client
 
@@ -86,9 +88,13 @@ class Get(base.DescribeCommand):
         collection='sql.instances')
 
     try:
-      return sql_client.instances.Get(
+      instance = sql_client.instances.Get(
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project, instance=instance_ref.instance))
+      # TODO(b/122660263): Remove when V1 instances are no longer supported.
+      if instance_api_util.IsInstanceV1(instance):
+        instance_command_util.ShowV1DeprecationWarning()
+      return instance
     except apitools_exceptions.HttpError as error:
       if error.status_code == six.moves.http_client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(

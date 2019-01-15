@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: List composite indexes.
-    DESCRIPTION: List composite indexes.
-    EXAMPLES: |
+    description: List composite indexes.
+    examples: |
       The following command lists all composite indexes in the database:
 
         $ {command}

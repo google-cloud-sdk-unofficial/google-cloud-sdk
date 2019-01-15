@@ -1,6 +1,6 @@
 - help_text:
     brief: List available accelerator types for Cloud TPUs.
-    DESCRIPTION: List available accelerator types for for Cloud TPUs.
+    description: List available accelerator types for for Cloud TPUs.
 
   request:
     collection: tpu.projects.locations.acceleratorTypes

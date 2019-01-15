@@ -145,11 +145,9 @@ def AddBaseArgs(parser):
       help=('First Generation instances only. The App Engine app '
             'this instance should follow. It must be in the same region as '
             'the instance. WARNING: Instance may be restarted.'))
-  parser.add_argument(
-      '--gce-zone',
-      required=False,
-      help=('The preferred Compute Engine zone (e.g. us-central1-a, '
-            'us-central1-b, etc.). WARNING: Instance may be restarted.'))
+  flags.AddZone(parser, help_text=(
+      'Preferred Compute Engine zone (e.g. us-central1-a, '
+      'us-central1-b, etc.). WARNING: Instance may be restarted.'))
   parser.add_argument(
       'instance',
       completer=flags.InstanceCompleter,
@@ -177,16 +175,7 @@ def AddBaseArgs(parser):
             'over IP.'))
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
-  parser.add_argument(
-      '--tier',
-      '-t',
-      required=False,
-      help=('The tier for this instance. For Second Generation instances, '
-            'TIER is the instance\'s machine type (e.g., db-n1-standard-1). '
-            'For PostgreSQL instances, only shared-core machine types '
-            '(e.g., db-f1-micro) apply. A complete list of tiers is '
-            'available here: https://cloud.google.com/sql/pricing. WARNING: '
-            'Instance will be restarted.'))
+  flags.AddTier(parser, is_patch=True)
 
 
 def AddBetaArgs(parser):
@@ -240,6 +229,11 @@ def RunBasePatchCommand(args, release_track):
           release_track=release_track))
   patch_instance.project = instance_ref.project
   patch_instance.name = instance_ref.instance
+
+  # TODO(b/122660263): Remove when V1 instances are no longer supported.
+  # V1 deprecation notice.
+  if api_util.IsInstanceV1(original_instance_resource):
+    command_util.ShowV1DeprecationWarning()
 
   cleared_fields = _GetConfirmedClearedFields(args, patch_instance)
   # beta only

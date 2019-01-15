@@ -2,7 +2,7 @@
 
   help_text:
     brief: List access levels.
-    DESCRIPTION: List access levels.
+    description: List access levels.
 
   request:
     collection: accesscontextmanager.accessPolicies.accessLevels

@@ -2,9 +2,9 @@
   help_text:
     brief: |
       Create a worker pool in the specified instance.
-    DESCRIPTION: |
+    description: |
       Create a worker pool in the specified instance.
-    EXAMPLES: |
+    examples: |
       The following command creates a worker pool called 'pool1' in the instance called
       'default_instance' with 25 workers configured with default machine type (n1-standard-2) and
       disk size (200Gb):

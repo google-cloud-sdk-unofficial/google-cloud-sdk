@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update the index configuration of the given field.
-    DESCRIPTION: |
+    description: |
       Update the index configuration of the given field.
 
       This creates an exemption for the field in question, allowing one to modify the field's index
@@ -9,7 +9,7 @@
     # Note: currently all indexes are collection scoped; collection group scoped indexes are not yet
     # supported. When they are, these examples will need to be updated to include queryScope keys in
     # addition to order/arrayConfig.
-    EXAMPLES: |
+    examples: |
       The following command creates an exemption for the `timestamp` field in the `Events`
       collection group, in which all indexes are disabled:
 

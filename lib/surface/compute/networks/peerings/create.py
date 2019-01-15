@@ -52,7 +52,7 @@ def _MakeRequests(client, requests, is_async):
   return responses
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Google Compute Engine network peering."""
 
@@ -117,13 +117,13 @@ class Create(base.Command):
     return _MakeRequests(client, requests, args.async)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateAlphaBeta(Create):
   """Create a Google Compute Engine network peering."""
 
   @staticmethod
   def Args(parser):
-    super(CreateAlpha, CreateAlpha).ArgsCommon(parser)
+    super(CreateAlphaBeta, CreateAlphaBeta).ArgsCommon(parser)
     flags.AddImportCustomRoutesFlag(parser)
     flags.AddExportCustomRoutesFlag(parser)
 

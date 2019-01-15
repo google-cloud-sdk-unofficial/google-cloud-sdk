@@ -1,7 +1,7 @@
 - help_text:
     brief: |
       Show metadata for a Memorystore Redis instance.
-    DESCRIPTION: |
+    description: |
       Show metadata for a Memorystore Redis instance.
 
       Displays all metadata associated with a Redis instance given a valid
@@ -11,7 +11,7 @@
         * The instance specified does not exist.
         * The active account does not have permission to access the given
           instance.
-    EXAMPLES: |
+    examples: |
       To display the metadata for an instance with the name `my-redis-instance` in the default
       region, run:
 

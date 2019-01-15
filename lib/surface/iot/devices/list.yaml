@@ -2,7 +2,7 @@
 
   help_text:
     brief: List devices.
-    DESCRIPTION: List devices.
+    description: List devices.
 
   request:
     collection: cloudiot.projects.locations.registries.devices

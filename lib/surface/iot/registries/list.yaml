@@ -2,7 +2,7 @@
 
   help_text:
     brief: List device registries.
-    DESCRIPTION: List device registries.
+    description: List device registries.
 
   request:
     collection: cloudiot.projects.locations.registries

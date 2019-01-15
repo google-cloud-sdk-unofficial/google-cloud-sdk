@@ -2,7 +2,7 @@
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify linguistic information.
-    DESCRIPTION: |
+    description: |
       Syntactic Analysis extracts linguistic information, breaking up the given
       text into a series of sentences and tokens (generally, word boundaries),
       providing further analysis on those tokens.
@@ -29,7 +29,7 @@
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify linguistic information.
-    DESCRIPTION: |
+    description: |
       Syntactic Analysis extracts linguistic information, breaking up the given
       text into a series of sentences and tokens (generally, word boundaries),
       providing further analysis on those tokens.

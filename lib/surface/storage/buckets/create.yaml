@@ -6,7 +6,7 @@
 
   help_text:
     brief: Create a new Cloud Storage bucket.
-    DESCRIPTION: Create a new Cloud Storage bucket.
+    description: Create a new Cloud Storage bucket.
 
   request:
     collection: storage.buckets

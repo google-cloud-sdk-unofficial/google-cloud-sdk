@@ -1,6 +1,6 @@
 - help_text:
     brief: View the list of all your Cloud DNS policies.
-    DESCRIPTION: |
+    description: |
       Displays the list all Cloud DNS policies in a given project.
       ## EXAMPLES
 

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify sentiments in a text.
-    DESCRIPTION: |
+    description: |
       Sentiment Analysis inspects the given text and identifies the prevailing
       emotional opinion within the text, especially to determine a writer's
       attitude as positive, negative, or neutral.
@@ -29,7 +29,7 @@
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify sentiments in a text.
-    DESCRIPTION: |
+    description: |
       Sentiment Analysis inspects the given text and identifies the prevailing
       emotional opinion within the text, especially to determine a writer's
       attitude as positive, negative, or neutral.

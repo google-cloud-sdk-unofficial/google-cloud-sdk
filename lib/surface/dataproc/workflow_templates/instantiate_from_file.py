@@ -78,7 +78,7 @@ class InstantiateFromFile(base.CreateCommand):
     return operation
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InstantiateFromFileBeta(base.CreateCommand):
   """Instantiate a workflow template from a file."""
 

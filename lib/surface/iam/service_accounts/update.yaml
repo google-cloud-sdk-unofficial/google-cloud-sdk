@@ -2,7 +2,7 @@
 
   help_text:
     brief: Update an IAM service account.
-    DESCRIPTION: Update an IAM service account.
+    description: Update an IAM service account.
 
   arguments:
     resource:

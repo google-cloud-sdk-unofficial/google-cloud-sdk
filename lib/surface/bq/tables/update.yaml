@@ -14,10 +14,10 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Update a new BigQuery table.
-    DESCRIPTION: |-
+    description: |-
       Create a new BigQuery table.
       Updates one or more attributes of a table or view.
-    EXAMPLES: |
+    examples: |
       The following command updates the description on a table with ID  `my-table` in `my-dataset`:
 
         $ {command}  /projects/myproject/datasets/my-dataset/tables/my-table --description 'My New Table'

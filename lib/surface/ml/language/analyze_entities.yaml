@@ -2,7 +2,7 @@
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify entities in text.
-    DESCRIPTION: |
+    description: |
       Entity Analysis inspects the given text for common names or known entities
       (proper nouns such as public figures, landmarks, etc.), and returns
       information about those entities.
@@ -29,7 +29,7 @@
 
   help_text:
     brief: Use Google Cloud Natural Language API to identify entities in text.
-    DESCRIPTION: |
+    description: |
       Entity Analysis inspects the given text for common names or known entities
       (proper nouns such as public figures, landmarks, etc.), and returns
       information about those entities.

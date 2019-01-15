@@ -1,11 +1,11 @@
 - help_text:
     brief: |
       List Memorystore Redis instances.
-    DESCRIPTION: |
+    description: |
       List all Redis instances under the specified project and region.
 
       To specify the maximum number of instances to list, use the --limit flag.
-    EXAMPLES: |
+    examples: |
       To list up to five instances, run:
 
           $ {command} --limit=5

@@ -14,7 +14,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Start the asynchronous cancellation of a Cloud DLP job.
-    DESCRIPTION: |
+    description: |
       Start the asynchronous cancellation of a Cloud DLP job. The server makes a
       best effort to cancel the job, but success is not guaranteed.
 

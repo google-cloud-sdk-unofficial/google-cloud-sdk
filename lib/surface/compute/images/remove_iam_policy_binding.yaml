@@ -1,48 +1,45 @@
-- &beta_command
-  release_tracks: [BETA]
-  help_text:
-    brief: Remove IAM policy binding of a Google Compute Engine image.
-    DESCRIPTION: |
-      Remove an IAM policy binding of a Google Compute Engine image.
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Remove IAM policy binding of a Google Compute Engine image.
+  description: |
+    Remove an IAM policy binding of a Google Compute Engine image.
 
-    EXAMPLES: |
-      To remove an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
-      with image 'my-image', run:
+  examples: |
+    To remove an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
+    with image 'my-image', run:
 
-        $ {command} my-image --member='user:test-user@gmail.com' --role='roles/compute.securityAdmin'
+      $ {command} my-image --member='user:test-user@gmail.com' --role='roles/compute.securityAdmin'
 
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
 
-  request: &request
-    collection: compute.images
-    api_version: beta
-
-  arguments:
-    resource:
-      help_text: The image for which to remove IAM policy binding from.
-      spec: !REF googlecloudsdk.command_lib.compute.resources:image
-
-  iam: &iam
-    set_iam_policy_request_path: globalSetPolicyRequest
-    message_type_overrides:
-      policy: Policy
-      set_iam_policy_request: ComputeImagesSetIamPolicyRequest
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
-  request:
-    <<: *request
+request:
+  collection: compute.images
+  api_version: beta
+  ALPHA:
     api_version: alpha
 
+arguments:
+  resource:
+    help_text: The image for which to remove IAM policy binding from.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:image
+
+iam:
+  set_iam_policy_request_path: globalSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeImagesSetIamPolicyRequest
+  ALPHA:
+    enable_condition: true
+
+ALPHA:
   help_text:
     brief: Remove IAM policy binding of a Google Compute Engine image.
-    DESCRIPTION: |
+    description: |
       Remove an IAM policy binding from the IAM policy of a Google Compute Engine image. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To remove an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
       with image 'my-image', run:
 
@@ -55,7 +52,3 @@
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.
-
-  iam:
-    <<: *iam
-    enable_condition: true

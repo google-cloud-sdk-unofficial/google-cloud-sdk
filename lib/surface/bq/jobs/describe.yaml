@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Describe a BigQuery job.
-    DESCRIPTION: Describe a BigQuery job.
-    EXAMPLES: |
+    description: Describe a BigQuery job.
+    examples: |
       The following command displays details for job named `my-query-job`
 
         $ {command}  my-query-job

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Update a Cloud Storage bucket.
-    DESCRIPTION: Update a Cloud Storage bucket.
+    description: Update a Cloud Storage bucket.
 
   request:
     collection: storage.buckets

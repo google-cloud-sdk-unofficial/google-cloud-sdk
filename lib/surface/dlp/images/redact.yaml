@@ -14,9 +14,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Redact potentially sensitive data from image content.
-    DESCRIPTION: |
+    description: |
       Redact potentially sensitive data from image content.
-    EXAMPLES: |
+    examples: |
       To redact phone numbers from an image named my-image.jpg and write the
       redacted image to my-redacted-image.jpg, run:
 

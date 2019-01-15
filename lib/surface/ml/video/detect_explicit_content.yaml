@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect explicit content in videos.
-    DESCRIPTION: |
+    description: |
       Detect adult content within a video. Adult content is content generally
       appropriate for 18 years of age and older, including but not limited to
       nudity, sexual activities, and pornography (including cartoons or anime).

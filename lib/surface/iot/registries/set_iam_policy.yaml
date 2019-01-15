@@ -2,7 +2,7 @@
 
   help_text:
     brief: Set the IAM policy for a device registry.
-    DESCRIPTION: |
+    description: |
       This command replaces the existing IAM policy for a device registry, given
       a REGISTRY and a file encoded in JSON or YAML that contains the IAM
       policy. If the given policy file specifies an "etag" value, then the
@@ -11,7 +11,7 @@
       prevent the replacement if the policy for the device registry has been
       subsequently updated.) A policy file that does not contain an etag value
       will replace any existing policy for the device registry.
-    EXAMPLES: |
+    examples: |
       The following command will read an IAM policy defined in a JSON file
       'policy.json' and set it for a device registry with identifier
       'my-registry'

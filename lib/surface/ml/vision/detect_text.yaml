@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect and extract text within an image.
-    DESCRIPTION: |
+    description: |
       Detect and extract text within an image.
 
       Google Cloud Vision uses OCR (Optical Character Recognition) to detect
@@ -32,7 +32,7 @@
 
   help_text:
     brief: Detect and extract text within an image.
-    DESCRIPTION: |
+    description: |
       Detect and extract text within an image.
 
       Google Cloud Vision uses OCR (Optical Character Recognition) to detect

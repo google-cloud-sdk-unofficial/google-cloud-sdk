@@ -1,9 +1,9 @@
 - help_text:
     brief: |
       List VPC Access Service regions
-    DESCRIPTION: |
+    description: |
       List all regions where VPC Access Service API is available.
-    EXAMPLES: |
+    examples: |
       The following command lists all the regions where you can create VPC
       Access connectors:
 

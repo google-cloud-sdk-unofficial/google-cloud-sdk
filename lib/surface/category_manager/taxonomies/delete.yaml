@@ -1,6 +1,6 @@
 - help_text:
     brief: Delete a taxonomy and all of its annotations.
-    DESCRIPTION: |
+    description: |
       Delete a taxonomy and all of its annotations. By default the taxonomy is deleted for the
       current project but this can be overridden with the --project flag.
 

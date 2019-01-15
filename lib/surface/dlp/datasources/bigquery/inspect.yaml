@@ -14,12 +14,12 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Schedules a job to inspect content in a BigQuery table.
-    DESCRIPTION: |
+    description: |
       Schedules a job to inspect content in a BigQuery table for sensitive data.
 
        See [Inspecting Storage and Databases for Sensitive Data](https://cloud.google.com/dlp/docs/inspecting-storage)
        for more details.
-    EXAMPLES: |
+    examples: |
       The following command creates a job `my-bq-job` to scan records in
       BigQuery table `myproject.myds.mytable`:
 

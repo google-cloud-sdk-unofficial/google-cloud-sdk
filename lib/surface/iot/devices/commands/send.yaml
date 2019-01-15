@@ -2,7 +2,7 @@
 
   help_text:
     brief: Sends a command to a device.
-    DESCRIPTION: Sends a command to a device.
+    description: Sends a command to a device.
 
   request:
     collection: cloudiot.projects.locations.registries.devices

@@ -1,6 +1,6 @@
 - help_text:
     brief: Delete a job.
-    DESCRIPTION: Delete a job.
+    description: Delete a job.
 
   request:
     collection: cloudscheduler.projects.locations.jobs

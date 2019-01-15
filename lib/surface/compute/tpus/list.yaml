@@ -1,6 +1,6 @@
 - help_text:
     brief: List Cloud TPUs
-    DESCRIPTION: List Cloud TPUs
+    description: List Cloud TPUs
 
   request:
     collection: tpu.projects.locations.nodes

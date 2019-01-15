@@ -1,36 +1,33 @@
-- &ga_command
-  release_tracks: [BETA, GA]
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Add IAM policy binding to a Cloud Spanner instance.
+  description: |
+    Add an IAM policy binding to a Cloud Spanner instance.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    with instance 'my-instance', run:
+
+      $ {command} my-instance --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: spanner.projects.instances
+arguments:
+  resource:
+    help_text: The Cloud Spanner instance to which to add the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
+
+ALPHA:
   help_text:
     brief: Add IAM policy binding to a Cloud Spanner instance.
-    DESCRIPTION: |
-      Add an IAM policy binding to a Cloud Spanner instance.
-
-    EXAMPLES: |
-      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      with instance 'my-instance', run:
-
-        $ {command} my-instance --member='user:test-user@gmail.com' --role='roles/editor'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  request:
-    collection: spanner.projects.instances
-  arguments:
-    resource:
-      help_text: The Cloud Spanner instance to which to add the IAM policy binding.
-      spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
-
-- <<: *ga_command
-  release_tracks: [ALPHA]
-
-  help_text:
-    brief: Add IAM policy binding to a Cloud Spanner instance.
-    DESCRIPTION: |
+    description: |
       Add an IAM policy binding to the IAM policy of Cloud Spanner instance. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
       with instance 'my-instance', run:
 

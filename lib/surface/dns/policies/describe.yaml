@@ -1,6 +1,6 @@
 - help_text:
     brief: Describes a Cloud DNS policy.
-    DESCRIPTION: |
+    description: |
       Describes details of a Cloud DNS policy.
 
   request:

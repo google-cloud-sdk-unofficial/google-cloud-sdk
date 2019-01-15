@@ -2,7 +2,7 @@
 
   help_text:
     brief: List CMLE Locations.
-    DESCRIPTION: List CMLE Locations.
+    description: List CMLE Locations.
 
   request:
     collection: ml.projects.locations

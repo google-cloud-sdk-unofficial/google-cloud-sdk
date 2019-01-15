@@ -1,6 +1,6 @@
 - help_text:
     brief: Deletes a Cloud TPU.
-    DESCRIPTION: Deletes a Cloud TPU.
+    description: Deletes a Cloud TPU.
 
   request:
     collection: tpu.projects.locations.nodes

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Show details about an Cloud Datastore index.
-    DESCRIPTION: Show details about an Cloud Datastore index.
+    description: Show details about an Cloud Datastore index.
 
   request:
     collection: datastore.projects.indexes

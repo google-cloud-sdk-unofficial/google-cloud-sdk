@@ -1,11 +1,11 @@
 - help_text:
     brief: |
       List Memorystore Redis operations.
-    DESCRIPTION: |
+    description: |
       List all Redis operations under the specified project and region.
 
       To specify the maximum number of operations to list, use the --limit flag.
-    EXAMPLES: |
+    examples: |
       To list up to five operations, run:
 
           $ {command} --limit=5

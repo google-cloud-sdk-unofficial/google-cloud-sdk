@@ -1,37 +1,34 @@
-- &ga_command
-  release_tracks: [BETA]
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Add IAM policy binding to a Binary Authorization attestor.
+  description: |
+    Add an IAM policy binding to a Binary Authorization attestor.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/binaryauthorization.attestorsEditor' for the user 'test-user@gmail.com'
+    on attesttor 'my_attestor', run:
+
+      $ {command} my_attestor --member='user:test-user@gmail.com' --role='roles/binaryauthorization.attestorsEditor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: binaryauthorization.projects.attestors
+
+arguments:
+  resource:
+    help_text: The Binary Authorization attestor for which to add IAM policy binding to.
+    spec: !REF googlecloudsdk.command_lib.container.resources:attestor
+
+ALPHA:
   help_text:
     brief: Add IAM policy binding to a Binary Authorization attestor.
-    DESCRIPTION: |
-      Add an IAM policy binding to a Binary Authorization attestor.
-
-    EXAMPLES: |
-      To add an IAM policy binding for the role of 'roles/binaryauthorization.attestorsEditor' for the user 'test-user@gmail.com'
-      on attesttor 'my_attestor', run:
-
-        $ {command} my_attestor --member='user:test-user@gmail.com' --role='roles/binaryauthorization.attestorsEditor'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  request:
-    collection: binaryauthorization.projects.attestors
-
-  arguments:
-    resource:
-      help_text: The Binary Authorization attestor for which to add IAM policy binding to.
-      spec: !REF googlecloudsdk.command_lib.container.resources:attestor
-
-- <<: *ga_command
-  release_tracks: [ALPHA]
-
-  help_text:
-    brief: Add IAM policy binding to a Binary Authorization attestor.
-    DESCRIPTION: |
+    description: |
       Add an IAM policy binding to the IAM policy of a Binary Authorization attestor. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To add an IAM policy binding for the role of 'roles/binaryauthorization.attestorsEditor' for the user 'test-user@gmail.com'
       on attesttor 'my_attestor', run:
 

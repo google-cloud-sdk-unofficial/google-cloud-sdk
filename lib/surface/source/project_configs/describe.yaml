@@ -1,6 +1,6 @@
 - help_text:
     brief: Show details about the configuration of a project.
-    DESCRIPTION: Show details about the configuration of a project.
+    description: Show details about the configuration of a project.
 
   request:
     collection: sourcerepo.projects

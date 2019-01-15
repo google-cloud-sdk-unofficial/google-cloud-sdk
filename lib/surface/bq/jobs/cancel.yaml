@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Cancel a BigQuery job.
-    DESCRIPTION: Cancel a BigQuery job.
-    EXAMPLES: |
+    description: Cancel a BigQuery job.
+    examples: |
       The following command cancels a job named `my-query-job` and returns the final
       state of the job:
 

@@ -73,7 +73,7 @@ class WorkflowTemplates(base.Group):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class WorkflowTemplatesBeta(base.Group):
   r"""Create and manage Google Cloud Dataproc workflow templates.
 

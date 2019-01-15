@@ -38,12 +38,17 @@ def _CommonArgs(parser, beta, include_deprecated):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetManagedCluster(base.UpdateCommand):
   """Set a managed cluster for the workflow template."""
+  BETA = False
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, beta=False, include_deprecated=False)
     flags.AddTemplateResourceArg(
         parser, 'set managed cluster', api_version='v1')
+
+  def GetCluster(self, cluster_name):
+    return compute_helpers.GetComputeResources(
+        base.ReleaseTrack.GA, cluster_name)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -58,17 +63,15 @@ class SetManagedCluster(base.UpdateCommand):
     else:
       cluster_name = template_ref.workflowTemplatesId
 
-    compute_resources = compute_helpers.GetComputeResources(
-        self.ReleaseTrack(), cluster_name)
+    compute_resources = self.GetCluster(cluster_name)
 
-    beta = self.ReleaseTrack() == base.ReleaseTrack.BETA
     cluster_config = clusters.GetClusterConfig(
         args,
         dataproc,
         template_ref.projectsId,
         compute_resources,
-        beta,
-        include_deprecated=beta)
+        self.BETA,
+        include_deprecated=self.BETA)
 
     labels = labels_util.ParseCreateArgs(
         args, dataproc.messages.ManagedCluster.LabelsValue)
@@ -84,9 +87,10 @@ class SetManagedCluster(base.UpdateCommand):
     return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetManagedClusterBeta(SetManagedCluster):
   """Set a managed cluster for the workflow template."""
+  BETA = True
 
   @staticmethod
   def Args(parser):
@@ -94,3 +98,7 @@ class SetManagedClusterBeta(SetManagedCluster):
     flags.AddTemplateResourceArg(
         parser, 'set managed cluster', api_version='v1beta2')
     clusters.BetaArgsForClusterRef(parser)
+
+  def GetCluster(self, cluster_name):
+    return compute_helpers.GetComputeResources(
+        base.ReleaseTrack.BETA, cluster_name)

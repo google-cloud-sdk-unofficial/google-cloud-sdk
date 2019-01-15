@@ -2990,9 +2990,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--restart-on-failure": "bool",
                     "--scopes": "value",
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
                     "--shielded-vm-integrity-monitoring": "bool",
                     "--shielded-vm-secure-boot": "bool",
                     "--shielded-vm-vtpm": "bool",
+                    "--shielded-vtpm": "bool",
                     "--source-instance": "dynamic",
                     "--source-instance-zone": "dynamic",
                     "--subnet": "value",
@@ -3255,9 +3258,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--restart-on-failure": "bool",
                     "--scopes": "value",
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
                     "--shielded-vm-integrity-monitoring": "bool",
                     "--shielded-vm-secure-boot": "bool",
                     "--shielded-vm-vtpm": "bool",
+                    "--shielded-vtpm": "bool",
                     "--source-instance-template": "dynamic",
                     "--source-machine-image": "dynamic",
                     "--source-snapshot": "value",
@@ -3513,7 +3519,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "set-iam-policy": {
                   "commands": {},
                   "flags": {
-                    "--zone": "dynamic"
+                    "--zone": "value"
                   }
                 },
                 "set-machine-type": {
@@ -3605,10 +3611,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-display-device": "bool",
                     "--min-cpu-platform": "value",
                     "--remove-labels": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-learn-integrity-policy": "bool",
+                    "--shielded-secure-boot": "bool",
                     "--shielded-vm-integrity-monitoring": "bool",
                     "--shielded-vm-learn-integrity-policy": "bool",
                     "--shielded-vm-secure-boot": "bool",
                     "--shielded-vm-vtpm": "bool",
+                    "--shielded-vtpm": "bool",
                     "--update-labels": "value",
                     "--zone": "dynamic"
                   }
@@ -6803,6 +6813,675 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "dataproc": {
+          "commands": {
+            "clusters": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--bucket": "value",
+                    "--expiration-time": "value",
+                    "--gce-pd-kms-key": "dynamic",
+                    "--gce-pd-kms-key-keyring": "dynamic",
+                    "--gce-pd-kms-key-location": "dynamic",
+                    "--gce-pd-kms-key-project": "dynamic",
+                    "--image": "value",
+                    "--image-version": "value",
+                    "--initialization-action-timeout": "value",
+                    "--initialization-actions": "value",
+                    "--labels": "value",
+                    "--master-accelerator": "value",
+                    "--master-boot-disk-size": "value",
+                    "--master-boot-disk-type": "value",
+                    "--master-machine-type": "value",
+                    "--master-min-cpu-platform": "value",
+                    "--max-age": "value",
+                    "--max-idle": "value",
+                    "--metadata": "value",
+                    "--network": "value",
+                    "--no-address": "bool",
+                    "--num-master-local-ssds": "value",
+                    "--num-masters": "value",
+                    "--num-preemptible-worker-local-ssds": "value",
+                    "--num-preemptible-workers": "value",
+                    "--num-worker-local-ssds": "value",
+                    "--num-workers": "value",
+                    "--optional-components": "value",
+                    "--preemptible-worker-boot-disk-size": "value",
+                    "--preemptible-worker-boot-disk-type": "value",
+                    "--properties": "value",
+                    "--region": "value",
+                    "--scopes": "value",
+                    "--service-account": "value",
+                    "--single-node": "bool",
+                    "--subnet": "value",
+                    "--tags": "value",
+                    "--worker-accelerator": "value",
+                    "--worker-boot-disk-size": "value",
+                    "--worker-boot-disk-type": "value",
+                    "--worker-machine-type": "value",
+                    "--worker-min-cpu-platform": "value",
+                    "--zone": "value"
+                  }
+                },
+                "create-from-file": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--file": "value",
+                    "--region": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "diagnose": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--destination": "value",
+                    "--region": "value"
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "value",
+                    "--source": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--clear-labels": "bool",
+                    "--expiration-time": "value",
+                    "--graceful-decommission-timeout": "value",
+                    "--max-age": "value",
+                    "--max-idle": "value",
+                    "--no-max-age": "bool",
+                    "--no-max-idle": "bool",
+                    "--num-preemptible-workers": "value",
+                    "--num-workers": "value",
+                    "--region": "value",
+                    "--remove-labels": "value",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {
+                "--region": "value"
+              }
+            },
+            "jobs": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "kill": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--state-filter": [
+                      "active",
+                      "inactive"
+                    ]
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "submit": {
+                  "commands": {
+                    "hadoop": {
+                      "commands": {},
+                      "flags": {
+                        "--archives": "value",
+                        "--async": "bool",
+                        "--bucket": "value",
+                        "--class": "value",
+                        "--cluster": "value",
+                        "--driver-log-levels": "value",
+                        "--files": "value",
+                        "--jar": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--max-failures-per-hour": "value",
+                        "--properties": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "hive": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--bucket": "value",
+                        "--cluster": "value",
+                        "--continue-on-failure": "bool",
+                        "--execute": "value",
+                        "--file": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--max-failures-per-hour": "value",
+                        "--params": "value",
+                        "--properties": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "pig": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--bucket": "value",
+                        "--cluster": "value",
+                        "--continue-on-failure": "bool",
+                        "--driver-log-levels": "value",
+                        "--execute": "value",
+                        "--file": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--max-failures-per-hour": "value",
+                        "--params": "value",
+                        "--properties": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "pyspark": {
+                      "commands": {},
+                      "flags": {
+                        "--archives": "value",
+                        "--async": "bool",
+                        "--bucket": "value",
+                        "--cluster": "value",
+                        "--driver-log-levels": "value",
+                        "--files": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--max-failures-per-hour": "value",
+                        "--properties": "value",
+                        "--py-files": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "spark": {
+                      "commands": {},
+                      "flags": {
+                        "--archives": "value",
+                        "--async": "bool",
+                        "--bucket": "value",
+                        "--class": "value",
+                        "--cluster": "value",
+                        "--driver-log-levels": "value",
+                        "--files": "value",
+                        "--jar": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--max-failures-per-hour": "value",
+                        "--properties": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "spark-r": {
+                      "commands": {},
+                      "flags": {
+                        "--archives": "value",
+                        "--async": "bool",
+                        "--bucket": "value",
+                        "--cluster": "value",
+                        "--driver-log-levels": "value",
+                        "--files": "value",
+                        "--labels": "value",
+                        "--max-failures-per-hour": "value",
+                        "--properties": "value",
+                        "--region": "value"
+                      }
+                    },
+                    "spark-sql": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--bucket": "value",
+                        "--cluster": "value",
+                        "--driver-log-levels": "value",
+                        "--execute": "value",
+                        "--file": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--max-failures-per-hour": "value",
+                        "--params": "value",
+                        "--properties": "value",
+                        "--region": "value"
+                      }
+                    }
+                  },
+                  "flags": {
+                    "--async": "bool",
+                    "--bucket": "value",
+                    "--region": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--clear-labels": "bool",
+                    "--region": "value",
+                    "--remove-labels": "value",
+                    "--update-labels": "value"
+                  }
+                },
+                "wait": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                }
+              },
+              "flags": {
+                "--region": "value"
+              }
+            },
+            "operations": {
+              "commands": {
+                "cancel": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value",
+                    "--state-filter": [
+                      "active",
+                      "inactive"
+                    ]
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
+                  }
+                }
+              },
+              "flags": {
+                "--region": "value"
+              }
+            },
+            "workflow-templates": {
+              "commands": {
+                "add-job": {
+                  "commands": {
+                    "hadoop": {
+                      "commands": {},
+                      "flags": {
+                        "--archives": "value",
+                        "--class": "value",
+                        "--driver-log-levels": "value",
+                        "--files": "value",
+                        "--jar": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--properties": "value",
+                        "--region": "value",
+                        "--start-after": "value",
+                        "--step-id": "value",
+                        "--workflow-template": "value"
+                      }
+                    },
+                    "hive": {
+                      "commands": {},
+                      "flags": {
+                        "--continue-on-failure": "bool",
+                        "--execute": "value",
+                        "--file": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--params": "value",
+                        "--properties": "value",
+                        "--region": "value",
+                        "--start-after": "value",
+                        "--step-id": "value",
+                        "--workflow-template": "value"
+                      }
+                    },
+                    "pig": {
+                      "commands": {},
+                      "flags": {
+                        "--continue-on-failure": "bool",
+                        "--driver-log-levels": "value",
+                        "--execute": "value",
+                        "--file": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--params": "value",
+                        "--properties": "value",
+                        "--region": "value",
+                        "--start-after": "value",
+                        "--step-id": "value",
+                        "--workflow-template": "value"
+                      }
+                    },
+                    "pyspark": {
+                      "commands": {},
+                      "flags": {
+                        "--archives": "value",
+                        "--driver-log-levels": "value",
+                        "--files": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--properties": "value",
+                        "--py-files": "value",
+                        "--region": "value",
+                        "--start-after": "value",
+                        "--step-id": "value",
+                        "--workflow-template": "value"
+                      }
+                    },
+                    "spark": {
+                      "commands": {},
+                      "flags": {
+                        "--archives": "value",
+                        "--class": "value",
+                        "--driver-log-levels": "value",
+                        "--files": "value",
+                        "--jar": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--properties": "value",
+                        "--region": "value",
+                        "--start-after": "value",
+                        "--step-id": "value",
+                        "--workflow-template": "value"
+                      }
+                    },
+                    "spark-r": {
+                      "commands": {},
+                      "flags": {
+                        "--archives": "value",
+                        "--driver-log-levels": "value",
+                        "--files": "value",
+                        "--labels": "value",
+                        "--properties": "value",
+                        "--region": "value",
+                        "--start-after": "value",
+                        "--step-id": "value",
+                        "--workflow-template": "value"
+                      }
+                    },
+                    "spark-sql": {
+                      "commands": {},
+                      "flags": {
+                        "--driver-log-levels": "value",
+                        "--execute": "value",
+                        "--file": "value",
+                        "--jars": "value",
+                        "--labels": "value",
+                        "--params": "value",
+                        "--properties": "value",
+                        "--region": "value",
+                        "--start-after": "value",
+                        "--step-id": "value",
+                        "--workflow-template": "value"
+                      }
+                    }
+                  },
+                  "flags": {
+                    "--region": "value"
+                  }
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--labels": "value",
+                    "--region": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--destination": "value",
+                    "--region": "dynamic"
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--source": "value"
+                  }
+                },
+                "instantiate": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--parameters": "value",
+                    "--region": "dynamic"
+                  }
+                },
+                "instantiate-from-file": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--file": "value",
+                    "--region": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "remove-job": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--step-id": "value"
+                  }
+                },
+                "run": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "dynamic"
+                  }
+                },
+                "set-cluster-selector": {
+                  "commands": {},
+                  "flags": {
+                    "--cluster-labels": "value",
+                    "--region": "dynamic"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "set-managed-cluster": {
+                  "commands": {},
+                  "flags": {
+                    "--bucket": "value",
+                    "--cluster-name": "value",
+                    "--expiration-time": "value",
+                    "--image": "value",
+                    "--image-version": "value",
+                    "--initialization-action-timeout": "value",
+                    "--initialization-actions": "value",
+                    "--labels": "value",
+                    "--master-accelerator": "value",
+                    "--master-boot-disk-size": "value",
+                    "--master-boot-disk-type": "value",
+                    "--master-machine-type": "value",
+                    "--master-min-cpu-platform": "value",
+                    "--max-age": "value",
+                    "--max-idle": "value",
+                    "--metadata": "value",
+                    "--network": "value",
+                    "--no-address": "bool",
+                    "--num-master-local-ssds": "value",
+                    "--num-masters": "value",
+                    "--num-preemptible-worker-local-ssds": "value",
+                    "--num-preemptible-workers": "value",
+                    "--num-worker-local-ssds": "value",
+                    "--num-workers": "value",
+                    "--optional-components": "value",
+                    "--preemptible-worker-boot-disk-size": "value",
+                    "--preemptible-worker-boot-disk-type": "value",
+                    "--properties": "value",
+                    "--region": "dynamic",
+                    "--scopes": "value",
+                    "--service-account": "value",
+                    "--single-node": "bool",
+                    "--subnet": "value",
+                    "--tags": "value",
+                    "--worker-accelerator": "value",
+                    "--worker-boot-disk-size": "value",
+                    "--worker-boot-disk-type": "value",
+                    "--worker-machine-type": "value",
+                    "--worker-min-cpu-platform": "value",
+                    "--zone": "value"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
         "datastore": {
           "commands": {
             "export": {
@@ -7763,7 +8442,6 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--additional-apks": "value",
                         "--app": "value",
-                        "--app-initial-activity": "value",
                         "--app-package": "value",
                         "--async": "bool",
                         "--auto-google-login": "bool",
@@ -7774,8 +8452,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--filter": "value",
                         "--limit": "value",
                         "--locales": "value",
-                        "--max-depth": "value",
-                        "--max-steps": "value",
                         "--network-profile": "value",
                         "--obb-files": "value",
                         "--orientations": "dynamic",
@@ -12230,7 +12906,8 @@ STATIC_COMPLETION_CLI_TREE = {
                       "HDD",
                       "SSD"
                     ],
-                    "--tier": "value"
+                    "--tier": "value",
+                    "--zone": "value"
                   }
                 },
                 "delete": {
@@ -12334,7 +13011,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--storage-auto-increase-limit": "value",
                     "--storage-size": "value",
                     "--tier": "value",
-                    "--update-labels": "value"
+                    "--update-labels": "value",
+                    "--zone": "value"
                   }
                 },
                 "promote-replica": {
@@ -16180,9 +16858,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--restart-on-failure": "bool",
                     "--scopes": "value",
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
                     "--shielded-vm-integrity-monitoring": "bool",
                     "--shielded-vm-secure-boot": "bool",
                     "--shielded-vm-vtpm": "bool",
+                    "--shielded-vtpm": "bool",
                     "--source-instance": "dynamic",
                     "--source-instance-zone": "dynamic",
                     "--subnet": "value",
@@ -16411,9 +17092,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--restart-on-failure": "bool",
                     "--scopes": "value",
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
                     "--shielded-vm-integrity-monitoring": "bool",
                     "--shielded-vm-secure-boot": "bool",
                     "--shielded-vm-vtpm": "bool",
+                    "--shielded-vtpm": "bool",
                     "--source-instance-template": "dynamic",
                     "--subnet": "value",
                     "--tags": "value",
@@ -16637,7 +17321,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "set-iam-policy": {
                   "commands": {},
                   "flags": {
-                    "--zone": "dynamic"
+                    "--zone": "value"
                   }
                 },
                 "set-machine-type": {
@@ -16707,10 +17391,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--deletion-protection": "bool",
                     "--min-cpu-platform": "value",
                     "--remove-labels": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-learn-integrity-policy": "bool",
+                    "--shielded-secure-boot": "bool",
                     "--shielded-vm-integrity-monitoring": "bool",
                     "--shielded-vm-learn-integrity-policy": "bool",
                     "--shielded-vm-secure-boot": "bool",
                     "--shielded-vm-vtpm": "bool",
+                    "--shielded-vtpm": "bool",
                     "--update-labels": "value",
                     "--zone": "dynamic"
                   }
@@ -17038,6 +17726,8 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--auto-create-routes": "bool",
+                        "--export-custom-routes": "bool",
+                        "--import-custom-routes": "bool",
                         "--network": "value",
                         "--peer-network": "value",
                         "--peer-project": "value"
@@ -17058,6 +17748,14 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--page-size": "value",
                         "--sort-by": "value",
                         "--uri": "bool"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--export-custom-routes": "bool",
+                        "--import-custom-routes": "bool",
+                        "--network": "value"
                       }
                     }
                   },
@@ -21441,7 +22139,6 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--additional-apks": "value",
                         "--app": "value",
-                        "--app-initial-activity": "value",
                         "--app-package": "value",
                         "--async": "bool",
                         "--auto-google-login": "bool",
@@ -21452,8 +22149,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--filter": "value",
                         "--limit": "value",
                         "--locales": "value",
-                        "--max-depth": "value",
-                        "--max-steps": "value",
                         "--network-profile": "value",
                         "--obb-files": "value",
                         "--orientations": "dynamic",
@@ -25023,7 +25718,8 @@ STATIC_COMPLETION_CLI_TREE = {
                       "HDD",
                       "SSD"
                     ],
-                    "--tier": "value"
+                    "--tier": "value",
+                    "--zone": "value"
                   }
                 },
                 "delete": {
@@ -25127,7 +25823,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--storage-auto-increase-limit": "value",
                     "--storage-size": "value",
                     "--tier": "value",
-                    "--update-labels": "value"
+                    "--update-labels": "value",
+                    "--zone": "value"
                   }
                 },
                 "promote-replica": {
@@ -27524,6 +28221,14 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--zone": "dynamic"
               }
             },
+            "add-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--member": "value",
+                "--role": "dynamic",
+                "--zone": "value"
+              }
+            },
             "add-labels": {
               "commands": {},
               "flags": {
@@ -27549,6 +28254,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "attach-disk": {
               "commands": {},
               "flags": {
+                "--boot": "bool",
                 "--csek-key-file": "value",
                 "--device-name": "value",
                 "--disk": "value",
@@ -27723,6 +28429,16 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--zone": "dynamic"
               }
             },
+            "get-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--zone": "value"
+              }
+            },
             "get-serial-port-output": {
               "commands": {},
               "flags": {
@@ -27764,6 +28480,14 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "remove-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--member": "value",
+                "--role": "dynamic",
+                "--zone": "value"
+              }
+            },
             "remove-labels": {
               "commands": {},
               "flags": {
@@ -27801,6 +28525,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--device-name": "value",
                 "--disk": "value",
                 "--zone": "dynamic"
+              }
+            },
+            "set-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--zone": "value"
               }
             },
             "set-machine-type": {
@@ -28905,6 +29635,14 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {
             "node-groups": {
               "commands": {
+                "add-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--member": "value",
+                    "--role": "dynamic",
+                    "--zone": "value"
+                  }
+                },
                 "create": {
                   "commands": {},
                   "flags": {
@@ -28924,6 +29662,16 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--zone": "dynamic"
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--zone": "value"
                   }
                 },
                 "list": {
@@ -28946,6 +29694,20 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "dynamic"
                   }
                 },
+                "remove-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--member": "value",
+                    "--role": "dynamic",
+                    "--zone": "value"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--zone": "value"
+                  }
+                },
                 "update": {
                   "commands": {},
                   "flags": {
@@ -28960,6 +29722,14 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "node-templates": {
               "commands": {
+                "add-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--member": "value",
+                    "--region": "value",
+                    "--role": "dynamic"
+                  }
+                },
                 "create": {
                   "commands": {},
                   "flags": {
@@ -28982,6 +29752,16 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic"
                   }
                 },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "value",
+                    "--sort-by": "value"
+                  }
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -28990,6 +29770,20 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
+                  }
+                },
+                "remove-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--member": "value",
+                    "--region": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "value"
                   }
                 }
               },
@@ -31662,7 +32456,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--app": "value",
-                    "--app-initial-activity": "value",
                     "--app-package": "value",
                     "--async": "bool",
                     "--auto-google-login": "bool",
@@ -31673,8 +32466,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--filter": "value",
                     "--limit": "value",
                     "--locales": "value",
-                    "--max-depth": "value",
-                    "--max-steps": "value",
                     "--obb-files": "value",
                     "--orientations": "dynamic",
                     "--os-version-ids": "value",
@@ -34482,7 +35273,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "HDD",
                   "SSD"
                 ],
-                "--tier": "value"
+                "--tier": "value",
+                "--zone": "value"
               }
             },
             "delete": {
@@ -34581,7 +35373,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--require-ssl": "bool",
                 "--storage-auto-increase": "bool",
                 "--storage-size": "value",
-                "--tier": "value"
+                "--tier": "value",
+                "--zone": "value"
               }
             },
             "promote-replica": {

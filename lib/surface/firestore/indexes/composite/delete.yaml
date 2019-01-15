@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Delete the given composite index.
-    DESCRIPTION: Delete the given composite index.
-    EXAMPLES: |
+    description: Delete the given composite index.
+    examples: |
       The following command deletes the composite index with ID `3421ef`:
 
         $ {command} 3421ef

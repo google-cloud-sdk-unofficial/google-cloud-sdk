@@ -75,7 +75,7 @@ class RemoveJob(base.UpdateCommand):
     return response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveJobBeta(RemoveJob):
   """Remove a job from workflow template."""
 

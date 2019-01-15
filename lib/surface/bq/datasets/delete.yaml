@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Delete a BigQuery dataset.
-    DESCRIPTION:  Delete a BigQuery dataset.
-    EXAMPLES: |
+    description:  Delete a BigQuery dataset.
+    examples: |
       The following command deletes a dataset with ID `my-dataset`
 
         $ {command}  my-dataset

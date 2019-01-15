@@ -14,7 +14,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Delete a Cloud DLP job trigger.
-    DESCRIPTION: |
+    description: |
       Delete a Cloud DLP job trigger.
 
   request:

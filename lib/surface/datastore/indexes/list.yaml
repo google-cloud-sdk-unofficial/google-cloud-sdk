@@ -2,7 +2,7 @@
 
   help_text:
     brief: List Cloud Datastore indexes.
-    DESCRIPTION: List Cloud Datastore indexes.
+    description: List Cloud Datastore indexes.
 
   request:
     collection: datastore.projects.indexes

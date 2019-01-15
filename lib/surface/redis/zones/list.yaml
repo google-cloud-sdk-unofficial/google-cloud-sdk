@@ -1,7 +1,7 @@
 - help_text:
     brief: |
       List Memorystore Redis zones
-    DESCRIPTION: |
+    description: |
       List all zones where Memorystore Redis API is available.
 
   arguments:

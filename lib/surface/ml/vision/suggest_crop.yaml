@@ -2,7 +2,7 @@
 
   help_text:
     brief: Suggest a bounding box in an image.
-    DESCRIPTION: |
+    description: |
       Returns the coordinates of a bounding box that surrounds the dominant
       object or face in an image.
 
@@ -31,7 +31,7 @@
 
   help_text:
     brief: Suggest a bounding box in an image.
-    DESCRIPTION: |
+    description: |
       Returns the coordinates of a bounding box that surrounds the dominant
       object or face in an image.
 

@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Describe a BigQuery table.
-    DESCRIPTION:  Describe a BigQuery table.
-    EXAMPLES: |
+    description:  Describe a BigQuery table.
+    examples: |
       The following command fetches details about a table with ID `my-table`
 
         $ {command}  my-table

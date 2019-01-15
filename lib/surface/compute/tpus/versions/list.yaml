@@ -1,6 +1,6 @@
 - help_text:
     brief: List available Tensorflow versions.
-    DESCRIPTION: List Tensorflow versions available for Cloud TPUs.
+    description: List Tensorflow versions available for Cloud TPUs.
 
   request:
     collection: tpu.projects.locations.tensorflowVersions

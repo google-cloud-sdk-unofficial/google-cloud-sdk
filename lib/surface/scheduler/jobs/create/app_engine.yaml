@@ -1,6 +1,6 @@
 - help_text:
     brief: Create a Cloud Scheduler job with an App Engine target.
-    DESCRIPTION: Create a Cloud Scheduler job with an App Engine target.
+    description: Create a Cloud Scheduler job with an App Engine target.
 
   request:
     collection: cloudscheduler.projects.locations.jobs

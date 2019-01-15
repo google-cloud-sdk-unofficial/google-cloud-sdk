@@ -1,9 +1,9 @@
 - help_text:
     brief: Lint an IAM condition.
-    DESCRIPTION: |
+    description: |
       Lint an IAM condition. The problems found by linter will not be fixed.
       Instead, it will show the problems.
-    EXAMPLES: |
+    examples: |
       To lint an IAM condition of resource `//cloudresourcemanager.googleapis.com/v1/projects/example-project`,
       and the condtion to lint is expression='true', title='title', description='description', run:
 

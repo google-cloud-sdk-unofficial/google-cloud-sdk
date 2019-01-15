@@ -14,12 +14,12 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Schedules a job to inspect content in a Cloud Datastore.
-    DESCRIPTION: |
+    description: |
       Schedules a job to inspect content in a Cloud Datastore for sensitive data.
 
        See [Inspecting Storage and Databases for Sensitive Data](https://cloud.google.com/dlp/docs/inspecting-storage)
        for more details.
-    EXAMPLES: |
+    examples: |
       The following command creates a job `my-ds-job` to scan records in
       Cloud Datastore table `myds:mykind`:
 

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect shot changes in videos.
-    DESCRIPTION: |
+    description: |
       Detect when the shot changes in a video.
 
   request:

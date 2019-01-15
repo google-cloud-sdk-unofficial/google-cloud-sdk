@@ -2,7 +2,7 @@
 
   help_text:
     brief: Update a Cloud Spanner instance.
-    DESCRIPTION: Update a Cloud Spanner instance.
+    description: Update a Cloud Spanner instance.
 
   arguments:
     resource:

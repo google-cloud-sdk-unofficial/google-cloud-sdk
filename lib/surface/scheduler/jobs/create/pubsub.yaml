@@ -1,6 +1,6 @@
 - help_text:
     brief: Create a Cloud Scheduler job with a Pub/Sub target.
-    DESCRIPTION: Create a Cloud Scheduler job with a Pub/Sub target.
+    description: Create a Cloud Scheduler job with a Pub/Sub target.
 
   request:
     collection: cloudscheduler.projects.locations.jobs

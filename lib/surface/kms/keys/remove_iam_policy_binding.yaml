@@ -1,39 +1,36 @@
-- &ga_command
-  release_tracks: [BETA, GA]
+release_tracks: [ALPHA, BETA, GA]
 
+help_text:
+  brief: Remove IAM policy binding for a kms key.
+  description: |
+    Removes a policy binding from the IAM policy of a kms key. One binding consists of a member
+    and a role.
+
+  examples: |
+    To remove an IAM policy binding for the role of 'roles/editor' for the user
+    'test-user@gmail.com' on the key frodo with the keyring fellowship and location global, run:
+
+      $ {command} frodo --keyring='fellowship' --location='global' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: cloudkms.projects.locations.keyRings.cryptoKeys
+
+arguments:
+  resource:
+    help_text: The key to remove the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.kms.resources:key
+
+ALPHA:
   help_text:
     brief: Remove IAM policy binding for a kms key.
-    DESCRIPTION: |
-      Removes a policy binding from the IAM policy of a kms key. One binding consists of a member
-      and a role.
-
-    EXAMPLES: |
-      To remove an IAM policy binding for the role of 'roles/editor' for the user
-      'test-user@gmail.com' on the key frodo with the keyring fellowship and location global, run:
-
-        $ {command} frodo --keyring='fellowship' --location='global' --member='user:test-user@gmail.com' --role='roles/editor'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  request:
-    collection: cloudkms.projects.locations.keyRings.cryptoKeys
-
-  arguments:
-    resource:
-      help_text: The key to remove the IAM policy binding.
-      spec: !REF googlecloudsdk.command_lib.kms.resources:key
-
-- <<: *ga_command
-  release_tracks: [ALPHA]
-
-  help_text:
-    brief: Remove IAM policy binding for a kms key.
-    DESCRIPTION: |
+    description: |
       Removes a policy binding from the IAM policy of a kms key. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To remove an IAM policy binding for the role of 'roles/editor' for the user
       'test-user@gmail.com' on the key frodo with the keyring fellowship and location global, run:
 

@@ -1,6 +1,6 @@
 - help_text:
     brief: List taxonomies.
-    DESCRIPTION: List taxonomies for a project.
+    description: List taxonomies for a project.
 
   request:
     collection: categorymanager.projects.taxonomies

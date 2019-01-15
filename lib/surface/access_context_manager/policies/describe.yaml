@@ -2,7 +2,7 @@
 
   help_text:
     brief: Show details about an access policy.
-    DESCRIPTION: Show details about a given access policy.
+    description: Show details about a given access policy.
 
   request:
     collection: accesscontextmanager.accessPolicies

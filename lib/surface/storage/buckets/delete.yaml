@@ -2,7 +2,7 @@
 
   help_text:
     brief: Delete a Cloud Storage bucket.
-    DESCRIPTION: Delete a Cloud Storage bucket.
+    description: Delete a Cloud Storage bucket.
 
   request:
     collection: storage.buckets

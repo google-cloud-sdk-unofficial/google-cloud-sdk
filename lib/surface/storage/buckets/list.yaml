@@ -2,7 +2,7 @@
 
   help_text:
     brief: List all the Cloud Storage buckets in your current project.
-    DESCRIPTION: List all the Cloud Storage buckets in your current project.
+    description: List all the Cloud Storage buckets in your current project.
 
   request:
     collection: storage.buckets

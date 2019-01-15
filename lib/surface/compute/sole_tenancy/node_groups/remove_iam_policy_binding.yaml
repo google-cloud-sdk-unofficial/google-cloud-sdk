@@ -1,48 +1,47 @@
-- &beta_command
-  release_tracks: [BETA]
-  help_text:
-    brief: Remove IAM policy binding of a Google Compute Engine node group.
-    DESCRIPTION: |
-      Remove an IAM policy binding of a Google Compute Engine node group.
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Remove IAM policy binding from a Google Compute Engine node group.
+  description: |
+    Remove an IAM policy binding from a Google Compute Engine node group.
 
-    EXAMPLES: |
-      To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
-      with node group 'my-node-group' and zone 'ZONE', run:
+  examples: |
+    To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
+    with node group 'my-node-group' and zone 'ZONE', run:
 
-        $ {command} my-node-group --zone='ZONE' --member='user:test-user@gmail.com' --role='roles/compute.admin'
+      $ {command} my-node-group --zone='ZONE' --member='user:test-user@gmail.com' --role='roles/compute.admin'
 
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
 
-  request: &request
-    collection: compute.nodeGroups
+request:
+  collection: compute.nodeGroups
+  api_version: v1
+  BETA:
     api_version: beta
-
-  iam: &iam
-    set_iam_policy_request_path: zoneSetPolicyRequest
-    message_type_overrides:
-      policy: Policy
-      set_iam_policy_request: ComputeNodeGroupsSetIamPolicyRequest
-
-  arguments:
-    resource:
-      help_text: The node group for which to remove IAM policy binding from.
-      spec: !REF googlecloudsdk.command_lib.compute.resources:node_group
-
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
-  request:
-    <<: *request
+  ALPHA:
     api_version: alpha
 
+iam:
+  set_iam_policy_request_path: zoneSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeNodeGroupsSetIamPolicyRequest
+  ALPHA:
+    enable_condition: true
+
+arguments:
+  resource:
+    help_text: The node group for which to remove IAM policy binding from.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:node_group
+
+ALPHA:
   help_text:
-    brief: Remove IAM policy binding of a Google Compute Engine node group.
-    DESCRIPTION: |
+    brief: Remove IAM policy binding from a Google Compute Engine node group.
+    description: |
       Remove an IAM policy binding from the IAM policy of a Google Compute Engine node group. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
       with node group 'my-node-group' and zone 'ZONE', run:
 
@@ -55,7 +54,3 @@
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.
-
-  iam:
-    <<: *iam
-    enable_condition: true

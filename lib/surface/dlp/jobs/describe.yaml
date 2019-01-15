@@ -14,7 +14,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Get the latest status of a Cloud DLP job.
-    DESCRIPTION: |
+    description: |
       Get the latest status of a Cloud DLP job.
 
   request:

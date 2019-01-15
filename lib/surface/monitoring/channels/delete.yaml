@@ -1,6 +1,6 @@
 - help_text:
     brief: Delete a notification channel.
-    DESCRIPTION: Delete a notification channel.
+    description: Delete a notification channel.
 
   request:
     collection: monitoring.projects.notificationChannels

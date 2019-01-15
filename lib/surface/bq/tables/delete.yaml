@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Delete a BigQuery table.
-    DESCRIPTION:  Delete a BigQuery table.
-    EXAMPLES: |
+    description:  Delete a BigQuery table.
+    examples: |
       The following command deletes a table with ID `my-table`
 
         $ {command}  my-table

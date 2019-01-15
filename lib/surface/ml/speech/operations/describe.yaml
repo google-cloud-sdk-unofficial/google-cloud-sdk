@@ -1,6 +1,6 @@
 - help_text:
     brief: Get description of a long-running speech recognition operation.
-    DESCRIPTION: |
+    description: |
       Get information about a long-running speech recognition operation.
 
   request:

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Get the IAM policy for a Google Compute Engine subnetwork.
-    DESCRIPTION: |
+    description: |
       *{command}* displays the IAM policy associated with a Google
       Compute Engine subnetwork in a project. If formatted as JSON,
       the output can be edited and used as a policy file for
@@ -10,7 +10,7 @@
       identifying the version emitted and allowing detection of
       concurrent policy updates; see
       $ {parent} set-iam-policy for additional details.
-    EXAMPLES: |
+    examples: |
       To print the IAM policy for a given subnetwork, run:
 
         $ {command} --region=us-central1 my-subnet

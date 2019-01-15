@@ -14,8 +14,8 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Create a new BigQuery dataset.
-    DESCRIPTION:  Create a new BigQuery dataset.
-    EXAMPLES: |
+    description:  Create a new BigQuery dataset.
+    examples: |
       The following command creates a dataset with ID `my-dataset`
 
         $ {command}  my-dataset --description 'My New Dataset'

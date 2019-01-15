@@ -2,9 +2,9 @@
   help_text:
     brief: |
       List worker pools in a project for a specified instance.
-    DESCRIPTION: |
+    description: |
       Lists all worker pools currently in a specified instance in a project.
-    EXAMPLES: |
+    examples: |
       The following command lists all the worker pools in the instance 'default_instance':
 
         $ {command} --instance=default_instance

@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: List fields with non-default index settings.
-    DESCRIPTION: |
+    description: |
       List fields that have had their index configurations exempted from the automatic settings.
       This includes the field describing the database-wide default index settings, unless otherwise
       filtered out.
-    EXAMPLES: |
+    examples: |
       The following command lists all fields with custom index settings:
 
         $ {command}

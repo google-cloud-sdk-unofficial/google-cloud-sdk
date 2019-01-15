@@ -1,6 +1,6 @@
 - help_text:
     brief: List jobs.
-    DESCRIPTION: List jobs.
+    description: List jobs.
 
   request:
     collection: cloudscheduler.projects.locations.jobs

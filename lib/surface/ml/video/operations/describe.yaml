@@ -2,7 +2,7 @@
 
   help_text:
     brief: Get description of a long-running video analysis operation.
-    DESCRIPTION: |
+    description: |
       Get information about a long-running video analysis operation.
 
   request:

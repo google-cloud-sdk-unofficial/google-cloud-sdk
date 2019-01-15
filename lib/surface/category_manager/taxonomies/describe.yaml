@@ -1,6 +1,6 @@
 - help_text:
     brief: Get the description of a taxonomy.
-    DESCRIPTION: |
+    description: |
       Get the description of a given taxonomy.
 
   request:

@@ -1,6 +1,6 @@
 - help_text:
     brief: Creates a new Cloud DNS policy.
-    DESCRIPTION: |
+    description: |
       Creates a new Cloud DNS policy.
       ## EXAMPLES
 

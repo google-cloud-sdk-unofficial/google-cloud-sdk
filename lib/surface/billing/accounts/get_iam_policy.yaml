@@ -3,7 +3,7 @@
   help_text:
     brief: Get the IAM policy for a Cloud Billing account.
 
-    DESCRIPTION: |
+    description: |
       *{command}* displays the IAM policy associated with a Cloud Billing
       account. If formatted as JSON, the output can be edited and used as a
       policy file for *set-iam-policy*. The output includes an "etag" field
@@ -11,7 +11,7 @@
       policy updates; see
       $ {parent} set-iam-policy for additional details.
 
-    EXAMPLES: |
+    examples: |
       To print the IAM policy for a given Cloud Billing account, run:
 
         $ {command} my-account

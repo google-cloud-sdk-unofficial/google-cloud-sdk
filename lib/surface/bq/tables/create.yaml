@@ -14,13 +14,13 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Create a new BigQuery table.
-    DESCRIPTION: |-
+    description: |-
       Create a new BigQuery table.
       Create a table or view with a specified name. A view is a collection of rows
       selected by a query in a flag, and manipulated as a table. The dataset to contain
       the table or view must already exist, and must not contain a table or view with
       the specified name.
-    EXAMPLES: |
+    examples: |
       The following command creates a table with ID  `my-table` in `my-dataset`:
 
         $ {command}  /projects/myproject/datasets/my-dataset/tables/my-table --description 'My New Table'

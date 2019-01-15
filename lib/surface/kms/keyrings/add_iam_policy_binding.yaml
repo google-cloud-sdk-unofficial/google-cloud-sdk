@@ -1,38 +1,35 @@
-- &ga_command
-  release_tracks: [BETA, GA]
+release_tracks: [ALPHA, BETA, GA]
+help_text:
+  brief: Add IAM policy binding for a kms keyring.
+  description: |
+    Adds a policy binding to the IAM policy of a kms keyring. One binding consists of a member and
+    a role.
+
+  examples: |
+    To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+    on the keyring fellowship with location global, run:
+
+      $ {command} fellowship --location='global' --member='user:test-user@gmail.com' --role='roles/editor'
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
+
+request:
+  collection: cloudkms.projects.locations.keyRings
+
+arguments:
+  resource:
+    help_text: The keyring to add the IAM policy binding.
+    spec: !REF googlecloudsdk.command_lib.kms.resources:keyring
+
+ALPHA:
   help_text:
     brief: Add IAM policy binding for a kms keyring.
-    DESCRIPTION: |
-      Adds a policy binding to the IAM policy of a kms keyring. One binding consists of a member and
-      a role.
-
-    EXAMPLES: |
-      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      on the keyring fellowship with location global, run:
-
-        $ {command} fellowship --location='global' --member='user:test-user@gmail.com' --role='roles/editor'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  request:
-    collection: cloudkms.projects.locations.keyRings
-
-  arguments:
-    resource:
-      help_text: The keyring to add the IAM policy binding.
-      spec: !REF googlecloudsdk.command_lib.kms.resources:keyring
-
-- <<: *ga_command
-  release_tracks: [ALPHA]
-
-  help_text:
-    brief: Add IAM policy binding for a kms keyring.
-    DESCRIPTION: |
+    description: |
       Adds a policy binding to the IAM policy of a kms keyring. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
       on the keyring fellowship with location global, run:
 

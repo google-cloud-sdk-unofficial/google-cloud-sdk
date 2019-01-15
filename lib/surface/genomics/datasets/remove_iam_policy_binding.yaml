@@ -2,11 +2,11 @@
 
   help_text:
     brief: Remove IAM policy binding of a genomics dataset.
-    DESCRIPTION: |
+    description: |
       Remove an IAM policy binding from the IAM policy of a genomics dataset. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
       on dataset 'my-dataset', run:
 

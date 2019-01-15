@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Describe the index configuration of the given field.
-    DESCRIPTION: Describe the index configuration of the given field.
-    EXAMPLES: |
+    description: Describe the index configuration of the given field.
+    examples: |
       The following command describes the database-wide default index settings:
 
         $ {command}

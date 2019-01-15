@@ -1,6 +1,6 @@
 - help_text:
     brief: Describe an accelerator type available for Cloud TPUs.
-    DESCRIPTION: |
+    description: |
       Get details on an accelerator type.
 
       To get a list of available accelerator types for your location run:

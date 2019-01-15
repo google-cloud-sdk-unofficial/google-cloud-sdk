@@ -1,7 +1,7 @@
 - release_tracks: [BETA, GA]
   help_text:
     brief: Get transcripts of longer audio from an audio file.
-    DESCRIPTION: |
+    description: |
       Get a transcript of audio up to 80 minutes in length. If the audio is
       under 60 seconds, you may also use `{parent_command} recognize` to
       analyze it.
@@ -46,7 +46,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: Get transcripts of longer audio from an audio file.
-    DESCRIPTION: |
+    description: |
       Get a transcript of audio up to 80 minutes in length. If the audio is
       under 60 seconds, you may also use `{parent_command} recognize` to
       analyze it.

@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a new composite index.
-    DESCRIPTION: Create a new composite index.
-    EXAMPLES: |
+    description: Create a new composite index.
+    examples: |
       The following command creates a composite index with fields `user_id` (in descending order)
       followed by `timestamp` (in descending order) in the `Events` collection group.
 

@@ -57,7 +57,7 @@ class SetIamPolicy(base.Command):
         request)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetIamPolicyBeta(SetIamPolicy):
   """Set IAM policy for a workflow template.
 

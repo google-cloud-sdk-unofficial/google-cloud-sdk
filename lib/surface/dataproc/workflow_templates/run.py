@@ -31,7 +31,7 @@ from googlecloudsdk.core import log
                 warning='Workflow template run command is deprecated, please '
                         'use instantiate command: "gcloud beta dataproc '
                         'workflow-templates instantiate"')
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Run(base.CreateCommand):
   """Run a workflow template."""
 

@@ -2,7 +2,7 @@
 
   help_text:
     brief: List service perimeters.
-    DESCRIPTION: List all service access zones in an access policy object.
+    description: List all service access zones in an access policy object.
 
   request:
     collection: accesscontextmanager.accessPolicies.servicePerimeters

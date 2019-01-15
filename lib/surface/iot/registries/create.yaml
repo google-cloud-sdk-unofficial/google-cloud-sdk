@@ -2,7 +2,7 @@
 
   help_text:
     brief: Create a new device registry.
-    DESCRIPTION: Create a new device registry.
+    description: Create a new device registry.
 
   request:
     collection: cloudiot.projects.locations.registries

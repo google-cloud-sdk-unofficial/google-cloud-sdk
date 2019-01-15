@@ -2,7 +2,7 @@
 
   help_text:
     brief: Delete a device.
-    DESCRIPTION: Delete a device.
+    description: Delete a device.
 
   request:
     collection: cloudiot.projects.locations.registries.devices

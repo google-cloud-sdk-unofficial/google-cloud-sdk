@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
     brief: Describe the given composite index.
-    DESCRIPTION: Describe the given composite index.
-    EXAMPLES: |
+    description: Describe the given composite index.
+    examples: |
       The following command describes the composite index with ID `3421ef`:
 
         $ {command} 3421ef

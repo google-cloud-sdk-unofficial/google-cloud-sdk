@@ -1,7 +1,7 @@
 - help_text:
     brief: |
       Show metadata for a VPC Access Service operation.
-    DESCRIPTION: |
+    description: |
       Display all metadata associated with a VPC Access Service operation
       given a valid operation name.
 
@@ -9,7 +9,7 @@
       * The operation specified does not exist.
       * The active account does not have permission to access the given
         operation.
-    EXAMPLES: |
+    examples: |
       The following command prints metadata for an operation with the name
       in region `us-central1`:
 

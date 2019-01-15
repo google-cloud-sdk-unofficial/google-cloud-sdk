@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect entities in an image from similar images on the web.
-    DESCRIPTION: |
+    description: |
       Detect entities in an image from similar images on the web.
 
   request:
@@ -25,7 +25,7 @@
 
   help_text:
     brief: Detect entities in an image from similar images on the web.
-    DESCRIPTION: |
+    description: |
       Detect entities in an image from similar images on the web.
 
   request:

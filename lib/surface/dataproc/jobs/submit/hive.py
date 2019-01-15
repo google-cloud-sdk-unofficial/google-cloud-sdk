@@ -51,7 +51,7 @@ class Hive(hive.HiveBase, submitter.JobSubmitter):
     submitter.JobSubmitter.ConfigureJob(messages, job, args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class HiveBeta(hive.HiveBase, submitter.JobSubmitterBeta):
   """Submit a Hive job to a cluster.
 

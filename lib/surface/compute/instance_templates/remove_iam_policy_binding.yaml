@@ -1,47 +1,45 @@
-- &beta_command
-  release_tracks: [BETA]
-  help_text:
-    brief: Remove IAM policy binding of a Google Compute Engine instance template.
-    DESCRIPTION: |
-      Remove an IAM policy binding of a Google Compute Engine instance template.
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Remove IAM policy binding of a Google Compute Engine instance template.
+  description: |
+    Remove an IAM policy binding of a Google Compute Engine instance template.
 
-    EXAMPLES: |
-      To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
-      with instance template 'my-template', run:
+  examples: |
+    To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
+    with instance template 'my-template', run:
 
-        $ {command} my-template --member='user:test-user@gmail.com' --role='roles/editor'
+      $ {command} my-template --member='user:test-user@gmail.com' --role='roles/editor'
 
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
+    See https://cloud.google.com/iam/docs/managing-policies for details of
+    policy role and member types.
 
-  request: &request
-    collection: compute.instanceTemplates
-    api_version: beta
-
-  arguments:
-    resource:
-      help_text: The instance template for which to remove IAM policy binding from.
-      spec: !REF googlecloudsdk.command_lib.compute.resources:instance_template
-
-  iam: &iam
-    set_iam_policy_request_path: globalSetPolicyRequest
-    message_type_overrides:
-      policy: Policy
-      set_iam_policy_request: ComputeInstanceTemplatesSetIamPolicyRequest
-- <<: *beta_command
-  release_tracks: [ALPHA]
-
-  request:
-    <<: *request
+request:
+  collection: compute.instanceTemplates
+  api_version: beta
+  ALPHA:
     api_version: alpha
 
+arguments:
+  resource:
+    help_text: The instance template for which to remove IAM policy binding from.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:instance_template
+
+iam:
+  set_iam_policy_request_path: globalSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeInstanceTemplatesSetIamPolicyRequest
+  ALPHA:
+    enable_condition: true
+
+ALPHA:
   help_text:
     brief: Remove IAM policy binding of a Google Compute Engine instance template.
-    DESCRIPTION: |
+    description: |
       Remove an IAM policy binding from the IAM policy of a Google Compute Engine instance template. One binding consists of a member,
       a role, and an optional condition.
 
-    EXAMPLES: |
+    examples: |
       To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
       with instance template 'my-template', run:
 
@@ -54,7 +52,3 @@
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.
-
-  iam:
-    <<: *iam
-    enable_condition: true

@@ -2,7 +2,7 @@
 
   help_text:
     brief: Detect general attributes of an image.
-    DESCRIPTION: |
+    description: |
       Detect general attributes of an image, such as dominant color.
 
   request:
@@ -24,7 +24,7 @@
 
   help_text:
     brief: Detect general attributes of an image.
-    DESCRIPTION: |
+    description: |
       Detect general attributes of an image, such as dominant color.
 
   request:
