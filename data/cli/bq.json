@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.39",
+  "CLI_VERSION": "2.0.40",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -303,7 +303,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Updates a dataset, table, view or transfer configuration with this\nname.\n\nSee 'bq help load' for more information on specifying the schema.\n",
-        "EXAMPLES": "bq update --description \"Dataset description\" existing_dataset\nbq update --description \"My table\" existing_dataset.existing_table\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num' existing_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\n"
+        "EXAMPLES": "bq update --description \"Dataset description\" existing_dataset\nbq update --description \"My table\" existing_dataset.existing_table\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num' existing_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US --project_id=my-project\n--reservation_size=2000000000\n"
       }
     },
     "version": {

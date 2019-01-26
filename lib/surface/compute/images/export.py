@@ -119,7 +119,8 @@ class Export(base.CreateCommand):
     return daisy_utils.RunDaisyBuild(
         args, workflow, variables, tags=tags,
         user_zone=properties.VALUES.compute.zone.Get(),
-        output_filter=_OUTPUT_FILTER, daisy_bucket=self._GetDaisyBucket(args))
+        output_filter=_OUTPUT_FILTER, daisy_bucket=self._GetDaisyBucket(args),
+        service_account_roles=self._GetServiceAccountRoles())
 
   def _GetDaisyBucket(self, args):
     return None
@@ -130,10 +131,13 @@ class Export(base.CreateCommand):
           args.network.lower())
     return variables
 
+  def _GetServiceAccountRoles(self):
+    return None
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ExportAlphaBeta(Export):
-  """Export a Google Compute Engine image for Alpha and Beta release tracks."""
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ExportBeta(Export):
+  """Export a Google Compute Engine image for Beta release track."""
 
   @staticmethod
   def Args(parser):
@@ -161,6 +165,14 @@ class ExportAlphaBeta(Export):
       variables += ',' + ','.join(network_vars)
     return variables
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ExportAlpha(ExportBeta):
+  """Export a Google Compute Engine image for Alpha release track."""
+
+  def _GetServiceAccountRoles(self):
+    return ['roles/iam.serviceAccountUser',
+            'roles/iam.serviceAccountTokenCreator']
 
 Export.detailed_help = {
     'brief': 'Export a Google Compute Engine image',

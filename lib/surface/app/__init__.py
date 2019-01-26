@@ -72,7 +72,7 @@ DETAILED_HELP = {
                     base.ReleaseTrack.GA)
 class AppengineGA(base.Group):
 
-  category = 'Compute'
+  category = base.GCLOUD_COMPUTE_CATEGORY
 
   def Filter(self, context, args):
     del context, args

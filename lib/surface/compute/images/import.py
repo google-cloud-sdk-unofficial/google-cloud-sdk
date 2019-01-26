@@ -302,8 +302,8 @@ class Import(base.CreateCommand):
     pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ImportAlphaBeta(Import):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ImportBeta(Import):
   """Import an image into Google Compute Engine for Alpha and Beta releases."""
 
   @staticmethod
@@ -351,7 +351,11 @@ class ImportAlphaBeta(Import):
         args, workflow, ','.join(daisy_vars), tags=tags,
         daisy_bucket=import_stager.GetDaisyBucket(),
         user_zone=properties.VALUES.compute.zone.Get(),
-        output_filter=_OUTPUT_FILTER)
+        output_filter=_OUTPUT_FILTER,
+        service_account_roles=self._GetServiceAccountRoles())
+
+  def _GetServiceAccountRoles(self):
+    return None
 
   def _ProcessAdditionalArgs(self, args, daisy_vars):
     if args.no_guest_environment:
@@ -496,6 +500,15 @@ class ImportFromGSFileStager(BaseImportFromFileStager):
     return _CopyToScratchBucket(
         self.source_file_gcs_uri, uuid.uuid4(), self.storage_client,
         self.daisy_bucket)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ImportAlpha(ImportBeta):
+
+  def _GetServiceAccountRoles(self):
+    return ['roles/iam.serviceAccountUser',
+            'roles/iam.serviceAccountTokenCreator']
+
 
 Import.detailed_help = {
     'brief': 'Import an image into Google Compute Engine',

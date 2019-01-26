@@ -1242,7 +1242,7 @@ class _Load(BigqueryCmd):
         '\n DATASTORE_BACKUP'
         '\n AVRO'
         '\n PARQUET'
-        '\n ORC (experimental)',
+        '\n ORC',
         flag_values=fv)
     flags.DEFINE_list(
         'projection_fields', [],
@@ -1427,8 +1427,12 @@ class _Load(BigqueryCmd):
       self.PrintJobStartInfo(job)
 
 
-def _CreateExternalTableDefinition(source_format, source_uris, schema,
-                                   autodetect):
+def _CreateExternalTableDefinition(source_format,
+                                   source_uris,
+                                   schema,
+                                   autodetect,
+                                   ignore_unknown_values=False,
+                                   hive_partitioning_mode=None):
   """Create an external table definition with the given URIs and the schema.
 
   Arguments:
@@ -1448,7 +1452,15 @@ def _CreateExternalTableDefinition(source_format, source_uris, schema,
       For JSON, defaulting to autodetection is safer because the only option
       autodetected is compression. If a schema is passed,
       then the user-supplied schema is used.
-
+    ignore_unknown_values:  Indicates if BigQuery should allow extra values that
+       are not represented in the table schema. If true, the extra values are
+       ignored. If false, records with extra columns are treated as bad records,
+       and if there are too many bad records, an invalid error is returned in
+       the job result. The default value is false.
+       The sourceFormat property determines what BigQuery treats as an
+       extra value:
+         - CSV: Trailing columns
+         - JSON: Named values that don't match any column names.
   Returns:
     A python dictionary that contains a external table definition for the given
     format with the most common options set.
@@ -1459,6 +1471,8 @@ def _CreateExternalTableDefinition(source_format, source_uris, schema,
         'NEWLINE_DELIMITED_JSON',
         'DATASTORE_BACKUP',
         'AVRO',
+        'ORC',
+        'PARQUET',
         'GOOGLE_SHEETS'
     ]
 
@@ -1498,7 +1512,8 @@ def _CreateExternalTableDefinition(source_format, source_uris, schema,
                 "skipLeadingRows": 0
             }
         """)
-
+    if ignore_unknown_values:
+      external_table_def['ignoreUnknownValues'] = True
     if schema:
       fields = BigqueryClient.ReadSchema(schema)
       external_table_def['schema'] = {'fields': fields}
@@ -1520,6 +1535,12 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         None,
         'Should schema and format options be autodetected.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'ignore_unknown_values',
+        None,
+        'Ignore any values in a row that are not present in the schema.',
+        short_name='i',
+        flag_values=fv)
     flags.DEFINE_enum(
         'source_format',
         'CSV',
@@ -1528,6 +1549,8 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             'GOOGLE_SHEETS',
             'NEWLINE_DELIMITED_JSON',
             'DATASTORE_BACKUP',
+            'ORC',
+            'PARQUET',
             'AVRO'
         ],
         'Format of source data. Options include:'
@@ -1535,6 +1558,8 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         '\n GOOGLE_SHEETS'
         '\n NEWLINE_DELIMITED_JSON'
         '\n DATASTORE_BACKUP'
+        '\n ORC (experimental)'
+        '\n PARQUET (experimental)'
         '\n AVRO',
         flag_values=fv)
     self._ProcessCommandRc(fv)
@@ -1573,8 +1598,13 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         text schema.
     """
     json.dump(
-        _CreateExternalTableDefinition(self.source_format, source_uris, schema,
-                                       self.autodetect),
+        _CreateExternalTableDefinition(
+            self.source_format,
+            source_uris,
+            schema,
+            self.autodetect,
+            self.ignore_unknown_values,
+            None),
         sys.stdout,
         sort_keys=True,
         indent=2)
@@ -2434,19 +2464,33 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           print 'No slot pools found.'
           results = None
       else:
+        bi_response = None
+        response = []
         object_type = ReservationReference
         reference = client.GetReservationReference(
             identifier, FLAGS.location, ' ')
         try:
+          bi_response = client.ListBiReservations(reference)
+          if 'size' in bi_response:
+            print 'BI Engine reservation: %s' % (bi_response['size'])
+        except BaseException as e:
+          if 'was not found' not in e.message and (
+              'is disabled' not in e.message):
+            raise bigquery_client.BigqueryError(
+                "Failed to list reservations '%s': %s" % (identifier, e))
+
+        try:
           response = client.ListReservations(
               reference, self.max_results, self.page_token)
         except BaseException as e:
-          raise bigquery_client.BigqueryError(
-              "Failed to list reservations '%s': %s" % (identifier, e))
+          if 'is disabled' not in e.message:
+            raise bigquery_client.BigqueryError(
+                "Failed to list reservations '%s': %s" % (identifier, e))
         if 'reservations' in response:
           results = response['reservations']
         else:
-          print 'No reservations found.'
+          if bi_response is None:
+            print 'No reservations found.'
       if 'nextPageToken' in response:
         _PrintPageToken(response)
     elif self.transfer_config:
@@ -3399,6 +3443,12 @@ class _Update(BigqueryCmd):
         'The number of slots associated with the reservation subtree rooted at '
         'this reservation node.',
         flag_values=fv)
+    flags.DEFINE_integer(
+        'reservation_size',
+        None,
+        'BI reservation size in bytes. Minimum 2GB. Use 0 to remove '
+        'reservation.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'use_parent',
         None,
@@ -3580,6 +3630,8 @@ class _Update(BigqueryCmd):
       bq update --transfer_config --target_dataset=dataset
           --refresh_window_days=5 --update_credentials
           projects/p/locations/l/transferConfigs/c
+      bq update --reservation --location=US --project_id=my-project
+          --reservation_size=2000000000
     """
     client = Client.Get()
     if self.d and self.t:
@@ -3594,17 +3646,23 @@ class _Update(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.materialized_view:
       reference = client.GetTableReference(identifier)
-    elif self.d or not identifier:
-      reference = client.GetDatasetReference(identifier)
     elif self.reservation:
       try:
-        reference = client.GetReservationReference(identifier, FLAGS.location)
-        object_info = client.UpdateReservation(
-            reference, self.slots, self.use_parent)
-        _PrintObjectInfo(object_info, reference, custom_format='show')
+        if self.reservation_size is not None:
+          reference = client.GetBiReservationReference(FLAGS.location)
+          object_info = client.UpdateBiReservation(reference,
+                                                   self.reservation_size)
+          print object_info
+        else:
+          reference = client.GetReservationReference(identifier, FLAGS.location)
+          object_info = client.UpdateReservation(reference, self.slots,
+                                                 self.use_parent)
+          _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to update reservation '%s': %s" % (identifier, e))
+    elif self.d or not identifier:
+      reference = client.GetDatasetReference(identifier)
     elif self.transfer_config:
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferConfigReference(

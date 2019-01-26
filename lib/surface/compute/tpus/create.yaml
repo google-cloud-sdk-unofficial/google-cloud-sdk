@@ -90,6 +90,7 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:network
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:version
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:preemptible
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:reserved
     - group:
         mutex: true
         required: true

@@ -53,7 +53,7 @@ class DNS(base.Group):
     $ {command} project-info describe --help
   """
 
-  category = 'Networking'
+  category = base.GCLOUD_NETWORKING_CATEGORY
 
   def Filter(self, context, args):
     del context, args

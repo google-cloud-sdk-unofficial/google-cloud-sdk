@@ -55,7 +55,7 @@ class Auth(base.Group):
     $ gcloud auth revoke test@gmail.com
   """
 
-  category = 'Identity and Security'
+  category = base.GCLOUD_IDENTITY_AND_SECURITY_CATEGORY
 
   def Filter(self, context, args):
     del context, args

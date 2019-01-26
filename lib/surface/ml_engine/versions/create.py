@@ -169,6 +169,7 @@ class CreateAlpha(base.CreateCommand):
   def Args(parser):
     _AddCreateArgs(parser)
     flags.ALPHA_MACHINE_TYPE.AddToParser(parser)
+    flags.SERVICE_ACCOUNT.AddToParser(parser)
     flags.AddUserCodeArgs(parser)
     flags.GetAcceleratorFlag().AddToParser(parser)
 
@@ -193,4 +194,5 @@ class CreateAlpha(base.CreateCommand):
                                 python_version=args.python_version,
                                 model_class=args.model_class,
                                 package_uris=args.package_uris,
+                                service_account=args.service_account,
                                 accelerator_config=accelerator)

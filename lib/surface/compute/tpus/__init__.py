@@ -28,4 +28,4 @@ class Tpus(base.Group):
   """List, create, and delete Cloud TPUs."""
 
 
-Tpus.category = 'Instances'
+Tpus.category = base.COMPUTE_INSTANCES_CATEGORY

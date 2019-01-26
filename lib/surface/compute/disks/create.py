@@ -102,7 +102,9 @@ def _SourceArgs(parser, source_snapshot_arg):
   source_snapshot_arg.AddArgument(source_group)
 
 
-def _CommonArgs(parser, source_snapshot_arg):
+def _CommonArgs(parser,
+                source_snapshot_arg,
+                include_physical_block_size_support=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -150,6 +152,16 @@ def _CommonArgs(parser, source_snapshot_arg):
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
+
+  if include_physical_block_size_support:
+    parser.add_argument(
+        '--physical-block-size',
+        choices=['4096', '16384'],
+        default='4096',
+        help="""\
+Physical block size of the persistent disk in bytes.
+Valid values are 4096(default) and 16384.
+""")
 
 
 def _AddReplicaZonesArg(parser):
@@ -319,7 +331,7 @@ class Create(base.Command):
   def Run(self, args):
     return self._Run(args, supports_kms_keys=True)
 
-  def _Run(self, args, supports_kms_keys=False):
+  def _Run(self, args, supports_kms_keys=False, supports_physical_block=False):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = compute_holder.client
 
@@ -398,12 +410,18 @@ class Create(base.Command):
 
       # end of alpha/beta features.
 
+      if supports_physical_block and args.IsSpecified('physical_block_size'):
+        physical_block_size_bytes = int(args.physical_block_size)
+      else:
+        physical_block_size_bytes = None
+
       disk = client.messages.Disk(
           name=disk_ref.Name(),
           description=args.description,
           sizeGb=size_gb,
           sourceSnapshot=snapshot_uri,
           type=type_uri,
+          physicalBlockSizeBytes=physical_block_size_bytes,
           **kwargs)
 
       if guest_os_feature_messages:
@@ -453,7 +471,10 @@ class CreateBeta(Create):
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
 
-    _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    _CommonArgs(
+        parser,
+        disks_flags.SOURCE_SNAPSHOT_ARG,
+        include_physical_block_size_support=True)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -463,7 +484,7 @@ class CreateBeta(Create):
     return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
 
   def Run(self, args):
-    return self._Run(args, supports_kms_keys=True)
+    return self._Run(args, supports_kms_keys=True, supports_physical_block=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -474,7 +495,10 @@ class CreateAlpha(Create):
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
 
-    _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    _CommonArgs(
+        parser,
+        disks_flags.SOURCE_SNAPSHOT_ARG,
+        include_physical_block_size_support=True)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     _AddReplicaZonesArg(parser)
     resource_flags.AddResourcePoliciesArgs(parser, 'added to', 'disk')
@@ -485,7 +509,7 @@ class CreateAlpha(Create):
     return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
 
   def Run(self, args):
-    return self._Run(args, supports_kms_keys=True)
+    return self._Run(args, supports_kms_keys=True, supports_physical_block=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

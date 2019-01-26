@@ -54,7 +54,7 @@ class Config(base.Group):
   {properties}
   """
 
-  category = 'SDK Tools'
+  category = base.GCLOUD_SDK_TOOLS_CATEGORY
 
   detailed_help = {
       'properties': properties.VALUES.GetHelpString(),

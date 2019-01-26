@@ -25,4 +25,4 @@ class Xpn(base.Group):
   """Configure shared VPC."""
 
 
-Xpn.category = 'Networking'
+Xpn.category = base.COMPUTE_NETWORKING_CATEGORY

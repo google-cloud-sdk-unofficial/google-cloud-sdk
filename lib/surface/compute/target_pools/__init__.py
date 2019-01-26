@@ -25,4 +25,4 @@ class TargetPools(base.Group):
   """Control Compute Engine target pools for network load balancing."""
 
 
-TargetPools.category = 'Load Balancing'
+TargetPools.category = base.COMPUTE_LOAD_BALANCING_CATEGORY

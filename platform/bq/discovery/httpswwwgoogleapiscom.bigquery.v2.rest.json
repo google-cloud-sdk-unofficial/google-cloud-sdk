@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20181119",
+ "revision": "20190116",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -19,7 +19,7 @@
  "basePath": "/bigquery/v2/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "bigquery/v2/",
- "batchPath": "batch",
+ "batchPath": "batch/bigquery/v2",
  "parameters": {
   "alt": {
    "type": "string",
@@ -247,11 +247,15 @@
       "properties": {
        "domain": {
         "type": "string",
-        "description": "[Pick one] A domain to grant access to. Any users signed in with the domain specified will be granted the specified access. Example: \"example.com\"."
+        "description": "[Pick one] A domain to grant access to. Any users signed in with the domain specified will be granted the specified access. Example: \"example.com\". Maps to IAM policy member \"domain:DOMAIN\"."
        },
        "groupByEmail": {
         "type": "string",
-        "description": "[Pick one] An email address of a Google Group to grant access to."
+        "description": "[Pick one] An email address of a Google Group to grant access to. Maps to IAM policy member \"group:GROUP\"."
+       },
+       "iamMember": {
+        "type": "string",
+        "description": "[Pick one] Some other type of member that appears in the IAM Policy but isn't a user, group, domain, or special group."
        },
        "role": {
         "type": "string",
@@ -259,11 +263,11 @@
        },
        "specialGroup": {
         "type": "string",
-        "description": "[Pick one] A special group to grant access to. Possible values include: projectOwners: Owners of the enclosing project. projectReaders: Readers of the enclosing project. projectWriters: Writers of the enclosing project. allAuthenticatedUsers: All authenticated BigQuery users."
+        "description": "[Pick one] A special group to grant access to. Possible values include: projectOwners: Owners of the enclosing project. projectReaders: Readers of the enclosing project. projectWriters: Writers of the enclosing project. allAuthenticatedUsers: All authenticated BigQuery users. Maps to similarly-named IAM members."
        },
        "userByEmail": {
         "type": "string",
-        "description": "[Pick one] An email address of a user to grant access to. For example: fred@example.com."
+        "description": "[Pick one] An email address of a user to grant access to. For example: fred@example.com. Maps to IAM policy member \"user:EMAIL\" or \"serviceAccount:EMAIL\"."
        },
        "view": {
         "$ref": "TableReference",
@@ -655,6 +659,10 @@
      "$ref": "GoogleSheetsOptions",
      "description": "[Optional] Additional options if sourceFormat is set to GOOGLE_SHEETS."
     },
+    "hivePartitioningMode": {
+     "type": "string",
+     "description": "[Optional, Experimental] If hive partitioning is enabled, which mode to use. Two modes are supported: - AUTO: automatically infer partition key name(s) and type(s). - STRINGS: automatic infer partition key name(s). All types are strings. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error."
+    },
     "ignoreUnknownValues": {
      "type": "boolean",
      "description": "[Optional] Indicates if BigQuery should allow extra values that are not represented in the table schema. If true, the extra values are ignored. If false, records with extra columns are treated as bad records, and if there are too many bad records, an invalid error is returned in the job result. The default value is false. The sourceFormat property determines what BigQuery treats as an extra value: CSV: Trailing columns JSON: Named values that don't match any column names Google Cloud Bigtable: This setting is ignored. Google Cloud Datastore backups: This setting is ignored. Avro: This setting is ignored."
@@ -766,7 +774,7 @@
    "properties": {
     "range": {
      "type": "string",
-     "description": "[Beta] [Optional] Range of a sheet to query from. Only used when non-empty. Typical format: !:"
+     "description": "[Beta] [Optional] Range of a sheet to query from. Only used when non-empty. Typical format: sheet_name!top_left_cell_id:bottom_right_cell_id For example: sheet1!A1:B20"
     },
     "skipLeadingRows": {
      "type": "string",
@@ -987,6 +995,10 @@
     "fieldDelimiter": {
      "type": "string",
      "description": "[Optional] The separator for fields in a CSV file. The separator can be any ISO-8859-1 single-byte character. To use a character in the range 128-255, you must encode the character as UTF8. BigQuery converts the string to ISO-8859-1 encoding, and then uses the first byte of the encoded string to split the data in its raw, binary state. BigQuery also supports the escape sequence \"\\t\" to specify a tab separator. The default value is a comma (',')."
+    },
+    "hivePartitioningMode": {
+     "type": "string",
+     "description": "[Optional, Experimental] If hive partitioning is enabled, which mode to use. Two modes are supported: - AUTO: automatically infer partition key name(s) and type(s). - STRINGS: automatic infer partition key name(s). All types are strings. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error."
     },
     "ignoreUnknownValues": {
      "type": "boolean",
@@ -1344,6 +1356,24 @@
       "type": "string"
      }
     },
+    "reservationUsage": {
+     "type": "array",
+     "description": "[Output-only] Job resource usage breakdown by reservation.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "name": {
+        "type": "string",
+        "description": "[Output-only] Reservation name or \"unreserved\" for on-demand resources usage."
+       },
+       "slotMs": {
+        "type": "string",
+        "description": "[Output-only] Slot-milliseconds the job spent in the given reservation.",
+        "format": "int64"
+       }
+      }
+     }
+    },
     "startTime": {
      "type": "string",
      "description": "[Output-only] Start time of this job, in milliseconds since the epoch. This field will be present when the job transitions from the PENDING state to either RUNNING or DONE.",
@@ -1352,6 +1382,11 @@
     "totalBytesProcessed": {
      "type": "string",
      "description": "[Output-only] [Deprecated] Use the bytes processed in the query statistics instead.",
+     "format": "int64"
+    },
+    "totalSlotMs": {
+     "type": "string",
+     "description": "[Output-only] Slot-milliseconds for the job.",
      "format": "int64"
     }
    }
@@ -1439,7 +1474,7 @@
     },
     "statementType": {
      "type": "string",
-     "description": "The type of query statement, if valid. Possible values (new values might be added in the future): \"SELECT\": SELECT query. \"INSERT\": INSERT query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language \"UPDATE\": UPDATE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language \"DELETE\": DELETE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language \"MERGE\": MERGE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language \"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT. \"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... \"DROP_TABLE\": DROP TABLE query. \"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... \"DROP_VIEW\": DROP VIEW query."
+     "description": "The type of query statement, if valid. Possible values (new values might be added in the future): \"SELECT\": SELECT query. \"INSERT\": INSERT query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"UPDATE\": UPDATE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"DELETE\": DELETE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"MERGE\": MERGE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT. \"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... . \"DROP_TABLE\": DROP TABLE query. \"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... . \"DROP_VIEW\": DROP VIEW query. \"ALTER_TABLE\": ALTER TABLE query. \"ALTER_VIEW\": ALTER VIEW query."
     },
     "timeline": {
      "type": "array",
@@ -2390,9 +2425,7 @@
      "description": "[Beta] [Optional] If not set, the table is partitioned by pseudo column, referenced via either '_PARTITIONTIME' as TIMESTAMP type, or '_PARTITIONDATE' as DATE type. If field is specified, the table is instead partitioned by this field. The field must be a top-level TIMESTAMP or DATE field. Its mode must be NULLABLE or REQUIRED."
     },
     "requirePartitionFilter": {
-     "type": "boolean",
-     "description": "[Beta] [Optional] If set to true, queries over this table require a partition filter that can be used for partition elimination to be specified.",
-     "default": "false"
+     "type": "boolean"
     },
     "type": {
      "type": "string",

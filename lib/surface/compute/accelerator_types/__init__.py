@@ -28,7 +28,7 @@ class AcceleratorTypes(base.Group):
   pass
 
 
-AcceleratorTypes.category = 'Info'
+AcceleratorTypes.category = base.COMPUTE_INFO_CATEGORY
 
 AcceleratorTypes.detailed_help = {
     'brief': 'Read Google Compute Engine accelerator types',

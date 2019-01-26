@@ -289,6 +289,8 @@ class CreateAlpha(CreateGA):
     flags.AddConnectionDrainOnFailover(parser, default=None)
     flags.AddDropTrafficIfUnhealthy(parser, default=None)
     flags.AddFailoverRatio(parser)
+    flags.AddEnableLogging(parser, default=None)
+    flags.AddLoggingSampleRate(parser)
     AddIapFlag(parser)
     parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
 
@@ -297,7 +299,8 @@ class CreateAlpha(CreateGA):
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
     if (args.connection_drain_on_failover is not None or
-        args.drop_traffic_if_unhealthy is not None or args.failover_ratio):
+        args.drop_traffic_if_unhealthy is not None or
+        args.failover_ratio is not None):
       raise exceptions.InvalidArgumentException(
           '--global',
           'cannot specify failover policies for global backend services.')
@@ -335,6 +338,9 @@ class CreateAlpha(CreateGA):
           client.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
               args.load_balancing_scheme))
 
+    backend_services_utils.ApplyLogConfigArgs(client.messages, args,
+                                              backend_service)
+
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,
         project=backend_services_ref.project)
@@ -349,6 +355,12 @@ class CreateAlpha(CreateGA):
         args.cache_key_query_string_whitelist is not None):
       raise exceptions.ToolException(
           'Custom cache key flags cannot be used for regional requests.')
+    if (args.enable_logging is not None or
+        args.logging_sample_rate is not None):
+      raise exceptions.InvalidArgumentException(
+          '--region',
+          'cannot specify logging options for regional backend services.')
+
     backend_service = self._CreateRegionBackendService(holder, args,
                                                        backend_services_ref)
     client = holder.client

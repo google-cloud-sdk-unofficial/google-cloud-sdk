@@ -45,7 +45,7 @@ class MlEngine(base.Group):
   https://cloud.google.com/ml/docs/
   """
 
-  category = 'AI and Machine Learning'
+  category = base.GCLOUD_AI_AND_MACHINE_LEARNING_CATEGORY
 
   def Filter(self, context, args):
     del context, args

@@ -449,6 +449,7 @@ class CreateBeta(Create):
     flags.AddAutoprovisioningFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddResourceUsageExportFlags(parser)
+    flags.AddAuthenticatorSecurityGroupFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -475,6 +476,7 @@ class CreateBeta(Create):
     ops.default_max_pods_per_node = args.default_max_pods_per_node
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.enable_network_egress_metering = args.enable_network_egress_metering
+    ops.security_group = args.security_group
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     return ops
 

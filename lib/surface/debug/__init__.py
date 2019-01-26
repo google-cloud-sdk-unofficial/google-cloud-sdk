@@ -69,7 +69,7 @@ class Debug(base.Group):
     "default-test" by description.
   """
 
-  category = 'Management Tools'
+  category = base.GCLOUD_MANAGEMENT_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

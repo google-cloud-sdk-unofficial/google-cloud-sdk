@@ -25,7 +25,7 @@ class Routes(base.Group):
   """Read and manipulate routes."""
 
 
-Routes.category = 'Networking'
+Routes.category = base.COMPUTE_NETWORKING_CATEGORY
 
 Routes.detailed_help = {
     'brief': 'Read and manipulate routes',

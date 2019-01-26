@@ -65,7 +65,7 @@ class Components(base.Group):
     $ {command} update --version 1.2.3
   """
 
-  category = 'SDK Tools'
+  category = base.GCLOUD_SDK_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

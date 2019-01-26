@@ -334,6 +334,8 @@ class UpdateAlpha(UpdateGA):
     flags.AddConnectionDrainOnFailover(parser, default=None)
     flags.AddDropTrafficIfUnhealthy(parser, default=None)
     flags.AddFailoverRatio(parser)
+    flags.AddEnableLogging(parser, default=None)
+    flags.AddLoggingSampleRate(parser)
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
 
@@ -359,6 +361,9 @@ class UpdateAlpha(UpdateGA):
 
     backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
                                                    replacement)
+
+    backend_services_utils.ApplyLogConfigArgs(client.messages, args,
+                                              replacement)
 
     if not replacement.customRequestHeaders:
       cleared_fields.append('customRequestHeaders')
@@ -388,7 +393,9 @@ class UpdateAlpha(UpdateGA):
         args.timeout is not None,
         args.connection_drain_on_failover is not None,
         args.drop_traffic_if_unhealthy is not None,
-        args.failover_ratio,
+        args.failover_ratio is not None,
+        args.enable_logging is not None,
+        args.logging_sample_rate is not None,
         getattr(args, 'health_checks', None),
         getattr(args, 'https_health_checks', None),
     ]):
@@ -400,6 +407,11 @@ class UpdateAlpha(UpdateGA):
       raise exceptions.InvalidArgumentException(
           '--global',
           'cannot specify failover policies for global backend services.')
+    if (backend_service_ref.Collection() == 'compute.regionBackendServices'
+       ) and replacement.logConfig is not None:
+      raise exceptions.InvalidArgumentException(
+          '--region',
+          'cannot specify logging options for regional backend services.')
     return super(UpdateAlpha, self).GetSetRequest(client, backend_service_ref,
                                                   replacement)
 

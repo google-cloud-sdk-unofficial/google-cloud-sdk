@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine dedicated interconnect attachment.
 
@@ -74,7 +74,16 @@ class Update(base.UpdateCommand):
         admin_enabled=args.admin_enabled,
         labels=labels,
         label_fingerprint=label_fingerprint,
-    )
+        bandwidth=getattr(args, 'bandwidth', None))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(Update):
+
+  @classmethod
+  def Args(cls, parser):
+    super(AlphaUpdate, cls).Args(parser)
+    attachment_flags.AddBandwidth(parser, required=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

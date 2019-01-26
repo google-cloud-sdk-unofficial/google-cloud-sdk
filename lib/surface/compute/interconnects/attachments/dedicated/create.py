@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 _DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicated/creating-vlan-attachments'
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine dedicated interconnect attachment.
 
@@ -44,7 +45,6 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-
     cls.INTERCONNECT_ARG = (
         interconnect_flags.InterconnectArgumentForOtherResource(
             'The interconnect for the interconnect attachment'))
@@ -94,10 +94,26 @@ class Create(base.CreateCommand):
         router=router_ref,
         vlan_tag_802_1q=args.vlan,
         admin_enabled=args.admin_enabled,
-        candidate_subnets=args.candidate_subnets)
+        candidate_subnets=args.candidate_subnets,
+        bandwidth=getattr(args, 'bandwidth', None))
 
   def Epilog(self, resources_were_displayed):
     message = ('You must configure your Google Cloud Router with an interface '
                'and BGP peer for your created VLAN attachment. See also {} for '
                'more detailed help.'.format(_DOCUMENTATION_LINK))
     log.status.Print(message)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine dedicated interconnect attachment.
+
+  *{command}* is used to create a dedicated interconnect attachments. An
+  interconnect attachment is what binds the underlying connectivity of an
+  interconnect to a path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    attachment_flags.AddBandwidth(parser, required=False)

@@ -139,7 +139,7 @@ class Feedback(base.Command):
   form fields on that page.
   """
 
-  category = 'SDK Tools'
+  category = base.GCLOUD_SDK_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

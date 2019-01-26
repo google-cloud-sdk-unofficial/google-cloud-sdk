@@ -129,7 +129,7 @@ def AddInternalIPArg(parser):
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
-  category = 'Tools'
+  category = base.COMPUTE_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

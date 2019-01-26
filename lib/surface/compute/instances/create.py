@@ -97,6 +97,7 @@ def _CommonArgs(parser,
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
+  instances_flags.AddHostnameArg(parser)
   instances_flags.AddImageArgs(parser, enable_snapshots=enable_snapshots)
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
@@ -398,6 +399,7 @@ class Create(base.CreateCommand):
           description=args.description,
           disks=disks,
           guestAccelerators=guest_accelerators,
+          hostname=args.hostname,
           labels=labels,
           machineType=machine_type_uri,
           metadata=metadata,
@@ -407,9 +409,6 @@ class Create(base.CreateCommand):
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
           tags=tags)
-
-      if hasattr(args, 'hostname'):
-        instance.hostname = args.hostname
 
       # TODO(b/80138906): These features are only exposed in alpha.
       if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
@@ -539,7 +538,6 @@ class CreateBeta(Create):
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     instances_flags.AddShieldedVMConfigArgs(parser)
-    instances_flags.AddHostnameArg(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -582,7 +580,6 @@ class CreateAlpha(CreateBeta):
     CreateAlpha.SOURCE_MACHINE_IMAGE.AddArgument(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddShieldedVMConfigArgs(parser)
-    instances_flags.AddHostnameArg(parser)
     instances_flags.AddAllocationAffinityGroup(parser)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)

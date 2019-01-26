@@ -34,6 +34,7 @@ from googlecloudsdk.core import log
 
 
 @base.UnicodeIsSupported
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Run(base.ListCommand):
   """Invoke a test in Firebase Test Lab for iOS and view test results."""
 
@@ -198,3 +199,13 @@ def PickHistoryName(args):
   if args.results_history_name:
     return args.results_history_name
   return None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RunBeta(Run):
+  """Invoke a test in Firebase Test Lab for iOS and view test results."""
+
+  @staticmethod
+  def Args(parser):
+    super(RunBeta, RunBeta).Args(parser)
+    arg_util.AddCommonBetaTestRunArgs(parser)

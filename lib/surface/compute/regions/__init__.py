@@ -25,7 +25,7 @@ class Regions(base.Group):
   """List Google Compute Engine regions."""
 
 
-Regions.category = 'Info'
+Regions.category = base.COMPUTE_INFO_CATEGORY
 
 Regions.detailed_help = {
     'brief': 'List Google Compute Engine regions',

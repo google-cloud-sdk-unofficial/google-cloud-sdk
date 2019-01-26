@@ -441,12 +441,17 @@ def JsonToInsertEntry(insert_id, json_string):
     raise BigqueryClientError('Could not parse object: %s' % (str(e),))
 
 
-def EncodeForPrinting(s):
-  """Safely encode a string as the encoding for sys.stdout."""
+def EncodeForPrinting(o):
+  """Safely encode an object as the encoding for sys.stdout."""
   # Not all file objects provide an encoding attribute, so we make sure to
   # handle the case where the attribute is completely absent.
   encoding = getattr(sys.stdout, 'encoding', None) or 'ascii'
-  return unicode(s).encode(encoding, 'backslashreplace')
+  try:
+    s = unicode(o)
+  except UnicodeDecodeError:
+    # Try an encoding that has a mapping for every byte value.
+    s = str(o).decode('latin-1')
+  return s.encode(encoding, 'backslashreplace')
 
 
 class BigqueryError(Exception):
@@ -971,6 +976,22 @@ class BigqueryClient(object):
       discovery_url=discovery_url)
     return self._op_reservation_client
 
+  def GetBiReservationApiClient(self, bi_reservationserver_address=None):
+    """Return the apiclient that supports bi reservation operations."""
+    path = bi_reservationserver_address
+
+    if path is None:
+      path = 'https://bigquerybiengine.googleapis.com'
+    if not self._op_bi_reservation_client:
+      # This is api key from cloud-bi-cli project. Only use it temporarily, for Alpha.
+      discovery_url = (
+          path +
+          '/$discovery/rest?version=v1alpha&key=AIzaSyCNfOtO0zboJlAIXBZdDmD5C13kCWU5RYM'
+      )
+      self._op_bi_reservation_client = self.BuildApiClient(
+      discovery_url=discovery_url)
+    return self._op_bi_reservation_client
+
   #################################
   ## Utility methods
   #################################
@@ -1245,6 +1266,17 @@ class BigqueryClient(object):
         location=location,
         reservationId=reservation_id)
 
+  def GetBiReservationReference(self, default_location=None):
+    """Determine a ReservationReference from an identifier and location."""
+    project_id = self.project_id
+    if not project_id:
+      raise BigqueryError('Project id not specified.')
+    location = default_location
+    if not location:
+      raise BigqueryError('Location not specified.')
+    return ApiClientHelper.BiReservationReference.Create(
+        projectId=project_id, location=location)
+
   def GetSlotPoolReference(self, identifier=None, path=None,
                            default_location=None,
                            default_reservation_id=None,
@@ -1419,6 +1451,22 @@ class BigqueryClient(object):
     return client.projects().locations().reservations().list(
         parent=parent, pageSize=page_size, pageToken=page_token).execute()
 
+  def ListBiReservations(self, reference):
+    """List BI reservations in the project and location for the given reference.
+
+    Arguments:
+      reference: Reservation reference containing project and location.
+
+    Returns:
+      List of BI reservations in the given project/location.
+    """
+    parent = 'projects/%s/locations/%s/reservations/default' % (
+        reference.projectId, reference.location)
+    client = self.GetBiReservationApiClient()
+    response = client.projects().locations().reservations().get(
+        name=parent).execute()
+    return response
+
   def GetReservation(self, reference):
     """Gets a reservation with the given reservation reference.
 
@@ -1442,6 +1490,38 @@ class BigqueryClient(object):
     client = self.GetReservationApiClient()
     client.projects().locations().reservations().delete(
         name=reference.path(), force=force).execute()
+
+  def UpdateBiReservation(self, reference, reservation_size):
+    """Updates a BI reservation with the given reservation reference.
+
+    Arguments:
+      reference: Reservation to update.
+      reservation_size: size of reservation.
+
+    Returns:
+      Reservation object that was updated.
+    """
+    client = self.GetBiReservationApiClient()
+
+    if reservation_size == 0:
+      client.projects().locations().reservations().delete(
+          name=reference.path()).execute()
+
+      object_info = {}
+      object_info['size'] = 0
+      return object_info
+
+    reservation = {}
+    update_mask = ''
+    reservation['size'] = reservation_size
+    update_mask += 'size,'
+    try:
+      return client.projects().locations().reservations().patch(
+          name=reference.path(), updateMask=update_mask,
+          body=reservation).execute()
+    except BaseException:
+      return client.projects().locations().reservations().create(
+          parent=reference.create_path(), body=reservation).execute()
 
   def UpdateReservation(self, reference, slots, use_parent):
     """Updates a reservation with the given reservation reference.
@@ -2677,8 +2757,12 @@ class BigqueryClient(object):
     if encryption_configuration:
       copy_config[
           'destinationEncryptionConfiguration'] = encryption_configuration
-    _ApplyParameters(copy_config, create_disposition=create_disposition,
-                     write_disposition=write_disposition)
+
+    _ApplyParameters(
+        copy_config,
+        create_disposition=create_disposition,
+        write_disposition=write_disposition)
+
     try:
       return self.ExecuteJob({'copy': copy_config}, **kwds)
     except BigqueryDuplicateError, e:
@@ -3471,7 +3555,7 @@ class BigqueryClient(object):
           data. Temporary flag; will be removed in a future version.
       max_results: Maximum number of results to return.
       timeout_ms: Timeout, in milliseconds, for the call to query().
-      min_completion_ratio: Optional. Specifies the the minimum fraction of
+      min_completion_ratio: Optional. Specifies the minimum fraction of
           data that must be scanned before a query returns. This value should be
           between 0.0 and 1.0 inclusive.
       project_id: Project id to use.
@@ -3618,7 +3702,7 @@ class BigqueryClient(object):
                 project_id=None,
                 job_id=None,
                 location=None):
-    """Attempt to cancel the specified job if it is runnning.
+    """Attempt to cancel the specified job if it is running.
 
     Args:
       project_id: The project_id to the job is running under. If None,
@@ -3853,7 +3937,7 @@ class BigqueryClient(object):
           data. Temporary flag; will be removed in a future version.
       max_results: Optional. Maximum number of results to return.
       wait: (optional, default maxint) Max wait time in seconds.
-      min_completion_ratio: Optional. Specifies the the minimum fraction of
+      min_completion_ratio: Optional. Specifies the minimum fraction of
           data that must be scanned before a query returns. This value should be
           between 0.0 and 1.0 inclusive.
       wait_printer_factory: (optional, defaults to
@@ -4010,7 +4094,7 @@ class BigqueryClient(object):
           is CREATE_NEVER, will only run the query if the result is already
           cached. Caching is best-effort only and you should not make
           assumptions about whether or how long a query result will be cached.
-      min_completion_ratio: Optional. Specifies the the minimum fraction of
+      min_completion_ratio: Optional. Specifies the minimum fraction of
           data that must be scanned before a query returns. This value should be
           between 0.0 and 1.0 inclusive.
       flatten_results: Whether to flatten nested and repeated fields in the
@@ -4609,3 +4693,17 @@ class ApiClientHelper(object):
 
     def path(self):
       return self._path_str % dict(self)
+
+  class BiReservationReference(Reference):
+    """ Helper class to provide a reference to bi reservation. """
+    _required_fields = frozenset(('projectId', 'location'))
+    _format_str = '%(projectId)s:%(location)s'
+    _path_str = 'projects/%(projectId)s/locations/%(location)s/reservations/default'
+    _create_path_str = 'projects/%(projectId)s/locations/%(location)s'
+    typename = 'bi reservation'
+
+    def path(self):
+      return self._path_str % dict(self)
+
+    def create_path(self):
+      return self._create_path_str % dict(self)

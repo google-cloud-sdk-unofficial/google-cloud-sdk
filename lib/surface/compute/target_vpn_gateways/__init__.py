@@ -29,7 +29,7 @@ class TargetVpnGateways(base.Group):
   detailed_help = None
 
 
-TargetVpnGateways.category = 'Networking'
+TargetVpnGateways.category = base.COMPUTE_NETWORKING_CATEGORY
 
 TargetVpnGateways.detailed_help = {
     'brief': (

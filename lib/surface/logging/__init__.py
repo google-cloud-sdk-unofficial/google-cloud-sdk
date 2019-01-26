@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 class Logging(base.Group):
   """Manage Stackdriver Logging."""
 
-  category = 'Management Tools'
+  category = base.GCLOUD_MANAGEMENT_TOOLS_CATEGORY
 
   def Filter(self, context, args):
     del context, args

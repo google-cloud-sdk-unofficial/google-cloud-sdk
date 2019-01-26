@@ -29,7 +29,7 @@ class VpnTunnels(base.Group):
   detailed_help = None
 
 
-VpnTunnels.category = 'Networking'
+VpnTunnels.category = base.COMPUTE_NETWORKING_CATEGORY
 
 VpnTunnels.detailed_help = {
     'brief': 'Read and manipulate Google Compute Engine VPN Tunnels'

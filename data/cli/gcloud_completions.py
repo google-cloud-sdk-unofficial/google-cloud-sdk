@@ -1225,6 +1225,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--drop-traffic-if-unhealthy": "bool",
                     "--enable-cdn": "bool",
+                    "--enable-logging": "bool",
                     "--failover-ratio": "value",
                     "--global": "bool",
                     "--global-health-checks": "bool",
@@ -1239,6 +1240,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "INTERNAL_MANAGED",
                       "INTERNAL_SELF_MANAGED"
                     ],
+                    "--logging-sample-rate": "value",
                     "--port-name": "value",
                     "--protocol": "value",
                     "--region": "dynamic",
@@ -1340,6 +1342,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--description": "value",
                     "--drop-traffic-if-unhealthy": "bool",
                     "--enable-cdn": "bool",
+                    "--enable-logging": "bool",
                     "--failover-ratio": "value",
                     "--global": "bool",
                     "--global-health-checks": "bool",
@@ -1348,6 +1351,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--http-health-checks": "dynamic",
                     "--https-health-checks": "dynamic",
                     "--iap": "value",
+                    "--logging-sample-rate": "value",
                     "--no-custom-request-headers": "bool",
                     "--port-name": "value",
                     "--protocol": "value",
@@ -1545,6 +1549,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--kms-project": "dynamic",
                     "--labels": "value",
                     "--licenses": "value",
+                    "--physical-block-size": [
+                      "16384",
+                      "4096"
+                    ],
                     "--region": "dynamic",
                     "--replica-zones": "value",
                     "--require-csek-key-create": "bool",
@@ -3412,7 +3420,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "dynamic"
                   }
                 },
-                "get-shielded-vm-identity": {
+                "get-shielded-identity": {
                   "commands": {},
                   "flags": {
                     "--zone": "dynamic"
@@ -3675,6 +3683,28 @@ STATIC_COMPLETION_CLI_TREE = {
                         "create": {
                           "commands": {},
                           "flags": {
+                            "--bandwidth": [
+                              "100m",
+                              "10g",
+                              "1g",
+                              "200m",
+                              "2g",
+                              "300m",
+                              "400m",
+                              "500m",
+                              "50m",
+                              "5g",
+                              "bps-100m",
+                              "bps-10g",
+                              "bps-1g",
+                              "bps-200m",
+                              "bps-2g",
+                              "bps-300m",
+                              "bps-400m",
+                              "bps-500m",
+                              "bps-50m",
+                              "bps-5g"
+                            ],
                             "--candidate-subnets": "value",
                             "--description": "value",
                             "--enable-admin": "bool",
@@ -3687,6 +3717,28 @@ STATIC_COMPLETION_CLI_TREE = {
                         "update": {
                           "commands": {},
                           "flags": {
+                            "--bandwidth": [
+                              "100m",
+                              "10g",
+                              "1g",
+                              "200m",
+                              "2g",
+                              "300m",
+                              "400m",
+                              "500m",
+                              "50m",
+                              "5g",
+                              "bps-100m",
+                              "bps-10g",
+                              "bps-1g",
+                              "bps-200m",
+                              "bps-2g",
+                              "bps-300m",
+                              "bps-400m",
+                              "bps-500m",
+                              "bps-50m",
+                              "bps-5g"
+                            ],
                             "--clear-labels": "bool",
                             "--description": "value",
                             "--enable-admin": "bool",
@@ -5749,6 +5801,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network": "value",
                     "--preemptible": "bool",
                     "--range": "value",
+                    "--reserved": "bool",
                     "--use-service-networking": "bool",
                     "--zone": "value"
                   }
@@ -6370,6 +6423,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "value",
                     "--resource-usage-bigquery-dataset": "value",
                     "--scopes": "value",
+                    "--security-group": "value",
                     "--security-profile": "value",
                     "--security-profile-runtime-rules": "bool",
                     "--service-account": "value",
@@ -8453,6 +8507,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--limit": "value",
                         "--locales": "value",
                         "--network-profile": "value",
+                        "--num-flaky-test-attempts": "value",
                         "--obb-files": "value",
                         "--orientations": "dynamic",
                         "--os-version-ids": "value",
@@ -8547,6 +8602,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--device": "value",
                         "--filter": "value",
                         "--limit": "value",
+                        "--num-flaky-test-attempts": "value",
                         "--page-size": "value",
                         "--record-video": "bool",
                         "--results-bucket": "value",
@@ -10843,6 +10899,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--package-uris": "value",
                     "--python-version": "value",
                     "--runtime-version": "value",
+                    "--service-account": "value",
                     "--staging-bucket": "value"
                   }
                 },
@@ -15630,6 +15687,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--kms-project": "dynamic",
                     "--labels": "value",
                     "--licenses": "value",
+                    "--physical-block-size": [
+                      "16384",
+                      "4096"
+                    ],
                     "--region": "dynamic",
                     "--replica-zones": "value",
                     "--require-csek-key-create": "bool",
@@ -16694,6 +16755,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "stop-autoscaling": {
                       "commands": {},
                       "flags": {
+                        "--region": "dynamic",
+                        "--zone": "dynamic"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--clear-autohealing": "bool",
+                        "--health-check": "dynamic",
+                        "--http-health-check": "value",
+                        "--https-health-check": "value",
+                        "--initial-delay": "value",
                         "--region": "dynamic",
                         "--zone": "dynamic"
                       }
@@ -19829,6 +19902,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "value",
                     "--resource-usage-bigquery-dataset": "value",
                     "--scopes": "value",
+                    "--security-group": "value",
                     "--service-account": "value",
                     "--services-ipv4-cidr": "value",
                     "--services-secondary-range-name": "value",
@@ -22150,6 +22224,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--limit": "value",
                         "--locales": "value",
                         "--network-profile": "value",
+                        "--num-flaky-test-attempts": "value",
                         "--obb-files": "value",
                         "--orientations": "dynamic",
                         "--os-version-ids": "value",
@@ -22244,6 +22319,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--device": "value",
                         "--filter": "value",
                         "--limit": "value",
+                        "--num-flaky-test-attempts": "value",
                         "--page-size": "value",
                         "--record-video": "bool",
                         "--results-bucket": "value",
@@ -28288,6 +28364,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--deletion-protection": "bool",
                 "--description": "value",
                 "--disk": "value",
+                "--hostname": "value",
                 "--image": "value",
                 "--image-family": "value",
                 "--image-project": "value",

@@ -46,7 +46,7 @@ Tips:
 * start by typing commands to get auto-suggestions and inline help
 * use `tab`, `up-arrow`, or `down-arrow` to navigate completion dropdowns
 * use `space` or `/` to accept the highlighted dropdown item
-* run `gcloud alpha interactive --help` for more info
+* run `gcloud beta interactive --help` for more info
 
 Run *$ gcloud feedback* to report bugs or request new features.
 

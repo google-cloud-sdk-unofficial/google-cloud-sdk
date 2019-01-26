@@ -25,4 +25,4 @@ class Interconnects(base.Group):
   """Read and manipulate  Google Compute Engine interconnects."""
 
 
-Interconnects.category = 'Networking'
+Interconnects.category = base.COMPUTE_NETWORKING_CATEGORY

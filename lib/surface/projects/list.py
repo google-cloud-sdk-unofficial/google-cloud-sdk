@@ -37,10 +37,10 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  The following command lists a maximum of five projects sorted alphabetically
-  by name:
+  The following command lists the last five created projects, sorted
+  alphabetically by project ID:
 
-    $ {command} --limit=5
+    $ {command} --sort-by=projectId --limit=5
   """
 
   @staticmethod

@@ -25,7 +25,7 @@ class HttpHealthChecks(base.Group):
   """Read and manipulate HTTP health checks for load balanced instances."""
 
 
-HttpHealthChecks.category = 'Load Balancing'
+HttpHealthChecks.category = base.COMPUTE_LOAD_BALANCING_CATEGORY
 
 HttpHealthChecks.detailed_help = {
     'brief': ('Read and manipulate HTTP health checks for load balanced '

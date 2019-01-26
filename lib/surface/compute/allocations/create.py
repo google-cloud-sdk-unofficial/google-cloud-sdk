@@ -33,7 +33,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     resource_args.GetAllocationResourceArg().AddArgument(
         parser, operation_type='create')
-    resource_args.GetCommitmentResourceArg().AddArgument(parser)
+    resource_args.GetCommitmentResourceArg(required=False).AddArgument(parser)
     flags.AddCreateFlags(parser)
 
   def Run(self, args):
