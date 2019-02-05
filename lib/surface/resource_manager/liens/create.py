@@ -36,17 +36,17 @@ class Create(base.CreateCommand):
     base.Argument(
         '--restrictions',
         required=True,
-        help='Comma separated list of IAM permissions to curtail').AddToParser(
+        help='Comma separated list of IAM permissions to curtail.').AddToParser(
             parser)
     base.Argument(
         '--reason',
         required=True,
-        help='A human-readable description of why this lien is being applied.'
+        help='Human-readable description of why this lien is being applied.'
     ).AddToParser(parser)
     base.Argument(
         '--origin',
         required=False,
-        help='The originator of for this Lien. Defaults to user identy.'
+        help='Origin of this lien. Defaults to user identity.'
     ).AddToParser(parser)
 
   @error.EmitErrorDetails

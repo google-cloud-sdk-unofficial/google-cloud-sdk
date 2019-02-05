@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2019 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import argparse
 import re
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.vpn_tunnels import vpn_tunnels_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -33,6 +34,11 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import flags
 
 
 _PRINTABLE_CHARS_PATTERN = r'[ -~]+'
+
+_ROUTER_ARG = router_flags.RouterArgumentForVpnTunnel(required=False)
+_TARGET_VPN_GATEWAY_ARG = (
+    target_vpn_gateway_flags.TargetVpnGatewayArgumentForVpnTunnel())
+_VPN_TUNNEL_ARG = flags.VpnTunnelArgument()
 
 
 class DeprecatedArgumentException(exceptions.ToolException):
@@ -77,24 +83,17 @@ class CreateGA(base.CreateCommand):
   identified by --peer-address.
   """
 
-  ROUTER_ARG = None
-  TARGET_VPN_GATEWAY_ARG = None
-  VPN_TUNNEL_ARG = None
-
   @classmethod
   def Args(cls, parser):
     """Adds arguments to the supplied parser."""
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.ROUTER_ARG = router_flags.RouterArgumentForVpnTunnel(required=False)
-    cls.TARGET_VPN_GATEWAY_ARG = (
-        target_vpn_gateway_flags.TargetVpnGatewayArgumentForVpnTunnel())
-    cls.TARGET_VPN_GATEWAY_ARG.AddArgument(parser)
-    cls.VPN_TUNNEL_ARG = flags.VpnTunnelArgument()
-    cls.VPN_TUNNEL_ARG.AddArgument(parser, operation_type='create')
+    _TARGET_VPN_GATEWAY_ARG.AddArgument(parser)
+    _ROUTER_ARG.AddArgument(parser)
+    _VPN_TUNNEL_ARG.AddArgument(parser, operation_type='create')
 
     parser.add_argument(
         '--description',
-        help='An optional, textual description for the target VPN tunnel.')
+        help='An optional, textual description for the VPN tunnel.')
 
     parser.add_argument(
         '--ike-version',
@@ -145,17 +144,13 @@ class CreateGA(base.CreateCommand):
               'of CIDR formatted strings. '
               'Example: 192.168.0.0/16,10.0.0.0/24.'))
 
-    # TODO(b/29072646): autocomplete --router argument
-    parser.add_argument(
-        '--router',
-        help='The Router to use for dynamic routing.')
-
     parser.display_info.AddCacheUpdater(flags.VpnTunnelsCompleter)
 
   def Run(self, args):
     """Issues API requests to construct VPN Tunnels."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    helper = vpn_tunnels_utils.VpnTunnelHelper(holder)
 
     # TODO(b/38253176) Add test coverage
     if args.ike_networks is not None:
@@ -163,35 +158,32 @@ class CreateGA(base.CreateCommand):
           '--ike-networks',
           'It has been renamed to --local-traffic-selector.')
 
-    vpn_tunnel_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
+    vpn_tunnel_ref = _VPN_TUNNEL_ARG.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     args.target_vpn_gateway_region = vpn_tunnel_ref.region
-    target_vpn_gateway_ref = self.TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
+    target_vpn_gateway_ref = _TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
         args, holder.resources)
 
     # TODO(b/38253800) Add test coverage
     router_link = None
     if args.router is not None:
       args.router_region = vpn_tunnel_ref.region
-      router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
+      router_ref = _ROUTER_ARG.ResolveAsResource(args, holder.resources)
       router_link = router_ref.SelfLink()
 
-    request = client.messages.ComputeVpnTunnelsInsertRequest(
-        project=vpn_tunnel_ref.project,
-        region=vpn_tunnel_ref.region,
-        vpnTunnel=client.messages.VpnTunnel(
-            description=args.description,
-            router=router_link,
-            localTrafficSelector=args.local_traffic_selector or [],
-            remoteTrafficSelector=args.remote_traffic_selector or [],
-            ikeVersion=args.ike_version,
-            name=vpn_tunnel_ref.Name(),
-            peerIp=args.peer_address,
-            sharedSecret=args.shared_secret,
-            targetVpnGateway=target_vpn_gateway_ref.SelfLink()))
-
-    return client.MakeRequests([(client.apitools_client.vpnTunnels, 'Insert',
-                                 request)])
+    vpn_tunnel_to_insert = helper.GetVpnTunnelForInsert(
+        name=vpn_tunnel_ref.Name(),
+        description=args.description,
+        ike_version=args.ike_version,
+        peer_ip=args.peer_address,
+        shared_secret=args.shared_secret,
+        target_vpn_gateway=target_vpn_gateway_ref.SelfLink(),
+        router=router_link,
+        local_traffic_selector=args.local_traffic_selector,
+        remote_traffic_selector=args.remote_traffic_selector)
+    operation_ref = helper.Create(vpn_tunnel_ref, vpn_tunnel_to_insert)
+    return helper.WaitForOperation(vpn_tunnel_ref, operation_ref,
+                                   'Creating VPN tunnel')

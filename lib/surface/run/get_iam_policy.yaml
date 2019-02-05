@@ -15,7 +15,7 @@
         $ {command} --region us-central1 my-service
 
   request:
-    collection: serverless.projects.locations.services
+    collection: run.projects.locations.services
 
   arguments:
     resource:

@@ -104,7 +104,7 @@ class Create(base.CreateCommand):
     log.status.Print(message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Google Compute Engine interconnect.
 
@@ -115,6 +115,8 @@ class CreateBeta(Create):
   INTERCONNECT_ARG = None
   LOCATION_ARG = None
 
+  supports_100g = False
+
   @classmethod
   def Args(cls, parser):
     cls.LOCATION_ARG = (
@@ -123,7 +125,18 @@ class CreateBeta(Create):
     cls.LOCATION_ARG.AddArgument(parser)
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
-    flags.AddCreateBetaArgs(parser)
+    flags.AddCreateBetaArgs(parser, cls.supports_100g)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Google Compute Engine interconnect.
+
+  *{command}* is used to create interconnects. An interconnect represents a
+  single specific connection between Google and the customer.
+  """
+
+  supports_100g = True
 
 
 Create.detailed_help = DETAILED_HELP

@@ -25,14 +25,20 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as 
 from googlecloudsdk.command_lib.compute.instance_groups.managed import rolling_action
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+def _AddArgs(parser, supports_min_ready=False):
+  """Adds args."""
+  instance_groups_managed_flags.AddMaxUnavailableArg(parser)
+  if supports_min_ready:
+    instance_groups_managed_flags.AddMinReadyArg(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StartUpdate(base.Command):
   """Start restart instances of managed instance group."""
 
   @staticmethod
   def Args(parser):
-    instance_groups_managed_flags.AddMaxUnavailableArg(parser)
-    instance_groups_managed_flags.AddMinReadyArg(parser)
+    _AddArgs(parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -50,6 +56,17 @@ class StartUpdate(base.Command):
           rolling_action.CreateRequest(args, cleared_fields, client, resources,
                                        minimal_action)
       ])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class StartUpdateAlphaBeta(StartUpdate):
+  """Start restart instances of managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser, supports_min_ready=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
 
 StartUpdate.detailed_help = {

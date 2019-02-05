@@ -6,7 +6,7 @@ help_text:
   examples: |
     The following command reads an IAM policy defined in a JSON file `policy.json` and sets it for
     the instance 'my-instance' and zone 'ZONE':
-      $ {command} my-instance --zone='ZONE' policy.json
+      $ {command} my-instance --zone=ZONE policy.json
     See https://cloud.google.com/iam/docs/managing-policies for details of
     policy role and member types.
 

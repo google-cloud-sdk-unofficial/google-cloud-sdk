@@ -69,6 +69,7 @@ class Deploy(base.Command):
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddAsyncFlag(parser)
+    flags.AddEndpointVisibilityEnum(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
@@ -79,6 +80,15 @@ class Deploy(base.Command):
     config_changes = flags.GetConfigurationChanges(args)
 
     conn_context = connection_context.GetConnectionContext(args)
+
+    # pylint: disable=protected-access
+    if (not isinstance(conn_context, connection_context._GKEConnectionContext)
+        and getattr(args, 'endpoint', None)):
+      raise exceptions.ConfigurationError(
+          'The `--endpoint=[internal|external]` flag '
+          'is only supported with Cloud Run on GKE.')
+    # pylint: enable=protected-access
+
     service_ref = flags.GetService(args)
     function_entrypoint = flags.GetFunction(args.function)
     msg = ('Deploying {dep_type} to {operator} '
@@ -121,7 +131,16 @@ class Deploy(base.Command):
       changes = [new_deployable]
       if config_changes:
         changes.extend(config_changes)
-      operations.ReleaseService(service_ref, changes, asyn=args.async)
+
+      if args.endpoint == 'internal':
+        private_endpoint = True
+      elif args.endpoint == 'external':
+        private_endpoint = False
+      else:
+        private_endpoint = None
+
+      operations.ReleaseService(service_ref, changes, asyn=args.async,
+                                private_endpoint=private_endpoint)
       url = operations.GetServiceUrl(service_ref)
       conf = operations.GetConfiguration(service_ref)
 

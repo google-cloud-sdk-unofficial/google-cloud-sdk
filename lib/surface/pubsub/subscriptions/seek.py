@@ -27,8 +27,7 @@ from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SeekAlpha(base.Command):
+class Seek(base.Command):
   """Resets a subscription's backlog to a point in time or to a given snapshot.
   """
 

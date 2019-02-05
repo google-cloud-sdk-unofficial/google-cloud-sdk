@@ -49,9 +49,7 @@ DETAILED_HELP = {
 }
 
 
-def _Args(parser,
-          support_disk_scope=False,
-          support_force_attach=False):
+def _Args(parser, support_disk_scope=False):
   """Add parser arguments to all tracks."""
 
   flags.INSTANCE_ARG.AddArgument(parser)
@@ -83,12 +81,11 @@ def _Args(parser,
   if support_disk_scope:
     flags.AddDiskScopeFlag(parser)
 
-  if support_force_attach:
-    parser.add_argument(
-        '--force-attach',
-        default=False,
-        action='store_true',
-        help="""\
+  parser.add_argument(
+      '--force-attach',
+      default=False,
+      action='store_true',
+      help="""\
 Attach the disk to the instance even if it is currently attached to another
 instance. The attachment will succeed even if detaching from the previous
 instance fails at first. The server will continue trying to detach the disk from
@@ -113,10 +110,7 @@ class AttachDisk(base.SilentCommand):
     return instance_utils.ParseDiskResource(
         resources, args.disk, instance_ref.project, instance_ref.zone, scope)
 
-  def _Run(self,
-           args,
-           support_disk_scope=False,
-           support_force_attach=False):
+  def _Run(self, args, support_disk_scope=False):
     """Invokes a request for attaching a disk to an instance."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -155,7 +149,7 @@ class AttachDisk(base.SilentCommand):
         attachedDisk=attached_disk,
         zone=instance_ref.zone)
 
-    if support_force_attach and args.force_attach:
+    if args.force_attach:
       request.forceAttach = args.force_attach
 
     return client.MakeRequests([(client.apitools_client.instances, 'AttachDisk',
@@ -171,16 +165,10 @@ class AttachDiskAlphaBeta(AttachDisk):
 
   @staticmethod
   def Args(parser):
-    _Args(
-        parser,
-        support_disk_scope=True,
-        support_force_attach=True)
+    _Args(parser, support_disk_scope=True)
 
   def Run(self, args):
-    return self._Run(
-        args,
-        support_disk_scope=True,
-        support_force_attach=True)
+    return self._Run(args, support_disk_scope=True)
 
 
 AttachDisk.detailed_help = DETAILED_HELP

@@ -37,7 +37,6 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Filestore(base.Group):
   """Create and manipulate Cloud Filestore resources."""
   detailed_help = DETAILED_HELP

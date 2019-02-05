@@ -12,7 +12,7 @@ help_text:
   examples: |
     To print the IAM policy for a given instance template, run:
 
-      $ {command} --zone=my-zone my-instance-template
+      $ {command} my-instance-template --zone=my-zone
 
 request:
   collection: compute.instanceTemplates

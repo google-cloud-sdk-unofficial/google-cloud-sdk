@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import scope
 from googlecloudsdk.command_lib.compute import ssh_utils
@@ -40,7 +41,7 @@ class NoInterfacesError(exceptions.Error):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StartIapTunnel(base.Command):
-  """Starts an IAP TCP Fordwarding tunnel over WebSocket connection.
+  """Starts an IAP TCP forwarding tunnel over WebSocket connection.
 
   Starts a tunnel to the Cloud Identity-Aware Proxy through which another
   process can create a connection (eg. SSH, RDP) to a Google Compute Engine
@@ -60,6 +61,18 @@ class StartIapTunnel(base.Command):
         type=lambda arg: arg_parsers.HostPort.Parse(arg, ipv6_enabled=True),
         default='localhost:0',
         help='Host:port to which the proxy should be bound.')
+    # It would be logical to put --local-host-port and --listen-on-stdin in a
+    # mutex group, but then the help text would display a message saying "At
+    # most one of these may be specified" even though it only shows
+    # --local-host-port.
+    parser.add_argument(
+        '--listen-on-stdin',
+        action='store_true',
+        hidden=True,
+        help=('Whether to get/put local data on stdin/stdout instead of '
+              'listening on a socket.  It is an error to specify '
+              '--local-host-port with this, because that flag has no meaning '
+              'with this.'))
     parser.add_argument(
         '--network-interface',
         default='nic0',
@@ -68,12 +81,21 @@ class StartIapTunnel(base.Command):
               'default.'))
 
   def Run(self, args):
+    if args.listen_on_stdin and args.IsSpecified('local_host_port'):
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--listen-on-stdin', '--local-host-port')
     project, zone, instance, interface, port = self._GetTargetArgs(args)
-    local_host, local_port = self._GetLocalHostPort(args)
 
-    iap_tunnel_helper = iap_tunnel.IapTunnelProxyServerHelper(
-        args, project, zone, instance, interface, port, local_host, local_port)
-    iap_tunnel_helper.StartProxyServer()
+    if args.listen_on_stdin:
+      iap_tunnel_helper = iap_tunnel.IapTunnelStdinHelper(
+          args, project, zone, instance, interface, port)
+      iap_tunnel_helper.Run()
+    else:
+      local_host, local_port = self._GetLocalHostPort(args)
+      iap_tunnel_helper = iap_tunnel.IapTunnelProxyServerHelper(
+          args, project, zone, instance, interface, port, local_host,
+          local_port)
+      iap_tunnel_helper.StartProxyServer()
 
   def _GetTargetArgs(self, args):
     holder = base_classes.ComputeApiHolder(base.ReleaseTrack.GA)
@@ -106,7 +128,7 @@ class StartIapTunnel(base.Command):
             % interface)
     else:
       interface = instance_obj.networkInterfaces[0].name
-      log.Print('Defaulting to first interface found [%s].' % interface)
+      log.status.Print('Defaulting to first interface found [%s].' % interface)
     return interface
 
   def _GetLocalHostPort(self, args):
@@ -115,5 +137,5 @@ class StartIapTunnel(base.Command):
         int(args.local_host_port.port) if args.local_host_port.port else 0)
     local_port = iap_tunnel.DetermineLocalPort(port_arg=port_arg)
     if not port_arg:
-      log.out.Print('Picking local unused port [%d].' % local_port)
+      log.status.Print('Picking local unused port [%d].' % local_port)
     return local_host_arg, local_port

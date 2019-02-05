@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Get the IAM policy for a Google Compute Engine subnetwork.
@@ -13,14 +13,16 @@
     examples: |
       To print the IAM policy for a given subnetwork, run:
 
-        $ {command} --region=us-central1 my-subnet
+        $ {command} my-subnet --region=REGION
 
   request:
     collection: compute.subnetworks
-    api_version: alpha
     use_relative_name: false
+    api_version: beta
+    ALPHA:
+      api_version: alpha
 
   arguments:
     resource:
-      help_text: The network for which to display the IAM policy.
+      help_text: The network to display the IAM policy for.
       spec: !REF googlecloudsdk.command_lib.compute.resources:subnet

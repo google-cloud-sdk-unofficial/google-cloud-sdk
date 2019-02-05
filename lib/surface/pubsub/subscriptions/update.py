@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlpha(base.UpdateCommand):
+class UpdateAlphaBeta(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub subscription."""
 
   @classmethod
@@ -38,7 +38,6 @@ class UpdateAlpha(base.UpdateCommand):
     resource_args.AddSubscriptionResourceArg(parser, 'to update.')
     flags.AddSubscriptionSettingsFlags(parser, cls.ReleaseTrack(),
                                        is_update=True)
-
     labels_util.AddUpdateLabelsFlags(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
@@ -89,6 +88,50 @@ class UpdateAlpha(base.UpdateCommand):
         raise
       log.status.Print('No update to perform.')
       result = None
+    else:
+      log.UpdatedResource(subscription_ref.RelativeName(), kind='subscription')
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
+  """Updates an existing Cloud Pub/Sub subscription."""
+
+  @classmethod
+  def Args(cls, parser):
+    resource_args.AddSubscriptionResourceArg(parser, 'to update.')
+    flags.AddSubscriptionSettingsFlags(parser, cls.ReleaseTrack(),
+                                       is_update=True)
+
+  @exceptions.CatchHTTPErrorRaiseHTTPException()
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      A serialized object (dict) describing the results of the operation. This
+      description fits the Resource described in the ResourceRegistry under
+      'pubsub.projects.subscriptions'.
+
+    Raises:
+      An HttpException if there was a problem calling the
+      API subscriptions.Patch command.
+    """
+    client = subscriptions.SubscriptionsClient()
+    subscription_ref = args.CONCEPTS.subscription.Parse()
+
+    try:
+      result = client.Patch(
+          subscription_ref,
+          ack_deadline=args.ack_deadline,
+          push_config=util.ParsePushConfig(args.push_endpoint),
+          retain_acked_messages=args.retain_acked_messages,
+          message_retention_duration=args.message_retention_duration)
+    except subscriptions.NoFieldsSpecifiedError:
+      raise
     else:
       log.UpdatedResource(subscription_ref.RelativeName(), kind='subscription')
     return result

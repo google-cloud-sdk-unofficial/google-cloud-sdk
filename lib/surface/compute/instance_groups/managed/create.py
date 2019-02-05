@@ -72,7 +72,7 @@ def _IsZonalGroup(ref):
   return ref.Collection() == 'compute.instanceGroupManagers'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateGA(base.CreateCommand):
   """Create Google Compute Engine managed instance groups."""
 
@@ -80,6 +80,7 @@ class CreateGA(base.CreateCommand):
   def Args(parser):
     parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
     _AddInstanceGroupManagerArgs(parser)
+    auto_healing_utils.AddAutohealingArgs(parser)
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
@@ -178,6 +179,13 @@ class CreateGA(base.CreateCommand):
     """Create parts of Instance Group Manager shared for the track."""
     instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
         args, holder.resources)
+    health_check = managed_instance_groups_utils.GetHealthCheckUri(
+        holder.resources, args)
+    auto_healing_policies = (
+        managed_instance_groups_utils.CreateAutohealingPolicies(
+            client.messages, health_check, args.initial_delay))
+    managed_instance_groups_utils.ValidateAutohealingPolicies(
+        auto_healing_policies)
     return client.messages.InstanceGroupManager(
         name=group_ref.Name(),
         description=args.description,
@@ -187,6 +195,7 @@ class CreateGA(base.CreateCommand):
         targetPools=self._GetInstanceGroupManagerTargetPools(
             args.target_pool, group_ref, holder),
         targetSize=int(args.size),
+        autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
             args.zones, holder.resources, client.messages),
     )
@@ -225,70 +234,13 @@ class CreateGA(base.CreateCommand):
     return augmented_migs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(CreateGA):
-  """Create Google Compute Engine managed instance groups."""
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
-    _AddInstanceGroupManagerArgs(parser)
-    auto_healing_utils.AddAutohealingArgs(parser)
-    igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
-    igm_arg.AddArgument(parser, operation_type='create')
-    instance_groups_flags.AddZonesFlag(parser)
-
-  def _CreateDistributionPolicy(self, zones, resources, messages):
-    if zones:
-      policy_zones = []
-      for zone in zones:
-        zone_ref = resources.Parse(
-            zone, collection='compute.zones',
-            params={'project': properties.VALUES.core.project.GetOrFail})
-        policy_zones.append(
-            messages.DistributionPolicyZoneConfiguration(
-                zone=zone_ref.SelfLink()))
-      return messages.DistributionPolicy(zones=policy_zones)
-
-  def _CreateInstanceGroupManager(
-      self, args, group_ref, template_ref, client, holder):
-    """Create parts of Instance Group Manager shared for the track."""
-    instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
-        args, holder.resources)
-    health_check = managed_instance_groups_utils.GetHealthCheckUri(
-        holder.resources, args)
-    auto_healing_policies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(
-            client.messages, health_check, args.initial_delay))
-    managed_instance_groups_utils.ValidateAutohealingPolicies(
-        auto_healing_policies)
-    return client.messages.InstanceGroupManager(
-        name=group_ref.Name(),
-        description=args.description,
-        instanceTemplate=template_ref.SelfLink(),
-        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
-            args.base_instance_name, group_ref),
-        targetPools=self._GetInstanceGroupManagerTargetPools(
-            args.target_pool, group_ref, holder),
-        targetSize=int(args.size),
-        autoHealingPolicies=auto_healing_policies,
-        distributionPolicy=self._CreateDistributionPolicy(
-            args.zones, holder.resources, client.messages),
-    )
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(CreateGA):
   """Create Google Compute Engine managed instance groups."""
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(managed_flags.DEFAULT_LIST_FORMAT)
-    _AddInstanceGroupManagerArgs(parser=parser)
-    auto_healing_utils.AddAutohealingArgs(parser)
-    igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
-    igm_arg.AddArgument(parser, operation_type='create')
-    instance_groups_flags.AddZonesFlag(parser)
+    CreateGA.Args(parser)
     instance_groups_flags.AddMigCreateStatefulFlags(parser)
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
@@ -358,4 +310,3 @@ in the ``us-central1-a'' zone.
 """,
 }
 CreateGA.detailed_help = DETAILED_HELP
-CreateBeta.detailed_help = DETAILED_HELP

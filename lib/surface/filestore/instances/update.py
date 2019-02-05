@@ -28,11 +28,11 @@ from googlecloudsdk.core import log
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.CreateCommand):
   """Update a Cloud Filestore instance."""
 
-  _API_VERSION = filestore_client.FILESTORE_API_VERSION
+  _API_VERSION = filestore_client.V1_API_VERSION
 
   @staticmethod
   def Args(parser):
@@ -73,15 +73,33 @@ class UpdateBeta(base.CreateCommand):
     result = client.UpdateInstance(
         instance_ref, instance, update_mask, args.async)
     if args.async:
-      log.status.Print('To check the status of the operation, run '
-                       '`gcloud beta filestore operations describe {}`'
-                       .format(result.name))
+      if self._API_VERSION == 'V1':
+        log.status.Print(
+            'To check the status of the operation, run `gcloud filestore '
+            'operations describe {}`'.format(result.name))
+      else:
+        log.status.Print(
+            'To check the status of the operation, run `gcloud beta filestore '
+            'operations describe {}`'.format(result.name))
     return result
 
 
-UpdateBeta.detailed_help = {
-    'DESCRIPTION': 'Update a Cloud Filestore instance.',
-    'EXAMPLES': """\
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.BETA_API_VERSION
+
+  @staticmethod
+  def Args(parser):
+    instances_flags.AddInstanceUpdateArgs(parser)
+
+
+Update.detailed_help = {
+    'DESCRIPTION':
+        'Update a Cloud Filestore instance.',
+    'EXAMPLES':
+        """\
 The following command updates the Cloud Filestore instance NAME to change the
 description to "A new description."
 

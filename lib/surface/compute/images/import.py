@@ -39,20 +39,53 @@ from googlecloudsdk.core.console import progress_tracker
 
 import six
 
-_OS_CHOICES = {'debian-8': 'debian/translate_debian_8.wf.json',
-               'debian-9': 'debian/translate_debian_9.wf.json',
-               'centos-6': 'enterprise_linux/translate_centos_6.wf.json',
-               'centos-7': 'enterprise_linux/translate_centos_7.wf.json',
-               'rhel-6': 'enterprise_linux/translate_rhel_6_licensed.wf.json',
-               'rhel-7': 'enterprise_linux/translate_rhel_7_licensed.wf.json',
-               'rhel-6-byol': 'enterprise_linux/translate_rhel_6_byol.wf.json',
-               'rhel-7-byol': 'enterprise_linux/translate_rhel_7_byol.wf.json',
-               'ubuntu-1404': 'ubuntu/translate_ubuntu_1404.wf.json',
-               'ubuntu-1604': 'ubuntu/translate_ubuntu_1604.wf.json',
-               'windows-2008r2': 'windows/translate_windows_2008_r2.wf.json',
-               'windows-2012r2': 'windows/translate_windows_2012_r2.wf.json',
-               'windows-2016': 'windows/translate_windows_2016.wf.json',
-              }
+_OS_CHOICES_MAP = {
+    'debian-8': 'debian/translate_debian_8.wf.json',
+    'debian-9': 'debian/translate_debian_9.wf.json',
+    'centos-6': 'enterprise_linux/translate_centos_6.wf.json',
+    'centos-7': 'enterprise_linux/translate_centos_7.wf.json',
+    'rhel-6': 'enterprise_linux/translate_rhel_6_licensed.wf.json',
+    'rhel-7': 'enterprise_linux/translate_rhel_7_licensed.wf.json',
+    'rhel-6-byol': 'enterprise_linux/translate_rhel_6_byol.wf.json',
+    'rhel-7-byol': 'enterprise_linux/translate_rhel_7_byol.wf.json',
+    'ubuntu-1404': 'ubuntu/translate_ubuntu_1404.wf.json',
+    'ubuntu-1604': 'ubuntu/translate_ubuntu_1604.wf.json',
+    'windows-2008r2': 'windows/translate_windows_2008_r2.wf.json',
+    'windows-2012r2': 'windows/translate_windows_2012_r2.wf.json',
+    'windows-2016': 'windows/translate_windows_2016.wf.json',
+    'windows-2008r2-byol': 'windows/translate_windows_2008_r2_byol.wf.json',
+    'windows-2012-byol': 'windows/translate_windows_2012_byol.wf.json',
+    'windows-2012r2-byol': 'windows/translate_windows_2012_r2_byol.wf.json',
+    'windows-2016-byol': 'windows/translate_windows_2016_byol.wf.json',
+    'windows-7-64-byol': 'windows/translate_windows_7_64_byol.wf.json',
+    'windows-10-64-byol': 'windows/translate_windows_10_64_byol.wf.json',
+}
+_OS_CHOICES_GA = [
+    'debian-8',
+    'debian-9',
+    'centos-6',
+    'centos-7',
+    'rhel-6',
+    'rhel-7',
+    'rhel-6-byol',
+    'rhel-7-byol',
+    'ubuntu-1404',
+    'ubuntu-1604',
+    'windows-2008r2',
+    'windows-2012r2',
+    'windows-2016',
+]
+_OS_CHOICES_BETA = _OS_CHOICES_GA + [
+]
+_OS_CHOICES_ALPHA = _OS_CHOICES_BETA + [
+    'windows-2008r2-byol',
+    'windows-2012-byol',
+    'windows-2012r2-byol',
+    'windows-2016-byol',
+    'windows-7-64-byol',
+    'windows-10-64-byol',
+]
+
 _WORKFLOW_DIR = '../workflows/image_import/'
 _IMPORT_WORKFLOW = _WORKFLOW_DIR + 'import_image.wf.json'
 _IMPORT_FROM_IMAGE_WORKFLOW = _WORKFLOW_DIR + 'import_from_image.wf.json'
@@ -122,7 +155,7 @@ def _CopyToScratchBucket(source_uri, image_uuid, storage_client, daisy_bucket):
 
 def _GetTranslateWorkflow(args):
   if args.os:
-    return _OS_CHOICES[args.os]
+    return _OS_CHOICES_MAP[args.os]
   return args.custom_workflow
 
 
@@ -185,8 +218,10 @@ def _CreateImportStager(storage_client, args):
 class Import(base.CreateCommand):
   """Import an image into Google Compute Engine."""
 
-  @staticmethod
-  def Args(parser):
+  _OS_CHOICES = _OS_CHOICES_GA
+
+  @classmethod
+  def Args(cls, parser):
     Import.DISK_IMAGE_ARG = flags.MakeDiskImageArg()
     Import.DISK_IMAGE_ARG.AddArgument(parser, operation_type='create')
 
@@ -206,7 +241,7 @@ class Import(base.CreateCommand):
     workflow = parser.add_mutually_exclusive_group(required=True)
     workflow.add_argument(
         '--os',
-        choices=sorted(_OS_CHOICES.keys()),
+        choices=sorted(cls._OS_CHOICES),
         help='Specifies the OS of the image being imported.'
     )
     workflow.add_argument(
@@ -222,7 +257,7 @@ class Import(base.CreateCommand):
               Specifies a custom workflow to use for image translation.
               Workflow should be relative to the image_import directory here:
               []({0}). For example: ``{1}''""".format(
-                  _WORKFLOWS_URL, _OS_CHOICES[sorted(_OS_CHOICES.keys())[0]])),
+                  _WORKFLOWS_URL, _OS_CHOICES_MAP[sorted(cls._OS_CHOICES)[0]])),
         hidden=True
     )
 
@@ -306,9 +341,11 @@ class Import(base.CreateCommand):
 class ImportBeta(Import):
   """Import an image into Google Compute Engine for Alpha and Beta releases."""
 
-  @staticmethod
-  def Args(parser):
-    Import.Args(parser)
+  _OS_CHOICES = _OS_CHOICES_BETA
+
+  @classmethod
+  def Args(cls, parser):
+    super(ImportBeta, cls).Args(parser)
     parser.add_argument(
         '--no-guest-environment',
         action='store_true',
@@ -504,6 +541,8 @@ class ImportFromGSFileStager(BaseImportFromFileStager):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ImportAlpha(ImportBeta):
+
+  _OS_CHOICES = _OS_CHOICES_ALPHA
 
   def _GetServiceAccountRoles(self):
     return ['roles/iam.serviceAccountUser',

@@ -24,11 +24,11 @@ from googlecloudsdk.command_lib.filestore import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Show metadata for a Cloud Filestore instance."""
 
-  _API_VERSION = filestore_client.FILESTORE_API_VERSION
+  _API_VERSION = filestore_client.V1_API_VERSION
 
   @staticmethod
   def Args(parser):
@@ -42,16 +42,25 @@ class DescribeBeta(base.DescribeCommand):
     return client.GetInstance(instance_ref)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
   """Show metadata for a Cloud Filestore instance."""
 
-  _API_VERSION = filestore_client.FILESTORE_ALPHA_API_VERSION
+  _API_VERSION = filestore_client.BETA_API_VERSION
 
 
-DescribeBeta.detailed_help = {
-    'DESCRIPTION': 'Show metadata for a Cloud Filestore instance.',
-    'EXAMPLES': """\
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Show metadata for a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.ALPHA_API_VERSION
+
+
+Describe.detailed_help = {
+    'DESCRIPTION':
+        'Show metadata for a Cloud Filestore instance.',
+    'EXAMPLES':
+        """\
 The following command shows the metadata for the Cloud Filestore instance
 named NAME in us-central1-c.
 

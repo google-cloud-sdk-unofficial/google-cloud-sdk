@@ -12,7 +12,7 @@ help_text:
   examples: |
     To print the IAM policy for a given disk, run:
 
-      $ {command} --zone=my-zone my-disk
+      $ {command} my-disk --zone=my-zone
 
 request:
   collection: compute.disks

@@ -26,7 +26,15 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import rolling_a
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+def _AddArgs(parser, supports_min_ready=False):
+  """Adds args."""
+  instance_groups_managed_flags.AddMaxSurgeArg(parser)
+  instance_groups_managed_flags.AddMaxUnavailableArg(parser)
+  if supports_min_ready:
+    instance_groups_managed_flags.AddMinReadyArg(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StartUpdate(base.Command):
   """Replaces instances in a managed instance group.
 
@@ -37,9 +45,7 @@ class StartUpdate(base.Command):
 
   @staticmethod
   def Args(parser):
-    instance_groups_managed_flags.AddMaxSurgeArg(parser)
-    instance_groups_managed_flags.AddMaxUnavailableArg(parser)
-    instance_groups_managed_flags.AddMinReadyArg(parser)
+    _AddArgs(parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -59,3 +65,19 @@ class StartUpdate(base.Command):
           rolling_action.CreateRequest(args, cleared_fields, client, resources,
                                        minimal_action, max_surge)
       ])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class StartUpdateAlphaBeta(StartUpdate):
+  """Replaces instances in a managed instance group.
+
+  Deletes the existing instance and creates a new instance from the target
+  template. The Updater creates a brand new instance with all new instance
+  properties, such as new internal and external IP addresses.
+  """
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser, supports_min_ready=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)

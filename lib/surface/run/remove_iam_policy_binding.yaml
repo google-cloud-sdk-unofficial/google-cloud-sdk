@@ -20,7 +20,7 @@
       policy role and member types.
 
   request:
-    collection: serverless.projects.locations.services
+    collection: run.projects.locations.services
 
   arguments:
     resource:

@@ -12,7 +12,7 @@ help_text:
   examples: |
     To print the IAM policy for a given node group, run:
 
-      $ {command} my-node-group
+      $ {command} my-node-group --zone=ZONE
 
 request:
   collection: compute.nodeGroups

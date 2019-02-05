@@ -21,7 +21,7 @@
       policy file format and contents.
 
   request:
-    collection: serverless.projects.locations.services
+    collection: run.projects.locations.services
 
   arguments:
     resource:

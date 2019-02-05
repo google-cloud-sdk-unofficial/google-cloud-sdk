@@ -33,6 +33,10 @@ class Filters(base.TopicCommand):
           textwrap.dedent("""\
           {description}
 
+          Note: Depending on the specific server API, filtering may be done
+          entirely by the client, entirely by the server, or by a combination
+          of both.
+
           ### Filter Expressions
 
           A filter expression is a Boolean function that selects the resources

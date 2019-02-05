@@ -29,11 +29,11 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
   """Delete a Cloud Filestore instance."""
 
-  _API_VERSION = filestore_client.FILESTORE_API_VERSION
+  _API_VERSION = filestore_client.V1_API_VERSION
 
   @staticmethod
   def Args(parser):
@@ -61,16 +61,25 @@ class DeleteBeta(base.DeleteCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
   """Delete a Cloud Filestore instance."""
 
-  _API_VERSION = filestore_client.FILESTORE_ALPHA_API_VERSION
+  _API_VERSION = filestore_client.BETA_API_VERSION
 
 
-DeleteBeta.detailed_help = {
-    'DESCRIPTION': 'Delete a Cloud Filestore instance.',
-    'EXAMPLES': """\
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete a Cloud Filestore instance."""
+
+  _API_VERSION = filestore_client.ALPHA_API_VERSION
+
+
+Delete.detailed_help = {
+    'DESCRIPTION':
+        'Delete a Cloud Filestore instance.',
+    'EXAMPLES':
+        """\
 To delete a Cloud Filestore instance named NAME in us-central1-c:
 
   $ {command} NAME --location=us-central1-c

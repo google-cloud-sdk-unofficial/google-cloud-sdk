@@ -61,7 +61,7 @@ def _AddSubmitTrainingArgs(parser, supports_container=False):
   labels_util.AddCreateLabelsFlags(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Train(base.Command):
   """Submit a Cloud Machine Learning training job."""
 
@@ -73,12 +73,20 @@ class Train(base.Command):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, supports_container_training=False):
+  def _Run(self, args, supports_container_training=False,
+           supports_custom_container=False):
     stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
     scale_tier = jobs_util.ScaleTierFlagMap().GetEnumForChoice(args.scale_tier)
     scale_tier_name = scale_tier.name if scale_tier else None
     jobs_client = jobs.JobsClient()
     labels = jobs_util.ParseCreateLabels(jobs_client, args)
+    if supports_custom_container:
+      custom_container_config = (
+          jobs_util.TrainingCustomInputServerConfig.FromArgs(args))
+      custom_container_config.ValidateConfig()
+    else:
+      custom_container_config = None
+
     job = jobs_util.SubmitTraining(
         jobs_client, args.job,
         job_dir=args.job_dir,
@@ -93,24 +101,27 @@ class Train(base.Command):
         labels=labels,
         stream_logs=stream_logs,
         user_args=args.user_args,
-        supports_container_training=supports_container_training)
+        supports_container_training=supports_container_training,
+        custom_train_server_config=custom_container_config)
     # If the job itself failed, we will return a failure status.
     if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
       self.exit_code = 1
     return job
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class TrainAlpha(Train):
   """Submit a Cloud Machine Learning training job."""
 
   @staticmethod
   def Args(parser):
     _AddSubmitTrainingArgs(parser, supports_container=True)
+    flags.AddCustomContainerFlags(parser)
     parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):
-    return self._Run(args, supports_container_training=True)
+    return self._Run(args, supports_container_training=True,
+                     supports_custom_container=True)
 
 
 _DETAILED_HELP = {

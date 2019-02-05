@@ -6,9 +6,9 @@ help_text:
 
   examples: |
     To add an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
-    with node template 'my-node-template' and region 'us-central1', run:
+    with node template 'my-node-template' and region 'REGION', run:
 
-      $ {command} my-node-template --region='us-central1' --member='user:test-user@gmail.com' --role='roles/compute.admin'
+      $ {command} my-node-template --region=REGION --member='user:test-user@gmail.com' --role='roles/compute.admin'
 
     See https://cloud.google.com/iam/docs/managing-policies for details of
     policy role and member types.
@@ -43,14 +43,14 @@ ALPHA:
 
     examples: |
       To add an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
-      with node template 'my-node-template' and region 'us-central1', run:
+      with node template 'my-node-template' and region 'REGION', run:
 
-        $ {command} my-node-template --region='us-central1' --member='user:test-user@gmail.com' --role='roles/compute.admin'
+        $ {command} my-node-template --region=REGION --member='user:test-user@gmail.com' --role='roles/compute.admin'
 
       To add an IAM policy binding which expires at the end of the year 2018 for the role of
-      'roles/compute.admin' and the user 'test-user@gmail.com' with node template 'my-node-template' and region 'us-central1', run:
+      'roles/compute.admin' and the user 'test-user@gmail.com' with node template 'my-node-template' and region 'REGION', run:
 
-        $ {command} my-node-template --region='us-central1' --member='user:test-user@gmail.com' --role='roles/compute.admin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
+        $ {command} my-node-template --region=REGION --member='user:test-user@gmail.com' --role='roles/compute.admin' --condition='expression=request.time < timestamp("2019-01-01T00:00:00Z"),title=expires_end_of_2018,description=Expires at midnight on 2018-12-31'
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.

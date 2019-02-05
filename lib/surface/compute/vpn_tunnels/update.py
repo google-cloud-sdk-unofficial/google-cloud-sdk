@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2019 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute.operations import poller
-from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.api_lib.compute.vpn_tunnels import vpn_tunnels_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -28,12 +27,15 @@ from googlecloudsdk.command_lib.compute.vpn_tunnels import flags as vpn_tunnel_f
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+_VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgument()
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine VPN tunnel.
 
-  *{command}* updates labels for a Google Compute Engine
-  VPN tunnel.  For example:
+  *{command}* updates labels for a Google Compute Engine VPN tunnel.
+  For example:
 
     $ {command} example-tunnel --region us-central1 \
       --update-labels=k0=value1,k1=value2 --remove-labels=k3
@@ -50,8 +52,6 @@ class Update(base.UpdateCommand):
 
   """
 
-  VPN_TUNNEL_ARG = None
-
   @classmethod
   def Args(cls, parser):
     """Adds arguments to the supplied parser.
@@ -59,29 +59,8 @@ class Update(base.UpdateCommand):
     Args:
       parser: The argparse parser to add arguments to.
     """
-    cls.VPN_TUNNEL_ARG = (vpn_tunnel_flags.VpnTunnelArgument())
-    cls.VPN_TUNNEL_ARG.AddArgument(parser)
+    _VPN_TUNNEL_ARG.AddArgument(parser, operation_type='update')
     labels_util.AddUpdateLabelsFlags(parser)
-
-  def _CreateRegionalSetLabelsRequest(self, messages, vpn_tunnel_ref,
-                                      vpn_tunnel, replacement):
-    """Creates the API request to update labels on a VPN Tunnel.
-
-    Args:
-      messages: Module with request messages.
-      vpn_tunnel_ref: Resource reference for the VPN tunnel.
-      vpn_tunnel: The vpn_tunnel being updated.
-      replacement: A new labels request proto representing the update and remove
-                   edits.
-    Returns:
-      Request to be sent to update the VPN tunnel's labels.
-    """
-    return messages.ComputeVpnTunnelsSetLabelsRequest(
-        project=vpn_tunnel_ref.project,
-        resource=vpn_tunnel_ref.Name(),
-        region=vpn_tunnel_ref.region,
-        regionSetLabelsRequest=messages.RegionSetLabelsRequest(
-            labelFingerprint=vpn_tunnel.labelFingerprint, labels=replacement))
 
   def Run(self, args):
     """Issues API requests to update a VPN Tunnel.
@@ -93,10 +72,9 @@ class Update(base.UpdateCommand):
       by the compute API.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client.apitools_client
     messages = holder.client.messages
-
-    vpn_tunnel_ref = self.VPN_TUNNEL_ARG.ResolveAsResource(
+    helper = vpn_tunnels_utils.VpnTunnelHelper(holder)
+    vpn_tunnel_ref = _VPN_TUNNEL_ARG.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
@@ -107,24 +85,15 @@ class Update(base.UpdateCommand):
           'LABELS', 'At least one of --update-labels or '
           '--remove-labels must be specified.')
 
-    vpn_tunnel = client.vpnTunnels.Get(
-        messages.ComputeVpnTunnelsGetRequest(**vpn_tunnel_ref.AsDict()))
-    labels_value = messages.RegionSetLabelsRequest.LabelsValue
-
-    labels_update = labels_diff.Apply(labels_value, vpn_tunnel.labels)
+    vpn_tunnel = helper.Describe(vpn_tunnel_ref)
+    labels_update = labels_diff.Apply(
+        messages.RegionSetLabelsRequest.LabelsValue, vpn_tunnel.labels)
 
     if not labels_update.needs_update:
       return vpn_tunnel
 
-    request = self._CreateRegionalSetLabelsRequest(
-        messages, vpn_tunnel_ref, vpn_tunnel, labels_update.labels)
-
-    operation = client.vpnTunnels.SetLabels(request)
-    operation_ref = holder.resources.Parse(
-        operation.selfLink, collection='compute.regionOperations')
-
-    operation_poller = poller.Poller(client.vpnTunnels)
-
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Updating labels of VPN tunnel [{0}]'.format(
-                              vpn_tunnel_ref.Name()))
+    operation_ref = helper.SetLabels(
+        vpn_tunnel_ref, vpn_tunnel.labelFingerprint, labels_update.labels)
+    return helper.WaitForOperation(
+        vpn_tunnel_ref, operation_ref,
+        'Updating labels of VPN tunnel [{0}]'.format(vpn_tunnel_ref.Name()))

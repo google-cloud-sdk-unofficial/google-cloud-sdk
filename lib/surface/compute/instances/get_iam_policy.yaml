@@ -12,7 +12,7 @@ help_text:
   examples: |
     To print the IAM policy for a given instance, run:
 
-      $ {command} --zone=my-zone my-instance
+      $ {command} my-instance --zone=my-zone
 
 request:
   collection: compute.instances

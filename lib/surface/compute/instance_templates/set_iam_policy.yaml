@@ -6,9 +6,9 @@ help_text:
 
   examples: |
     The following command will read am IAM policy defined in a JSON file
-    'policy.json' and set it for the instance template `my_template`:
+    'policy.json' and set it for the instance template `my-template`:
 
-      $ {command} my_template policy.json
+      $ {command} my-template policy.json
 
     See https://cloud.google.com/iam/docs/managing-policies for details of the
     policy file format and contents.

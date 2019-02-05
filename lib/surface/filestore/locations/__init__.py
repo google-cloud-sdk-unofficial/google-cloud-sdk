@@ -23,8 +23,3 @@ from googlecloudsdk.calliope import base
 
 class Locations(base.Group):
   """List locations where Cloud Filestore is available."""
-
-
-Locations.detailed_help = {
-    'brief': 'List locations where Cloud Filestore is available',
-}

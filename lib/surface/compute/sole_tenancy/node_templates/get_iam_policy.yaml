@@ -12,7 +12,7 @@ help_text:
   examples: |
     To print the IAM policy for a given node template, run:
 
-      $ {command} my-node-template
+      $ {command} my-node-template --region=REGION
 
 request:
   collection: compute.nodeTemplates

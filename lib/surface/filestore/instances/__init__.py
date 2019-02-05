@@ -23,8 +23,3 @@ from googlecloudsdk.calliope import base
 
 class Instances(base.Group):
   """Create and manage Cloud Filestore instances."""
-
-
-Instances.detailed_help = {
-    'brief': 'Manage Cloud Filestore instances',
-}

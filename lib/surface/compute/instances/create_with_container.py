@@ -83,6 +83,7 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
 
   def _ValidateArgs(self, args):
+    instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateKonletArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
@@ -110,6 +111,22 @@ class CreateWithContainer(base.CreateCommand):
       image_uri = containers_utils.ExpandKonletCosImageFlag(client)
     return image_uri
 
+  def _GetNetworkInterfaces(
+      self, args, client, holder, instance_refs, skip_defaults):
+    return instance_utils.GetNetworkInterfaces(args, client, holder,
+                                               instance_refs, skip_defaults)
+
+  def GetNetworkInterfaces(
+      self, args, resources, client, holder, instance_refs, skip_defaults):
+    if args.network_interface:
+      return instance_utils.CreateNetworkInterfaceMessages(
+          resources=resources,
+          compute_client=client,
+          network_interface_arg=args.network_interface,
+          instance_refs=instance_refs)
+    return self._GetNetworkInterfaces(
+        args, client, holder, instance_refs, skip_defaults)
+
   def Run(self, args):
     self._ValidateArgs(args)
 
@@ -124,8 +141,8 @@ class CreateWithContainer(base.CreateCommand):
     user_metadata = instance_utils.GetValidatedMetadata(args, client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, client, holder)
-    network_interfaces = instance_utils.GetNetworkInterfaces(
-        args, client, holder, instance_refs, skip_defaults)
+    network_interfaces = self.GetNetworkInterfaces(
+        args, holder.resources, client, holder, instance_refs, skip_defaults)
     machine_type_uris = instance_utils.GetMachineTypeUris(
         args, client, holder, instance_refs, skip_defaults)
     image_uri = self.GetImageUri(args, client, holder, instance_refs)
@@ -179,15 +196,8 @@ class CreateWithContainerBeta(CreateWithContainer):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
   def _ValidateArgs(self, args):
-    instances_flags.ValidateNetworkTierArgs(args)
-    instances_flags.ValidateKonletArgs(args)
-    instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
-    instances_flags.ValidateServiceAccountAndScopeArgs(args)
-    if instance_utils.UseExistingBootDisk(args.disk or []):
-      raise exceptions.InvalidArgumentException(
-          '--disk',
-          'Boot disk specified for containerized VM.')
+    super(CreateWithContainerBeta, self)._ValidateArgs(args)
 
   def GetImageUri(self, args, client, holder, instance_refs):
     if (args.IsSpecified('image') or args.IsSpecified('image_family') or
@@ -226,8 +236,8 @@ class CreateWithContainerBeta(CreateWithContainer):
     user_metadata = instance_utils.GetValidatedMetadata(args, client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, client, holder)
-    network_interfaces = instance_utils.GetNetworkInterfaces(
-        args, client, holder, instance_refs, skip_defaults)
+    network_interfaces = self.GetNetworkInterfaces(
+        args, holder.resources, client, holder, instance_refs, skip_defaults)
     machine_type_uris = instance_utils.GetMachineTypeUris(
         args, client, holder, instance_refs, skip_defaults)
     image_uri = self.GetImageUri(args, client, holder, instance_refs)
@@ -284,6 +294,11 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
+  def _GetNetworkInterfaces(
+      self, args, client, holder, instance_refs, skip_defaults):
+    return instance_utils.GetNetworkInterfacesAlpha(
+        args, client, holder, instance_refs, skip_defaults)
+
   def Run(self, args):
     self._ValidateArgs(args)
     instances_flags.ValidatePublicDnsFlags(args)
@@ -306,8 +321,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     user_metadata = instance_utils.GetValidatedMetadata(args, client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, client, holder)
-    network_interfaces = instance_utils.GetNetworkInterfacesAlpha(
-        args, client, holder, instance_refs, skip_defaults)
+    network_interfaces = self.GetNetworkInterfaces(
+        args, holder.resources, client, holder, instance_refs, skip_defaults)
     machine_type_uris = instance_utils.GetMachineTypeUris(
         args, client, holder, instance_refs, skip_defaults)
     image_uri = self.GetImageUri(args, client, holder, instance_refs)

@@ -23,8 +23,3 @@ from googlecloudsdk.calliope import base
 
 class Operations(base.Group):
   """Read and manipulate Cloud Filestore operations."""
-
-
-Operations.detailed_help = {
-    'brief': 'Read and manipulate Cloud Filestore operations',
-}

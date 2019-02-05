@@ -27,8 +27,8 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class UpdateGA(base.UpdateCommand):
   r"""Update Google Compute Engine managed instance groups.
 
   *{command}* allows you to specify or modify AutoHealingPolicy for an existing
@@ -121,7 +121,7 @@ class UpdateBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
+class UpdateAlpha(UpdateGA):
   r"""Update Google Compute Engine managed instance groups.
 
   *{command}* allows you to specify or modify the StatefulPolicy and
@@ -147,7 +147,7 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    UpdateBeta.Args(parser)
+    UpdateGA.Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2019 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,37 +19,34 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.vpn_tunnels import vpn_tunnels_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.vpn_tunnels import flags
 
 
+_VPN_TUNNEL_ARG = flags.VpnTunnelArgument()
+
+
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine vpn tunnel.
+  """Describe a Google Compute Engine VPN tunnel.
 
     *{command}* displays all data associated with a Google Compute
-  Engine vpn tunnel in a project.
+  Engine VPN tunnel in a project.
   """
-
-  VPN_TUNNEL_ARG = None
 
   @staticmethod
   def Args(parser):
     """Adds arguments to the supplied parser."""
-    Describe.VPN_TUNNEL_ARG = flags.VpnTunnelArgument()
-    Describe.VPN_TUNNEL_ARG.AddArgument(parser, operation_type='describe')
+    _VPN_TUNNEL_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    helper = vpn_tunnels_utils.VpnTunnelHelper(holder)
 
-    vpn_tunnel_ref = Describe.VPN_TUNNEL_ARG.ResolveAsResource(
+    vpn_tunnel_ref = _VPN_TUNNEL_ARG.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    request = client.messages.ComputeVpnTunnelsGetRequest(
-        **vpn_tunnel_ref.AsDict())
-
-    return client.MakeRequests([(client.apitools_client.vpnTunnels,
-                                 'Get', request)])[0]
+    return helper.Describe(vpn_tunnel_ref)

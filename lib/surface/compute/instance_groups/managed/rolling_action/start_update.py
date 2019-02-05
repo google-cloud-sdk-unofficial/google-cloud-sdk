@@ -29,13 +29,13 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as 
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
-# Forked from ../update_instances.py
-def _AddArgs(parser):
+def _AddArgs(parser, supports_min_ready=False):
   """Adds args."""
   instance_groups_managed_flags.AddTypeArg(parser)
   instance_groups_managed_flags.AddMaxSurgeArg(parser)
   instance_groups_managed_flags.AddMaxUnavailableArg(parser)
-  instance_groups_managed_flags.AddMinReadyArg(parser)
+  if supports_min_ready:
+    instance_groups_managed_flags.AddMinReadyArg(parser)
   parser.add_argument(
       '--version',
       type=arg_parsers.ArgDict(spec={'template': str,
@@ -59,7 +59,7 @@ def _AddArgs(parser):
   instance_groups_managed_flags.AddForceArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StartUpdate(base.Command):
   """Start update instances of managed instance group."""
 
@@ -131,12 +131,21 @@ class StartUpdate(base.Command):
     minimal_action = (client.messages.InstanceGroupManagerUpdatePolicy.
                       MinimalActionValueValuesEnum.REPLACE)
 
-    update_policy = client.messages.InstanceGroupManagerUpdatePolicy(
-        maxSurge=max_surge,
-        maxUnavailable=max_unavailable,
-        minReadySec=args.min_ready,
-        minimalAction=minimal_action,
-        type=update_policy_type)
+    # min_ready is available in alpha and beta APIs only
+    if hasattr(args, 'min_ready'):
+      update_policy = client.messages.InstanceGroupManagerUpdatePolicy(
+          maxSurge=max_surge,
+          maxUnavailable=max_unavailable,
+          minReadySec=args.min_ready,
+          minimalAction=minimal_action,
+          type=update_policy_type)
+    else:
+      update_policy = client.messages.InstanceGroupManagerUpdatePolicy(
+          maxSurge=max_surge,
+          maxUnavailable=max_unavailable,
+          minimalAction=minimal_action,
+          type=update_policy_type)
+
     igm_resource = client.messages.InstanceGroupManager(
         instanceTemplate=None, updatePolicy=update_policy, versions=versions)
     if hasattr(igm_ref, 'zone'):
@@ -163,6 +172,17 @@ class StartUpdate(base.Command):
                             if max_unavailable.fixed is None else
                             'updatePolicy.maxUnavailable.percent')
     return (service, 'Patch', request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class StartUpdateAlphaBeta(StartUpdate):
+  """Start update instances of managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser=parser, supports_min_ready=True)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
 
 
 StartUpdate.detailed_help = {

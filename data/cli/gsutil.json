@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.35",
+  "CLI_VERSION": "4.36",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -82,6 +82,65 @@
         "GET": "The \"acl get\" command gets the ACL text for a bucket or object, which you can\nsave and edit for the acl set command.",
         "ROLES": "You may specify the following roles with either their shorthand or\ntheir full name:\n\n  R: READ\n  W: WRITE\n  O: OWNER\n\nFor more information on these roles and the access they grant, see the\npermissions section of the `Access Control Lists page\n<https://cloud.google.com/storage/docs/access-control/lists#permissions>`_.",
         "SET": "The \"acl set\" command allows you to set an Access Control List on one or\nmore buckets and objects. The simplest way to use it is to specify one of\nthe canned ACLs, e.g.,:\n\n  gsutil acl set private gs://bucket\n\nIf you want to make an object or bucket publicly readable or writable, it is\nrecommended to use \"acl ch\", to avoid accidentally removing OWNER permissions.\nSee \"gsutil help acl ch\" for details.\n\nSee \"gsutil help acls\" for a list of all canned ACLs.\n\nIf you want to define more fine-grained control over your data, you can\nretrieve an ACL using the \"acl get\" command, save the output to a file, edit\nthe file, and then use the \"acl set\" command to set that ACL on the buckets\nand/or objects. For example:\n\n  gsutil acl get gs://bucket/file.txt > acl.txt\n\nMake changes to acl.txt such as adding an additional grant, then:\n\n  gsutil acl set acl.txt gs://cats/file.txt\n\nNote that you can set an ACL on multiple buckets or objects at once,\nfor example:\n\n  gsutil acl set acl.txt gs://bucket/*.jpg\n\nIf you have a large number of ACLs to update you might want to use the\ngsutil -m option, to perform a parallel (multi-threaded/multi-processing)\nupdate:\n\n  gsutil -m acl set acl.txt gs://bucket/*.jpg\n\nNote that multi-threading/multi-processing is only done when the named URLs\nrefer to objects, which happens either if you name specific objects or\nif you enumerate objects by using an object wildcard or specifying\nthe acl -r flag."
+      }
+    },
+    "bucketpolicyonly": {
+      "capsule": "Configure Bucket Policy Only",
+      "commands": {
+        "get": {
+          "capsule": "Configure Bucket Policy Only",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "bucketpolicyonly",
+            "get"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``bucketpolicyonly get`` command shows whether Bucket Policy Only is\nenabled for the specified Cloud Storage bucket(s).",
+            "EXAMPLES": "Check if your buckets are using Bucket Policy Only:\n\n  gsutil bucketpolicyonly get gs://redbucket gs://bluebucket"
+          }
+        },
+        "set": {
+          "capsule": "Configure Bucket Policy Only",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "bucketpolicyonly",
+            "set"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``bucketpolicyonly set`` command enables or disables the Bucket Policy\nOnly feature on Google Cloud Storage bucket(s).",
+            "EXAMPLES": "Configure your buckets to use Bucket Policy Only:\n\n  gsutil bucketpolicyonly set on gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use Bucket Policy Only:\n\n  gsutil bucketpolicyonly set off gs://redbucket gs://bluebucket"
+          }
+        }
+      },
+      "flags": {},
+      "groups": {},
+      "is_group": true,
+      "is_hidden": false,
+      "path": [
+        "gsutil",
+        "bucketpolicyonly"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "The ``bucketpolicyonly`` command is used to retrieve or configure the Bucket\nPolicy Only setting of Cloud Storage bucket(s). This command has two\nsub-commands, ``get`` and ``set``.",
+        "EXAMPLES": "Configure your buckets to use Bucket Policy Only:\n\n  gsutil bucketpolicyonly set on gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use Bucket Policy Only:\n\n  gsutil bucketpolicyonly set off gs://redbucket gs://bluebucket",
+        "GET": "The ``bucketpolicyonly get`` command shows whether Bucket Policy Only is\nenabled for the specified Cloud Storage bucket(s).",
+        "SET": "The ``bucketpolicyonly set`` command enables or disables the Bucket Policy\nOnly feature on Google Cloud Storage bucket(s)."
       }
     },
     "cat": {
@@ -1039,7 +1098,7 @@
           "sections": {
             "CONFIGURATION": "To determine if the compiled version of crcmod is available in your Python\nenvironment, you can inspect the output of the ``gsutil version`` command for\nthe \"compiled crcmod\" entry:\n\n  $ gsutil version -l\n  ...\n  compiled crcmod: True\n  ...\n\nIf your crcmod library is compiled to a native binary, this value will be\nTrue. If using the pure-Python version, the value will be False.\n\nTo control gsutil's behavior in response to crcmod's status, you can set the\n\"check_hashes\" configuration variable. For details on this variable, see the\nsurrounding comments in your boto configuration file. If \"check_hashes\"\nis not present in your configuration file, rerun ``gsutil config`` to\nregenerate the file.",
             "DESCRIPTION": "Google Cloud Storage provides a cyclic redundancy check (CRC) header that\nallows clients to verify the integrity of object contents. For non-composite\nobjects Google Cloud Storage also provides an MD5 header to allow clients to\nverify object integrity, but for composite objects only the CRC is available.\ngsutil automatically performs integrity checks on all uploads and downloads.\nAdditionally, you can use the ``gsutil hash`` command to calculate a CRC for\nany local file.\n\nThe CRC variant used by Google Cloud Storage is called CRC32C (Castagnoli),\nwhich is not available in the standard Python distribution. The implementation\nof CRC32C used by gsutil is provided by a third-party Python module called\n`crcmod <https://pypi.python.org/pypi/crcmod>`_.\n\nThe crcmod module contains a pure-Python implementation of CRC32C, but using\nit results in very poor performance. A Python C extension is also provided by\ncrcmod, which requires compiling into a binary module for use. gsutil ships\nwith a precompiled crcmod C extension for macOS; for other platforms, see\nthe installation instructions below.\n\nAt the end of each copy operation, the ``gsutil cp`` and ``gsutil rsync``\ncommands validate that the checksum of the source file/object matches the\nchecksum of the destination file/object. If the checksums do not match,\ngsutil will delete the invalid copy and print a warning message. This very\nrarely happens, but if it does, please contact gs-team@google.com.",
-            "INSTALLATION": "These installation instructions assume that:\n\n-  You have ``pip`` installed. Consult the `pip installation instructions\n   <https://pip.pypa.io/en/stable/installing/>`_ for details on how\n   to install ``pip``.\n-  Your installation of ``pip`` can be found in your ``PATH`` environment\n   variable. If it cannot, you may need to replace ``pip`` in the commands\n   below with the full path to the executable.\n-  You are installing the crcmod package for use with your system installation\n   of Python, and thus use the ``sudo`` command. If installing crcmod for a\n   different Python environment (e.g. in a virtualenv), you should omit\n   ``sudo`` from the commands below.\n\nCentOS, RHEL, and Fedora\n------------------------\n\nTo compile and install crcmod:\n\n  sudo yum install gcc python-devel python-setuptools redhat-rpm-config\n  sudo pip uninstall crcmod\n  sudo pip install -U crcmod\n\nDebian and Ubuntu\n-----------------\n\nTo compile and install crcmod:\n\n  sudo apt-get install gcc python-dev python-setuptools\n  sudo pip uninstall crcmod\n  sudo pip install -U crcmod\n\nmacOS\n-----\n\ngsutil distributes a pre-compiled version of crcmod for macOS, so you shouldn't\nneed to compile and install it yourself. If for some reason the pre-compiled\nversion is not being detected, please let the Google Cloud Storage team know\n(see ``gsutil help support``).\n\nTo compile manually on macOS, you will first need to install\n`XCode <https://developer.apple.com/xcode/>`_ and then run:\n\n  sudo pip install -U crcmod\n\nWindows\n-------\n\nAn installer is available for the compiled version of crcmod from the Python\nPackage Index (PyPi) at the following URL:\n\nhttps://pypi.python.org/pypi/crcmod/1.7\n\nMSI installers are available for the 32-bit versions of Python 2.7.\nMake sure to install to a 32-bit Python directory. If you're using 64-bit\nPython it won't work with 32-bit crcmod, and instead you'll need to install\n32-bit Python in order to use crcmod.\n\nNote: If you have installed crcmod and gsutil hasn't detected it, it may have\nbeen installed to the wrong directory. It should be located at\n<python_dir>\\files\\Lib\\site-packages\\crcmod\\\n\nIn some cases the installer will incorrectly install to\n<python_dir>\\Lib\\site-packages\\crcmod\\\n\nManually copying the crcmod directory to the correct location should resolve\nthe issue."
+            "INSTALLATION": "These installation instructions assume that:\n\n-  You have ``pip`` installed. Consult the `pip installation instructions\n   <https://pip.pypa.io/en/stable/installing/>`_ for details on how\n   to install ``pip``.\n-  Your installation of ``pip`` can be found in your ``PATH`` environment\n   variable. If it cannot, you may need to replace ``pip`` in the commands\n   below with the full path to the executable.\n-  You are installing the crcmod package for use with your system installation\n   of Python, and thus use the ``sudo`` command. If installing crcmod for a\n   different Python environment (e.g. in a virtualenv), you should omit\n   ``sudo`` from the commands below.\n\nCentOS, RHEL, and Fedora\n------------------------\n\nTo compile and install crcmod:\n\n  sudo yum install gcc python-devel python-setuptools redhat-rpm-config\n  sudo pip uninstall crcmod\n  sudo pip install -U crcmod\n\nDebian and Ubuntu\n-----------------\n\nTo compile and install crcmod:\n\n  sudo apt-get install gcc python-dev python-setuptools\n  sudo pip uninstall crcmod\n  sudo pip install -U crcmod\n\nEnterprise SUSE\n-----------------\n\nTo compile and install crcmod:\n\n  sudo zypper install gcc python-devel\n  sudo pip uninstall crcmod\n  sudo pip install -U crcmod\n\nmacOS\n-----\n\ngsutil distributes a pre-compiled version of crcmod for macOS, so you shouldn't\nneed to compile and install it yourself. If for some reason the pre-compiled\nversion is not being detected, please let the Google Cloud Storage team know\n(see ``gsutil help support``).\n\nTo compile manually on macOS, you will first need to install\n`XCode <https://developer.apple.com/xcode/>`_ and then run:\n\n  sudo pip install -U crcmod\n\nWindows\n-------\n\nAn installer is available for the compiled version of crcmod from the Python\nPackage Index (PyPi) at the following URL:\n\nhttps://pypi.python.org/pypi/crcmod/1.7\n\nMSI installers are available for the 32-bit versions of Python 2.7.\nMake sure to install to a 32-bit Python directory. If you're using 64-bit\nPython it won't work with 32-bit crcmod, and instead you'll need to install\n32-bit Python in order to use crcmod.\n\nNote: If you have installed crcmod and gsutil hasn't detected it, it may have\nbeen installed to the wrong directory. It should be located at\n<python_dir>\\files\\Lib\\site-packages\\crcmod\\\n\nIn some cases the installer will incorrectly install to\n<python_dir>\\Lib\\site-packages\\crcmod\\\n\nManually copying the crcmod directory to the correct location should resolve\nthe issue."
           }
         },
         "creds": {
@@ -1982,7 +2041,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "BUCKET DETAILS": "If you want to see information about the bucket itself, use the -b\noption. For example:\n\n  gsutil ls -L -b gs://bucket\n\nwill print something like:\n\n  gs://bucket/ :\n          Storage class:                MULTI_REGIONAL\n          Location constraint:          US\n          Versioning enabled:           False\n          Logging configuration:        None\n          Website configuration:        None\n          CORS configuration:           None\n          Lifecycle configuration:      None\n          Requester Pays enabled:       True\n          Labels:                       None\n          Default KMS key:              None\n          Time created:                 Thu, 14 Jan 2016 19:25:17 GMT\n          Time updated:                 Thu, 08 Jun 2017 21:17:59 GMT\n          Metageneration:               1\n          ACL:\n            [\n              {\n                \"entity\": \"project-owners-867489160491\",\n                \"projectTeam\": {\n                  \"projectNumber\": \"867489160491\",\n                  \"team\": \"owners\"\n                },\n                \"role\": \"OWNER\"\n              }\n            ]\n          Default ACL:\n            [\n              {\n                \"entity\": \"project-owners-867489160491\",\n                \"projectTeam\": {\n                  \"projectNumber\": \"867489160491\",\n                  \"team\": \"owners\"\n                },\n                \"role\": \"OWNER\"\n              }\n            ]\n\nNote that some fields above (time created, time updated, metageneration) are\nnot available with the (non-default) XML API.",
+        "BUCKET DETAILS": "If you want to see information about the bucket itself, use the -b\noption. For example:\n\n  gsutil ls -L -b gs://bucket\n\nwill print something like:\n\n  gs://bucket/ :\n          Storage class:                MULTI_REGIONAL\n          Location constraint:          US\n          Versioning enabled:           False\n          Logging configuration:        None\n          Website configuration:        None\n          CORS configuration:           None\n          Lifecycle configuration:      None\n          Requester Pays enabled:       True\n          Labels:                       None\n          Default KMS key:              None\n          Time created:                 Thu, 14 Jan 2016 19:25:17 GMT\n          Time updated:                 Thu, 08 Jun 2017 21:17:59 GMT\n          Metageneration:               1\n          Bucket Policy Only enabled:   False\n          ACL:\n            [\n              {\n                \"entity\": \"project-owners-867489160491\",\n                \"projectTeam\": {\n                  \"projectNumber\": \"867489160491\",\n                  \"team\": \"owners\"\n                },\n                \"role\": \"OWNER\"\n              }\n            ]\n          Default ACL:\n            [\n              {\n                \"entity\": \"project-owners-867489160491\",\n                \"projectTeam\": {\n                  \"projectNumber\": \"867489160491\",\n                  \"team\": \"owners\"\n                },\n                \"role\": \"OWNER\"\n              }\n            ]\n\nNote that some fields above (time created, time updated, metageneration) are\nnot available with the (non-default) XML API.",
         "OBJECT DETAILS": "If you specify the -l option, gsutil will output additional information\nabout each matching provider, bucket, subdirectory, or object. For example:\n\n  gsutil ls -l gs://bucket/*.txt\n\nwill print the object size, creation time stamp, and name of each matching\nobject, along with the total count and sum of sizes of all matching objects:\n\n     2276224  2017-03-02T19:25:17Z  gs://bucket/obj1\n     3914624  2017-03-02T19:30:27Z  gs://bucket/obj2\n  TOTAL: 2 objects, 6190848 bytes (5.9 MiB)\n\nNote that the total listed in parentheses above is in mebibytes (or gibibytes,\ntebibytes, etc.), which corresponds to the unit of billing measurement for\nGoogle Cloud Storage.\n\nYou can get a listing of all the objects in the top-level bucket directory\n(along with the total count and sum of sizes) using a command like:\n\n  gsutil ls -l gs://bucket\n\nTo print additional detail about objects and buckets use the gsutil ls -L\noption. For example:\n\n  gsutil ls -L gs://bucket/obj1\n\nwill print something like:\n\n  gs://bucket/obj1:\n          Creation time:                    Fri, 26 May 2017 22:55:44 GMT\n          Update time:                      Tue, 18 Jul 2017 12:31:18 GMT\n          Storage class:                    MULTI_REGIONAL\n          Content-Length:                   60183\n          Content-Type:                     image/jpeg\n          Hash (crc32c):                    zlUhtg==\n          Hash (md5):                       Bv86IAzFzrD1Z2io/c7yqA==\n          ETag:                             5ca67960a586723b7344afffc81\n          Generation:                       1378862725952000\n          Metageneration:                   1\n          ACL:                              [\n    {\n      \"entity\": \"project-owners-867484910061\",\n      \"projectTeam\": {\n        \"projectNumber\": \"867484910061\",\n        \"team\": \"owners\"\n      },\n      \"role\": \"OWNER\"\n    },\n    {\n      \"email\": \"jane@gmail.com\",\n      \"entity\": \"user-jane@gmail.com\",\n      \"role\": \"OWNER\"\n    }\n  ]\n  TOTAL: 1 objects, 60183 bytes (58.77 KiB)\n\nNote that results may contain additional fields, such as custom metadata or\na storage class update time, if they are applicable to the object.\n\nAlso note that some fields, such as update time, are not available with the\n(non-default) XML API.\n\nSee also \"gsutil help acl\" for getting a more readable version of the ACL.",
         "PROVIDERS, BUCKETS, SUBDIRECTORIES, AND OBJECTS": "If you run gsutil ls without URLs, it lists all of the Google Cloud Storage\nbuckets under your default project ID:\n\n  gsutil ls\n\n(For details about projects, see \"gsutil help projects\" and also the -p\noption in the OPTIONS section below.)\n\nIf you specify one or more provider URLs, gsutil ls will list buckets at\neach listed provider:\n\n  gsutil ls gs://\n\nIf you specify bucket URLs, gsutil ls will list objects at the top level of\neach bucket, along with the names of each subdirectory. For example:\n\n  gsutil ls gs://bucket\n\nmight produce output like:\n\n  gs://bucket/obj1.htm\n  gs://bucket/obj2.htm\n  gs://bucket/images1/\n  gs://bucket/images2/\n\nThe \"/\" at the end of the last 2 URLs tells you they are subdirectories,\nwhich you can list using:\n\n  gsutil ls gs://bucket/images*\n\nIf you specify object URLs, gsutil ls will list the specified objects. For\nexample:\n\n  gsutil ls gs://bucket/*.txt\n\nwill list all files whose name matches the above wildcard at the top level\nof the bucket.\n\nSee \"gsutil help wildcards\" for more details on working with wildcards."
       }
@@ -1995,7 +2054,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "time Specifies the retention policy. Default is no retention\n policy. This can only be set on gs:// buckets and requires\n using the JSON API.",
+          "description": "time Specifies the retention policy. Default is no retention\n policy. This can only be set on gs:// buckets and\n requires using the JSON API.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -2005,11 +2064,25 @@
           "type": "bool",
           "value": ""
         },
+        "-b": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "bucket_policy_only Specifies the Bucket Policy Only setting.\n Default is \"off\"",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-b",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
         "-c": {
           "attr": {},
           "category": "",
           "default": "",
-          "description": "class Specifies the default storage class. Default is \"Standard\".\n Can only be set on gs:// buckets.",
+          "description": "class Specifies the default storage class.\n Default is \"Standard\".",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -2023,7 +2096,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "location Can be any multi-regional or regional location. See\n https://cloud.google.com/storage/docs/bucket-locations\n for a discussion of this distinction. Default is US for\n gs:// buckets. Locations are case insensitive.",
+          "description": "location Can be any multi-regional or regional location. See\n https://cloud.google.com/storage/docs/bucket-locations\n for a discussion of this distinction. Default is US.\n Locations are case insensitive.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -2037,7 +2110,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "proj_id Specifies the project ID under which to create the bucket.\n Can only be set on gs:// buckets.",
+          "description": "proj_id Specifies the project ID under which to create the\n bucket.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -2072,8 +2145,9 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "The mb command creates a new bucket. Google Cloud Storage has a single\nnamespace, so you are not allowed to create a bucket with a name already\nin use by another user. You can, however, carve out parts of the bucket name\nspace corresponding to your company's domain name (see \"gsutil help naming\").\n\nIf you don't specify a project ID using the -p option, the bucket is created\nusing the default project ID specified in your gsutil configuration file\n(see \"gsutil help config\"). For more details about projects see \"gsutil help\nprojects\".\n\nThe -c and -l options specify the storage class and location, respectively,\nfor the bucket. Once a bucket is created in a given location and with a\ngiven storage class, it cannot be moved to a different location, and the\nstorage class cannot be changed. Instead, you would need to create a new\nbucket and move the data over and then delete the original bucket.\n\nThe --retention option specifies the retention period for the bucket. For more\ndetails about retention policy see \"gsutil help retention\".",
+        "DESCRIPTION": "The mb command creates a new bucket. Google Cloud Storage has a single\nnamespace, so you are not allowed to create a bucket with a name already\nin use by another user. You can, however, carve out parts of the bucket name\nspace corresponding to your company's domain name (see \"gsutil help naming\").\n\nIf you don't specify a project ID using the -p option, the bucket is created\nusing the default project ID specified in your gsutil configuration file\n(see \"gsutil help config\"). For more details about projects see \"gsutil help\nprojects\".\n\nThe -c and -l options specify the storage class and location, respectively,\nfor the bucket. Once a bucket is created in a given location and with a\ngiven storage class, it cannot be moved to a different location, and the\nstorage class cannot be changed. Instead, you would need to create a new\nbucket and move the data over and then delete the original bucket.\n\nThe --retention option specifies the retention period for the bucket. For more\ndetails about retention policy see \"gsutil help retention\".\n\nThe -b option specifies the Bucket Policy Only setting of the bucket.\nACLs assigned to objects are not evaluated in buckets with Bucket Policy Only\nenabled. Consequently, only IAM policies grant access to objects in these\nbuckets.",
         "LOCATIONS": "You can specify one of the `available locations\n<https://cloud.google.com/storage/docs/locations>`_ for a bucket\nwith the -l option.\n\nExamples:\n\n  gsutil mb -l asia gs://some-bucket\n\n  gsutil mb -c regional -l us-east1 gs://some-bucket\n\nIf you don't specify a -l option, the bucket is created in the default\nlocation (US).",
+        "POLICY ONLY": "You can specify one of the available settings for a bucket\nwith the -b option.\n\nExamples:\n\n  gsutil mb -b off gs://bucket-with-acls\n\n  gsutil mb -b on gs://bucket-with-no-acls",
         "STORAGE CLASSES": "You can specify one of the `storage classes\n<https://cloud.google.com/storage/docs/storage-classes>`_ for a bucket\nwith the -c option.\n\nExample:\n\n  gsutil mb -c nearline gs://some-bucket\n\nSee online documentation for\n`pricing <https://cloud.google.com/storage/pricing>`_ and\n`SLA <https://cloud.google.com/storage/sla>`_ details.\n\nIf you don't specify a -c option, the bucket is created with the\ndefault storage class Standard Storage, which is equivalent to Multi-Regional\nStorage or Regional Storage, depending on whether the bucket was created in\na multi-regional location or regional location, respectively."
       }
     },

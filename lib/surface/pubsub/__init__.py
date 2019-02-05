@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 
 class Pubsub(base.Group):
-  """Manage Cloud Pub/Sub topics and subscriptions."""
+  """Manage Cloud Pub/Sub topics, subscriptions, and snapshots."""
 
   category = base.GCLOUD_DATA_ANALYTICS_CATEGORY
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2019 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,40 +20,51 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.compute.vpn_tunnels import vpn_tunnels_utils
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.vpn_tunnels import flags
 
 
+_VPN_TUNNEL_ARG = flags.VpnTunnelArgument(plural=True)
+
+
+class DeleteBatchPoller(poller.BatchPoller):
+
+  def GetResult(self, operation_batch):
+    # For delete operations, once the operation status is DONE, there is
+    # nothing further to fetch.
+    return
+
+
 class Delete(base.DeleteCommand):
-  """Delete vpn tunnels.
+  """Delete VPN tunnels.
 
-  *{command}* deletes one or more Google Compute Engine vpn tunnels.
+  *{command}* deletes one or more Google Compute Engine VPN tunnels.
   """
-
-  VPN_TUNNEL_ARG = None
 
   @staticmethod
   def Args(parser):
-    Delete.VPN_TUNNEL_ARG = flags.VpnTunnelArgument(plural=True)
-    Delete.VPN_TUNNEL_ARG.AddArgument(parser, operation_type='delete')
+    _VPN_TUNNEL_ARG.AddArgument(parser, operation_type='delete')
     parser.display_info.AddCacheUpdater(flags.VpnTunnelsCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    helper = vpn_tunnels_utils.VpnTunnelHelper(holder)
 
-    vpn_tunnel_refs = Delete.VPN_TUNNEL_ARG.ResolveAsResource(
+    vpn_tunnel_refs = _VPN_TUNNEL_ARG.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
-
     utils.PromptForDeletion(vpn_tunnel_refs, 'region')
 
-    requests = []
-    for vpn_tunnel_ref in vpn_tunnel_refs:
-      requests.append((client.apitools_client.vpnTunnels, 'Delete',
-                       client.messages.ComputeVpnTunnelsDeleteRequest(
-                           **vpn_tunnel_ref.AsDict())))
-
-    return client.MakeRequests(requests)
+    operation_refs = [helper.Delete(ref) for ref in vpn_tunnel_refs]
+    wait_message = 'Deleting VPN {}'.format(
+        ('tunnels' if (len(operation_refs) > 1) else 'tunnel'))
+    operation_poller = DeleteBatchPoller(client,
+                                         client.apitools_client.vpnTunnels)
+    return waiter.WaitFor(operation_poller,
+                          poller.OperationBatch(operation_refs), wait_message)
