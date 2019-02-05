@@ -9,7 +9,7 @@ help_text:
     The following command will read am IAM policy defined in a JSON file
     'policy.json' and set it for the node template `my-node-template`:
 
-    $ {command} my-node-template policy.json
+      $ {command} my-node-template policy.json
 
     See https://cloud.google.com/iam/docs/managing-policies for details of the
     policy file format and contents.

@@ -47,3 +47,16 @@
         following command:
 
         $ gcloud compute machine-types list
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.minCpuPlatform
+      arg_name: min-cpu-platform
+      required: false
+      help_text: |
+        Minimum CPU platform for the workers.  For more information see
+        https://cloud.google.com/compute/docs/cpu-platforms.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.reserved
+      arg_name: reserved
+      required: false
+      default: false
+      help_text: |
+        Determines the type of VM to use.  If set then reserved VMs are used, otherwise preemptable
+        VMs are used.

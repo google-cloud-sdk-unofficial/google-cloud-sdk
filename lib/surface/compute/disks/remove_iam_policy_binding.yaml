@@ -1,8 +1,8 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
-  brief: Remove IAM policy binding of a Google Compute Engine disk.
+  brief: Remove IAM policy binding from a Google Compute Engine disk.
   description: |
-    Remove an IAM policy binding of a Google Compute Engine disk.
+    Remove an IAM policy binding from a Google Compute Engine disk.
 
   examples: |
     To remove an IAM policy binding for the role of 'roles/compute.securityAdmin' for the user 'test-user@gmail.com'
@@ -15,7 +15,9 @@ help_text:
 
 request:
   collection: compute.disks
-  api_version: beta
+  api_version: v1
+  BETA:
+    api_version: beta
   ALPHA:
     api_version: alpha
 
@@ -34,7 +36,7 @@ iam:
 
 ALPHA:
   help_text:
-    brief: Remove IAM policy binding of a Google Compute Engine disk.
+    brief: Remove IAM policy binding from a Google Compute Engine disk.
     description: |
       Remove an IAM policy binding from the IAM policy of a Google Compute Engine disk. One binding consists of a member,
       a role, and an optional condition.

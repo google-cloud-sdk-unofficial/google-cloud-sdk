@@ -267,13 +267,16 @@ class UpdateBeta(Update):
     flags.AddShieldedVMConfigArgs(
         parser, use_default_value=False, for_update=True)
     flags.AddShieldedVMIntegrityPolicyArgs(parser)
+    flags.AddDisplayDeviceArg(parser, is_update=True)
 
   def Run(self, args):
-    return self._Run(args, supports_shielded_vm=True)
+    return self._Run(args,
+                     supports_shielded_vm=True,
+                     supports_display_device=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBeta):
   """Update a Google Compute Engine virtual machine."""
 
   @staticmethod
@@ -286,11 +289,6 @@ class UpdateAlpha(Update):
         parser, use_default_value=False, for_update=True)
     flags.AddShieldedVMIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
-
-  def Run(self, args):
-    return self._Run(args,
-                     supports_shielded_vm=True,
-                     supports_display_device=True)
 
 
 Update.detailed_help = DETAILED_HELP

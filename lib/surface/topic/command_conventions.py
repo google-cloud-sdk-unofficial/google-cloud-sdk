@@ -155,10 +155,20 @@ class CommandConventions(base.TopicCommand):
   ### Output
 
   The standard output is for explicit information requested by the command.
+
   Depending on the context, there may be guarantees on the output format
-  to support deterministic parsing. For example, the *yaml*, *json* and *csv*
-  output *--formats* guarantee that successful command completion results
-  in standard output data that can be parsed using the respective format.
+  to support deterministic parsing. Certain commands do return resources and
+  these resources are listed on standard output usually using either a
+  command-specific table format or the default YAML format.
+  Moreover, the `--format` flag can be used to change or configure these
+  default output formats. *yaml*, *json*, and *csv* output *--format* values
+  guarantee that successful command completion results in standard output data
+  that can be parsed using the respective format. A detailed explanation of the
+  capabilities of the `--format` flag can be found with $ gcloud topic formats.
+  In the case of async commands, or commands run with `--async`, the resource
+  returned on standard output is an operations resource.
+  For commands that do not return resources, the output is defined in the
+  command's `--help`.
 
   The standard error is reserved for diagnostics. In general, the format of
   standard error data may change from release to release. Users should not
@@ -167,7 +177,7 @@ class CommandConventions(base.TopicCommand):
   described below.
 
   Most standard error messaging is also logged to a file that can be accessed
-  by $ gcloud info --show-log.
+  by $ gcloud info `--show-log`.
 
   No *gcloud* command should crash with an uncaught exception. However, if
   *gcloud* does crash the stack trace is intercepted and written to the log

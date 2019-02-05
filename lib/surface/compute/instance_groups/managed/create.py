@@ -238,24 +238,6 @@ class CreateBeta(CreateGA):
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
 
-  def CreateGroupReference(self, args, client, resources):
-    if args.zones:
-      zone_ref = resources.Parse(
-          args.zones[0], collection='compute.zones',
-          params={'project': properties.VALUES.core.project.GetOrFail})
-      region = utils.ZoneNameToRegionName(zone_ref.Name())
-      return resources.Parse(
-          args.name,
-          params={
-              'region': region,
-              'project': properties.VALUES.core.project.GetOrFail},
-          collection='compute.regionInstanceGroupManagers')
-    return (instance_groups_flags.GetInstanceGroupManagerArg().
-            ResolveAsResource)(
-                args, resources,
-                default_scope=compute_scope.ScopeEnum.ZONE,
-                scope_lister=flags.GetDefaultScopeLister(client))
-
   def _CreateDistributionPolicy(self, zones, resources, messages):
     if zones:
       policy_zones = []

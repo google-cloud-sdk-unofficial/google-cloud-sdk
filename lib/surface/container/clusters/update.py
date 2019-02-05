@@ -378,7 +378,8 @@ to completion."""
 
     if not args.async:
       adapter.WaitForOperation(op_ref,
-                               'Updating {0}'.format(cluster_ref.clusterId))
+                               'Updating {0}'.format(cluster_ref.clusterId),
+                               timeout_s=1800)
 
       log.UpdatedResource(cluster_ref)
       cluster_url = util.GenerateClusterUrl(cluster_ref)

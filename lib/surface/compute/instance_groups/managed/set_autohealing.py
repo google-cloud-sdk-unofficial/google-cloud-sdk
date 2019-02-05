@@ -27,6 +27,11 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated and will not be promoted to GA. '
+             'Please use `gcloud beta instance-groups managed update` instead.')
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SetAutohealing(base.Command):
   """Set autohealing policy for managed instance group.

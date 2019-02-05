@@ -85,9 +85,7 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
   user_acl = sql_messages.AclEntry(
       name=acl_name,
       expirationTime=iso_duration.Duration(
-          minutes=minutes).GetRelativeDateTime(time_of_connection)
-      # TODO(b/122989827): Remove this once the datetime parsing is fixed.
-      .replace(microsecond=1),
+          minutes=minutes).GetRelativeDateTime(time_of_connection),
       value='CLIENT_IP')
 
   try:
@@ -101,9 +99,6 @@ def _WhitelistClientIP(instance_ref, sql_client, sql_messages, resources,
           'There was no instance found at {} or you are not authorized to '
           'connect to it.'.format(instance_ref.RelativeName()))
     raise calliope_exceptions.HttpException(error)
-
-  # TODO(b/122989827): Remove this once the datetime parsing is fixed.
-  original.serverCaCert = None
 
   original.settings.ipConfiguration.authorizedNetworks.append(user_acl)
   try:

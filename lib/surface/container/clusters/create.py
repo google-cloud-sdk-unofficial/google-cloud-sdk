@@ -229,6 +229,7 @@ def ParseCreateOptionsBase(args):
     # failing so don't do it.
     enable_autorepair = ((args.image_type or '').lower() in ['', 'cos'])
   flags.WarnForUnspecifiedIpAllocationPolicy(args)
+  flags.WarnForNodeModification(args, enable_autorepair)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
   return api_adapter.CreateClusterOptions(
@@ -450,6 +451,14 @@ class CreateBeta(Create):
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
+    kms_flag_overrides = {
+        'kms-key': '--database-encryption-key',
+        'kms-keyring': '--database-encryption-key-keyring',
+        'kms-location': '--database-encryption-key-location',
+        'kms-project': '--database-encryption-key-project'
+    }
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser, 'cluster', flag_overrides=kms_flag_overrides)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -478,6 +487,18 @@ class CreateBeta(Create):
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.security_group = args.security_group
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
+    kms_ref = args.CONCEPTS.kms_key.Parse()
+    if kms_ref:
+      ops.database_encryption = kms_ref.RelativeName()
+    else:
+      # Check for partially specified database-encryption-key.
+      for keyword in [
+          'database-encryption-key', 'database-encryption-key-keyring',
+          'database-encryption-key-location', 'database-encryption-key-project'
+      ]:
+        if getattr(args, keyword.replace('-', '_'), None):
+          raise exceptions.InvalidArgumentException('--database-encryption-key',
+                                                    'not fully specified.')
     return ops
 
 

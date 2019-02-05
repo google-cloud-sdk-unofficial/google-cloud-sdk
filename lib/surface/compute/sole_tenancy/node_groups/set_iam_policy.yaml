@@ -9,7 +9,7 @@ help_text:
     The following command will read am IAM policy defined in a JSON file
     'policy.json' and set it for the node group `my-node-group`:
 
-    $ {command} my-node-group policy.json
+      $ {command} my-node-group policy.json
 
     See https://cloud.google.com/iam/docs/managing-policies for details of the
     policy file format and contents.

@@ -123,6 +123,7 @@ def ParseCreateNodePoolOptionsBase(args):
     # repairs, attempting to enable autorepair for them will result in API call
     # failing so don't do it.
     enable_autorepair = ((args.image_type or '').lower() in ['', 'cos'])
+  flags.WarnForNodeModification(args, enable_autorepair)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
   return api_adapter.CreateNodePoolOptions(
