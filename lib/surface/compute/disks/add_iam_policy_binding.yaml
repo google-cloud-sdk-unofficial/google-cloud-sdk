@@ -15,6 +15,7 @@ help_text:
 
 request:
   collection: compute.disks
+  use_relative_name: false
   api_version: v1
   BETA:
     api_version: beta

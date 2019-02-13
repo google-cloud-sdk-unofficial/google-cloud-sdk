@@ -24,7 +24,8 @@ from googlecloudsdk.command_lib.source import flags
 from googlecloudsdk.command_lib.source import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Update(base.Command):
   """Update the configuration of a Cloud Source Repository."""
 

@@ -25,8 +25,17 @@ from googlecloudsdk.command_lib.asset import utils as asset_utils
 from googlecloudsdk.core import log
 
 
+# pylint: disable=line-too-long
 class Export(base.Command):
-  """Export the cloud assets to Google Cloud Storage."""
+  """Export the cloud assets to Google Cloud Storage.
+
+  Export the cloud assets to Google Cloud Storage. Use gcloud asset operations
+  describe to get the latest status of the operation. Note that to use this
+  command, you must be authenticated with a service account.
+  See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/gcloud-asset
+  for more details.
+  """
+# pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):
@@ -52,5 +61,5 @@ class Export(base.Command):
       operation_describe_command = 'gcloud asset operations describe'
     log.ExportResource(parent, is_async=True, kind='root asset')
     log.status.Print(
-        'Use [{} {}] to check the status of the operation(s).'.format(
+        'Use [{} {}] to check the status of the operation.'.format(
             operation_describe_command, operation.name))

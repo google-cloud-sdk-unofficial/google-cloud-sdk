@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a membership.
+    description: Delete a membership.
+
+  request:
+    collection: gkehub.projects.locations.global.memberships
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.container.memberships.util:PrepareMembershipDeletion
+
+  async:
+    collection: gkehub.projects.locations.operations
+
+  arguments:
+    resource:
+      help_text: A membership resource representing a cluster on-prem or in Google Kubernetes Hub.
+      spec: !REF googlecloudsdk.command_lib.container.memberships.resources:membership
+    params:
+    - arg_name: kubeconfig-file
+      help_text: |
+        The Kubeconfig file contains the entry of the cluster to delete membership.
+        Default to $KUBECONFIG.
+    - arg_name: context
+      help_text: |
+        The context within the kubeconfig file that specifies the entry of the
+        cluster to delete membership. User in this context must have `cluster-admin`
+        permission in the cluster in order to successfully cleanup the connect
+        agent resources.

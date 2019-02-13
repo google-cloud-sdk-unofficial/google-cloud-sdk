@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.resource_manager import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update the display name of a folder.
 
@@ -42,7 +42,7 @@ class Update(base.UpdateCommand):
   The following command updates a folder with the ID `123456789` to have
   the name "Foo Bar and Grill":
 
-    $ {command} 123456789 --display_name="Foo Bar and Grill"
+    $ {command} 123456789 --display-name="Foo Bar and Grill"
   """
 
   @staticmethod

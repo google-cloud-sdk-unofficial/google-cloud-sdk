@@ -34,13 +34,14 @@ _DETAILED_HELP = {
         To list connections of a network called `my-network` to a service called
         `your-service`, run:
 
-          $ {command} --network my-network --service your-service \\
+          $ {command} --network my-network --service your-service
+
+        To list connections of a network against all services, run:
+
+          $ {command} --network my-network
+
         """,
 }
-
-_SERVICE_HELP = """The service to list connections"""
-_NETWORK_HELP = """The network in the current project to list connections
- with the service"""
 
 
 class List(base.DescribeCommand):
@@ -56,12 +57,16 @@ class List(base.DescribeCommand):
           allowed.
     """
     parser.add_argument(
-        '--network', metavar='NETWORK', required=True, help=_NETWORK_HELP)
+        '--network',
+        metavar='NETWORK',
+        required=True,
+        help='The network in the current project to list connections with the service'
+    )
     parser.add_argument(
         '--service',
         metavar='SERVICE',
-        default='servicenetworking.googleapis.com',
-        help=_SERVICE_HELP)
+        default='',
+        help='The service to list connections')
 
   def Run(self, args):
     """Run 'services vpc-peerings list'.
@@ -75,7 +80,8 @@ class List(base.DescribeCommand):
     """
     project = properties.VALUES.core.project.Get(required=True)
     project_number = projects_util.GetProjectNumber(project)
-    conns = peering.ListConnections(project_number, args.service, args.network)
+    service = args.service if args.IsSpecified('service') else '-'
+    conns = peering.ListConnections(project_number, service, args.network)
     return iter(conns)
 
 

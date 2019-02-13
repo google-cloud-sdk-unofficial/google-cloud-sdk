@@ -99,6 +99,9 @@ def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
     if args.IsSpecified('runtime'):
       function.runtime = args.runtime
       updated_fields.append('runtime')
+    elif is_new_function:
+      log.warning('Flag `--runtime` will become a required flag soon. '
+                  'Please specify the value for this flag.')
   if enable_max_instances:
     if (args.IsSpecified('max_instances') or
         args.IsSpecified('clear_max_instances')):

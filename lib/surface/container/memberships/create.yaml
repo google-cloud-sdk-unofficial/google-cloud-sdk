@@ -1,0 +1,66 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a new membership instance.
+    description: Create a new membership instance.
+
+  request:
+    collection: gkehub.projects.locations.global.memberships
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.container.memberships.util:SetParentCollection
+    - googlecloudsdk.command_lib.container.memberships.util:PopulateMembership
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.container.memberships.util:DeployConnectAgent
+
+  async:
+    collection: gkehub.projects.locations.operations
+    # TODO(b/124025758): due to the weird conversion of description,
+    # Get request always use description instead of actual ID.
+    extract_resource_result: false
+
+
+  arguments:
+    resource:
+      help_text: The membership you want to create.
+      spec: !REF googlecloudsdk.command_lib.container.memberships.resources:membership
+    params:
+    - arg_name: kubeconfig-file
+      help_text: |
+        The Kubeconfig file contains the entry of the cluster to be registererd.
+        Default to $KUBECONFIG.
+    - arg_name: context
+      help_text: |
+        The context within the Kubeconfig to specify the cluster.
+        Default to current-context
+    - group:
+        mutex: true
+        required: true
+        params:
+        - group:
+            params:
+            - arg_name: service-account-key-file
+              required: true
+              help_text: |
+                The JSON file of a Google Cloud service account private key.
+            - arg_name: proxy
+              required: false
+              help_text: |
+                The proxy address in the format of http(s)://{hostname}.
+                The proxy must support the HTTP CONNECT method in order for this connection to succeed.
+            - arg_name: docker-registry
+              required: false
+              help_text: |
+                If the user wishes to use the connect agent image from a private registry.
+                The user is responsible for maintaining and updating the connect agent image
+                in the private registry.
+            - arg_name: docker-credential-file
+              required: false
+              help_text: |
+                If a private registry is used and auth is required. Content of the file will be
+                appropriately embedded into ImagePullSecret.
+        - arg_name: agent-deployed
+          action: store_true
+          default: false
+          help_text: |
+            If the agent has already been deployed by the user.

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 """Auth flags for calling BigQuery."""
 
+
 import os
 
 
 import gflags as flags
 
 FLAGS = flags.FLAGS
-
 
 
 flags.DEFINE_boolean(

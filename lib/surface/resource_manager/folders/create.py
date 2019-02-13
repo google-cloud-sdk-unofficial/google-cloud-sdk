@@ -25,11 +25,23 @@ from googlecloudsdk.command_lib.resource_manager import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new folder.
 
   Creates a new folder in the given parent folder or organization.
+
+  ## EXAMPLES
+
+  The following command creates a folder with the name `abc` into a
+  folder with the ID `2345`:
+
+    $ {command} --display-name=abc --folder=2345
+
+  The following command creates a folder with the name `abc` into an
+  organization with ID `1234`:
+
+    $ {command} --display-name=abc --organization=1234
   """
 
   @staticmethod
@@ -39,7 +51,7 @@ class Create(base.CreateCommand):
     base.Argument(
         '--display-name',
         required=True,
-        help='Friendly display name to use for the new folder').AddToParser(
+        help='Friendly display name to use for the new folder.').AddToParser(
             parser)
 
   def Run(self, args):

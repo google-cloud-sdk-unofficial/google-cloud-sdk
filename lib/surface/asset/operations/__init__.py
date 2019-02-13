@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for CloudAsset operations."""
+"""Command group for Cloud Asset Inventory operations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Operations(base.Group):
-  """Manage CloudAsset operations."""
+  """Manage Cloud Asset Inventory operations."""

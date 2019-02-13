@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.asset import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a cloud asset operation."""
+  """Describe a Cloud Asset Inventory operation."""
 
   @staticmethod
   def Args(parser):

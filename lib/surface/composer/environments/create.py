@@ -231,9 +231,10 @@ class CreateBeta(Create):
         type=airflow_version_type,
         help="""Version of Airflow to run in the environment.
 
-          Must be of the form `X.Y[.Z]`.
+        Must be of the form `X.Y[.Z]`.
 
-          Cannot be updated.""")
+        The latest supported Cloud Composer version will be used within
+        the created environment.""")
 
     image_version_type = arg_parsers.RegexpValidator(
         r'^composer-(\d+\.\d+.\d+|latest)-airflow-(\d+\.\d+(?:\.\d+)?)',
@@ -245,8 +246,8 @@ class CreateBeta(Create):
         type=image_version_type,
         help="""Version of the image to run in the environment.
 
-        This encapsulates the versions of both Cloud Composer and Apache
-        Airflow. Must be of the form `composer-A.B.C-airflow-X.Y[.Z]`.
+        Value consists of version information for both Cloud Composer and
+        Apache Airflow. Must be of the form `composer-A.B.C-airflow-X.Y[.Z]`.
 
         The Cloud Composer and Airflow versions are semantic versions.
         `latest` can be provided instead of an explicit Cloud Composer
@@ -254,9 +255,7 @@ class CreateBeta(Create):
         with the current Cloud Composer version. For the Apache Airflow
         portion, the patch version can be omitted and the current
         version will be selected. The version numbers that are used will
-        be stored.
-
-        Cannot be updated.""")
+        be stored.""")
 
   def Run(self, args):
     self.image_version = None

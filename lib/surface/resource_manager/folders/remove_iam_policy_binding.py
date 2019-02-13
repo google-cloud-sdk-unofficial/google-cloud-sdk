@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.resource_manager import flags
 import six.moves.http_client
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding for a folder.
 

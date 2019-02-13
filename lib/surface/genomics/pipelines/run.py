@@ -279,6 +279,38 @@ At least one region or region must be specified.
 For more information on default regions, see
 https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_region_in_your_local_client''')
 
+    parser.add_argument(
+        '--network',
+        help='''v2alpha1 only. The network name to attach the VM's network
+            interface to.
+
+The value will be prefixed with global/networks/ unless it contains a /, in
+which case it is assumed to be a fully specified network resource URL.
+
+If unspecified, the global default network is used.''')
+
+    parser.add_argument(
+        '--subnetwork',
+        help='''v2alpha1 only. The subnetwork to use on the provided network.
+
+If the specified network is configured for custom subnet creation, the name of
+the subnetwork to attach the instance to must be specified here.
+
+The value is prefixed with regions/*/subnetworks/ unless it contains a /, in
+which case it is assumed to be a fully specified subnetwork resource URL.
+
+If the * character appears in the value, it is replaced with the region that
+the virtual machine has been allocated in.''')
+
+    parser.add_argument(
+        '--boot-disk-size',
+        type=int,
+        help='''v2alpha1 only. The size of the boot disk in GB.
+
+The boot disk size must be large enough to accomondate all Docker images from
+each action in the pipeline at the same time. If not specified, a small but
+reasonable default value is used.''')
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -379,6 +411,21 @@ https://cloud.google.com/compute/docs/gcloud-compute/#set_default_zone_and_regio
       # Always add a scope for GCS in case any arguments need it.
       virtual_machine.serviceAccount.scopes.append(
           'https://www.googleapis.com/auth/devstorage.read_write')
+
+      # Attach custom network/subnetwork (if set).
+      if args.network or args.subnetwork:
+        if not virtual_machine.network:
+          virtual_machine.network = genomics_messages.Network()
+        if args.network:
+          virtual_machine.network.name = args.network
+        if args.subnetwork:
+          virtual_machine.network.subnetwork = args.subnetwork
+
+      if args.boot_disk_size is not None:
+        if args.boot_disk_size <= 0:
+          raise exceptions.GenomicsError(
+              'Boot disk size must be greater than zero.')
+        virtual_machine.bootDiskSizeGb = args.boot_disk_size
 
       # Generate paths for inputs and outputs in a shared location and put them
       # into the environment for actions based on their name.

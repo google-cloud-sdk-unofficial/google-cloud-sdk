@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.asset import flags
 
 
 class GetHistory(base.Command):
-  """Get history of assets that overlaps a time window."""
+  """Get the update history of assets that overlaps a time window."""
 
   @staticmethod
   def Args(parser):

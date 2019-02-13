@@ -26,19 +26,9 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DisksAddResourcePolicies(base.UpdateCommand):
-  """Add resource policies to a Google Compute Engine disk.
-
-    *{command}* adds resource policies to a Google Compute Engine
-    disk. These policies define a schedule for taking snapshots and a retention
-    period for these snapshots.
-
-    For information on how to create resource policies, see:
-
-      $ gcloud alpha compute resource-policies create --help
-
-  """
+  """Add resource policies to a Google Compute Engine disk."""
 
   @staticmethod
   def Args(parser):
@@ -67,3 +57,22 @@ class DisksAddResourcePolicies(base.UpdateCommand):
 
     return disk_info.MakeAddResourcePoliciesRequest(resource_policies,
                                                     holder.client)
+
+
+DisksAddResourcePolicies.detailed_help = {
+    'DESCRIPTION':
+        """\
+Add resource policies to a Google Compute Engine disk.
+
+*{command}* adds resource policies to a Google Compute Engine disk. These policies define a schedule for taking snapshots and a retention period for these snapshots.
+
+For information on how to create resource policies, see:
+  $ gcloud beta compute resource-policies create --help
+""",
+    'EXAMPLES':
+        """\
+The following command adds two resource policies to a Google Compute Engine disk.
+
+  $ {command} my-disk --zone=ZONE --resource-policies=policy-1,policy-2
+"""
+}

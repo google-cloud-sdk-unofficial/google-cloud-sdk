@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.resource_manager import flags
 import six.moves.http_client
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding for a folder.
 

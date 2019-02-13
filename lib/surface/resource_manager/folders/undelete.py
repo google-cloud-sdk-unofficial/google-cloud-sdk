@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.resource_manager import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Undelete(base.CreateCommand):
   """Undelete a folder.
 

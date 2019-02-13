@@ -26,13 +26,9 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DisksRemoveResourcePolicies(base.UpdateCommand):
-  """Remove resource policies from a Google Compute Engine disk.
-
-    *{command}* removes resource policies from a Google Compute
-    Engine virtual disk.
-  """
+  """Remove resource policies from a Google Compute Engine disk."""
 
   @staticmethod
   def Args(parser):
@@ -62,3 +58,19 @@ class DisksRemoveResourcePolicies(base.UpdateCommand):
 
     return disk_info.MakeRemoveResourcePoliciesRequest(resource_policies,
                                                        holder.client)
+
+
+DisksRemoveResourcePolicies.detailed_help = {
+    'DESCRIPTION':
+        """\
+Remove resource policies from a Google Compute Engine disk.
+
+*{command}* removes resource policies from a Google Compute Engine disk.
+""",
+    'EXAMPLES':
+        """\
+The following command removes one resource policy from a Google Compute Engine disk.
+
+  $ {command} my-disk --zone=ZONE --resource-policies=POLICY
+"""
+}

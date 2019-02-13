@@ -49,15 +49,14 @@ def _Args(parser,
   if support_global_access:
     flags.AddAllowGlobalAccess(parser)
 
-  if include_beta:
-    parser.add_argument(
-        '--service-label',
-        help='(Only for Internal Load Balancing): '
-             'https://cloud.google.com/compute/docs/load-balancing/internal/\n'
-             'The DNS label to use as the prefix of the fully qualified domain '
-             'name for this forwarding rule. The full name will be internally '
-             'generated and output as dnsName. If this field is not specified, '
-             'no DNS record will be generated and no DNS name will be output. ')
+  parser.add_argument(
+      '--service-label',
+      help='(Only for Internal Load Balancing): '
+           'https://cloud.google.com/compute/docs/load-balancing/internal/\n'
+           'The DNS label to use as the prefix of the fully qualified domain '
+           'name for this forwarding rule. The full name will be internally '
+           'generated and output as dnsName. If this field is not specified, '
+           'no DNS record will be generated and no DNS name will be output. ')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

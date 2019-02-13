@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.40",
+  "CLI_VERSION": "2.0.41",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -178,7 +178,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Create a dataset, table, view, or transfer configuration with this\nname.\n\nSee 'bq help load' for more information on specifying the schema.\n",
-        "EXAMPLES": "bq mk new_dataset\nbq mk new_dataset.new_table\nbq --dataset_id=new_dataset mk table\nbq mk -t new_dataset.newtable name:integer,value:string\nbq mk --view='select 1 as num' new_dataset.newview\n(--view_udf_resource=path/to/file.js)\nbq mk --materialized_view='select sum(x) as sum_x from dataset.table'\nnew_dataset.newview\nbq mk -d --data_location=EU new_dataset\nbq mk --transfer_config --target_dataset=dataset --display_name=name\n-p='{\"param\":\"value\"}' --data_source=source\nbq mk --transfer_run --start_time={start_time} --end_time={end_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk ---reservation_grant -project_id=proj --location=us\n--reservation_id=project:us.dev --job_type=QUERY\n"
+        "EXAMPLES": "bq mk new_dataset\nbq mk new_dataset.new_table\nbq --dataset_id=new_dataset mk table\nbq mk -t new_dataset.newtable name:integer,value:string\nbq mk --view='select 1 as num' new_dataset.newview\n(--view_udf_resource=path/to/file.js)\nbq mk --materialized_view='select sum(x) as sum_x from dataset.table'\nnew_dataset.newview\nbq mk -d --data_location=EU new_dataset\nbq mk --transfer_config --target_dataset=dataset --display_name=name\n-p='{\"param\":\"value\"}' --data_source=source\n--schedule_start_time={schedule_start_time}\n--schedule_end_time={schedule_end_time}\nbq mk --transfer_run --start_time={start_time} --end_time={end_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk ---reservation_grant -project_id=proj --location=us\n--reservation_id=project:us.dev --job_type=QUERY\n"
       }
     },
     "mkdef": {
@@ -303,7 +303,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Updates a dataset, table, view or transfer configuration with this\nname.\n\nSee 'bq help load' for more information on specifying the schema.\n",
-        "EXAMPLES": "bq update --description \"Dataset description\" existing_dataset\nbq update --description \"My table\" existing_dataset.existing_table\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num' existing_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US --project_id=my-project\n--reservation_size=2000000000\n"
+        "EXAMPLES": "bq update --description \"Dataset description\" existing_dataset\nbq update --description \"My table\" existing_dataset.existing_table\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num' existing_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US --project_id=my-project\n--reservation_size=2G\n"
       }
     },
     "version": {

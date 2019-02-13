@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.projects import flags as project_flags
 from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.command_lib.resource_manager import flags as folder_flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -66,6 +67,21 @@ class Move(base.Command):
   def Run(self, args):
     folder_flags.CheckParentFlags(args)
     project_ref = command_lib_util.ParseProject(args.id)
+    if not console_io.PromptContinue(
+        'Your project will be moved. This may alter the policies enforced on '
+        'your Project, either exposing your Project to more security risk '
+        'through looser polices or cause an outage through stricter polices. '
+        'See these public notes on policy implications for more information: '
+        'https://cloud.google.com/resource-manager/docs/'
+        'creating-managing-folders#moving-folders-policy-considerations and '
+        'https://cloud.google.com/resource-manager/docs/'
+        'migrating-projects-billing#note_on_policy_implications. '
+        'Once moved, you can move the Project again so long as you have the '
+        'appropriate permissions. See our public documentation for more '
+        'information: https://cloud.google.com/resource-manager/docs/'
+        'creating-managing-folders#moving_a_project_into_a_folder'
+    ):
+      return None
     result = projects_api.Update(
         project_ref,
         parent=projects_api.ParentNameToResourceId(

@@ -54,8 +54,4 @@ class Endpoints(base.Group):
     context['servicemanagement-v1-messages'] = apis.GetMessagesModule(
         'servicemanagement', 'v1')
 
-    context['apikeys-v1'] = apis.GetClientInstance('apikeys', 'v1')
-    context['apikeys-v1-messages'] = apis.GetMessagesModule(
-        'apikeys', 'v1')
-
     return context

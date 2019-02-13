@@ -21,16 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ResourcePolicies(base.Group):
-  """Manage resource policies."""
-
-
-ResourcePolicies.detailed_help = {
-    'brief': 'Manage Google Compute Engine Resource Policies.',
-    'DESCRIPTION': """\
-      Currently Resource Policies are only available for instances.
-      Resource policies for instances let you define time windows
-      in which live migrations can take place.
-    """
-}
+  """Manage Google Compute Engine Resource Policies."""

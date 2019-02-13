@@ -1,0 +1,13 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Describe a membership.
+    description: Describe a membership in Google Kubernetes Hub.
+
+  request:
+    collection: gkehub.projects.locations.global.memberships
+
+  arguments:
+    resource:
+      help_text: The membership you want to describe.
+      spec: !REF googlecloudsdk.command_lib.container.memberships.resources:membership

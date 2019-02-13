@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.resource_manager import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetIamPolicy(base.Command):
   """Set IAM policy for a folder.
 
@@ -43,7 +43,7 @@ class SetIamPolicy(base.Command):
   def Args(parser):
     flags.FolderIdArg('whose policy you want to set.').AddToParser(parser)
     parser.add_argument(
-        'policy_file', help='JSON or YAML file with the IAM policy')
+        'policy_file', help='JSON or YAML file with the IAM policy.')
 
   def Run(self, args):
     messages = folders.FoldersMessages()

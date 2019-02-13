@@ -759,6 +759,47 @@ class JobIdGeneratorIncrementing(JobIdGenerator):
     return '%s_%d' % (self._inner.Generate(config), self._retry)
 
 
+class TransferScheduleArgs(object):
+  """Arguments to customize data transfer schedule."""
+
+  def __init__(self,
+               schedule=None,
+               start_time=None,
+               end_time=None,
+               disable_auto_scheduling=False):
+    self.schedule = schedule
+    self.start_time = start_time
+    self.end_time = end_time
+    self.disable_auto_scheduling = disable_auto_scheduling
+
+  def ToScheduleOptionsPayload(self, options_to_copy=None):
+    """Returns a dictionary of schedule options.
+
+    Args:
+      options_to_copy: Existing options to be copied.
+
+    Returns:
+      A dictionary of schedule options expected by the
+      bigquery.transfers.create and bigquery.transfers.update API methods.
+    """
+
+    # Copy the current options or start with an empty dictionary.
+    options = dict(options_to_copy or {})
+
+    if self.start_time is not None:
+      options['startTime'] = self._TimeOrInfitity(self.start_time)
+    if self.end_time is not None:
+      options['endTime'] = self._TimeOrInfitity(self.end_time)
+
+    options['disableAutoScheduling'] = self.disable_auto_scheduling
+
+    return options
+
+  def _TimeOrInfitity(self, time_str):
+    """Returns None to indicate Inifinity, if time_str is an empty string."""
+    return time_str or None
+
+
 class BigqueryClient(object):
   """Class encapsulating interaction with the BigQuery service."""
 
@@ -935,7 +976,7 @@ class BigqueryClient(object):
 
   @property
   def apiclient(self):
-    """Return the apiclient attached to self."""
+    """Returns the apiclient attached to self."""
     if self._apiclient is None:
       self._apiclient = self.BuildApiClient()
     return self._apiclient
@@ -1502,6 +1543,10 @@ class BigqueryClient(object):
       Reservation object that was updated.
     """
     client = self.GetBiReservationApiClient()
+
+    if reservation_size.upper().rfind('G') >= 0:
+      reservation_size = long(
+          reservation_size.rstrip('GgBb')) * 1024 * 1024 * 1024
 
     if reservation_size == 0:
       client.projects().locations().reservations().delete(
@@ -2406,14 +2451,17 @@ class BigqueryClient(object):
     return map(  # pylint: disable=g-long-lambda
         BigqueryClient.ConstructObjectReference, self.ListJobs(**kwds))
 
-  def ListJobs(self,
-               reference=None,
-               max_results=None,
-               page_token=None,
-               state_filter=None,
-               min_creation_time=None,
-               max_creation_time=None,
-               all_users=None):
+  def ListJobs(
+      self,
+      reference=None,
+      max_results=None,
+      page_token=None,
+      state_filter=None,
+      min_creation_time=None,
+      max_creation_time=None,
+      all_users=None
+  ):
+    # pylint: disable=g-doc-args
     """Return a list of jobs.
 
     Args:
@@ -2428,22 +2476,30 @@ class BigqueryClient(object):
         before or at this timestamp.
       all_users: Whether to list jobs for all users of the project. Requesting
         user must be an owner of the project to list all jobs.
-
     Returns:
       A list of jobs.
     """
-    return self.ListJobsAndToken(reference, max_results, page_token,
-                                 state_filter, min_creation_time,
-                                 max_creation_time, all_users)['results']
+    return self.ListJobsAndToken(
+        reference,
+        max_results,
+        page_token,
+        state_filter,
+        min_creation_time,
+        max_creation_time,
+        all_users
+    )['results']
 
-  def ListJobsAndToken(self,
-                       reference=None,
-                       max_results=None,
-                       page_token=None,
-                       state_filter=None,
-                       min_creation_time=None,
-                       max_creation_time=None,
-                       all_users=None):
+  def ListJobsAndToken(
+      self,
+      reference=None,
+      max_results=None,
+      page_token=None,
+      state_filter=None,
+      min_creation_time=None,
+      max_creation_time=None,
+      all_users=None
+  ):
+    # pylint: disable=g-doc-args
     """Return a list of jobs.
 
     Args:
@@ -2475,8 +2531,12 @@ class BigqueryClient(object):
         state_filter = state_filter.lower()
       else:
         state_filter = [s.lower() for s in state_filter]
-    _ApplyParameters(request, projection='full',
-                     state_filter=state_filter, all_users=all_users)
+    _ApplyParameters(
+        request,
+        projection='full',
+        state_filter=state_filter,
+        all_users=all_users
+    )
     if min_creation_time is not None:
       request['minCreationTime'] = min_creation_time
     if max_creation_time is not None:
@@ -2961,7 +3021,8 @@ class BigqueryClient(object):
                            display_name=None,
                            refresh_window_days=None,
                            params=None,
-                           authorization_code=None):
+                           authorization_code=None,
+                           schedule_args=None):
     """Updates a transfer config.
 
     Args:
@@ -2973,6 +3034,7 @@ class BigqueryClient(object):
       params: Optional parameters to update.
       authorization_code: Authorization code that the user input if they want to
         update credentials.
+      schedule_args: Optional parameters to customize data transfer schedule.
 
     Raises:
       TypeError: if reference is not a TransferConfigReference.
@@ -3020,6 +3082,16 @@ class BigqueryClient(object):
             update_items, current_config['dataSourceId'])
         update_mask.append('transfer_config.data_refresh_window_days,')
 
+    if schedule_args:
+      if schedule_args.schedule is not None:
+        # update schedule if a custom string was provided
+        update_items['schedule'] = schedule_args.schedule
+        update_mask.append('transfer_config.schedule,')
+
+      update_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload(
+          options_to_copy=current_config.get('scheduleOptions'))
+      update_mask.append('transfer_config.scheduleOptions,')
+
     transfer_client.projects().locations().transferConfigs().patch(
         body=update_items,
         name=reference.transferConfigName,
@@ -3034,7 +3106,8 @@ class BigqueryClient(object):
                            display_name=None,
                            refresh_window_days=None,
                            params=None,
-                           authorization_code=None):
+                           authorization_code=None,
+                           schedule_args=None):
     """Create a tranfer config corresponding to TransferConfigReference.
 
     Args:
@@ -3049,6 +3122,7 @@ class BigqueryClient(object):
         will vary.
       authorization_code: The authorization code that the user input if they
       need credentials.
+      schedule_args: Optional parameters to customize data transfer schedule.
 
     Raises:
       BigqueryNotFoundError: if a requested item is not found.
@@ -3095,10 +3169,16 @@ class BigqueryClient(object):
     # dataset location.
     parent = reference + '/locations/-'
 
+    if schedule_args:
+      if schedule_args.schedule is not None:
+        create_items['schedule'] = schedule_args.schedule
+      create_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload()
+
     new_transfer_config = transfer_client.projects().locations(
     ).transferConfigs().create(
         parent=parent, body=create_items,
         authorizationCode=authorization_code).execute()
+
     return new_transfer_config['name']
 
   def ProcessParamsFlag(self, params, items):
@@ -4194,6 +4274,7 @@ class BigqueryClient(object):
       destination_encryption_configuration=None,
       use_avro_logical_types=None,
       range_partitioning=None,
+      hive_partitioning_mode=None,
       **kwds):
     """Load the given data into BigQuery.
 
@@ -4245,6 +4326,10 @@ class BigqueryClient(object):
           TIMESTAMP), instead of only using their raw types (ie. INTEGER).
       range_partitioning: Optional. Provides range partitioning specification
           for the destination table.
+      hive_partitioning_mode: (experimental) Enables hive partitioning.  AUTO
+          indicates to perform automatic type inference.  STRINGS indicates to
+          treat all hive partition keys as STRING typed.  No other values are
+          accepted.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -4262,6 +4347,8 @@ class BigqueryClient(object):
       load_config['schema'] = {'fields': BigqueryClient.ReadSchema(schema)}
     if use_avro_logical_types is not None:
       load_config['useAvroLogicalTypes'] = use_avro_logical_types
+    if hive_partitioning_mode is not None:
+      load_config['hivePartitioningMode'] = hive_partitioning_mode
     if destination_encryption_configuration:
       load_config['destinationEncryptionConfiguration'] = (
           destination_encryption_configuration)

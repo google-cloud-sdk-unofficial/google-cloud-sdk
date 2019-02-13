@@ -483,6 +483,7 @@ class CreateBeta(Create):
     ops.istio_config = args.istio_config
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.default_max_pods_per_node = args.default_max_pods_per_node
+    ops.max_pods_per_node = args.max_pods_per_node
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.security_group = args.security_group
@@ -579,6 +580,7 @@ class CreateAlpha(Create):
     ops.istio_config = args.istio_config
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.default_max_pods_per_node = args.default_max_pods_per_node
+    ops.max_pods_per_node = args.max_pods_per_node
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
     ops.federating_service_account = args.federating_service_account
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset

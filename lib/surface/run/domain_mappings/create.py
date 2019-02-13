@@ -44,7 +44,7 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionArgWithDefault(parser)
+    flags.AddRegionArg(parser)
     parser.add_argument(
         '--service', required=True,
         help='Create domain mapping for the given service.')
@@ -67,5 +67,5 @@ class Create(base.Command):
       msg = """{domain} now maps to service [{serv}] in region [{region}]
       """.format(domain=domain_mapping_ref.domainmappingsId,
                  serv=args.service,
-                 region=args.region)
+                 region=conn_context.region)
       pretty_print.Success(msg)

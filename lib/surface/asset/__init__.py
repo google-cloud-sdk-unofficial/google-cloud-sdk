@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The main command group for CloudAsset."""
+"""The main command group for Cloud Asset Inventory."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,9 +22,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Asset(base.Group):
-  """Manage CloudAsset."""
+  """Manage the Cloud Asset Inventory."""
 
   def Filter(self, context, args):
     del context, args

@@ -29,6 +29,10 @@ from googlecloudsdk.core import properties
 import six
 
 
+def _CommonArgs(parser, api_version=filestore_client.V1_API_VERSION):
+  instances_flags.AddInstanceCreateArgs(parser, api_version)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud Filestore instance."""
@@ -37,8 +41,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    instances_flags.AddInstanceCreateArgs(parser,
-                                          filestore_client.V1_API_VERSION)
+    _CommonArgs(parser)
 
   def Run(self, args):
     """Create a Cloud Filestore instance in the current project."""
@@ -76,8 +79,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    instances_flags.AddInstanceCreateArgs(parser,
-                                          filestore_client.BETA_API_VERSION)
+    _CommonArgs(parser, CreateBeta._API_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -88,8 +90,7 @@ class CreateAlpha(Create):
 
   @staticmethod
   def Args(parser):
-    instances_flags.AddInstanceCreateArgs(parser,
-                                          filestore_client.ALPHA_API_VERSION)
+    _CommonArgs(parser, CreateAlpha._API_VERSION)
 
 
 Create.detailed_help = {

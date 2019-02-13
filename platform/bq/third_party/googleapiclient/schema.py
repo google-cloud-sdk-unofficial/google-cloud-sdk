@@ -66,15 +66,7 @@ import six
 
 import copy
 
-# Oauth2client < 3 has the positional helper in 'util', >= 3 has it
-# in '_helpers'.
-try:
-  from oauth2client import util
-except ImportError:
-  try:
-    from oauth2client import _helpers as util
-  except ImportError:
-    from oauth2client_4_0 import _helpers as util
+from googleapiclient import _helpers as util
 
 
 class Schemas(object):

@@ -90,10 +90,6 @@ class UpdateBeta(Update):
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
-  @staticmethod
-  def Args(parser):
-    instances_flags.AddInstanceUpdateArgs(parser)
-
 
 Update.detailed_help = {
     'DESCRIPTION':

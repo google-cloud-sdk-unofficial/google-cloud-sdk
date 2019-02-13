@@ -12,7 +12,7 @@
     examples: |
       To print the IAM policy for a given service, run:
 
-        $ {command} --region us-central1 my-service
+        $ {command} --region=us-central1 my-service
 
   request:
     collection: run.projects.locations.services

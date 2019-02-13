@@ -44,7 +44,7 @@ class Delete(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionArgWithDefault(parser)
+    flags.AddRegionArg(parser)
     domain_mapping_presentation = presentation_specs.ResourcePresentationSpec(
         '--domain',
         resource_args.GetDomainMappingResourceSpec(),
@@ -58,9 +58,9 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete domain mappings."""
     conn_context = connection_context.GetConnectionContext(args)
-    domain = args.CONCEPTS.domain.Parse().domainmappingsId
+    domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
-      client.DeleteDomainMapping(domain)
+      client.DeleteDomainMapping(domain_mapping_ref.RelativeName())
       msg = """Mappings to [{domain}] now have been deleted.""".format(
-          domain=domain)
+          domain=domain_mapping_ref.domainmappingsId)
       pretty_print.Success(msg)
