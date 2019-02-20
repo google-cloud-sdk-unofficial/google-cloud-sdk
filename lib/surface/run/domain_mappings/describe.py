@@ -58,11 +58,11 @@ class Describe(base.Command):
   def Run(self, args):
     """Describe a domain mapping."""
     conn_context = connection_context.GetConnectionContext(args)
-    domain_name = args.CONCEPTS.domain.Parse().domainmappingsId
+    domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
-      domain_mapping = client.GetDomainMapping(domain_name)
+      domain_mapping = client.GetDomainMapping(domain_mapping_ref)
       if not domain_mapping:
         raise flags.ArgumentError(
             'Cannot find domain mapping for domain name [{}]'.format(
-                domain_name))
+                domain_mapping_ref.domainmappingsId))
       return domain_mapping

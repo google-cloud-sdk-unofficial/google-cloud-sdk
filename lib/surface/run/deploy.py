@@ -68,6 +68,7 @@ class Deploy(base.Command):
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
+    flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     flags.AddEndpointVisibilityEnum(parser)
     concept_parsers.ConceptParser([

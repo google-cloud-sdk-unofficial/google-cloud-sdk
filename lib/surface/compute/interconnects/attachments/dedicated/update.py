@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine dedicated interconnect attachment.
 
@@ -38,6 +38,15 @@ class Update(base.UpdateCommand):
   INTERCONNECT_ARG = None
   ROUTER_ARG = None
 
+  def _get_attachment(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+    return client.InterconnectAttachment(
+        attachment_ref, compute_client=holder.client)
+
   @classmethod
   def Args(cls, parser):
 
@@ -46,17 +55,31 @@ class Update(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
+
+  def Run(self, args):
+    interconnect_attachment = self._get_attachment(args)
+    return interconnect_attachment.PatchGa(
+        description=args.description, admin_enabled=args.admin_enabled)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateWithBandwidth(Update):
+  """Update a Google Compute Engine dedicated interconnect attachment.
+
+  *{command}* is used to update interconnect attachments. An interconnect
+  attachment is what binds the underlying connectivity of an interconnect to a
+  path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateWithBandwidth, cls).Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    attachment_flags.AddBandwidth(parser, required=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
-
-    interconnect_attachment = client.InterconnectAttachment(
-        attachment_ref, compute_client=holder.client)
+    interconnect_attachment = self._get_attachment(args)
 
     labels = None
     label_fingerprint = None
@@ -75,43 +98,3 @@ class Update(base.UpdateCommand):
         labels=labels,
         label_fingerprint=label_fingerprint,
         bandwidth=getattr(args, 'bandwidth', None))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdate(Update):
-
-  @classmethod
-  def Args(cls, parser):
-    super(AlphaUpdate, cls).Args(parser)
-    attachment_flags.AddBandwidth(parser, required=False)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class GaUpdate(Update):
-  """Update a Google Compute Engine dedicated interconnect attachment.
-
-  *{command}* is used to update interconnect attachments. An interconnect
-  attachment is what binds the underlying connectivity of an interconnect to a
-  path into and out of the customer's cloud network.
-  """
-
-  @classmethod
-  def Args(cls, parser):
-
-    cls.INTERCONNECT_ATTACHMENT_ARG = (
-        attachment_flags.InterconnectAttachmentArgument())
-    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
-    attachment_flags.AddDescription(parser)
-    attachment_flags.AddAdminEnabled(parser, update=True)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
-
-    interconnect_attachment = client.InterconnectAttachment(
-        attachment_ref, compute_client=holder.client)
-    return interconnect_attachment.PatchGa(
-        description=args.description, admin_enabled=args.admin_enabled)

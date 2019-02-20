@@ -31,7 +31,7 @@ from googlecloudsdk.core import log
 _DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicated/creating-vlan-attachments'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine dedicated interconnect attachment.
 
@@ -104,8 +104,8 @@ class Create(base.CreateCommand):
     log.status.Print(message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateWithBandwidth(Create):
   """Create a Google Compute Engine dedicated interconnect attachment.
 
   *{command}* is used to create a dedicated interconnect attachments. An
@@ -115,5 +115,5 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
+    super(CreateWithBandwidth, cls).Args(parser)
     attachment_flags.AddBandwidth(parser, required=False)

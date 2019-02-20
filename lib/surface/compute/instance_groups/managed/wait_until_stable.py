@@ -69,7 +69,7 @@ class WaitUntilStable(base.Command):
       responses, errors = self._GetResources(client, group_ref)
       if errors:
         utils.RaiseToolException(errors)
-      if wait_info.IsGroupStable(responses[0]):
+      if responses[0].status.isStable:
         break
       log.out.Print(wait_info.CreateWaitText(responses[0]))
       time_util.Sleep(WaitUntilStable._TIME_BETWEEN_POLLS_SEC)

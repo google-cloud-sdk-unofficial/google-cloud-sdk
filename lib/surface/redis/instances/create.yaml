@@ -91,7 +91,10 @@
       choices:
       - enum_value: REDIS_3_2
         arg_value: redis_3_2
-        help_text: Deploy Redis 3.2
+        help_text: Redis 3.2 compatibility
+      - enum_value: REDIS_4_0
+        arg_value: redis_4_0
+        help_text: Redis 4.0 compatibility
     - arg_name: reserved-ip-range
       api_field: instance.reservedIpRange
       help_text: |

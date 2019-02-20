@@ -87,8 +87,12 @@ class Create(base.CreateCommand):
     ]
     return messages.PerInstanceConfig(
         instance=str(instance_ref),
+        name=str(instance_ref).rsplit('/', 1)[-1],
         override=messages.ManagedInstanceOverride(
-            disks=disk_overrides, metadata=metadata_overrides))
+            disks=disk_overrides, metadata=metadata_overrides),
+        preservedState=\
+            instance_configs_messages.MakePreservedStateFromOverrides(
+                holder.client.messages, disk_overrides, metadata_overrides))
 
   @staticmethod
   def _CreateInstanceReference(holder, igm_ref, instance_name):

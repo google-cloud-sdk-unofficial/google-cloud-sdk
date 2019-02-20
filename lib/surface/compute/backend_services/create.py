@@ -453,6 +453,8 @@ class CreateBeta(CreateGA):
     flags.AddCacheKeyIncludeHost(parser, default=True)
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
     flags.AddCacheKeyQueryStringList(parser)
+    flags.AddEnableLogging(parser, default=None)
+    flags.AddLoggingSampleRate(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
     AddIapFlag(parser)
 
@@ -486,6 +488,9 @@ class CreateBeta(CreateGA):
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
+    backend_services_utils.ApplyLogConfigArgs(client.messages, args,
+                                              backend_service)
+
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service,
         project=backend_services_ref.project)
@@ -493,6 +498,12 @@ class CreateBeta(CreateGA):
     return [(client.apitools_client.backendServices, 'Insert', request)]
 
   def CreateRegionalRequests(self, holder, args, backend_services_ref):
+    if (args.enable_logging is not None or
+        args.logging_sample_rate is not None):
+      raise exceptions.InvalidArgumentException(
+          '--region',
+          'cannot specify logging options for regional backend services.')
+
     backend_service = self._CreateRegionBackendService(holder, args,
                                                        backend_services_ref)
     client = holder.client

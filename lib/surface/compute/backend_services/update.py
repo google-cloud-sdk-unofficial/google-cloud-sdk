@@ -461,6 +461,8 @@ class UpdateBeta(UpdateGA):
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
+    flags.AddEnableLogging(parser, default=None)
+    flags.AddLoggingSampleRate(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
 
@@ -483,6 +485,9 @@ class UpdateBeta(UpdateGA):
         replacement,
         is_update=True,
         apply_signed_url_cache_max_age=True)
+
+    backend_services_utils.ApplyLogConfigArgs(client.messages, args,
+                                              replacement)
 
     if not replacement.customRequestHeaders:
       cleared_fields.append('customRequestHeaders')
@@ -512,5 +517,16 @@ class UpdateBeta(UpdateGA):
         args.session_affinity is not None,
         args.IsSpecified('signed_url_cache_max_age'),
         args.timeout is not None,
+        args.enable_logging is not None,
+        args.logging_sample_rate is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
+
+  def GetSetRequest(self, client, backend_service_ref, replacement):
+    if (backend_service_ref.Collection() == 'compute.regionBackendServices'
+       ) and replacement.logConfig is not None:
+      raise exceptions.InvalidArgumentException(
+          '--region',
+          'cannot specify logging options for regional backend services.')
+    return super(UpdateBeta, self).GetSetRequest(client, backend_service_ref,
+                                                 replacement)

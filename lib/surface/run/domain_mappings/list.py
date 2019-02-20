@@ -55,9 +55,9 @@ class List(base.ListCommand):
         namespace_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
         """table(
-        firstof(id,metadata.name):label=SERVICE,
+        route_name:label=SERVICE,
         region:label=REGION,
-        route_name:label=DOMAIN)""")
+        metadata.name:label=DOMAIN)""")
 
   def Run(self, args):
     """List available domain mappings."""

@@ -245,6 +245,24 @@ class CreateAlpha(CreateGA):
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
   @staticmethod
+  def _MakePreservedStateWithDisks(client, device_names):
+    """Create StatefulPolicyPreservedState from a list of device names."""
+    additional_properties = []
+    # Disk device with AutoDelete NEVER
+    disk_device = client.messages.StatefulPolicyPreservedStateDiskDevice(
+        autoDelete=
+        client.messages.StatefulPolicyPreservedStateDiskDevice \
+          .AutoDeleteValueValuesEnum.NEVER)
+    # Add all disk_devices to map
+    for device_name in device_names:
+      disk_value = client.messages.StatefulPolicyPreservedState.DisksValue \
+        .AdditionalProperty(key=device_name, value=disk_device)
+      additional_properties.append(disk_value)
+    return client.messages.StatefulPolicyPreservedState(
+        disks=client.messages.StatefulPolicyPreservedState.DisksValue(
+            additionalProperties=additional_properties))
+
+  @staticmethod
   def _GetStatefulPolicy(args, client):
     if args.stateful_disks:
       disks = [
@@ -253,8 +271,11 @@ class CreateAlpha(CreateGA):
       ]
       preserved_resources = client.messages.StatefulPolicyPreservedResources(
           disks=disks)
+      preserved_state =\
+          CreateAlpha._MakePreservedStateWithDisks(client, args.stateful_disks)
       return client.messages.StatefulPolicy(
-          preservedResources=preserved_resources)
+          preservedResources=preserved_resources,
+          preservedState=preserved_state)
     if args.stateful_names:
       return client.messages.StatefulPolicy()
     return None

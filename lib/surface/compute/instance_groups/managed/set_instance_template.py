@@ -65,44 +65,17 @@ class SetInstanceTemplate(base.Command):
         },
         collection='compute.instanceTemplates')
 
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      return self._MakeSetInstanceTemplateRequest(client, igm_ref, template_ref)
-
     return self._MakePatchRequest(client, igm_ref, template_ref)
-
-  def _MakeSetInstanceTemplateRequest(self, client, igm_ref, template_ref):
-    messages = client.messages
-    if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = client.apitools_client.instanceGroupManagers
-      request = (
-          messages.ComputeInstanceGroupManagersSetInstanceTemplateRequest(
-              project=igm_ref.project,
-              zone=igm_ref.zone,
-              instanceGroupManager=igm_ref.Name(),
-              instanceGroupManagersSetInstanceTemplateRequest=(
-                  messages.InstanceGroupManagersSetInstanceTemplateRequest(
-                      instanceTemplate=template_ref.SelfLink()))))
-    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
-      service = client.apitools_client.regionInstanceGroupManagers
-      request = (
-          messages.ComputeRegionInstanceGroupManagersSetInstanceTemplateRequest(
-              project=igm_ref.project,
-              region=igm_ref.region,
-              instanceGroupManager=igm_ref.Name(),
-              regionInstanceGroupManagersSetTemplateRequest=(
-                  messages.RegionInstanceGroupManagersSetTemplateRequest(
-                      instanceTemplate=template_ref.SelfLink()))))
-    else:
-      raise ValueError('Unknown reference type {0}'.format(
-          igm_ref.Collection()))
-
-    return client.MakeRequests([(service, 'SetInstanceTemplate', request)])
 
   def _MakePatchRequest(self, client, igm_ref, template_ref):
     messages = client.messages
 
     igm_resource = messages.InstanceGroupManager(
-        instanceTemplate=template_ref.SelfLink())
+        instanceTemplate=template_ref.SelfLink(),
+        versions=[
+            messages.InstanceGroupManagerVersion(
+                instanceTemplate=template_ref.SelfLink())
+        ])
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = client.apitools_client.instanceGroupManagers

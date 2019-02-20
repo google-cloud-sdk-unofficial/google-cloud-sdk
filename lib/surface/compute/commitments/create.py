@@ -26,8 +26,8 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute.commitments import allocation_helper
 from googlecloudsdk.command_lib.compute.commitments import flags
+from googlecloudsdk.command_lib.compute.commitments import reservation_helper
 from googlecloudsdk.core import properties
 
 
@@ -104,7 +104,7 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
     flags.AddCreateFlags(parser)
-    flags.AddAllocationArgGroup(parser)
+    flags.AddReservationArgGroup(parser)
     messages = apis.GetMessagesModule('compute', 'alpha')
     flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
 
@@ -113,7 +113,7 @@ class CreateAlpha(Create):
     commitment_type_flag = flags.GetTypeMapperFlag(messages)
     commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
     commitment = messages.Commitment(
-        allocations=allocation_helper.MakeAllocations(args, messages, holder),
+        allocations=reservation_helper.MakeReservations(args, messages, holder),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArg(messages, args.resources),

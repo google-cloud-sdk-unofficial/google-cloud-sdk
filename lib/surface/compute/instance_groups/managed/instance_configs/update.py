@@ -118,14 +118,17 @@ class Update(base.UpdateCommand):
                          stateful_metadata_key_to_remove)))
 
     new_stateful_metadata.update(update_stateful_metadata)
-
     per_instance_config.override.metadata = [
         messages.ManagedInstanceOverride.MetadataValueListEntry(
             key=metadata_key, value=metadata_value)
         for metadata_key, metadata_value in sorted(
             six.iteritems(new_stateful_metadata))
     ]
-
+    preserved_state = \
+      instance_configs_messages.MakePreservedStateFromOverrides(
+          holder.client.messages, new_stateful_disks,
+          per_instance_config.override.metadata)
+    per_instance_config.preservedState = preserved_state
     return per_instance_config
 
   @staticmethod

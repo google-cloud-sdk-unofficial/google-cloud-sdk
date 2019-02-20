@@ -25,7 +25,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListRoutes(base.ListCommand):
   """List received or advertised routes for a VPC network peering."""
 

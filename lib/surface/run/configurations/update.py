@@ -57,6 +57,7 @@ class Update(base.Command):
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
+    flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
@@ -72,8 +73,8 @@ class Update(base.Command):
       if not changes:
         raise exceptions.NoConfigurationChangeError(
             'No configuration change requested. '
-            'Did you mean to include the flags --update-env-vars, '
-            '--memory, or --concurrency?')
+            'Did you mean to include the flags `--update-env-vars`, '
+            '`--memory`, `--concurrency`, or `--timeout`?')
       client.ReleaseService(service_ref, changes, args.async)
       url = client.GetServiceUrl(service_ref)
       active_revs = client.GetActiveRevisions(service_ref)
@@ -90,4 +91,3 @@ class Update(base.Command):
         url=url)
 
     pretty_print.Success(msg)
-

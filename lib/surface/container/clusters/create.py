@@ -450,7 +450,7 @@ class CreateBeta(Create):
     flags.AddAutoprovisioningFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddResourceUsageExportFlags(parser)
-    flags.AddAuthenticatorSecurityGroupFlags(parser)
+    flags.AddAuthenticatorSecurityGroupFlags(parser, hidden=True)
     kms_flag_overrides = {
         'kms-key': '--database-encryption-key',
         'kms-keyring': '--database-encryption-key-keyring',

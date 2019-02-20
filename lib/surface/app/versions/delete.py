@@ -73,7 +73,13 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
+
     services = client.ListServices()
+
+    # If a service is supplied, only list versions for that service
+    if args.service:
+      services = [s for s in services if s.id == args.service]
+
     all_versions = client.ListVersions(services)
     # Sort versions to make behavior deterministic enough for unit testing.
     versions = sorted(version_util.GetMatchingVersions(all_versions,

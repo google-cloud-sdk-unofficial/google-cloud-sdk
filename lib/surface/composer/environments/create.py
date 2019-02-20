@@ -51,7 +51,6 @@ def _CommonArgs(parser):
       help='The Compute Engine machine type '
       '(https://cloud.google.com/compute/docs/machine-types) to use for '
       'nodes. For example `--machine-type=n1-standard-1`.')
-
   parser.add_argument(
       '--disk-size',
       default='100GB',
@@ -125,6 +124,40 @@ information on how to structure KEYs and VALUEs, run
       'Supplied value should represent the desired major Python version. '
       'Cannot be updated.')
 
+  version_group = parser.add_mutually_exclusive_group()
+  airflow_version_type = arg_parsers.RegexpValidator(
+      r'^(\d+\.\d+(?:\.\d+)?)', 'must be in the form X.Y[.Z].')
+  version_group.add_argument(
+      '--airflow-version',
+      type=airflow_version_type,
+      help="""Version of Airflow to run in the environment.
+
+      Must be of the form `X.Y[.Z]`.
+
+      The latest supported Cloud Composer version will be used within
+      the created environment.""")
+
+  image_version_type = arg_parsers.RegexpValidator(
+      r'^composer-(\d+\.\d+.\d+|latest)-airflow-(\d+\.\d+(?:\.\d+)?)',
+      'must be in the form \'composer-A.B.C-airflow-X.Y[.Z]\' or '
+      '\'latest\' can be provided in place of the Cloud Composer version '
+      'string. For example: \'composer-latest-airflow-1.10.0\'.')
+  version_group.add_argument(
+      '--image-version',
+      type=image_version_type,
+      help="""Version of the image to run in the environment.
+
+      Value consists of version information for both Cloud Composer and
+      Apache Airflow. Must be of the form `composer-A.B.C-airflow-X.Y[.Z]`.
+
+      The Cloud Composer and Airflow versions are semantic versions.
+      `latest` can be provided instead of an explicit Cloud Composer
+      version number indicating that the server will replace `latest`
+      with the current Cloud Composer version. For the Apache Airflow
+      portion, the patch version can be omitted and the current
+      version will be selected. The version numbers that are used will
+      be stored.""")
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -166,6 +199,12 @@ class Create(base.Command):
           args.subnetwork,
           fallback_region=self.env_ref.Parent().Name()).RelativeName()
 
+    self.image_version = None
+    if args.airflow_version:
+      self.image_version = _ImageVersionFromAirflowVersion(args.airflow_version)
+    elif args.image_version:
+      self.image_version = args.image_version
+
     operation = self.GetOperationMessage(args)
 
     details = 'with operation [{0}]'.format(operation.name)
@@ -205,6 +244,7 @@ class Create(base.Command):
         tags=args.tags,
         disk_size_gb=args.disk_size >> 30,
         python_version=args.python_version,
+        image_version=self.image_version,
         release_track=self.ReleaseTrack())
 
 
@@ -217,73 +257,6 @@ class CreateBeta(Create):
 
     {top_command} composer operations describe
   """
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser)
-
-    # Adding beta arguments
-    mutex_group = parser.add_mutually_exclusive_group()
-    airflow_version_type = arg_parsers.RegexpValidator(
-        r'^(\d+\.\d+(?:\.\d+)?)', 'must be in the form X.Y[.Z].')
-    mutex_group.add_argument(
-        '--airflow-version',
-        type=airflow_version_type,
-        help="""Version of Airflow to run in the environment.
-
-        Must be of the form `X.Y[.Z]`.
-
-        The latest supported Cloud Composer version will be used within
-        the created environment.""")
-
-    image_version_type = arg_parsers.RegexpValidator(
-        r'^composer-(\d+\.\d+.\d+|latest)-airflow-(\d+\.\d+(?:\.\d+)?)',
-        'must be in the form \'composer-A.B.C-airflow-X.Y[.Z]\' or '
-        '\'latest\' can be provided in place of the Cloud Composer version '
-        'string. For example: \'composer-latest-airflow-1.10.0\'.')
-    mutex_group.add_argument(
-        '--image-version',
-        type=image_version_type,
-        help="""Version of the image to run in the environment.
-
-        Value consists of version information for both Cloud Composer and
-        Apache Airflow. Must be of the form `composer-A.B.C-airflow-X.Y[.Z]`.
-
-        The Cloud Composer and Airflow versions are semantic versions.
-        `latest` can be provided instead of an explicit Cloud Composer
-        version number indicating that the server will replace `latest`
-        with the current Cloud Composer version. For the Apache Airflow
-        portion, the patch version can be omitted and the current
-        version will be selected. The version numbers that are used will
-        be stored.""")
-
-  def Run(self, args):
-    self.image_version = None
-    if args.airflow_version:
-      self.image_version = _ImageVersionFromAirflowVersion(args.airflow_version)
-    elif args.image_version:
-      self.image_version = args.image_version
-    return super(CreateBeta, self).Run(args)
-
-  def GetOperationMessage(self, args):
-    """See base class."""
-    return environments_api_util.Create(
-        self.env_ref,
-        args.node_count,
-        labels=args.labels,
-        location=self.zone,
-        machine_type=self.machine_type,
-        network=self.network,
-        subnetwork=self.subnetwork,
-        env_variables=args.env_variables,
-        airflow_config_overrides=args.airflow_configs,
-        service_account=args.service_account,
-        oauth_scopes=args.oauth_scopes,
-        tags=args.tags,
-        disk_size_gb=args.disk_size >> 30,
-        python_version=args.python_version,
-        image_version=self.image_version,
-        release_track=self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

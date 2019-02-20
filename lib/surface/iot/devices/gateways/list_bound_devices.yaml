@@ -6,14 +6,18 @@
 
   request:
     collection: cloudiot.projects.locations.registries.devices
+    static_fields:
+      fieldMask: blocked,name,gatewayConfig
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iot.util:RegistriesDevicesListRequestHook
 
   arguments:
     resource:
       help_text: The registry you want to list bound devices for.
       spec: !REF googlecloudsdk.command_lib.iot.resources:registry
     params:
-    - api_field: gatewayListOptions_associationsGatewayId
-      arg_name: gateway
+    - arg_name: gateway
+      api_field: gatewayListOptions_associationsGatewayId
       is_positional: false
       required: true
       help_text: The gateway id or numeric id you want to list bound devices for.

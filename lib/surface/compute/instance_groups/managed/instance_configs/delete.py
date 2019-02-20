@@ -54,12 +54,19 @@ class Delete(base.DeleteCommand):
         help='Names of instances to delete instance-configs from.')
 
   @staticmethod
+  def _GetInstanceNameListFromUrlList(holder, instances):
+    instance_names = [
+        holder.resources.ParseURL(instance).Name() for instance in instances
+    ]
+    return instance_names
+
+  @staticmethod
   def _GetDeletePerInstanceConfigRequests(holder, igm_ref, instances):
     """Returns a delete message for instance group manager."""
-
     messages = holder.client.messages
     req = messages.InstanceGroupManagersDeletePerInstanceConfigsReq(
-        instances=instances)
+        instances=instances,
+        names=Delete._GetInstanceNameListFromUrlList(holder, instances))
     return messages.ComputeInstanceGroupManagersDeletePerInstanceConfigsRequest(
         instanceGroupManager=igm_ref.Name(),
         instanceGroupManagersDeletePerInstanceConfigsReq=req,
@@ -73,7 +80,8 @@ class Delete(base.DeleteCommand):
 
     messages = holder.client.messages
     req = messages.RegionInstanceGroupManagerDeleteInstanceConfigReq(
-        instances=instances)
+        instances=instances,
+        names=Delete._GetInstanceNameListFromUrlList(holder, instances))
     return (messages.
             ComputeRegionInstanceGroupManagersDeletePerInstanceConfigsRequest)(
                 instanceGroupManager=igm_ref.Name(),

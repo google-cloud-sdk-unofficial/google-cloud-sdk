@@ -76,7 +76,6 @@ class Update(base.SilentCommand):
     parser.add_argument(
         '--ranges',
         metavar='RANGES',
-        required=True,
         help='IP CIDR ranges for service to use.')
     parser.add_argument(
         '--force',

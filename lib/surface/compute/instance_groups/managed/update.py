@@ -151,15 +151,34 @@ class UpdateAlpha(UpdateGA):
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
+  def _MakePreservedStateWithDisks(self, client, device_names):
+    """Create StatefulPolicyPreservedState from a list of device names."""
+    additional_properties = []
+    # Disk device with AutoDelete NEVER
+    disk_device = client.messages.StatefulPolicyPreservedStateDiskDevice(
+        autoDelete=
+        client.messages.StatefulPolicyPreservedStateDiskDevice \
+          .AutoDeleteValueValuesEnum.NEVER)
+    # Add all disk_devices to map
+    for device_name in device_names:
+      disk_value = client.messages.StatefulPolicyPreservedState.DisksValue \
+        .AdditionalProperty(key=device_name, value=disk_device)
+      additional_properties.append(disk_value)
+    return client.messages.StatefulPolicyPreservedState(
+        disks=client.messages.StatefulPolicyPreservedState.DisksValue(
+            additionalProperties=additional_properties))
+
   def _UpdateStatefulPolicy(self, client, device_names):
     preserved_disks = [
         client.messages.StatefulPolicyPreservedDisk(deviceName=device_name)
         for device_name in device_names
     ]
+    preserved_state = self._MakePreservedStateWithDisks(client, device_names)
     if preserved_disks:
       return client.messages.StatefulPolicy(
           preservedResources=client.messages.StatefulPolicyPreservedResources(
-              disks=preserved_disks))
+              disks=preserved_disks),
+          preservedState=preserved_state)
     else:
       return client.messages.StatefulPolicy()
 

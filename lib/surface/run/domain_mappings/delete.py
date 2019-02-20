@@ -60,7 +60,7 @@ class Delete(base.Command):
     conn_context = connection_context.GetConnectionContext(args)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
-      client.DeleteDomainMapping(domain_mapping_ref.RelativeName())
+      client.DeleteDomainMapping(domain_mapping_ref)
       msg = """Mappings to [{domain}] now have been deleted.""".format(
           domain=domain_mapping_ref.domainmappingsId)
       pretty_print.Success(msg)
