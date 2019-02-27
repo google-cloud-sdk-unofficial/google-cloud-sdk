@@ -25,7 +25,7 @@ class Images(base.Group):
   """List, create, and delete Google Compute Engine images."""
 
 
-Images.category = base.COMPUTE_INSTANCES_CATEGORY
+Images.category = base.INSTANCES_CATEGORY
 
 Images.detailed_help = {
     'brief': 'List, create, and delete Google Compute Engine images',

@@ -46,7 +46,7 @@ def _ApplyEnvVarsArgsToFunction(function, args):
 
 
 def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
-         enable_connected_vpc=False, enable_service_account=False):
+         enable_connected_vpc=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
   labels_util.CheckNoDeploymentLabels('--remove-labels', args.remove_labels)
@@ -92,7 +92,7 @@ def _Run(args, track=None, enable_runtime=True, enable_max_instances=False,
   if args.memory:
     function.availableMemoryMb = utils.BytesToMb(args.memory)
     updated_fields.append('availableMemoryMb')
-  if enable_service_account and args.service_account:
+  if args.service_account:
     function.serviceAccountEmail = args.service_account
     updated_fields.append('serviceAccountEmail')
   if enable_runtime:
@@ -177,6 +177,8 @@ class Deploy(base.Command):
         extra_update_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE,
         extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
 
+    flags.AddServiceAccountFlag(parser)
+
     # Add args for specifying the function source code
     flags.AddSourceFlag(parser)
     flags.AddStageBucketFlag(parser)
@@ -202,10 +204,9 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddServiceAccountFlag(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack(), enable_service_account=True)
+    return _Run(args, track=self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -218,8 +219,7 @@ class DeployAlpha(base.Command):
     Deploy.Args(parser)
     flags.AddMaxInstancesFlag(parser)
     flags.AddConnectedVPCMutexGroup(parser)
-    flags.AddServiceAccountFlag(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack(), enable_max_instances=True,
-                enable_connected_vpc=True, enable_service_account=True)
+                enable_connected_vpc=True)

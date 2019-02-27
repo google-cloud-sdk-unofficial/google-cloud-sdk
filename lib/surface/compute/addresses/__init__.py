@@ -25,7 +25,7 @@ class Addresses(base.Group):
   """Read and manipulate Google Compute Engine addresses."""
 
 
-Addresses.category = base.COMPUTE_NETWORKING_CATEGORY
+Addresses.category = base.NETWORKING_CATEGORY
 
 Addresses.detailed_help = {
     'brief': 'Read and manipulate Google Compute Engine addresses',

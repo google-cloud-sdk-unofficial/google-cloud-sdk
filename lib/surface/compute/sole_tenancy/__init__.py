@@ -27,4 +27,4 @@ class SoleTenancy(base.Group):
   """Read and manage Google Compute Engine sole-tenancy resources."""
 
 
-SoleTenancy.category = base.COMPUTE_INSTANCES_CATEGORY
+SoleTenancy.category = base.INSTANCES_CATEGORY

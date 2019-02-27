@@ -30,7 +30,7 @@ class Source(base.Group):
   Cloud project.
   """
 
-  category = base.GCLOUD_SDK_TOOLS_CATEGORY
+  category = base.SDK_TOOLS_CATEGORY
 
   def Filter(self, context, args):
     """Initialize context for source commands.

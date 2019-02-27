@@ -93,7 +93,7 @@ def _Args(parser):
 class ScpGA(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
-  category = base.COMPUTE_TOOLS_CATEGORY
+  category = base.TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

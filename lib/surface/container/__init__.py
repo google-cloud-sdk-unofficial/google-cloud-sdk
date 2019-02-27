@@ -39,7 +39,7 @@ class Container(base.Group):
   can be found here: https://cloud.google.com/kubernetes-engine/docs/
   """
 
-  category = base.GCLOUD_COMPUTE_CATEGORY
+  category = base.COMPUTE_CATEGORY
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

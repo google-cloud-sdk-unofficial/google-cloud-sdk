@@ -22,12 +22,12 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Logging(base.Group):
   """Manage Stackdriver Logging."""
 
-  category = base.GCLOUD_MANAGEMENT_TOOLS_CATEGORY
+  category = base.MANAGEMENT_TOOLS_CATEGORY
 
   def Filter(self, context, args):
     del context, args
-    base.DisableUserProjectQuota()

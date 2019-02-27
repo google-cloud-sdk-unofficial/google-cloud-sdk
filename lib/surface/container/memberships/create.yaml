@@ -27,12 +27,12 @@
     params:
     - arg_name: kubeconfig-file
       help_text: |
-        The Kubeconfig file contains the entry of the cluster to be registererd.
-        Default to $KUBECONFIG.
+        The kubeconfig file containing an entry for the cluster being registered.
+        Defaults to $KUBECONFIG.
     - arg_name: context
       help_text: |
-        The context within the Kubeconfig to specify the cluster.
-        Default to current-context
+        The context in the kubeconfig file that specifies the cluster being registered.
+        Defaults to the current context.
     - group:
         mutex: true
         required: true
@@ -44,21 +44,23 @@
               help_text: |
                 The JSON file of a Google Cloud service account private key.
             - arg_name: proxy
-              required: false
               help_text: |
                 The proxy address in the format of http(s)://{hostname}.
-                The proxy must support the HTTP CONNECT method in order for this connection to succeed.
-            - arg_name: docker-registry
-              required: false
+                The proxy must support the HTTP CONNECT method in order for this
+                connection to succeed.
+            - arg_name: docker-image
               help_text: |
-                If the user wishes to use the connect agent image from a private registry.
-                The user is responsible for maintaining and updating the connect agent image
-                in the private registry.
+                The image to use for the connect agent, as it would be passed to
+                the `docker pull` command. The user is responsible for ensuring
+                that this image can be pulled from the cluster that is being
+                registered, and is responsible for maintaining and updating the
+                agent image if a private registry is being used.
             - arg_name: docker-credential-file
-              required: false
               help_text: |
-                If a private registry is used and auth is required. Content of the file will be
-                appropriately embedded into ImagePullSecret.
+                The credentials to be used if a private registry is provided and
+                auth is required. The contents of the file will be stored into a
+                Secret and referenced from the imagePullSecrets of the connect
+                agent workload.
         - arg_name: agent-deployed
           action: store_true
           default: false

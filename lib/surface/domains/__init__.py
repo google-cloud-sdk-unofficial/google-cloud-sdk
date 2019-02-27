@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 class Domains(base.Group):
   """Base class for gcloud domains command group."""
 
-  category = base.GCLOUD_NETWORKING_CATEGORY
+  category = base.NETWORKING_CATEGORY
 
   detailed_help = {
       'brief': 'Manage domains for your Google Cloud projects.',

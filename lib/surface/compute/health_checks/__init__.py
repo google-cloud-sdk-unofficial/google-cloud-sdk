@@ -25,7 +25,7 @@ class HealthChecks(base.Group):
   """Read and manipulate health checks for load balanced instances."""
 
 
-HealthChecks.category = base.COMPUTE_LOAD_BALANCING_CATEGORY
+HealthChecks.category = base.LOAD_BALANCING_CATEGORY
 
 HealthChecks.detailed_help = {
     'brief': ('Read and manipulate health checks for load balanced '

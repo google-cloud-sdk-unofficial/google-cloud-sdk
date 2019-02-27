@@ -44,6 +44,7 @@ _DETAILED_HELP = {
 }
 
 
+# TODO(b/125365973): add e2e test for list command.
 class List(base.DescribeCommand):
   """List connections to a service via VPC peering for a project network."""
 

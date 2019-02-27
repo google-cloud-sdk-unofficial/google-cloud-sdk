@@ -58,7 +58,7 @@ class SignUrl(base.Command):
   - The URL must not have a fragment.
   """
 
-  category = base.COMPUTE_TOOLS_CATEGORY
+  category = base.TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

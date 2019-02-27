@@ -312,7 +312,8 @@ class Create(base.CreateCommand):
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddDeprecatedClusterNodeIdentityFlags(parser)
-    flags.AddPrivateClusterFlags(parser, with_deprecated=False)
+    flags.AddPrivateClusterFlags(
+        parser, with_deprecated=False, with_alpha=False)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
@@ -444,7 +445,7 @@ class CreateBeta(Create):
     flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddPrivateClusterFlags(parser, with_deprecated=True)
+    flags.AddPrivateClusterFlags(parser, with_deprecated=True, with_alpha=False)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser)
@@ -534,7 +535,7 @@ class CreateAlpha(Create):
     flags.AddPreemptibleFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
-    flags.AddPrivateClusterFlags(parser, with_deprecated=True)
+    flags.AddPrivateClusterFlags(parser, with_deprecated=True, with_alpha=True)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
@@ -592,6 +593,7 @@ class CreateAlpha(Create):
     ops.node_pool_name = args.node_pool_name
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
+    ops.enable_peering_route_sharing = args.enable_peering_route_sharing
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

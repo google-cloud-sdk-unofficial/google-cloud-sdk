@@ -34,5 +34,5 @@ DETAILED_HELP = {
 
 class Oslogin(base.Group):
   """Create and manipulate Google Compute Engine OS Login resources."""
-  category = base.COMPUTE_TOOLS_CATEGORY
+  category = base.TOOLS_CATEGORY
   detailed_help = DETAILED_HELP

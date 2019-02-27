@@ -58,7 +58,7 @@ DETAILED_HELP = {
 class Dataproc(base.Group):
   """Create and manage Google Cloud Dataproc clusters and jobs."""
 
-  category = base.GCLOUD_DATA_ANALYTICS_CATEGORY
+  category = base.DATA_ANALYTICS_CATEGORY
 
   detailed_help = DETAILED_HELP
 

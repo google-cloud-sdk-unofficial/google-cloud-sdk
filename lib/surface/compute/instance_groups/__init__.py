@@ -30,4 +30,4 @@ class InstanceGroups(base.Group):
   """
 
 
-InstanceGroups.category = base.COMPUTE_INSTANCES_CATEGORY
+InstanceGroups.category = base.INSTANCES_CATEGORY

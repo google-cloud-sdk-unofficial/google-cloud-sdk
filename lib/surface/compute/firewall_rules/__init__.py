@@ -25,7 +25,7 @@ class FirewallRules(base.Group):
   """List, create, update, and delete Google Compute Engine firewall rules."""
 
 
-FirewallRules.category = base.COMPUTE_NETWORKING_CATEGORY
+FirewallRules.category = base.NETWORKING_CATEGORY
 
 FirewallRules.detailed_help = {
     'brief': ('List, create, update, and delete Google Compute Engine firewall '

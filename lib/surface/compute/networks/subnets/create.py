@@ -19,11 +19,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import utils as compute_api
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 import six
 
 
@@ -141,6 +144,27 @@ def _AddArgs(cls, parser, include_alpha=False):
         default=None,
         help=('Enable/disable private IPv6 access for the subnet.'))
 
+    messages = apis.GetMessagesModule('compute',
+                                      compute_api.COMPUTE_ALPHA_API_VERSION)
+    GetPrivateIpv6GoogleAccessTypeFlagMapper(messages).choice_arg.AddToParser(
+        parser)
+
+
+def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
+  return arg_utils.ChoiceEnumMapper(
+      '--private-ipv6-google-access-type',
+      messages.Subnetwork.PrivateIpv6GoogleAccessValueValuesEnum,
+      custom_mappings={
+          'DISABLE_GOOGLE_ACCESS':
+              'disable',
+          'ENABLE_BIDIRECTIONAL_ACCESS_TO_GOOGLE':
+              'enable-bidirectional-access',
+          'ENABLE_OUTBOUND_VM_ACCESS_TO_GOOGLE':
+              'enable-outbound-vm-access'
+      },
+      help_str='The private IPv6 google access type for the VMs in this subnet.'
+  )
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -193,6 +217,11 @@ class Create(base.CreateCommand):
             convert_to_enum(args.metadata))
       if args.enable_private_ipv6_access is not None:
         subnetwork.enablePrivateV6Access = args.enable_private_ipv6_access
+      if args.private_ipv6_google_access_type is not None:
+        subnetwork.privateIpv6GoogleAccess = (
+            messages.Subnetwork.PrivateIpv6GoogleAccessValueValuesEnum(
+                ConvertPrivateIpv6GoogleAccess(
+                    convert_to_enum(args.private_ipv6_google_access_type))))
 
     return subnetwork
 
@@ -239,3 +268,12 @@ class CreateAlpha(Create):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     _AddArgs(cls, parser, include_alpha=True)
     parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
+
+
+def ConvertPrivateIpv6GoogleAccess(choice):
+  choices_to_enum = {
+      'DISABLE': 'DISABLE_GOOGLE_ACCESS',
+      'ENABLE_BIDIRECTIONAL_ACCESS': 'ENABLE_BIDIRECTIONAL_ACCESS_TO_GOOGLE',
+      'ENABLE_OUTBOUND_VM_ACCESS': 'ENABLE_OUTBOUND_VM_ACCESS_TO_GOOGLE'
+  }
+  return choices_to_enum.get(choice)

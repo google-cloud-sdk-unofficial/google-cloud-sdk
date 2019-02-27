@@ -32,4 +32,4 @@ class InstanceTemplates(base.Group):
   """
 
 
-InstanceTemplates.category = base.COMPUTE_INSTANCES_CATEGORY
+InstanceTemplates.category = base.INSTANCES_CATEGORY

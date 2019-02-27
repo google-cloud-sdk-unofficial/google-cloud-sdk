@@ -110,6 +110,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "iam-policy",
                   "resource"
                 ],
+                "--folder": "value",
                 "--organization": "value",
                 "--output-path": "value",
                 "--snapshot-time": "value"
@@ -1369,6 +1370,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--reservation-zone": "dynamic",
                     "--reservations-from-file": "value",
                     "--resources": "value",
+                    "--resources-accelerator": "value",
                     "--type": [
                       "general-purpose",
                       "memory-optimized"
@@ -4122,6 +4124,11 @@ STATIC_COMPLETION_CLI_TREE = {
                           "include-all-metadata"
                         ],
                         "--network": "dynamic",
+                        "--private-ipv6-google-access-type": [
+                          "disable",
+                          "enable-bidirectional-access",
+                          "enable-outbound-vm-access"
+                        ],
                         "--purpose": [
                           "INTERNAL_HTTPS_LOAD_BALANCER",
                           "PRIVATE"
@@ -4224,6 +4231,11 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--metadata": [
                           "exclude-all-metadata",
                           "include-all-metadata"
+                        ],
+                        "--private-ipv6-google-access-type": [
+                          "disable",
+                          "enable-bidirectional-access",
+                          "enable-outbound-vm-access"
                         ],
                         "--region": "dynamic",
                         "--remove-secondary-ranges": "value",
@@ -4621,6 +4633,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
                         "--log-filter": [
+                          "ALL",
                           "ERRORS_ONLY",
                           "TRANSLATIONS_ONLY"
                         ],
@@ -4663,7 +4676,6 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
                         "--clear-icmp-idle-timeout": "bool",
-                        "--clear-log-filter": "bool",
                         "--clear-min-ports-per-vm": "bool",
                         "--clear-tcp-established-idle-timeout": "bool",
                         "--clear-tcp-transitory-idle-timeout": "bool",
@@ -4671,6 +4683,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
                         "--log-filter": [
+                          "ALL",
                           "ERRORS_ONLY",
                           "TRANSLATIONS_ONLY"
                         ],
@@ -6431,6 +6444,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-master-authorized-networks": "bool",
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
+                    "--enable-peering-route-sharing": "bool",
                     "--enable-pod-security-policy": "bool",
                     "--enable-private-endpoint": "bool",
                     "--enable-private-nodes": "bool",
@@ -6554,6 +6568,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-master-authorized-networks": "bool",
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
+                    "--enable-peering-route-sharing": "bool",
                     "--enable-pod-security-policy": "bool",
                     "--enable-vertical-pod-autoscaling": "bool",
                     "--generate-password": "bool",
@@ -6676,7 +6691,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--context": "value",
                     "--docker-credential-file": "value",
-                    "--docker-registry": "value",
+                    "--docker-image": "value",
                     "--kubeconfig-file": "value",
                     "--proxy": "value",
                     "--service-account-key-file": "value"
@@ -6951,6 +6966,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-version": "value",
                     "--initialization-action-timeout": "value",
                     "--initialization-actions": "value",
+                    "--kerberos-config-file": "value",
+                    "--kerberos-kms-key": "dynamic",
+                    "--kerberos-kms-key-keyring": "dynamic",
+                    "--kerberos-kms-key-location": "dynamic",
+                    "--kerberos-kms-key-project": "dynamic",
+                    "--kerberos-root-principal-password-uri": "value",
                     "--labels": "value",
                     "--master-accelerator": "value",
                     "--master-boot-disk-size": "value",
@@ -7561,6 +7582,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-version": "value",
                     "--initialization-action-timeout": "value",
                     "--initialization-actions": "value",
+                    "--kerberos-config-file": "value",
+                    "--kerberos-kms-key": "dynamic",
+                    "--kerberos-kms-key-keyring": "dynamic",
+                    "--kerberos-kms-key-location": "dynamic",
+                    "--kerberos-kms-key-project": "dynamic",
+                    "--kerberos-root-principal-password-uri": "value",
                     "--labels": "value",
                     "--master-accelerator": "value",
                     "--master-boot-disk-size": "value",
@@ -8511,6 +8538,34 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "regions": {
+              "commands": {
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "zones": {
+              "commands": {
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
             }
           },
           "flags": {}
@@ -8985,114 +9040,6 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "genomics": {
           "commands": {
-            "callsets": {
-              "commands": {
-                "create": {
-                  "commands": {},
-                  "flags": {
-                    "--name": "value",
-                    "--variant-set-id": "value"
-                  }
-                },
-                "delete": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "describe": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--name": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                },
-                "update": {
-                  "commands": {},
-                  "flags": {
-                    "--name": "value"
-                  }
-                }
-              },
-              "flags": {}
-            },
-            "datasets": {
-              "commands": {
-                "add-iam-policy-binding": {
-                  "commands": {},
-                  "flags": {
-                    "--condition": "value",
-                    "--condition-from-file": "value",
-                    "--member": "value",
-                    "--role": "dynamic"
-                  }
-                },
-                "create": {
-                  "commands": {},
-                  "flags": {
-                    "--name": "value"
-                  }
-                },
-                "delete": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "describe": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "get-iam-policy": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value"
-                  }
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                },
-                "remove-iam-policy-binding": {
-                  "commands": {},
-                  "flags": {
-                    "--all": "bool",
-                    "--condition": "value",
-                    "--condition-from-file": "value",
-                    "--member": "value",
-                    "--role": "dynamic"
-                  }
-                },
-                "restore": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "set-iam-policy": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "update": {
-                  "commands": {},
-                  "flags": {
-                    "--name": "value"
-                  }
-                }
-              },
-              "flags": {}
-            },
             "operations": {
               "commands": {
                 "cancel": {
@@ -9147,189 +9094,151 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
-            },
-            "readgroupsets": {
+            }
+          },
+          "flags": {}
+        },
+        "healthcare": {
+          "commands": {
+            "annotation-stores": {
               "commands": {
-                "delete": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "describe": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "export": {
+                "add-iam-policy-binding": {
                   "commands": {},
                   "flags": {
-                    "--export-uri": "value",
-                    "--reference-names": "value"
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
                   }
                 },
-                "import": {
-                  "commands": {},
-                  "flags": {
-                    "--dataset-id": "value",
-                    "--partition-strategy": "value",
-                    "--reference-set-id": "value",
-                    "--source-uris": "value"
-                  }
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--name": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                },
-                "update": {
-                  "commands": {},
-                  "flags": {
-                    "--name": "value",
-                    "--reference-set-id": "value"
-                  }
-                }
-              },
-              "flags": {}
-            },
-            "reads": {
-              "commands": {
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--end": "value",
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--reference-name": "value",
-                    "--sort-by": "value",
-                    "--start": "value",
-                    "--uri": "bool"
-                  }
-                }
-              },
-              "flags": {}
-            },
-            "references": {
-              "commands": {
-                "describe": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--accessions": "value",
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--md5checksums": "value",
-                    "--page-size": "value",
-                    "--reference-set-id": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                }
-              },
-              "flags": {}
-            },
-            "referencesets": {
-              "commands": {
-                "describe": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--accessions": "value",
-                    "--assembly-id": "value",
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--md5checksums": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                }
-              },
-              "flags": {}
-            },
-            "variants": {
-              "commands": {
-                "delete": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "describe": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "import": {
-                  "commands": {},
-                  "flags": {
-                    "--file-format": [
-                      "complete-genomics",
-                      "vcf"
-                    ],
-                    "--info-merge-config": "value",
-                    "--normalize-reference-names": "bool",
-                    "--source-uris": "value",
-                    "--variantset-id": "value"
-                  }
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--call-set-ids": "value",
-                    "--end": "value",
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--limit-calls": "value",
-                    "--page-size": "value",
-                    "--reference-name": "value",
-                    "--sort-by": "value",
-                    "--start": "value",
-                    "--uri": "bool",
-                    "--variant-set-id": "value"
-                  }
-                },
-                "update": {
-                  "commands": {},
-                  "flags": {
-                    "--names": "value"
-                  }
-                }
-              },
-              "flags": {}
-            },
-            "variantsets": {
-              "commands": {
                 "create": {
                   "commands": {},
                   "flags": {
-                    "--dataset-id": "value",
-                    "--description": "value",
-                    "--name": "value",
-                    "--reference-set-id": "value"
+                    "--dataset": "value",
+                    "--location": "value"
                   }
                 },
                 "delete": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
                 },
                 "describe": {
                   "commands": {},
-                  "flags": {}
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
                 },
-                "export": {
+                "get-iam-policy": {
                   "commands": {},
                   "flags": {
-                    "--bigquery-dataset": "value",
-                    "--bigquery-project": "value",
-                    "--call-set-ids": "value"
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "remove-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "datasets": {
+              "commands": {
+                "add-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value",
+                    "--time-zone": "value"
+                  }
+                },
+                "deidentify": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--default-fhir-config": "bool",
+                    "--destination-dataset": "value",
+                    "--dicom-filter-tags": "value",
+                    "--location": "value",
+                    "--text-redaction-mode": [
+                      "all"
+                    ]
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
                   }
                 },
                 "list": {
@@ -9337,16 +9246,374 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--filter": "value",
                     "--limit": "value",
+                    "--location": "value",
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
                 },
+                "remove-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
                 "update": {
                   "commands": {},
                   "flags": {
-                    "--description": "value",
-                    "--name": "value"
+                    "--location": "value",
+                    "--time-zone": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "dicom-stores": {
+              "commands": {
+                "add-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--pubsub-topic": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--bq-table": "value",
+                    "--dataset": "value",
+                    "--gcs-uri-prefix": "value",
+                    "--location": "value",
+                    "--mime-type": "value",
+                    "--overwrite-table": "bool"
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--gcs-uri": "value",
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "remove-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--pubsub-topic": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "fhir-stores": {
+              "commands": {
+                "add-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--disable-referential-integrity": "bool",
+                    "--disable-resource-versioning": "bool",
+                    "--enable-update-create": "bool",
+                    "--location": "value",
+                    "--pubsub-topic": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--bq-dataset": "value",
+                    "--dataset": "value",
+                    "--gcs-uri": "value",
+                    "--location": "value",
+                    "--recursive-depth": "value",
+                    "--schema-type": [
+                      "analytics",
+                      "lossless"
+                    ]
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--content-structure": [
+                      "bundle",
+                      "resource"
+                    ],
+                    "--dataset": "value",
+                    "--error-gcs-uri": "value",
+                    "--gcs-uri": "value",
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "remove-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--enable-update-create": "bool",
+                    "--location": "value",
+                    "--pubsub-topic": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "hl7v2-stores": {
+              "commands": {
+                "add-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--pubsub-topic": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "get-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "remove-iam-policy-binding": {
+                  "commands": {},
+                  "flags": {
+                    "--all": "bool",
+                    "--condition": "value",
+                    "--condition-from-file": "value",
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--member": "value",
+                    "--role": "dynamic"
+                  }
+                },
+                "set-iam-policy": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value",
+                    "--pubsub-topic": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--dataset": "value",
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
                   }
                 }
               },
@@ -10379,6 +10646,166 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "logging": {
+          "commands": {
+            "logs": {
+              "commands": {
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "metrics": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--config-from-file": "value",
+                    "--description": "value",
+                    "--log-filter": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--config-from-file": "value",
+                    "--description": "value",
+                    "--log-filter": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "read": {
+              "commands": {},
+              "flags": {
+                "--billing-account": "value",
+                "--folder": "value",
+                "--freshness": "value",
+                "--limit": "value",
+                "--order": [
+                  "asc",
+                  "desc"
+                ],
+                "--organization": "dynamic"
+              }
+            },
+            "resource-descriptors": {
+              "commands": {
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "sinks": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--billing-account": "value",
+                    "--folder": "value",
+                    "--include-children": "bool",
+                    "--log-filter": "value",
+                    "--organization": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--billing-account": "value",
+                    "--folder": "value",
+                    "--organization": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--billing-account": "value",
+                    "--folder": "value",
+                    "--organization": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--billing-account": "value",
+                    "--filter": "value",
+                    "--folder": "value",
+                    "--limit": "value",
+                    "--organization": "dynamic",
+                    "--sort-by": "value"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--billing-account": "value",
+                    "--folder": "value",
+                    "--log-filter": "value",
+                    "--organization": "dynamic"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "write": {
+              "commands": {},
+              "flags": {
+                "--billing-account": "value",
+                "--folder": "value",
+                "--organization": "dynamic",
+                "--payload-type": [
+                  "json",
+                  "text"
+                ],
+                "--severity": [
+                  "ALERT",
+                  "CRITICAL",
+                  "DEBUG",
+                  "DEFAULT",
+                  "EMERGENCY",
+                  "ERROR",
+                  "INFO",
+                  "NOTICE",
+                  "WARNING"
+                ]
+              }
             }
           },
           "flags": {}
@@ -11528,7 +11955,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
-                    "--labels": "value"
+                    "--labels": "value",
+                    "--topic-encryption-key": "dynamic",
+                    "--topic-encryption-key-keyring": "dynamic",
+                    "--topic-encryption-key-location": "dynamic",
+                    "--topic-encryption-key-project": "dynamic"
                   }
                 },
                 "delete": {
@@ -12084,7 +12515,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--cluster": "value",
                 "--cluster-location": "value",
                 "--concurrency": "value",
-                "--endpoint": [
+                "--connectivity": [
                   "external",
                   "internal"
                 ],
@@ -14761,6 +15192,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "iam-policy",
                   "resource"
                 ],
+                "--folder": "value",
                 "--organization": "value",
                 "--output-path": "value",
                 "--snapshot-time": "value"
@@ -18507,7 +18939,13 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
+                        "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
+                        "--log-filter": [
+                          "ALL",
+                          "ERRORS_ONLY",
+                          "TRANSLATIONS_ONLY"
+                        ],
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
@@ -18551,7 +18989,13 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--clear-tcp-established-idle-timeout": "bool",
                         "--clear-tcp-transitory-idle-timeout": "bool",
                         "--clear-udp-idle-timeout": "bool",
+                        "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
+                        "--log-filter": [
+                          "ALL",
+                          "ERRORS_ONLY",
+                          "TRANSLATIONS_ONLY"
+                        ],
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
@@ -20719,6 +21163,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-version": "value",
                     "--initialization-action-timeout": "value",
                     "--initialization-actions": "value",
+                    "--kerberos-config-file": "value",
+                    "--kerberos-kms-key": "dynamic",
+                    "--kerberos-kms-key-keyring": "dynamic",
+                    "--kerberos-kms-key-location": "dynamic",
+                    "--kerberos-kms-key-project": "dynamic",
+                    "--kerberos-root-principal-password-uri": "value",
                     "--labels": "value",
                     "--master-accelerator": "value",
                     "--master-boot-disk-size": "value",
@@ -21329,6 +21779,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--image-version": "value",
                     "--initialization-action-timeout": "value",
                     "--initialization-actions": "value",
+                    "--kerberos-config-file": "value",
+                    "--kerberos-kms-key": "dynamic",
+                    "--kerberos-kms-key-keyring": "dynamic",
+                    "--kerberos-kms-key-location": "dynamic",
+                    "--kerberos-kms-key-project": "dynamic",
+                    "--kerberos-root-principal-password-uri": "value",
                     "--labels": "value",
                     "--master-accelerator": "value",
                     "--master-boot-disk-size": "value",
@@ -22495,6 +22951,34 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--sort-by": "value",
                     "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "regions": {
+              "commands": {
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "zones": {
+              "commands": {
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
                   }
                 }
               },
@@ -33214,6 +33698,34 @@ STATIC_COMPLETION_CLI_TREE = {
             }
           },
           "flags": {}
+        },
+        "regions": {
+          "commands": {
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "zones": {
+          "commands": {
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            }
+          },
+          "flags": {}
         }
       },
       "flags": {}
@@ -33451,6 +33963,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "--remove-labels": "value",
             "--retry": "bool",
             "--runtime": "value",
+            "--service-account": "value",
             "--set-env-vars": "value",
             "--source": "value",
             "--stage-bucket": "value",
@@ -35596,6 +36109,54 @@ STATIC_COMPLETION_CLI_TREE = {
             "wait": {
               "commands": {},
               "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "vpc-peerings": {
+          "commands": {
+            "connect": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--network": "value",
+                "--ranges": "value",
+                "--service": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--network": "value",
+                "--service": "value"
+              }
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--name": "value"
+                  }
+                },
+                "wait": {
+                  "commands": {},
+                  "flags": {
+                    "--name": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--force": "bool",
+                "--network": "value",
+                "--ranges": "value",
+                "--service": "value"
+              }
             }
           },
           "flags": {}

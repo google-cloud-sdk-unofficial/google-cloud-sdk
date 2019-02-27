@@ -43,9 +43,6 @@ class Create(base.Command):
     flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
     flags.AddCreateFlags(parser)
 
-  def _ValidateArgs(self, args):
-    flags.ValidateResourcesArg(args.resources)
-
   def _MakeCreateRequest(
       self, args, messages, project, region, commitment_ref, unused_holder):
     commitment = messages.Commitment(
@@ -60,8 +57,6 @@ class Create(base.Command):
     )
 
   def Run(self, args):
-    self._ValidateArgs(args)
-
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     resources = holder.resources
     commitment_ref = flags.MakeCommitmentArg(False).ResolveAsResource(
@@ -103,7 +98,7 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
-    flags.AddCreateFlags(parser)
+    flags.AddCreateFlags(parser, enable_ssd_and_accelerator_support=True)
     flags.AddReservationArgGroup(parser)
     messages = apis.GetMessagesModule('compute', 'alpha')
     flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
@@ -116,7 +111,7 @@ class CreateAlpha(Create):
         allocations=reservation_helper.MakeReservations(args, messages, holder),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
-        resources=flags.TranslateResourcesArg(messages, args.resources),
+        resources=flags.TranslateResourcesArgGroup(messages, args),
         type=commitment_type)
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,

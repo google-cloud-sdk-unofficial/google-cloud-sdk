@@ -32,7 +32,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Genomics(base.Group):
-  """Manage Genomics resources using version 1 of the API."""
+  """Manage Genomics resources."""
 
   def Filter(self, context, args):
     del context, args

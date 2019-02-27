@@ -46,7 +46,7 @@ DETAILED_HELP = {
 class SQL(base.Group):
   """Create and manage Google Cloud SQL databases."""
 
-  category = base.GCLOUD_DATABASES_CATEGORY
+  category = base.DATABASES_CATEGORY
 
   detailed_help = DETAILED_HELP
 

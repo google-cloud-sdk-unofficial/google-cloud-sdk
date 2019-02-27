@@ -33,7 +33,7 @@ from googlecloudsdk.core import properties
 class Functions(base.Group):
   """Manage Google Cloud Functions."""
 
-  category = base.GCLOUD_COMPUTE_CATEGORY
+  category = base.COMPUTE_CATEGORY
 
   @staticmethod
   def Args(parser):

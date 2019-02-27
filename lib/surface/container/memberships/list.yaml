@@ -16,3 +16,10 @@
 
   response:
     id_field: name
+
+  output:
+    format: |
+      table(
+         name.basename():label=NAME,
+         description:label=DESCRIPTION
+       )

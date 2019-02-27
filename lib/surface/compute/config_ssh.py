@@ -259,7 +259,7 @@ class ConfigSSH(base.Command):
   flag is given, the generated key will have an empty passphrase).
   """
 
-  category = base.COMPUTE_TOOLS_CATEGORY
+  category = base.TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

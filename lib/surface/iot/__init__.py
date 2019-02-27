@@ -30,7 +30,7 @@ class Iot(base.Group):
   Commands for managing Google Cloud IoT resources.
   """
 
-  category = base.GCLOUD_INTERNET_OF_THINGS_CATEGORY
+  category = base.INTERNET_OF_THINGS_CATEGORY
 
   def Filter(self, context, args):
     del context, args

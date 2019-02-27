@@ -31,4 +31,4 @@ class SslCertificates(base.Group):
   """
 
 
-SslCertificates.category = base.COMPUTE_LOAD_BALANCING_CATEGORY
+SslCertificates.category = base.LOAD_BALANCING_CATEGORY

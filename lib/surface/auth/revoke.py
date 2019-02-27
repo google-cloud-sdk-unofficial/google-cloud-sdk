@@ -32,12 +32,21 @@ class Revoke(base.Command):
   """Revoke access credentials for an account.
 
   Revokes credentials for the specified user accounts or service accounts.
-  When you revoke the credentials, they are removed from the local machine. If
-  no account is specified, this command revokes credentials for the currently
-  active account, effectively logging out of that account.
 
-  You can revoke credentials when you want to disallow access by gcloud and
-  other Cloud SDK tools using a specified account. You don't need to revoke
+  When given a user account, this command revokes the user account token on the
+  server. If the revocation is successful, or if the token has already been
+  revoked, this command removes the credential from the local machine.
+
+  When given a service account, this command does not revoke the service account
+  token on the server because service account tokens are not revocable. Instead,
+  it will print a warning and remove the credential from the local machine.
+
+  If no account is specified, this command revokes credentials for the currently
+  active account, effectively logging out of that account. If --all is given,
+  the behaviors described above apply individually to each account in the list.
+
+  You can revoke credentials when you want to prevent gcloud and other Cloud
+  SDK tools from using the specified account. You do not need to revoke
   credentials to switch between accounts.
   """
 
@@ -52,7 +61,7 @@ class Revoke(base.Command):
   def Run(self, args):
     """Revoke credentials and update active account."""
     accounts = args.accounts or []
-    if type(accounts) is str:
+    if isinstance(accounts, str):
       accounts = [accounts]
     available_accounts = c_store.AvailableAccounts()
     unknown_accounts = set(accounts) - set(available_accounts)
@@ -75,8 +84,16 @@ class Revoke(base.Command):
       if active_account == account:
         properties.PersistProperty(properties.VALUES.core.account, None)
       if not c_store.Revoke(account):
-        log.warning(
-            '[{}] already inactive (previously revoked?)'.format(account))
+        if account.endswith('.gserviceaccount.com'):
+          log.warning(
+              '[{}] appears to be a service account. Service account tokens '
+              'cannot be revoked, but they will expire automatically. To '
+              'prevent use of the service account token earlier than the '
+              'expiration, revoke the parent service account or service '
+              'account key.'.format(account))
+        else:
+          log.warning(
+              '[{}] already inactive (previously revoked?)'.format(account))
     return accounts
 
   def Epilog(self, unused_results_were_displayed):

@@ -87,4 +87,5 @@ class UpdateAlpha(base.UpdateCommand):
         metadata=args.metadata,
         set_role_active=getattr(args, 'role', None) == 'ACTIVE',
         drain_timeout_seconds=args.drain_timeout,
-        enable_private_ipv6_access=args.enable_private_ipv6_access)
+        enable_private_ipv6_access=args.enable_private_ipv6_access,
+        private_ipv6_google_access_type=args.private_ipv6_google_access_type)

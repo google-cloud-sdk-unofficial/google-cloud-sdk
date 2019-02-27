@@ -54,7 +54,7 @@ class Dataflow(base.Group):
   here: https://cloud.google.com/dataflow/docs/
   """
 
-  category = base.GCLOUD_DATA_ANALYTICS_CATEGORY
+  category = base.DATA_ANALYTICS_CATEGORY
 
   def Filter(self, context, args):
     del context, args

@@ -43,7 +43,7 @@ class Composer(base.Group):
       $ {command} operations --help
   """
 
-  category = base.GCLOUD_DATA_ANALYTICS_CATEGORY
+  category = base.DATA_ANALYTICS_CATEGORY
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

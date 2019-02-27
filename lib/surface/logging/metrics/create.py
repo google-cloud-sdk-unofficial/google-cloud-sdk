@@ -80,7 +80,7 @@ class CreateGA(base.CreateCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(base.CreateCommand):
   """Creates a logs-based metric."""
 
@@ -153,4 +153,3 @@ class CreateBeta(base.CreateCommand):
     result = util.GetClient().projects_metrics.Create(request)
     log.CreatedResource(args.metric_name)
     return result
-

@@ -25,4 +25,4 @@ class Commitments(base.Group):
   """Manage Google Compute Engine commitments."""
 
 
-Commitments.category = base.COMPUTE_INSTANCES_CATEGORY
+Commitments.category = base.INSTANCES_CATEGORY

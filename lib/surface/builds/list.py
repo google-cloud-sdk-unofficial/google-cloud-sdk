@@ -41,6 +41,7 @@ class List(base.ListCommand):
         help='Only list builds that are currently QUEUED or WORKING.',
         action='store_true')
     base.LIMIT_FLAG.SetDefault(parser, 50)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 20)
     parser.display_info.AddFormat("""
         table(
             id,

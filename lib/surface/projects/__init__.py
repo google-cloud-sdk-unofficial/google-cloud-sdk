@@ -43,7 +43,7 @@ class Projects(base.Group):
   https://cloud.google.com/resource-manager/docs/creating-managing-projects
   """
 
-  category = base.GCLOUD_MANAGEMENT_TOOLS_CATEGORY
+  category = base.MANAGEMENT_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

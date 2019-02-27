@@ -21,5 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+_DEPRECATION_WARNING = (
+    '`gcloud filestore locations` is deprecated. Use `gcloud filestore zones` '
+    'or `gcloud filestore regions` instead.')
+
+
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 class Locations(base.Group):
   """List locations where Cloud Filestore is available."""

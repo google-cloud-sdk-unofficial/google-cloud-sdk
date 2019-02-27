@@ -131,7 +131,7 @@ class ResetWindowsPassword(base.UpdateCommand):
   Google Compute Engine project containing the Windows instance.
   """
 
-  category = base.COMPUTE_TOOLS_CATEGORY
+  category = base.TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

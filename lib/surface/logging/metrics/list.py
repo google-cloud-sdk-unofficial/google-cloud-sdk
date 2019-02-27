@@ -62,7 +62,7 @@ class ListGA(base.ListCommand):
         limit=args.limit, batch_size=None, batch_size_attribute='pageSize')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListBeta(ListGA):
   """Displays all logs-based metrics."""
 

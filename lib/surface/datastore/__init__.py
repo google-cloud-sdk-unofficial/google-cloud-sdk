@@ -48,7 +48,7 @@ class Datastore(base.Group):
     $ {command} indexes cleanup index.yaml
   """
 
-  category = base.GCLOUD_DATABASES_CATEGORY
+  category = base.DATABASES_CATEGORY
 
   def Filter(self, context, args):
     del context, args

@@ -16,7 +16,7 @@
 
   request:
     collection: cloudresourcemanager.folders
-    api_version: v2beta1
+    api_version: v2
 
   arguments:
     resource:

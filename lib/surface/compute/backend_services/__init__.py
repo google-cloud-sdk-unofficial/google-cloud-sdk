@@ -25,7 +25,7 @@ class BackendServices(base.Group):
   """List, create, and delete backend services."""
 
 
-BackendServices.category = base.COMPUTE_LOAD_BALANCING_CATEGORY
+BackendServices.category = base.LOAD_BALANCING_CATEGORY
 
 BackendServices.detailed_help = {
     'brief': 'List, create, and delete backend services',

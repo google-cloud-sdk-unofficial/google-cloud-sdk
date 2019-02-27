@@ -25,7 +25,7 @@ class Operations(base.Group):
   """Read and manipulate Google Compute Engine operations."""
 
 
-Operations.category = base.COMPUTE_INFO_CATEGORY
+Operations.category = base.INFO_CATEGORY
 
 Operations.detailed_help = {
     'brief': 'Read and manipulate Google Compute Engine operations',

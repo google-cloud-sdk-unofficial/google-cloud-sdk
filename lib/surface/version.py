@@ -34,7 +34,7 @@ class Version(base.Command):
   components and prints a message if updates are available.
   """
 
-  category = base.GCLOUD_SDK_TOOLS_CATEGORY
+  category = base.SDK_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

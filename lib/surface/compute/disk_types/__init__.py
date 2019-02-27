@@ -25,7 +25,7 @@ class DiskTypes(base.Group):
   """Read Google Compute Engine virtual disk types."""
 
 
-DiskTypes.category = base.COMPUTE_DISKS_CATEGORY
+DiskTypes.category = base.DISKS_CATEGORY
 
 DiskTypes.detailed_help = {
     'brief': 'Read Google Compute Engine virtual disk types',

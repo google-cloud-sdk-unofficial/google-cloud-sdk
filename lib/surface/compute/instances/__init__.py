@@ -25,7 +25,7 @@ class Instances(base.Group):
   """Read and manipulate Google Compute Engine virtual machine instances."""
 
 
-Instances.category = base.COMPUTE_INSTANCES_CATEGORY
+Instances.category = base.INSTANCES_CATEGORY
 
 Instances.detailed_help = {
     'brief': (

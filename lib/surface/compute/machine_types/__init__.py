@@ -25,7 +25,7 @@ class MachineTypes(base.Group):
   """Read Google Compute Engine virtual machine types."""
 
 
-MachineTypes.category = base.COMPUTE_INFO_CATEGORY
+MachineTypes.category = base.INFO_CATEGORY
 
 MachineTypes.detailed_help = {
     'brief': 'Read Google Compute Engine virtual machine types',

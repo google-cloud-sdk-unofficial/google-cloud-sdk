@@ -88,7 +88,6 @@ class ListBeta(List):
             source_network.basename():label=NETWORK,
             network.map().scope(projects).segment(0):label=PEER_PROJECT,
             network.basename():label=PEER_NETWORK,
-            autoCreateRoutes,
             importCustomRoutes,
             exportCustomRoutes,
             state,

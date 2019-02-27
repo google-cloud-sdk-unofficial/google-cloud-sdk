@@ -35,20 +35,23 @@ class Export(base.Command):
   See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/gcloud-asset
   for more details.
   """
-# pylint: enable=line-too-long
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):
-    flags.AddOrganizationArgs(parser)
+    flags.AddParentArgs(parser)
     flags.AddSnapshotTimeArgs(parser)
     flags.AddAssetTypesArgs(parser)
     flags.AddContentTypeArgs(parser, required=False)
     flags.AddOutputPathArgs(parser)
 
   def Run(self, args):
-    parent = asset_utils.GetParentName(args.organization, args.project)
+    parent = asset_utils.GetParentName(args.organization, args.project,
+                                       args.folder)
     if parent.startswith('projects'):
       client = client_util.AssetProjectExportClient(parent)
+    elif parent.startswith('folders'):
+      client = client_util.AssetFolderExportClient(parent)
     else:
       client = client_util.AssetOrganizationExportClient(parent)
     operation = client.Export(args)

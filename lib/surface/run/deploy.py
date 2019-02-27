@@ -26,9 +26,11 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
+from googlecloudsdk.command_lib.run import stages
 
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.console import progress_tracker
 
 
 class Deploy(base.Command):
@@ -84,7 +86,7 @@ class Deploy(base.Command):
 
     # pylint: disable=protected-access
     if (not isinstance(conn_context, connection_context._GKEConnectionContext)
-        and getattr(args, 'endpoint', None)):
+        and getattr(args, 'connectivity', None)):
       raise exceptions.ConfigurationError(
           'The `--endpoint=[internal|external]` flag '
           'is only supported with Cloud Run on GKE.')
@@ -132,24 +134,35 @@ class Deploy(base.Command):
       changes = [new_deployable]
       if config_changes:
         changes.extend(config_changes)
-
-      if args.endpoint == 'internal':
+      if args.connectivity == 'internal':
         private_endpoint = True
-      elif args.endpoint == 'external':
+      elif args.connectivity == 'external':
         private_endpoint = False
       else:
         private_endpoint = None
-
-      operations.ReleaseService(service_ref, changes, asyn=args.async,
-                                private_endpoint=private_endpoint)
-      url = operations.GetServiceUrl(service_ref)
-      conf = operations.GetConfiguration(service_ref)
-
-    msg = (
-        'Service [{{bold}}{serv}{{reset}}] revision [{{bold}}{rev}{{reset}}] '
-        'has been deployed and is serving traffic at {{bold}}{url}{{reset}}')
-    msg = msg.format(
-        serv=service_ref.servicesId,
-        rev=conf.status.latestReadyRevisionName,
-        url=url)
-    pretty_print.Success(msg)
+      deployment_stages = stages.ServiceStages()
+      with progress_tracker.StagedProgressTracker(
+          'Deploying...',
+          deployment_stages,
+          failure_message='Deployment failed',
+          suppress_output=args.async) as tracker:
+        operations.ReleaseService(service_ref, changes, tracker,
+                                  asyn=args.async,
+                                  private_endpoint=private_endpoint)
+      if args.async:
+        pretty_print.Success(
+            'Service [{{bold}}{serv}{{reset}}] is deploying '
+            'asynchronously.'.format(serv=service_ref.servicesId))
+      else:
+        url = operations.GetServiceUrl(service_ref)
+        conf = operations.GetConfiguration(service_ref)
+        msg = (
+            'Service [{{bold}}{serv}{{reset}}] '
+            'revision [{{bold}}{rev}{{reset}}] '
+            'has been deployed and is serving traffic at '
+            '{{bold}}{url}{{reset}}')
+        msg = msg.format(
+            serv=service_ref.servicesId,
+            rev=conf.status.latestReadyRevisionName,
+            url=url)
+        pretty_print.Success(msg)

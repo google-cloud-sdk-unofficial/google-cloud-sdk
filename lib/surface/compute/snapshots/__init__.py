@@ -25,7 +25,7 @@ class Snapshots(base.Group):
   """List, describe, and delete Google Compute Engine snapshots."""
 
 
-Snapshots.category = base.COMPUTE_INSTANCES_CATEGORY
+Snapshots.category = base.INSTANCES_CATEGORY
 
 Snapshots.detailed_help = {
     'brief': 'List, describe, and delete Google Compute Engine snapshots',

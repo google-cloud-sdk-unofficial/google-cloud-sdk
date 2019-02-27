@@ -25,7 +25,7 @@ class URLMaps(base.Group):
   """List, create, and delete URL maps."""
 
 
-URLMaps.category = base.COMPUTE_NETWORKING_CATEGORY
+URLMaps.category = base.NETWORKING_CATEGORY
 
 URLMaps.detailed_help = {
     'brief': 'List, create, and delete URL maps',

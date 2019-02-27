@@ -25,4 +25,4 @@ from googlecloudsdk.calliope import base
 class Ml(base.Group):
   """Use Google Cloud machine learning capabilities."""
 
-  category = base.GCLOUD_AI_AND_MACHINE_LEARNING_CATEGORY
+  category = base.AI_AND_MACHINE_LEARNING_CATEGORY

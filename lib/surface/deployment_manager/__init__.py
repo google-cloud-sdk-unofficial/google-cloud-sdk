@@ -42,7 +42,7 @@ class DmV2(base.Group):
   found here: https://cloud.google.com/deployment-manager/docs/
   """
 
-  category = base.GCLOUD_MANAGEMENT_TOOLS_CATEGORY
+  category = base.MANAGEMENT_TOOLS_CATEGORY
 
   def Filter(self, context, args):
     del context, args

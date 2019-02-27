@@ -97,7 +97,7 @@ class UpdateGA(base.UpdateCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(base.UpdateCommand):
   """Updates the definition of a logs-based metric."""
 
@@ -186,4 +186,3 @@ class UpdateBeta(base.UpdateCommand):
             logMetric=updated_metric))
     log.UpdatedResource(args.metric_name)
     return result
-

@@ -74,7 +74,7 @@ class Help(base.ListCommand):
     $ {command} --sort-by=name -- project
   """
 
-  category = base.GCLOUD_SDK_TOOLS_CATEGORY
+  category = base.SDK_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

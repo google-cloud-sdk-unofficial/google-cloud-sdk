@@ -165,7 +165,7 @@ class Run(base.ListCommand):
       log.status.Print('Test results will be streamed to [{0}].'.format(url))
 
       # If we have exactly one testExecution, show detailed progress info.
-      if len(supported_executions) == 1:
+      if len(supported_executions) == 1 and args.num_flaky_test_attempts == 0:
         monitor.MonitorTestExecutionProgress(supported_executions[0].id)
       else:
         monitor.MonitorTestMatrixProgress()
@@ -178,7 +178,12 @@ class Run(base.ListCommand):
     self.exit_code = exit_code.ExitCodeFromRollupOutcome(
         summary_fetcher.FetchMatrixRollupOutcome(),
         tr_messages.Outcome.SummaryValueValuesEnum)
-    return summary_fetcher.CreateMatrixOutcomeSummary()
+    if args.num_flaky_test_attempts > 0:
+      if not args.IsSpecified('format'):
+        args.format = util.FLAKY_ATTEMPTS_OUTCOMES_FORMAT
+      return summary_fetcher.CreateFlakyAttemptsMatrixOutcomeSummary()
+    else:
+      return summary_fetcher.CreateMatrixOutcomeSummary()
 
 
 def PickHistoryName(args):

@@ -25,7 +25,7 @@ class Networks(base.Group):
   """List, create, and delete Google Compute Engine networks."""
 
 
-Networks.category = base.COMPUTE_NETWORKING_CATEGORY
+Networks.category = base.NETWORKING_CATEGORY
 
 Networks.detailed_help = {
     'brief': 'List, create, and delete Google Compute Engine networks',

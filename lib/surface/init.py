@@ -67,7 +67,7 @@ class Init(base.Command):
   To sync the configuration, re-run {command}
   """
 
-  category = base.GCLOUD_SDK_TOOLS_CATEGORY
+  category = base.SDK_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

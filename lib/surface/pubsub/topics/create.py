@@ -24,14 +24,16 @@ from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _Run(args, enable_labels=False, legacy_output=False):
+def _Run(args, enable_labels=False, legacy_output=False, enable_kms=False):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
@@ -39,12 +41,26 @@ def _Run(args, enable_labels=False, legacy_output=False):
   if enable_labels:
     labels = labels_util.ParseCreateArgs(args,
                                          client.messages.Topic.LabelsValue)
+  kms_key = None
+  if enable_kms:
+    kms_ref = args.CONCEPTS.kms_key.Parse()
+    if kms_ref:
+      kms_key = kms_ref.RelativeName()
+    else:
+      # Did user supply any topic-encryption-key flags?
+      for keyword in [
+          'topic-encryption-key', 'topic-encryption-key-project',
+          'topic-encryption-key-location', 'topic-encryption-key-keyring'
+      ]:
+        if args.IsSpecified(keyword.replace('-', '_')):
+          raise core_exceptions.Error(
+              '--topic-encryption-key was not fully specified.')
 
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
 
     try:
-      result = client.Create(topic_ref, labels=labels)
+      result = client.Create(topic_ref, labels=labels, kms_key=kms_key)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(topic_ref.RelativeName(), kind='topic',
@@ -80,7 +96,7 @@ class Create(base.CreateCommand):
     return _Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub topics."""
 
@@ -92,3 +108,44 @@ class CreateBeta(Create):
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     return _Run(args, enable_labels=True, legacy_output=legacy_output)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Creates one or more Cloud Pub/Sub topics."""
+
+  @classmethod
+  def Args(cls, parser):
+
+    # Create KMS key presentation spec.
+    kms_flag_overrides = {
+        'kms-key': '--topic-encryption-key',
+        'kms-keyring': '--topic-encryption-key-keyring',
+        'kms-location': '--topic-encryption-key-location',
+        'kms-project': '--topic-encryption-key-project'
+    }
+
+    permission_info = """
+    The specified CloudKMS key should have purpose set to "ENCRYPT_DECRYPT".
+    The service account,
+    "service-${CONSUMER_PROJECT_NUMBER}@gcp-sa-pubsub.iam.gserviceaccount.com"
+
+    requires the IAM cryptoKeyEncrypterDecrypter role for the given CloudKMS key.
+    CONSUMER_PROJECT_NUMBER is the project number of the project that is the parent of the
+    topic being created"""
+
+    kms_key_presentation_spec = kms_resource_args.GetKmsKeyPresentationSpec(
+        'topic', flag_overrides=kms_flag_overrides,
+        permission_info=permission_info)
+
+    # Create Topic presentation spec.
+    topic_presentation_spec = resource_args.CreateTopicResourceArg(
+        'to create.', positional=True, plural=True)
+    resource_args.AddResourceArgs(
+        parser, [kms_key_presentation_spec, topic_presentation_spec])
+    labels_util.AddCreateLabelsFlags(parser)
+
+  def Run(self, args):
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, enable_labels=True, enable_kms=True,
+                legacy_output=legacy_output)

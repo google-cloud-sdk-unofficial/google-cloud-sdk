@@ -490,6 +490,7 @@ class UpdateAlpha(Update):
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddSecurityProfileForUpdateFlag(group)
     flags.AddIstioConfigFlag(parser)
+    flags.AddPeeringRouteSharingFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -511,5 +512,6 @@ class UpdateAlpha(Update):
     opts.istio_config = args.istio_config
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+    opts.enable_peering_route_sharing = args.enable_peering_route_sharing
 
     return opts

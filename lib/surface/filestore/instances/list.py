@@ -88,7 +88,7 @@ class ListAlpha(List):
   def Args(parser):
     concept_parsers.ConceptParser([flags.GetListingLocationPresentationSpec(
         'The location in which to list instances.')]).AddToParser(parser)
-    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT_ALPHA)
+    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT)
 
     def UriFunc(resource):
       registry = resources.REGISTRY.Clone()

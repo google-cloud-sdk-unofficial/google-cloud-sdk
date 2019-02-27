@@ -42,7 +42,7 @@ class Iam(base.Group):
      https://cloud.google.com/iam/docs/
   """
 
-  category = base.GCLOUD_IDENTITY_AND_SECURITY_CATEGORY
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   def Filter(self, context, args):
     base.DisableUserProjectQuota()
