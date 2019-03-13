@@ -35,14 +35,13 @@ from six.moves import range  # pylint: disable=redefined-builtin
 def _Args(parser,
           include_beta,
           include_alpha=False,
-          support_flex_port=False,
           support_global_access=False):
   """Argument parsing."""
   flags.AddUpdateArgs(parser, include_beta=include_beta,
                       include_alpha=include_alpha)
   flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
-  flags.AddPortsAndPortRange(parser, supports_flex_port=support_flex_port)
+  flags.AddPortsAndPortRange(parser)
   flags.AddNetworkTier(
       parser, supports_network_tier_flag=True, for_update=False)
 
@@ -64,7 +63,6 @@ class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
   FORWARDING_RULE_ARG = None
-  _support_flex_port = False
   _support_global_access = False
   _support_network_in_global_request = False
 
@@ -75,7 +73,6 @@ class Create(base.CreateCommand):
         parser,
         include_beta=False,
         include_alpha=False,
-        support_flex_port=cls._support_flex_port,
         support_global_access=cls._support_global_access)
     flags.AddAddressesAndIPVersions(parser, required=False)
     cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
@@ -289,7 +286,6 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
-  _support_flex_port = True
   _support_global_access = False
   _support_network_in_global_request = False
 
@@ -300,7 +296,6 @@ class CreateBeta(Create):
         parser,
         include_beta=True,
         include_alpha=False,
-        support_flex_port=cls._support_flex_port,
         support_global_access=cls._support_global_access)
     flags.AddAddressesAndIPVersions(parser, required=False)
     cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
@@ -313,7 +308,6 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
-  _support_flex_port = True
   _support_global_access = True
   _support_network_in_global_request = True
 
@@ -324,7 +318,6 @@ class CreateAlpha(CreateBeta):
         parser,
         include_beta=True,
         include_alpha=True,
-        support_flex_port=cls._support_flex_port,
         support_global_access=cls._support_global_access)
     flags.AddAddressesAndIPVersions(parser, required=False, include_alpha=True)
     cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')

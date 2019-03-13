@@ -686,7 +686,11 @@ class TablePrinter(object):
     """Returns bq-specific formatting of a TIMESTAMP type."""
     try:
       date = datetime.datetime.utcfromtimestamp(float(value))
-      return date.strftime('%Y-%m-%d %H:%M:%S')
+      # Our goal is the equivalent of '%Y-%m-%d %H:%M:%S' via strftime but that
+      # doesn't work for dates with years prior to 1900.  Instead we zero out
+      # fractional seconds then call isoformat with a space separator.
+      date = date.replace(microsecond=0)
+      return date.isoformat(' ')
     except ValueError:
       return '<date out of range for display>'
 
@@ -1961,17 +1965,18 @@ class _Query(BigqueryCmd):
       elif not FLAGS.sync:
         self.PrintJobStartInfo(job)
       else:
-        fields, rows = client.ReadSchemaAndJobRows(
-            job['jobReference'],
-            start_row=self.start_row,
-            max_rows=self.max_rows)
-        Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
+        self._PrintQueryJobResults(client, job)
         # If we are here, the job succeeded, but print warnings if any.
         _PrintJobMessages(client.FormatJobInfo(job))
     if self.destination_schema:
       client.UpdateTable(
           client.GetTableReference(self.destination_table),
           BigqueryClient.ReadSchema(self.destination_schema))
+
+  def _PrintQueryJobResults(self, client, job):
+    fields, rows = client.ReadSchemaAndJobRows(
+        job['jobReference'], start_row=self.start_row, max_rows=self.max_rows)
+    Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
 
 
 def _GetExternalDataConfig(file_path_or_simple_spec):

@@ -28,7 +28,7 @@
       arg_name: device-num-ids
       help_text: |
         If given, show only devices with one of the provided numerical IDs.
-    - api_field: gatewayListOptions_associationsDeviceId
+    - api_field: gatewayListOptions_gatewayType
       arg_name: device-type
       required: false
       choices:

@@ -53,7 +53,7 @@ def _Run(args, track, enable_server_binding=False):
   return client.MakeRequests([(service, 'Insert', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a Google Compute Engine node template."""
 
@@ -65,8 +65,22 @@ class Create(base.CreateCommand):
     return _Run(args, self.ReleaseTrack())
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Creates a Google Compute Engine node template."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    messages = apis.GetMessagesModule('compute', 'beta')
+    flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
+
+  def Run(self, args):
+    return _Run(args, self.ReleaseTrack(), enable_server_binding=True)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Creates a Google Compute Engine node template."""
 
   @staticmethod
@@ -74,6 +88,3 @@ class CreateAlpha(Create):
     _CommonArgs(parser)
     messages = apis.GetMessagesModule('compute', 'alpha')
     flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
-
-  def Run(self, args):
-    return _Run(args, self.ReleaseTrack(), enable_server_binding=True)

@@ -44,8 +44,7 @@ DETAILED_HELP = {
         they are attached to running instances. Once created, snapshots may be
         managed (listed, deleted, resized etc.) via `gcloud compute snapshots`.
 
-        For best practices regarding managing snapshots, refer to this guide:
-        https://cloud.google.com/compute/docs/disks/create-snapshots#best_practices.
+        Refer to the Snapshot best practices guide. https://cloud.google.com/compute/docs/disks/snapshot-best-practices
 
         {command} waits until the operation returns a status of `READY` or
         `FAILED`, or reaches the maximum timeout, and returns the last known

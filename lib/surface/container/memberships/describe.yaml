@@ -9,5 +9,5 @@
 
   arguments:
     resource:
-      help_text: The membership you want to describe.
+      help_text: membership resource representing a cluster in Google Kubernetes Hub.
       spec: !REF googlecloudsdk.command_lib.container.memberships.resources:membership

@@ -73,6 +73,7 @@ class Deploy(base.Command):
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     flags.AddEndpointVisibilityEnum(parser)
+    flags.AddAllowUnauthenticatedFlag(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
@@ -85,11 +86,17 @@ class Deploy(base.Command):
     conn_context = connection_context.GetConnectionContext(args)
 
     # pylint: disable=protected-access
-    if (not isinstance(conn_context, connection_context._GKEConnectionContext)
+    if (conn_context.supports_one_platform
         and getattr(args, 'connectivity', None)):
       raise exceptions.ConfigurationError(
           'The `--endpoint=[internal|external]` flag '
           'is only supported with Cloud Run on GKE.')
+
+    if (not conn_context.supports_one_platform
+        and getattr(args, 'allow_unauthenticated', None)):
+      raise exceptions.ConfigurationError(
+          'The `--allow-unauthenticated` flag '
+          'is not supported with Cloud Run on GKE.')
     # pylint: enable=protected-access
 
     service_ref = flags.GetService(args)
@@ -141,14 +148,19 @@ class Deploy(base.Command):
       else:
         private_endpoint = None
       deployment_stages = stages.ServiceStages()
+      exists = operations.GetService(service_ref)
+      header = 'Deploying...' if exists else 'Deploying new service...'
       with progress_tracker.StagedProgressTracker(
-          'Deploying...',
+          header,
           deployment_stages,
           failure_message='Deployment failed',
           suppress_output=args.async) as tracker:
-        operations.ReleaseService(service_ref, changes, tracker,
-                                  asyn=args.async,
-                                  private_endpoint=private_endpoint)
+        operations.ReleaseService(
+            service_ref, changes,
+            tracker,
+            asyn=args.async,
+            private_endpoint=private_endpoint,
+            allow_unauthenticated=args.allow_unauthenticated)
       if args.async:
         pretty_print.Success(
             'Service [{{bold}}{serv}{{reset}}] is deploying '

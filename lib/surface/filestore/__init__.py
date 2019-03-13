@@ -40,3 +40,4 @@ DETAILED_HELP = {
 class Filestore(base.Group):
   """Create and manipulate Cloud Filestore resources."""
   detailed_help = DETAILED_HELP
+  category = base.STORAGE_CATEGORY

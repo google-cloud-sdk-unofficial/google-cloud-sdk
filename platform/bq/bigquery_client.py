@@ -838,6 +838,7 @@ class BigqueryClient(object):
     self._apiclient = None
     self._op_transfer_client = None
     self._op_reservation_client = None
+    self._op_bi_reservation_client = None
     for required_flag in ('api', 'api_version'):
       if required_flag not in kwds:
         raise ValueError('Missing required flag: %s' % (required_flag,))
@@ -1024,11 +1025,7 @@ class BigqueryClient(object):
     if path is None:
       path = 'https://bigquerybiengine.googleapis.com'
     if not self._op_bi_reservation_client:
-      # This is api key from cloud-bi-cli project. Only use it temporarily, for Alpha.
-      discovery_url = (
-          path +
-          '/$discovery/rest?version=v1alpha&key=AIzaSyCNfOtO0zboJlAIXBZdDmD5C13kCWU5RYM'
-      )
+      discovery_url = (path + '/$discovery/rest?version=v1')
       self._op_bi_reservation_client = self.BuildApiClient(
       discovery_url=discovery_url)
     return self._op_bi_reservation_client
@@ -1196,6 +1193,7 @@ class BigqueryClient(object):
 
   def GetDatasetReference(self, identifier=''):
     """Determine a DatasetReference from an identifier and self."""
+    identifier = self.dataset_id if not identifier else identifier
     project_id, dataset_id, table_id = BigqueryClient._ParseIdentifier(
         identifier)
     if table_id and not project_id and not dataset_id:
@@ -1208,14 +1206,6 @@ class BigqueryClient(object):
     elif project_id and dataset_id and not table_id:
       # identifier is 'foo:bar'
       pass
-    elif not identifier:
-      # identifier is ''
-      project_id, dataset_id = BigqueryClient._ParseDatasetIdentifier(
-          self.dataset_id)
-      if dataset_id and not project_id:
-        if not self.project_id:
-          raise ValueError('Cannot set dataset_id without project_id')
-        project_id = self.project_id
     else:
       raise BigqueryError('Cannot determine dataset described by %s' % (
           identifier,))
@@ -1241,6 +1231,15 @@ class BigqueryClient(object):
     except ValueError:
       raise BigqueryError('Cannot determine table described by %s' % (
           identifier,))
+
+
+  def GetQueryDefaultDataset(self, identifier):
+    parsed_project_id, parsed_dataset_id = self._ParseDatasetIdentifier(
+        identifier)
+    result = dict(datasetId=parsed_dataset_id)
+    if parsed_project_id:
+      result['projectId'] = parsed_project_id
+    return result
 
   def GetReference(self, identifier=''):
     """Try to deduce a project/dataset/table reference from a string.
@@ -3665,7 +3664,7 @@ class BigqueryClient(object):
     if udf_resources:
       request['userDefinedFunctionResources'] = udf_resources
     if self.dataset_id:
-      request['defaultDataset'] = dict(self.GetDatasetReference())
+      request['defaultDataset'] = self.GetQueryDefaultDataset(self.dataset_id)
     _ApplyParameters(
         request,
         preserve_nulls=preserve_nulls,
@@ -4210,8 +4209,8 @@ class BigqueryClient(object):
       raise BigqueryClientError('No query string provided')
     query_config = {'query': query}
     if self.dataset_id:
-      query_config['defaultDataset'] = dict(
-          self.GetDatasetReference(self.dataset_id))
+      query_config['defaultDataset'] = self.GetQueryDefaultDataset(
+          self.dataset_id)
     if external_table_definitions_json:
       query_config['tableDefinitions'] = external_table_definitions_json
     if udf_resources:

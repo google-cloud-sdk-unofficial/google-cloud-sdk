@@ -34,7 +34,7 @@ from googlecloudsdk.core import properties
 _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Google Compute Engine commitments."""
 
@@ -89,6 +89,29 @@ class Create(base.Command):
     if errors:
       utils.RaiseToolException(errors)
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create Google Compute Engine commitments."""
+
+  @classmethod
+  def Args(cls, parser):
+    flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
+    # TODO(b/118885734): verify that when reservations has been in beta.
+    flags.AddCreateFlags(parser, enable_ssd_and_accelerator_support=True)
+
+  def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
+                         holder):
+    commitment = messages.Commitment(
+        name=commitment_ref.Name(),
+        plan=flags.TranslatePlanArg(messages, args.plan),
+        resources=flags.TranslateResourcesArgGroup(messages, args))
+    return messages.ComputeRegionCommitmentsInsertRequest(
+        commitment=commitment,
+        project=project,
+        region=commitment_ref.region,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

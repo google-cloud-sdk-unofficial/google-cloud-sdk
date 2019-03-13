@@ -29,19 +29,26 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine router."""
 
   ROUTER_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def _Args(cls, parser, support_keepalive_interval=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='update')
     base.ASYNC_FLAG.AddToParser(parser)
+    if support_keepalive_interval:
+      flags.AddKeepaliveIntervalArg(parser)
     flags.AddUpdateCustomAdvertisementArgs(parser, 'router')
 
-  def Run(self, args):
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser)
+
+  def _Run(self, args, support_keepalive_interval=False):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -54,6 +61,9 @@ class Update(base.UpdateCommand):
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
     existing_mode = replacement.bgp.advertiseMode
+
+    if support_keepalive_interval and args.keepalive_interval is not None:
+      setattr(replacement.bgp, 'keepaliveInterval', args.keepalive_interval)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -155,6 +165,24 @@ class Update(base.UpdateCommand):
     operation_poller = poller.Poller(service, target_router_ref)
     return waiter.WaitFor(operation_poller, operation_ref,
                           'Updating router [{0}]'.format(router_ref.Name()))
+
+  def Run(self, args):
+    """See base.UpdateCommand."""
+    return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Google Compute Engine router."""
+
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser, support_keepalive_interval=True)
+
+  def Run(self, args):
+    return self._Run(args, support_keepalive_interval=True)
 
 
 Update.detailed_help = {

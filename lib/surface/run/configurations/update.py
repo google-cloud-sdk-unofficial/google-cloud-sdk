@@ -20,18 +20,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
-from googlecloudsdk.command_lib.run import serverless_operations
-from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
-from googlecloudsdk.core.console import progress_tracker
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(error='This command has been replaced with'
+                ' `gcloud beta run services update`.')
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings.
   """
@@ -66,40 +63,4 @@ class Update(base.Command):
         service_presentation]).AddToParser(parser)
 
   def Run(self, args):
-    """Update environment variables."""
-    conn_context = connection_context.GetConnectionContext(args)
-    service_ref = flags.GetService(args)
-
-    with serverless_operations.Connect(conn_context) as client:
-      changes = flags.GetConfigurationChanges(args)
-      if not changes:
-        raise exceptions.NoConfigurationChangeError(
-            'No configuration change requested. '
-            'Did you mean to include the flags `--update-env-vars`, '
-            '`--memory`, `--concurrency`, or `--timeout`?')
-      deployment_stages = stages.ServiceStages()
-      with progress_tracker.StagedProgressTracker(
-          'Deploying...',
-          deployment_stages,
-          failure_message='Deployment failed',
-          suppress_output=args.async) as tracker:
-        client.ReleaseService(service_ref, changes, tracker, args.async)
-      if args.async:
-        pretty_print.Success(
-            'Configuration change is deploying asynchronously.')
-      else:
-        url = client.GetServiceUrl(service_ref)
-        active_revs = client.GetActiveRevisions(service_ref)
-
-        msg = ('{{bold}}Service [{serv}] revision{plural} {rev_msg} is active'
-               ' and serving traffic at{{reset}} {url}')
-
-        rev_msg = ' '.join(['[{}]'.format(rev) for rev in active_revs])
-
-        msg = msg.format(
-            serv=service_ref.servicesId,
-            plural='s' if len(active_revs) > 1 else '',
-            rev_msg=rev_msg,
-            url=url)
-
-        pretty_print.Success(msg)
+    pass

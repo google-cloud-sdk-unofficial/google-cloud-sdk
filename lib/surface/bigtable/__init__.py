@@ -24,6 +24,8 @@ from googlecloudsdk.calliope import base
 class BigtableV2(base.Group):
   """Manage your Cloud Bigtable storage."""
 
+  category = base.DATABASES_CATEGORY
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

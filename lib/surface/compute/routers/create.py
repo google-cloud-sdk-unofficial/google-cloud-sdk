@@ -30,7 +30,8 @@ from googlecloudsdk.core import resources
 import six
 
 
-class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Create(base.CreateCommand):
   """Create a Google Compute Engine router.
 
      *{command}* is used to create a router to provide dynamic routing to VPN
@@ -40,9 +41,7 @@ class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def Args(cls, parser):
-    """See base.CreateCommand."""
-
+  def _Args(cls, parser, support_keepalive_interval=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
         'The network for this router')
@@ -50,13 +49,18 @@ class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='create')
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddCreateRouterArgsForAlpha(parser)
+    flags.AddCreateRouterArgs(parser)
+    if support_keepalive_interval:
+      flags.AddKeepaliveIntervalArg(parser)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'router')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
 
-  def Run(self, args):
+  @classmethod
+  def Args(cls, parser):
     """See base.CreateCommand."""
+    cls._Args(parser)
 
+  def _Run(self, args, support_keepalive_interval=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.routers
@@ -69,9 +73,16 @@ class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
         description=args.description,
         network=network_ref.SelfLink())
 
-    # Add bgp field with the assigned asn.
-    if args.asn is not None:
-      router_resource.bgp = messages.RouterBgp(asn=args.asn)
+    if support_keepalive_interval:
+      # Add bgp field with the assigned asn and/or keepalive_interval
+      if args.asn is not None or args.keepalive_interval is not None:
+        router_resource.bgp = (
+            messages.RouterBgp(
+                asn=args.asn, keepaliveInterval=args.keepalive_interval))
+    else:
+      # Add bgp field with the assigned asn.
+      if args.asn is not None:
+        router_resource.bgp = messages.RouterBgp(asn=args.asn)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -126,3 +137,27 @@ class CreateWithCustomAdvertisementsAlpha(base.CreateCommand):
     operation_poller = poller.Poller(service, target_router_ref)
     return waiter.WaitFor(operation_poller, operation_ref,
                           'Creating router [{0}]'.format(router_ref.Name()))
+
+  def Run(self, args):
+    """See base.UpdateCommand."""
+    return self._Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine router.
+
+     *{command}* is used to create a router to provide dynamic routing to VPN
+     tunnels and interconnects.
+  """
+
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    """See base.CreateCommand."""
+    cls._Args(parser, support_keepalive_interval=True)
+
+  def Run(self, args):
+    """See base.CreateCommand."""
+    return self._Run(args, support_keepalive_interval=True)

@@ -23,3 +23,5 @@ from googlecloudsdk.calliope import base
 
 class Redis(base.Group):
   """Manage Cloud Memorystore Redis resources."""
+
+  category = base.STORAGE_CATEGORY

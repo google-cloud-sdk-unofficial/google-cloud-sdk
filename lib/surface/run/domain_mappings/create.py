@@ -64,8 +64,6 @@ class Create(base.Command):
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
       client.CreateDomainMapping(domain_mapping_ref, args.service)
-      msg = """{domain} now maps to service [{serv}] in region [{region}]
-      """.format(domain=domain_mapping_ref.domainmappingsId,
-                 serv=args.service,
-                 region=conn_context.region)
+      msg = """{domain} now maps to service [{serv}]""".format(
+          domain=domain_mapping_ref.domainmappingsId, serv=args.service)
       pretty_print.Success(msg)

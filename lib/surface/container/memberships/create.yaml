@@ -1,68 +1,23 @@
 - release_tracks: [ALPHA]
+
   help_text:
-    brief: Create a new membership instance.
-    description: Create a new membership instance.
+    brief: Create a new membership.
+    description: Create a new membership in Google Kubernetes Hub.
 
   request:
     collection: gkehub.projects.locations.global.memberships
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.memberships.util:SetParentCollection
-    - googlecloudsdk.command_lib.container.memberships.util:PopulateMembership
-
-  response:
-    modify_response_hooks:
-    - googlecloudsdk.command_lib.container.memberships.util:DeployConnectAgent
 
   async:
     collection: gkehub.projects.locations.operations
-    # TODO(b/124025758): due to the weird conversion of description,
-    # Get request always use description instead of actual ID.
-    extract_resource_result: false
-
 
   arguments:
     resource:
-      help_text: The membership you want to create.
+      help_text: membership resource representing a cluster in Google Kubernetes Hub.
       spec: !REF googlecloudsdk.command_lib.container.memberships.resources:membership
     params:
-    - arg_name: kubeconfig-file
-      help_text: |
-        The kubeconfig file containing an entry for the cluster being registered.
-        Defaults to $KUBECONFIG.
-    - arg_name: context
-      help_text: |
-        The context in the kubeconfig file that specifies the cluster being registered.
-        Defaults to the current context.
-    - group:
-        mutex: true
-        required: true
-        params:
-        - group:
-            params:
-            - arg_name: service-account-key-file
-              required: true
-              help_text: |
-                The JSON file of a Google Cloud service account private key.
-            - arg_name: proxy
-              help_text: |
-                The proxy address in the format of http(s)://{hostname}.
-                The proxy must support the HTTP CONNECT method in order for this
-                connection to succeed.
-            - arg_name: docker-image
-              help_text: |
-                The image to use for the connect agent, as it would be passed to
-                the `docker pull` command. The user is responsible for ensuring
-                that this image can be pulled from the cluster that is being
-                registered, and is responsible for maintaining and updating the
-                agent image if a private registry is being used.
-            - arg_name: docker-credential-file
-              help_text: |
-                The credentials to be used if a private registry is provided and
-                auth is required. The contents of the file will be stored into a
-                Secret and referenced from the imagePullSecrets of the connect
-                agent workload.
-        - arg_name: agent-deployed
-          action: store_true
-          default: false
-          help_text: |
-            If the agent has already been deployed by the user.
+    - api_field: membership.description
+      arg_name: description
+      required: true
+      help_text: description of the membership resource.

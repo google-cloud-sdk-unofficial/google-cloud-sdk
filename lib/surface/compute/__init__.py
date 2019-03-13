@@ -46,6 +46,8 @@ class Compute(base.Group):
   """Create and manipulate Google Compute Engine resources."""
   detailed_help = DETAILED_HELP
 
+  category = base.COMPUTE_CATEGORY
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddTransforms(transforms.GetTransforms())

@@ -26,6 +26,8 @@ class SecurityPolicies(base.Group):
   pass
 
 
+SecurityPolicies.category = base.LOAD_BALANCING_CATEGORY
+
 SecurityPolicies.detailed_help = {
     'brief': ('Read and manipulate Google Compute Engine security policies. '
               'Security policies are used to control access to Google Cloud '

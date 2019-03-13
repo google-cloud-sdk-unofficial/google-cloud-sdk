@@ -263,23 +263,8 @@ class Create(base.Command):
     flags.AddDatabaseVersion(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(base.Command):
-  """Creates a new Cloud SQL instance."""
-
-  def Run(self, args):
-    return RunBaseCreateCommand(args, self.ReleaseTrack())
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser)
-    AddBetaArgs(parser)
-    flags.AddDatabaseVersion(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.Command):
   """Creates a new Cloud SQL instance."""
 
   def Run(self, args):

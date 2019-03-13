@@ -11,7 +11,7 @@
 
   arguments:
     resource:
-      help_text: The project of the memberships you want to list.
+      help_text: project containing memberships you want to list.
       spec: !REF googlecloudsdk.command_lib.container.memberships.resources:project
 
   response:

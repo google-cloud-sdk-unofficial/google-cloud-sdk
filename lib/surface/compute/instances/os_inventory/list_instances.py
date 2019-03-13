@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import base64
+import json
 import os
 import zlib
 
@@ -35,10 +36,10 @@ from googlecloudsdk.core.resource import resource_projector
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListInstances(base.ListCommand):
-  """List instances with specific OS inventory data values.
+  r"""List instances with specific OS inventory data values.
 
   {command} displays all Google Compute Engine instances in a project matching
-  an inventory filter.
+  an inventory filter. Run gcloud topic filters to see supported filter syntax.
 
   ## EXAMPLES
 
@@ -46,15 +47,48 @@ class ListInstances(base.ListCommand):
 
         $ {command}
 
-  To list the URIs of all instances in a project whose hostname equals
-  my-instance, run:
+  To list the URIs of all instances whose OS short name contains rhel, run:
 
-        $ {command} --inventory-filter="Hostname=my-instance" --uri
+        $ {command} --inventory-filter="ShortName:rhel" --uri
 
-  To list all instances whose OS short name contains rhel, run:
+  To list all instances with package google-cloud-sdk installed, run:
 
-        $ {command} --inventory-filter="ShortName:rhel"
+        $ {command} --inventory-filter="InstalledPackages:google-cloud-sdk"
+
+  To list all instances with package name matching a regex ^google-cloud*
+  available for update through apt, run:
+
+        $ {command} --inventory-filter="\
+        PackageUpdates.apt[].Name~^google-cloud*"
+
+  To list all instances with package update google-cloud-sdk of version greater
+  than or equal to 235.0.0-0 available through apt, run:
+
+        $ {command} --inventory-filter="\
+        PackageUpdates.apt[].google-cloud-sdk.Version>=235.0.0-0"
+
+  To list all instances missing the Stackdriver monitoring package
+  stackdriver-agent, run:
+
+        $ {command} --inventory-filter="\
+        NOT(InstalledPackages:stackdriver-agent)"
+
+  To list all Windows instances with an installed qfe hotfix whose ID equals
+  KB4462930, run:
+
+        $ {command} --inventory-filter="\
+        InstalledPackages.qfe[].HotFixID=KB4462930"
+
+  To list all Windows instances with a wua update whose description contains the
+  word Security, run:
+
+        $ {command} --inventory-filter="\
+        InstalledPackages.wua[].Description:Security"
+
   """
+
+  _GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS = ('InstalledPackages', 'PackageUpdates')
+  _SPECIAL_PACKAGE_MANAGERS = ('wua', 'qfe')
 
   @staticmethod
   def Args(parser):
@@ -89,10 +123,41 @@ class ListInstances(base.ListCommand):
 
     for response in filter(None, responses):
       for item in response.queryValue.items:
-        if item.key == 'InstalledPackages' or item.key == 'PackageUpdates':
+        if item.key in self._GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS:
           item.value = zlib.decompress(
               base64.b64decode(item.value), zlib.MAX_WBITS | 32)
     return responses
+
+  def _GetFormattedGuestAttributes(self, guest_attributes):
+    guest_attributes_json = resource_projector.MakeSerializable(
+        guest_attributes)
+
+    formatted_guest_attributes = {}
+    for guest_attribute in guest_attributes_json:
+      guest_attribute_key = guest_attribute['key']
+
+      # Only reformat the guest attribute value
+      # for certain fields that contain JSON data.
+      if guest_attribute_key in self._GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS:
+        formatted_packages_info = {}
+        guest_attribute_json = json.loads(guest_attribute['value'])
+        for package_manager, package_list in guest_attribute_json.items():
+          if package_manager in self._SPECIAL_PACKAGE_MANAGERS:
+            # No reformatting for special package managers.
+            formatted_packages_info[package_manager] = package_list
+          else:
+            # Reformat package info published by standard package managers
+            formatted_packages_list = []
+            for package in package_list:
+              name = package['Name']
+              info = {'Arch': package['Arch'], 'Version': package['Version']}
+              formatted_packages_list.append({'Name': name, name: info})
+            formatted_packages_info[package_manager] = formatted_packages_list
+        guest_attribute['value'] = formatted_packages_info
+
+      formatted_guest_attributes[guest_attribute_key] = guest_attribute['value']
+
+    return json.loads(json.dumps(formatted_guest_attributes))
 
   def _GetInventoryFilteredInstances(self, instances, responses, query):
     filtered_instances = []
@@ -101,10 +166,9 @@ class ListInstances(base.ListCommand):
       # No listing instances without inventory data.
       if instance is not None and response is not None:
         guest_attributes = response.queryValue.items
-        guest_attributes_json = resource_projector.MakeSerializable(
+        formatted_guest_attributes_json = self._GetFormattedGuestAttributes(
             guest_attributes)
-
-        if query.Evaluate(guest_attributes_json):
+        if query.Evaluate(formatted_guest_attributes_json):
           filtered_instances.append(instance)
 
     return filtered_instances

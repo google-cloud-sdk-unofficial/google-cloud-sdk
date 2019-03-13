@@ -29,22 +29,27 @@ from googlecloudsdk.core import resources
 import six
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class AddBgpPeer(base.UpdateCommand):
   """Add a BGP peer to a Google Compute Engine router."""
 
   ROUTER_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def _Args(cls, parser, support_bfd=False, support_enable=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddBgpPeerArgs(parser, for_add_bgp_peer=True)
+    flags.AddBgpPeerArgs(
+        parser, for_add_bgp_peer=True, support_bfd=support_bfd,
+        support_enable=support_enable)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'peer')
 
-  def Run(self, args):
-    """See base.UpdateCommand."""
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser)
 
+  def _Run(self, args, support_bfd=False, support_enable=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
     service = holder.client.apitools_client.routers
@@ -54,7 +59,8 @@ class AddBgpPeer(base.UpdateCommand):
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
-    peer = _CreateBgpPeerMessage(messages, args)
+    peer = _CreateBgpPeerMessage(messages, args, support_bfd=support_bfd,
+                                 support_enable=support_enable)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -110,13 +116,77 @@ class AddBgpPeer(base.UpdateCommand):
                           'Creating peer [{0}] in router [{1}]'.format(
                               peer.name, router_ref.Name()))
 
+  def Run(self, args):
+    """See base.UpdateCommand."""
+    return self._Run(args)
 
-def _CreateBgpPeerMessage(messages, args):
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddBgpPeerAlpha(AddBgpPeer):
+  """Add a BGP peer to a Google Compute Engine router."""
+
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser, support_bfd=True, support_enable=True)
+
+  def Run(self, args):
+    """See base.UpdateCommand."""
+    return self._Run(args, support_bfd=True, support_enable=True)
+
+
+def _CreateBgpPeerMessage(messages, args, support_bfd=False,
+                          support_enable=False):
   """Creates a BGP peer with base attributes based on flag arguments."""
+  bfd = None
+  if support_bfd:
+    bfd = _CreateBgpPeerBfdMessage(messages, args)
+  enable = None
+  if support_enable and args.enabled is not None:
+    if args.enabled:
+      enable = messages.RouterBgpPeer.EnableValueValuesEnum.TRUE
+    else:
+      enable = messages.RouterBgpPeer.EnableValueValuesEnum.FALSE
+  if support_bfd or support_enable:
+    return messages.RouterBgpPeer(
+        name=args.peer_name,
+        interfaceName=args.interface,
+        peerIpAddress=args.peer_ip_address,
+        peerAsn=args.peer_asn,
+        advertisedRoutePriority=args.advertised_route_priority,
+        enable=enable,
+        bfd=bfd)
+  else:
+    return messages.RouterBgpPeer(
+        name=args.peer_name,
+        interfaceName=args.interface,
+        peerIpAddress=args.peer_ip_address,
+        peerAsn=args.peer_asn,
+        advertisedRoutePriority=args.advertised_route_priority)
 
-  return messages.RouterBgpPeer(
-      name=args.peer_name,
-      interfaceName=args.interface,
-      peerIpAddress=args.peer_ip_address,
-      peerAsn=args.peer_asn,
-      advertisedRoutePriority=args.advertised_route_priority)
+
+def _CreateBgpPeerBfdMessage(messages, args):
+  """Creates a BGP peer with base attributes based on flag arguments."""
+  if not (args.IsSpecified('bfd_min_receive_interval') or
+          args.IsSpecified('bfd_min_transmit_interval') or
+          args.IsSpecified('bfd_mode') or
+          args.IsSpecified('bfd_multiplier') or
+          args.IsSpecified('bfd_packet_mode') or
+          args.IsSpecified('bfd_slow_timer_interval')):
+    return None
+  bfd_mode = None
+  if args.bfd_mode is not None:
+    bfd_mode = messages.RouterBgpPeerBfd.ModeValueValuesEnum(args.bfd_mode)
+  bfd_packet_mode = None
+  if args.bfd_packet_mode is not None:
+    bfd_packet_mode = messages.RouterBgpPeerBfd.PacketModeValueValuesEnum(
+        args.bfd_packet_mode)
+  return messages.RouterBgpPeerBfd(
+      minReceiveInterval=args.bfd_min_receive_interval,
+      minTransmitInterval=args.bfd_min_transmit_interval,
+      mode=bfd_mode,
+      multiplier=args.bfd_multiplier,
+      packetMode=bfd_packet_mode,
+      slowTimerInterval=args.bfd_slow_timer_interval,
+  )

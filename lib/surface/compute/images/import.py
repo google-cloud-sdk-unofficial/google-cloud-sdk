@@ -51,14 +51,15 @@ _OS_CHOICES_MAP = {
     'ubuntu-1404': 'ubuntu/translate_ubuntu_1404.wf.json',
     'ubuntu-1604': 'ubuntu/translate_ubuntu_1604.wf.json',
     'windows-2008r2': 'windows/translate_windows_2008_r2.wf.json',
+    'windows-2012': 'windows/translate_windows_2012.wf.json',
     'windows-2012r2': 'windows/translate_windows_2012_r2.wf.json',
     'windows-2016': 'windows/translate_windows_2016.wf.json',
     'windows-2008r2-byol': 'windows/translate_windows_2008_r2_byol.wf.json',
     'windows-2012-byol': 'windows/translate_windows_2012_byol.wf.json',
     'windows-2012r2-byol': 'windows/translate_windows_2012_r2_byol.wf.json',
     'windows-2016-byol': 'windows/translate_windows_2016_byol.wf.json',
-    'windows-7-64-byol': 'windows/translate_windows_7_64_byol.wf.json',
-    'windows-10-64-byol': 'windows/translate_windows_10_64_byol.wf.json',
+    'windows-7-byol': 'windows/translate_windows_7_byol.wf.json',
+    'windows-10-byol': 'windows/translate_windows_10_byol.wf.json',
 }
 _OS_CHOICES_GA = [
     'debian-8',
@@ -72,18 +73,19 @@ _OS_CHOICES_GA = [
     'ubuntu-1404',
     'ubuntu-1604',
     'windows-2008r2',
+    'windows-2012',
     'windows-2012r2',
     'windows-2016',
 ]
 _OS_CHOICES_BETA = _OS_CHOICES_GA + [
-]
-_OS_CHOICES_ALPHA = _OS_CHOICES_BETA + [
     'windows-2008r2-byol',
     'windows-2012-byol',
     'windows-2012r2-byol',
     'windows-2016-byol',
-    'windows-7-64-byol',
-    'windows-10-64-byol',
+    'windows-7-byol',
+    'windows-10-byol',
+]
+_OS_CHOICES_ALPHA = _OS_CHOICES_BETA + [
 ]
 
 _WORKFLOW_DIR = '../workflows/image_import/'

@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.dataproc import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class GetIamPolicy(base.ListCommand):
+class GetIamPolicy(base.Command):
   """Get IAM policy for a workflow template.
 
   Gets the IAM policy for a workflow template, given a template ID.
@@ -42,7 +42,6 @@ class GetIamPolicy(base.ListCommand):
   def Args(parser):
     flags.AddTemplateResourceArg(
         parser, 'retrieve the policy for', api_version='v1')
-    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())

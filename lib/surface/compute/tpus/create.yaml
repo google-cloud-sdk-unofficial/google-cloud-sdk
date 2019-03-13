@@ -97,3 +97,70 @@
         params:
         - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:range
         - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:service_networking
+    - group:
+        mutex: true
+        params:
+        - group:
+            params:
+            - arg_name: model-config-file
+              api_field: node.modelConfigFile
+              help_text: |
+                Google Cloud Storage URI of the configuration file for models to serve. For example:
+                'gs://my_bucket/path/to/config.pbtxt'.
+
+                The contents of the model configuration file should look something like the
+                following:
+
+                model_config_list: {
+                  config: {
+                    name: "Model1",
+                    base_path: "gs://my_bucket/path/to/model1",
+                    model_platform: "tensorflow"
+                  },
+                  config: {
+                    name: "Model2",
+                    base_path: "gs://my_other_bucket/path/to/model2",
+                    model_platform: "tensorflow"
+                  },
+                }
+            - arg_name: platform-config-file
+              api_field: node.platformConfigFile
+              help_text: |
+                Google Cloud Storage URI of configuration file for platform requirements. For example:
+                'gs://my_bucket/path/to/platform.pbtxt'.
+
+                The contents of the platform configuration file should look something like the following:
+
+                platform_configs {
+                  key: "tensorflow"
+                  value {
+                    source_adapter_config {
+                      [type.googleapis.com/tensorflow.serving.SavedModelBundleSourceAdapterConfig] {
+                        legacy_config {
+                          saved_model_tags: "tpu"
+                          saved_model_tags: "serve"
+                          batching_parameters {
+                            max_batch_size { value: 8 }
+                            batch_timeout_micros { value: 50000 }
+                            max_enqueued_batches { value: 10000 }
+                            num_batch_threads { value: 8 }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+        - group:
+            params:
+            - arg_name: model-base-path
+              api_field: node.modelBasePath
+              help_text: |
+                Base path to exported saved model. This flag can be used instead of
+                '--model-config-file' directly to specify the exported saved model's base path
+                (excluding timestamp), whereas '--model-config-file' points to a Google Cloud
+                Storage path to a ModelServerConfig proto.
+            - arg_name: model-name
+              api_field: node.modelName
+              help_text: |
+                Model name for tensorflow serving to serve to incoming requests. If not provided,
+                'serving_default' will be used.

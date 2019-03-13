@@ -122,6 +122,17 @@ class Update(base.UpdateCommand):
       has_changes = True
 
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      if args.autoscaling_policy:
+        cluster_config.autoscalingConfig = dataproc.messages.AutoscalingConfig(
+            policyUri=args.CONCEPTS.autoscaling_policy.Parse().RelativeName())
+        changed_fields.append('config.autoscaling_config.policy_uri')
+        has_changes = True
+      elif args.autoscaling_policy == '' or args.disable_autoscaling:  # pylint: disable=g-explicit-bool-comparison
+        # Disabling autoscaling. Don't need to explicitly set
+        # cluster_config.autoscaling_config to None.
+        changed_fields.append('config.autoscaling_config.policy_uri')
+        has_changes = True
+
       lifecycle_config = dataproc.messages.LifecycleConfig()
       changed_config = False
       if args.max_age is not None:
@@ -248,6 +259,18 @@ class UpdateBeta(Update):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
+
+    # Can only specify one of --autoscaling-policy or --disable-autoscaling
+    autoscaling_group = parser.add_mutually_exclusive_group(hidden=True)
+    flags.AddAutoscalingPolicyResourceArgForCluster(
+        autoscaling_group, api_version='v1beta2')
+    autoscaling_group.add_argument(
+        '--disable-autoscaling',
+        action='store_true',
+        help="""\
+        Disable autoscaling, if it is enabled. This is an alias for passing the
+        empty string to --autoscaling-policy',
+        """)
 
     idle_delete_group = parser.add_mutually_exclusive_group()
     idle_delete_group.add_argument(

@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Regions(base.Group):
-  """Manage Cloud Filestore regions."""
+  """List regions where Cloud Filestore is available."""

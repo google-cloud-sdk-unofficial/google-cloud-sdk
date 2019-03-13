@@ -65,48 +65,52 @@ class Update(base.UpdateCommand):
     per_instance_config = configs_getter.get_instance_config(
         igm_ref=igm_ref, instance_ref=instance_ref)
 
-    per_instance_config.override.reset('origin')
-
     remove_stateful_disks_set = set(remove_stateful_disks or [])
     update_stateful_disks_dict = Update._UpdateStatefulDisksToDict(
         update_stateful_disks)
-
     new_stateful_disks = []
-    for current_stateful_disk in per_instance_config.override.disks:
-      if current_stateful_disk.deviceName in remove_stateful_disks_set:
+    existing_disks = []
+    if per_instance_config.preservedState.disks:
+      existing_disks =\
+          per_instance_config.preservedState.disks.additionalProperties
+    for current_stateful_disk in existing_disks:
+      disk_name = current_stateful_disk.key
+      # Disk to be removed
+      if disk_name in remove_stateful_disks_set:
         continue
-      if current_stateful_disk.deviceName in update_stateful_disks_dict:
-        update_stateful_disk = update_stateful_disks_dict[
-            current_stateful_disk.deviceName]
-        source = update_stateful_disk.get('source')
-        mode = update_stateful_disk.get('mode')
+      # Disk to be updated
+      if disk_name in update_stateful_disks_dict:
+        update_disk_data = update_stateful_disks_dict[disk_name]
+        source = update_disk_data.get('source')
+        mode = update_disk_data.get('mode')
         if not (source or mode):
           raise exceptions.InvalidArgumentException(
               parameter_name='--update-stateful-disk',
               message=('[source] or [mode] is required when updating'
                        ' [device-name] already existing in instance config'))
+        preserved_disk = current_stateful_disk.value
         if source:
-          current_stateful_disk.source = source
+          preserved_disk.source = source
         if mode:
-          current_stateful_disk.mode = instance_configs_messages.GetMode(
-              messages=messages, mode=mode)
-        del update_stateful_disks_dict[current_stateful_disk.deviceName]
+          preserved_disk.mode = instance_configs_messages.GetMode(
+              messages=messages, mode=mode, preserved_state_mode=True)
+        del update_stateful_disks_dict[disk_name]
       new_stateful_disks.append(current_stateful_disk)
-
     for update_stateful_disk in update_stateful_disks_dict.values():
       new_stateful_disks.append(
-          instance_configs_messages.GetDiskOverride(
+          instance_configs_messages.MakePreservedStateDiskEntry(
               messages=messages,
-              stateful_disk=update_stateful_disk,
+              stateful_disk_data=update_stateful_disk,
               disk_getter=disk_getter))
 
-    per_instance_config.override.disks = new_stateful_disks
-
+    existing_metadata = []
+    if per_instance_config.preservedState.metadata:
+      existing_metadata = per_instance_config.preservedState\
+          .metadata.additionalProperties
     new_stateful_metadata = {
         metadata.key: metadata.value
-        for metadata in per_instance_config.override.metadata
+        for metadata in existing_metadata
     }
-
     for stateful_metadata_key_to_remove in remove_stateful_metadata or []:
       if stateful_metadata_key_to_remove in new_stateful_metadata:
         del new_stateful_metadata[stateful_metadata_key_to_remove]
@@ -116,19 +120,26 @@ class Update(base.UpdateCommand):
             message=('stateful metadata key to remove `{0}` does not exist in'
                      ' the given instance config'.format(
                          stateful_metadata_key_to_remove)))
-
     new_stateful_metadata.update(update_stateful_metadata)
-    per_instance_config.override.metadata = [
-        messages.ManagedInstanceOverride.MetadataValueListEntry(
-            key=metadata_key, value=metadata_value)
-        for metadata_key, metadata_value in sorted(
-            six.iteritems(new_stateful_metadata))
-    ]
-    preserved_state = \
-      instance_configs_messages.MakePreservedStateFromOverrides(
-          holder.client.messages, new_stateful_disks,
-          per_instance_config.override.metadata)
+
+    # Create preserved state
+    preserved_state = messages.PreservedState()
+    preserved_state.disks = messages.PreservedState.DisksValue(
+        additionalProperties=new_stateful_disks)
+    preserved_state.metadata = messages.PreservedState.MetadataValue(
+        additionalProperties=[
+            instance_configs_messages.MakePreservedStateMetadataEntry(
+                messages, key=key, value=value)
+            for key, value in sorted(six.iteritems(new_stateful_metadata))]
+    )
     per_instance_config.preservedState = preserved_state
+
+    # Create overrides (only if required)
+    if per_instance_config.override:
+      per_instance_config.override = \
+          instance_configs_messages.MakeOverridesFromPreservedState(
+              messages, preserved_state)
+      per_instance_config.override.reset('origin')
     return per_instance_config
 
   @staticmethod
