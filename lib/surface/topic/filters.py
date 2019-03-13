@@ -32,7 +32,7 @@ class Filters(base.TopicCommand):
       'DESCRIPTION':
           textwrap.dedent("""\
           {description}
-
+          +
           Note: Depending on the specific server API, filtering may be done
           entirely by the client, entirely by the server, or by a combination
           of both.
@@ -220,11 +220,10 @@ class Filters(base.TopicCommand):
 
             $ gcloud projects list --format="table(projectNumber,projectId,createTime)" --filter="createTime>-P2W"
 
-          For more about ISO8601 durations, see:
-          https://en.wikipedia.org/wiki/ISO_8601
-
-
-          This table shows : operator pattern matching:
+          For more about ISO8601 durations, see: https://en.wikipedia.org/wiki/ISO_8601
+          +
+          The table below shows examples of pattern matching if used with
+          the `:` operator:
 
           PATTERN | VALUE | MATCHES | DEPRECATED_MATCHES
           --- | --- | --- | ---

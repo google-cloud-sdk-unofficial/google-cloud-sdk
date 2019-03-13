@@ -1,17 +1,21 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
 
   help_text:
     brief: Create a new access level.
     description: Create a new access level in a given access policy.
 
   request:
+    api_version: v1
+    BETA:
+      api_version: v1beta
+    ALPHA:
+      api_version: v1beta
     collection: accesscontextmanager.accessPolicies.accessLevels
     modify_request_hooks:
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=accessLevel.name
 
   async:
     collection: accesscontextmanager.operations
-
   arguments:
     resource:
       help_text: The access level to create.
@@ -54,3 +58,7 @@
             ```
       repeated: false
       processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditions
+      ALPHA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditionsBeta
+      BETA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditionsBeta

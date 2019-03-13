@@ -185,6 +185,9 @@ class CreateGA(base.CreateCommand):
           client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
 
+    if args.port_name is not None:
+      backend_service.portName = args.port_name
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
@@ -378,6 +381,9 @@ class CreateAlpha(CreateGA):
           client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
 
+    if args.port_name is not None:
+      backend_service.portName = args.port_name
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
@@ -518,6 +524,9 @@ class CreateBeta(CreateGA):
       backend_service.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
+
+    if args.port_name is not None:
+      backend_service.portName = args.port_name
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,

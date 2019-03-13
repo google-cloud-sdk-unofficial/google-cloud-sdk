@@ -48,12 +48,7 @@ class Export(base.Command):
   def Run(self, args):
     parent = asset_utils.GetParentName(args.organization, args.project,
                                        args.folder)
-    if parent.startswith('projects'):
-      client = client_util.AssetProjectExportClient(parent)
-    elif parent.startswith('folders'):
-      client = client_util.AssetFolderExportClient(parent)
-    else:
-      client = client_util.AssetOrganizationExportClient(parent)
+    client = client_util.AssetExportClient(parent)
     operation = client.Export(args)
 
     prefix = self.ReleaseTrack().prefix

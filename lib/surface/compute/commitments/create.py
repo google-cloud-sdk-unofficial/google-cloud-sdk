@@ -131,7 +131,8 @@ class CreateAlpha(Create):
     commitment_type_flag = flags.GetTypeMapperFlag(messages)
     commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
     commitment = messages.Commitment(
-        allocations=reservation_helper.MakeReservations(args, messages, holder),
+        reservations=reservation_helper.MakeReservations(
+            args, messages, holder),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args),

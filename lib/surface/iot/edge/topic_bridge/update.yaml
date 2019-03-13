@@ -23,3 +23,6 @@
     - arg_name: rule-file
       required: true
       help_text: Path to YAML/JSON file that contains topic bridging rules.
+
+  output:
+    format: table(name.basename(),version,rules:format='table[box,title=RULES](sourceDomain,operation,sourceFilter,destinationDomain,rewriteTopicName)')

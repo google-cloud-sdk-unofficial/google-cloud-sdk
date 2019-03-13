@@ -30,24 +30,24 @@ class AutoscalingPoliciesBeta(base.Group):
 
   ## EXAMPLES
 
-  To create an autoscaling policy, run:
+  To see the list of all autoscaling policies, run:
 
-    $ {command} create policy-file.yaml
-
-  To update an autoscaling policy, run:
-
-    $ {command} update policy-file.yaml
-
-  To delete an autoscaling policy, run:
-
-    $ {command} delete my_policy
+    $ {command} list
 
   To view the details of an autoscaling policy, run:
 
     $ {command} describe my_policy
 
-  To see the list of all autoscaling policies, run:
+  To view just the non-output only fields of an autoscaling policy, run:
 
-    $ {command} list
+    $ {command} export my_policy --destination policy-file.yaml
+
+  To create or update an autoscaling policy, run:
+
+    $ {command} import my_policy --source policy-file.yaml
+
+  To delete an autoscaling policy, run:
+
+    $ {command} delete my_policy
   """
   pass

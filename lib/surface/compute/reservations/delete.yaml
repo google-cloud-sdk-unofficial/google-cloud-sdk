@@ -10,7 +10,7 @@
       help_text: The name of the reservation to delete.
 
   request:
-    collection: compute.allocations
+    collection: compute.reservations
     api_version: alpha
 
 # Need to add operation handling here. TODO(b/124401797)

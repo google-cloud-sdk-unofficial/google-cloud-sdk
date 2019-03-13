@@ -410,11 +410,6 @@ class Create(base.CreateCommand):
           scheduling=scheduling,
           tags=tags)
 
-      # TODO(b/80138906): These features are only exposed in alpha.
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        instance.allocationAffinity = instance_utils.GetAllocationAffinity(
-            args, compute_client)
-
       resource_policies = getattr(
           args, 'resource_policies', None)
       if resource_policies:
@@ -460,7 +455,6 @@ class Create(base.CreateCommand):
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidateAcceleratorArgs(args)
     instances_flags.ValidateNetworkTierArgs(args)
-    instances_flags.ValidateAllocationAffinityGroup(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -581,7 +575,6 @@ class CreateAlpha(CreateBeta):
     CreateAlpha.SOURCE_MACHINE_IMAGE.AddArgument(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddShieldedVMConfigArgs(parser)
-    instances_flags.AddAllocationAffinityGroup(parser)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddLocalNvdimmArgs(parser)

@@ -23,25 +23,41 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.accesscontextmanager import levels
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateLevelsGA(base.UpdateCommand):
   """Update an existing access level."""
+
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
+    UpdateLevelsGA.ArgsVersioned(parser, version='v1')
+
+  @staticmethod
+  def ArgsVersioned(parser, version='v1'):
     levels.AddResourceArg(parser, 'to update')
-    levels.AddLevelArgs(parser)
-    levels.AddLevelSpecArgs(parser)
+    levels.AddLevelArgs(parser, version=version)
+    levels.AddLevelSpecArgs(parser, version=version)
 
   def Run(self, args):
-    client = levels_api.Client()
+    client = levels_api.Client(version=self._API_VERSION)
 
     level_ref = args.CONCEPTS.level.Parse()
 
-    mapper = levels.GetCombineFunctionEnumMapper()
+    mapper = levels.GetCombineFunctionEnumMapper(version=self._API_VERSION)
     combine_function = mapper.GetEnumForChoice(args.combine_function)
-    return client.Patch(level_ref,
-                        description=args.description,
-                        title=args.title,
-                        combine_function=combine_function,
-                        basic_level_conditions=args.basic_level_spec)
+    return client.Patch(
+        level_ref,
+        description=args.description,
+        title=args.title,
+        combine_function=combine_function,
+        basic_level_conditions=args.basic_level_spec)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateLevelsBeta(UpdateLevelsGA):
+  _API_VERSION = 'v1beta'
+
+  @staticmethod
+  def Args(parser):
+    UpdateLevelsGA.ArgsVersioned(parser, version='v1beta')

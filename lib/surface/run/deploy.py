@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
-
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -85,7 +85,6 @@ class Deploy(base.Command):
 
     conn_context = connection_context.GetConnectionContext(args)
 
-    # pylint: disable=protected-access
     if (conn_context.supports_one_platform
         and getattr(args, 'connectivity', None)):
       raise exceptions.ConfigurationError(
@@ -97,7 +96,6 @@ class Deploy(base.Command):
       raise exceptions.ConfigurationError(
           'The `--allow-unauthenticated` flag '
           'is not supported with Cloud Run on GKE.')
-    # pylint: enable=protected-access
 
     service_ref = flags.GetService(args)
     function_entrypoint = flags.GetFunction(args.function)
@@ -149,6 +147,24 @@ class Deploy(base.Command):
         private_endpoint = None
       deployment_stages = stages.ServiceStages()
       exists = operations.GetService(service_ref)
+
+      if (not exists and not args.allow_unauthenticated and
+          conn_context.supports_one_platform):
+
+        if operations.CanAddIamPolicyBinding(service_ref):
+          allow_unauth = console_io.PromptContinue(
+              prompt_string=(
+                  'Allow unauthenticated invocations '
+                  'to new service [{}]?'.format(
+                      service_ref.servicesId)),
+              default=False)
+        else:
+          allow_unauth = False
+          pretty_print.Info(
+              'This new service will require authentication to be invoked.')
+      else:
+        allow_unauth = False
+
       header = 'Deploying...' if exists else 'Deploying new service...'
       with progress_tracker.StagedProgressTracker(
           header,
@@ -156,11 +172,12 @@ class Deploy(base.Command):
           failure_message='Deployment failed',
           suppress_output=args.async) as tracker:
         operations.ReleaseService(
-            service_ref, changes,
+            service_ref,
+            changes,
             tracker,
             asyn=args.async,
             private_endpoint=private_endpoint,
-            allow_unauthenticated=args.allow_unauthenticated)
+            allow_unauthenticated=allow_unauth or args.allow_unauthenticated)
       if args.async:
         pretty_print.Success(
             'Service [{{bold}}{serv}{{reset}}] is deploying '

@@ -12,12 +12,12 @@
     - arg_name: vm-count
       required: true
       type: int
-      api_field: allocationsResizeRequest.specificSkuCount
+      api_field: reservationsResizeRequest.specificSkuCount
       help_text: |
         Number of VM instances can be updated. The value of this field must be an int in the
         range [1, 1000].
 
   request:
-    collection: compute.allocations
+    collection: compute.reservations
     api_version: alpha
     method: resize

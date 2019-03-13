@@ -452,6 +452,8 @@ class CreateBeta(Create):
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser, hidden=True)
+    flags.AddWorkloadIdentityFlags(parser)
+    flags.AddEnableShieldedContainersFlags(parser)
     kms_flag_overrides = {
         'kms-key': '--database-encryption-key',
         'kms-keyring': '--database-encryption-key-keyring',
@@ -488,6 +490,8 @@ class CreateBeta(Create):
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.security_group = args.security_group
+    ops.enable_workload_identity = args.enable_workload_identity
+    ops.enable_shielded_containers = args.enable_shielded_containers
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
@@ -540,12 +544,14 @@ class CreateAlpha(Create):
     flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddManagedPodIdentityFlags(parser)
+    flags.AddWorkloadIdentityFlags(parser)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddSecurityProfileForCreateFlags(parser)
     flags.AddInitialNodePoolNameArg(parser, hidden=False)
     flags.AddEnablePrivateIpv6AccessFlag(parser, hidden=True)
+    flags.AddEnableShieldedContainersFlags(parser)
     kms_flag_overrides = {
         'kms-key': '--database-encryption-key',
         'kms-keyring': '--database-encryption-key-keyring',
@@ -583,6 +589,7 @@ class CreateAlpha(Create):
     ops.default_max_pods_per_node = args.default_max_pods_per_node
     ops.max_pods_per_node = args.max_pods_per_node
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
+    ops.enable_workload_identity = args.enable_workload_identity
     ops.federating_service_account = args.federating_service_account
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.security_group = args.security_group
@@ -594,6 +601,7 @@ class CreateAlpha(Create):
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
     ops.enable_peering_route_sharing = args.enable_peering_route_sharing
+    ops.enable_shielded_containers = args.enable_shielded_containers
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

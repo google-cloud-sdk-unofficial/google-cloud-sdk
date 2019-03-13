@@ -155,7 +155,7 @@ class ScpBeta(ScpGA):
         [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
         """)
 
-    iap_tunnel.AddConnectionHelperArgs(parser, mutex_scope)
+    iap_tunnel.AddSshTunnelArgs(parser, mutex_scope)
 
   def Run(self, args):
     """See scp_utils.BaseScpCommand.Run."""

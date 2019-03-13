@@ -35,3 +35,13 @@ class AccessContextManagerBeta(base.Group):
 
   Policy API for configuring context aware access features and access zones.
   """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class AccessContextManagerGA(base.Group):
+  """Manage Access Context Manager resources.
+
+  Policy API for configuring context aware access features and access zones.
+  """
+
+  category = base.IDENTITY_AND_SECURITY_CATEGORY

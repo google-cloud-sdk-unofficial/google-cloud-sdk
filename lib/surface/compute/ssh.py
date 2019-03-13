@@ -36,11 +36,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
 
 
-def ArgsHaveTunnelThroughIap(args):
-  """Determine if the current track has this flag and if it is also enabled."""
-  return hasattr(args, 'tunnel_through_iap') and args.tunnel_through_iap
-
-
 def AddCommandArg(parser):
   parser.add_argument(
       '--command',
@@ -67,6 +62,9 @@ def AddSSHArgs(parser):
       is equivalent to passing the flags ``--vvv'' and ``-L
       80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
       'example-instance' is 162.222.181.197.
+
+      If connecting to the instance's external IP, then %INSTANCE% is replaced
+      with that, otherwise it is replaced with the internal IP.
       """)
 
   parser.add_argument(
@@ -166,11 +164,26 @@ class Ssh(base.Command):
       public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
       user, use_oslogin = ssh.CheckForOsloginAndGetUser(
           instance, project, user, public_key, self.ReleaseTrack())
-    if args.internal_ip or ArgsHaveTunnelThroughIap(args):
+
+    iap_tunnel_args = iap_tunnel.SshTunnelArgs.FromArgs(
+        args, self.ReleaseTrack(), instance_ref,
+        ssh_utils.GetInternalInterface(instance))
+
+    if iap_tunnel_args:
+      # IAP Tunnel only uses ip_address for the purpose of --ssh-flag
+      # substitution. In this case, dest_addr doesn't do much, it just matches
+      # against entries in the user's ssh_config file. It's best to use
+      # something unique to avoid false positive matches, thus we use
+      # HostKeyAlias.
       ip_address = ssh_utils.GetInternalIPAddress(instance)
+      dest_addr = ssh_utils.HostKeyAlias(instance)
+    elif args.internal_ip:
+      ip_address = ssh_utils.GetInternalIPAddress(instance)
+      dest_addr = ip_address
     else:
       ip_address = ssh_utils.GetExternalIPAddress(instance)
-    remote = ssh.Remote(ip_address, user)
+      dest_addr = ip_address
+    remote = ssh.Remote(dest_addr, user)
 
     identity_file = None
     options = None
@@ -198,22 +211,13 @@ class Ssh(base.Command):
                     'extra_flags': extra_flags,
                     'remote_command': remote_command,
                     'tty': tty,
+                    'iap_tunnel_args': iap_tunnel_args,
                     'remainder': remainder}
-
-    tunnel_helper = None
-    if ArgsHaveTunnelThroughIap(args):
-      tunnel_helper = ssh_utils.CreateIapTunnelHelper(args, instance_ref,
-                                                      instance)
-      tunnel_helper.StartListener()
-      ssh_cmd_args['remote'] = ssh.Remote('localhost', user)
-      ssh_cmd_args['port'] = str(tunnel_helper.GetLocalPort())
 
     cmd = ssh.SSHCommand(**ssh_cmd_args)
 
     if args.dry_run:
       log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
-      if tunnel_helper:
-        tunnel_helper.StopListener()
       return
 
     if args.plain or use_oslogin:
@@ -223,40 +227,22 @@ class Ssh(base.Command):
           client, remote.user, instance, project)
 
     if keys_newly_added:
-      poller_tunnel_helper = None
-      if tunnel_helper:
-        poller_tunnel_helper = ssh_utils.CreateIapTunnelHelper(
-            args, instance_ref, instance)
-        poller_tunnel_helper.StartListener(accept_multiple_connections=True)
-      poller = ssh_utils.CreateSSHPoller(
-          remote, identity_file, options, poller_tunnel_helper,
-          extra_flags=extra_flags)
-
+      poller = ssh_utils.CreateSSHPoller(remote, identity_file, options,
+                                         iap_tunnel_args,
+                                         extra_flags=extra_flags)
       log.status.Print('Waiting for SSH key to propagate.')
       # TODO(b/35355795): Don't force_connect
       try:
         poller.Poll(ssh_helper.env, force_connect=True)
       except retry.WaitException:
-        if tunnel_helper:
-          tunnel_helper.StopListener()
         raise ssh_utils.NetworkError()
-      finally:
-        if poller_tunnel_helper:
-          poller_tunnel_helper.StopListener()
 
-    if args.internal_ip and not tunnel_helper:
-      # The IAP Tunnel connection uses instance name and network interface name,
-      # so do not need to additionally verify the instance.  Also, the
-      # SSHCommand used within the function does not support IAP Tunnels.
+    if args.internal_ip:
       ssh_helper.PreliminarilyVerifyInstance(instance.id, remote, identity_file,
                                              options)
 
-    try:
-      # Errors from SSH itself result in an ssh.CommandError being raised
-      return_code = cmd.Run(ssh_helper.env, force_connect=True)
-    finally:
-      if tunnel_helper:
-        tunnel_helper.StopListener()
+    # Errors from SSH itself result in an ssh.CommandError being raised
+    return_code = cmd.Run(ssh_helper.env, force_connect=True)
     if return_code:
       # This is the return code of the remote command.  Problems with SSH itself
       # will result in ssh.CommandError being raised above.
@@ -278,7 +264,7 @@ class SshBeta(Ssh):
 
     mutex_scope = parser.add_mutually_exclusive_group()
     AddInternalIPArg(mutex_scope)
-    iap_tunnel.AddConnectionHelperArgs(parser, mutex_scope)
+    iap_tunnel.AddSshTunnelArgs(parser, mutex_scope)
 
 
 def DetailedHelp():

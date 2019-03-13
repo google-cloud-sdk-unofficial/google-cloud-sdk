@@ -75,7 +75,7 @@ class UpdateAlphaBeta(base.UpdateCommand):
       result = client.Patch(
           subscription_ref,
           ack_deadline=args.ack_deadline,
-          push_config=util.ParsePushConfig(args.push_endpoint),
+          push_config=util.ParsePushConfig(args),
           retain_acked_messages=args.retain_acked_messages,
           labels=labels_update.GetOrNone(),
           message_retention_duration=args.message_retention_duration,
@@ -127,7 +127,7 @@ class UpdateGA(base.UpdateCommand):
       result = client.Patch(
           subscription_ref,
           ack_deadline=args.ack_deadline,
-          push_config=util.ParsePushConfig(args.push_endpoint),
+          push_config=util.ParsePushConfig(args),
           retain_acked_messages=args.retain_acked_messages,
           message_retention_duration=args.message_retention_duration)
     except subscriptions.NoFieldsSpecifiedError:

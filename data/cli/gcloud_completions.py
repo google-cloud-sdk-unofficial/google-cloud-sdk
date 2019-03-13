@@ -3,6 +3,183 @@
 # pylint: disable=line-too-long,bad-continuation
 STATIC_COMPLETION_CLI_TREE = {
   "commands": {
+    "access-context-manager": {
+      "commands": {
+        "levels": {
+          "commands": {
+            "conditions": {
+              "commands": {
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--level": "value",
+                    "--policy": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "create": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--basic-level-spec": "value",
+                "--combine-function": [
+                  "and",
+                  "or"
+                ],
+                "--description": "value",
+                "--policy": "value",
+                "--title": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--policy": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--policy": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--policy": "value",
+                "--sort-by": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--basic-level-spec": "value",
+                "--combine-function": [
+                  "and",
+                  "or"
+                ],
+                "--description": "value",
+                "--policy": "value",
+                "--title": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "perimeters": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--access-levels": "value",
+                "--async": "bool",
+                "--description": "value",
+                "--perimeter-type": [
+                  "bridge",
+                  "regular"
+                ],
+                "--policy": "value",
+                "--resources": "value",
+                "--restricted-services": "value",
+                "--title": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--policy": "value"
+              }
+            },
+            "describe": {
+              "commands": {},
+              "flags": {
+                "--policy": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--policy": "value",
+                "--sort-by": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--add-access-levels": "value",
+                "--add-resources": "value",
+                "--add-restricted-services": "value",
+                "--clear-access-levels": "bool",
+                "--clear-resources": "bool",
+                "--clear-restricted-services": "bool",
+                "--description": "value",
+                "--policy": "value",
+                "--remove-access-levels": "value",
+                "--remove-resources": "value",
+                "--remove-restricted-services": "value",
+                "--set-access-levels": "value",
+                "--set-resources": "value",
+                "--set-restricted-services": "value",
+                "--title": "value",
+                "--type": [
+                  "bridge",
+                  "regular"
+                ]
+              }
+            }
+          },
+          "flags": {}
+        },
+        "policies": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--organization": "value",
+                "--title": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--organization": "value",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--title": "value"
+              }
+            }
+          },
+          "flags": {}
+        }
+      },
+      "flags": {}
+    },
     "alpha": {
       "commands": {
         "access-context-manager": {
@@ -89,8 +266,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--policy": "value",
                     "--resources": "value",
                     "--restricted-services": "value",
-                    "--title": "value",
-                    "--unrestricted-services": "value"
+                    "--title": "value"
                   }
                 },
                 "delete": {
@@ -122,21 +298,17 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--add-access-levels": "value",
                     "--add-resources": "value",
                     "--add-restricted-services": "value",
-                    "--add-unrestricted-services": "value",
                     "--clear-access-levels": "bool",
                     "--clear-resources": "bool",
                     "--clear-restricted-services": "bool",
-                    "--clear-unrestricted-services": "bool",
                     "--description": "value",
                     "--policy": "value",
                     "--remove-access-levels": "value",
                     "--remove-resources": "value",
                     "--remove-restricted-services": "value",
-                    "--remove-unrestricted-services": "value",
                     "--set-access-levels": "value",
                     "--set-resources": "value",
                     "--set-restricted-services": "value",
-                    "--set-unrestricted-services": "value",
                     "--title": "value",
                     "--type": [
                       "bridge",
@@ -1554,6 +1726,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--resources": "value",
                     "--resources-accelerator": "value",
                     "--type": [
+                      "compute-optimized",
                       "general-purpose",
                       "memory-optimized"
                     ],
@@ -3343,12 +3516,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--accelerator": "value",
                     "--address": "value",
-                    "--allocation-affinity": [
-                      "any",
-                      "none",
-                      "specific"
-                    ],
-                    "--allocation-label": "value",
                     "--async": "bool",
                     "--boot-disk-auto-delete": "bool",
                     "--boot-disk-device-name": "value",
@@ -9102,8 +9269,10 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--clear-env-vars": "bool",
                 "--clear-labels": "bool",
+                "--clear-max-instances": "bool",
                 "--entry-point": "value",
                 "--env-vars-file": "value",
+                "--max-instances": "value",
                 "--memory": "value",
                 "--region": "dynamic",
                 "--remove-env-vars": "value",
@@ -9930,6 +10099,14 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {}
                 },
                 "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "disable": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "enable": {
                   "commands": {},
                   "flags": {}
                 },
@@ -10940,6 +11117,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--location": "value",
+                    "--retention-period": "value"
+                  }
                 }
               },
               "flags": {}
@@ -11687,7 +11873,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "xgboost"
                     ],
                     "--labels": "value",
-                    "--machine-type": "value",
+                    "--machine-type": [
+                      "mls1-c1-m2",
+                      "mls1-c4-m2"
+                    ],
                     "--model": "value",
                     "--model-class": "value",
                     "--origin": "value",
@@ -12129,6 +12318,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--expiration-period": "value",
                     "--labels": "value",
                     "--message-retention-duration": "value",
+                    "--push-auth-service-account": "value",
+                    "--push-auth-token-audience": "value",
                     "--push-endpoint": "value",
                     "--retain-acked-messages": "bool",
                     "--topic": "value",
@@ -12179,6 +12370,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "modify-push-config": {
                   "commands": {},
                   "flags": {
+                    "--push-auth-service-account": "value",
+                    "--push-auth-token-audience": "value",
                     "--push-endpoint": "value"
                   }
                 },
@@ -12224,6 +12417,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-labels": "bool",
                     "--expiration-period": "value",
                     "--message-retention-duration": "value",
+                    "--push-auth-service-account": "value",
+                    "--push-auth-token-audience": "value",
                     "--push-endpoint": "value",
                     "--remove-labels": "value",
                     "--retain-acked-messages": "bool",
@@ -14938,8 +15133,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--policy": "value",
                     "--resources": "value",
                     "--restricted-services": "value",
-                    "--title": "value",
-                    "--unrestricted-services": "value"
+                    "--title": "value"
                   }
                 },
                 "delete": {
@@ -14971,21 +15165,17 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--add-access-levels": "value",
                     "--add-resources": "value",
                     "--add-restricted-services": "value",
-                    "--add-unrestricted-services": "value",
                     "--clear-access-levels": "bool",
                     "--clear-resources": "bool",
                     "--clear-restricted-services": "bool",
-                    "--clear-unrestricted-services": "bool",
                     "--description": "value",
                     "--policy": "value",
                     "--remove-access-levels": "value",
                     "--remove-resources": "value",
                     "--remove-restricted-services": "value",
-                    "--remove-unrestricted-services": "value",
                     "--set-access-levels": "value",
                     "--set-resources": "value",
                     "--set-restricted-services": "value",
-                    "--set-unrestricted-services": "value",
                     "--title": "value",
                     "--type": [
                       "bridge",
@@ -23636,8 +23826,10 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--clear-env-vars": "bool",
                 "--clear-labels": "bool",
+                "--clear-max-instances": "bool",
                 "--entry-point": "value",
                 "--env-vars-file": "value",
+                "--max-instances": "value",
                 "--memory": "value",
                 "--region": "dynamic",
                 "--remove-env-vars": "value",
@@ -25351,7 +25543,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "xgboost"
                     ],
                     "--labels": "value",
-                    "--machine-type": "value",
+                    "--machine-type": [
+                      "mls1-c1-m2",
+                      "mls1-c4-m2"
+                    ],
                     "--model": "value",
                     "--origin": "value",
                     "--python-version": "value",
@@ -32768,6 +32963,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--num-preemptible-workers": "value",
                 "--num-worker-local-ssds": "value",
                 "--num-workers": "value",
+                "--optional-components": "value",
                 "--preemptible-worker-boot-disk-size": "value",
                 "--preemptible-worker-boot-disk-type": "value",
                 "--properties": "value",
@@ -33302,6 +33498,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--num-preemptible-workers": "value",
                 "--num-worker-local-ssds": "value",
                 "--num-workers": "value",
+                "--optional-components": "value",
                 "--preemptible-worker-boot-disk-size": "value",
                 "--preemptible-worker-boot-disk-type": "value",
                 "--properties": "value",
@@ -36117,6 +36314,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "xgboost"
                 ],
                 "--labels": "value",
+                "--machine-type": [
+                  "mls1-c1-m2",
+                  "mls1-c4-m2"
+                ],
                 "--model": "value",
                 "--origin": "value",
                 "--python-version": "value",

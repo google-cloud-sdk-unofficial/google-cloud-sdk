@@ -204,9 +204,10 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
+    flags.AddMaxInstancesFlag(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack())
+    return _Run(args, track=self.ReleaseTrack(), enable_max_instances=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

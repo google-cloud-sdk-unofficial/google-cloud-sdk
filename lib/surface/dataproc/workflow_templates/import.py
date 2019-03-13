@@ -20,9 +20,11 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.export import util as export_util
+from googlecloudsdk.core import yaml_validator
 from googlecloudsdk.core.console import console_io
 
 
@@ -68,9 +70,13 @@ class Import(base.UpdateCommand):
     parent = '/'.join(template_ref.RelativeName().split('/')[0:4])
 
     data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
-    template = export_util.Import(message_type=msgs.WorkflowTemplate,
-                                  stream=data,
-                                  schema_path=self.GetSchemaPath())
+    try:
+      template = export_util.Import(
+          message_type=msgs.WorkflowTemplate,
+          stream=data,
+          schema_path=self.GetSchemaPath())
+    except yaml_validator.ValidationError as e:
+      raise exceptions.ValidationError(e.message)
 
     # Populate id field.
     template.id = template_ref.Name()

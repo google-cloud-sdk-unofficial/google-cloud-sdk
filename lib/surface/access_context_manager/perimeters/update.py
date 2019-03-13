@@ -24,17 +24,23 @@ from googlecloudsdk.command_lib.accesscontextmanager import perimeters
 from googlecloudsdk.command_lib.util.args import repeated
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdatePerimetersGA(base.UpdateCommand):
   """Update an existing access zone."""
+  _INCLUDE_UNRESTRICTED = False
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
+    UpdatePerimetersGA.ArgsVersioned(parser, version='v1')
+
+  @staticmethod
+  def ArgsVersioned(parser, version='v1'):
     perimeters.AddResourceArg(parser, 'to update')
-    perimeters.AddPerimeterUpdateArgs(parser)
+    perimeters.AddPerimeterUpdateArgs(parser, version=version)
 
   def Run(self, args):
-    client = zones_api.Client()
+    client = zones_api.Client(version=self._API_VERSION)
     perimeter_ref = args.CONCEPTS.perimeter.Parse()
     result = repeated.CachedResult.FromFunc(client.Get, perimeter_ref)
 
@@ -42,11 +48,20 @@ class Update(base.UpdateCommand):
         perimeter_ref,
         description=args.description,
         title=args.title,
-        perimeter_type=perimeters.GetTypeEnumMapper().GetEnumForChoice(
-            args.type),
+        perimeter_type=perimeters.GetTypeEnumMapper(
+            version=self._API_VERSION).GetEnumForChoice(args.type),
         resources=perimeters.ParseResources(args, result),
         restricted_services=perimeters.ParseRestrictedServices(args, result),
-        unrestricted_services=perimeters.ParseUnrestrictedServices(
-            args, result),
         levels=perimeters.ParseLevels(args, result,
                                       perimeter_ref.accessPoliciesId))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdatePerimetersBeta(UpdatePerimetersGA):
+  """Update an existing access zone."""
+  _INCLUDE_UNRESTRICTED = False
+  _API_VERSION = 'v1beta'
+
+  @staticmethod
+  def Args(parser):
+    UpdatePerimetersGA.ArgsVersioned(parser, version='v1beta')

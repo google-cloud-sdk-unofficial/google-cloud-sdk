@@ -31,8 +31,8 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat("""\
         table(name,
-              specificAllocation.inUseCount,
-              specificAllocation.count,
+              specificReservation.inUseCount,
+              specificReservation.count,
               zone.basename())
         """)
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
@@ -44,7 +44,7 @@ class List(base.ListCommand):
 
     request_data = lister.ParseZonalFlags(args, holder.resources)
 
-    list_implementation = lister.ZonalLister(client,
-                                             client.apitools_client.allocations)
+    list_implementation = lister.ZonalLister(
+        client, client.apitools_client.reservations)
 
     return lister.Invoke(request_data, list_implementation)

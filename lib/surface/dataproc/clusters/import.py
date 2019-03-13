@@ -19,11 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util as dp_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.export import util as export_util
+from googlecloudsdk.core import yaml_validator
 from googlecloudsdk.core.console import console_io
 
 
@@ -61,9 +63,13 @@ class Import(base.UpdateCommand):
     msgs = dataproc.messages
 
     data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
-    cluster = export_util.Import(message_type=msgs.Cluster,
-                                 stream=data,
-                                 schema_path=self.GetSchemaPath())
+    try:
+      cluster = export_util.Import(
+          message_type=msgs.Cluster,
+          stream=data,
+          schema_path=self.GetSchemaPath())
+    except yaml_validator.ValidationError as e:
+      raise exceptions.ValidationError(e.message)
 
     cluster_ref = dp_util.ParseCluster(args.name, dataproc)
     cluster.clusterName = cluster_ref.clusterName

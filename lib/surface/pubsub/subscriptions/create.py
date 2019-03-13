@@ -37,7 +37,7 @@ def _Run(args, enable_labels=False, legacy_output=False):
   client = subscriptions.SubscriptionsClient()
 
   topic_ref = args.CONCEPTS.topic.Parse()
-  push_config = util.ParsePushConfig(args.push_endpoint)
+  push_config = util.ParsePushConfig(args)
   retain_acked_messages = getattr(args, 'retain_acked_messages', None)
   retention_duration = getattr(args, 'message_retention_duration', None)
   if retention_duration:

@@ -31,13 +31,5 @@ class Describe(base.DescribeCommand):
     flags.AddOperationArgs(parser)
 
   def Run(self, args):
-    client = client_util.GetClient()
-    message_module = client_util.GetMessages()
-    operation_name = args.id
-    if operation_name.startswith('projects'):
-      service = client.projects_operations
-      message = message_module.CloudassetProjectsOperationsGetRequest
-    else:
-      service = client.organizations_operations
-      message = message_module.CloudassetOrganizationsOperationsGetRequest
-    return service.Get(message(name=args.id))
+    service = client_util.AssetOperationClient()
+    return service.Get(name=args.id)
