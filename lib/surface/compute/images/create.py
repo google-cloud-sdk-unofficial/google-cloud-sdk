@@ -33,7 +33,8 @@ import six
 
 
 def _Args(parser, release_track, supports_force_create=False,
-          supports_storage_location=False):
+          supports_storage_location=False,
+          supports_shielded_instance_initial_state=False):
   """Set Args based on Release Track."""
   # GA Args
   parser.display_info.AddFormat(flags.LIST_FORMAT)
@@ -62,6 +63,9 @@ def _Args(parser, release_track, supports_force_create=False,
   if supports_storage_location:
     compute_flags.AddStorageLocationFlag(parser, 'image')
 
+  if supports_shielded_instance_initial_state:
+    compute_flags.AddShieldedInstanceInitialStateKeyArg(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -77,7 +81,8 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, supports_storage_location=False):
+  def _Run(self, args, supports_storage_location=False,
+           supports_shielded_instance_initial_state=False):
     """Returns a list of requests necessary for adding images."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -160,6 +165,12 @@ class Create(base.CreateCommand):
         guest_os_feature_messages.append(guest_os_feature)
       image.guestOsFeatures = guest_os_feature_messages
 
+    if supports_shielded_instance_initial_state:
+      initial_state, has_set =\
+          image_utils.CreateInitialStateConfig(args, messages)
+      if has_set:
+        image.shieldedInstanceInitialState = initial_state
+
     if (supports_storage_location and args.IsSpecified('storage_location')):
       image.storageLocations = [args.storage_location]
 
@@ -208,11 +219,13 @@ class CreateAlpha(Create):
     _Args(parser,
           cls.ReleaseTrack(),
           supports_force_create=True,
-          supports_storage_location=True)
+          supports_storage_location=True,
+          supports_shielded_instance_initial_state=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args, supports_storage_location=True)
+    return self._Run(args, supports_storage_location=True,
+                     supports_shielded_instance_initial_state=True)
 
 
 Create.detailed_help = {

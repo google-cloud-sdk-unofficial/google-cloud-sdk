@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden  # Hidden until implementation is completed.
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AutoscalingPoliciesBeta(base.Group):
   r"""Create and manage Google Cloud Dataproc autoscaling policies.

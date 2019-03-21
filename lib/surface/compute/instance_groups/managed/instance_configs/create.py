@@ -28,8 +28,6 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_getter
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
-from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_disk_getter
-import six
 
 
 # TODO(b/70321546): rewrite help
@@ -68,33 +66,6 @@ class Create(base.CreateCommand):
     instance_groups_flags.AddMigStatefulForceInstanceUpdateFlag(parser)
 
   @staticmethod
-  def _GetPerInstanceConfigMessage(holder, instance_ref, stateful_disks,
-                                   stateful_metadata):
-    disk_getter = instance_disk_getter.InstanceDiskGetter(
-        instance_ref=instance_ref, holder=holder)
-    messages = holder.client.messages
-    disk_overrides = [
-        instance_configs_messages.GetDiskOverride(
-            messages=messages,
-            stateful_disk=stateful_disk,
-            disk_getter=disk_getter) for stateful_disk in stateful_disks or []
-    ]
-    metadata_overrides = [
-        messages.ManagedInstanceOverride.MetadataValueListEntry(
-            key=metadata_key, value=metadata_value)
-        for metadata_key, metadata_value in sorted(
-            six.iteritems(stateful_metadata))
-    ]
-    return messages.PerInstanceConfig(
-        instance=str(instance_ref),
-        name=str(instance_ref).rsplit('/', 1)[-1],
-        override=messages.ManagedInstanceOverride(
-            disks=disk_overrides, metadata=metadata_overrides),
-        preservedState=\
-            instance_configs_messages.MakePreservedStateFromOverrides(
-                holder.client.messages, disk_overrides, metadata_overrides))
-
-  @staticmethod
   def _CreateInstanceReference(holder, igm_ref, instance_name):
     """Creates reference to instance in instance group (zonal or regional)."""
     if instance_name.startswith('https://') or instance_name.startswith(
@@ -131,8 +102,9 @@ class Create(base.CreateCommand):
     configs_getter.check_if_instance_config_exists(
         igm_ref=igm_ref, instance_ref=instance_ref, should_exist=False)
 
-    per_instance_config_message = self._GetPerInstanceConfigMessage(
-        holder, instance_ref, args.stateful_disk, args.stateful_metadata)
+    per_instance_config_message = (
+        instance_configs_messages.CreatePerInstanceConfigMessage)(
+            holder, instance_ref, args.stateful_disk, args.stateful_metadata)
 
     operation_ref = instance_configs_messages.CallPerInstanceConfigUpdate(
         holder=holder,

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.app.api import appengine_domains_api_client as api_c
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class ListUserVerified(base.Command):
   """Lists the user's verified domains."""
 

@@ -61,6 +61,11 @@ _owned_ports = set()
 _random_ports = set()
 
 
+class NoFreePortFoundError(Exception):
+    """Exception indicating that no free port could be found."""
+    pass
+
+
 def add_reserved_port(port):
     """Add a port that was acquired by means other than the port server."""
     _free_ports.add(port)
@@ -133,22 +138,35 @@ def is_port_free(port):
 IsPortFree = is_port_free  # legacy API. pylint: disable=invalid-name
 
 
-def pick_unused_port(pid=None):
+def pick_unused_port(pid=None, portserver_address=None):
     """A pure python implementation of PickUnusedPort.
 
     Args:
       pid: PID to tell the portserver to associate the reservation with. If
-        None,
-        the current process's PID is used.
+        None, the current process's PID is used.
+      portserver_address: The address (path) of a unix domain socket
+        with which to connect to a portserver, a leading '@'
+        character indicates an address in the "abstract namespace".  OR
+        On systems without socket.AF_UNIX, this is an AF_INET address.
+        If None, or no port is returned by the portserver at the provided
+        address, the environment will be checked for a PORTSERVER_ADDRESS
+        variable.  If that is not set, no port server will be used.
 
     Returns:
       A port number that is unused on both TCP and UDP.
+
+    Raises:
+      NoFreePortFoundError: No free port could be found.
     """
     if _free_ports:
         port = _free_ports.pop()
         _owned_ports.add(port)
         return port
     # Provide access to the portserver on an opt-in basis.
+    if portserver_address:
+        port = get_port_from_port_server(portserver_address, pid=pid)
+        if port:
+            return port
     if 'PORTSERVER_ADDRESS' in os.environ:
         port = get_port_from_port_server(os.environ['PORTSERVER_ADDRESS'],
                                          pid=pid)
@@ -168,7 +186,10 @@ def _pick_unused_port_without_server():  # Protected. pylint: disable=invalid-na
     should not be called by code outside of this module.
 
     Returns:
-      A port number that is unused on both TCP and UDP.  None on error.
+      A port number that is unused on both TCP and UDP.
+
+    Raises:
+      NoFreePortFoundError: No free port could be found.
     """
     # Try random ports first.
     rng = random.Random()
@@ -178,16 +199,19 @@ def _pick_unused_port_without_server():  # Protected. pylint: disable=invalid-na
             _random_ports.add(port)
             return port
 
-    # Try OS-assigned ports next.
+    # Next, try a few times to get an OS-assigned port.
     # Ambrose discovered that on the 2.6 kernel, calling Bind() on UDP socket
     # returns the same port over and over. So always try TCP first.
-    while True:
+    for _ in range(10):
         # Ask the OS for an unused port.
         port = bind(0, _PROTOS[0][0], _PROTOS[0][1])
         # Check if this port is unused on the other protocol.
         if port and bind(port, _PROTOS[1][0], _PROTOS[1][1]):
             _random_ports.add(port)
             return port
+
+    # Give up.
+    raise NoFreePortFoundError()
 
 
 def get_port_from_port_server(portserver_address, pid=None):
@@ -204,6 +228,7 @@ def get_port_from_port_server(portserver_address, pid=None):
       portserver_address: The address (path) of a unix domain socket
         with which to connect to the portserver.  A leading '@'
         character indicates an address in the "abstract namespace."
+        On systems without socket.AF_UNIX, this is an AF_INET address.
       pid: The PID to tell the portserver to associate the reservation with.
         If None, the current process's PID is used.
 
@@ -224,7 +249,11 @@ def get_port_from_port_server(portserver_address, pid=None):
 
     try:
         # Create socket.
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        if hasattr(socket, 'AF_UNIX'):
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        else:
+            # fallback to AF_INET if this is not unix
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             # Connect to portserver.
             sock.connect(portserver_address)

@@ -54,7 +54,7 @@ class Create(base.CreateCommand):
     instance = client.ParseFilestoreConfig(
         tier=tier, description=args.description,
         file_share=args.file_share, network=args.network,
-        labels=labels)
+        labels=labels, zone=instance_ref.locationsId)
     try:
       client.ValidateFileShares(instance)
     except filestore_client.InvalidCapacityError as e:

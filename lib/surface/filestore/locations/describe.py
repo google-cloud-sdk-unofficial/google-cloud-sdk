@@ -37,7 +37,7 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    location_ref = args.CONCEPTS.location.Parse()
+    location_ref = args.CONCEPTS.zone.Parse().RelativeName()
     client = filestore_client.FilestoreClient(version=self._API_VERSION)
     return client.GetLocation(location_ref)
 

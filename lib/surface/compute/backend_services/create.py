@@ -286,7 +286,8 @@ class CreateAlpha(CreateGA):
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
-    flags.AddLoadBalancingScheme(parser, include_alpha=True)
+    flags.AddLoadBalancingScheme(
+        parser, include_l7_ilb=True, include_traffic_director=True)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False, default=False)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
     flags.AddConnectionDrainOnFailover(parser, default=None)
@@ -453,7 +454,8 @@ class CreateBeta(CreateGA):
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
-    flags.AddLoadBalancingScheme(parser)
+    flags.AddLoadBalancingScheme(
+        parser, include_l7_ilb=False, include_traffic_director=True)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False)
     flags.AddCacheKeyIncludeProtocol(parser, default=True)
     flags.AddCacheKeyIncludeHost(parser, default=True)
@@ -491,6 +493,11 @@ class CreateBeta(CreateGA):
         backend_service,
         is_update=False,
         apply_signed_url_cache_max_age=True)
+
+    if args.load_balancing_scheme != 'EXTERNAL':
+      backend_service.loadBalancingScheme = (
+          client.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+              args.load_balancing_scheme))
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 

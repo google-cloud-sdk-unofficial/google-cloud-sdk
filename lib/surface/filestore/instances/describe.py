@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.filestore import filestore_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.filestore import flags
+from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
@@ -34,6 +35,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
         'The instance to describe.')]).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
 
   def Run(self, args):
     """Run the describe command."""

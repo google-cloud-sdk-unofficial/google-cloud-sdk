@@ -161,9 +161,9 @@ class Test(base.Command):
     raise ValueError('Catch me if you can.')
 
   def _RunStagedProgressTracker(self, args):
-    get_bread = progress_tracker.Stage('Getting bread...')
-    get_pb_and_j = progress_tracker.Stage('Getting peanut butter...')
-    make_sandwich = progress_tracker.Stage('Making sandwich...')
+    get_bread = progress_tracker.Stage('Getting bread...', key='bread')
+    get_pb_and_j = progress_tracker.Stage('Getting peanut butter...', key='pb')
+    make_sandwich = progress_tracker.Stage('Making sandwich...', key='make')
     stages = [get_bread, get_pb_and_j, make_sandwich]
     with progress_tracker.StagedProgressTracker(
         'Making sandwich...',
@@ -171,17 +171,17 @@ class Test(base.Command):
         success_message='Time to eat!',
         failure_message='Time to order delivery..!',
         tracker_id='meta.make_sandwich') as tracker:
-      tracker.StartStage(get_bread)
+      tracker.StartStage('bread')
       time.sleep(0.5)
-      tracker.UpdateStage(get_bread, 'Looking for bread in the pantry')
+      tracker.UpdateStage('bread', 'Looking for bread in the pantry')
       time.sleep(0.5)
-      tracker.CompleteStage(get_bread, 'Got some whole wheat bread!')
-      tracker.StartStage(get_pb_and_j)
+      tracker.CompleteStage('bread', 'Got some whole wheat bread!')
+      tracker.StartStage('pb')
       time.sleep(1)
-      tracker.CompleteStage(get_pb_and_j)
-      tracker.StartStage(make_sandwich)
+      tracker.CompleteStage('pb')
+      tracker.StartStage('make')
       time.sleep(1)
-      tracker.CompleteStage(make_sandwich)
+      tracker.CompleteStage('make')
 
   def Run(self, args):
     if args.arg_dict:

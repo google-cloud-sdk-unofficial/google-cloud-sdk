@@ -121,7 +121,7 @@ class RequestField(object):
         'Content-Disposition' fields.
 
         :param header_parts:
-            A sequence of (k, v) typles or a :class:`dict` of (k, v) to format
+            A sequence of (k, v) tuples or a :class:`dict` of (k, v) to format
             as `k1="v1"; k2="v2"; ...`.
         """
         parts = []
@@ -130,7 +130,7 @@ class RequestField(object):
             iterable = header_parts.items()
 
         for name, value in iterable:
-            if value:
+            if value is not None:
                 parts.append(self._render_part(name, value))
 
         return '; '.join(parts)

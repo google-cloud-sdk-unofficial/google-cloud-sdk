@@ -1,4 +1,3 @@
-# TODO(b/127817989): improve the return message when success.
 - release_tracks: [ALPHA]
 
   help_text:
@@ -11,6 +10,13 @@
   request:
     collection: iam.projects.serviceAccounts
     method: disable
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:DisableIamAccountConfirmation
+
+  output:
+    format: none
 
   arguments:
     resource:

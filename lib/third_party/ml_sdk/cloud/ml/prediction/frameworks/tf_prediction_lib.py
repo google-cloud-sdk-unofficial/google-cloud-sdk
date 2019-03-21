@@ -23,7 +23,6 @@ import collections
 import logging
 import os
 
-from .. import custom_code_utils
 from .. import prediction_utils
 from .._interfaces import PredictionClient
 import numpy as np
@@ -376,22 +375,6 @@ class TensorFlowModel(prediction_utils.BaseModel):
   client.
   """
 
-  def __init__(self, client):
-    """Constructs a TensorFlowModel.
-
-    Args:
-      client: An instance of ModelServerClient or SessionClient.
-    """
-    super(TensorFlowModel, self).__init__(client)
-    self._preprocess_fn = None
-    self._postprocess_fn = None
-    processor_cls = custom_code_utils.create_processor_class()
-    if processor_cls:
-      self._preprocess_fn = getattr(processor_cls,
-                                    custom_code_utils.PREPROCESS_KEY, None)
-      self._postprocess_fn = getattr(processor_cls,
-                                     custom_code_utils.POSTPROCESS_KEY, None)
-
   def _get_columns(self, instances, stats, signature):
     """Columnarize the instances, appending input_name, if necessary.
 
@@ -448,13 +431,6 @@ class TensorFlowModel(prediction_utils.BaseModel):
   def preprocess(self, instances, stats=None, signature_name=None, **kwargs):
     _, signature = self.get_signature(signature_name)
     preprocessed = self._canonicalize_input(instances, signature)
-    if self._preprocess_fn:
-      try:
-        preprocessed = self._preprocess_fn(preprocessed, **kwargs)
-      except Exception as e:
-        logging.error("Exception during preprocessing: %s", e)
-        raise PredictionError(PredictionError.INVALID_INPUTS,
-                              "Exception during preprocessing: " + str(e))
     return self._get_columns(preprocessed, stats, signature)
 
   def _canonicalize_input(self, instances, signature):
@@ -509,15 +485,6 @@ class TensorFlowModel(prediction_utils.BaseModel):
       postprocessed_outputs = rowify(postprocessed_outputs)
 
     postprocessed_outputs = list(postprocessed_outputs)
-    if self._postprocess_fn:
-      try:
-        postprocessed_outputs = self._postprocess_fn(postprocessed_outputs,
-                                                     **kwargs)
-      except Exception as e:
-        logging.error("Exception during postprocessing: %s", e)
-        raise PredictionError(PredictionError.INVALID_INPUTS,
-                              "Exception during postprocessing: " + str(e))
-
     with stats.time(prediction_utils.ENCODE_TIME):
       try:
         postprocessed_outputs = encode_base64(

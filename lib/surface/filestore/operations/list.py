@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.filestore import filestore_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.filestore import flags
+from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.filestore.operations import flags as operations_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
@@ -37,6 +38,7 @@ class List(base.ListCommand):
         [flags.GetListingLocationPresentationSpec(
             'The location in which to list operations.')]
     ).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
     parser.display_info.AddFormat(operations_flags.OPERATIONS_LIST_FORMAT)
 
     def UriFunc(resource):
@@ -49,7 +51,11 @@ class List(base.ListCommand):
     parser.display_info.AddUriFunc(UriFunc)
 
   def Run(self, args):
-    location_ref = args.CONCEPTS.location.Parse()
+    location_ref = args.CONCEPTS.zone.Parse().RelativeName()
+    if args.zone is None and args.location is not None:
+      location_list = location_ref.split('/')
+      location_list[-1] = args.location
+      location_ref = '/'.join(location_list)
     client = filestore_client.FilestoreClient(version=self._API_VERSION)
     return list(client.ListOperations(location_ref, limit=args.limit))
 
@@ -66,6 +72,7 @@ class ListBeta(List):
         [flags.GetListingLocationPresentationSpec(
             'The location in which to list operations.')]
     ).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
     parser.display_info.AddFormat(operations_flags.OPERATIONS_LIST_FORMAT)
 
     def UriFunc(resource):
@@ -91,6 +98,7 @@ class ListAlpha(List):
         [flags.GetListingLocationPresentationSpec(
             'The location in which to list operations.')]
     ).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
     parser.display_info.AddFormat(operations_flags.OPERATIONS_LIST_FORMAT)
 
     def UriFunc(resource):

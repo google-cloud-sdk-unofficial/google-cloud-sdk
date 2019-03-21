@@ -282,7 +282,7 @@ class Edit(base.Command):
         ('backends[].group',
          MakeReferenceNormalizer(
              'group',
-             ('compute.instanceGroups'))),
+             ('compute.instanceGroups', 'compute.regionInstanceGroups'))),
     ]
 
   def GetGetRequest(self, client, backend_service_ref):

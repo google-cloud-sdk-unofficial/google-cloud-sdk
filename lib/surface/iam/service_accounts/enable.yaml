@@ -1,4 +1,3 @@
-# TODO(b/127817989): improve the return message when success.
 - release_tracks: [ALPHA]
 
   help_text:
@@ -9,6 +8,13 @@
     resource:
       help_text: The IAM service account to enable.
       spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:EnableIamAccountConfirmation
+
+  output:
+    format: none
 
   request:
     collection: iam.projects.serviceAccounts

@@ -55,11 +55,14 @@ class Update(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
+    attachment_flags.AddBandwidth(parser, required=False)
 
   def Run(self, args):
     interconnect_attachment = self._get_attachment(args)
     return interconnect_attachment.PatchGa(
-        description=args.description, admin_enabled=args.admin_enabled)
+        description=args.description,
+        admin_enabled=args.admin_enabled,
+        bandwidth=getattr(args, 'bandwidth', None))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -75,7 +78,6 @@ class UpdateWithBandwidth(Update):
   def Args(cls, parser):
     super(UpdateWithBandwidth, cls).Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    attachment_flags.AddBandwidth(parser, required=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

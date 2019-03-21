@@ -316,6 +316,7 @@ class Create(base.CreateCommand):
         parser, with_deprecated=False, with_alpha=False)
 
   def ParseCreateOptions(self, args):
+    flags.WarnGAForFutureAutoUpgradeChange()
     return ParseCreateOptionsBase(args)
 
   def Run(self, args):

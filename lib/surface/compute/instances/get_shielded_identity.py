@@ -25,7 +25,9 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+# TODO(b/128621670): clean up the release tracks.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class GetShieldedIdentity(base.DescribeCommand):
   """Get the Shielded identity for a Google Compute Engine instance.
 
@@ -48,13 +50,12 @@ class GetShieldedIdentity(base.DescribeCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    # TODO(b/121391469): replace the GetShieldedVmIdentity with
-    # GetShieldedIdentity API call.
-    request = (client.apitools_client.instances, 'GetShieldedVmIdentity',
-               client.messages.ComputeInstancesGetShieldedVmIdentityRequest(
-                   instance=instance_ref.instance,
-                   zone=instance_ref.zone,
-                   project=instance_ref.project))
+    request = (
+        client.apitools_client.instances, 'GetShieldedInstanceIdentity',
+        client.messages.ComputeInstancesGetShieldedInstanceIdentityRequest(
+            instance=instance_ref.instance,
+            zone=instance_ref.zone,
+            project=instance_ref.project))
 
     errors = []
     objects = client.MakeRequests(requests=[request], errors_to_collect=errors)

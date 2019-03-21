@@ -170,6 +170,7 @@ class Create(base.CreateCommand):
     flags.AddDeprecatedNodePoolNodeIdentityFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
+    flags.WarnGAForFutureAutoUpgradeChange()
     return ParseCreateNodePoolOptionsBase(args)
 
   def Run(self, args):

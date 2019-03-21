@@ -27,10 +27,20 @@ try:
     from . import urllib3
 except ImportError:
     import urllib3
-    sys.modules['%s.urllib3' % __name__] = urllib3
 
 try:
     from . import chardet
 except ImportError:
     import chardet
-    sys.modules['%s.chardet' % __name__] = chardet
+
+try:
+    from . import idna
+except ImportError:
+    import idna
+
+for package in ('urllib3', 'idna', 'chardet'):
+    # This traversal is apparently necessary such that the identities are
+    # preserved (requests.packages.urllib3.* is urllib3.*)
+    for mod in list(sys.modules):
+        if mod == package or mod.startswith(package + '.'):
+            sys.modules['requests.packages.' + mod] = sys.modules[mod]

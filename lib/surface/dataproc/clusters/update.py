@@ -261,7 +261,7 @@ class UpdateBeta(Update):
     _CommonArgs(parser)
 
     # Can only specify one of --autoscaling-policy or --disable-autoscaling
-    autoscaling_group = parser.add_mutually_exclusive_group(hidden=True)
+    autoscaling_group = parser.add_mutually_exclusive_group()
     flags.AddAutoscalingPolicyResourceArgForCluster(
         autoscaling_group, api_version='v1beta2')
     autoscaling_group.add_argument(

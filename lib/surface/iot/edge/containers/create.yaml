@@ -7,8 +7,8 @@
   request:
     collection: edge.projects.locations.registries.devices.containers
     modify_request_hooks:
-    - googlecloudsdk.command_lib.iot.edge.util:ContainerNameAnnotateHook
-    - googlecloudsdk.command_lib.iot.edge.util:ContainerAddDefaultTopicHook
+    - googlecloudsdk.command_lib.iot.edge.util:NameAnnotateHook:component=container
+    - googlecloudsdk.command_lib.iot.edge.util:AddDefaultTopicHook:component=container
 
   arguments:
     resource:

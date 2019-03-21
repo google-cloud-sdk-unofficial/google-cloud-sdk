@@ -20,7 +20,10 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewalls_utils
+from googlecloudsdk.api_lib.compute import utils as compute_api
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.core.console import progress_tracker
@@ -151,6 +154,8 @@ class AlphaCreate(BetaCreate):
 
   @classmethod
   def Args(cls, parser):
+    messages = apis.GetMessagesModule('compute',
+                                      compute_api.COMPUTE_ALPHA_API_VERSION)
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='create')
@@ -163,6 +168,26 @@ class AlphaCreate(BetaCreate):
         with_service_account=True)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=False)
     flags.AddEnableLogging(parser, default=None)
+    flags.AddLoggingMetadata(parser, messages)
+
+  def _CreateFirewall(self, holder, args):
+    client = holder.client
+    firewall, project = super(AlphaCreate, self)._CreateFirewall(holder, args)
+
+    if args.IsSpecified('logging_metadata') and not args.enable_logging:
+      raise exceptions.InvalidArgumentException(
+          '--logging-metadata',
+          'cannot toggle logging metadata if logging is not enabled.')
+
+    if args.IsSpecified('enable_logging'):
+      log_config = client.messages.FirewallLogConfig(enable=args.enable_logging)
+
+      if args.IsSpecified('logging_metadata'):
+        log_config.metadata = flags.GetLoggingMetadataArg(
+            client.messages).GetEnumForChoice(args.logging_metadata)
+      firewall.logConfig = log_config
+
+    return firewall, project
 
 
 Create.detailed_help = {

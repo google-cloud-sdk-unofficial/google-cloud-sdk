@@ -13,6 +13,13 @@ def is_fp_closed(obj):
     """
 
     try:
+        # Check `isclosed()` first, in case Python3 doesn't set `closed`.
+        # GH Issue #928
+        return obj.isclosed()
+    except AttributeError:
+        pass
+
+    try:
         # Check via the official file-like-object way.
         return obj.closed
     except AttributeError:
@@ -52,8 +59,14 @@ def assert_header_parsing(headers):
     get_payload = getattr(headers, 'get_payload', None)
 
     unparsed_data = None
-    if get_payload:  # Platform-specific: Python 3.
-        unparsed_data = get_payload()
+    if get_payload:
+        # get_payload is actually email.message.Message.get_payload;
+        # we're only interested in the result if it's not a multipart message
+        if not headers.is_multipart():
+            payload = get_payload()
+
+            if isinstance(payload, (bytes, str)):
+                unparsed_data = payload
 
     if defects or unparsed_data:
         raise HeaderParsingError(defects=defects, unparsed_data=unparsed_data)

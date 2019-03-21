@@ -25,6 +25,7 @@ VERIFY_DOMAINS_URL = ('https://www.google.com/webmasters/verification/'
                       'verification?authuser=0&domain={domain}&pli=1')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Verify(base.Command):
   """Verifies a domain via an in-browser workflow."""
 

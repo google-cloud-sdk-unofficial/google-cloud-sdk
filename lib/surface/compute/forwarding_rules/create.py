@@ -64,7 +64,7 @@ class Create(base.CreateCommand):
 
   FORWARDING_RULE_ARG = None
   _support_global_access = False
-  _support_network_in_global_request = False
+  _support_traffic_director = False
 
   @classmethod
   def Args(cls, parser):
@@ -124,7 +124,7 @@ class Create(base.CreateCommand):
     target_ref = utils.GetGlobalTarget(
         resources,
         args,
-        include_alpha=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
+        include_traffic_director=self._support_traffic_director)
     protocol = self.ConstructProtocol(client.messages, args)
 
     if args.address is None or args.ip_version:
@@ -148,7 +148,7 @@ class Create(base.CreateCommand):
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=_GetLoadBalancingScheme(args, client.messages))
 
-    if self._support_network_in_global_request and args.network is not None:
+    if args.network is not None:
       forwarding_rule.network = flags.NETWORK_ARG_ALPHA.ResolveAsResource(
           args, resources).SelfLink()
 
@@ -287,7 +287,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = False
-  _support_network_in_global_request = False
+  _support_traffic_director = True
 
   @classmethod
   def Args(cls, parser):
@@ -297,7 +297,7 @@ class CreateBeta(Create):
         include_beta=True,
         include_alpha=False,
         support_global_access=cls._support_global_access)
-    flags.AddAddressesAndIPVersions(parser, required=False)
+    flags.AddAddressesAndIPVersions(parser, required=False, include_beta=True)
     cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
     parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
 
@@ -309,7 +309,7 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
-  _support_network_in_global_request = True
+  _support_traffic_director = True
 
   @classmethod
   def Args(cls, parser):
@@ -319,7 +319,8 @@ class CreateAlpha(CreateBeta):
         include_beta=True,
         include_alpha=True,
         support_global_access=cls._support_global_access)
-    flags.AddAddressesAndIPVersions(parser, required=False, include_alpha=True)
+    flags.AddAddressesAndIPVersions(
+        parser, required=False, include_beta=True, include_alpha=True)
     cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
     parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
 

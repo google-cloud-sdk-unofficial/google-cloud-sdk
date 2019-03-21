@@ -18,8 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewalls_utils
+from googlecloudsdk.api_lib.compute import utils as compute_api
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
@@ -31,6 +35,7 @@ class UpdateFirewall(base.UpdateCommand):
 
   with_egress_firewall = True
   with_service_account = True
+  support_logging_metadata = False
 
   FIREWALL_RULE_ARG = None
 
@@ -64,6 +69,8 @@ class UpdateFirewall(base.UpdateCommand):
           for x in (args.source_service_accounts, args.target_service_accounts))
     args_unset = args_unset and args.disabled is None
     args_unset = (args_unset and args.enable_logging is None)
+    if self.support_logging_metadata:
+      args_unset = args_unset and not args.logging_metadata
     if args_unset:
       raise calliope_exceptions.ToolException(
           'At least one property must be modified.')
@@ -251,8 +258,12 @@ class BetaUpdateFirewall(UpdateFirewall):
 class AlphaUpdateFirewall(BetaUpdateFirewall):
   """Update a firewall rule."""
 
+  support_logging_metadata = True
+
   @classmethod
   def Args(cls, parser):
+    messages = apis.GetMessagesModule('compute',
+                                      compute_api.COMPUTE_ALPHA_API_VERSION)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
     firewalls_utils.AddCommonArgs(
@@ -262,6 +273,24 @@ class AlphaUpdateFirewall(BetaUpdateFirewall):
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
     flags.AddEnableLogging(parser, default=None)
+    flags.AddLoggingMetadata(parser, messages)
+
+  def Modify(self, client, args, existing, cleared_fields):
+    new_firewall = super(AlphaUpdateFirewall, self).Modify(
+        client, args, existing, cleared_fields)
+
+    if args.IsSpecified('logging_metadata'):
+      log_config = encoding.CopyProtoMessage(existing.logConfig)
+      if log_config is None or not log_config.enable:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--logging-metadata',
+            'cannot toggle logging metadata if logging is not enabled.')
+
+      log_config.metadata = flags.GetLoggingMetadataArg(
+          client.messages).GetEnumForChoice(args.logging_metadata)
+      new_firewall.logConfig = log_config
+
+    return new_firewall
 
 
 UpdateFirewall.detailed_help = {
@@ -275,5 +304,10 @@ UpdateFirewall.detailed_help = {
         unaffected. The `action` flag (whether to allow or deny matching
         traffic) cannot be defined when updating a firewall rule; use
         `gcloud compute firewall-rules delete` to remove the rule instead.
+        """,
+    'EXAMPLES': """\
+        To update the firewall rule ``RULE'' to enable logging, run:
+
+          $ {command} RULE --enable-logging
         """,
 }

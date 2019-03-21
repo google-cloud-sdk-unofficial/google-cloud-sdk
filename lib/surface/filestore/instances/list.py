@@ -37,6 +37,7 @@ class List(base.ListCommand):
   def Args(parser):
     concept_parsers.ConceptParser([flags.GetListingLocationPresentationSpec(
         'The location in which to list instances.')]).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
     parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT)
 
     def UriFunc(resource):
@@ -49,7 +50,11 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    location_ref = args.CONCEPTS.location.Parse()
+    location_ref = args.CONCEPTS.zone.Parse().RelativeName()
+    if args.zone is None and args.location is not None:
+      location_list = location_ref.split('/')
+      location_list[-1] = args.location
+      location_ref = '/'.join(location_list)
     client = filestore_client.FilestoreClient(version=self._API_VERSION)
     return list(client.ListInstances(location_ref, limit=args.limit))
 
@@ -66,6 +71,7 @@ class ListBeta(List):
         flags.GetListingLocationPresentationSpec(
             'The location in which to list instances.')
     ]).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
     parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT)
 
     def UriFunc(resource):
@@ -88,6 +94,7 @@ class ListAlpha(List):
   def Args(parser):
     concept_parsers.ConceptParser([flags.GetListingLocationPresentationSpec(
         'The location in which to list instances.')]).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
     parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT)
 
     def UriFunc(resource):

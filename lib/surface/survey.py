@@ -22,6 +22,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+
+from googlecloudsdk.api_lib.survey import concord_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.survey import survey
 from googlecloudsdk.core import log
@@ -48,12 +50,10 @@ def _GetAnswerToQuestion(question):
 
 def LogResponse(survey_instance):
   """Sends response to concord's clearcut tables."""
-  del survey_instance  # TODO(b/121044443): Remove this line when fixed.
-  answer = console_io.PromptContinue(
+  send = console_io.PromptContinue(
       prompt_string='Do you want to submit your response')
-  if answer:
-    # TODO(b/121044443): Send response to backend.
-    log.err.Print('Your response is submitted.')
+  if send:
+    concord_util.LogSurveyAnswers(survey_instance)
   else:
     log.err.Print('Your response is not recorded.')
 

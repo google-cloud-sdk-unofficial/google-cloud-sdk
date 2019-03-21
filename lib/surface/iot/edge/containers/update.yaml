@@ -7,9 +7,9 @@
   request:
     collection: edge.projects.locations.registries.devices.containers
     modify_request_hooks:
-    - googlecloudsdk.command_lib.iot.edge.util:ContainerAddDefaultTopicHook
-    - googlecloudsdk.command_lib.iot.edge.util:ContainerUpdateMaskHook
-    - googlecloudsdk.command_lib.iot.edge.util:ContainerUpdateEnvVarsHook
+    - googlecloudsdk.command_lib.iot.edge.util:AddDefaultTopicHook:component=container
+    - googlecloudsdk.command_lib.iot.edge.util:UpdateMaskHook
+    - googlecloudsdk.command_lib.iot.edge.util:UpdateEnvVarsHook:component=container
 
 
   update:

@@ -1,5 +1,8 @@
 from __future__ import absolute_import
-from collections import Mapping, MutableMapping
+try:
+    from collections.abc import Mapping, MutableMapping
+except ImportError:
+    from collections import Mapping, MutableMapping
 try:
     from threading import RLock
 except ImportError:  # Platform-specific: No threads available
@@ -11,10 +14,8 @@ except ImportError:  # Platform-specific: No threads available
             pass
 
 
-try:  # Python 2.7+
-    from collections import OrderedDict
-except ImportError:
-    from .packages.ordered_dict import OrderedDict
+from collections import OrderedDict
+from .exceptions import InvalidHeader
 from .packages.six import iterkeys, itervalues, PY3
 
 
@@ -144,7 +145,7 @@ class HTTPHeaderDict(MutableMapping):
             self.extend(kwargs)
 
     def __setitem__(self, key, val):
-        self._container[key.lower()] = (key, val)
+        self._container[key.lower()] = [key, val]
         return self._container[key.lower()]
 
     def __getitem__(self, key):
@@ -215,18 +216,11 @@ class HTTPHeaderDict(MutableMapping):
         'bar, baz'
         """
         key_lower = key.lower()
-        new_vals = key, val
+        new_vals = [key, val]
         # Keep the common case aka no item present as fast as possible
         vals = self._container.setdefault(key_lower, new_vals)
         if new_vals is not vals:
-            # new_vals was not inserted, as there was a previous one
-            if isinstance(vals, list):
-                # If already several items got inserted, we have a list
-                vals.append(val)
-            else:
-                # vals should be a tuple then, i.e. only one item so far
-                # Need to convert the tuple to list for further extension
-                self._container[key_lower] = [vals[0], vals[1], val]
+            vals.append(val)
 
     def extend(self, *args, **kwargs):
         """Generic import function for any type of header-like object.
@@ -254,23 +248,25 @@ class HTTPHeaderDict(MutableMapping):
         for key, value in kwargs.items():
             self.add(key, value)
 
-    def getlist(self, key):
+    def getlist(self, key, default=__marker):
         """Returns a list of all the values for the named field. Returns an
         empty list if the key doesn't exist."""
         try:
             vals = self._container[key.lower()]
         except KeyError:
-            return []
+            if default is self.__marker:
+                return []
+            return default
         else:
-            if isinstance(vals, tuple):
-                return [vals[1]]
-            else:
-                return vals[1:]
+            return vals[1:]
 
     # Backwards compatibility for httplib
     getheaders = getlist
     getallmatchingheaders = getlist
     iget = getlist
+
+    # Backwards compatibility for http.cookiejar
+    get_all = getlist
 
     def __repr__(self):
         return "%s(%s)" % (type(self).__name__, dict(self.itermerged()))
@@ -310,13 +306,22 @@ class HTTPHeaderDict(MutableMapping):
         # python2.7 does not expose a proper API for exporting multiheaders
         # efficiently. This function re-reads raw lines from the message
         # object and extracts the multiheaders properly.
+        obs_fold_continued_leaders = (' ', '\t')
         headers = []
 
         for line in message.headers:
-            if line.startswith((' ', '\t')):
-                key, value = headers[-1]
-                headers[-1] = (key, value + '\r\n' + line.rstrip())
-                continue
+            if line.startswith(obs_fold_continued_leaders):
+                if not headers:
+                    # We received a header line that starts with OWS as described
+                    # in RFC-7230 S3.2.4. This indicates a multiline header, but
+                    # there exists no previous header to which we can attach it.
+                    raise InvalidHeader(
+                        'Header continuation with no previous header: %s' % line
+                    )
+                else:
+                    key, value = headers[-1]
+                    headers[-1] = (key, value + ' ' + line.strip())
+                    continue
 
             key, value = line.split(':', 1)
             headers.append((key, value.strip()))

@@ -59,12 +59,14 @@ class Update(base.UpdateCommand):
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, Update.ReleaseTrack())
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
+    flags.AddShieldedInstanceConfigArgs(
+        parser, use_default_value=False, for_update=True)
+    flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
 
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, supports_shielded_vm=False,
-           supports_display_device=False):
+  def _Run(self, args, supports_display_device=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -78,7 +80,7 @@ class Update(base.UpdateCommand):
     labels_operation_ref = None
     min_cpu_platform_operation_ref = None
     deletion_protection_operation_ref = None
-    shielded_vm_config_ref = None
+    shielded_instance_config_ref = None
     display_device_ref = None
 
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
@@ -109,24 +111,23 @@ class Update(base.UpdateCommand):
         'Setting deletion protection of instance [{0}] to [{1}]',
         instance_ref.Name(), args.deletion_protection) or result
 
-    if supports_shielded_vm:
-      if (args.IsSpecified('shielded_vm_secure_boot') or
-          args.IsSpecified('shielded_vm_vtpm') or
-          args.IsSpecified('shielded_vm_integrity_monitoring')):
-        shielded_vm_config_ref = self._GetShieldedVMConfigRef(
-            instance_ref, args, holder)
-        result = self._WaitForResult(
-            operation_poller, shielded_vm_config_ref,
-            'Setting shieldedVMConfig  of instance [{0}]',
-            instance_ref.Name()) or result
+    if (args.IsSpecified('shielded_vm_secure_boot') or
+        args.IsSpecified('shielded_vm_vtpm') or
+        args.IsSpecified('shielded_vm_integrity_monitoring')):
+      shielded_instance_config_ref = self._GetShieldedInstanceConfigRef(
+          instance_ref, args, holder)
+      result = self._WaitForResult(
+          operation_poller, shielded_instance_config_ref,
+          'Setting shieldedInstanceConfig  of instance [{0}]',
+          instance_ref.Name()) or result
 
-      if args.IsSpecified('shielded_vm_learn_integrity_policy'):
-        shielded_vm_integrity_policy_ref = (
-            self._GetShieldedVMIntegrityPolicyRef(instance_ref, holder))
-        result = self._WaitForResult(
-            operation_poller, shielded_vm_integrity_policy_ref,
-            'Setting shieldedVMIntegrityPolicy of instance [{0}]',
-            instance_ref.Name()) or result
+    if args.IsSpecified('shielded_vm_learn_integrity_policy'):
+      shielded_instance_integrity_policy_ref = (
+          self._GetShieldedInstanceIntegrityPolicyRef(instance_ref, holder))
+      result = self._WaitForResult(
+          operation_poller, shielded_instance_integrity_policy_ref,
+          'Setting shieldedInstanceIntegrityPolicy of instance [{0}]',
+          instance_ref.Name()) or result
 
     if supports_display_device and args.IsSpecified('enable_display_device'):
       display_device_ref = self._GetDisplayDeviceOperationRef(
@@ -140,7 +141,7 @@ class Update(base.UpdateCommand):
 
     return result
 
-  def _GetShieldedVMConfigRef(self, instance_ref, args, holder):
+  def _GetShieldedInstanceConfigRef(self, instance_ref, args, holder):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
@@ -148,36 +149,34 @@ class Update(base.UpdateCommand):
         args.shielded_vm_vtpm is None and
         args.shielded_vm_integrity_monitoring is None):
       return None
-    shieldedvm_config_message = instance_utils.CreateShieldedVmConfigMessage(
-        messages,
-        args.shielded_vm_secure_boot,
-        args.shielded_vm_vtpm,
+    shieldedinstance_config_message = instance_utils.CreateShieldedInstanceConfigMessage(
+        messages, args.shielded_vm_secure_boot, args.shielded_vm_vtpm,
         args.shielded_vm_integrity_monitoring)
 
-    request = messages.ComputeInstancesUpdateShieldedVmConfigRequest(
+    request = messages.ComputeInstancesUpdateShieldedInstanceConfigRequest(
         instance=instance_ref.Name(),
         project=instance_ref.project,
-        shieldedVmConfig=shieldedvm_config_message,
+        shieldedInstanceConfig=shieldedinstance_config_message,
         zone=instance_ref.zone)
 
-    operation = client.instances.UpdateShieldedVmConfig(request)
+    operation = client.instances.UpdateShieldedInstanceConfig(request)
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
-  def _GetShieldedVMIntegrityPolicyRef(self, instance_ref, holder):
+  def _GetShieldedInstanceIntegrityPolicyRef(self, instance_ref, holder):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    shieldedvm_integrity_policy_message = (
-        instance_utils.CreateShieldedVmIntegrityPolicyMessage(messages))
+    shieldedinstance_integrity_policy_message = (
+        instance_utils.CreateShieldedInstanceIntegrityPolicyMessage(messages))
 
-    request = messages.ComputeInstancesSetShieldedVmIntegrityPolicyRequest(
+    request = messages.ComputeInstancesSetShieldedInstanceIntegrityPolicyRequest(
         instance=instance_ref.Name(),
         project=instance_ref.project,
-        shieldedVmIntegrityPolicy=shieldedvm_integrity_policy_message,
+        shieldedInstanceIntegrityPolicy=shieldedinstance_integrity_policy_message,
         zone=instance_ref.zone)
 
-    operation = client.instances.SetShieldedVmIntegrityPolicy(request)
+    operation = client.instances.SetShieldedInstanceIntegrityPolicy(request)
     return holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
@@ -264,15 +263,13 @@ class UpdateBeta(Update):
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, UpdateBeta.ReleaseTrack())
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
-    flags.AddShieldedVMConfigArgs(
+    flags.AddShieldedInstanceConfigArgs(
         parser, use_default_value=False, for_update=True)
-    flags.AddShieldedVMIntegrityPolicyArgs(parser)
+    flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
 
   def Run(self, args):
-    return self._Run(args,
-                     supports_shielded_vm=True,
-                     supports_display_device=True)
+    return self._Run(args, supports_display_device=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -285,9 +282,9 @@ class UpdateAlpha(UpdateBeta):
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddMinCpuPlatformArgs(parser, UpdateAlpha.ReleaseTrack())
     flags.AddDeletionProtectionFlag(parser, use_default_value=False)
-    flags.AddShieldedVMConfigArgs(
+    flags.AddShieldedInstanceConfigArgs(
         parser, use_default_value=False, for_update=True)
-    flags.AddShieldedVMIntegrityPolicyArgs(parser)
+    flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
 
 

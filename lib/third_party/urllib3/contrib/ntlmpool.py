@@ -5,14 +5,11 @@ Issue #10, see: http://code.google.com/p/urllib3/issues/detail?id=10
 """
 from __future__ import absolute_import
 
-try:
-    from http.client import HTTPSConnection
-except ImportError:
-    from httplib import HTTPSConnection
 from logging import getLogger
 from ntlm import ntlm
 
-from urllib3 import HTTPSConnectionPool
+from .. import HTTPSConnectionPool
+from ..packages.six.moves.http_client import HTTPSConnection
 
 
 log = getLogger(__name__)
@@ -46,8 +43,7 @@ class NTLMConnectionPool(HTTPSConnectionPool):
         log.debug('Starting NTLM HTTPS connection no. %d: https://%s%s',
                   self.num_connections, self.host, self.authurl)
 
-        headers = {}
-        headers['Connection'] = 'Keep-Alive'
+        headers = {'Connection': 'Keep-Alive'}
         req_header = 'Authorization'
         resp_header = 'www-authenticate'
 

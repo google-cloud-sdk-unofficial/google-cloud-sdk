@@ -16,7 +16,6 @@
 import logging
 import os
 
-from .. import custom_code_utils
 from .. import prediction_utils
 from .._interfaces import PredictionClient
 
@@ -97,20 +96,6 @@ class SklearnModel(prediction_utils.BaseModel):
   """The implementation of Scikit-learn Model.
   """
 
-  def __init__(self, client):
-    super(SklearnModel, self).__init__(client)
-    self._user_processor = custom_code_utils.create_processor_class()
-    if self._user_processor and hasattr(self._user_processor,
-                                        custom_code_utils.PREPROCESS_KEY):
-      self._preprocess = self._user_processor.preprocess
-    else:
-      self._preprocess = self._null_processor
-    if self._user_processor and hasattr(self._user_processor,
-                                        custom_code_utils.POSTPROCESS_KEY):
-      self._postprocess = self._user_processor.postprocess
-    else:
-      self._postprocess = self._null_processor
-
   def predict(self, instances, stats=None, **kwargs):
     """Override the predict method to remove TF-specific args from kwargs."""
     kwargs.pop(prediction_utils.SIGNATURE_KEY, None)
@@ -118,27 +103,22 @@ class SklearnModel(prediction_utils.BaseModel):
 
   def preprocess(self, instances, stats=None, **kwargs):
     # TODO(b/67383676) Consider changing this to a more generic type.
-    return self._preprocess(np.array(instances), **kwargs)
+    return np.array(instances)
 
   def postprocess(self,
                   predicted_outputs,
                   original_input=None,
                   stats=None,
                   **kwargs):
-    # TODO(b/67383676) Consider changing this to a more generic type.
-    post_processed = self._postprocess(predicted_outputs, **kwargs)
-    if isinstance(post_processed, np.ndarray):
-      return post_processed.tolist()
-    if isinstance(post_processed, list):
-      return post_processed
+    if isinstance(predicted_outputs, np.ndarray):
+      return predicted_outputs.tolist()
+    if isinstance(predicted_outputs, list):
+      return predicted_outputs
     raise PredictionError(
         PredictionError.INVALID_OUTPUTS,
-        "Bad output type returned after running %s"
-        "The post-processing function should return either "
-        "a numpy ndarray or a list." % self._postprocess.__name__)
-
-  def _null_processor(self, instances, **unused_kwargs):
-    return instances
+        "Bad output type returned."
+        "The predict function should return either "
+        "a numpy ndarray or a list.")
 
 
 class XGBoostModel(SklearnModel):

@@ -19,14 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute.instance_groups.managed import wait_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.command_lib.compute.instance_groups.managed import wait_info
-from googlecloudsdk.command_lib.util import time_util
-from googlecloudsdk.core import log
 
 
 def _AddArgs(parser):
@@ -38,9 +35,12 @@ def _AddArgs(parser):
   instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
       parser)
 
+_DEPRECATION_WARNING = (
+    '`gcloud wait-until-stable` is deprecated. '
+    'Please use `gcloud wait-until --stable` instead.')
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class WaitUntilStable(base.Command):
   """Waits until state of managed instance group is stable."""
 
@@ -62,47 +62,14 @@ class WaitUntilStable(base.Command):
     """Issues requests necessary to wait until stable on a MIG."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-    start = time_util.CurrentTimeSec()
     group_ref = self.CreateGroupReference(client, holder.resources, args)
 
-    while True:
-      responses, errors = self._GetResources(client, group_ref)
-      if errors:
-        utils.RaiseToolException(errors)
-      if responses[0].status.isStable:
-        break
-      log.out.Print(wait_info.CreateWaitText(responses[0]))
-      time_util.Sleep(WaitUntilStable._TIME_BETWEEN_POLLS_SEC)
+    wait_utils.WaitForIgmState(
+        client, group_ref, wait_utils.IgmState.STABLE, args.timeout)
 
-      if args.timeout and time_util.CurrentTimeSec() - start > args.timeout:
-        raise utils.TimeoutError('Timeout while waiting for group to become '
-                                 'stable.')
-    log.out.Print('Group is stable')
 
-  def GetRequestForGroup(self, client, group_ref):
-    if group_ref.Collection() == 'compute.instanceGroupManagers':
-      service = client.apitools_client.instanceGroupManagers
-      request = service.GetRequestType('Get')(
-          instanceGroupManager=group_ref.Name(),
-          zone=group_ref.zone,
-          project=group_ref.project)
-    elif group_ref.Collection() == 'compute.regionInstanceGroupManagers':
-      service = client.apitools_client.regionInstanceGroupManagers
-      request = service.GetRequestType('Get')(
-          instanceGroupManager=group_ref.Name(),
-          region=group_ref.region,
-          project=group_ref.project)
-    else:
-      raise ValueError('Unknown reference type {0}'.format(
-          group_ref.Collection()))
-    return (service, request)
-
-  def _GetResources(self, client, group_ref):
-    """Retrieves group with pending actions."""
-    service, request = self.GetRequestForGroup(client, group_ref)
-    errors = []
-    results = client.MakeRequests(
-        requests=[(service, 'Get', request)],
-        errors_to_collect=errors)
-
-    return results, errors
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class WaitUntilStableAlpha(WaitUntilStable):
+  """Waits until state of managed instance group is stable."""
+  pass

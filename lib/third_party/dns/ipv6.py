@@ -91,7 +91,7 @@ def inet_ntoa(address):
         hex = b':'.join(chunks)
     return maybe_decode(hex)
 
-_v4_ending = re.compile(b'(.*):(\d+\.\d+\.\d+\.\d+)$')
+_v4_ending = re.compile(br'(.*):(\d+\.\d+\.\d+\.\d+)$')
 _colon_colon_start = re.compile(b'::.*')
 _colon_colon_end = re.compile(b'.*::$')
 

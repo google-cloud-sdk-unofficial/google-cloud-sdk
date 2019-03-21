@@ -39,6 +39,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
         'The instance to delete.')]).AddToParser(parser)
+    instances_flags.AddLocationArg(parser)
     instances_flags.AddAsyncFlag(parser, 'delete')
 
   def Run(self, args):

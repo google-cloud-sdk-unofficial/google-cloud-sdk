@@ -45,13 +45,14 @@ _INSTANTIATE_FROM_VALUES = [
 ]
 
 
-def _CommonArgs(parser,
-                release_track,
-                support_source_instance,
-                support_local_ssd_size=False,
-                support_shielded_vms=False,
-                support_kms=False,
-               ):
+def _CommonArgs(
+    parser,
+    release_track,
+    support_source_instance,
+    support_local_ssd_size=False,
+    support_kms=False,
+    support_reservation=False,
+):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
@@ -74,8 +75,7 @@ def _CommonArgs(parser,
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddImageArgs(parser)
   instances_flags.AddNetworkArgs(parser)
-  if support_shielded_vms:
-    instances_flags.AddShieldedVMConfigArgs(parser)
+  instances_flags.AddShieldedInstanceConfigArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
 
@@ -128,16 +128,27 @@ def _CommonArgs(parser,
         """.format(', '.join(_INSTANTIATE_FROM_VALUES)),
     )
 
+  if support_reservation:
+    instances_flags.AddReservationAffinityGroup(
+        parser,
+        group_text="""\
+Specifies the reservation for instances created from this template.
+""",
+        affinity_text="""\
+The type of reservation for instances created from this template.
+""")
+
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
 
-def _ValidateInstancesFlags(args, support_kms=False):
+def _ValidateInstancesFlags(args, support_kms=False, support_reservation=False):
   """Validate flags for instance template that affects instance creation.
 
   Args:
       args: argparse.Namespace, An object that contains the values for the
-          arguments specified in the .Args() method.
+        arguments specified in the .Args() method.
       support_kms: If KMS is supported.
+      support_reservation: If GCE reservation is supported.
   """
   instances_flags.ValidateDiskCommonFlags(args)
   instances_flags.ValidateDiskBootFlags(args, enable_kms=support_kms)
@@ -146,6 +157,8 @@ def _ValidateInstancesFlags(args, support_kms=False):
   instances_flags.ValidateNicFlags(args)
   instances_flags.ValidateServiceAccountAndScopeArgs(args)
   instances_flags.ValidateAcceleratorArgs(args)
+  if support_reservation:
+    instances_flags.ValidateReservationAffinityGroup(args)
 
 
 def _AddSourceInstanceToTemplate(
@@ -181,7 +194,7 @@ def _AddSourceInstanceToTemplate(
   instance_template.properties = None
 
 
-def BuildShieldedVMConfigMessage(messages, args):
+def BuildShieldedInstanceConfigMessage(messages, args):
   """Common routine for creating instance template.
 
   Build a shielded VM config message.
@@ -193,21 +206,21 @@ def BuildShieldedVMConfigMessage(messages, args):
   Returns:
       A shielded VM config message.
   """
-  # Set the default values for ShieldedVmConfig parameters
+  # Set the default values for ShieldedInstanceConfig parameters
 
-  shielded_vm_config_message = None
+  shielded_instance_config_message = None
   enable_secure_boot = None
   enable_vtpm = None
   enable_integrity_monitoring = None
   if not (hasattr(args, 'shielded_vm_secure_boot') or
           hasattr(args, 'shielded_vm_vtpm') or
           hasattr(args, 'shielded_vm_integrity_monitoring')):
-    return shielded_vm_config_message
+    return shielded_instance_config_message
 
   if (not args.IsSpecified('shielded_vm_secure_boot') and
       not args.IsSpecified('shielded_vm_vtpm') and
       not args.IsSpecified('shielded_vm_integrity_monitoring')):
-    return shielded_vm_config_message
+    return shielded_instance_config_message
 
   if args.shielded_vm_secure_boot is not None:
     enable_secure_boot = args.shielded_vm_secure_boot
@@ -216,20 +229,17 @@ def BuildShieldedVMConfigMessage(messages, args):
   if args.shielded_vm_integrity_monitoring is not None:
     enable_integrity_monitoring = args.shielded_vm_integrity_monitoring
   # compute message for shielded VM configuration.
-  shielded_vm_config_message = instance_utils.CreateShieldedVmConfigMessage(
-      messages,
-      enable_secure_boot,
-      enable_vtpm,
-      enable_integrity_monitoring)
+  shielded_instance_config_message = instance_utils.CreateShieldedInstanceConfigMessage(
+      messages, enable_secure_boot, enable_vtpm, enable_integrity_monitoring)
 
-  return shielded_vm_config_message
+  return shielded_instance_config_message
 
 
 def _RunCreate(compute_api,
                args,
                support_source_instance,
-               support_shielded_vms=False,
-               support_kms=False):
+               support_kms=False,
+               support_reservation=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -237,16 +247,17 @@ def _RunCreate(compute_api,
   Args:
       compute_api: The compute api.
       args: argparse.Namespace, An object that contains the values for the
-          arguments specified in the .Args() method.
+        arguments specified in the .Args() method.
       support_source_instance: indicates whether source instance is supported.
-      support_shielded_vms: Indicate whether a shielded vm config is supported
-      or not.
       support_kms: Indicate whether KMS is integrated or not.
+      support_reservation: Indicate whether Reservation affinity is integrated
+        or not.
 
   Returns:
       A resource object dispatched by display.Displayer().
   """
-  _ValidateInstancesFlags(args, support_kms=support_kms)
+  _ValidateInstancesFlags(
+      args, support_kms=support_kms, support_reservation=support_reservation)
   instances_flags.ValidateNetworkTierArgs(args)
 
   client = compute_api.client
@@ -287,11 +298,9 @@ def _RunCreate(compute_api,
             network_tier=network_tier)
     ]
 
-  # Compute the shieldedVmConfig message.
-  if support_shielded_vms:
-    shieldedvm_config_message = BuildShieldedVMConfigMessage(
-        messages=client.messages,
-        args=args)
+  # Compute the shieldedInstanceConfig message.
+  shieldedinstance_config_message = BuildShieldedInstanceConfigMessage(
+      messages=client.messages, args=args)
 
   node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
       args, client.messages)
@@ -410,8 +419,11 @@ def _RunCreate(compute_api,
       name=instance_template_ref.Name(),
   )
 
-  if support_shielded_vms:
-    instance_template.properties.shieldedVmConfig = shieldedvm_config_message
+  instance_template.properties.shieldedInstanceConfig = shieldedinstance_config_message
+
+  if support_reservation:
+    instance_template.properties.reservationAffinity = instance_utils.GetReservationAffinity(
+        args, client)
 
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template,
@@ -487,7 +499,6 @@ class CreateBeta(Create):
   instances in any zone.
   """
   _support_source_instance = True
-  _support_shielded_vms = True
   _support_kms = True
 
   @classmethod
@@ -497,7 +508,6 @@ class CreateBeta(Create):
         release_track=base.ReleaseTrack.BETA,
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
-        support_shielded_vms=cls._support_shielded_vms,
         support_kms=cls._support_kms
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
@@ -516,7 +526,6 @@ class CreateBeta(Create):
         base_classes.ComputeApiHolder(base.ReleaseTrack.BETA),
         args=args,
         support_source_instance=self._support_source_instance,
-        support_shielded_vms=self._support_shielded_vms,
         support_kms=self._support_kms
     )
 
@@ -536,8 +545,8 @@ class CreateAlpha(Create):
   instances in any zone.
   """
   _support_source_instance = True
-  _support_shielded_vms = True
   _support_kms = True
+  _support_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -546,9 +555,8 @@ class CreateAlpha(Create):
         release_track=base.ReleaseTrack.ALPHA,
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
-        support_shielded_vms=cls._support_shielded_vms,
-        support_kms=cls._support_kms
-    )
+        support_kms=cls._support_kms,
+        support_reservation=cls._support_reservation)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
@@ -566,6 +574,5 @@ class CreateAlpha(Create):
         base_classes.ComputeApiHolder(base.ReleaseTrack.ALPHA),
         args=args,
         support_source_instance=self._support_source_instance,
-        support_shielded_vms=self._support_shielded_vms,
-        support_kms=self._support_kms
-    )
+        support_kms=self._support_kms,
+        support_reservation=self._support_reservation)

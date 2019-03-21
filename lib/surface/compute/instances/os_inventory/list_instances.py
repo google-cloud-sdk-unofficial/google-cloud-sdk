@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import properties
@@ -39,7 +40,8 @@ class ListInstances(base.ListCommand):
   r"""List instances with specific OS inventory data values.
 
   {command} displays all Google Compute Engine instances in a project matching
-  an inventory filter. Run gcloud topic filters to see supported filter syntax.
+  an inventory filter. Run $ gcloud topic filters to see the supported filter
+  syntax.
 
   ## EXAMPLES
 
@@ -51,9 +53,15 @@ class ListInstances(base.ListCommand):
 
         $ {command} --inventory-filter="ShortName:rhel" --uri
 
-  To list all instances with package google-cloud-sdk installed, run:
+  To list the URIs of all instances whose OS short name is equal to rhel, run:
 
-        $ {command} --inventory-filter="InstalledPackages:google-cloud-sdk"
+        $ {command} --os-shortname="rhel" --uri
+
+  To list all instances with package google-cloud-sdk of version 235.0.0-0
+  installed, run:
+
+        $ {command} --package-name="google-cloud-sdk" \
+        --package-version="235.0.0-0"
 
   To list all instances with package name matching a regex ^google-cloud*
   available for update through apt, run:
@@ -88,7 +96,10 @@ class ListInstances(base.ListCommand):
   """
 
   _GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS = ('InstalledPackages', 'PackageUpdates')
+
+  # See go/osconfig-agent.
   _SPECIAL_PACKAGE_MANAGERS = ('wua', 'qfe')
+  _REGULAR_PACKAGE_MANAGERS = ('deb', 'googet', 'rpm', 'gem', 'pip')
 
   @staticmethod
   def Args(parser):
@@ -99,6 +110,34 @@ class ListInstances(base.ListCommand):
         '--inventory-filter',
         type=str,
         help="""Filter expression for matching against OS inventory criteria""")
+    filter_group = parser.add_group(
+        help='Exact match values for OS inventory data:')
+    filter_group.add_argument(
+        '--os-shortname',
+        type=str,
+        help="""If specified, only instances with this OS shortname in their
+        inventory data will be displayed.""")
+    filter_group.add_argument(
+        '--os-version',
+        type=str,
+        help="""If specified, only instances with this OS version in their
+        inventory data will be displayed.""")
+    filter_group.add_argument(
+        '--kernel-version',
+        type=str,
+        help="""If specified, only instances with this kernel version in their
+        inventory data will be displayed.""")
+    filter_group.add_argument(
+        '--package-name',
+        type=str,
+        help="""If specified, only instances with an installed package of this
+        name in their inventory data will be displayed.""")
+    filter_group.add_argument(
+        '--package-version',
+        type=str,
+        help="""If specified with a package name, only instances with the
+        installed package of this version in their inventory data will be
+        displayed.""")
 
   def _GetGuestAttributesRequest(self, messages, instance_name, project, zone):
     return messages.ComputeInstancesGetGuestAttributesRequest(
@@ -173,8 +212,48 @@ class ListInstances(base.ListCommand):
 
     return filtered_instances
 
+  def _GetInventoryFilterQuery(self, args):
+    query_list = []
+
+    def _AppendQuery(query):
+      query_list.append('({})'.format(query))
+
+    if args.inventory_filter:
+      _AppendQuery(args.inventory_filter)
+    if args.os_shortname:
+      _AppendQuery('ShortName=' + args.os_shortname)
+    if args.os_version:
+      _AppendQuery('Version=' + args.os_version)
+    if args.kernel_version:
+      _AppendQuery('KernelVersion=' + args.kernel_version)
+
+    installed_packages_query_prefixes = [
+        'InstalledPackages.' + package_manager + '[].'
+        for package_manager in self._REGULAR_PACKAGE_MANAGERS
+    ]
+    if args.package_version:
+      if not args.package_name:
+        raise exceptions.InvalidArgumentException(
+            '--package-version',
+            'package version must be specified together with a package name. '
+            'e.g. --package-name google-cloud-sdk --package-version 235.0.0-0')
+      else:
+        _AppendQuery(' OR '.join([
+            '({})'.format(prefix + args.package_name + '.Version=' +
+                          args.package_version)
+            for prefix in installed_packages_query_prefixes
+        ]))
+    else:
+      if args.package_name:
+        _AppendQuery(' OR '.join([
+            '({})'.format(prefix + 'Name=' + args.package_name)
+            for prefix in installed_packages_query_prefixes
+        ]))
+
+    return ' AND '.join(query_list)
+
   def Run(self, args):
-    query = resource_filter.Compile(args.inventory_filter)
+    query = resource_filter.Compile(self._GetInventoryFilterQuery(args))
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
