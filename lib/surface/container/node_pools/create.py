@@ -101,7 +101,6 @@ on the Compute Engine API instance object and can be used in firewall rules.
 See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
-  flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
   flags.AddNodeVersionFlag(parser)
   flags.AddAcceleratorArgs(parser)
@@ -151,7 +150,8 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_autoupgrade=args.enable_autoupgrade,
       service_account=args.service_account,
       disk_type=args.disk_type,
-      metadata=metadata)
+      metadata=metadata,
+      max_pods_per_node=args.max_pods_per_node)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -168,6 +168,8 @@ class Create(base.CreateCommand):
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddDeprecatedNodePoolNodeIdentityFlags(parser)
+    flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
+    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     flags.WarnGAForFutureAutoUpgradeChange()
@@ -208,11 +210,6 @@ class Create(base.CreateCommand):
             messages.AutoUpdateUpgradeRepairMessage(options.enable_autorepair,
                                                     'autorepair'))
 
-      if options.enable_autoupgrade is not None:
-        log.status.Print(
-            messages.AutoUpdateUpgradeRepairMessage(options.enable_autoupgrade,
-                                                    'autoupgrade'))
-
       if options.accelerators is not None:
         log.status.Print(constants.KUBERNETES_GPU_LIMITATION_MSG)
 
@@ -247,13 +244,14 @@ class CreateBeta(Create):
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
+    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
+    flags.WarnForAutoUpgrade(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.new_scopes_behavior = True
     ops.enable_autoprovisioning = args.enable_autoprovisioning
-    ops.max_pods_per_node = args.max_pods_per_node
     return ops
 
 
@@ -263,11 +261,11 @@ class CreateAlpha(Create):
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
+    flags.WarnForAutoUpgrade(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.new_scopes_behavior = True
     ops.local_ssd_volume_configs = args.local_ssd_volumes
-    ops.max_pods_per_node = args.max_pods_per_node
     ops.sandbox = args.sandbox
     ops.node_group = args.node_group
     return ops
@@ -285,8 +283,9 @@ class CreateAlpha(Create):
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
-    flags.AddSandboxFlag(parser, hidden=True)
+    flags.AddSandboxFlag(parser)
     flags.AddNodeGroupFlag(parser)
+    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+  help_text:
     brief: |
       Create a VPC Access connector.
     description: |
@@ -8,9 +9,8 @@
         * An instance with the same name already exists.
         * The active account does not have permission to create instances.
     examples: |
-      The following command creates a VPC Access connector of type `extended` with
-      name `my-vpc-connector` in region `us-central1` in network `my-network`
-      with IP CIDR range of `10.132.0.0/28`.
+      The following command creates a VPC Access connector with name 'my-vpc-connector'
+      in region 'us-central1' in network 'my-network' with IP CIDR range of '10.132.0.0/28'.
 
         $ {command} my-vpc-connector --region=us-central1 --network=my-network
           --range=10.132.0.0/28
@@ -20,19 +20,24 @@
 
   request:
     collection: vpcaccess.projects.locations.connectors
+    api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:connector
+      spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:connector_v1beta1
+      ALPHA:
+        spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:connector
       help_text: |
-        Arguments and flags that specify the VPC Access connector you want
-        to create.
+        Arguments and flags that specify the VPC Access connector you want to create.
     params:
     - arg_name: type
+      release_tracks: [ALPHA]
       api_field: connector.type
       required: false
       help_text: |
-        The type of the connector: `extended` or `basic`. Extended is the
+        The type of the connector: 'extended' or 'basic'. Extended is the
         default and provides internal load balancer support.
       choices:
       - enum_value: EXTENDED
@@ -46,7 +51,7 @@
       api_field: connector.network
       required: false
       help_text: |
-        The name of the Google Compute Engine network to which the connector
+        Name of the Google Compute Engine network to which the connector
         will be connected. If left unspecified, the default network will be
         used.
       default: default
@@ -54,6 +59,20 @@
       api_field: connector.ipCidrRange
       required: false
       help_text: |
-        The CIDR range of internal addresses that are reserved for this
+        CIDR range of internal addresses that are reserved for this
         connector. For example, 10.132.0.0/28. Range must be unique and
         non-overlapping with existing ranges in the network.
+    - arg_name: min-throughput
+      release_tracks: [BETA]
+      api_field: connector.minThroughput
+      required: false
+      help_text: |
+        Minimum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
+      default: 200
+    - arg_name: max-throughput
+      release_tracks: [BETA]
+      api_field: connector.maxThroughput
+      required: false
+      help_text: |
+        Maximum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
+      default: 1000

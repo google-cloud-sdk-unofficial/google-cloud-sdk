@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+  help_text:
     brief: |
       List VPC Access Service operations.
     description: |
@@ -15,6 +16,9 @@
 
   request:
     collection: vpcaccess.projects.locations.operations
+    api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
 
   response:
     id_field: name
@@ -32,6 +36,6 @@
          metadata.target.basename(),
          metadata.method:label=METHOD,
          done,
-         metadata.insertTime.date():label=START_TIME:sort=1,
+         metadata.firstof(createTime, insertTime).date():label=START_TIME:sort=1:reverse,
          metadata.endTime.date().yesno(no="-")
        )

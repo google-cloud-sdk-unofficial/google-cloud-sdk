@@ -26,10 +26,10 @@ from googlecloudsdk.command_lib.compute.target_vpn_gateways import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete target vpn gateways.
+  """Delete Cloud VPN Classic Target VPN Gateways.
 
-  *{command}* deletes one or more Google Compute Engine target vpn
-  gateways.
+  *{command}* deletes one or more Google Compute Engine Cloud VPN Classic
+  Target VPN Gateways.
   """
 
   TARGET_VPN_GATEWAY_ARG = None

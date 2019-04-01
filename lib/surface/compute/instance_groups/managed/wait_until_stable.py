@@ -40,7 +40,7 @@ _DEPRECATION_WARNING = (
     'Please use `gcloud wait-until --stable` instead.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class WaitUntilStable(base.Command):
   """Waits until state of managed instance group is stable."""
 
@@ -69,7 +69,7 @@ class WaitUntilStable(base.Command):
 
 
 @base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class WaitUntilStableAlpha(WaitUntilStable):
   """Waits until state of managed instance group is stable."""
   pass

@@ -119,7 +119,7 @@ class ResizeBeta(Resize):
 
   @classmethod
   def Args(cls, parser):
-    Resize.DISKS_ARG = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    Resize.DISKS_ARG = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
 
 
@@ -128,7 +128,7 @@ class ResizeAlpha(Resize):
 
   @classmethod
   def Args(cls, parser):
-    Resize.DISKS_ARG = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    Resize.DISKS_ARG = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
 
 

@@ -17,6 +17,7 @@
       policy file format and contents.
   request:
     collection: cloudresourcemanager.projects
+    use_relative_name: false
     modify_request_hooks:
     - googlecloudsdk.command_lib.projects.util:SetIamPolicyFromFileHook
 

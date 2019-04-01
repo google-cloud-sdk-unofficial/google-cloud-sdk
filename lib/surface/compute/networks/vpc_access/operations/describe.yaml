@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+  help_text:
     brief: |
       Show metadata for a VPC Access Service operation.
     description: |
@@ -18,6 +19,9 @@
 
   request:
     collection: vpcaccess.projects.locations.operations
+    api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
 
   response:
     id_field: name

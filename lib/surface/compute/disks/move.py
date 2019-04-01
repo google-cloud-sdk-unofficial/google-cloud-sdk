@@ -35,7 +35,7 @@ class Move(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    Move.disk_arg = disks_flags.MakeDiskArg(plural=False)
+    Move.disk_arg = disks_flags.MakeDiskArgZonal(plural=False)
     Move.disk_arg.AddArgument(parser)
 
     parser.add_argument(
@@ -118,4 +118,9 @@ Move.detailed_help = {
 
         will move the disk called example-disk-1, currently running in
         us-central1-b, to us-central1-f.
+
+        Please note that gcloud compute disks move does not yet support regional
+        persistent disks. Please see
+        https://cloud.google.com/compute/docs/disks/regional-persistent-disk for
+        more details.
     """}

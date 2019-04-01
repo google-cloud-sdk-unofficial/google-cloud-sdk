@@ -24,5 +24,5 @@ from googlecloudsdk.calliope import base
 class Locations(base.Group):
   """Manage locations resource for VPC Access Service.
 
-  Commands for mangaging locations resource for VPC Access Service.
+  Commands for managing locations resource for VPC Access Service.
   """

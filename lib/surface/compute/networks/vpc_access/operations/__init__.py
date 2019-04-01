@@ -24,5 +24,5 @@ from googlecloudsdk.calliope import base
 class Operations(base.Group):
   """Manage operations resource for VPC Access Service.
 
-  Commands for mangaging operatoins resource for VPC Access Service.
+  Commands for managing operations resource for VPC Access Service.
   """

@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings.
   """
@@ -109,3 +110,14 @@ class Update(base.Command):
             url=url)
 
         pretty_print.Success(msg)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(Update):
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+    flags.AddCloudSQLFlags(parser)
+
+AlphaUpdate.__doc__ = Update.__doc__

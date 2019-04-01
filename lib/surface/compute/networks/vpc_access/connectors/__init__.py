@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class Connectors(base.Group):
-  """Manage connectors resource for VPC Access Service.
+  """Manage Serverless VPC Access Service connectors.
 
-  Commands for mangaging connectors resource for VPC Access Service.
+  Commands for managing connectors resource for VPC Access Service.
   """

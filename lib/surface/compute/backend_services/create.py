@@ -461,6 +461,9 @@ class CreateBeta(CreateGA):
     flags.AddCacheKeyIncludeHost(parser, default=True)
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
     flags.AddCacheKeyQueryStringList(parser)
+    flags.AddConnectionDrainOnFailover(parser, default=None)
+    flags.AddDropTrafficIfUnhealthy(parser, default=None)
+    flags.AddFailoverRatio(parser)
     flags.AddEnableLogging(parser, default=None)
     flags.AddLoggingSampleRate(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
@@ -470,6 +473,12 @@ class CreateBeta(CreateGA):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.ToolException(
           'Must specify --region for internal load balancer.')
+    if (args.connection_drain_on_failover is not None or
+        args.drop_traffic_if_unhealthy is not None or
+        args.failover_ratio is not None):
+      raise exceptions.InvalidArgumentException(
+          '--global',
+          'cannot specify failover policies for global backend services.')
     backend_service = self._CreateBackendService(holder, args,
                                                  backend_services_ref)
 
@@ -526,6 +535,8 @@ class CreateBeta(CreateGA):
           drainingTimeoutSec=args.connection_draining_timeout)
     if args.IsSpecified('custom_request_header'):
       backend_service.customRequestHeaders = args.custom_request_header
+    backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
+                                                   backend_service)
 
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (

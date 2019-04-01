@@ -205,6 +205,7 @@ class AddBackendBeta(AddBackend):
     backend_flags.AddBalancingMode(parser, supports_neg=True)
     backend_flags.AddCapacityLimits(parser, supports_neg=True)
     backend_flags.AddCapacityScalar(parser)
+    backend_flags.AddFailover(parser, default=None)
 
   def _GetGroupRef(self, args, resources, client):
     if args.instance_group:
@@ -234,7 +235,8 @@ class AddBackendBeta(AddBackend):
         maxUtilization=args.max_utilization,
         maxConnections=args.max_connections,
         maxConnectionsPerInstance=args.max_connections_per_instance,
-        maxConnectionsPerEndpoint=args.max_connections_per_endpoint)
+        maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
+        failover=args.failover)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

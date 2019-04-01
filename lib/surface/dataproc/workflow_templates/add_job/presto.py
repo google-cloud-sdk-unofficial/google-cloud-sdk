@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import presto
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Presto(presto.PrestoBase, base.Command):
   """Add a Presto job to the workflow template."""

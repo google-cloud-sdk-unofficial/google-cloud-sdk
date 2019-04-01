@@ -101,10 +101,6 @@ class Update(base.UpdateCommand):
           messages.AutoUpdateUpgradeRepairMessage(options.enable_autorepair,
                                                   'autorepair'))
 
-    if options.enable_autoupgrade is not None:
-      log.status.Print(
-          messages.AutoUpdateUpgradeRepairMessage(options.enable_autoupgrade,
-                                                  'autoupgrade'))
     try:
       operation_ref = adapter.UpdateNodePool(pool_ref, options)
 

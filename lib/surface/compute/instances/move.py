@@ -108,4 +108,9 @@ Move.detailed_help = {
 
         will move the instance called example-instance-1 with its all attached
         persistent disks, currently running in us-central1-b, to us-central1-f.
+
+        Please note that gcloud compute instances move does not yet support
+        instances which have regional persistent disks attached. Please see
+        https://cloud.google.com/compute/docs/disks/regional-persistent-disk for
+        more details.
     """}

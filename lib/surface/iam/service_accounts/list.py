@@ -52,4 +52,5 @@ class List(base.ListCommand):
         field='accounts',
         limit=args.limit,
         batch_size_attribute='pageSize'):
+      item.disabled = bool(item.disabled)
       yield item

@@ -94,13 +94,14 @@ the previous instance in the background.""")
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class AttachDisk(base.SilentCommand):
   """Attach a disk to an instance."""
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
+    _Args(parser, support_disk_scope=True)
 
   def ParseDiskRef(self, resources, args, instance_ref, support_disk_scope):
     if support_disk_scope and args.disk_scope == 'regional':
@@ -154,18 +155,6 @@ class AttachDisk(base.SilentCommand):
 
     return client.MakeRequests([(client.apitools_client.instances, 'AttachDisk',
                                  request)])
-
-  def Run(self, args):
-    return self._Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AttachDiskAlphaBeta(AttachDisk):
-  """Attach a disk to an instance."""
-
-  @staticmethod
-  def Args(parser):
-    _Args(parser, support_disk_scope=True)
 
   def Run(self, args):
     return self._Run(args, support_disk_scope=True)

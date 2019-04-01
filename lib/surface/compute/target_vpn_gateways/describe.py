@@ -25,10 +25,10 @@ from googlecloudsdk.command_lib.compute.target_vpn_gateways import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine target vpn gateway.
+  """Describe a Google Compute Engine Cloud VPN Classic Target VPN Gateway.
 
   *{command}* displays all data associated with a Google Compute
-  Engine target vpn gateway in a project.
+  Engine Cloud VPN Target VPN Gateway in a project.
   """
 
   TARGET_VPN_GATEWAY_ARG = None

@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.endpoints import services_util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.endpoints import arg_parsers
 from googlecloudsdk.command_lib.endpoints import common_flags
@@ -61,17 +60,6 @@ class Describe(base.DescribeCommand):
     parser.display_info.AddFormat(
         ':(metadata.startTime.date(format="%Y-%m-%d %H:%M:%S %Z", tz=LOCAL)) '
         '[transforms] default')
-
-    # TODO(b/33273839): remove after this has been released for >90 days
-    parser.add_argument(
-        '--full',
-        action=actions.DeprecationAction(
-            '--full',
-            warn=('The `--full` flag is deprecated and has no effect.')),
-        default=False,
-        hidden=True,
-        help=('Print the entire operation resource, which could be large. '
-              'By default, this behavior is enabled.'))
 
   def Run(self, args):
     """Run 'endpoints operations describe'.

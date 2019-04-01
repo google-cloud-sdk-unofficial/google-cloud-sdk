@@ -63,7 +63,7 @@ class DescribeBeta(Describe):
 
   @staticmethod
   def Args(parser):
-    Describe.disk_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=False)
+    Describe.disk_arg = disks_flags.MakeDiskArg(plural=False)
     _CommonArgs(parser)
 
 
@@ -73,7 +73,7 @@ class DescribeAlpha(Describe):
 
   @staticmethod
   def Args(parser):
-    Describe.disk_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=False)
+    Describe.disk_arg = disks_flags.MakeDiskArg(plural=False)
     _CommonArgs(parser)
 
 

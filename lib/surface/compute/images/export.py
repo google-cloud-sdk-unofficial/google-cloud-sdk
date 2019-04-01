@@ -165,14 +165,15 @@ class ExportBeta(Export):
       variables += ',' + ','.join(network_vars)
     return variables
 
+  def _GetServiceAccountRoles(self):
+    return ['roles/iam.serviceAccountUser',
+            'roles/iam.serviceAccountTokenCreator']
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ExportAlpha(ExportBeta):
   """Export a Google Compute Engine image for Alpha release track."""
 
-  def _GetServiceAccountRoles(self):
-    return ['roles/iam.serviceAccountUser',
-            'roles/iam.serviceAccountTokenCreator']
 
 Export.detailed_help = {
     'brief': 'Export a Google Compute Engine image',

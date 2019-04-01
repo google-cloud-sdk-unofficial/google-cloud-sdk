@@ -33,6 +33,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Deploy(base.Command):
   """Deploy an app, function or container to Cloud Run."""
 
@@ -88,7 +89,7 @@ class Deploy(base.Command):
     if (conn_context.supports_one_platform
         and getattr(args, 'connectivity', None)):
       raise exceptions.ConfigurationError(
-          'The `--endpoint=[internal|external]` flag '
+          'The `--connectivity=[internal|external]` flag '
           'is only supported with Cloud Run on GKE.')
 
     if (not conn_context.supports_one_platform
@@ -195,3 +196,14 @@ class Deploy(base.Command):
             rev=conf.status.latestReadyRevisionName,
             url=url)
         pretty_print.Success(msg)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDeploy(Deploy):
+
+  @staticmethod
+  def Args(parser):
+    Deploy.Args(parser)
+    flags.AddCloudSQLFlags(parser)
+
+AlphaDeploy.__doc__ = Deploy.__doc__

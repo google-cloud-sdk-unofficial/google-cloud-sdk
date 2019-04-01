@@ -50,8 +50,7 @@ class Gcloud(base.Group):
     parser.add_argument(
         '--impersonate-service-account',
         metavar='SERVICE_ACCOUNT_EMAIL',
-        hidden=True,
-        help='(ALPHA) For this gcloud invocation, all API requests will be '
+        help='For this gcloud invocation, all API requests will be '
              'made as the given service account instead of the currently '
              'selected account. This is done without needing to create, '
              'download, and activate a key for the account. In order to '

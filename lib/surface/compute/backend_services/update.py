@@ -461,6 +461,9 @@ class UpdateBeta(UpdateGA):
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
+    flags.AddConnectionDrainOnFailover(parser, default=None)
+    flags.AddDropTrafficIfUnhealthy(parser, default=None)
+    flags.AddFailoverRatio(parser)
     flags.AddEnableLogging(parser, default=None)
     flags.AddLoggingSampleRate(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
@@ -485,6 +488,9 @@ class UpdateBeta(UpdateGA):
         replacement,
         is_update=True,
         apply_signed_url_cache_max_age=True)
+
+    backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
+                                                   replacement)
 
     backend_services_utils.ApplyLogConfigArgs(client.messages, args,
                                               replacement)
@@ -517,12 +523,20 @@ class UpdateBeta(UpdateGA):
         args.session_affinity is not None,
         args.IsSpecified('signed_url_cache_max_age'),
         args.timeout is not None,
+        args.connection_drain_on_failover is not None,
+        args.drop_traffic_if_unhealthy is not None,
+        args.failover_ratio is not None,
         args.enable_logging is not None,
         args.logging_sample_rate is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
   def GetSetRequest(self, client, backend_service_ref, replacement):
+    if (backend_service_ref.Collection() == 'compute.backendServices') and (
+        replacement.failoverPolicy):
+      raise exceptions.InvalidArgumentException(
+          '--global',
+          'cannot specify failover policies for global backend services.')
     if (backend_service_ref.Collection() == 'compute.regionBackendServices'
        ) and replacement.logConfig is not None:
       raise exceptions.InvalidArgumentException(

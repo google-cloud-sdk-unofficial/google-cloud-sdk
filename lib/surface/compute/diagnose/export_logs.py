@@ -122,7 +122,7 @@ class ExportLogs(base_classes.BaseCommand):
     if hasattr(urllib, 'quote_plus'):
       url_suffix = urllib.quote_plus(encoded_sig)
     else:
-      url_suffix = urllib.parse.quote_plus(encoded_sig)  # pytype: disable=module-attr
+      url_suffix = urllib.parse.quote_plus(encoded_sig)
 
     return url.format(bucket, filepath, service_account, expiration, url_suffix)
 

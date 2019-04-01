@@ -32,7 +32,7 @@ class DisksAddResourcePolicies(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    disks_flags.MakeDiskArgZonalOrRegional(plural=False).AddArgument(
+    disks_flags.MakeDiskArg(plural=False).AddArgument(
         parser, operation_type='add resource policies to')
     flags.AddResourcePoliciesArgs(parser, 'added to', 'disk', required=True)
 
@@ -41,7 +41,7 @@ class DisksAddResourcePolicies(base.UpdateCommand):
     client = holder.client.apitools_client
     messages = holder.client.messages
 
-    disk_ref = disks_flags.MakeDiskArgZonalOrRegional(
+    disk_ref = disks_flags.MakeDiskArg(
         plural=False).ResolveAsResource(args, holder.resources)
     disk_info = api_util.GetDiskInfo(disk_ref, client, messages)
     disk_region = disk_info.GetDiskRegionName()

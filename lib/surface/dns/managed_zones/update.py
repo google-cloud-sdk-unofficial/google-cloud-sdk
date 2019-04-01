@@ -34,6 +34,7 @@ def _CommonArgs(parser, messages):
   flags.AddCommonManagedZonesDnssecArgs(parser, messages)
   flags.GetManagedZonesDescriptionArg().AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
+  flags.GetManagedZoneNetworksArg().AddToParser(parser)
 
 
 def _Update(zones_client,
@@ -83,7 +84,30 @@ class UpdateGA(base.UpdateCommand):
 
   def Run(self, args):
     zones_client = managed_zones.Client.FromApiVersion('v1')
-    return _Update(zones_client, args)
+    messages = apis.GetMessagesModule('dns', 'v1')
+
+    visibility_config = None
+    if args.networks:
+      networks = args.networks if args.networks != [''] else []
+
+      def GetNetworkSelfLink(network):
+        return util.GetRegistry('v1').Parse(
+            network,
+            collection='compute.networks',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail
+            }).SelfLink()
+
+      network_urls = [GetNetworkSelfLink(n) for n in networks]
+      network_configs = [
+          messages.ManagedZonePrivateVisibilityConfigNetwork(networkUrl=nurl)
+          for nurl in network_urls
+      ]
+      visibility_config = messages.ManagedZonePrivateVisibilityConfig(
+          networks=network_configs)
+
+    return _Update(zones_client, args,
+                   private_visibility_config=visibility_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -104,7 +128,6 @@ class UpdateBeta(base.UpdateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
-    flags.GetManagedZoneNetworksArg().AddToParser(parser)
     flags.GetForwardingTargetsArg().AddToParser(parser)
 
   def Run(self, args):
@@ -119,14 +142,16 @@ class UpdateBeta(base.UpdateCommand):
     visibility_config = None
     if args.networks:
       networks = args.networks if args.networks != [''] else []
-      network_urls = [
-          util.GetRegistry('v1beta2').Parse(
-              n,
-              params={
-                  'project': properties.VALUES.core.project.GetOrFail
-              },
-              collection='compute.networks').SelfLink() for n in networks
-      ]
+
+      def GetNetworkSelfLink(network):
+        return util.GetRegistry('v1beta2').Parse(
+            network,
+            collection='compute.networks',
+            params={
+                'project': properties.VALUES.core.project.GetOrFail
+            }).SelfLink()
+
+      network_urls = [GetNetworkSelfLink(n) for n in networks]
       network_configs = [
           messages.ManagedZonePrivateVisibilityConfigNetwork(networkUrl=nurl)
           for nurl in network_urls

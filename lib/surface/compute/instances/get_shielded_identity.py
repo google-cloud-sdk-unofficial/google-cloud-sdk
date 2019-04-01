@@ -25,9 +25,6 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instances import flags
 
 
-# TODO(b/128621670): clean up the release tracks.
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
 class GetShieldedIdentity(base.DescribeCommand):
   """Get the Shielded identity for a Google Compute Engine instance.
 

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.dataproc.jobs import presto
 from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class PrestoBeta(presto.PrestoBase, submitter.JobSubmitterBeta):
   r"""Submit a Presto job to a cluster.

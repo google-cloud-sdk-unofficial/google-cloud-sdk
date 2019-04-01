@@ -37,16 +37,16 @@ def _AddArgs(parser):
   event_type.add_argument('--version-target-reached',
                           action='store_true',
                           default=False,
-                          help='Wait until version target is reached')
+                          help='Wait until version target is reached.')
   event_type.add_argument('--stable',
                           action='store_true',
                           default=False,
-                          help='Wait until the group is stable')
+                          help='Wait until the group is stable.')
   instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
       parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class WaitUntil(base.Command):
   """Wait until managed instance group reaches desired state."""
 

@@ -25,6 +25,7 @@
 
   request:
     collection: dlp.projects.dlpJobs
+    display_resource_type: job
     method: create
     api_version: v2
     modify_request_hooks:

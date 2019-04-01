@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2018 Google Inc. All Rights Reserved.
+# Copyright 2019 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,29 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.compute import completers as compute_completers
-
 from googlecloudsdk.command_lib.compute import flags as compute_flags
-
-
-# TODO(b/119257245): clean up this file and move it to reservations/.
-class RegionCommitmentsCompleter(compute_completers.ListCommandCompleter):
-
-  def __init__(self, **kwargs):
-    super(RegionCommitmentsCompleter, self).__init__(
-        collection='compute.regionCommitments',
-        list_command='alpha compute commitments list --uri',
-        **kwargs)
-
-
-def GetCommitmentResourceArg(required=True):
-  return compute_flags.ResourceArgument(
-      name='--commitment',
-      resource_name='regional commitment',
-      completer=RegionCommitmentsCompleter,
-      plural=False,
-      required=required,
-      regional_collection='compute.regionCommitments',
-      region_explanation=compute_flags.REGION_PROPERTY_EXPLANATION)
 
 
 class ZoneAllocationsCompleter(compute_completers.ListCommandCompleter):

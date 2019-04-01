@@ -91,7 +91,7 @@ class Start(base.Command):
         java.RequireJavaInstalled(title)
         util.EnsureComponentIsInstalled(component, title)
 
-    with contextlib.ExitStack() as stack:  # pytype: disable=module-attr
+    with contextlib.ExitStack() as stack:
 
       local_emulator_ports = {}
       for emulator in args.emulators:

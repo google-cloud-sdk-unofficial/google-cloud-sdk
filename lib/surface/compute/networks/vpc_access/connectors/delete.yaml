@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [BETA, ALPHA]
+  help_text:
     brief: |
       Delete a VPC Access connector.
     description: |
@@ -18,6 +19,9 @@
 
   request:
     collection: vpcaccess.projects.locations.connectors
+    api_version: v1beta1
+    ALPHA:
+      api_version: v1alpha1
 
   input:
     confirmation_prompt: |

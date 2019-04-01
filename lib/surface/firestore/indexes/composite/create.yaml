@@ -12,6 +12,7 @@
 
   request:
     collection: firestore.projects.databases.collectionGroups.indexes
+    display_resource_type: index
     modify_request_hooks:
     # Normally we would perform this validation when parsing the '--field-config' arg but then we
     # would have to write a whole custom 'type' hook and we would miss out on the built-in
@@ -23,7 +24,6 @@
   response:
     modify_response_hooks:
     - googlecloudsdk.command_lib.firestore.util:ExtractOperationMetadata
-    - googlecloudsdk.command_lib.firestore.util:LogCreatedIndex
 
   async:
     collection: firestore.projects.databases.operations

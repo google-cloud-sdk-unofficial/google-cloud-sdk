@@ -198,6 +198,7 @@ class Create(base.Command):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.GA)
+    _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
 
@@ -217,21 +218,7 @@ class Create(base.Command):
     return []
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
-    """Validate flags and parse disks references.
-
-    Subclasses may override it to customize parsing.
-
-    Args:
-      args: The argument namespace
-      compute_holder: base_classes.ComputeApiHolder instance
-
-    Returns:
-      List of compute.regionDisks resources.
-    """
-    return Create.disks_arg.ResolveAsResource(
-        args,
-        compute_holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
+    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
 
   def GetFromImage(self, args):
     return args.image or args.image_family
@@ -469,7 +456,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
 
     _CommonArgs(
         parser,
@@ -481,9 +468,6 @@ class CreateBeta(Create):
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
 
-  def ValidateAndParseDiskRefs(self, args, compute_holder):
-    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
-
   def Run(self, args):
     return self._Run(args, supports_kms_keys=True, supports_physical_block=True)
 
@@ -494,7 +478,7 @@ class CreateAlpha(Create):
 
   @staticmethod
   def Args(parser):
-    Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+    Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
 
     _CommonArgs(
         parser,
@@ -505,9 +489,6 @@ class CreateAlpha(Create):
     resource_flags.AddResourcePoliciesArgs(parser, 'added to', 'disk')
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
-
-  def ValidateAndParseDiskRefs(self, args, compute_holder):
-    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
 
   def Run(self, args):
     return self._Run(args, supports_kms_keys=True, supports_physical_block=True)

@@ -483,6 +483,7 @@ class UpdateAlpha(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
     flags.AddAutoprovisioningFlags(group, hidden=False)
+    flags.AddAutoscalingProfilesFlag(group, hidden=True)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
@@ -502,6 +503,7 @@ class UpdateAlpha(Update):
     opts.max_memory = args.max_memory
     opts.min_accelerator = args.min_accelerator
     opts.max_accelerator = args.max_accelerator
+    opts.autoscaling_profile = args.autoscaling_profile
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.enable_binauthz = args.enable_binauthz
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset

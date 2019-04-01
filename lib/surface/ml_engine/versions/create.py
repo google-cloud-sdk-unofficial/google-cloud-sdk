@@ -98,7 +98,6 @@ class CreateGA(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _AddCreateArgs(parser)
-    flags.MACHINE_TYPE.AddToParser(parser)
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
@@ -116,7 +115,6 @@ class CreateGA(base.CreateCommand):
         asyncronous=args.async,
         description=args.description,
         labels=labels,
-        machine_type=args.machine_type,
         framework=framework,
         python_version=args.python_version)
 
@@ -130,6 +128,11 @@ class CreateBeta(CreateGA):
   For more details on managing ML Engine models and versions see
   https://cloud.google.com/ml-engine/docs/how-tos/managing-models-jobs
   """
+
+  @staticmethod
+  def Args(parser):
+    _AddCreateArgs(parser)
+    flags.AddMachineTypeFlagToParser(parser)
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
@@ -165,8 +168,8 @@ class CreateAlpha(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _AddCreateArgs(parser)
-    flags.MACHINE_TYPE.AddToParser(parser)
     flags.SERVICE_ACCOUNT.AddToParser(parser)
+    flags.AddMachineTypeFlagToParser(parser)
     flags.AddUserCodeArgs(parser)
     flags.GetAcceleratorFlag().AddToParser(parser)
 
