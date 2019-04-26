@@ -181,13 +181,13 @@ class CreateGA(base.CreateCommand):
         raise exceptions.InvalidArgumentException(
             '--peer-gcp-gateway',
             'When creating High Availability VPN tunnels, either '
-            'peerGcpGateway or peerExternalGateway must be specified.')
+            '--peer-gcp-gateway or --peer-external-gateway must be specified.')
       if args.IsSpecified('peer_external_gateway') and not args.IsSpecified(
           'peer_external_gateway_interface'):
         raise exceptions.InvalidArgumentException(
             '--peer-external-gateway-interface',
-            'The flag peer-external-gateway-interface must be spcified along '
-            'with peer-external-gateway.')
+            'The flag --peer-external-gateway-interface must be specified along'
+            ' with --peer-external-gateway.')
       if args.IsSpecified('local_traffic_selector'):
         raise exceptions.InvalidArgumentException(
             '--local-traffic-selector',

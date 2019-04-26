@@ -97,7 +97,6 @@ class ListInstances(base.ListCommand):
 
   _GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS = ('InstalledPackages', 'PackageUpdates')
 
-  # See go/osconfig-agent.
   _SPECIAL_PACKAGE_MANAGERS = ('wua', 'qfe')
   _REGULAR_PACKAGE_MANAGERS = ('deb', 'googet', 'rpm', 'gem', 'pip')
 

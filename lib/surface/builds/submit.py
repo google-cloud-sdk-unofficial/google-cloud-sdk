@@ -67,7 +67,8 @@ class Submit(base.CreateCommand):
   """
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           {description}
 
           When the `builds/use_kaniko` property is `True`, builds submitted with
@@ -80,9 +81,8 @@ class Submit(base.CreateCommand):
   }
 
   _machine_type_flag_map = arg_utils.ChoiceEnumMapper(
-      '--machine-type',
-      (cloudbuild_util.GetMessagesModule()
-      ).BuildOptions.MachineTypeValueValuesEnum,
+      '--machine-type', (cloudbuild_util.GetMessagesModule()
+                        ).BuildOptions.MachineTypeValueValuesEnum,
       include_filter=lambda s: str(s) != 'UNSPECIFIED',
       help_str='Machine type used to run the build.')
 
@@ -196,8 +196,7 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
         'This has the same effect as setting the builds/kaniko_cache_ttl '
         'property to 0 for this build.  This can be useful in cases where '
         'Dockerfile builds are non-deterministic and a non-deterministic '
-        'result should not be cached.'
-    )
+        'result should not be cached.')
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddFormat("""
           table(
@@ -273,9 +272,10 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
             steps=[
                 messages.BuildStep(
                     name=properties.VALUES.builds.kaniko_image.Get(),
-                    args=['--destination', args.tag,
-                          '--cache', 'true',
-                          '--cache-ttl', ttl],
+                    args=[
+                        '--destination', args.tag, '--cache', 'true',
+                        '--cache-ttl', ttl
+                    ],
                 ),
             ],
             timeout=timeout_str,
@@ -292,7 +292,10 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
             steps=[
                 messages.BuildStep(
                     name='gcr.io/cloud-builders/docker',
-                    args=['build', '--no-cache', '-t', args.tag, '.'],
+                    args=[
+                        'build', '--network', 'cloudbuild', '--no-cache', '-t',
+                        args.tag, '.'
+                    ],
                 ),
             ],
             timeout=timeout_str,
@@ -410,8 +413,8 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
                                bucket=gcs_source_staging.bucket,
                                object=gcs_source_staging.object,
                            ))
-          staged_source_obj = gcs_client.CopyFileToGCS(
-              args.source, gcs_source_staging)
+          staged_source_obj = gcs_client.CopyFileToGCS(args.source,
+                                                       gcs_source_staging)
           build_config.source = messages.Source(
               storageSource=messages.StorageSource(
                   bucket=staged_source_obj.bucket,
@@ -428,8 +431,8 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
       gcs_log_dir = resources.REGISTRY.Parse(
           args.gcs_log_dir, collection='storage.objects')
 
-      build_config.logsBucket = (
-          'gs://' + gcs_log_dir.bucket + '/' + gcs_log_dir.object)
+      build_config.logsBucket = ('gs://' + gcs_log_dir.bucket + '/' +
+                                 gcs_log_dir.object)
 
     # Machine type.
     if args.machine_type is not None:

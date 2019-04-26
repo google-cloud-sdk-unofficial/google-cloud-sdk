@@ -28,7 +28,7 @@ from gslib.utils.constants import NO_MAX
 
 
 _SET_SYNOPSIS = """
-  gsutil versioning set [on|off] bucket_url...
+  gsutil versioning set <on|off> bucket_url...
 """
 
 _GET_SYNOPSIS = """
@@ -52,8 +52,10 @@ _GET_DESCRIPTION = """
 """
 
 _DESCRIPTION = """
-  The Versioning Configuration feature enables you to configure a Google Cloud
-  Storage bucket to keep old versions of objects.
+  The `Versioning Configuration
+  <https://cloud.google.com/storage/docs/object-versioning>`_ feature
+  enables you to configure a Google Cloud Storage bucket to keep old
+  versions of objects.
 
   The gsutil versioning command has two sub-commands:
 """ + _SET_DESCRIPTION + _GET_DESCRIPTION
@@ -113,7 +115,7 @@ class VersioningCommand(Command):
     """Gets versioning configuration for a bucket."""
     versioning_arg = self.args[0].lower()
     if versioning_arg not in ('on', 'off'):
-      raise CommandException('Argument to "%s set" must be either [on|off]'
+      raise CommandException('Argument to "%s set" must be either <on|off>'
                              % (self.command_name))
     url_args = self.args[1:]
     if not url_args:

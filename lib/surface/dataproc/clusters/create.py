@@ -47,6 +47,7 @@ def _CommonArgs(parser, beta=False):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a cluster."""
+  BETA = False
 
   detailed_help = {
       'EXAMPLES': """\
@@ -90,9 +91,9 @@ class Create(base.CreateCommand):
     compute_resources = compute_helpers.GetComputeResources(
         self.ReleaseTrack(), args.name)
 
-    beta = self.ReleaseTrack() == base.ReleaseTrack.BETA
-    cluster_config = clusters.GetClusterConfig(
-        args, dataproc, cluster_ref.projectId, compute_resources, beta)
+    cluster_config = clusters.GetClusterConfig(args, dataproc,
+                                               cluster_ref.projectId,
+                                               compute_resources, self.BETA)
 
     cluster = dataproc.messages.Cluster(
         config=cluster_config,
@@ -113,6 +114,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a cluster."""
+  BETA = True
 
   @staticmethod
   def Args(parser):

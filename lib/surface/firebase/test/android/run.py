@@ -283,7 +283,6 @@ class RunBeta(_BaseRun, base.ListCommand):
     arg_util.AddMatrixArgs(parser)
     arg_util.AddAndroidTestArgs(parser)
     arg_util.AddAndroidBetaArgs(parser)
-    arg_util.AddCommonBetaTestRunArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(util.OUTCOMES_FORMAT)
 

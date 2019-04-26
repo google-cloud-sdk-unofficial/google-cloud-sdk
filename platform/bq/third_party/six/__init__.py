@@ -922,7 +922,6 @@ def python_2_unicode_compatible(klass):
     return klass
 
 
-
 # Complete the moves implementation.
 # This code is at the end of this module to speed up module loading.
 # Turn this module into a package.

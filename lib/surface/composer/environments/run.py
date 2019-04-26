@@ -103,7 +103,14 @@ class Run(base.Command):
     cluster_location_id = command_util.ExtractGkeClusterLocationId(env_obj)
 
     with command_util.TemporaryKubeconfig(cluster_location_id, cluster_id):
-      pod = command_util.GetGkePod(pod_substr=WORKER_POD_SUBSTR)
+      kubectl_ns = command_util.FetchKubectlNamespace(
+          env_obj.config.softwareConfig.imageVersion)
+      pod = command_util.GetGkePod(
+          pod_substr=WORKER_POD_SUBSTR, kubectl_namespace=kubectl_ns)
+
+      log.status.Print(
+          'Executing within the following kubectl namespace: {}'.format(
+              kubectl_ns))
 
       self.BypassConfirmationPrompt(args)
       kubectl_args = [
@@ -112,4 +119,7 @@ class Run(base.Command):
       if args.cmd_args:
         # Add '--' to the argument list so kubectl won't eat the command args.
         kubectl_args.extend(['--'] + args.cmd_args)
-      command_util.RunKubectlCommand(kubectl_args, out_func=log.status.Print)
+
+      command_util.RunKubectlCommand(
+          command_util.AddKubectlNamespace(kubectl_ns, kubectl_args),
+          out_func=log.status.Print)

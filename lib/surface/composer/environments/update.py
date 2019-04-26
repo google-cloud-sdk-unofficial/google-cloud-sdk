@@ -21,11 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import environment_patch_util as patch_util
 from googlecloudsdk.command_lib.composer import flags
+from googlecloudsdk.command_lib.composer import image_versions_util as image_versions_command_util
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update properties of a Cloud Composer environment."""
 
@@ -33,18 +35,20 @@ class Update(base.Command):
   def Args(parser):
     resource_args.AddEnvironmentResourceArg(parser, 'to update')
     base.ASYNC_FLAG.AddToParser(parser)
-    update_type_group = parser.add_mutually_exclusive_group(
-        required=True, help='The update type.')
-    flags.AddNodeCountUpdateFlagToGroup(update_type_group)
-    flags.AddPypiUpdateFlagsToGroup(update_type_group)
-    flags.AddEnvVariableUpdateFlagsToGroup(update_type_group)
-    labels_update_group = update_type_group.add_argument_group()
-    labels_util.AddUpdateLabelsFlags(labels_update_group)
-    flags.AddAirflowConfigUpdateFlagsToGroup(update_type_group)
 
-  def Run(self, args):
-    env_ref = args.CONCEPTS.environment.Parse()
-    field_mask, patch = patch_util.ConstructPatch(
+    Update.update_type_group = parser.add_mutually_exclusive_group(
+        required=True, help='The update type.')
+    flags.AddNodeCountUpdateFlagToGroup(Update.update_type_group)
+    flags.AddPypiUpdateFlagsToGroup(Update.update_type_group)
+    flags.AddEnvVariableUpdateFlagsToGroup(Update.update_type_group)
+    flags.AddAirflowConfigUpdateFlagsToGroup(Update.update_type_group)
+
+    labels_update_group = Update.update_type_group.add_argument_group()
+    labels_util.AddUpdateLabelsFlags(labels_update_group)
+
+  def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
+
+    params = dict(
         env_ref=env_ref,
         node_count=args.node_count,
         update_pypi_packages_from_file=args.update_pypi_packages_from_file,
@@ -63,9 +67,68 @@ class Update(base.Command):
         remove_env_variables=args.remove_env_variables,
         update_env_variables=args.update_env_variables,
         release_track=self.ReleaseTrack())
+
+    if support_environment_upgrades:
+      params['update_image_version'] = args.image_version
+
+    return patch_util.ConstructPatch(**params)
+
+  def Run(self, args):
+    env_ref = args.CONCEPTS.environment.Parse()
+    field_mask, patch = self._ConstructPatch(env_ref, args)
     return patch_util.Patch(
         env_ref,
         field_mask,
         patch,
         args.async,
         release_track=self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update properties of a Cloud Composer environment."""
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+
+    # Environment upgrade arguments
+    UpdateBeta.support_environment_upgrades = True
+    flags.AddAirflowVersionUpdateFlagsToGroup(Update.update_type_group)
+    flags.AddImageVersionUpdateFlagsToGroup(Update.update_type_group)
+
+  def Run(self, args):
+    env_ref = args.CONCEPTS.environment.Parse()
+
+    if args.airflow_version:
+      # Converts airflow_version arg to image_version arg
+      args.image_version = (
+          image_versions_command_util.ImageVersionFromAirflowVersion(
+              args.airflow_version))
+
+    # Checks validity of image_version upgrade request.
+    if (args.image_version and
+        not image_versions_command_util.IsValidImageVersionUpgrade(
+            env_ref, args.image_version, self.ReleaseTrack())):
+      raise command_util.InvalidUserInputError(
+          'Invalid environment upgrade. [Requested: {}]'.format(
+              args.image_version))
+
+    field_mask, patch = self._ConstructPatch(
+        env_ref, args, UpdateBeta.support_environment_upgrades)
+
+    return patch_util.Patch(
+        env_ref,
+        field_mask,
+        patch,
+        args.async,
+        release_track=self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update properties of a Cloud Composer environment."""
+
+  @staticmethod
+  def Args(parser):
+    UpdateBeta.Args(parser)

@@ -54,7 +54,8 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('table(name, dnsName, description)')
+    parser.display_info.AddFormat('table(name, dnsName, description,'
+                                  ' visibility)')
     parser.display_info.AddUriFunc(_GetUriFunction('v1'))
 
   def Run(self, args):
@@ -88,7 +89,8 @@ class ListBeta(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('table(name, dnsName, description)')
+    parser.display_info.AddFormat('table(name, dnsName, description,'
+                                  ' visibility)')
     parser.display_info.AddUriFunc(_GetUriFunction('v1beta2'))
 
   def Run(self, args):

@@ -27,6 +27,7 @@
     format: |
       table(
         name.basename():label=INSTANCE_NAME:sort=2,
+        redisVersion:label=VERSION,
         name.segment(3):label=REGION,
         tier,
         memorySizeGb:label=SIZE_GB,

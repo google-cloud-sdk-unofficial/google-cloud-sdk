@@ -1,4 +1,4 @@
-- release_tracks: []
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Update a Compute Engine reservation.
@@ -19,5 +19,17 @@
 
   request:
     collection: compute.reservations
-    api_version: alpha
+    api_version: beta
     method: resize
+    ALPHA:
+      api_version: alpha
+
+  async:
+    api_version: beta
+    collection: compute.zoneOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+    ALPHA:
+      api_version: alpha

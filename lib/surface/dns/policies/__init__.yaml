@@ -25,6 +25,14 @@ args:
         receive DNS queries sent by VMs or applications over VPN
         connections. Defaults to False.
 
+  logging:
+    api_field: policy.enableLogging
+    arg_name: enable-logging
+    action: store_true
+    default: false
+    help_text: |
+      Specifies whether to enable query logging. Defaults to False.
+
   altnameservers:
     api_field: policy.alternativeNameServerConfig.targetNameServers
     arg_name: alternative-name-servers

@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import image_versions_util as image_versions_command_util
 from googlecloudsdk.command_lib.composer import resource_args
+from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListUpgrades(base.ListCommand):
   """List the Cloud Composer image version upgrades for a specific environment.
@@ -47,5 +47,6 @@ class ListUpgrades(base.ListCommand):
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
+    log.status.Print('Fetching list of available upgrades...')
     return image_versions_command_util.ListImageVersionUpgrades(
         env_ref, release_track=self.ReleaseTrack())

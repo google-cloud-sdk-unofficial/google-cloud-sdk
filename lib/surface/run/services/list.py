@@ -60,7 +60,8 @@ class List(base.ListCommand):
         firstof(id,metadata.name):label=SERVICE,
         region:label=REGION,
         latest_created_revision:label="LATEST REVISION",
-        serving_revisions.list():label="SERVING REVISION")""".format(
+        serving_revisions.list():label="SERVING REVISION",
+        last_modifier:label="LAST DEPLOYED BY")""".format(
             ready_column=pretty_print.READY_COLUMN))
 
   def Run(self, args):

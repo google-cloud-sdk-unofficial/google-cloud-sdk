@@ -82,6 +82,8 @@ TransferConfigReference = (
 TransferRunReference = bigquery_client.ApiClientHelper.TransferRunReference
 TransferLogReference = bigquery_client.ApiClientHelper.TransferLogReference
 NextPageTokenReference = bigquery_client.ApiClientHelper.NextPageTokenReference
+ModelReference = bigquery_client.ApiClientHelper.ModelReference
+RoutineReference = bigquery_client.ApiClientHelper.RoutineReference
 EncryptionServiceAccount = (
     bigquery_client.ApiClientHelper.EncryptionServiceAccount)
 BigqueryClient = bigquery_client.BigqueryClient
@@ -92,6 +94,7 @@ JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
 SlotPoolReference = bigquery_client.ApiClientHelper.SlotPoolReference
 ReservationGrantReference = bigquery_client.ApiClientHelper.ReservationGrantReference  # pylint: disable=line-too-long
+ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
 
 # pylint: enable=g-bad-name
 
@@ -780,8 +783,13 @@ class Client(object):
   client = None
 
   @staticmethod
-  def Create(**kwds):
-    """Build a new BigqueryClient configured from kwds and FLAGS."""
+  def Create(config_logging=True, **kwds):
+    """Build a new BigqueryClient configured from kwds and FLAGS.
+
+    Args:
+      config_logging: if True, set python logging according to --apilog.
+      **kwds: keyword arguments for creating BigqueryClient.
+    """
 
     def KwdsOrFlags(name):
       return kwds[name] if name in kwds else getattr(FLAGS, name)
@@ -789,7 +797,8 @@ class Client(object):
     # Note that we need to handle possible initialization tasks
     # for the case of being loaded as a library.
     bq_utils.ProcessBigqueryrc()
-    _ConfigureLogging(bigquery_client)
+    if config_logging:
+      _ConfigureLogging(bigquery_client)
 
     if FLAGS.httplib2_debuglevel:
       httplib2.debuglevel = FLAGS.httplib2_debuglevel
@@ -1966,17 +1975,22 @@ class _Query(BigqueryCmd):
         self.PrintJobStartInfo(job)
       else:
         self._PrintQueryJobResults(client, job)
-        # If we are here, the job succeeded, but print warnings if any.
-        _PrintJobMessages(client.FormatJobInfo(job))
     if self.destination_schema:
       client.UpdateTable(
           client.GetTableReference(self.destination_table),
           BigqueryClient.ReadSchema(self.destination_schema))
 
   def _PrintQueryJobResults(self, client, job):
-    fields, rows = client.ReadSchemaAndJobRows(
-        job['jobReference'], start_row=self.start_row, max_rows=self.max_rows)
-    Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
+    printable_job_info = client.FormatJobInfo(job)
+    if not _IsSuccessfulDmlOrDdlJob(printable_job_info):
+      # ReadSchemaAndJobRows can handle failed jobs, but cannot handle
+      # a successful DML job if the destination table is already deleted.
+      # DML and DDL do not have query result, so skip ReadSchemaAndJobRows.
+      fields, rows = client.ReadSchemaAndJobRows(
+          job['jobReference'], start_row=self.start_row, max_rows=self.max_rows)
+      Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
+    # If we are here, the job succeeded, but print warnings if any.
+    _PrintJobMessages(printable_job_info)
 
 
 def _GetExternalDataConfig(file_path_or_simple_spec):
@@ -2300,6 +2314,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'Show datasets described by this identifier.',
         short_name='d',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'models', False, 'Show all models.', short_name='m', flag_values=fv)
+    flags.DEFINE_boolean(
+        'routines', False, 'Show all routines.', flag_values=fv)
     flags.DEFINE_string(
         'transfer_location',
         None,
@@ -2385,6 +2403,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'List all reservation grants for given project/location or '
         'reservation.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'connection', None,
+        'List all connections for given project/location',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
@@ -2401,6 +2423,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       bq ls -p -n 1000
       bq ls mydataset
       bq ls -a
+      bq ls -m mydataset
+      bq ls --routines mydataset (requires whitelisting)
       bq ls --filter labels.color:red
       bq ls --filter 'labels.color:red labels.size:*'
       bq ls --transfer_config --transfer_location='us'
@@ -2412,6 +2436,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       bq ls --reservation_grant --project_id=proj --location='us'
       bq ls --reservation_grant --project_id=proj --location='us' --reservation
           <reservation_ref>
+      bq ls --connection --project_id=proj --location=us
     """
 
     # pylint: disable=g-doc-exception
@@ -2478,6 +2503,28 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           max_creation_time=self.max_creation_time,
           page_token=page_token
       )
+    elif self.m:
+      object_type = ModelReference
+      reference = client.GetDatasetReference(identifier)
+      response = client.ListModels(
+          reference=reference,
+          max_results=self.max_results,
+          page_token=page_token)
+      if 'models' in response:
+        results = response['models']
+      if 'nextPageToken' in response:
+        _PrintPageToken(response)
+    elif self.routines:
+      object_type = RoutineReference
+      reference = client.GetDatasetReference(identifier)
+      response = client.ListRoutines(
+          reference=reference,
+          max_results=self.max_results,
+          page_token=page_token)
+      if 'routines' in response:
+        results = response['routines']
+      if 'nextPageToken' in response:
+        _PrintPageToken(response)
     elif self.reservation_grant:
       try:
         if self.reservation:
@@ -2524,7 +2571,9 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         try:
           bi_response = client.ListBiReservations(reference)
           if 'size' in bi_response:
-            print 'BI Engine reservation: %s' % (bi_response['size'])
+            size_in_bytes = long(bi_response['size'])
+            size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
+            print 'BI Engine reservation: %sGB' % size_in_gbytes
         except BaseException as e:
           if 'was not found' not in e.message and (
               'is disabled' not in e.message):
@@ -2606,6 +2655,21 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         page_token = dict(nextPageToken=list_transfer_log_result[1])
         _PrintPageToken(page_token)
       results = list_transfer_log_result[0]
+    elif self.connection:
+      object_type = ConnectionReference
+      reference = client.GetConnectionReference(identifier=identifier,
+                                                default_location=FLAGS.location,
+                                                default_connection_id=' ')
+      list_connections_results = client.ListConnections(
+          reference,
+          max_results=self.max_results,
+          page_token=self.page_token)
+      if 'connections' in list_connections_results:
+        results = list_connections_results['connections']
+      else:
+        print 'No connections found.'
+      if 'nextPageToken' in list_connections_results:
+        _PrintPageToken(list_connections_results)
     elif self.p or reference is None:
       object_type = ProjectReference
       results = client.ListProjects(
@@ -2686,6 +2750,20 @@ class _Delete(BigqueryCmd):
     flags.DEFINE_boolean(
         'reservation_grant', None, 'Delete a reservation grant.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'model',
+        False,
+        'Remove model with this model ID.',
+        short_name='m',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'routine',
+        False,
+        'Remove routine with this routine ID.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'connection', None, 'Delete a connection.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier):
@@ -2700,9 +2778,12 @@ class _Delete(BigqueryCmd):
 
     Examples:
       bq rm ds.table
+      bq rm -m ds.model
+      bq rm --routine ds.routine (requires whitelisting)
       bq rm -r -f old_dataset
       bq rm --transfer_config=projects/p/locations/l/transferConfigs/c
       bq rm --reservation_grant --project_id=proj --location=us query_proj_dev
+      bq rm --connection --project_id=proj --location=us con
     """
 
     client = Client.Get()
@@ -2715,6 +2796,10 @@ class _Delete(BigqueryCmd):
 
     if self.t:
       reference = client.GetTableReference(identifier)
+    elif self.m:
+      reference = client.GetModelReference(identifier)
+    elif self.routine:
+      reference = client.GetRoutineReference(identifier)
     elif self.d:
       reference = client.GetDatasetReference(identifier)
     elif self.transfer_config:
@@ -2748,6 +2833,10 @@ class _Delete(BigqueryCmd):
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to delete reservation grant '%s': %s" % (identifier, e))
+    elif self.connection:
+      reference = client.GetConnectionReference(
+          identifier=identifier, default_location=FLAGS.location)
+      client.DeleteConnection(reference)
     else:
       reference = client.GetReference(identifier)
       _Typecheck(reference, (DatasetReference, TableReference),
@@ -2756,11 +2845,19 @@ class _Delete(BigqueryCmd):
     if isinstance(reference, TableReference) and self.r:
       raise app.UsageError('Cannot specify -r with %r' % (reference,))
 
+    if isinstance(reference, ModelReference) and self.r:
+      raise app.UsageError('Cannot specify -r with %r' % (reference,))
+
+    if isinstance(reference, RoutineReference) and self.r:
+      raise app.UsageError('Cannot specify -r with %r' % (reference,))
+
     if not self.force:
       if ((isinstance(reference, DatasetReference) and
            client.DatasetExists(reference)) or
           (isinstance(reference, TableReference) and
            client.TableExists(reference)) or
+          (isinstance(reference, ModelReference) and
+           client.ModelExists(reference)) or
           (isinstance(reference, TransferConfigReference) and
            client.TransferExists(reference))):
         if 'y' != _PromptYN('rm: remove %r? (y/N) ' % (reference,)):
@@ -2774,6 +2871,10 @@ class _Delete(BigqueryCmd):
           delete_contents=self.recursive)
     elif isinstance(reference, TableReference):
       client.DeleteTable(reference, ignore_not_found=self.force)
+    elif isinstance(reference, ModelReference):
+      client.DeleteModel(reference, ignore_not_found=self.force)
+    elif isinstance(reference, RoutineReference):
+      client.DeleteRoutine(reference, ignore_not_found=self.force)
     elif isinstance(reference, TransferConfigReference):
       client.DeleteTransferConfig(reference, ignore_not_found=self.force)
 
@@ -3217,12 +3318,6 @@ class _Make(BigqueryCmd):
         'hierarchies can be specified by separating reservations with a slash.'
         'For example foo/bar/baz.',
         flag_values=fv)
-    flags.DEFINE_boolean(
-        'slot_pool',
-        None,
-        'Creates a slot pool in the specified reservation. You do not need to '
-        'specify a slot pool id, this will be assigned automatically.',
-        flag_values=fv)
     flags.DEFINE_integer(
         'slots',
         0,
@@ -3234,15 +3329,6 @@ class _Make(BigqueryCmd):
         True,
         'If true, any query using this reservation will also be submitted to '
         'the parent reservation.',
-        flag_values=fv)
-    flags.DEFINE_enum(
-        'plan',
-        None, ['ADHOC', 'ONE_DAY', 'THIRTY_DAYS'],
-        'Commitment plan for this slot pool. Plans cannot be deleted before '
-        'their commitment period is over. Options include:'
-        '\n ADHOC'
-        '\n ONE_DAY'
-        '\n THIRTY_DAYS',
         flag_values=fv)
     flags.DEFINE_boolean(
         'reservation_grant',
@@ -3260,6 +3346,28 @@ class _Make(BigqueryCmd):
         'reservation_id', None,
         'Reservation ID used to create reservation grant for. '
         'Used in conjuction with --reservation_grant.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'connection',
+        None,
+        'Create a connection.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'connection_type',
+        None,
+        ['CLOUD_SQL'],
+        'Connection type. Valid values:'
+        '\n CLOUD_SQL',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'properties',
+        None,
+        'Connection properties in JSON format',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'connection_credential',
+        None,
+        'Connection credential in JSON format',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -3287,6 +3395,11 @@ class _Make(BigqueryCmd):
           projects/p/locations/l/transferConfigs/c
       bq mk ---reservation_grant -project_id=proj --location=us
           --reservation_id=project:us.dev --job_type=QUERY
+      bq mk --connection --connection_type='CLOUD_SQL'
+        --properties='{"instanceId" : "instance",
+        "database" : "db", "type" : "MYSQL" }'
+        --connection_credential='{"username":"u", "password":"p"}'
+        --project_id=proj --location=us new_connection
     """
 
     client = Client.Get()
@@ -3306,19 +3419,7 @@ class _Make(BigqueryCmd):
     elif self.reservation:
       object_info = None
       reference = client.GetReservationReference(identifier, FLAGS.location)
-      if self.slot_pool:
-        try:
-          result = client.CreateSlotPool(reference, self.slots, self.plan)
-        except BaseException as e:
-          raise bigquery_client.BigqueryError(
-              "Failed to create slot pool in '%s': %s" % (identifier, e))
-        if result['done']:
-          object_info = result['response']
-          reference = client.GetSlotPoolReference(
-              path=object_info['name'], default_location=FLAGS.location)
-        else:
-          print 'Slot pool creation is pending: %s' % result['name']
-      else:
+      if True:
         try:
           object_info = client.CreateReservation(reference, self.slots,
                                                  self.use_parent)
@@ -3396,6 +3497,22 @@ class _Make(BigqueryCmd):
       for result in results:
         formatter.AddDict(result)
       formatter.Print()
+    elif self.connection:
+      reference = client.GetConnectionReference(identifier=identifier,
+                                                default_location=FLAGS.location)
+      if not self.connection_type:
+        raise app.UsageError('Need to specify --connection_type.')
+      if not self.properties:
+        raise app.UsageError('Need to specify --properties')
+      created_connection = client.CreateConnection(
+          reference,
+          self.connection_type,
+          self.properties)
+      if self.connection_credential:
+        path = created_connection['name']
+        reference = client.GetConnectionReference(path=path)
+        client.UpdateConnectionCredential(reference, self.connection_type,
+                                          self.connection_credential)
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
     else:
@@ -3525,6 +3642,12 @@ class _Update(BigqueryCmd):
         False,
         'Updates a table with this name.',
         short_name='t',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'model',
+        False,
+        'Updates a model with this model ID.',
+        short_name='m',
         flag_values=fv)
     flags.DEFINE_boolean(
         'reservation',
@@ -3731,6 +3854,11 @@ class _Update(BigqueryCmd):
         'Only apply to partitioned table.',
         flag_values=fv)
     flags.DEFINE_string(
+        'connection_credential',
+        None,
+        'Connection credential in JSON format',
+        flag_values=fv)
+    flags.DEFINE_string(
         'range_partitioning',
         None,
         'Enables range partitioning on the table. The format should be '
@@ -3749,6 +3877,7 @@ class _Update(BigqueryCmd):
     Examples:
       bq update --description "Dataset description" existing_dataset
       bq update --description "My table" existing_dataset.existing_table
+      bq update --description "My model" -m existing_dataset.existing_model
       bq update -t existing_dataset.existing_table name:integer,value:string
       bq update --destination_kms_key
           projects/p/locations/l/keyRings/r/cryptoKeys/k
@@ -3762,6 +3891,8 @@ class _Update(BigqueryCmd):
           projects/p/locations/l/transferConfigs/c
       bq update --reservation --location=US --project_id=my-project
           --reservation_size=2G
+      bq update --connection_credential='{"username":"u", "password":"p"}'
+        --location=US --project_id=my-project existing_connection
     """
     client = Client.Get()
     if self.d and self.t:
@@ -3793,10 +3924,20 @@ class _Update(BigqueryCmd):
             "Failed to update reservation '%s': %s" % (identifier, e))
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
+    elif self.m:
+      reference = client.GetModelReference(identifier)
     elif self.transfer_config:
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier)
+    elif self.connection_credential:
+      reference = client.GetConnectionReference(identifier=identifier,
+                                                default_location=FLAGS.location)
+      connection = client.GetConnection(reference)
+      if 'cloudSql' in connection:
+        client.UpdateConnectionCredential(reference,
+                                          'CLOUD_SQL',
+                                          self.connection_credential)
     else:
       reference = client.GetReference(identifier)
       _Typecheck(reference, (DatasetReference, TableReference),
@@ -3934,6 +4075,20 @@ class _Update(BigqueryCmd):
       else:
         raise bigquery_client.BigqueryNotFoundError(
             'Not found: %r' % (reference,), {'reason': 'notFound'}, [])
+    elif isinstance(reference, ModelReference):
+      expiration = None
+      if self.expiration:
+        expiration = int(self.expiration + time.time()) * 1000
+      else:
+        expiration = self.expiration  # None or 0
+      client.UpdateModel(
+          reference,
+          description=self.description,
+          expiration=expiration,
+          labels_to_set=labels_to_set,
+          label_keys_to_remove=label_keys_to_remove,
+          etag=self.etag)
+      print "Model '%s' successfully updated." % (reference)
 
 
 def RetrieveAuthorizationCode(reference, data_source, transfer_client):
@@ -4076,6 +4231,17 @@ class _Show(BigqueryCmd):
         'Show information about the particular transfer run.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'model',
+        False,
+        'Show details of model with this model ID.',
+        short_name='m',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'routine',
+        False,
+        'Show the details of a particular routine.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'reservation',
         None,
         'Shows details for the reservation described by this identifier.',
@@ -4084,6 +4250,11 @@ class _Show(BigqueryCmd):
         'slot_pool',
         None,
         'Shows details for the slot pool described by this identifier.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'connection',
+        None,
+        'Shows details for the connection described by this identifier.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4096,9 +4267,12 @@ class _Show(BigqueryCmd):
       bq show [--schema] dataset.table
       bq show [--view] dataset.view
       bq show [--materialized_view] dataset.materialized_view
+      bq show -m ds.model
+      bq show --routine ds.routine (requires whitelisting)
       bq show --transfer_config projects/p/locations/l/transferConfigs/c
       bq show --transfer_run projects/p/locations/l/transferConfigs/c/runs/r
       bq show --encryption_service_account
+      bq show --connection --project_id=project --location=us connection
     """
     # pylint: disable=g-doc-exception
     client = Client.Get()
@@ -4129,6 +4303,10 @@ class _Show(BigqueryCmd):
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferRunReference(transferRunName=formatted_identifier)
       object_info = client.GetTransferRun(formatted_identifier)
+    elif self.m:
+      reference = client.GetModelReference(identifier)
+    elif self.routine:
+      reference = client.GetRoutineReference(identifier)
     elif self.reservation:
       if self.slot_pool:
         reference = client.GetSlotPoolReference(
@@ -4143,6 +4321,9 @@ class _Show(BigqueryCmd):
       email = object_info['email']
       object_info = {'ServiceAccountID': email}
       reference = EncryptionServiceAccount(serviceAccount='serviceAccount')
+    elif self.connection:
+      reference = client.GetConnectionReference(identifier)
+      object_info = client.GetConnection(reference)
     else:
       reference = client.GetReference(identifier)
     if reference is None:
@@ -4153,6 +4334,12 @@ class _Show(BigqueryCmd):
     _PrintObjectInfo(object_info, reference, custom_format=custom_format)
 
 
+def _IsSuccessfulDmlOrDdlJob(printable_job_info):
+  """Returns True iff the job is successful and is a DML/DDL query job."""
+  return ('Affected Rows' in printable_job_info or
+          'DDL Operation Performed' in printable_job_info)
+
+
 def _PrintJobMessages(printable_job_info):
   """Prints additional info from a job formatted for printing.
 
@@ -4160,6 +4347,9 @@ def _PrintJobMessages(printable_job_info):
 
   If any error/warning does not have a 'message' key, printable_job_info must
   have 'jobReference' identifying the job.
+
+  For DML queries prints number of affected rows.
+  For DDL queries prints the performed operation and the target.
   """
 
   job_ref = '(unknown)'  # Should never be seen, but beats a weird crash.
@@ -4195,6 +4385,26 @@ def _PrintJobMessages(printable_job_info):
         print '%s\n' % message
     if recommend_show:
       print 'Use "bq show -j %s" to view job warnings.' % job_ref
+  elif 'Affected Rows' in printable_job_info:
+    print 'Number of affected rows: %s\n' % printable_job_info['Affected Rows']
+  elif 'DDL Target Table' in printable_job_info:
+    ddl_target_table = printable_job_info['DDL Target Table']
+    project_id = ddl_target_table.get('projectId')
+    dataset_id = ddl_target_table.get('datasetId')
+    table_id = ddl_target_table.get('tableId')
+    op = _DDL_OPERATION_MAP.get(
+        printable_job_info.get('DDL Operation Performed'))
+    if project_id and dataset_id and table_id and op:
+      print '%s %s.%s.%s\n' % (op, project_id, dataset_id, table_id)
+  elif 'DDL Target Routine' in printable_job_info:
+    ddl_target_routine = printable_job_info['DDL Target Routine']
+    project_id = ddl_target_routine.get('projectId')
+    dataset_id = ddl_target_routine.get('datasetId')
+    routine_id = ddl_target_routine.get('routineId')
+    op = _DDL_OPERATION_MAP.get(
+        printable_job_info.get('DDL Operation Performed'))
+    if project_id and dataset_id and routine_id and op:
+      print '%s %s.%s.%s' % (op, project_id, dataset_id, routine_id)
 
 
 def _PrintObjectInfo(object_info, reference, custom_format):

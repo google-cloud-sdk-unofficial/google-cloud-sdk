@@ -83,6 +83,7 @@ class Update(base.UpdateCommand):
         update_disk_data = update_stateful_disks_dict[disk_name]
         source = update_disk_data.get('source')
         mode = update_disk_data.get('mode')
+        auto_delete = update_disk_data.get('auto-delete')
         if not (source or mode):
           raise exceptions.InvalidArgumentException(
               parameter_name='--update-stateful-disk',
@@ -94,6 +95,9 @@ class Update(base.UpdateCommand):
         if mode:
           preserved_disk.mode = instance_configs_messages.GetMode(
               messages=messages, mode=mode, preserved_state_mode=True)
+        if auto_delete:
+          preserved_disk.autoDelete = auto_delete.GetAutoDeleteEnumValue(
+              messages.PreservedStatePreservedDisk.AutoDeleteValueValuesEnum)
         del update_stateful_disks_dict[disk_name]
       new_stateful_disks.append(current_stateful_disk)
     for update_stateful_disk in update_stateful_disks_dict.values():

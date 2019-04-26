@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The app_profiles command group for bigtable."""
+"""The app profiles command group for bigtable."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,6 +22,5 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class AppProfiles(base.Group):
-  """Manage Cloud Bigtable app_profiles."""
+  """Manage Cloud Bigtable app profiles."""

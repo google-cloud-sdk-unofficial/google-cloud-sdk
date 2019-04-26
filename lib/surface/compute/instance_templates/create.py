@@ -500,6 +500,7 @@ class CreateBeta(Create):
   """
   _support_source_instance = True
   _support_kms = True
+  _support_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -508,7 +509,8 @@ class CreateBeta(Create):
         release_track=base.ReleaseTrack.BETA,
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
-        support_kms=cls._support_kms
+        support_kms=cls._support_kms,
+        support_reservation=cls._support_reservation
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -526,8 +528,8 @@ class CreateBeta(Create):
         base_classes.ComputeApiHolder(base.ReleaseTrack.BETA),
         args=args,
         support_source_instance=self._support_source_instance,
-        support_kms=self._support_kms
-    )
+        support_kms=self._support_kms,
+        support_reservation=self._support_reservation)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

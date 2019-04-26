@@ -98,12 +98,14 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
-    # TODO(b/118885734): verify that when reservations has been in beta.
     flags.AddCreateFlags(parser, enable_ssd_and_accelerator_support=True)
+    flags.AddReservationArgGroup(parser)
 
   def _MakeCreateRequest(self, args, messages, project, region, commitment_ref,
                          holder):
     commitment = messages.Commitment(
+        reservations=reservation_helper.MakeReservations(
+            args, messages, holder),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args))

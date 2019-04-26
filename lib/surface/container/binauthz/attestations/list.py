@@ -55,13 +55,6 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat("""
-        table(
-            attestation.attestation.pgpSignedAttestation.pgpKeyId,
-            resource.uri:label=ARTIFACT_URL:sort=1
-        )
-    """)
-
     flags.AddArtifactUrlFlag(parser, required=False)
 
     flags.AddConcepts(

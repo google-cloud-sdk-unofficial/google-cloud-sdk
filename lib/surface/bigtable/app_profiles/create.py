@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""bigtable app_profiles create command."""
+"""bigtable app profiles create command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,13 +27,13 @@ from googlecloudsdk.core import log
 
 
 class CreateAppProfile(base.CreateCommand):
-  """Create a new Bigtable app_profile."""
+  """Create a new Bigtable app profile."""
 
   @staticmethod
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to create')
     (arguments.ArgAdder(parser).AddDescription(
-        'app-profile',
+        'app profile',
         required=False).AddForce('create').AddAppProfileRouting())
 
   def Run(self, args):
@@ -62,5 +62,5 @@ class CreateAppProfile(base.CreateCommand):
     except HttpError as e:
       util.FormatErrorMessages(e)
     else:
-      log.CreatedResource(app_profile_ref.Name(), kind='app-profile')
+      log.CreatedResource(app_profile_ref.Name(), kind='app profile')
       return result

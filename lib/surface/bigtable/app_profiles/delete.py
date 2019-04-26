@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""bigtable app-profiles delete command."""
+"""bigtable app profiles delete command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,7 +28,7 @@ from googlecloudsdk.core.console import console_io
 
 
 class DeleteAppProfile(base.DeleteCommand):
-  """Delete a Bigtable app-profile."""
+  """Delete a Bigtable app profile."""
 
   @staticmethod
   def Args(parser):

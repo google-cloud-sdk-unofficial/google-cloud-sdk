@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""bigtable app-profiles list command."""
+"""bigtable app profiles list command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,11 +24,11 @@ from googlecloudsdk.command_lib.bigtable import arguments
 
 
 class ListAppProfiles(base.ListCommand):
-  """List Bigtable app-profiles."""
+  """List Bigtable app profiles."""
 
   @staticmethod
   def Args(parser):
-    arguments.AddInstanceResourceArg(parser, 'to list app-profiles for')
+    arguments.AddInstanceResourceArg(parser, 'to list app profiles for')
     # ROUTING is a oneof SingleClusterRouting, MultiClusterRoutingUseAny.
     # Combine into a single ROUTING column in the table.
     parser.display_info.AddFormat("""

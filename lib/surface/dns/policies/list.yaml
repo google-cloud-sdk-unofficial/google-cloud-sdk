@@ -31,6 +31,7 @@
       table(name,
             description,
             enableInboundForwarding:label=FORWARDING,
+            enableLogging:label=LOGGING,
             alternativeNameServerConfig.targetNameServers.extract(
             ipv4Address).map().join(", ").list():label=ALTERNATE_NAME_SERVERS,
             networks.firstof(networkUrl).map().scope().join(", "):label=NETWORKS

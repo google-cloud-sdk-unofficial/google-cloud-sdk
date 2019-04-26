@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""bigtable app_profiles update command."""
+"""bigtable app profiles update command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,13 +27,14 @@ from googlecloudsdk.core import log
 
 
 class UpdateAppProfile(base.CreateCommand):
-  """Update a Bigtable app_profile."""
+  """Update a Bigtable app profile."""
 
   @staticmethod
   def Args(parser):
     arguments.AddAppProfileResourceArg(parser, 'to update')
-    (arguments.ArgAdder(parser).AddDescription('app-profile', required=False)
-     .AddAppProfileRouting(required=False).AddForce('update').AddAsync())
+    (arguments.ArgAdder(parser).AddDescription(
+        'app profile', required=False).AddAppProfileRouting(
+            required=False).AddForce('update').AddAsync())
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -66,10 +67,10 @@ class UpdateAppProfile(base.CreateCommand):
       if args.async:
         log.UpdatedResource(
             operation_ref,
-            kind='bigtable app-profile {0}'.format(app_profile_ref.Name()),
+            kind='bigtable app profile {0}'.format(app_profile_ref.Name()),
             is_async=True)
         return result
 
       return util.AwaitAppProfile(
           operation_ref,
-          'Updating bigtable app-profile {0}'.format(app_profile_ref.Name()))
+          'Updating bigtable app profile {0}'.format(app_profile_ref.Name()))

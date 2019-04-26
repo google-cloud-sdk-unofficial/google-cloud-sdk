@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deploy an app, function or container to Cloud Run."""
+"""Deploy a container to Cloud Run."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,7 +35,7 @@ from googlecloudsdk.core.console import progress_tracker
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Deploy(base.Command):
-  """Deploy an app, function or container to Cloud Run."""
+  """Deploy a container to Cloud Run."""
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -80,7 +80,7 @@ class Deploy(base.Command):
         service_presentation]).AddToParser(parser)
 
   def Run(self, args):
-    """Deploy an app, function or container to Cloud Run."""
+    """Deploy a container to Cloud Run."""
     source_ref = flags.GetSourceRef(args.source, args.image)
     config_changes = flags.GetConfigurationChanges(args)
 

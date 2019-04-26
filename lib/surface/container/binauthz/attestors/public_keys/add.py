@@ -18,14 +18,20 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
+from googlecloudsdk.api_lib.container.binauthz import kms
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.binauthz import exceptions
 from googlecloudsdk.command_lib.container.binauthz import flags
+from googlecloudsdk.command_lib.container.binauthz import pkix
 
 
-class Add(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddBeta(base.Command):
   """Add a public key to an Attestor."""
 
   @classmethod
@@ -55,6 +61,107 @@ class Add(base.Command):
     attestor_ref = args.CONCEPTS.attestor.Parse()
 
     # TODO(b/71700164): Validate the contents of the public key file.
+    return attestors_client.AddPgpKey(
+        attestor_ref,
+        pgp_pubkey_content=args.public_key_file,
+        comment=args.comment)
 
-    return attestors_client.AddKey(attestor_ref, args.public_key_file,
-                                   args.comment)
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddAlpha(base.Command):
+  """Add a public key to an Attestor."""
+
+  @classmethod
+  def Args(cls, parser):
+    flags.AddConcepts(
+        parser,
+        flags.GetAttestorPresentationSpec(
+            required=True,
+            positional=False,
+            group_help=(
+                'The attestor to which the public key should be added.'),
+        ),
+    )
+    parser.add_argument(
+        '--comment', help='The comment describing the public key.')
+
+    key_group = parser.add_group(mutex=True, required=True)
+    pgp_group = key_group.add_group()
+    pgp_group.add_argument(
+        '--pgp-public-key-file',
+        type=arg_parsers.BufferedFileInput(),
+        help='The path to the file containing the '
+        'ASCII-armored PGP public key to add.')
+    kms_group = key_group.add_group()
+    flags.AddConcepts(
+        kms_group,
+        flags.GetCryptoKeyVersionPresentationSpec(
+            base_name='keyversion',
+            required=True,
+            positional=False,
+            use_global_project_flag=False,
+            group_help=textwrap.dedent("""\
+              The Cloud KMS (Key Management Service) CryptoKeyVersion whose
+              public key will be added to the attestor.""")),
+    )
+    pkix_group = key_group.add_group()
+    pkix_group.add_argument(
+        '--pkix-public-key-file',
+        required=True,
+        type=arg_parsers.BufferedFileInput(),
+        help='The path to the file containing the PKIX public key to add.')
+    pkix_group.add_argument(
+        '--pkix-public-key-algorithm',
+        choices=pkix.GetAlgorithmMapper().choices,
+        required=True,
+        help=textwrap.dedent("""\
+            The signing algorithm of the associated key. This will be used to
+            verify the signatures associated with this key."""))
+
+    parser.add_argument(
+        '--public-key-id-override',
+        type=str,
+        help=textwrap.dedent("""\
+          If provided, the ID to replace the default API-generated one. All IDs
+          must be valid URIs as defined by RFC 3986
+          (https://tools.ietf.org/html/rfc3986).
+
+          When creating Attestations to be verified by this key, one must always
+          provide this custom ID as the public key ID."""))
+
+  def Run(self, args):
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    attestors_client = attestors.Client(api_version)
+
+    attestor_ref = args.CONCEPTS.attestor.Parse()
+
+    if args.pgp_public_key_file and args.public_key_id_override:
+      raise exceptions.InvalidArgumentError(
+          '--public-key-id-override may not be used with old-style PGP keys')
+
+    if args.keyversion:
+      key_resource = args.CONCEPTS.keyversion.Parse()
+      public_key = kms.Client().GetPublicKey(key_resource.RelativeName())
+      return attestors_client.AddPkixKey(
+          attestor_ref,
+          pkix_pubkey_content=public_key.pem,
+          pkix_sig_algorithm=attestors_client.ConvertFromKmsSignatureAlgorithm(
+              public_key.algorithm),
+          id_override=(args.public_key_id_override or
+                       kms.GetKeyUri(key_resource)),
+          comment=args.comment)
+    elif args.pkix_public_key_file:
+      alg_mapper = pkix.GetAlgorithmMapper(api_version)
+      return attestors_client.AddPkixKey(
+          attestor_ref,
+          pkix_pubkey_content=args.pkix_public_key_file,
+          pkix_sig_algorithm=alg_mapper.GetEnumForChoice(
+              args.pkix_public_key_algorithm),
+          id_override=args.public_key_id_override,
+          comment=args.comment)
+    else:
+      # TODO(b/71700164): Validate the contents of the public key file.
+      return attestors_client.AddPgpKey(
+          attestor_ref,
+          pgp_pubkey_content=args.pgp_public_key_file,
+          comment=args.comment)

@@ -529,7 +529,7 @@ class CreateBeta(Create):
   _support_public_dns = False
   _support_snapshots = False
   _support_display_device = True
-  _support_reservation = False
+  _support_reservation = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -542,7 +542,8 @@ class CreateBeta(Create):
         parser,
         enable_regional=True,
         enable_kms=True,
-        supports_display_device=True
+        supports_display_device=True,
+        supports_reservation=cls._support_reservation
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

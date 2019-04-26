@@ -1,4 +1,4 @@
-- release_tracks: []
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Delete a Compute Engine reservation.
@@ -11,6 +11,16 @@
 
   request:
     collection: compute.reservations
-    api_version: alpha
+    api_version: beta
+    ALPHA:
+      api_version: alpha
 
-# Need to add operation handling here. TODO(b/124401797)
+  async:
+    api_version: beta
+    collection: compute.zoneOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+    ALPHA:
+      api_version: alpha

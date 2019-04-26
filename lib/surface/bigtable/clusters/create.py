@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateCluster(base.CreateCommand):
   """Create a bigtable cluster."""
 

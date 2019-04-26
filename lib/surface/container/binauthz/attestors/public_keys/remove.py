@@ -24,7 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
 
-class Remove(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveBeta(base.Command):
   """Remove a public key from an Attestor."""
 
   @classmethod
@@ -49,4 +50,32 @@ class Remove(base.Command):
     attestor_ref = args.CONCEPTS.attestor.Parse()
 
     attestors_client.RemoveKey(
-        attestor_ref, fingerprint_to_remove=args.public_key_fingerprint)
+        attestor_ref, pubkey_id=args.public_key_fingerprint)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveAlpha(base.Command):
+  """Remove a public key from an Attestor."""
+
+  @classmethod
+  def Args(cls, parser):
+    flags.AddConcepts(
+        parser,
+        flags.GetAttestorPresentationSpec(
+            required=True,
+            positional=False,
+            group_help=(
+                'The attestor from which the public key should be removed.'),
+        ),
+    )
+    parser.add_argument(
+        'public_key_id',
+        help='The ID of the public key to remove.')
+
+  def Run(self, args):
+    api_version = apis.GetApiVersion(self.ReleaseTrack())
+    attestors_client = attestors.Client(api_version)
+
+    attestor_ref = args.CONCEPTS.attestor.Parse()
+
+    attestors_client.RemoveKey(attestor_ref, pubkey_id=args.public_key_id)

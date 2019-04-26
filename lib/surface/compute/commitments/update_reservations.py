@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.commitments import flags
 from googlecloudsdk.command_lib.compute.commitments import reservation_helper
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateReservationsAlpha(base.UpdateCommand):
   """Update the resource shape of reservations within the commitment."""
 
@@ -36,7 +36,7 @@ class UpdateReservationsAlpha(base.UpdateCommand):
     flags.AddReservationArgGroup(parser)
 
   def Run(self, args):
-    holder = base_classes.ComputeApiHolder(base.ReleaseTrack.ALPHA)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     resources = holder.resources
     commitment_ref = flags.MakeCommitmentArg(False).ResolveAsResource(
         args,

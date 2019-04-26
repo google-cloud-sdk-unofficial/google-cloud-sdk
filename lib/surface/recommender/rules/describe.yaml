@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Get a Rule.
+    description: |
+      Get a Rule.
+    examples: |
+      $ {command} abcd-1234 --project=concord-api-testing
+
+  request:
+    collection: recommender.projects.rules
+    method: get
+
+  arguments:
+    resource:
+      help_text: The rule to describe.
+      spec: !REF googlecloudsdk.command_lib.recommender.resources:rule

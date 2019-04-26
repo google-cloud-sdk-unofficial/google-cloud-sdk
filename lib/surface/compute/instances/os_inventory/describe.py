@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import base64
-import textwrap
+import json
 import zlib
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -28,6 +28,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.instances.os_inventory import exceptions
+from googlecloudsdk.core.resource import resource_projector
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -38,15 +39,66 @@ class Describe(base.DescribeCommand):
   Engine virtual machine instance.
   """
 
+  _GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS = ('InstalledPackages', 'PackageUpdates')
+
   @staticmethod
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(parser, operation_type='describe')
-    parser.display_info.AddFormat(
-        textwrap.dedent("""table[no-heading](
-      key.list(separator='
-      '),
-      value.list(separator='
-      '))"""))
+
+    parser.display_info.AddFormat("""
+          multi(
+            InstalledPackages.deb:format=
+              "table[box,title='InstalledPackages(DEB)']
+                (Name:sort=1,Arch,Version)",
+            InstalledPackages.gem:format=
+              "table[box,title='InstalledPackages(Gem)']
+                (Name:sort=1,Arch,Version)",
+            InstalledPackages.googet:format=
+              "table[box,title='InstalledPackages(GooGet)']
+                (Name:sort=1,Arch,Version)",
+            InstalledPackages.pip:format=
+              "table[box,title='InstalledPackages(Pip)']
+                (Name:sort=1,Arch,Version)",
+            InstalledPackages.rpm:format=
+              "table[box,title='InstalledPackages(RPM)']
+                (Name:sort=1,Arch,Version)",
+            InstalledPackages.wua:format=
+              "table[box,title='InstalledPackages(Windows Update Agent)'](
+                Title:sort=1:wrap,
+                Description:wrap=11,
+                Categories.list():wrap,
+                KBArticleIDs.list():wrap=14,
+                SupportURL:wrap=11,
+                LastDeploymentChangeTime:wrap=15:label='LAST_DEPLOYMENT')",
+            InstalledPackages.qfe:format=
+              "table[box,title='InstalledPackages(Quick Fix Engineering)']
+                (Caption,Description:wrap=15,HotFixID:sort=1,InstalledOn)",
+            PackageUpdates.apt:format=
+              "table[box,title='PackagesUpdates(Apt)']
+                (Name:sort=1,Arch,Version)",
+            PackageUpdates.gem:format=
+              "table[box,title='PackagesUpdates(Gem)']
+                (Name:sort=1,Arch,Version)",
+            PackageUpdates.googet:format=
+              "table[box,title='PackagesUpdates(GooGet)']
+                (Name:sort=1,Arch,Version)",
+            PackageUpdates.pip:format=
+              "table[box,title='PackagesUpdates(Pip)']
+                (Name:sort=1,Arch,Version)",
+            PackageUpdates.yum:format=
+              "table[box,title='PackagesUpdates(Yum)']
+                (Name:sort=1,Arch,Version)",
+            PackageUpdates.wua:format=
+              "table[box,title='PackageUpdates(Windows Update Agent)'](
+                Title:sort=1:wrap,
+                Description:wrap=11,
+                Categories.list():wrap,
+                KBArticleIDs.list():wrap=14,
+                SupportURL:wrap=11,
+                LastDeploymentChangeTime:wrap=15:label='LAST_DEPLOYMENT')",
+            SystemInformation:format="default"
+          )
+        """)
 
   def _GetInstanceRef(self, holder, args):
     return flags.INSTANCE_ARG.ResolveAsResource(
@@ -68,7 +120,7 @@ class Describe(base.DescribeCommand):
             request)])[0]
 
       for item in response.queryValue.items:
-        if item.key == 'InstalledPackages' or item.key == 'PackageUpdates':
+        if item.key in self._GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS:
           item.value = zlib.decompress(
               base64.b64decode(item.value), zlib.MAX_WBITS | 32)
 
@@ -87,7 +139,29 @@ class Describe(base.DescribeCommand):
             error_message='Could not fetch resource:')
       raise e
 
+  def _GetFormattedGuestAttributes(self, guest_attributes):
+    guest_attributes_json = resource_projector.MakeSerializable(
+        guest_attributes)
+
+    formatted_guest_attributes = {'SystemInformation': {}}
+    for guest_attribute in guest_attributes_json:
+      guest_attribute_key = guest_attribute['key']
+
+      # Only reformat the guest attribute value
+      # for certain fields that contain JSON data.
+      if guest_attribute_key in self._GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS:
+        formatted_guest_attributes[guest_attribute_key] = json.loads(
+            guest_attribute['value'])
+      else:
+        formatted_guest_attributes['SystemInformation'][
+            guest_attribute_key] = guest_attribute['value']
+
+    return json.loads(json.dumps(formatted_guest_attributes))
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     instance_ref = self._GetInstanceRef(holder, args)
-    return self._GetGuestInventoryGuestAttributes(holder, instance_ref)
+    guest_attributes_json = self._GetGuestInventoryGuestAttributes(
+        holder, instance_ref)
+    return self._GetFormattedGuestAttributes(guest_attributes_json)
+

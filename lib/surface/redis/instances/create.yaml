@@ -13,6 +13,7 @@
 
         $ {command} my-redis-instance --region=us-central1 --size=5
 
+  release_tracks: [ALPHA, BETA, GA]
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.redis.resources:instance
@@ -85,7 +86,8 @@
           - api_field: value
     - arg_name: redis-version
       api_field: instance.redisVersion
-      hidden: true
+      GA:
+        hidden: true
       metavar: VERSION
       help_text: The version of Redis software.
       choices:

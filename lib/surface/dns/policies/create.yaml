@@ -31,6 +31,7 @@
     - _COMMON_: args.description
     - _COMMON_: args.networks
     - _COMMON_: args.forwarding
+    - _COMMON_: args.logging
     - _COMMON_: args.altnameservers
 
   output:

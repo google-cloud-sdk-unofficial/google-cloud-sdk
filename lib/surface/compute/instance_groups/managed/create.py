@@ -30,6 +30,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.command_lib.compute.instance_groups.flags import AutoDeleteFlag
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 from googlecloudsdk.core import properties
@@ -245,37 +246,40 @@ class CreateAlpha(CreateGA):
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
   @staticmethod
-  def _MakePreservedStateWithDisks(client, device_names):
+  def _MakePreservedStateWithDisks(client, stateful_disks):
     """Create StatefulPolicyPreservedState from a list of device names."""
+    # Add all disk_devices to preserved state
     additional_properties = []
-    # Disk device with AutoDelete NEVER
-    disk_device = client.messages.StatefulPolicyPreservedStateDiskDevice(
-        autoDelete=
-        client.messages.StatefulPolicyPreservedStateDiskDevice \
-          .AutoDeleteValueValuesEnum.NEVER)
-    # Add all disk_devices to map
-    for device_name in device_names:
+    for stateful_disk in stateful_disks:
+      auto_delete = (stateful_disk.get('auto-delete') or
+                     AutoDeleteFlag.NEVER).GetAutoDeleteEnumValue(
+                         client.messages.StatefulPolicyPreservedStateDiskDevice
+                         .AutoDeleteValueValuesEnum)
+      disk_device = client.messages.StatefulPolicyPreservedStateDiskDevice(
+          autoDelete=auto_delete)
       disk_value = client.messages.StatefulPolicyPreservedState.DisksValue \
-        .AdditionalProperty(key=device_name, value=disk_device)
+        .AdditionalProperty(
+            key=stateful_disk.get('device-name'), value=disk_device)
       additional_properties.append(disk_value)
     return client.messages.StatefulPolicyPreservedState(
         disks=client.messages.StatefulPolicyPreservedState.DisksValue(
             additionalProperties=additional_properties))
 
   @staticmethod
-  def _GetStatefulPolicy(args, client):
-    if args.stateful_disks:
+  def _CreateStatefulPolicy(args, client):
+    if args.stateful_disk:
       disks = [
-          client.messages.StatefulPolicyPreservedDisk(deviceName=device)
-          for device in args.stateful_disks
+          client.messages.StatefulPolicyPreservedDisk(
+              deviceName=stateful_disk.get('device-name'))
+          for stateful_disk in args.stateful_disk
       ]
-      preserved_resources = client.messages.StatefulPolicyPreservedResources(
-          disks=disks)
-      preserved_state =\
-          CreateAlpha._MakePreservedStateWithDisks(client, args.stateful_disks)
       return client.messages.StatefulPolicy(
-          preservedResources=preserved_resources,
-          preservedState=preserved_state)
+          preservedResources=client.messages.StatefulPolicyPreservedResources(
+              disks=disks),
+          preservedState=CreateAlpha._MakePreservedStateWithDisks(
+              client, args.stateful_disk))
+    # Create empty stateful policy in case --stateful-names flag is specified to
+    # make MIG stateful nevertheless.
     if args.stateful_names:
       return client.messages.StatefulPolicy()
     return None
@@ -312,7 +316,7 @@ class CreateAlpha(CreateGA):
         autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
             args.zones, holder.resources, client.messages),
-        statefulPolicy=self._GetStatefulPolicy(args, client),
+        statefulPolicy=self._CreateStatefulPolicy(args, client),
         updatePolicy=update_policy,
     )
 

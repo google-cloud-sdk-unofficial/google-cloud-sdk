@@ -1,4 +1,4 @@
-- release_tracks: []
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Show details about a Compute Engine reservation.
@@ -11,4 +11,6 @@
 
   request:
     collection: compute.reservations
-    api_version: alpha
+    api_version: beta
+    ALPHA:
+      api_version: alpha

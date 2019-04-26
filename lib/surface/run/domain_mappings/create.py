@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -57,13 +56,14 @@ class Create(base.Command):
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         domain_mapping_presentation]).AddToParser(parser)
+    parser.display_info.AddFormat(
+        """table(
+        type:label="RECORD TYPE",
+        rrdata:label=CONTENTS)""")
 
   def Run(self, args):
     """Create a domain mapping."""
     conn_context = connection_context.GetConnectionContext(args)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
-      client.CreateDomainMapping(domain_mapping_ref, args.service)
-      msg = """{domain} now maps to service [{serv}]""".format(
-          domain=domain_mapping_ref.domainmappingsId, serv=args.service)
-      pretty_print.Success(msg)
+      return client.CreateDomainMapping(domain_mapping_ref, args.service)

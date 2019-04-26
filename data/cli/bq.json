@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.42",
+  "CLI_VERSION": "2.0.43",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -160,7 +160,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "List the objects contained in the named collection.\n\nList the objects in the named project or dataset. A trailing : or .\ncan be used to signify a project or dataset.\n* With -j, show the jobs in the named project.\n* With -p, show all projects.\n",
-        "EXAMPLES": "bq ls\nbq ls -j proj\nbq ls -p -n 1000\nbq ls mydataset\nbq ls -a\nbq ls --filter labels.color:red\nbq ls --filter 'labels.color:red labels.size:*'\nbq ls --transfer_config --transfer_location='us'\n--filter='dataSourceIds:play,adwords'\nbq ls --transfer_run --filter='states:SUCCESSED,PENDING'\n--run_attempt='LATEST' projects/p/locations/l/transferConfigs/c\nbq ls --transfer_log --message_type='messageTypes:INFO,ERROR'\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq ls --reservation_grant --project_id=proj --location='us'\nbq ls --reservation_grant --project_id=proj --location='us'\n--reservation\n<reservation_ref>\n"
+        "EXAMPLES": "bq ls\nbq ls -j proj\nbq ls -p -n 1000\nbq ls mydataset\nbq ls -a\nbq ls -m mydataset\nbq ls --routines mydataset (requires whitelisting)\nbq ls --filter labels.color:red\nbq ls --filter 'labels.color:red labels.size:*'\nbq ls --transfer_config --transfer_location='us'\n--filter='dataSourceIds:play,adwords'\nbq ls --transfer_run --filter='states:SUCCESSED,PENDING'\n--run_attempt='LATEST' projects/p/locations/l/transferConfigs/c\nbq ls --transfer_log --message_type='messageTypes:INFO,ERROR'\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq ls --reservation_grant --project_id=proj --location='us'\nbq ls --reservation_grant --project_id=proj --location='us'\n--reservation\n<reservation_ref>\nbq ls --connection --project_id=proj --location=us\n"
       }
     },
     "mk": {
@@ -178,7 +178,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Create a dataset, table, view, or transfer configuration with this\nname.\n\nSee 'bq help load' for more information on specifying the schema.\n",
-        "EXAMPLES": "bq mk new_dataset\nbq mk new_dataset.new_table\nbq --dataset_id=new_dataset mk table\nbq mk -t new_dataset.newtable name:integer,value:string\nbq mk --view='select 1 as num' new_dataset.newview\n(--view_udf_resource=path/to/file.js)\nbq mk --materialized_view='select sum(x) as sum_x from dataset.table'\nnew_dataset.newview\nbq mk -d --data_location=EU new_dataset\nbq mk --transfer_config --target_dataset=dataset --display_name=name\n-p='{\"param\":\"value\"}' --data_source=source\n--schedule_start_time={schedule_start_time}\n--schedule_end_time={schedule_end_time}\nbq mk --transfer_run --start_time={start_time} --end_time={end_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk ---reservation_grant -project_id=proj --location=us\n--reservation_id=project:us.dev --job_type=QUERY\n"
+        "EXAMPLES": "bq mk new_dataset\nbq mk new_dataset.new_table\nbq --dataset_id=new_dataset mk table\nbq mk -t new_dataset.newtable name:integer,value:string\nbq mk --view='select 1 as num' new_dataset.newview\n(--view_udf_resource=path/to/file.js)\nbq mk --materialized_view='select sum(x) as sum_x from dataset.table'\nnew_dataset.newview\nbq mk -d --data_location=EU new_dataset\nbq mk --transfer_config --target_dataset=dataset --display_name=name\n-p='{\"param\":\"value\"}' --data_source=source\n--schedule_start_time={schedule_start_time}\n--schedule_end_time={schedule_end_time}\nbq mk --transfer_run --start_time={start_time} --end_time={end_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk ---reservation_grant -project_id=proj --location=us\n--reservation_id=project:us.dev --job_type=QUERY\nbq mk --connection --connection_type='CLOUD_SQL'\n--properties='{\"instanceId\" : \"instance\",\n\"database\" : \"db\", \"type\" : \"MYSQL\" }'\n--connection_credential='{\"username\":\"u\", \"password\":\"p\"}'\n--project_id=proj --location=us new_connection\n"
       }
     },
     "mkdef": {
@@ -250,7 +250,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Delete the dataset, table, or transfer config described by\nidentifier.\n\nAlways requires an identifier, unlike the show and ls commands. By\ndefault, also requires confirmation before deleting. Supports the -d\n-t flags to signify that the identifier is a dataset or table.\n* With -f, don't ask for confirmation before deleting.\n* With -r, remove all tables in the named dataset.\n",
-        "EXAMPLES": "bq rm ds.table\nbq rm -r -f old_dataset\nbq rm --transfer_config=projects/p/locations/l/transferConfigs/c\nbq rm --reservation_grant --project_id=proj --location=us\nquery_proj_dev\n"
+        "EXAMPLES": "bq rm ds.table\nbq rm -m ds.model\nbq rm --routine ds.routine (requires whitelisting)\nbq rm -r -f old_dataset\nbq rm --transfer_config=projects/p/locations/l/transferConfigs/c\nbq rm --reservation_grant --project_id=proj --location=us\nquery_proj_dev\nbq rm --connection --project_id=proj --location=us con\n"
       }
     },
     "shell": {
@@ -285,7 +285,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Show all information about an object.\n",
-        "EXAMPLES": "bq show -j <job_id>\nbq show dataset\nbq show [--schema] dataset.table\nbq show [--view] dataset.view\nbq show [--materialized_view] dataset.materialized_view\nbq show --transfer_config projects/p/locations/l/transferConfigs/c\nbq show --transfer_run\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq show --encryption_service_account\n"
+        "EXAMPLES": "bq show -j <job_id>\nbq show dataset\nbq show [--schema] dataset.table\nbq show [--view] dataset.view\nbq show [--materialized_view] dataset.materialized_view\nbq show -m ds.model\nbq show --routine ds.routine (requires whitelisting)\nbq show --transfer_config projects/p/locations/l/transferConfigs/c\nbq show --transfer_run\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq show --encryption_service_account\nbq show --connection --project_id=project --location=us connection\n"
       }
     },
     "update": {
@@ -303,7 +303,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Updates a dataset, table, view or transfer configuration with this\nname.\n\nSee 'bq help load' for more information on specifying the schema.\n",
-        "EXAMPLES": "bq update --description \"Dataset description\" existing_dataset\nbq update --description \"My table\" existing_dataset.existing_table\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num' existing_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US --project_id=my-project\n--reservation_size=2G\n"
+        "EXAMPLES": "bq update --description \"Dataset description\" existing_dataset\nbq update --description \"My table\" existing_dataset.existing_table\nbq update --description \"My model\" -m existing_dataset.existing_model\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num' existing_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US --project_id=my-project\n--reservation_size=2G\nbq update --connection_credential='{\"username\":\"u\", \"password\":\"p\"}'\n--location=US --project_id=my-project existing_connection\n"
       }
     },
     "version": {

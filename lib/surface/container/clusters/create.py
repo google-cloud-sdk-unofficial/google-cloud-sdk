@@ -284,7 +284,9 @@ def ParseCreateOptionsBase(args):
       user=args.username,
       metadata=metadata,
       default_max_pods_per_node=args.default_max_pods_per_node,
-      max_pods_per_node=args.max_pods_per_node)
+      max_pods_per_node=args.max_pods_per_node,
+      enable_tpu=args.enable_tpu,
+      tpu_ipv4_cidr=args.tpu_ipv4_cidr)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -317,6 +319,7 @@ class Create(base.CreateCommand):
     flags.AddClusterVersionFlag(parser)
     flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
+    flags.AddTpuFlags(parser, hidden=False)
 
   def ParseCreateOptions(self, args):
     flags.WarnGAForFutureAutoUpgradeChange()
@@ -450,7 +453,8 @@ class CreateBeta(Create):
     flags.AddAutoprovisioningFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddResourceUsageExportFlags(parser)
-    flags.AddAuthenticatorSecurityGroupFlags(parser, hidden=True)
+    flags.AddAuthenticatorSecurityGroupFlags(parser)
+    flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddWorkloadIdentityFlags(parser)
     flags.AddEnableShieldedContainersFlags(parser)
     flags.AddClusterVersionFlag(parser)
@@ -484,12 +488,11 @@ class CreateBeta(Create):
     ops.private_cluster = args.private_cluster
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.enable_binauthz = args.enable_binauthz
-    ops.enable_tpu = args.enable_tpu
-    ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     ops.istio_config = args.istio_config
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.enable_network_egress_metering = args.enable_network_egress_metering
+    ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.security_group = args.security_group
     ops.identity_namespace = args.identity_namespace
     ops.enable_shielded_containers = args.enable_shielded_containers
@@ -553,6 +556,7 @@ class CreateAlpha(Create):
     flags.AddSecurityProfileForCreateFlags(parser)
     flags.AddInitialNodePoolNameArg(parser, hidden=False)
     flags.AddEnablePrivateIpv6AccessFlag(parser, hidden=True)
+    flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddEnableShieldedContainersFlags(parser)
 
     versioning_groups = parser.add_mutually_exclusive_group("""\
@@ -574,6 +578,7 @@ class CreateAlpha(Create):
     }
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'cluster', flag_overrides=kms_flag_overrides)
+    flags.AddSurgeUpgradeFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -597,8 +602,6 @@ class CreateAlpha(Create):
     ops.enable_private_endpoint = args.enable_private_endpoint
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.new_scopes_behavior = True
-    ops.enable_tpu = args.enable_tpu
-    ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     ops.enable_tpu_service_networking = args.enable_tpu_service_networking
     ops.istio_config = args.istio_config
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
@@ -614,6 +617,7 @@ class CreateAlpha(Create):
     ops.node_pool_name = args.node_pool_name
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
+    ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.enable_peering_route_sharing = args.enable_peering_route_sharing
     ops.enable_shielded_containers = args.enable_shielded_containers
     ops.release_channel = args.release_channel
@@ -629,4 +633,6 @@ class CreateAlpha(Create):
         if getattr(args, keyword.replace('-', '_'), None):
           raise exceptions.InvalidArgumentException('--database-encryption-key',
                                                     'not fully specified.')
+    ops.max_surge_upgrade = args.max_surge_upgrade
+
     return ops

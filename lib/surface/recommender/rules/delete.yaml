@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: |
+      Delete a Rule.
+    description: |
+      Delete a Rule.
+    examples: |
+      $ {command} abcd-1234 --project=concord-api-testing
+
+  request:
+    collection: recommender.projects.rules
+    method: delete
+
+  arguments:
+    resource:
+      help_text: The rule to delete.
+      spec: !REF googlecloudsdk.command_lib.recommender.resources:rule

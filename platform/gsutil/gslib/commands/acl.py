@@ -72,7 +72,7 @@ _SET_DESCRIPTION = """
 
   If you want to make an object or bucket publicly readable or writable, it is
   recommended to use "acl ch", to avoid accidentally removing OWNER permissions.
-  See "gsutil help acl ch" for details.
+  See the "acl ch" section for details.
 
   See "gsutil help acls" for a list of all canned ACLs.
 
@@ -99,7 +99,7 @@ _SET_DESCRIPTION = """
     gsutil -m acl set acl.txt gs://bucket/*.jpg
 
   Note that multi-threading/multi-processing is only done when the named URLs
-  refer to objects, which happens either if you name specific objects or 
+  refer to objects, which happens either if you name specific objects or
   if you enumerate objects by using an object wildcard or specifying
   the acl -r flag.
 

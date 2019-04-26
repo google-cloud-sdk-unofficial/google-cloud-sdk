@@ -53,7 +53,8 @@ class Update(base.UpdateCommand):
     resource_args.AddPolicyResourceArg(parser, verb=' to update.')
     flags.GetPolicyDescriptionArg().AddToParser(parser)
     flags.GetPolicyNetworksArg().AddToParser(parser)
-    flags.GetPolicyInbboundForwardingArg().AddToParser(parser)
+    flags.GetPolicyInboundForwardingArg().AddToParser(parser)
+    flags.GetPolicyLoggingArg().AddToParser(parser)
     flags.GetPolicyAltNameServersnArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
@@ -67,6 +68,7 @@ class Update(base.UpdateCommand):
 
     if not (args.IsSpecified('networks') or args.IsSpecified('description') or
             args.IsSpecified('enable_inbound_forwarding') or
+            args.IsSpecified('enable_logging') or
             args.IsSpecified('alternative_name_servers')):
       log.status.Print('Nothing to update.')
       return to_update
@@ -85,6 +87,9 @@ class Update(base.UpdateCommand):
 
     if args.IsSpecified('enable_inbound_forwarding'):
       to_update.enableInboundForwarding = args.enable_inbound_forwarding
+    if args.IsSpecified('enable_logging'):
+      to_update.enableLogging = args.enable_logging
+
     if args.IsSpecified('description'):
       to_update.description = args.description
 

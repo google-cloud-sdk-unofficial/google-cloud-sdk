@@ -26,6 +26,24 @@ from googlecloudsdk.command_lib.asset import flags
 class GetHistory(base.Command):
   """Get the update history of assets that overlaps a time window."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+      To get the history of asset metadata for
+      '//compute.googleapis.com/projects/test-project/zones/us-central1-f/instances/instance1'
+      between '2018-10-02T15:01:23.045Z' and '2018-12-05T13:01:21.045Z', run:
+
+        $ {command} --project='test-project' --asset-names='//compute.googleapis.com/projects/test-project/zones/us-central1-f/instances/instance1' --start-time='2018-10-02T15:01:23.045Z' --end-time='2018-12-05T13:01:21.045Z' --content-type='resource'
+
+      To get the history of asset iam policy for
+      '//cloudresourcemanager.googleapis.com/projects/10179387634'
+      between '2018-10-02T15:01:23.045Z' and '2018-12-05T13:01:21.045Z', and
+      project '10179387634' is in organization '1060499660910', run:
+
+        $ {command} --organization='1060499660910' --asset-names='//cloudresourcemanager.googleapis.com/projects/10179387634' --start-time='2018-10-02T15:01:23.045Z' --end-time='2018-12-05T13:01:21.045Z' --content-type='iam-policy'
+      """
+  }
+
   @staticmethod
   def Args(parser):
     flags.AddOrganizationArgs(parser)

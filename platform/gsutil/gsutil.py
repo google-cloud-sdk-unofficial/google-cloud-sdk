@@ -45,11 +45,9 @@ if not GSUTIL_DIR:
 # we don't assume any third party libraries are installed system-wide.
 THIRD_PARTY_DIR = os.path.join(GSUTIL_DIR, 'third_party')
 
-
 # Flag for whether or not an import wrapper is used to measure time taken for
 # individual imports.
 MEASURING_TIME_ACTIVE = False
-
 
 # Filter out "module was already imported" warnings that get printed after we
 # add our bundled version of modules to the Python path.
@@ -58,31 +56,37 @@ warnings.filterwarnings('ignore', category=UserWarning,
 warnings.filterwarnings('ignore', category=UserWarning,
                         message=r'.* oauth2client was already imported from')
 
-
 # List of third-party libraries. The first element of the tuple is the name of
 # the directory under third_party and the second element is the subdirectory
 # that needs to be added to sys.path.
 THIRD_PARTY_LIBS = [
     ('argcomplete', ''),  # For tab-completion (gcloud installs only).
-    ('mock', ''),  # mock and dependencies must be before boto.
+    ('mock', ''),
     ('funcsigs', ''),  # mock dependency
     ('google-reauth-python', ''),  # Package name: google_reauth
     ('pyu2f', ''),  # google_reauth dependency
-    ('oauth2client', ''),  # oauth2client and dependencies must be before boto.
+    ('oauth2client', ''),
     ('pyasn1', ''),  # oauth2client dependency
     ('pyasn1-modules', ''),  # oauth2client dependency
     ('rsa', ''),  # oauth2client dependency
     ('apitools', ''),
-    ('boto', ''),
     ('gcs-oauth2-boto-plugin', ''),
     ('fasteners', ''), # oauth2client and apitools dependency
     ('monotonic', ''), # fasteners dependency
     ('httplib2', 'python2'),
     ('python-gflags', ''),
     ('retry-decorator', ''),
-    ('six', ''),
+    ('six', ''), # Python 2 / 3 compatibility dependency
     ('socksipy-branch', ''),
 ]
+
+# The wrapper script adds all third_party libraries to the Python path, since
+# we don't assume any third party libraries are installed system-wide.
+#
+# Note that vendored libraries (e.g. Boto) are added to the Python path in
+# gslib/__init__.py, as they will always be present even when bypassing this
+# script and invoking gslib.__main__.py's main() method directly.
+THIRD_PARTY_DIR = os.path.join(GSUTIL_DIR, 'third_party')
 for libdir, subdir in THIRD_PARTY_LIBS:
   if not os.path.isdir(os.path.join(THIRD_PARTY_DIR, libdir)):
     OutputAndExit(
@@ -91,10 +95,6 @@ for libdir, subdir in THIRD_PARTY_LIBS:
         'Please re-install gsutil per the installation instructions.' % (
             libdir, THIRD_PARTY_DIR))
   sys.path.insert(0, os.path.join(THIRD_PARTY_DIR, libdir, subdir))
-
-# The wrapper script adds all third_party libraries to the Python path, since
-# we don't assume any third party libraries are installed system-wide.
-THIRD_PARTY_DIR = os.path.join(GSUTIL_DIR, 'third_party')
 
 CRCMOD_PATH = os.path.join(THIRD_PARTY_DIR, 'crcmod', 'python2')
 CRCMOD_OSX_PATH = os.path.join(THIRD_PARTY_DIR, 'crcmod_osx')

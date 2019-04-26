@@ -40,7 +40,8 @@ def _CommonArgs(parser, messages):
 def _Update(zones_client,
             args,
             private_visibility_config=None,
-            forwarding_config=None):
+            forwarding_config=None,
+            peering_config=None):
   """Helper function to perform the update."""
   zone_ref = args.CONCEPTS.zone.Parse()
 
@@ -55,6 +56,8 @@ def _Update(zones_client,
     kwargs['private_visibility_config'] = private_visibility_config
   if forwarding_config:
     kwargs['forwarding_config'] = forwarding_config
+  if peering_config:
+    kwargs['peering_config'] = peering_config
   return zones_client.Patch(
       zone_ref,
       dnssec_config=dnssec_config,
@@ -129,6 +132,7 @@ class UpdateBeta(base.UpdateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
     flags.GetForwardingTargetsArg().AddToParser(parser)
+    flags.GetDnsPeeringArgs().AddToParser(parser)
 
   def Run(self, args):
     zones_client = managed_zones.Client.FromApiVersion('v1beta2')
@@ -138,6 +142,14 @@ class UpdateBeta(base.UpdateCommand):
     if args.forwarding_targets:
       forwarding_config = command_util.ParseManagedZoneForwardingConfig(
           args.forwarding_targets, messages)
+
+    peering_config = None
+    if args.target_project and args.target_network:
+      peering_network = 'https://www.googleapis.com/compute/v1/projects/{}/global/networks/{}'.format(
+          args.target_project, args.target_network)
+      peering_config = messages.ManagedZonePeeringConfig()
+      peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
+          networkUrl=peering_network)
 
     visibility_config = None
     if args.networks:
@@ -163,4 +175,5 @@ class UpdateBeta(base.UpdateCommand):
         zones_client,
         args,
         private_visibility_config=visibility_config,
-        forwarding_config=forwarding_config)
+        forwarding_config=forwarding_config,
+        peering_config=peering_config)

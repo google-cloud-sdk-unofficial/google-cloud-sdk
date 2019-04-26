@@ -26,6 +26,14 @@ from googlecloudsdk.command_lib.asset import flags
 class Describe(base.DescribeCommand):
   """Describe a Cloud Asset Inventory operation."""
 
+  detailed_help = {
+      'EXAMPLES': """\
+      To describe the operation 'projects/19306908007/operations/ExportAssets/RESOURCE/78689643348272423423', run:
+
+        $ {command} projects/19306908007/operations/ExportAssets/RESOURCE/78689643348272423423
+      """
+  }
+
   @staticmethod
   def Args(parser):
     flags.AddOperationArgs(parser)

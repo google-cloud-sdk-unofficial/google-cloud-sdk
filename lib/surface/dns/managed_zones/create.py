@@ -171,6 +171,7 @@ class CreateBeta(base.CreateCommand):
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
     flags.GetForwardingTargetsArg().AddToParser(parser)
+    flags.GetDnsPeeringArgs().AddToParser(parser)
 
   def Run(self, args):
     # We explicitly want to allow --networks='' as a valid option and we need
@@ -229,6 +230,15 @@ class CreateBeta(base.CreateCommand):
 
     dnssec_config = _MakeDnssecConfig(args, messages)
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
+
+    peering_config = None
+    if args.target_project and args.target_network:
+      peering_network = 'https://www.googleapis.com/compute/v1/projects/{}/global/networks/{}'.format(
+          args.target_project, args.target_network)
+      peering_config = messages.ManagedZonePeeringConfig()
+      peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
+          networkUrl=peering_network)
+
     zone = messages.ManagedZone(
         name=zone_ref.managedZone,
         dnsName=util.AppendTrailingDot(args.dns_name),
@@ -237,7 +247,8 @@ class CreateBeta(base.CreateCommand):
         labels=labels,
         visibility=visibility,
         forwardingConfig=forward_config,
-        privateVisibilityConfig=visibility_config)
+        privateVisibilityConfig=visibility_config,
+        peeringConfig=peering_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,

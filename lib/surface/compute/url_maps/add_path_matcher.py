@@ -267,7 +267,8 @@ class AddPathMatcher(base.UpdateCommand):
               paths=sorted(paths),
               service=resources.Parse(
                   service,
-                  params=self._GetBackendServiceParamsForUrlMap(url_map),
+                  params=self._GetBackendServiceParamsForUrlMap(url_map,
+                                                                url_map_ref),
                   collection=self._GetBackendServiceCollectionForUrlMap(
                       url_map)).SelfLink()))
     for bucket, paths in sorted(six.iteritems(bucket_map)):
@@ -295,7 +296,7 @@ class AddPathMatcher(base.UpdateCommand):
     replacement.pathMatchers.append(new_path_matcher)
     return replacement
 
-  def _GetBackendServiceParamsForUrlMap(self, url_map):
+  def _GetBackendServiceParamsForUrlMap(self, url_map, url_map_ref):
     return {'project': properties.VALUES.core.project.GetOrFail}
 
   def _GetBackendServiceCollectionForUrlMap(self, url_map):
@@ -383,10 +384,10 @@ class AddPathMatcherAlpha(AddPathMatcher):
                 project=url_map_ref.project,
                 region=url_map_ref.region))
 
-  def _GetBackendServiceParamsForUrlMap(self, url_map):
+  def _GetBackendServiceParamsForUrlMap(self, url_map, url_map_ref):
     params = {'project': properties.VALUES.core.project.GetOrFail}
     if url_map.region:
-      params['region'] = url_map.region
+      params['region'] = url_map_ref.region
 
     return params
 

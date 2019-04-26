@@ -48,7 +48,7 @@ DETAILED_HELP = {
           $ dev_appserver.py ~/my_app/app.yaml
 
         For an in-depth look into using the local development server, follow
-        this guide : https://cloud.google.com/appengine/docs/standard/python/tools/using-local-server.
+        this guide : https://cloud.google.com/appengine/docs/standard/python/tools/using-local-server
 
         To deploy the code and configuration of your app to the App Engine
         server, run:
