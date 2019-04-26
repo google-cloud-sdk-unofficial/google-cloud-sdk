@@ -28,6 +28,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import constants
+from googlecloudsdk.command_lib.container import container_command_util as cmd_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
@@ -114,14 +115,7 @@ def ParseCreateNodePoolOptionsBase(args):
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
                      'property container/ new_scopes_behavior is set to true.')
-  if args.IsSpecified('enable_autorepair'):
-    enable_autorepair = args.enable_autorepair
-  else:
-    # Node pools using COS support auto repairs, enable it for them by default.
-    # Other node pools using (Ubuntu, custom images) don't support node auto
-    # repairs, attempting to enable autorepair for them will result in API call
-    # failing so don't do it.
-    enable_autorepair = ((args.image_type or '').lower() in ['', 'cos'])
+  enable_autorepair = cmd_util.GetAutoRepair(args)
   flags.WarnForNodeModification(args, enable_autorepair)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
@@ -147,7 +141,7 @@ def ParseCreateNodePoolOptionsBase(args):
       image_family=args.image_family,
       preemptible=args.preemptible,
       enable_autorepair=enable_autorepair,
-      enable_autoupgrade=args.enable_autoupgrade,
+      enable_autoupgrade=cmd_util.GetAutoUpgrade(args),
       service_account=args.service_account,
       disk_type=args.disk_type,
       metadata=metadata,
@@ -248,7 +242,7 @@ class CreateBeta(Create):
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
-    flags.WarnForAutoUpgrade(args)
+    flags.WarnForNodeVersionAutoUpgrade(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.new_scopes_behavior = True
     ops.enable_autoprovisioning = args.enable_autoprovisioning
@@ -261,7 +255,7 @@ class CreateAlpha(Create):
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
-    flags.WarnForAutoUpgrade(args)
+    flags.WarnForNodeVersionAutoUpgrade(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.new_scopes_behavior = True

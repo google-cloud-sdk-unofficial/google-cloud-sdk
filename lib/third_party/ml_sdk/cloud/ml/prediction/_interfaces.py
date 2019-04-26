@@ -91,6 +91,19 @@ class PredictionClient(object):
     """
     raise NotImplementedError()
 
+  def explain(self, inputs, **kwargs):
+    """Produces predictions for the given inputs.
+
+    Args:
+      inputs: A dict mapping input names to values.
+      **kwargs: Additional keyword arguments for prediction
+
+    Returns:
+      A dict mapping output names to output values, similar to the input
+      dict.
+    """
+    raise NotImplementedError()
+
 
 class Processor(object):
   """Interface for constructing instance processors."""

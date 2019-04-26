@@ -15,6 +15,7 @@
 import base64
 import collections
 from contextlib import contextmanager
+import json
 import logging
 import os
 import pickle
@@ -78,6 +79,15 @@ LOCAL_MODEL_PATH = "/tmp/model"
 PredictionErrorType = collections.namedtuple(
     "PredictionErrorType", ("message", "code"))
 
+# Keys related to the explainability feature.
+METADATA_KEY = "metadata"
+METADATA_FILE_NAME = "metadata.json"
+EXPLANATION_CONFIG_KEY = "explanation_config"
+ABLATION_ATTRIBUTION_KEY = "ablation_attribution"
+SHAP_ATTRIBUTION_KEY = "shap_attribution"
+SAABAS_ATTRIBUTION_KEY = "saabas_attribution"
+NUM_FEATURE_INTERACTIONS = "num_feature_interactions"
+
 
 class PredictionError(Exception):
   """Customer exception for known prediction exception."""
@@ -92,6 +102,10 @@ class PredictionError(Exception):
       message="There was a problem processing the outputs", code=3)
   INVALID_USER_CODE = PredictionErrorType(
       message="There was a problem processing the user code", code=4)
+  FAILED_TO_LOAD_METADATA = PredictionErrorType(
+      message="Failed to load metadata.json", code=5)
+  FAILED_TO_EXPLAIN_MODEL = PredictionErrorType(
+      message="Failed to run model explainer", code=6)
   # When adding new exception, please update the ERROR_MESSAGE_ list as well as
   # unittest.
 
@@ -256,6 +270,17 @@ class BaseModel(Model):
       postprocessed = self.postprocess(
           predicted_outputs, original_input=instances, stats=stats, **kwargs)
     return postprocessed
+
+  def explain(self, instances):
+    """Runs model explanation on the instances.
+
+    Args:
+      instances: list of instances that will be explained.
+
+    Returns:
+      A json format of feature attributions.
+    """
+    return self._client.explain(instances)
 
   def _validate_kwargs(self, kwargs):
     """Validates and sets defaults for extra predict keyword arguments.
@@ -530,3 +555,114 @@ def detect_framework(model_path):
     logging.warning(("Model files are not found in the model_path."
                      "Assumed to be custom code."))
     return None
+
+
+def get_field_in_version_json(field_name):
+  """Gets the value of field_name in the version being created, if it exists.
+
+  Args:
+    field_name: Name of the key used for retrieving the corresponding value from
+      version json object.
+
+  Returns:
+  The value of the given field in the version object or the user provided create
+  version request if it exists. Otherwise None is returned.
+  """
+  if not os.environ.get("create_version_request"):
+    return None
+  request = json.loads(os.environ.get("create_version_request"))
+  if not request or not isinstance(request, dict):
+    return None
+  version = request.get("version")
+  if not version or not isinstance(version, dict):
+    return None
+
+  logging.info("Found value: %s, for field: %s from create_version_request",
+               version.get(field_name), field_name)
+  return version.get(field_name)
+
+
+def get_explanation_config(framework):
+  """Get explanation config if the feature is enabled.
+
+  Args:
+    framework: The local path to the directory that contains the model file.
+
+  Raises:
+    TypeError: If the explanation config is not currently supported by the
+    framework.
+
+  Returns:
+    One of the supported explanation config type.
+  """
+  config_request = get_field_in_version_json(EXPLANATION_CONFIG_KEY)
+  if config_request is None:
+    return None
+
+  if framework == XGBOOST_FRAMEWORK_NAME:
+    # pylint: disable=g-import-not-at-top
+    from explainers.xgboost.factory import XGBoostAblationConfig
+    from explainers.xgboost.factory import XGBoostSaabasConfig
+    from explainers.xgboost.factory import XGBoostSHAPConfig
+    if SHAP_ATTRIBUTION_KEY in config_request:
+      config = XGBoostSHAPConfig()
+    elif SAABAS_ATTRIBUTION_KEY in config_request:
+      config = XGBoostSaabasConfig()
+    elif ABLATION_ATTRIBUTION_KEY in config_request:
+      ablation_attribution = config_request.get(ABLATION_ATTRIBUTION_KEY)
+      num_feature_interactions = ablation_attribution.get(
+          NUM_FEATURE_INTERACTIONS, 1)
+      config = XGBoostAblationConfig(num_feature_interactions)
+    else:
+      raise TypeError("{} is not a supported explanation config for {}.".format(
+          config_request, framework))
+  elif framework == TENSORFLOW_FRAMEWORK_NAME:
+    # pylint: disable=g-import-not-at-top
+    from  explainers.tf import factory
+    if ABLATION_ATTRIBUTION_KEY in config_request:
+      config = factory.TFAblationConfig(
+          factory.ModelType.CUSTOM, factory.InputType.FEED_DICT)
+    else:
+      raise TypeError("{} is not a supported explanation config for {}.".format(
+          config_request, framework))
+  else:
+    raise TypeError(
+        "{} is not a supported type for model explanation.".format(framework))
+  return config
+
+
+def load_metadata(model_path):
+  """Loads metadata.json file from the same GCS bucket where the model locates.
+
+  This method will only be called for TF explainers when the explainability
+  feature is enabled.
+
+  Args:
+      model_path: path to the directory containing the TF model.
+        This path can be either a local path or a GCS path.
+
+  Returns:
+    The metadata with the model at model_path loaded.
+
+  Raises:
+    PredictionError: If there is a problem while loading the file.
+  """
+  if model_path.startswith("gs://"):
+    copy_model_to_local(model_path, LOCAL_MODEL_PATH)
+    model_path = LOCAL_MODEL_PATH
+  metadata_file = os.path.join(model_path, METADATA_FILE_NAME)
+
+  if not os.path.exists(metadata_file):
+    return None
+
+  metadata = None
+  try:
+    # pylint: disable=g-import-not-at-top
+    from  explainers.tf import model_metadata
+    # pylint: enable=g-import-not-at-top
+    metadata = model_metadata.read_model_metadata_from_file(metadata_file)
+  except IOError as e:
+    error_msg = "Failed to read metadata.json: {}.".format(str(e))
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_METADATA, error_msg)
+  return metadata

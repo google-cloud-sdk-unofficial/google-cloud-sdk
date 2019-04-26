@@ -57,6 +57,7 @@ class Update(base.Command):
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
+    flags.AddServiceAccountFlag(parser)
     flags.AddAsyncFlag(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,

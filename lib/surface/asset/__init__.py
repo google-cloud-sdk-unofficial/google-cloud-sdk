@@ -27,6 +27,3 @@ from googlecloudsdk.calliope import base
 class Asset(base.Group):
   """Manage the Cloud Asset Inventory."""
 
-  def Filter(self, context, args):
-    del context, args
-    base.DisableUserProjectQuota()

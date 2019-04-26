@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
@@ -59,6 +60,7 @@ class Update(base.Command):
     flags.AddRegionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
+    flags.AddCpuFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
@@ -76,6 +78,11 @@ class Update(base.Command):
     """
     conn_context = connection_context.GetConnectionContext(args)
     service_ref = flags.GetService(args)
+
+    if conn_context.supports_one_platform:
+      flags.VerifyOnePlatformFlags(args)
+    else:
+      flags.VerifyGKEFlags(args)
 
     with serverless_operations.Connect(conn_context) as client:
       changes = flags.GetConfigurationChanges(args)
@@ -118,6 +125,8 @@ class AlphaUpdate(Update):
   @staticmethod
   def Args(parser):
     Update.Args(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
     flags.AddCloudSQLFlags(parser)
+    flags.AddServiceAccountFlag(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

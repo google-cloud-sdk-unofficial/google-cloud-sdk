@@ -67,6 +67,24 @@ class XgboostClient(PredictionClient):
   def __init__(self, booster):
     self._booster = booster
 
+  def explain(self, inputs, **unused_kwargs):
+    # pylint: disable=g-import-not-at-top
+    from explainers.xgboost.factory import XGBoostExplainerFactory
+    factory = XGBoostExplainerFactory()
+    explanation_config = prediction_utils.get_explanation_config(
+        prediction_utils.XGBOOST_FRAMEWORK_NAME)
+    if explanation_config is None:
+      return None
+
+    xgb_explainer = factory.get_explainer(self._booster, explanation_config)
+    try:
+      return xgb_explainer.explain(np.array(inputs))
+    except Exception as e:
+      logging.exception("Exception during explanation with xgboost model: ")
+      raise PredictionError(
+          PredictionError.FAILED_TO_EXPLAIN_MODEL,
+          "Exception during xgboost model explanation: " + str(e))
+
   def predict(self, inputs, stats=None, **kwargs):
     stats = stats or prediction_utils.Stats()
     stats[prediction_utils.FRAMEWORK] = prediction_utils.XGBOOST_FRAMEWORK_NAME

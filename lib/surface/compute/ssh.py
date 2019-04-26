@@ -167,7 +167,8 @@ class Ssh(base.Command):
 
     iap_tunnel_args = iap_tunnel.SshTunnelArgs.FromArgs(
         args, self.ReleaseTrack(), instance_ref,
-        ssh_utils.GetInternalInterface(instance))
+        ssh_utils.GetInternalInterface(instance),
+        ssh_utils.GetExternalInterface(instance, no_raise=True))
 
     if iap_tunnel_args:
       # IAP Tunnel only uses ip_address for the purpose of --ssh-flag

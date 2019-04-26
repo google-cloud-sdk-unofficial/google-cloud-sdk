@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import console_io
@@ -69,6 +70,7 @@ class Deploy(base.Command):
     flags.AddRegionArg(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
+    flags.AddCpuFlag(parser)
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
@@ -86,17 +88,10 @@ class Deploy(base.Command):
 
     conn_context = connection_context.GetConnectionContext(args)
 
-    if (conn_context.supports_one_platform
-        and getattr(args, 'connectivity', None)):
-      raise exceptions.ConfigurationError(
-          'The `--connectivity=[internal|external]` flag '
-          'is only supported with Cloud Run on GKE.')
-
-    if (not conn_context.supports_one_platform
-        and getattr(args, 'allow_unauthenticated', None)):
-      raise exceptions.ConfigurationError(
-          'The `--allow-unauthenticated` flag '
-          'is not supported with Cloud Run on GKE.')
+    if conn_context.supports_one_platform:
+      flags.VerifyOnePlatformFlags(args)
+    else:
+      flags.VerifyGKEFlags(args)
 
     service_ref = flags.GetService(args)
     function_entrypoint = flags.GetFunction(args.function)
@@ -146,7 +141,6 @@ class Deploy(base.Command):
         private_endpoint = False
       else:
         private_endpoint = None
-      deployment_stages = stages.ServiceStages()
       exists = operations.GetService(service_ref)
 
       if (not exists and not args.allow_unauthenticated and
@@ -166,6 +160,8 @@ class Deploy(base.Command):
       else:
         allow_unauth = False
 
+      deployment_stages = stages.ServiceStages(
+          allow_unauth or args.allow_unauthenticated)
       header = 'Deploying...' if exists else 'Deploying new service...'
       with progress_tracker.StagedProgressTracker(
           header,
@@ -204,6 +200,8 @@ class AlphaDeploy(Deploy):
   @staticmethod
   def Args(parser):
     Deploy.Args(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
     flags.AddCloudSQLFlags(parser)
+    flags.AddServiceAccountFlag(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

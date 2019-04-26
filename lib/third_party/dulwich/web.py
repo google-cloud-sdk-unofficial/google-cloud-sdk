@@ -1,21 +1,23 @@
 # web.py -- WSGI smart-http server
 # Copyright (C) 2010 Google, Inc.
-# Copyright (C) 2012 Jelmer Vernooij <jelmer@samba.org>
+# Copyright (C) 2012 Jelmer Vernooij <jelmer@jelmer.uk>
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; version 2
-# or (at your option) any later version of the License.
+# Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
+# General Public License as public by the Free Software Foundation; version 2.0
+# or (at your option) any later version. You can redistribute it and/or
+# modify it under the terms of either of these two licenses.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA  02110-1301, USA.
+# You should have received a copy of the licenses; if not, see
+# <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
+# and <http://www.apache.org/licenses/LICENSE-2.0> for a copy of the Apache
+# License, Version 2.0.
+#
 
 """HTTP server for dulwich that implements the git smart HTTP protocol."""
 
@@ -88,8 +90,8 @@ def url_prefix(mat):
 
     :param mat: A regex match object.
     :returns: The URL prefix, defined as the text before the match in the
-        original string. Normalized to start with one leading slash and end with
-        zero.
+        original string. Normalized to start with one leading slash and end
+        with zero.
     """
     return '/' + mat.string[:mat.start()].strip('/')
 
@@ -117,13 +119,10 @@ def send_file(req, f, content_type):
             if not data:
                 break
             yield data
-        f.close()
     except IOError:
-        f.close()
         yield req.error('Error reading file')
-    except:
+    finally:
         f.close()
-        raise
 
 
 def _url_to_path(url):
@@ -175,16 +174,18 @@ def get_info_refs(req, backend, mat):
     params = parse_qs(req.environ['QUERY_STRING'])
     service = params.get('service', [None])[0]
     if service and not req.dumb:
-        handler_cls = req.handlers.get(service, None)
+        handler_cls = req.handlers.get(service.encode('ascii'), None)
         if handler_cls is None:
             yield req.forbidden('Unsupported service')
             return
         req.nocache()
-        write = req.respond(HTTP_OK, 'application/x-%s-advertisement' % service)
+        write = req.respond(
+            HTTP_OK, 'application/x-%s-advertisement' % service)
         proto = ReceivableProtocol(BytesIO().read, write)
         handler = handler_cls(backend, [url_prefix(mat)], proto,
                               http_req=req, advertise_refs=True)
-        handler.proto.write_pkt_line(b'# service=' + service.encode('ascii') + b'\n')
+        handler.proto.write_pkt_line(
+            b'# service=' + service.encode('ascii') + b'\n')
         handler.proto.write_pkt_line(None)
         handler.handle()
     else:
@@ -231,7 +232,7 @@ class _LengthLimitedFile(object):
 def handle_service_request(req, backend, mat):
     service = mat.group().lstrip('/')
     logger.info('Handling service request for %s', service)
-    handler_cls = req.handlers.get(service, None)
+    handler_cls = req.handlers.get(service.encode('ascii'), None)
     if handler_cls is None:
         yield req.forbidden('Unsupported service')
         return
@@ -275,21 +276,21 @@ class HTTPGitRequest(object):
         self._cache_headers = []
         logger.info('Not found: %s', message)
         self.respond(HTTP_NOT_FOUND, 'text/plain')
-        return message
+        return message.encode('ascii')
 
     def forbidden(self, message):
         """Begin a HTTP 403 response and return the text of a message."""
         self._cache_headers = []
         logger.info('Forbidden: %s', message)
         self.respond(HTTP_FORBIDDEN, 'text/plain')
-        return message
+        return message.encode('ascii')
 
     def error(self, message):
         """Begin a HTTP 500 response and return the text of a message."""
         self._cache_headers = []
         logger.error('Error: %s', message)
         self.respond(HTTP_ERROR, 'text/plain')
-        return message
+        return message.encode('ascii')
 
     def nocache(self):
         """Set the response to never be cached by the client."""
@@ -321,9 +322,12 @@ class HTTPGitApplication(object):
       ('GET', re.compile('/objects/info/alternates$')): get_text_file,
       ('GET', re.compile('/objects/info/http-alternates$')): get_text_file,
       ('GET', re.compile('/objects/info/packs$')): get_info_packs,
-      ('GET', re.compile('/objects/([0-9a-f]{2})/([0-9a-f]{38})$')): get_loose_object,
-      ('GET', re.compile('/objects/pack/pack-([0-9a-f]{40})\\.pack$')): get_pack_file,
-      ('GET', re.compile('/objects/pack/pack-([0-9a-f]{40})\\.idx$')): get_idx_file,
+      ('GET', re.compile('/objects/([0-9a-f]{2})/([0-9a-f]{38})$')):
+      get_loose_object,
+      ('GET', re.compile('/objects/pack/pack-([0-9a-f]{40})\\.pack$')):
+      get_pack_file,
+      ('GET', re.compile('/objects/pack/pack-([0-9a-f]{40})\\.idx$')):
+      get_idx_file,
 
       ('POST', re.compile('/git-upload-pack$')): handle_service_request,
       ('POST', re.compile('/git-receive-pack$')): handle_service_request,
@@ -356,7 +360,7 @@ class HTTPGitApplication(object):
             if self.fallback_app is not None:
                 return self.fallback_app(environ, start_response)
             else:
-                return req.not_found('Sorry, that method is not supported')
+                return [req.not_found('Sorry, that method is not supported')]
 
         return handler(req, self.backend, mat)
 
@@ -371,18 +375,20 @@ class GunzipFilter(object):
 
     def __call__(self, environ, start_response):
         if environ.get('HTTP_CONTENT_ENCODING', '') == 'gzip':
-            if hasattr(environ['wsgi.input'], 'seek'):
+            try:
+                environ['wsgi.input'].tell()
                 wsgi_input = environ['wsgi.input']
-            else:
+            except (AttributeError, IOError, NotImplementedError):
                 # The gzip implementation in the standard library of Python 2.x
-                # requires the '.seek()' and '.tell()' methods to be available
-                # on the input stream.  Read the data into a temporary file to
-                # work around this limitation.
+                # requires working '.seek()' and '.tell()' methods on the input
+                # stream.  Read the data into a temporary file to work around
+                # this limitation.
                 wsgi_input = tempfile.SpooledTemporaryFile(16 * 1024 * 1024)
                 shutil.copyfileobj(environ['wsgi.input'], wsgi_input)
                 wsgi_input.seek(0)
 
-            environ['wsgi.input'] = gzip.GzipFile(filename=None, fileobj=wsgi_input, mode='r')
+            environ['wsgi.input'] = gzip.GzipFile(
+                filename=None, fileobj=wsgi_input, mode='r')
             del environ['HTTP_CONTENT_ENCODING']
             if 'CONTENT_LENGTH' in environ:
                 del environ['CONTENT_LENGTH']
@@ -415,7 +421,7 @@ def make_wsgi_chain(*args, **kwargs):
     correctly wrapped with needed middleware.
     """
     app = HTTPGitApplication(*args, **kwargs)
-    wrapped_app = GunzipFilter(LimitedInputFilter(app))
+    wrapped_app = LimitedInputFilter(GunzipFilter(app))
     return wrapped_app
 
 
@@ -423,7 +429,7 @@ class ServerHandlerLogger(ServerHandler):
     """ServerHandler that uses dulwich's logger for logging exceptions."""
 
     def log_exception(self, exc_info):
-        if sys.version < (2, 7):
+        if sys.version_info < (2, 7):
             logger.exception('Exception happened during processing of request')
         else:
             logger.exception('Exception happened during processing of request',
@@ -453,7 +459,7 @@ class WSGIRequestHandlerLogger(WSGIRequestHandler):
         """Handle a single HTTP request"""
 
         self.raw_requestline = self.rfile.readline()
-        if not self.parse_request(): # An error code has been sent, just exit
+        if not self.parse_request():  # An error code has been sent, just exit
             return
 
         handler = ServerHandlerLogger(
@@ -467,7 +473,9 @@ class WSGIServerLogger(WSGIServer):
 
     def handle_error(self, request, client_address):
         """Handle an error. """
-        logger.exception('Exception happened during processing of request from %s' % str(client_address))
+        logger.exception(
+            'Exception happened during processing of request from %s' %
+            str(client_address))
 
 
 def main(argv=sys.argv):

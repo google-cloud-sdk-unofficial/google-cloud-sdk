@@ -42,7 +42,7 @@ class Resize(base.Command):
     """
     parser.add_argument('name', help='The name of this cluster.')
     parser.add_argument(
-        '--size',
+        '--num-nodes', '--size',
         required=True,
         type=int,
         help=('Target number of nodes in the cluster.'))
@@ -83,11 +83,11 @@ class Resize(base.Command):
                  '{new_size}.').format(
                      pool=pool_name,
                      cluster_name=cluster_name,
-                     new_size=args.size),
+                     new_size=args.num_nodes),
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    op_ref = adapter.ResizeNodePool(cluster_ref, pool_name, args.size)
+    op_ref = adapter.ResizeNodePool(cluster_ref, pool_name, args.num_nodes)
 
     if not args.async:
       adapter.WaitForOperation(op_ref,

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for updating service accounts."""
 
 from __future__ import absolute_import
@@ -28,29 +27,25 @@ from googlecloudsdk.core import log
 import six.moves.http_client
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update an IAM service account."""
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('--display-name',
-                        help='The new textual name to display for the account.')
+    parser.add_argument(
+        '--display-name',
+        help='The new textual name to display for the account.')
 
-    iam_util.AddServiceAccountNameArg(
-        parser, action='to update')
+    iam_util.AddServiceAccountNameArg(parser, action='to update')
 
   @http_retry.RetryOnHttpStatus(six.moves.http_client.CONFLICT)
   def Run(self, args):
     resource_name = iam_util.EmailToAccountResourceName(args.service_account)
     client, messages = util.GetClientAndMessages()
-    current = client.projects_serviceAccounts.Get(
-        messages.IamProjectsServiceAccountsGetRequest(name=resource_name))
 
     result = client.projects_serviceAccounts.Update(
         messages.ServiceAccount(
-            name=resource_name,
-            etag=current.etag,
-            displayName=args.display_name))
+            name=resource_name, displayName=args.display_name))
     log.UpdatedResource(args.service_account, kind='serviceAccount')
     return result

@@ -1,20 +1,22 @@
 # hooks.py -- for dealing with git hooks
 # Copyright (C) 2012-2013 Jelmer Vernooij and others.
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; version 2
-# of the License or (at your option) a later version of the License.
+# Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
+# General Public License as public by the Free Software Foundation; version 2.0
+# or (at your option) any later version. You can redistribute it and/or
+# modify it under the terms of either of these two licenses.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA  02110-1301, USA.
+# You should have received a copy of the licenses; if not, see
+# <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
+# and <http://www.apache.org/licenses/LICENSE-2.0> for a copy of the Apache
+# License, Version 2.0.
+#
 
 """Access to hooks."""
 
@@ -50,7 +52,8 @@ class ShellHook(Hook):
     """
 
     def __init__(self, name, path, numparam,
-                 pre_exec_callback=None, post_exec_callback=None):
+                 pre_exec_callback=None, post_exec_callback=None,
+                 cwd=None):
         """Setup shell hook definition
 
         :param name: name of hook for error messages
@@ -64,6 +67,7 @@ class ShellHook(Hook):
             Defaults to None. Takes in a boolean for hook success and the
             modified argument list and returns the final hook return value
             if applicable
+        :param cwd: working directory to switch to when executing the hook
         """
         self.name = name
         self.filepath = path
@@ -71,6 +75,8 @@ class ShellHook(Hook):
 
         self.pre_exec_callback = pre_exec_callback
         self.post_exec_callback = post_exec_callback
+
+        self.cwd = cwd
 
         if sys.version_info[0] == 2 and sys.platform == 'win32':
             # Python 2 on windows does not support unicode file paths
@@ -89,7 +95,7 @@ class ShellHook(Hook):
             args = self.pre_exec_callback(*args)
 
         try:
-            ret = subprocess.call([self.filepath] + list(args))
+            ret = subprocess.call([self.filepath] + list(args), cwd=self.cwd)
             if ret != 0:
                 if (self.post_exec_callback is not None):
                     self.post_exec_callback(0, *args)
@@ -108,7 +114,7 @@ class PreCommitShellHook(ShellHook):
     def __init__(self, controldir):
         filepath = os.path.join(controldir, 'hooks', 'pre-commit')
 
-        ShellHook.__init__(self, 'pre-commit', filepath, 0)
+        ShellHook.__init__(self, 'pre-commit', filepath, 0, cwd=controldir)
 
 
 class PostCommitShellHook(ShellHook):
@@ -117,7 +123,7 @@ class PostCommitShellHook(ShellHook):
     def __init__(self, controldir):
         filepath = os.path.join(controldir, 'hooks', 'post-commit')
 
-        ShellHook.__init__(self, 'post-commit', filepath, 0)
+        ShellHook.__init__(self, 'post-commit', filepath, 0, cwd=controldir)
 
 
 class CommitMsgShellHook(ShellHook):
@@ -147,4 +153,4 @@ class CommitMsgShellHook(ShellHook):
             os.unlink(args[0])
 
         ShellHook.__init__(self, 'commit-msg', filepath, 1,
-                           prepare_msg, clean_msg)
+                           prepare_msg, clean_msg, controldir)

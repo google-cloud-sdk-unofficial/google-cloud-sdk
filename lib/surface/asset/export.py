@@ -36,10 +36,11 @@ class Export(base.Command):
       'DESCRIPTION':
           """\
       Export the cloud assets to Google Cloud Storage. Use gcloud asset operations
-      describe to get the latest status of the operation. Note that to use this
-      command, you must be authenticated with a service account.
+      describe to get the latest status of the operation. Note that to export a
+      project different from the project you want to bill, you can either
+      explicitly set the billing/quota_project property or authenticate with a service account.
       See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/gcloud-asset
-      for more details.
+      for examples of using a service account.
       """,
       'EXAMPLES':
           """\
@@ -61,8 +62,8 @@ class Export(base.Command):
     flags.AddOutputPathArgs(parser)
 
   def Run(self, args):
-    parent = asset_utils.GetParentName(args.organization, args.project,
-                                       args.folder)
+    parent = asset_utils.GetParentNameForExport(args.organization, args.project,
+                                                args.folder)
     client = client_util.AssetExportClient(parent)
     operation = client.Export(args)
 

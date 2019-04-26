@@ -14,6 +14,6 @@
 """Classes for dealing with I/O from ML pipelines.
 """
 
-from coders import CsvCoder
-from coders import ExampleProtoCoder
-from coders import JsonCoder
+from google.cloud.ml.io.coders import CsvCoder
+from google.cloud.ml.io.coders import ExampleProtoCoder
+from google.cloud.ml.io.coders import JsonCoder

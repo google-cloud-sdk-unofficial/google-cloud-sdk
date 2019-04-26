@@ -30,6 +30,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import constants
+from googlecloudsdk.command_lib.container import container_command_util as cmd_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
@@ -217,15 +218,8 @@ def ParseCreateOptionsBase(args):
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
                      'property container/ new_scopes_behavior is set to true.')
-  if args.IsSpecified('enable_autorepair'):
-    enable_autorepair = args.enable_autorepair
-  else:
-    # Node pools using COS support auto repairs, enable it for them by default.
-    # Other node pools using (Ubuntu, custom images) don't support node auto
-    # repairs, attempting to enable autorepair for them will result in API call
-    # failing so don't do it.
-    enable_autorepair = ((args.image_type or '').lower() in ['', 'cos'])
   flags.WarnForUnspecifiedIpAllocationPolicy(args)
+  enable_autorepair = cmd_util.GetAutoRepair(args)
   flags.WarnForNodeModification(args, enable_autorepair)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
@@ -241,7 +235,7 @@ def ParseCreateOptionsBase(args):
       disk_type=args.disk_type,
       enable_autorepair=enable_autorepair,
       enable_autoscaling=args.enable_autoscaling,
-      enable_autoupgrade=args.enable_autoupgrade,
+      enable_autoupgrade=cmd_util.GetAutoUpgrade(args),
       enable_cloud_endpoints=args.enable_cloud_endpoints,
       enable_cloud_logging=args.enable_cloud_logging,
       enable_cloud_monitoring=args.enable_cloud_monitoring,
@@ -370,6 +364,19 @@ class Create(base.CreateCommand):
                   'node pool, run `clusters create` with the flag '
                   '`--metadata disable-legacy-endpoints=true`.')
 
+    if options.enable_ip_alias:
+      log.warning(
+          'The Pod address range limits the maximum size of the cluster. '
+          'Please refer to https://cloud.google.com/kubernetes-engine/docs/how-to/flexible-pod-cidr to learn how to optimize IP address allocation.'
+      )
+    else:
+      max_node_number = util.CalculateMaxNodeNumberByPodRange(
+          options.cluster_ipv4_cidr)
+      if max_node_number > 0:
+        log.warning(
+            'Your Pod address range (`--cluster-ipv4-cidr`) can accommodate at most %d node(s). '
+            % max_node_number)
+
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(
           message=constants.KUBERNETES_ALPHA_PROMPT,
@@ -471,7 +478,7 @@ class CreateBeta(Create):
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
-    flags.WarnForAutoUpgrade(args)
+    flags.WarnForNodeVersionAutoUpgrade(args)
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.autoprovisioning_config_file = args.autoprovisioning_config_file
     ops.min_cpu = args.min_cpu
@@ -579,10 +586,11 @@ class CreateAlpha(Create):
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'cluster', flag_overrides=kms_flag_overrides)
     flags.AddSurgeUpgradeFlag(parser)
+    flags.AddMaxUnavailableUpgradeFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
-    flags.WarnForAutoUpgrade(args)
+    flags.WarnForNodeVersionAutoUpgrade(args)
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.autoprovisioning_config_file = args.autoprovisioning_config_file
     ops.min_cpu = args.min_cpu
@@ -634,5 +642,6 @@ class CreateAlpha(Create):
           raise exceptions.InvalidArgumentException('--database-encryption-key',
                                                     'not fully specified.')
     ops.max_surge_upgrade = args.max_surge_upgrade
+    ops.max_unavailable_upgrade = args.max_unavailable_upgrade
 
     return ops

@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 
@@ -37,7 +36,7 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         'BUCKET_ID', help='The id of the bucket to update.')
     parser.add_argument(
-        '--retention-period', type=arg_parsers.Duration(),
+        '--retention-days', type=int,
         help='A new retention period for the bucket.')
     parser.add_argument(
         '--display-name',
@@ -59,19 +58,19 @@ class Update(base.UpdateCommand):
     """
     bucket_data = {}
     update_mask = []
-    if args.retention_period:
-      bucket_data['retentionPeriod'] = '%ds' % args.retention_period
-      update_mask.append('retention_period')
-    if args.display_name:
+    if args.IsSpecified('retention_days'):
+      bucket_data['retentionDays'] = args.retention_days
+      update_mask.append('retention_days')
+    if args.IsSpecified('display_name'):
       bucket_data['displayName'] = args.display_name
       update_mask.append('display_name')
-    if args.description:
+    if args.IsSpecified('description'):
       bucket_data['description'] = args.description
       update_mask.append('description')
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
-          ['--retention-period', '--display-name', '--description'],
+          ['--retention-days', '--display-name', '--description'],
           'Please specify at least one property to update')
 
     return util.GetClient().projects_locations_buckets.Patch(

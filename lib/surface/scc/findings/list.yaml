@@ -14,7 +14,7 @@
 
       Only list category and resource_name of all ACTIVE findings under organization 123456 and source 5678:
 
-        $ {command} 123456 --source 5678  --filter "state=\"ACTIVE\"" --field-mask "category,resource_name"
+        $ {command} 123456 --source=5678  --filter="state=\"ACTIVE\"" --field-mask="finding.category,finding.resource_name"
 
       List all ACTIVE findings of XSS category/type, under organization 123456 and source 5678:
 
@@ -69,7 +69,7 @@
       api_field: fieldMask
       help_text: |
         Field mask to specify the finding fields listed in the response. An empty field
-        mask will list all fields. For example: --field-mask="category,resource_name" will only
+        mask will list all fields. For example: --field-mask="finding.category,finding.resource_name" will only
         output category and resource_name for the findings in addition to default attributes. Notice
         the difference between hyphens (-) used with flags v/s camel case used in field masks.
         An empty or missing field mask will list all fields.

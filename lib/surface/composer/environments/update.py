@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.composer import flags
 from googlecloudsdk.command_lib.composer import image_versions_util as image_versions_command_util
 from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
-from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -42,9 +41,7 @@ class Update(base.Command):
     flags.AddPypiUpdateFlagsToGroup(Update.update_type_group)
     flags.AddEnvVariableUpdateFlagsToGroup(Update.update_type_group)
     flags.AddAirflowConfigUpdateFlagsToGroup(Update.update_type_group)
-
-    labels_update_group = Update.update_type_group.add_argument_group()
-    labels_util.AddUpdateLabelsFlags(labels_update_group)
+    flags.AddLabelsUpdateFlagsToGroup(Update.update_type_group)
 
   def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
 
@@ -94,8 +91,7 @@ class UpdateBeta(Update):
 
     # Environment upgrade arguments
     UpdateBeta.support_environment_upgrades = True
-    flags.AddAirflowVersionUpdateFlagsToGroup(Update.update_type_group)
-    flags.AddImageVersionUpdateFlagsToGroup(Update.update_type_group)
+    flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()

@@ -23,7 +23,6 @@ import datetime
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.images import flags
 
 
@@ -76,6 +75,27 @@ class DeprecateImages(base.SilentCommand):
         type=lambda x: x.upper(),
         required=True,
         help='The deprecation state to set on the image.')
+
+    deprecate_group = parser.add_mutually_exclusive_group()
+
+    deprecate_group.add_argument(
+        '--deprecate-on',
+        help="""\
+        Specifies time (in the same format as *--delete-on*) when this image
+        will be marked as DEPRECATED. State will not be changed - it has only
+        informational purpose.
+        This flag is mutually exclusive with *--deprecate-in*.
+        """)
+
+    deprecate_group.add_argument(
+        '--deprecate-in',
+        type=arg_parsers.Duration(),
+        help="""\
+        Specifies time (in the same format as *--delete-in*) until the image
+        will be marked DEPRECATED. State will not be changed - it is only for
+        informational purposes.
+        This flag is mutually exclusive with *--deprecate-on*.
+       """)
 
     delete_group = parser.add_mutually_exclusive_group()
 
@@ -140,24 +160,15 @@ class DeprecateImages(base.SilentCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    if (any([args.delete_on, args.delete_in, args.obsolete_on, args.obsolete_in,
-             args.replacement]) and args.state == 'ACTIVE'):
-      raise calliope_exceptions.ToolException(
-          'If the state is set to [ACTIVE] then none of [--delete-on], '
-          '[--delete-in], [--obsolete-on], [--obsolete-in], or [--replacement] '
-          'may be provided.')
-
     # Determine the date and time to deprecate for each flag set.
     current_time = datetime.datetime.now()
     delete_time = _ResolveTime(args.delete_on, args.delete_in, current_time)
     obsolete_time = _ResolveTime(
         args.obsolete_on, args.obsolete_in, current_time)
+    deprecate_time = _ResolveTime(
+        args.deprecate_on, args.deprecate_in, current_time)
 
-    # ACTIVE is not actually an option in the state enum.
-    if args.state == 'ACTIVE':
-      state = None
-    else:
-      state = client.messages.DeprecationStatus.StateValueValuesEnum(args.state)
+    state = client.messages.DeprecationStatus.StateValueValuesEnum(args.state)
 
     replacement_ref = flags.REPLACEMENT_DISK_IMAGE_ARG.ResolveAsResource(
         args, holder.resources)
@@ -174,6 +185,7 @@ class DeprecateImages(base.SilentCommand):
             state=state,
             deleted=delete_time,
             obsolete=obsolete_time,
+            deprecated=deprecate_time,
             replacement=replacement_uri),
         image=image_ref.Name(),
         project=image_ref.project)
@@ -189,7 +201,8 @@ DeprecateImages.detailed_help = {
 
           $ {command} IMAGE --state DEPRECATED --obsolete-in 1d --delete-in 2d
 
-        To un-deprecate an image called 'IMAGE', use:
+        To un-deprecate an image called 'IMAGE' and clear times for deprecated,
+        obsoleted, and deleted, use:
 
           $ {command} IMAGE --state ACTIVE
         """,

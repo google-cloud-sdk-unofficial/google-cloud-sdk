@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Lookup a Cloud Data Catalog entry by its target name.
+    description: Lookup a Cloud Data Catalog entry by its target name.
+    examples: |-
+      To lookup the entry for a Cloud Pub/Sub topic by its Google Cloud Platform resource name, run:
+
+        $ {command} //pubsub.googleapis.com/projects/project1/topics/topic1
+
+      To lookup the entry for a Cloud Pub/Sub topic by its SQL name, run:
+
+        $ {command} pubsub.project1.topic1
+
+  request:
+    collection: datacatalog.entries
+    method: lookup
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.util:ParseResourceIntoLookupRequest
+
+  arguments:
+    params:
+    - arg_name: resource
+      is_positional: true
+      help_text: |-
+        The name of the target resource to lookup. This can be either the Google Cloud Platform
+        resource name or the SQL name of a Google Cloud Platform resource.

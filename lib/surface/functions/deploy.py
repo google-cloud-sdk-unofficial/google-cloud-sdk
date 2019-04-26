@@ -117,11 +117,11 @@ def _Run(args,
     if args.connected_vpc:
       function.network = args.connected_vpc
       updated_fields.append('network')
-    if args.vpc_connector:
+    if args.IsSpecified('vpc_connector'):
       function.vpcConnector = args.vpc_connector
       updated_fields.append('vpcConnector')
   if enable_vpc_connector:
-    if args.vpc_connector:
+    if args.IsSpecified('vpc_connector'):
       function.vpcConnector = args.vpc_connector
       updated_fields.append('vpcConnector')
 
