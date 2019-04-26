@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -44,7 +45,6 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddRegionArgWithDefault(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
@@ -52,21 +52,28 @@ class List(base.ListCommand):
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser([
+        resource_args.CLOUD_RUN_LOCATION_PRESENTATION,
         resource_args.CLUSTER_PRESENTATION,
         namespace_presentation]).AddToParser(parser)
-    parser.display_info.AddFormat(
-        """table(
+    parser.display_info.AddFormat("""table(
         {ready_column},
         firstof(id,metadata.name):label=SERVICE,
         region:label=REGION,
         latest_created_revision:label="LATEST REVISION",
         serving_revisions.list():label="SERVING REVISION",
-        last_modifier:label="LAST DEPLOYED BY")""".format(
+        last_modifier:label="LAST DEPLOYED BY",
+        last_transition_time:label="LAST DEPLOYED AT")""".format(
             ready_column=pretty_print.READY_COLUMN))
 
   def Run(self, args):
     """List available services."""
-    conn_context = connection_context.GetConnectionContext(args)
-    namespace_ref = args.CONCEPTS.namespace.Parse()
-    with serverless_operations.Connect(conn_context) as client:
-      return client.ListServices(namespace_ref)
+    if args.uri:
+      raise flags.ArgumentError('--uri flag is not supported for this resource')
+    if not flags.IsGKE(args) and not getattr(args, 'region', None):
+      locations_ref = args.CONCEPTS.region.Parse()
+      return global_methods.ListServices(locations_ref.RelativeName())
+    else:
+      conn_context = connection_context.GetConnectionContext(args)
+      namespace_ref = args.CONCEPTS.namespace.Parse()
+      with serverless_operations.Connect(conn_context) as client:
+        return client.ListServices(namespace_ref)

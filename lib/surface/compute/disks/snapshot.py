@@ -89,18 +89,19 @@ def _CommonArgs(parser):
             'to prepare for the snapshot process. Currently only supported '
             'on Windows instances using the Volume Shadow Copy Service '
             '(VSS).'))
+  flags.AddStorageLocationFlag(parser, 'snapshot')
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 
   base.ASYNC_FLAG.AddToParser(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SnapshotDisks(base.SilentCommand):
   """Create snapshots of Google Compute Engine persistent disks."""
 
   @staticmethod
   def Args(parser):
     SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(plural=True)
+    labels_util.AddCreateLabelsFlags(parser)
     _CommonArgs(parser)
 
   def Run(self, args):
@@ -201,17 +202,5 @@ class SnapshotDisks(base.SilentCommand):
         max_wait_ms=None
     )
 
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SnapshotDisksBeta(SnapshotDisks):
-  """Create snapshots of Google Compute Engine persistent disks."""
-
-  @staticmethod
-  def Args(parser):
-    SnapshotDisks.disks_arg = disks_flags.MakeDiskArg(
-        plural=True)
-    labels_util.AddCreateLabelsFlags(parser)
-    flags.AddStorageLocationFlag(parser, 'snapshot')
-    _CommonArgs(parser)
 
 SnapshotDisks.detailed_help = DETAILED_HELP

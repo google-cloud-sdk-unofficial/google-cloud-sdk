@@ -59,7 +59,8 @@ class Create(base.CreateCommand):
     attachment_flags.AddAdminEnabled(parser, default_behavior=True)
     attachment_flags.AddVlan(parser)
     attachment_flags.AddCandidateSubnets(parser)
-    attachment_flags.AddBandwidth(parser, required=False)
+    attachment_flags.AddBandwidth(
+        parser, required=False, track=cls._release_track)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

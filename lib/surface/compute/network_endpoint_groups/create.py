@@ -31,24 +31,34 @@ def _Run(args, holder):
   client = holder.client
   messages = holder.client.messages
   resources = holder.resources
-  neg_client = network_endpoint_groups.NetworkEndpointGroupsClient(client,
-                                                                   messages,
-                                                                   resources)
+  neg_client = network_endpoint_groups.NetworkEndpointGroupsClient(
+      client, messages, resources)
   neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
-      args, holder.resources,
+      args,
+      holder.resources,
       scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
   result = neg_client.Create(
-      neg_ref, args.network_endpoint_type,
-      default_port=args.default_port, network=args.network,
+      neg_ref,
+      args.network_endpoint_type,
+      default_port=args.default_port,
+      network=args.network,
       subnet=args.subnet)
   log.CreatedResource(neg_ref.Name(), 'network endpoint group')
   return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Creates a Google Compute Engine network endpoint group."""
+  r"""Creates a Google Compute Engine network endpoint group.
+
+  ## EXAMPLES
+
+  To create a network endpoint group:
+
+    $ {command} my-neg --zone=us-central1-a --network=my-network \
+    --subnet=my-subnetwork
+  """
 
   @staticmethod
   def Args(parser, support_neg_type=False):

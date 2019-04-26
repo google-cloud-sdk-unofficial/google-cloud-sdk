@@ -31,7 +31,8 @@ class UpdateContainer(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    instances_flags.AddUpdateContainerArgs(parser)
+    instances_flags.AddUpdateContainerArgs(parser,
+                                           container_mount_disk_enabled=True)
 
   def Run(self, args):
     """Issues requests necessary to update Container."""
@@ -46,8 +47,13 @@ class UpdateContainer(base.UpdateCommand):
     instance = client.apitools_client.instances.Get(
         client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
+    container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
+        holder, args.container_mount_disk, instance.disks, [], for_update=True,
+        client=client.apitools_client)
+
     containers_utils.UpdateInstance(holder, client, instance_ref, instance,
-                                    args)
+                                    args, container_mount_disk_enabled=True,
+                                    container_mount_disk=container_mount_disk)
 
 
 UpdateContainer.detailed_help = {

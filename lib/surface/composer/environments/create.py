@@ -264,11 +264,37 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     Create.Args(parser)
-    flags.AddPrivateEnvironmentFlags(parser)
+    flags.AddPrivateIpAndIpAliasEnvironmentFlags(parser)
 
   def Run(self, args):
+    self.ParseIpAliasConfigOptions(args)
     self.ParsePrivateEnvironmentConfigOptions(args)
     return super(CreateBeta, self).Run(args)
+
+  def ParseIpAliasConfigOptions(self, args):
+    """Parses the options for VPC-native configuration."""
+    if args.enable_private_environment and not args.enable_ip_alias:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-ip-alias', opt='enable-private-environment'))
+    if args.cluster_ipv4_cidr and not args.enable_ip_alias:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-ip-alias', opt='cluster-ipv4-cidr'))
+    if args.cluster_secondary_range_name and not args.enable_ip_alias:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-ip-alias',
+              opt='cluster-secondary-range-name'))
+    if args.services_ipv4_cidr and not args.enable_ip_alias:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-ip-alias', opt='services-ipv4-cidr'))
+    if args.services_secondary_range_name and not args.enable_ip_alias:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-ip-alias',
+              opt='services-secondary-range-name'))
 
   def ParsePrivateEnvironmentConfigOptions(self, args):
     """Parses the options for Private Environment configuration."""
@@ -302,6 +328,11 @@ class CreateBeta(Create):
         disk_size_gb=args.disk_size >> 30,
         python_version=args.python_version,
         image_version=self.image_version,
+        use_ip_aliases=args.enable_ip_alias,
+        cluster_secondary_range_name=args.cluster_secondary_range_name,
+        services_secondary_range_name=args.services_secondary_range_name,
+        cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
+        services_ipv4_cidr_block=args.services_ipv4_cidr,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         master_ipv4_cidr=args.master_ipv4_cidr,
@@ -353,6 +384,11 @@ class CreateAlpha(CreateBeta):
         python_version=args.python_version,
         image_version=self.image_version,
         airflow_executor_type=args.airflow_executor_type,
+        use_ip_aliases=args.enable_ip_alias,
+        cluster_secondary_range_name=args.cluster_secondary_range_name,
+        services_secondary_range_name=args.services_secondary_range_name,
+        cluster_ipv4_cidr_block=args.cluster_ipv4_cidr,
+        services_ipv4_cidr_block=args.services_ipv4_cidr,
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         master_ipv4_cidr=args.master_ipv4_cidr,

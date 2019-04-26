@@ -113,6 +113,7 @@ def AddBaseArgs(parser):
       action='store_true',
       default=None,
       help='Specified if users connecting over IP must use SSL.')
+  flags.AddRootPassword(parser)
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
   parser.add_argument(

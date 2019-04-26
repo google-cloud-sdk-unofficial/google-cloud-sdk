@@ -61,6 +61,8 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """List available domain mappings."""
+    if args.uri:
+      raise flags.ArgumentError('--uri flag is not supported for this resource')
     conn_context = connection_context.GetConnectionContext(args)
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:

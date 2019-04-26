@@ -14,7 +14,7 @@ help_text:
     will add an IAM policy binding for the role of 'roles/editor' to the given
     service account:
 
-      $ {command} test-proj1@example.domain.com --member='serviceAccount:test-proj1@example.domain.com' --role='roles/editor'
+      $ {command} my-topic --member='serviceAccount:test-proj1@example.domain.com' --role='roles/editor'
 
     The following command will add an IAM policy binding for the role of
     'roles/editor' for all authenticated users on a topic with identifier

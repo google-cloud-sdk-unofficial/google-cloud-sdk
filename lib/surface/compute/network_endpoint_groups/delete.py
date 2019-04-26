@@ -27,7 +27,14 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes a Google Compute Engine network endpoint group."""
+  r"""Deletes a Google Compute Engine network endpoint group.
+
+  ## EXAMPLES
+
+  To delete a network endpoint group:
+
+    $ {command} my-neg --zone=us-central1-a
+  """
 
   @staticmethod
   def Args(parser):

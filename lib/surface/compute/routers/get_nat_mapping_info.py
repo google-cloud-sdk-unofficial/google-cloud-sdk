@@ -26,15 +26,18 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags as routers_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class GetNatMappingInfo(base.ListCommand):
   """Display NAT Mapping information in a router."""
 
   ROUTER_ARG = None
+  with_nat_name_filter = False
 
   @classmethod
   def Args(cls, parser):
     cls.ROUTER_ARG = routers_flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='get NAT mapping info')
+    routers_flags.AddGetNatMappingInfoArgs(parser, cls.with_nat_name_filter)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
@@ -46,8 +49,11 @@ class GetNatMappingInfo(base.ListCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    request = client.messages.ComputeRoutersGetNatMappingInfoRequest(
-        **router_ref.AsDict())
+    params = router_ref.AsDict()
+    if self.with_nat_name_filter and args.nat_name:
+      params['natName'] = args.nat_name
+
+    request = client.messages.ComputeRoutersGetNatMappingInfoRequest(**params)
 
     return list_pager.YieldFromList(
         client.apitools_client.routers,
@@ -60,6 +66,13 @@ class GetNatMappingInfo(base.ListCommand):
         next_token_attribute='nextPageToken',
         batch_size_attribute='maxResults',
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetNatMappingInfoAlpha(GetNatMappingInfo):
+  """Display NAT Mapping information in a router."""
+
+  with_nat_name_filter = True
 
 
 GetNatMappingInfo.detailed_help = {

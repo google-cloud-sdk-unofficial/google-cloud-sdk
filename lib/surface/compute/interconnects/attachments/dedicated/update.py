@@ -55,7 +55,8 @@ class Update(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
-    attachment_flags.AddBandwidth(parser, required=False)
+    attachment_flags.AddBandwidth(
+        parser, required=False, track=cls._release_track)
 
   def Run(self, args):
     interconnect_attachment = self._get_attachment(args)

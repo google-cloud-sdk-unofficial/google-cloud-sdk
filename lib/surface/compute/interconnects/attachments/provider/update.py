@@ -44,7 +44,8 @@ class Update(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG = (
         attachment_flags.InterconnectAttachmentArgument())
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
-    attachment_flags.AddBandwidth(parser, required=False)
+    attachment_flags.AddBandwidth(
+        parser, required=False, track=cls._release_track)
     attachment_flags.AddPartnerMetadata(parser, required=False)
     attachment_flags.AddDescription(parser)
     labels_util.AddUpdateLabelsFlags(parser)
@@ -95,7 +96,8 @@ class UpdateGa(Update):
     cls.INTERCONNECT_ATTACHMENT_ARG = (
         attachment_flags.InterconnectAttachmentArgument())
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
-    attachment_flags.AddBandwidth(parser, required=False)
+    attachment_flags.AddBandwidth(
+        parser, required=False, track=cls._release_track)
     attachment_flags.AddPartnerMetadata(parser, required=False)
     attachment_flags.AddDescription(parser)
 

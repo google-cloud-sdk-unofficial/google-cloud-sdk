@@ -239,6 +239,7 @@ class CreateBeta(Create):
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
+    flags.AddSandboxFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -246,6 +247,7 @@ class CreateBeta(Create):
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.new_scopes_behavior = True
     ops.enable_autoprovisioning = args.enable_autoprovisioning
+    ops.sandbox = args.sandbox
     return ops
 
 

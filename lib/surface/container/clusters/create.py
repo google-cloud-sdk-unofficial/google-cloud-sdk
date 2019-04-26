@@ -463,7 +463,7 @@ class CreateBeta(Create):
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddWorkloadIdentityFlags(parser)
-    flags.AddEnableShieldedContainersFlags(parser)
+    flags.AddEnableShieldedNodesFlags(parser)
     flags.AddClusterVersionFlag(parser)
     flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
@@ -502,7 +502,7 @@ class CreateBeta(Create):
     ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.security_group = args.security_group
     ops.identity_namespace = args.identity_namespace
-    ops.enable_shielded_containers = args.enable_shielded_containers
+    ops.enable_shielded_nodes = args.enable_shielded_nodes
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
@@ -564,7 +564,7 @@ class CreateAlpha(Create):
     flags.AddInitialNodePoolNameArg(parser, hidden=False)
     flags.AddEnablePrivateIpv6AccessFlag(parser, hidden=True)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
-    flags.AddEnableShieldedContainersFlags(parser)
+    flags.AddEnableShieldedNodesFlags(parser)
 
     versioning_groups = parser.add_mutually_exclusive_group("""\
 `--release-channel` cannot be specified if `--cluster-version` or
@@ -627,7 +627,7 @@ class CreateAlpha(Create):
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
     ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.enable_peering_route_sharing = args.enable_peering_route_sharing
-    ops.enable_shielded_containers = args.enable_shielded_containers
+    ops.enable_shielded_nodes = args.enable_shielded_nodes
     ops.release_channel = args.release_channel
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:

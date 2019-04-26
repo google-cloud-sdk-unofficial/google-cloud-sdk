@@ -27,7 +27,14 @@ from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 
 
 class ListEndpoints(base.ListCommand):
-  """List network endpoints in a network endpoint group."""
+  r"""List network endpoints in a network endpoint group.
+
+  ## EXAMPLES
+
+  To list network endpoints of a network endpoint group:
+
+    $ {command} my-neg --zone=us-central1-a
+  """
 
   @staticmethod
   def Args(parser):

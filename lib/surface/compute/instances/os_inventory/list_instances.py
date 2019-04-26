@@ -73,7 +73,7 @@ class ListInstances(base.ListCommand):
   than or equal to 235.0.0-0 available through apt, run:
 
         $ {command} --inventory-filter="\
-        PackageUpdates.apt[].google-cloud-sdk.Version>=235.0.0-0"
+        PackageUpdates.apt[].['google-cloud-sdk'].Version>=235.0.0-0"
 
   To list all instances missing the Stackdriver monitoring package
   stackdriver-agent, run:
@@ -237,8 +237,9 @@ class ListInstances(base.ListCommand):
             'package version must be specified together with a package name. '
             'e.g. --package-name google-cloud-sdk --package-version 235.0.0-0')
       else:
+        package_name = '[\'{}\']'.format(args.package_name)
         _AppendQuery(' OR '.join([
-            '({})'.format(prefix + args.package_name + '.Version=' +
+            '({})'.format(prefix + package_name + '.Version=' +
                           args.package_version)
             for prefix in installed_packages_query_prefixes
         ]))

@@ -28,7 +28,8 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class RemoveBackend(base.UpdateCommand):
   """Remove a backend from a backend service.
 
@@ -41,13 +42,11 @@ class RemoveBackend(base.UpdateCommand):
   backend-services edit'.
   """
   _BACKEND_SERVICE_ARG = flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG
-  _INSTANCE_GROUP_ARG = flags.MULTISCOPE_INSTANCE_GROUP_ARG
 
   @classmethod
   def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
-        parser, operation_type='remove from the backend service')
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'remove from')
 
   def GetGetRequest(self, client, backend_service_ref):
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -80,10 +79,16 @@ class RemoveBackend(base.UpdateCommand):
                 project=backend_service_ref.project))
 
   def _GetGroupRef(self, args, resources, client):
-    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-        args,
-        resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    if args.instance_group:
+      return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
+    if args.network_endpoint_group:
+      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   def Modify(self, client, resources, backend_service_ref, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
@@ -133,34 +138,3 @@ class RemoveBackend(base.UpdateCommand):
 
     return client.MakeRequests(
         [self.GetSetRequest(client, backend_service_ref, new_object)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class RemoveBackendBeta(RemoveBackend):
-  """Remove a backend from a backend service.
-
-  *{command}* is used to remove a backend from a backend
-  service.
-
-  Before removing a backend, it is a good idea to "drain" the
-  backend first. A backend can be drained by setting its
-  capacity scaler to zero through 'gcloud compute
-  backend-services edit'.
-  """
-
-  def _GetGroupRef(self, args, resources, client):
-    if args.instance_group:
-      return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-          args,
-          resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client))
-    if args.network_endpoint_group:
-      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
-          args,
-          resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-  @classmethod
-  def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'remove from')

@@ -4,7 +4,7 @@
       Create a Cloud Healthcare API annotation store.
   request:
     collection: healthcare.projects.locations.datasets.annotationStores
-    api_version: v1alpha
+    api_version: v1alpha2
 
   arguments:
     resource:

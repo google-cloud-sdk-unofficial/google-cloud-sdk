@@ -28,8 +28,9 @@ from googlecloudsdk.core.console import progress_tracker
 class Repair(base.Command):
   """Restores required App Engine features to the current application.
 
-  For example, this command will restore the App Engine service account if it
-  has been deleted.
+  For example, this command will restore the App Engine staging bucket if it
+  has been deleted. It will no longer restore the service account, instead, the
+  IAM service account undelete API must be used for the purpose.
   """
 
   detailed_help = {

@@ -53,26 +53,6 @@ def _IsLocalFile(file_name):
               file_name.startswith('https://'))
 
 
-def _UploadToGcs(is_async, local_path, daisy_bucket, image_uuid,
-                 storage_client):
-  """Uploads a local file to GCS. Returns the gs:// URI to that file."""
-  file_name = os.path.basename(local_path).replace(' ', '-')
-  dest_path = 'gs://{0}/tmpimage/{1}-{2}'.format(
-      daisy_bucket, image_uuid, file_name)
-  if is_async:
-    log.status.Print('Async: Once upload is complete, your image will be '
-                     'imported from Cloud Storage asynchronously.')
-  with progress_tracker.ProgressTracker(
-      'Copying [{0}] to [{1}]'.format(local_path, dest_path)):
-    # TODO(b/109938541): Remove gsutil implementation after the new
-    # implementation seems stable.
-    use_gsutil = properties.VALUES.storage.use_gsutil.GetBool()
-    if use_gsutil:
-      return _UploadToGcsGsutil(local_path, dest_path)
-    else:
-      return _UploadToGcsStorageApi(local_path, dest_path, storage_client)
-
-
 def _UploadToGcsGsutil(local_path, dest_path):
   """Uploads a local file to GCS using gsutil."""
   retcode = storage_util.RunGsutilCommand('cp', [local_path, dest_path])
@@ -82,28 +62,6 @@ def _UploadToGcsGsutil(local_path, dest_path):
     raise exceptions.FailedSubCommand(
         ['gsutil', 'cp', local_path, dest_path], retcode)
   return dest_path
-
-
-def _UploadToGcsStorageApi(local_path, dest_path, storage_client):
-  """Uploads a local file to GCS using the gcloud storage api client."""
-  dest_object = storage_util.ObjectReference.FromUrl(dest_path)
-  storage_client.CopyFileToGCS(local_path, dest_object)
-  return dest_path
-
-
-def _CopyToScratchBucket(source_uri, image_uuid, storage_client, daisy_bucket):
-  """Copy image from source_uri to daisy scratch bucket."""
-  image_file = os.path.basename(source_uri)
-  dest_uri = 'gs://{0}/tmpimage/{1}-{2}'.format(
-      daisy_bucket, image_uuid, image_file)
-  src_object = resources.REGISTRY.Parse(source_uri,
-                                        collection='storage.objects')
-  dest_object = resources.REGISTRY.Parse(dest_uri,
-                                         collection='storage.objects')
-  with progress_tracker.ProgressTracker(
-      'Copying [{0}] to [{1}]'.format(source_uri, dest_uri)):
-    storage_client.Rewrite(src_object, dest_object)
-  return dest_uri
 
 
 def _GetTranslateWorkflow(args):
@@ -153,20 +111,15 @@ def _CheckForExistingImage(image_name, compute_holder):
     raise exceptions.InvalidArgumentException('IMAGE_NAME', message)
 
 
-def _CreateImportStager(storage_client, args):
-  if args.source_image:
-    return ImportFromImageStager(storage_client, args)
-  elif _IsLocalFile(args.source_file):
-    return ImportFromLocalFileStager(storage_client, args)
-  else:
-    return ImportFromGSFileStager(storage_client, args)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
   """Import an image into Google Compute Engine."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_GA
+
+  def __init__(self, *args, **kwargs):
+    self.storage_client = storage_api.StorageClient()
+    super(Import, self).__init__(*args, **kwargs)
 
   @classmethod
   def Args(cls, parser):
@@ -211,94 +164,12 @@ class Import(base.CreateCommand):
     )
 
     daisy_utils.AddCommonDaisyArgs(parser)
-    parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
-  def Run(self, args):
-    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    # Fail early if the requested image name is invalid or already exists.
-    _CheckImageName(args.image_name)
-    _CheckForExistingImage(args.image_name, compute_holder)
-
-    storage_client = storage_api.StorageClient()
-    daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(
-        storage_client=storage_client)
-    image_uuid = uuid.uuid4()
-
-    daisy_vars = ['image_name={}'.format(args.image_name)]
-    if args.source_image:
-      # If we're starting from an image, then we've already imported it.
-      workflow = _IMPORT_FROM_IMAGE_WORKFLOW
-      daisy_vars.append(
-          'translate_workflow={}'.format(_GetTranslateWorkflow(args)))
-      ref = resources.REGISTRY.Parse(
-          args.source_image,
-          collection='compute.images',
-          params={'project': properties.VALUES.core.project.GetOrFail})
-      # source_name should be of the form 'global/images/image-name'.
-      source_name = ref.RelativeName()[len(ref.Parent().RelativeName() + '/'):]
-      daisy_vars.append('source_image={}'.format(source_name))
-    else:
-      # If the file is an OVA file, print a warning.
-      if args.source_file.endswith('.ova'):
-        log.warning(
-            'The specified input file may contain more than one virtual disk. '
-            'Only the first vmdk disk will be imported.')
-      elif (args.source_file.endswith('.tar.gz')
-            or args.source_file.endswith('.tgz')):
-        raise exceptions.BadFileException(
-            '`gcloud compute images import` does not support compressed '
-            'archives. Please extract your image and try again.\n If you got '
-            'this file by exporting an image from Compute Engine (e.g. by '
-            'using `gcloud compute images export`) then you can instead use '
-            '`gcloud compute images create` to create your image from your '
-            '.tar.gz file.')
-
-      # Get the image into the scratch bucket, wherever it is now.
-      if _IsLocalFile(args.source_file):
-        gcs_uri = _UploadToGcs(args.async, args.source_file,
-                               daisy_bucket, image_uuid, storage_client)
-      else:
-        source_file = daisy_utils.MakeGcsUri(args.source_file)
-        gcs_uri = _CopyToScratchBucket(source_file, image_uuid,
-                                       storage_client, daisy_bucket)
-
-      # Import and (maybe) translate from the scratch bucket.
-      daisy_vars.append('source_disk_file={}'.format(gcs_uri))
-      if args.data_disk:
-        workflow = _IMPORT_WORKFLOW
-      else:
-        workflow = _IMPORT_AND_TRANSLATE_WORKFLOW
-        daisy_vars.append(
-            'translate_workflow={}'.format(_GetTranslateWorkflow(args)))
-
-    self._ProcessAdditionalArgs(args, daisy_vars)
-
-    # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
-    # warning message with a ProgressTracker spinner.
-    log.warning('Importing image. This may take up to 2 hours.')
-    return daisy_utils.RunDaisyBuild(args, workflow, ','.join(daisy_vars),
-                                     daisy_bucket=daisy_bucket,
-                                     user_zone=args.zone,
-                                     output_filter=_OUTPUT_FILTER)
-
-  def _ProcessAdditionalArgs(self, args, daisy_vars):
-    """Hook for subclasses to implement additional argument processing."""
-    pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ImportBeta(Import):
-  """Import an image into Google Compute Engine for Alpha and Beta releases."""
-
-  _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
-
-  @classmethod
-  def Args(cls, parser):
-    super(ImportBeta, cls).Args(parser)
     parser.add_argument(
-        '--no-guest-environment',
+        '--guest-environment',
         action='store_true',
-        help='Google Guest Environment will not be installed on the image.')
+        default=True,
+        help='Google Guest Environment will be installed on the image.')
 
     parser.add_argument(
         '--network',
@@ -317,17 +188,16 @@ class ImportBeta(Import):
               'Region or zone should be specified if this field is specified.'),
     )
 
+    parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
+
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     # Fail early if the requested image name is invalid or already exists.
     _CheckImageName(args.image_name)
     _CheckForExistingImage(args.image_name, compute_holder)
 
-    storage_client = storage_api.StorageClient()
-    import_stager = _CreateImportStager(storage_client, args)
+    import_stager = self._CreateImportStager(args)
     daisy_vars, workflow = import_stager.Stage()
-
-    self._ProcessAdditionalArgs(args, daisy_vars)
 
     # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
     # warning message with a ProgressTracker spinner.
@@ -337,19 +207,15 @@ class ImportBeta(Import):
         args, workflow, ','.join(daisy_vars), tags=tags,
         daisy_bucket=import_stager.GetDaisyBucket(),
         user_zone=properties.VALUES.compute.zone.Get(),
-        output_filter=_OUTPUT_FILTER,
-        service_account_roles=self._GetServiceAccountRoles())
+        output_filter=_OUTPUT_FILTER)
 
-  def _GetServiceAccountRoles(self):
-    return [
-        'roles/iam.serviceAccountUser',
-        'roles/iam.serviceAccountTokenCreator']
-
-  def _ProcessAdditionalArgs(self, args, daisy_vars):
-    if args.no_guest_environment:
-      daisy_vars.append('install_gce_packages={}'.format('false'))
-    daisy_vars.extend(daisy_utils.ExtractNetworkAndSubnetDaisyVariables(
-        args, daisy_utils.ImageOperation.IMPORT))
+  def _CreateImportStager(self, args):
+    if args.source_image:
+      return ImportFromImageStager(self.storage_client, args)
+    elif _IsLocalFile(args.source_file):
+      return ImportFromLocalFileStager(self.storage_client, args)
+    else:
+      return ImportFromGSFileStager(self.storage_client, args)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -370,8 +236,7 @@ class BaseImportStager(object):
   def _CreateDaisyBucket(self):
     # Create Daisy bucket in default GS location (US Multi-regional)
     # This is default behaviour for all types of import except from a file in GS
-    self.daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(
-        storage_client=self.storage_client)
+    self.daisy_bucket = self.GetAndCreateDaisyBucket()
 
   def GetDaisyBucket(self):
     """Returns the name of Daisy scratch bucket.
@@ -396,9 +261,20 @@ class BaseImportStager(object):
   def _BuildDaisyVars(self, daisy_workflow):
     daisy_workflow.append('image_name={}'.format(self.args.image_name))
 
+    if not self.args.guest_environment:
+      daisy_workflow.append('install_gce_packages={}'.format('false'))
+
+    daisy_workflow.extend(daisy_utils.ExtractNetworkAndSubnetDaisyVariables(
+        self.args, daisy_utils.ImageOperation.IMPORT))
+
   @abc.abstractmethod
   def _GetDaisyWorkflow(self):
     raise NotImplementedError
+
+  def GetAndCreateDaisyBucket(self):
+    bucket_name = daisy_utils.GetDaisyBucketName()
+    self.storage_client.CreateBucketIfNotExists(bucket_name)
+    return bucket_name
 
 
 class ImportFromImageStager(BaseImportStager):
@@ -465,9 +341,32 @@ class ImportFromLocalFileStager(BaseImportFromFileStager):
   """Image import stager from a local file."""
 
   def _CopySourceFileToScratchBucket(self):
-    return _UploadToGcs(
-        self.args.async, self.args.source_file, self.daisy_bucket, uuid.uuid4(),
-        self.storage_client)
+    return self._UploadToGcs(
+        self.args.async, self.args.source_file, self.daisy_bucket, uuid.uuid4())
+
+  def _UploadToGcs(self, is_async, local_path, daisy_bucket, image_uuid):
+    """Uploads a local file to GCS. Returns the gs:// URI to that file."""
+    file_name = os.path.basename(local_path).replace(' ', '-')
+    dest_path = 'gs://{0}/tmpimage/{1}-{2}'.format(
+        daisy_bucket, image_uuid, file_name)
+    if is_async:
+      log.status.Print('Async: Once upload is complete, your image will be '
+                       'imported from Cloud Storage asynchronously.')
+    with progress_tracker.ProgressTracker(
+        'Copying [{0}] to [{1}]'.format(local_path, dest_path)):
+      # TODO(b/109938541): Remove gsutil implementation after the new
+      # implementation seems stable.
+      use_gsutil = properties.VALUES.storage.use_gsutil.GetBool()
+      if use_gsutil:
+        return _UploadToGcsGsutil(local_path, dest_path)
+      else:
+        return self._UploadToGcsStorageApi(local_path, dest_path)
+
+  def _UploadToGcsStorageApi(self, local_path, dest_path):
+    """Uploads a local file to GCS using the gcloud storage api client."""
+    dest_object = storage_util.ObjectReference.FromUrl(dest_path)
+    self.storage_client.CopyFileToGCS(local_path, dest_object)
+    return dest_path
 
 
 class ImportFromGSFileStager(BaseImportFromFileStager):
@@ -477,17 +376,32 @@ class ImportFromGSFileStager(BaseImportFromFileStager):
     self.source_file_gcs_uri = daisy_utils.MakeGcsUri(args.source_file)
     super(ImportFromGSFileStager, self).__init__(storage_client, args)
 
-  def _CreateDaisyBucket(self):
-    # Create a Daisy bucket in the same region as the source file in GS.
-    self.daisy_bucket = daisy_utils.GetAndCreateDaisyBucket(
-        storage_client=self.storage_client,
-        bucket_location=self.storage_client.GetBucketLocationForFile(
-            self.source_file_gcs_uri))
+  def GetAndCreateDaisyBucket(self):
+    bucket_location = self.storage_client.GetBucketLocationForFile(
+        self.source_file_gcs_uri)
+    bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
+    self.storage_client.CreateBucketIfNotExists(bucket_name)
+    return bucket_name
 
   def _CopySourceFileToScratchBucket(self):
-    return _CopyToScratchBucket(
-        self.source_file_gcs_uri, uuid.uuid4(), self.storage_client,
-        self.daisy_bucket)
+    image_file = os.path.basename(self.source_file_gcs_uri)
+    dest_uri = 'gs://{0}/tmpimage/{1}-{2}'.format(
+        self.daisy_bucket, uuid.uuid4(), image_file)
+    src_object = resources.REGISTRY.Parse(self.source_file_gcs_uri,
+                                          collection='storage.objects')
+    dest_object = resources.REGISTRY.Parse(dest_uri,
+                                           collection='storage.objects')
+    with progress_tracker.ProgressTracker(
+        'Copying [{0}] to [{1}]'.format(self.source_file_gcs_uri, dest_uri)):
+      self.storage_client.Rewrite(src_object, dest_object)
+    return dest_uri
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ImportBeta(Import):
+  """Import an image into Google Compute Engine for Alpha and Beta releases."""
+
+  _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

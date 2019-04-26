@@ -79,6 +79,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                 api_adapter.DASHBOARD: _ParseAddonDisabled,
                 api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
                 api_adapter.ISTIO: _ParseAddonDisabled,
+                api_adapter.CLOUDRUN: _ParseAddonDisabled,
             }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -87,12 +88,14 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED
 {istio}=ENABLED|DISABLED
-{network_policy}=ENABLED|DISABLED""".format(
+{network_policy}=ENABLED|DISABLED
+{cloudrun}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
     istio=api_adapter.ISTIO,
+    cloudrun=api_adapter.CLOUDRUN,
     ))
 
   else:

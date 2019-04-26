@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,10 +69,8 @@ class Export(base.Command):
             holder.resources,
             scope_lister=compute_flags.GetDefaultScopeLister(client)))
 
-    get_request = backend_services_utils.ComposeGetRequest(
+    backend_service = backend_services_utils.SendGetRequest(
         client, backend_service_ref)
-
-    backend_service = client.MakeRequests([get_request])[0]
 
     if args.destination:
       with files.FileWriter(args.destination) as stream:
@@ -83,5 +81,3 @@ class Export(base.Command):
       export_util.Export(message=backend_service,
                          stream=sys.stdout,
                          schema_path=self.GetSchemaPath())
-
-

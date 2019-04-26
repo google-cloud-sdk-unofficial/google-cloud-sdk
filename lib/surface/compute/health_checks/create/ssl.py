@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
-def _Run(args, holder, supports_port_specification=False, include_alpha=False):
+def _Run(args, holder, include_alpha=False):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
@@ -42,7 +42,7 @@ def _Run(args, holder, supports_port_specification=False, include_alpha=False):
       proxyHeader=proxy_header)
 
   health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
-      args, ssl_health_check, supports_port_specification)
+      args, ssl_health_check)
 
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
     request = messages.ComputeRegionHealthChecksInsertRequest(
@@ -75,22 +75,19 @@ def _Run(args, holder, supports_port_specification=False, include_alpha=False):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a SSL health check to monitor load balanced instances."""
 
   @classmethod
   def Args(cls,
            parser,
-           supports_use_serving_port=False,
            regionalized=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.HealthCheckArgument(
         'SSL', include_alpha=regionalized).AddArgument(
             parser, operation_type='create')
-    health_checks_utils.AddTcpRelatedCreationArgs(
-        parser,
-        use_serving_port=supports_use_serving_port)
+    health_checks_utils.AddTcpRelatedCreationArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'SSL')
 
   def Run(self, args):
@@ -99,38 +96,18 @@ class Create(base.CreateCommand):
     return _Run(args, holder)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a SSL health check to monitor load balanced instances."""
-
-  @staticmethod
-  def Args(parser,
-           supports_use_serving_port=True,
-           regionalized=False):
-    Create.Args(
-        parser,
-        supports_use_serving_port=supports_use_serving_port,
-        regionalized=regionalized)
-
-  def Run(self, args):
-    """Issues the request necessary for adding the health check."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, supports_port_specification=True)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   """Create a SSL health check to monitor load balanced instances."""
 
   @staticmethod
   def Args(parser):
-    CreateBeta.Args(parser, regionalized=True)
+    Create.Args(parser, regionalized=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(
-        args, holder, supports_port_specification=True, include_alpha=True)
+    return _Run(args, holder, include_alpha=True)
 
 
 Create.detailed_help = {

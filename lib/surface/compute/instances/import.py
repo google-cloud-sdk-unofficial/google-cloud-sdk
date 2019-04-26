@@ -78,7 +78,7 @@ class Import(base.CreateCommand):
         '--guest-environment',
         action='store_true',
         default=True,
-        help='Google Guest Environment will not be installed on the instance.')
+        help='Google Guest Environment will be installed on the instance.')
 
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 

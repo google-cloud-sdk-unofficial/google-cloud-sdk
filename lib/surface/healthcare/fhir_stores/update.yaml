@@ -27,3 +27,6 @@
       api_field: fhirStore.notificationConfig.pubsubTopic
       help_text: |
         Google Cloud Pub/Sub topic to send updates to.
+
+        Note, a topic needs to be created before publishing or subscribing to it. For instructions
+        on creating topics, refer to: https://cloud.google.com/pubsub/docs/admin#create_a_topic

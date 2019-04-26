@@ -43,7 +43,7 @@ class CreateAppEngine(base.CreateCommand):
     task_ref = parsers.ParseTask(args.task,
                                  queue_ref) if args.task else None
     task_config = parsers.ParseCreateTaskArgs(
-        args, constants.APP_ENGINE_QUEUE, api.messages)
+        args, constants.PUSH_QUEUE, api.messages)
     create_response = tasks_client.Create(
         queue_ref, task_ref,
         schedule_time=task_config.scheduleTime,
@@ -68,7 +68,7 @@ class AlphaCreateAppEngine(base.CreateCommand):
     task_ref = parsers.ParseTask(args.task,
                                  queue_ref) if args.task else None
     task_config = parsers.ParseCreateTaskArgs(
-        args, constants.APP_ENGINE_QUEUE, api.messages, is_alpha=True)
+        args, constants.PUSH_QUEUE, api.messages, is_alpha=True)
     create_response = tasks_client.Create(
         queue_ref, task_ref,
         schedule_time=task_config.scheduleTime,

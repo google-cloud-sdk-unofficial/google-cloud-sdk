@@ -25,7 +25,14 @@ from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describes a Google Compute Engine network endpoint group."""
+  r"""Describes a Google Compute Engine network endpoint group.
+
+  ## EXAMPLES
+
+  To describe a network endpoint group:
+
+    $ {command} my-neg --zone=us-central1-a
+  """
 
   @staticmethod
   def Args(parser):

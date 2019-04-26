@@ -42,7 +42,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('HTTP2')
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddHttpRelatedUpdateArgs(parser, use_serving_port=True)
+    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP2')
 
@@ -115,9 +115,7 @@ class Update(base.UpdateCommand):
       response = None
 
     port, port_name, port_specification = health_checks_utils.\
-        HandlePortRelatedFlagsForUpdate(
-            args, existing_check.http2HealthCheck,
-            supports_port_specification=True)
+        HandlePortRelatedFlagsForUpdate(args, existing_check.http2HealthCheck)
 
     proxy_header = existing_check.http2HealthCheck.proxyHeader
     if args.proxy_header is not None:
@@ -207,6 +205,6 @@ class UpdateAlpha(Update):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
         'HTTP2', include_alpha=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddHttpRelatedUpdateArgs(parser, use_serving_port=True)
+    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP2')

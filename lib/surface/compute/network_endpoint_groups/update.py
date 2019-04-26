@@ -32,15 +32,15 @@ class Update(base.UpdateCommand):
 
   To add two endpoints to a network endpoint group:
 
-    $ {command} my-neg --zone us-central1-a \
-      --add-endpoint instance=my-instance1,ip=127.0.0.1,port=1234 \
-      --add-endpoint instance=my-instance2
+    $ {command} my-neg --zone=us-central1-a \
+      --add-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 \
+      --add-endpoint=instance=my-instance2
 
   To remove two endpoints from a network endpoint group:
 
-    $ {command} my-neg --zone us-central1-a \
-      --remove-endpoint instance=my-instance1,ip=127.0.0.1,port=1234 \
-      --remove-endpoint instance=my-instance2
+    $ {command} my-neg --zone=us-central1-a \
+      --remove-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 \
+      --remove-endpoint=instance=my-instance2
   """
 
   @staticmethod

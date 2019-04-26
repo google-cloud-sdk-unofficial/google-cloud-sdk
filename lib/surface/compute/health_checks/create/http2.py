@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.compute.health_checks import flags
 def _Run(args,
          holder,
          supports_response=False,
-         supports_port_specification=False,
          regionalized=False):
   """Issues the request necessary for adding the health check."""
   client = holder.client
@@ -49,7 +48,7 @@ def _Run(args,
   if supports_response:
     http2_health_check.response = args.response
   health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
-      args, http2_health_check, supports_port_specification)
+      args, http2_health_check)
 
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
     request = messages.ComputeRegionHealthChecksInsertRequest(
@@ -93,8 +92,7 @@ class Create(base.CreateCommand):
     flags.HealthCheckArgument(
         'HTTP2', include_alpha=regionalized).AddArgument(
             parser, operation_type='create')
-    health_checks_utils.AddHttpRelatedCreationArgs(
-        parser, use_serving_port=supports_use_serving_port)
+    health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP2')
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha
@@ -104,8 +102,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(
-        args, holder, supports_response=True, supports_port_specification=True)
+    return _Run(args, holder, supports_response=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -123,7 +120,6 @@ class CreateAlpha(Create):
         args,
         holder,
         supports_response=True,
-        supports_port_specification=True,
         regionalized=True)
 
 

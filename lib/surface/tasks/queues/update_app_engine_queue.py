@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2019 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud tasks queues update-app-engine-queue` command."""
+"""`gcloud tasks queues update` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,6 +26,9 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
+@base.Deprecate(is_removed=False,
+                warning='This command group is deprecated. '
+                        'Use `gcloud beta tasks queues update` instead')
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateAppEngine(base.UpdateCommand):
   """Update an App Engine queue.
@@ -33,12 +36,27 @@ class UpdateAppEngine(base.UpdateCommand):
   The flags available to this command represent the fields of an App Engine
   queue that are mutable. Attempting to use this command on a different type of
   queue will result in an error.
-
-  If you have early access to Cloud Tasks, refer to the following guide for
-  more information about the different queue target types:
-  https://cloud.google.com/cloud-tasks/docs/queue-types.
-  For access, sign up here: https://goo.gl/Ya0AZd
   """
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To update an App Engine queue:
+
+              $ {command} my-queue
+                --clear-max-attempts --clear-max-retry-duration
+                --clear-max-doublings --clear-min-backoff
+                --clear-max-backoff
+                --clear-max-dispatches-per-second
+                --clear-max-concurrent-dispatches
+                --clear-routing-override
+         """,
+  }
+
+  def __init__(self, *args, **kwargs):
+    super(UpdateAppEngine, self).__init__(*args, **kwargs)
+    self.is_alpha = False
 
   @staticmethod
   def Args(parser):
@@ -47,15 +65,26 @@ class UpdateAppEngine(base.UpdateCommand):
     flags.AddUpdateAppEngineQueueFlags(parser)
 
   def Run(self, args):
-    parsers.CheckUpdateArgsSpecified(args, constants.APP_ENGINE_QUEUE)
+    parsers.CheckUpdateArgsSpecified(args,
+                                     constants.PUSH_QUEUE,
+                                     self.is_alpha)
     api = GetApiAdapter(self.ReleaseTrack())
     queues_client = api.queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args, constants.APP_ENGINE_QUEUE, api.messages, is_update=True)
-    app_engine_routing_override = (
-        queue_config.appEngineHttpQueue.appEngineRoutingOverride
-        if queue_config.appEngineHttpQueue is not None else None)
+        args,
+        constants.PUSH_QUEUE,
+        api.messages,
+        is_update=True,
+        is_alpha=self.is_alpha)
+    if not self.is_alpha:
+      app_engine_routing_override = (
+          queue_config.appEngineHttpQueue.appEngineRoutingOverride
+          if queue_config.appEngineHttpQueue is not None else None)
+    else:
+      app_engine_routing_override = (
+          queue_config.appEngineHttpTarget.appEngineRoutingOverride
+          if queue_config.appEngineHttpTarget is not None else None)
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
         queue_ref,
@@ -66,19 +95,38 @@ class UpdateAppEngine(base.UpdateCommand):
     return update_response
 
 
+@base.Deprecate(is_removed=False,
+                warning='This command group is deprecated. '
+                        'Use `gcloud alpha tasks queues update` instead')
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdateAppEngine(base.UpdateCommand):
+class AlphaUpdateAppEngine(UpdateAppEngine):
   """Update an App Engine queue.
 
   The flags available to this command represent the fields of an App Engine
   queue that are mutable. Attempting to use this command on a different type of
   queue will result in an error.
-
-  If you have early access to Cloud Tasks, refer to the following guide for
-  more information about the different queue target types:
-  https://cloud.google.com/cloud-tasks/docs/queue-types.
-  For access, sign up here: https://goo.gl/Ya0AZd
   """
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To update an App Engine queue:
+
+              $ {command} my-queue
+                --clear-max-attempts --clear-max-retry-duration
+                --clear-max-doublings --clear-min-backoff
+                --clear-max-backoff
+                --clear-max-tasks-dispatched-per-second
+                --clear-max-concurrent-tasks
+                --clear-routing-override
+         """,
+  }
+
+  def __init__(self, *args, **kwargs):
+    super(AlphaUpdateAppEngine, self).__init__(*args, **kwargs)
+    self.is_alpha = True
 
   @staticmethod
   def Args(parser):
@@ -86,27 +134,3 @@ class AlphaUpdateAppEngine(base.UpdateCommand):
     flags.AddLocationFlag(parser)
     flags.AddUpdateAppEngineQueueFlags(parser, is_alpha=True)
 
-  def Run(self, args):
-    parsers.CheckUpdateArgsSpecified(
-        args, constants.APP_ENGINE_QUEUE, is_alpha=True)
-    api = GetApiAdapter(self.ReleaseTrack())
-    queues_client = api.queues
-    queue_ref = parsers.ParseQueue(args.queue, args.location)
-    queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args,
-        constants.APP_ENGINE_QUEUE,
-        api.messages,
-        is_update=True,
-        is_alpha=True)
-    app_engine_routing_override = (
-        queue_config.appEngineHttpTarget.appEngineRoutingOverride if
-        queue_config.appEngineHttpTarget is not None else
-        None)
-    log.warning(constants.QUEUE_MANAGEMENT_WARNING)
-    update_response = queues_client.Patch(
-        queue_ref,
-        retry_config=queue_config.retryConfig,
-        rate_limits=queue_config.rateLimits,
-        app_engine_routing_override=app_engine_routing_override)
-    log.status.Print('Updated queue [{}].'.format(queue_ref.Name()))
-    return update_response

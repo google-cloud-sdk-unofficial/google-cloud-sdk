@@ -128,6 +128,7 @@ class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
   category = base.TOOLS_CATEGORY
+  get_host_keys = False
 
   @staticmethod
   def Args(parser):
@@ -158,6 +159,14 @@ class Ssh(base.Command):
         scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
     instance = ssh_helper.GetInstance(client, instance_ref)
     project = ssh_helper.GetProject(client, instance_ref.project)
+    if self.get_host_keys:
+      host_keys = ssh_helper.GetHostKeysFromGuestAttributes(
+          client, instance_ref)
+      if not host_keys:
+        log.warning('Unable to retrieve host keys from instance metadata. '
+                    'Continuing.')
+    else:
+      host_keys = {}
     if args.plain:
       use_oslogin = False
     else:
@@ -191,7 +200,8 @@ class Ssh(base.Command):
     if not args.plain:
       identity_file = ssh_helper.keys.key_file
       options = ssh_helper.GetConfig(ssh_utils.HostKeyAlias(instance),
-                                     args.strict_host_key_checking)
+                                     args.strict_host_key_checking,
+                                     host_keys_to_add=host_keys)
 
     extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, ip_address)
     remainder = []
@@ -250,9 +260,11 @@ class Ssh(base.Command):
       sys.exit(return_code)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SshBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
+
+  get_host_keys = False
 
   @staticmethod
   def Args(parser):
@@ -266,6 +278,13 @@ class SshBeta(Ssh):
     mutex_scope = parser.add_mutually_exclusive_group()
     AddInternalIPArg(mutex_scope)
     iap_tunnel.AddSshTunnelArgs(parser, mutex_scope)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SshAlpha(SshBeta):
+  """SSH into a virtual machine instance (Alpha)."""
+
+  get_host_keys = True
 
 
 def DetailedHelp():

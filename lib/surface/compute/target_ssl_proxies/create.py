@@ -38,7 +38,7 @@ class Create(base.CreateCommand):
   referenced by one or more forwarding rules which define which packets the
   proxy is responsible for routing. The target SSL proxy points to a backend
   service which handle the actual requests. The target SSL proxy also points
-  to at most 10 SSL certificates used for server-side authentication. The
+  to at most 15 SSL certificates used for server-side authentication. The
   target SSL proxy can be associated with at most one SSL policy.
   """
 

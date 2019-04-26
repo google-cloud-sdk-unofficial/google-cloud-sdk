@@ -64,6 +64,8 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """List available revisions."""
+    if args.uri:
+      raise flags.ArgumentError('--uri flag is not supported for this resource')
     service_name = args.service
     conn_context = connection_context.GetConnectionContext(args)
     namespace_ref = args.CONCEPTS.namespace.Parse()

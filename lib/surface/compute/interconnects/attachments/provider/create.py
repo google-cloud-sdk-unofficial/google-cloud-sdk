@@ -50,7 +50,8 @@ class Create(base.CreateCommand):
         attachment_flags.InterconnectAttachmentArgument())
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
 
-    attachment_flags.AddBandwidth(parser, required=True)
+    attachment_flags.AddBandwidth(
+        parser, required=True, track=cls._release_track)
     attachment_flags.AddVlan(parser)
     attachment_flags.AddPartnerAsn(parser)
     attachment_flags.AddPartnerMetadata(parser, required=True)

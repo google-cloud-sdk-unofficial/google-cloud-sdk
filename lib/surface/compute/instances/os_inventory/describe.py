@@ -48,22 +48,22 @@ class Describe(base.DescribeCommand):
     parser.display_info.AddFormat("""
           multi(
             InstalledPackages.deb:format=
-              "table[box,title='InstalledPackages(DEB)']
+              "table[box,title='Installed Packages (DEB)']
                 (Name:sort=1,Arch,Version)",
             InstalledPackages.gem:format=
-              "table[box,title='InstalledPackages(Gem)']
+              "table[box,title='Installed Packages (Gem)']
                 (Name:sort=1,Arch,Version)",
             InstalledPackages.googet:format=
-              "table[box,title='InstalledPackages(GooGet)']
+              "table[box,title='Installed Packages (GooGet)']
                 (Name:sort=1,Arch,Version)",
             InstalledPackages.pip:format=
-              "table[box,title='InstalledPackages(Pip)']
+              "table[box,title='Installed Packages (Pip)']
                 (Name:sort=1,Arch,Version)",
             InstalledPackages.rpm:format=
-              "table[box,title='InstalledPackages(RPM)']
+              "table[box,title='Installed Packages (RPM)']
                 (Name:sort=1,Arch,Version)",
             InstalledPackages.wua:format=
-              "table[box,title='InstalledPackages(Windows Update Agent)'](
+              "table[box,title='Installed Packages (Windows Update Agent)'](
                 Title:sort=1:wrap,
                 Description:wrap=11,
                 Categories.list():wrap,
@@ -71,25 +71,25 @@ class Describe(base.DescribeCommand):
                 SupportURL:wrap=11,
                 LastDeploymentChangeTime:wrap=15:label='LAST_DEPLOYMENT')",
             InstalledPackages.qfe:format=
-              "table[box,title='InstalledPackages(Quick Fix Engineering)']
+              "table[box,title='Installed Packages (Quick Fix Engineering)']
                 (Caption,Description:wrap=15,HotFixID:sort=1,InstalledOn)",
             PackageUpdates.apt:format=
-              "table[box,title='PackagesUpdates(Apt)']
+              "table[box,title='Package Updates Available (Apt)']
                 (Name:sort=1,Arch,Version)",
             PackageUpdates.gem:format=
-              "table[box,title='PackagesUpdates(Gem)']
+              "table[box,title='Package Updates Available (Gem)']
                 (Name:sort=1,Arch,Version)",
             PackageUpdates.googet:format=
-              "table[box,title='PackagesUpdates(GooGet)']
+              "table[box,title='Package Updates Available (GooGet)']
                 (Name:sort=1,Arch,Version)",
             PackageUpdates.pip:format=
-              "table[box,title='PackagesUpdates(Pip)']
+              "table[box,title='Package Updates Available (Pip)']
                 (Name:sort=1,Arch,Version)",
             PackageUpdates.yum:format=
-              "table[box,title='PackagesUpdates(Yum)']
+              "table[box,title='Package Updates Available (Yum)']
                 (Name:sort=1,Arch,Version)",
             PackageUpdates.wua:format=
-              "table[box,title='PackageUpdates(Windows Update Agent)'](
+              "table[box,title='Package Updates Available (Windows Update Agent)'](
                 Title:sort=1:wrap,
                 Description:wrap=11,
                 Categories.list():wrap,
@@ -164,4 +164,3 @@ class Describe(base.DescribeCommand):
     guest_attributes_json = self._GetGuestInventoryGuestAttributes(
         holder, instance_ref)
     return self._GetFormattedGuestAttributes(guest_attributes_json)
-

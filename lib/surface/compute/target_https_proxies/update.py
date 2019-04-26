@@ -43,7 +43,7 @@ class Update(base.SilentCommand):
   points to a URL map that defines the rules for routing the requests.
   The URL map's job is to map URLs to backend services which handle
   the actual requests. The target HTTPS proxy also points to at most
-  10 SSL certificates used for server-side authentication. The target
+  15 SSL certificates used for server-side authentication. The target
   HTTPS proxy can be associated with at most one SSL policy.
   """
 
@@ -162,7 +162,7 @@ class UpdateAlpha(Update):
   points to a URL map that defines the rules for routing the requests.
   The URL map's job is to map URLs to backend services which handle
   the actual requests. The target HTTPS proxy also points to at most
-  10 SSL certificates used for server-side authentication. The target
+  15 SSL certificates used for server-side authentication. The target
   HTTPS proxy can be associated with at most one SSL policy.
   """
 

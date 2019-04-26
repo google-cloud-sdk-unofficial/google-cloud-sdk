@@ -55,8 +55,7 @@ class UpdateBackend(base.UpdateCommand):
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
-    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
-        parser, operation_type='update the backend service')
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
@@ -92,10 +91,16 @@ class UpdateBackend(base.UpdateCommand):
                 project=backend_service_ref.project))
 
   def _GetGroupRef(self, args, resources, client):
-    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-        args,
-        resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    if args.instance_group:
+      return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
+    if args.network_endpoint_group:
+      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   def _Modify(self, client, resources, backend_service_ref, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
@@ -156,8 +161,10 @@ class UpdateBackend(base.UpdateCommand):
         args.max_utilization is not None,
         args.max_rate is not None,
         args.max_rate_per_instance is not None,
+        args.max_rate_per_endpoint is not None,
         args.max_connections is not None,
         args.max_connections_per_instance is not None,
+        args.max_connections_per_endpoint is not None,
         args.capacity_scaler is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
@@ -214,22 +221,10 @@ class UpdateBackendBeta(UpdateBackend):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
     backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser, supports_neg=True)
-    backend_flags.AddCapacityLimits(parser, supports_neg=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
-
-  def _GetGroupRef(self, args, resources, client):
-    if args.instance_group:
-      return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-          args,
-          resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client))
-    if args.network_endpoint_group:
-      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
-          args,
-          resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   def _Modify(self, client, resources, backend_service_ref, args, existing):
     """Modify Backend."""
@@ -249,18 +244,6 @@ class UpdateBackendBeta(UpdateBackend):
       backend_to_update.failover = args.failover
 
     return replacement
-
-  def _ModifyBalancingModeArgs(self, client, args, backend_to_update):
-    """Update balancing mode fields in backend_to_update according to args.
-
-    Args:
-      client: The compute client.
-      args: The arguments given to the update-backend command.
-      backend_to_update: The backend message to modify.
-    """
-
-    _ModifyBalancingModeArgs(
-        client.messages, args, backend_to_update, supports_neg=True)
 
   def _ValidateArgs(self, args):
     """Overrides."""
@@ -308,8 +291,8 @@ class UpdateBackendAlpha(UpdateBackendBeta):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
     backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser, supports_neg=True)
-    backend_flags.AddCapacityLimits(parser, supports_neg=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
 
@@ -351,33 +334,27 @@ class UpdateBackendAlpha(UpdateBackendBeta):
       raise exceptions.ToolException('At least one property must be modified.')
 
 
-def _ClearMutualExclusiveBackendCapacityThresholds(backend, supports_neg):
+def _ClearMutualExclusiveBackendCapacityThresholds(backend):
   """Initialize the backend's mutually exclusive capacity thresholds."""
   backend.maxRate = None
   backend.maxRatePerInstance = None
   backend.maxConnections = None
   backend.maxConnectionsPerInstance = None
-  if supports_neg:
-    backend.maxRatePerEndpoint = None
-    backend.maxConnectionsPerEndpoint = None
+  backend.maxRatePerEndpoint = None
+  backend.maxConnectionsPerEndpoint = None
 
 
-def _ModifyBalancingModeArgs(messages, args, backend_to_update,
-                             supports_neg=False):
+def _ModifyBalancingModeArgs(messages, args, backend_to_update):
   """Update balancing mode fields in backend_to_update according to args.
 
   Args:
     messages: API messages class, determined by the release track.
     args: The arguments given to the update-backend command.
     backend_to_update: The backend message to modify.
-    supports_neg: If network endpoint groups is supported as a backend group.
   """
 
   backend_services_utils.ValidateBalancingModeArgs(
-      messages,
-      args,
-      backend_to_update.balancingMode,
-      supports_neg=supports_neg)
+      messages, args, backend_to_update.balancingMode)
 
   if args.balancing_mode:
     backend_to_update.balancingMode = (
@@ -392,15 +369,13 @@ def _ModifyBalancingModeArgs(messages, args, backend_to_update,
       backend_to_update.maxUtilization = None
       backend_to_update.maxConnections = None
       backend_to_update.maxConnectionsPerInstance = None
-      if supports_neg:
-        backend_to_update.maxConnectionsPerEndpoint = None
+      backend_to_update.maxConnectionsPerEndpoint = None
     elif (backend_to_update.balancingMode ==
           messages.Backend.BalancingModeValueValuesEnum.CONNECTION):
       backend_to_update.maxUtilization = None
       backend_to_update.maxRate = None
       backend_to_update.maxRatePerInstance = None
-      if supports_neg:
-        backend_to_update.maxRatePerEndpoint = None
+      backend_to_update.maxRatePerEndpoint = None
 
   # Now, we set the parameters that control load balancing.
   # ValidateBalancingModeArgs takes care that the control parameters
@@ -411,29 +386,23 @@ def _ModifyBalancingModeArgs(messages, args, backend_to_update,
   # max_rate, max_rate_per_instance, max_connections and
   # max_connections_per_instance are mutually exclusive arguments.
   if args.max_rate is not None:
-    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update,
-                                                   supports_neg)
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxRate = args.max_rate
   elif args.max_rate_per_instance is not None:
-    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update,
-                                                   supports_neg)
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxRatePerInstance = args.max_rate_per_instance
   elif args.max_connections is not None:
-    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update,
-                                                   supports_neg)
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxConnections = args.max_connections
   elif args.max_connections_per_instance is not None:
-    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update,
-                                                   supports_neg)
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxConnectionsPerInstance = (
         args.max_connections_per_instance)
-  elif supports_neg and args.max_rate_per_endpoint is not None:
-    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update,
-                                                   supports_neg)
+  elif args.max_rate_per_endpoint is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxRatePerEndpoint = args.max_rate_per_endpoint
-  elif supports_neg and args.max_connections_per_endpoint is not None:
-    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update,
-                                                   supports_neg)
+  elif args.max_connections_per_endpoint is not None:
+    _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxConnectionsPerEndpoint = (
         args.max_connections_per_endpoint)
 

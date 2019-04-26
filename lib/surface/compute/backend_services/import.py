@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -34,6 +35,7 @@ class Import(base.UpdateCommand):
   """Import a backend service.
 
   If the specified backend service already exists, it will be overwritten.
+  Otherwise, a new backend service will be created.
   To edit a backend service you can export the backend service to a file,
   edit its configuration, and then import the new configuration.
   """
@@ -59,27 +61,35 @@ class Import(base.UpdateCommand):
         parser, operation_type='import')
     export_util.AddImportFlags(parser, cls.GetSchemaPath(for_help=True))
 
-  def ComposePatchRequest(self, client, backend_service_ref, replacement):
-    """Create Backend Services patch request."""
+  def SendPatchRequest(self, client, backend_service_ref, replacement):
+    """Send Backend Services patch request."""
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
-      return (
-          client.apitools_client.regionBackendServices,
-          'Patch',
+      return client.apitools_client.regionBackendServices.Patch(
           client.messages.ComputeRegionBackendServicesPatchRequest(
               project=backend_service_ref.project,
               region=backend_service_ref.region,
               backendService=backend_service_ref.Name(),
-              backendServiceResource=replacement),
-      )
+              backendServiceResource=replacement))
 
-    return (
-        client.apitools_client.backendServices,
-        'Patch',
+    return client.apitools_client.backendServices.Patch(
         client.messages.ComputeBackendServicesPatchRequest(
             project=backend_service_ref.project,
             backendService=backend_service_ref.Name(),
-            backendServiceResource=replacement),
-    )
+            backendServiceResource=replacement))
+
+  def SendInsertRequest(self, client, backend_service_ref, backend_service):
+    """Send Backend Services insert request."""
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return client.apitools_client.regionBackendServices.Insert(
+          client.messages.ComputeRegionBackendServicesInsertRequest(
+              project=backend_service_ref.project,
+              region=backend_service_ref.region,
+              backendService=backend_service))
+
+    return client.apitools_client.backendServices.Insert(
+        client.messages.ComputeBackendServicesInsertRequest(
+            project=backend_service_ref.project,
+            backendService=backend_service))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -102,10 +112,15 @@ class Import(base.UpdateCommand):
       raise exceptions.ToolException(e.message)
 
     # Get existing backend service.
-    get_request = backend_services_utils.ComposeGetRequest(
-        client, backend_service_ref)
-
-    backend_service_old = client.MakeRequests([get_request])[0]
+    try:
+      backend_service_old = backend_services_utils.SendGetRequest(
+          client, backend_service_ref)
+    except apitools_exceptions.HttpError as error:
+      if error.status_code != 404:
+        raise error
+      # Backend service does not exist, create a new one.
+      return self.SendInsertRequest(client, backend_service_ref,
+                                    backend_service)
 
     # No change, do not send requests to server.
     if backend_service_old == backend_service:
@@ -134,8 +149,5 @@ class Import(base.UpdateCommand):
     if backend_service.outlierDetection is None:
       cleared_fields.append('outlierDetection')
 
-    patch_request = self.ComposePatchRequest(
-        client, backend_service_ref, backend_service)
-
     with client.apitools_client.IncludeFields(cleared_fields):
-      return client.MakeRequests([patch_request])
+      return self.SendPatchRequest(client, backend_service_ref, backend_service)

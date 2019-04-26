@@ -54,8 +54,7 @@ class AddBackend(base.UpdateCommand):
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
-    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
-        parser, operation_type='add to the backend service')
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'add to')
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
@@ -91,10 +90,16 @@ class AddBackend(base.UpdateCommand):
                 project=backend_service_ref.project))
 
   def _GetGroupRef(self, args, resources, client):
-    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-        args,
-        resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    if args.instance_group:
+      return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
+    if args.network_endpoint_group:
+      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
     """Create a backend message.
@@ -119,9 +124,11 @@ class AddBackend(base.UpdateCommand):
         group=group_uri,
         maxRate=args.max_rate,
         maxRatePerInstance=args.max_rate_per_instance,
+        maxRatePerEndpoint=args.max_rate_per_endpoint,
         maxUtilization=args.max_utilization,
         maxConnections=args.max_connections,
-        maxConnectionsPerInstance=args.max_connections_per_instance)
+        maxConnectionsPerInstance=args.max_connections_per_instance,
+        maxConnectionsPerEndpoint=args.max_connections_per_endpoint)
 
   def _Modify(self, client, resources, backend_service_ref, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
@@ -202,28 +209,15 @@ class AddBackendBeta(AddBackend):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'add to')
     backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser, supports_neg=True)
-    backend_flags.AddCapacityLimits(parser, supports_neg=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
-
-  def _GetGroupRef(self, args, resources, client):
-    if args.instance_group:
-      return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
-          args,
-          resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client))
-    if args.network_endpoint_group:
-      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
-          args,
-          resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
     """Overrides."""
 
-    backend_services_utils.ValidateBalancingModeArgs(
-        messages, args, supports_neg=True)
+    backend_services_utils.ValidateBalancingModeArgs(messages, args)
     return messages.Backend(
         balancingMode=balancing_mode,
         capacityScaler=args.capacity_scaler,
@@ -265,16 +259,15 @@ class AddBackendAlpha(AddBackendBeta):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'add to')
     backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser, supports_neg=True)
-    backend_flags.AddCapacityLimits(parser, supports_neg=True)
+    backend_flags.AddBalancingMode(parser)
+    backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
     """Overrides."""
 
-    backend_services_utils.ValidateBalancingModeArgs(
-        messages, args, supports_neg=True)
+    backend_services_utils.ValidateBalancingModeArgs(messages, args)
     return messages.Backend(
         balancingMode=balancing_mode,
         capacityScaler=args.capacity_scaler,

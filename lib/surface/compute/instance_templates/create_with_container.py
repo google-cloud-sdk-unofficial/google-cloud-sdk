@@ -46,6 +46,7 @@ def _Args(parser, release_track, container_mount_enabled=False):
   if release_track != base.ReleaseTrack.GA:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   instances_flags.AddCanIpForwardArgs(parser)
+  instances_flags.AddContainerMountDiskFlag(parser)
   instances_flags.AddAddressArgs(parser, instances=False)
   instances_flags.AddMachineTypeArgs(parser)
   deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
@@ -85,7 +86,7 @@ class CreateWithContainer(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, base.ReleaseTrack.GA)
+    _Args(parser, base.ReleaseTrack.GA, container_mount_enabled=True)
 
   def _ValidateArgs(self, args):
     instances_flags.ValidateKonletArgs(args)
@@ -195,6 +196,12 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.ValidateNetworkTierArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
+        holder,
+        args.container_mount_disk,
+        args.disk,
+        args.create_disk)
+
     client = holder.client
     instance_template_ref = self._GetInstanceTemplateRef(args, holder)
     image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
@@ -204,14 +211,16 @@ class CreateWithContainer(base.CreateCommand):
         args, client.messages.InstanceProperties.LabelsValue)
     if argument_labels:
       labels.additionalProperties.extend(argument_labels.additionalProperties)
-
-    metadata = self._GetUserMetadata(args, client, instance_template_ref)
+    metadata = self._GetUserMetadata(args, client, instance_template_ref,
+                                     container_mount_disk_enabled=True,
+                                     container_mount_disk=container_mount_disk)
     network_interfaces = self._GetNetworkInterfaces(args, client, holder)
     scheduling = self._GetScheduling(args, client)
     service_accounts = self._GetServiceAccounts(args, client)
     machine_type = self._GetMachineType(args)
     disks = self._GetDisks(
-        args, client, holder, instance_template_ref, image_uri)
+        args, client, holder, instance_template_ref, image_uri,
+        match_container_mount_disks=True)
 
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
@@ -279,7 +288,6 @@ class CreateWithContainerBeta(CreateWithContainer):
   @staticmethod
   def Args(parser):
     _Args(parser, base.ReleaseTrack.BETA, container_mount_enabled=True)
-    instances_flags.AddContainerMountDiskFlag(parser)
 
   def _ValidateArgs(self, args):
     super(CreateWithContainerBeta, self)._ValidateArgs(args)
@@ -355,7 +363,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   @staticmethod
   def Args(parser):
     _Args(parser, base.ReleaseTrack.ALPHA, container_mount_enabled=True)
-    instances_flags.AddContainerMountDiskFlag(parser)
     instances_flags.AddLocalNvdimmArgs(parser)
 
   def Run(self, args):
