@@ -219,7 +219,7 @@ def _UpdateBgpPeerBfdMessage(messages, peer, args):
   """Updates BGP peer BFD messages based on flag arguments."""
   if not (args.IsSpecified('bfd_min_receive_interval') or
           args.IsSpecified('bfd_min_transmit_interval') or
-          args.IsSpecified('bfd_mode') or
+          args.IsSpecified('bfd_session_initialization_mode') or
           args.IsSpecified('bfd_multiplier') or
           args.IsSpecified('bfd_packet_mode') or
           args.IsSpecified('bfd_slow_timer_interval')):
@@ -230,8 +230,9 @@ def _UpdateBgpPeerBfdMessage(messages, peer, args):
   else:
     bfd = messages.RouterBgpPeerBfd()
   attrs = {}
-  if args.bfd_mode is not None:
-    attrs['mode'] = messages.RouterBgpPeerBfd.ModeValueValuesEnum(args.bfd_mode)
+  if args.bfd_session_initialization_mode is not None:
+    attrs['mode'] = messages.RouterBgpPeerBfd.ModeValueValuesEnum(
+        args.bfd_session_initialization_mode)
   if args.bfd_packet_mode is not None:
     attrs['packetMode'] = (
         messages.RouterBgpPeerBfd.PacketModeValueValuesEnum(

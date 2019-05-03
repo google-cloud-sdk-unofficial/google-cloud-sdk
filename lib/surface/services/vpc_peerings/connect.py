@@ -26,39 +26,34 @@ from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-OP_BASE_CMD = 'gcloud beta services vpc-peerings operations '
+OP_BASE_CMD = 'gcloud services vpc-peerings operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
-
-_DETAILED_HELP = {
-    'DESCRIPTION':
-        """\
-        This command connects a network to a service via VPC peering for a
-        project.
-        """,
-    'EXAMPLES':
-        """\
-        To connect a network called `my-network`  on the current project to a
-        service called `your-service` with IP CIDR ranges
-        `10.197.0.0/20,10.198.0.0/20` for the service to use, run:
-
-          $ {command} --network my-network --service your-service \\
-              --ranges 10.197.0.0/20,10.198.0.0/20
-
-        To run the same command asynchronously (non-blocking), run:
-
-          $ {command} --network my-network --service your-service \\
-              --ranges 10.197.0.0/20,10.198.0.0/20 --async
-        """,
-}
-
-_SERVICE_HELP = """The service to connect to"""
-_NETWORK_HELP = """The network in the current project to be peered with the \
-  service"""
-_RANGES_HELP = """IP CIDR ranges for service to use."""
 
 
 class Connect(base.SilentCommand):
   """Connect to a service via VPC peering for a project network."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          This command connects a private service connection to a service via a
+          VPC network.
+          """,
+      'EXAMPLES':
+          """\
+          To connect a network called `my-network`  on the current project to a
+          service called `your-service` with IP CIDR ranges
+          `google-range-1,google-range-2` for the service to use, run:
+
+            $ {command} --network my-network --service your-service \\
+                --ranges google-range-1,google-range-2
+
+          To run the same command asynchronously (non-blocking), run:
+
+            $ {command} --network my-network --service your-service \\
+                --ranges google-range-1,google-range-2 --async
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -70,14 +65,20 @@ class Connect(base.SilentCommand):
           allowed.
     """
     parser.add_argument(
-        '--network', metavar='NETWORK', required=True, help=_NETWORK_HELP)
+        '--network',
+        metavar='NETWORK',
+        required=True,
+        help='The network in the current project to be peered with the service')
     parser.add_argument(
         '--service',
         metavar='SERVICE',
         default='servicenetworking.googleapis.com',
-        help=_SERVICE_HELP)
+        help='The service to connect to')
     parser.add_argument(
-        '--ranges', metavar='RANGES', required=True, help=_RANGES_HELP)
+        '--ranges',
+        metavar='RANGES',
+        required=True,
+        help='The names of IP CIDR ranges for service to use.')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -103,9 +104,6 @@ class Connect(base.SilentCommand):
       return
     op = peering.WaitOperation(op.name)
     services_util.PrintOperation(op)
-
-
-Connect.detailed_help = _DETAILED_HELP
 
 
 def _GetProjectNumber(project_id):

@@ -50,14 +50,14 @@ class ListUsable(base.ListCommand):
       List all subnetworks usable for cluster creation in project `my-project`.
 
           $ {command} \
-            --project my-project
+            --project=my-project
 
       List all subnetworks existing in project `my-shared-host-project` usable
       for cluster creation in project `my-service-project`.
 
           $ {command} \
-             --project my-service-project \
-             --network-project my-shared-host-project
+             --project=my-service-project \
+             --network-project=my-shared-host-project
 
   """
 

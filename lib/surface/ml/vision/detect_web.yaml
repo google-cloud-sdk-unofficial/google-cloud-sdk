@@ -4,6 +4,10 @@
     brief: Detect entities in an image from similar images on the web.
     description: |
       Detect entities in an image from similar images on the web.
+    examples: |
+      To detect entities in an image `gs://my_bucket/input_file`:
+
+        $ {command} gs://my_bucket/input_file
 
   request:
     _COMMON_: request
@@ -27,6 +31,10 @@
     brief: Detect entities in an image from similar images on the web.
     description: |
       Detect entities in an image from similar images on the web.
+    examples: |
+      To detect entities in an image `gs://my_bucket/input_file`:
+
+        $ {command} gs://my_bucket/input_file
 
   request:
     _COMMON_: request

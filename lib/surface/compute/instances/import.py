@@ -36,7 +36,6 @@ from googlecloudsdk.core import properties
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Import(base.CreateCommand):
   """Import an instance into Google Compute Engine from OVF."""

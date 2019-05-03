@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -34,6 +35,7 @@ class Import(base.UpdateCommand):
   """Import a URL map.
 
   If the specified URL map already exists, it will be overwritten.
+  Otherwise, a new URL map will be created.
   To edit a URL map you can export the URL map to a file,
   edit its configuration, and then import the new configuration.
   """
@@ -65,27 +67,34 @@ class Import(base.UpdateCommand):
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='import')
     export_util.AddImportFlags(parser, cls.GetSchemaPath(for_help=True))
 
-  def ComposePatchRequest(self, client, url_map_ref, replacement):
-    """Create Url Maps patch request."""
+  def SendPatchRequest(self, client, url_map_ref, replacement):
+    """Send Url Maps patch request."""
     if url_map_ref.Collection() == 'compute.regionUrlMaps':
-      return (
-          client.apitools_client.regionUrlMaps,
-          'Patch',
+      return client.apitools_client.regionUrlMaps.Patch(
           client.messages.ComputeRegionUrlMapsPatchRequest(
               project=url_map_ref.project,
               region=url_map_ref.region,
               urlMap=url_map_ref.Name(),
-              urlMapResource=replacement),
-      )
+              urlMapResource=replacement))
 
-    return (
-        client.apitools_client.urlMaps,
-        'Patch',
+    return client.apitools_client.urlMaps.Patch(
         client.messages.ComputeUrlMapsPatchRequest(
             project=url_map_ref.project,
             urlMap=url_map_ref.Name(),
-            urlMapResource=replacement),
-    )
+            urlMapResource=replacement))
+
+  def SendInsertRequest(self, client, url_map_ref, url_map):
+    """Send Url Maps insert request."""
+    if url_map_ref.Collection() == 'compute.regionUrlMaps':
+      return client.apitools_client.regionUrlMaps.Insert(
+          client.messages.ComputeRegionUrlMapsInsertRequest(
+              project=url_map_ref.project,
+              region=url_map_ref.region,
+              urlMap=url_map))
+
+    return client.apitools_client.urlMaps.Insert(
+        client.messages.ComputeUrlMapsInsertRequest(
+            project=url_map_ref.project, urlMap=url_map))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -107,8 +116,13 @@ class Import(base.UpdateCommand):
       raise exceptions.ToolException(e.message)
 
     # Get existing URL map.
-    get_request = url_maps_utils.ComposeGetRequest(client, url_map_ref)
-    url_map_old = client.MakeRequests([get_request])[0]
+    try:
+      url_map_old = url_maps_utils.SendGetRequest(client, url_map_ref)
+    except apitools_exceptions.HttpError as error:
+      if error.status_code != 404:
+        raise error
+      # Url Map does not exist, create a new one.
+      return self.SendInsertRequest(client, url_map_ref, url_map)
 
     # No change, do not send requests to server.
     if url_map_old == url_map:
@@ -124,7 +138,4 @@ class Import(base.UpdateCommand):
     url_map.id = url_map_old.id
     url_map.fingerprint = url_map_old.fingerprint
 
-    patch_request = self.ComposePatchRequest(
-        client, url_map_ref, url_map)
-
-    return client.MakeRequests([patch_request])
+    return self.SendPatchRequest(client, url_map_ref, url_map)

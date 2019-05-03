@@ -104,6 +104,13 @@ def _Run(args,
     if args.IsSpecified('runtime'):
       function.runtime = args.runtime
       updated_fields.append('runtime')
+      if args.runtime in ['nodejs', 'nodejs6']:  # nodejs is nodejs6 alias
+        log.warning(
+            'The Node.js 6 runtime is deprecated on Cloud Functions. '
+            'Please migrate to Node.js 8 (--runtime=nodejs8) or Node.js 10 '
+            '(--runtime=nodejs10). '
+            'See https://cloud.google.com/functions/docs/migrating/nodejs-runtimes'
+        )
     elif is_new_function:
       raise exceptions.RequiredArgumentException(
           'runtime', 'Flag `--runtime` is required for new functions.')

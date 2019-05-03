@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
-OP_BASE_CMD = 'gcloud beta services vpc-peerings operations '
+OP_BASE_CMD = 'gcloud services vpc-peerings operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
@@ -36,22 +36,22 @@ class Update(base.SilentCommand):
   detailed_help = {
       'DESCRIPTION':
           """\
-          This command updates a private service connection to a service via for a
+          This command updates a private service connection to a service via a
           VPC network.
           """,
       'EXAMPLES':
           """\
           To update connection for a network called `my-network`  on the current
           project to a service called `your-service` with IP CIDR ranges
-          `10.197.0.0/20,10.198.0.0/20` for the service to use, run:
+          `google-range-1,google-range-2` for the service to use, run:
 
             $ {command} --network=my-network --service=your-service \\
-                --ranges=10.197.0.0/20,10.198.0.0/20
+                --ranges=google-range-1,google-range-2
 
           To run the same command asynchronously (non-blocking), run:
 
             $ {command} --network=my-network --service=your-service \\
-                --ranges=10.197.0.0/20,10.198.0.0/20 --async
+                --ranges=google-range-1,google-range-2 --async
           """,
   }
 
@@ -76,7 +76,7 @@ class Update(base.SilentCommand):
     parser.add_argument(
         '--ranges',
         metavar='RANGES',
-        help='IP CIDR ranges for service to use.')
+        help='The names of IP CIDR ranges for service to use.')
     parser.add_argument(
         '--force',
         action='store_true',

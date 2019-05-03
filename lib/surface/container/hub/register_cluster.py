@@ -184,7 +184,7 @@ class RegisterCluster(base.CreateCommand):
       console_io.PromptContinue(
           message='A membership for [{}] already exists. Continuing will '
           'update the Connect agent deployment to use a new image (if one is '
-          'available, or install the Connect agent if it is not already '
+          'available), or install the Connect agent if it is not already '
           'running.'.format(args.CLUSTER_NAME),
           cancel_on_no=True)
 

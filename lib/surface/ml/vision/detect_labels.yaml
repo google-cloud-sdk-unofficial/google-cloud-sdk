@@ -5,6 +5,10 @@
     description: |
       Label Detection detects categories in an image, ranging from modes of
       transportation to animals.
+    examples: |
+      To detect categories in an image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
 
   request:
     _COMMON_: request
@@ -29,6 +33,10 @@
     description: |
       Label Detection detects categories in an image, ranging from modes of
       transportation to animals.
+    examples: |
+      To detect categories in an image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
 
   request:
     _COMMON_: request

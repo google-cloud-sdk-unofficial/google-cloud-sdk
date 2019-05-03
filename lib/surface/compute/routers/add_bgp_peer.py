@@ -170,14 +170,15 @@ def _CreateBgpPeerBfdMessage(messages, args):
   """Creates a BGP peer with base attributes based on flag arguments."""
   if not (args.IsSpecified('bfd_min_receive_interval') or
           args.IsSpecified('bfd_min_transmit_interval') or
-          args.IsSpecified('bfd_mode') or
+          args.IsSpecified('bfd_session_initialization_mode') or
           args.IsSpecified('bfd_multiplier') or
           args.IsSpecified('bfd_packet_mode') or
           args.IsSpecified('bfd_slow_timer_interval')):
     return None
-  bfd_mode = None
-  if args.bfd_mode is not None:
-    bfd_mode = messages.RouterBgpPeerBfd.ModeValueValuesEnum(args.bfd_mode)
+  bfd_session_initialization_mode = None
+  if args.bfd_session_initialization_mode is not None:
+    bfd_session_initialization_mode = messages.RouterBgpPeerBfd.ModeValueValuesEnum(
+        args.bfd_session_initialization_mode)
   bfd_packet_mode = None
   if args.bfd_packet_mode is not None:
     bfd_packet_mode = messages.RouterBgpPeerBfd.PacketModeValueValuesEnum(
@@ -185,7 +186,7 @@ def _CreateBgpPeerBfdMessage(messages, args):
   return messages.RouterBgpPeerBfd(
       minReceiveInterval=args.bfd_min_receive_interval,
       minTransmitInterval=args.bfd_min_transmit_interval,
-      mode=bfd_mode,
+      mode=bfd_session_initialization_mode,
       multiplier=args.bfd_multiplier,
       packetMode=bfd_packet_mode,
       slowTimerInterval=args.bfd_slow_timer_interval,

@@ -27,7 +27,7 @@ args:
     arg_name: image_path
     is_positional: true
     help_text: |
-      The path to the image to be analyzed. This can be either a local path
+      Path to the image to be analyzed. This can be either a local path
       or a URL. If you provide a local file, the contents will be sent
       directly to Google Cloud Vision. If you provide a URL, it must be in
       Google Cloud Storage format (gs://bucket/object) or an HTTP URL
@@ -42,12 +42,18 @@ args:
   max_results_field:
     api_field: requests.features.maxResults
     arg_name: max-results
-    help_text: The maximum number of results to be provided.
+    help_text: Maximum number of results to be provided.
 
   model_field:
     api_field: requests.features.model
     arg_name: model-version
     default: builtin/stable
+    release_tracks: [ALPHA, BETA]
     help_text: |
-      The model version to use for the feature. Supported values include
-      "builtin/stable" and "builtin/latest".
+      Model version to use for the feature.
+    type: str
+    choices:
+    - arg_value: builtin/stable
+      enum_value: builtin/stable
+    - arg_value: builtin/latest
+      enum_value: builtin/latest

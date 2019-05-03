@@ -84,9 +84,9 @@ class Deploy(base.Command):
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     source_ref = flags.GetSourceRef(args.source, args.image)
-    config_changes = flags.GetConfigurationChanges(args)
 
     conn_context = connection_context.GetConnectionContext(args)
+    config_changes = flags.GetConfigurationChanges(args)
 
     if conn_context.supports_one_platform:
       flags.VerifyOnePlatformFlags(args)

@@ -14,6 +14,11 @@
       {language_hints}
     language_hints: !COMMON help_text.language_hints
 
+    examples: |
+      To detect dense text in image 'gs://my_bucket/input_file':
+
+        $ {command} gs://my_bucket/input_file
+
   request:
     _COMMON_: request
     static_fields:
@@ -45,7 +50,10 @@
 
       {language_hints}
     language_hints: !COMMON help_text.language_hints
+    examples: |
+      To detect dense text in image 'gs://my_bucket/input_file':
 
+        $ {command} gs://my_bucket/input_file
   request:
     _COMMON_: request
     static_fields:

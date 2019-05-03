@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A hidden command that prints access tokens.
+"""A command that prints access tokens.
 """
 
 from __future__ import absolute_import
@@ -27,9 +27,18 @@ from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
 
-@base.Hidden
 class AccessToken(base.Command):
   """Print an access token for the active account."""
+  detailed_help = {
+      'DESCRIPTION': """\
+        {description}
+        """,
+      'EXAMPLES': """\
+        To print access tokens:
+
+          $ {command}
+        """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -39,6 +48,13 @@ class AccessToken(base.Command):
               'active account.'))
     parser.display_info.AddFormat('value(access_token)')
 
+    parser.add_argument(
+        '--force-auth-refresh',
+        action='store_true',
+        help='Force a refresh of the credentials even if they have not '
+             'expired yet. By default, credentials will only be refreshed when '
+             'necessary.')
+
   @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError, client.Error)
   def Run(self, args):
     """Run the helper command."""
@@ -46,6 +62,8 @@ class AccessToken(base.Command):
     cred = c_store.Load(args.account)
     c_store.Refresh(cred)
 
+    if args.force_auth_refresh:
+      c_store.Refresh(cred)
     if not cred.access_token:
       raise auth_exceptions.InvalidCredentialsError(
           'No access token could be obtained from the current credentials.')

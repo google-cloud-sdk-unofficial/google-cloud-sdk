@@ -75,3 +75,47 @@
             Path to file containing the data payload to be included as the
             body of the HTTP request. May only be given with compatible HTTP
             methods (PUT or POST).
+    - group:
+        help_text: |
+          How the request sent to the target when executing the job should be
+          authenticated.
+        mutex: true
+        params:
+        - group:
+            help_text: OpenId Connect
+            params:
+            - api_field: job.httpTarget.oidcToken.serviceAccountEmail
+              arg_name: oidc-service-account-email
+              required: true
+              help_text: |
+                The service account email to be used for generating an OpenId
+                Connect token to be included in the request sent to the target
+                when executing the job. The service account must be within the
+                same project as the job. The caller must have
+                iam.serviceAccounts.actAs permission for the service account.
+            - api_field: job.httpTarget.oidcToken.audience
+              arg_name: oidc-token-audience
+              help_text: |
+                The audience to be used when generating an OpenId Connect token
+                to be included in the request sent to the target when executing
+                the job. If not specified, the URI specified in target will be
+                used.
+        - group:
+            help_text: OAuth2
+            params:
+            - api_field: job.httpTarget.oauthToken.serviceAccountEmail
+              arg_name: oauth-service-account-email
+              required: true
+              help_text: |
+                The service account email to be used for generating an OAuth2
+                access token to be included in the request sent to the target
+                when executing the job. The service account must be within the
+                same project as the job. The caller must have
+                iam.serviceAccounts.actAs permission for the service account.
+            - api_field: job.httpTarget.oauthToken.scope
+              arg_name: oauth-token-scope
+              help_text: |
+                The scope to be used when generating an OAuth2 access token to
+                be included in the request sent to the target when executing the
+                job. If not specified,
+                "https://www.googleapis.com/auth/cloud-platform" will be used.

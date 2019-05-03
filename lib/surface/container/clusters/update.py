@@ -434,6 +434,8 @@ class UpdateBeta(Update):
     flags.AddResourceUsageExportFlags(group, add_clear_flag=True)
     flags.AddIstioConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
+    flags.AddWorkloadIdentityFlags(group)
+    flags.AddWorkloadIdentityUpdateFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -455,6 +457,11 @@ class UpdateBeta(Update):
         args.clear_resource_usage_bigquery_dataset
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+
+    # Top-level update options are automatically forced to be
+    # mutually-exclusive, so we don't need special handling for these two.
+    opts.identity_namespace = args.identity_namespace
+    opts.disable_workload_identity = args.disable_workload_identity
 
     return opts
 
@@ -498,6 +505,8 @@ class UpdateAlpha(Update):
     flags.AddIstioConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddPeeringRouteSharingFlag(group)
+    flags.AddWorkloadIdentityFlags(group)
+    flags.AddWorkloadIdentityUpdateFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -522,5 +531,10 @@ class UpdateAlpha(Update):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_peering_route_sharing = args.enable_peering_route_sharing
+
+    # Top-level update options are automatically forced to be
+    # mutually-exclusive, so we don't need special handling for these two.
+    opts.identity_namespace = args.identity_namespace
+    opts.disable_workload_identity = args.disable_workload_identity
 
     return opts

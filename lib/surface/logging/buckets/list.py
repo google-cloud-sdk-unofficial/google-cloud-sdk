@@ -35,7 +35,7 @@ class List(base.ListCommand):
         'Location from which to list buckets. By default, buckets in all '
         'locations will be listed')
     parser.display_info.AddFormat(
-        'table(name, display_name, retentionPeriod, locked, create_time,'
+        'table(name, display_name, retentionDays, locked, create_time,'
         'update_time, description)')
     parser.display_info.AddCacheUpdater(None)
 

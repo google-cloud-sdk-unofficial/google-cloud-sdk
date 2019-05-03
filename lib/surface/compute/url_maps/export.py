@@ -72,9 +72,7 @@ class Export(base.Command):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    get_request = url_maps_utils.ComposeGetRequest(client, url_map_ref)
-
-    url_map = client.MakeRequests([get_request])[0]
+    url_map = url_maps_utils.SendGetRequest(client, url_map_ref)
 
     if args.destination:
       with files.FileWriter(args.destination) as stream:
@@ -85,5 +83,3 @@ class Export(base.Command):
       export_util.Export(message=url_map,
                          stream=sys.stdout,
                          schema_path=self.GetSchemaPath())
-
-
