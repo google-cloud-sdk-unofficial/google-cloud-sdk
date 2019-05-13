@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.resource import resource_filter
 from googlecloudsdk.core.util import times
 
 
@@ -119,7 +120,12 @@ class List(base.ListCommand):
     Returns:
       An iterator over Job messages.
     """
-    filter_pred = _JobFilter(args)
+    if args.filter:
+      filter_expr = resource_filter.Compile(args.filter)
+      filter_pred = lambda x: filter_expr.Evaluate(x) and _JobFilter(args)(x)
+    else:
+      filter_pred = _JobFilter(args)
+
     project_id = properties.VALUES.core.project.Get(required=True)
     jobs = self._JobSummariesForProject(project_id, args, filter_pred)
 

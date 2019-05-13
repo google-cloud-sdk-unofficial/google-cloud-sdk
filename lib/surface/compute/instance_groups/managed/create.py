@@ -73,7 +73,7 @@ def _IsZonalGroup(ref):
   return ref.Collection() == 'compute.instanceGroupManagers'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create Google Compute Engine managed instance groups."""
 
@@ -235,15 +235,58 @@ class CreateGA(base.CreateCommand):
     return augmented_migs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateGA):
   """Create Google Compute Engine managed instance groups."""
 
   @classmethod
   def Args(cls, parser):
     CreateGA.Args(parser)
-    instance_groups_flags.AddMigCreateStatefulFlags(parser)
     instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
+
+  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
+                                  holder):
+    """Create parts of Instance Group Manager shared for the track."""
+    instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
+        args, holder.resources)
+    health_check = managed_instance_groups_utils.GetHealthCheckUri(
+        holder.resources, args)
+    auto_healing_policies = (
+        managed_instance_groups_utils.CreateAutohealingPolicies(
+            client.messages, health_check, args.initial_delay))
+    managed_instance_groups_utils.ValidateAutohealingPolicies(
+        auto_healing_policies)
+    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
+        args.GetValue('instance_redistribution_type'), group_ref)
+    update_policy = (managed_instance_groups_utils
+                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                         client, args.GetValue('instance_redistribution_type'),
+                         None)
+
+    return client.messages.InstanceGroupManager(
+        name=group_ref.Name(),
+        description=args.description,
+        instanceTemplate=template_ref.SelfLink(),
+        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
+            args.base_instance_name, group_ref),
+        targetPools=self._GetInstanceGroupManagerTargetPools(
+            args.target_pool, group_ref, holder),
+        targetSize=int(args.size),
+        autoHealingPolicies=auto_healing_policies,
+        distributionPolicy=self._CreateDistributionPolicy(
+            args.zones, holder.resources, client.messages),
+        updatePolicy=update_policy,
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create Google Compute Engine managed instance groups."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateBeta.Args(parser)
+    instance_groups_flags.AddMigCreateStatefulFlags(parser)
 
   @staticmethod
   def _MakePreservedStateWithDisks(client, stateful_disks):

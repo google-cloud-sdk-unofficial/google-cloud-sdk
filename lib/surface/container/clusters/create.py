@@ -35,7 +35,6 @@ from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -214,10 +213,6 @@ def ParseCreateOptionsBase(args):
                 '`--enable-basic-auth` or `--username` is not, our API will '
                 'treat that as `--no-enable-basic-auth`.')
 
-  if (args.IsSpecified('enable_cloud_endpoints') and
-      properties.VALUES.container.new_scopes_behavior.GetBool()):
-    raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
-                     'property container/ new_scopes_behavior is set to true.')
   flags.WarnForUnspecifiedIpAllocationPolicy(args)
   enable_autorepair = cmd_util.GetAutoRepair(args)
   flags.WarnForNodeModification(args, enable_autorepair)
@@ -236,7 +231,6 @@ def ParseCreateOptionsBase(args):
       enable_autorepair=enable_autorepair,
       enable_autoscaling=args.enable_autoscaling,
       enable_autoupgrade=cmd_util.GetAutoUpgrade(args),
-      enable_cloud_endpoints=args.enable_cloud_endpoints,
       enable_cloud_logging=args.enable_cloud_logging,
       enable_cloud_monitoring=args.enable_cloud_monitoring,
       enable_ip_alias=args.enable_ip_alias,
@@ -307,7 +301,7 @@ class Create(base.CreateCommand):
     flags.AddNetworkPolicyFlags(parser)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
-    flags.AddDeprecatedClusterNodeIdentityFlags(parser)
+    flags.AddClusterNodeIdentityFlags(parser)
     flags.AddPrivateClusterFlags(
         parser, with_deprecated=False, with_alpha=False)
     flags.AddClusterVersionFlag(parser)
@@ -491,7 +485,6 @@ class CreateBeta(Create):
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
-    ops.new_scopes_behavior = True
     ops.private_cluster = args.private_cluster
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.enable_binauthz = args.enable_binauthz
@@ -587,6 +580,7 @@ class CreateAlpha(Create):
         parser, 'cluster', flag_overrides=kms_flag_overrides)
     flags.AddSurgeUpgradeFlag(parser)
     flags.AddMaxUnavailableUpgradeFlag(parser)
+    flags.AddLinuxSysctlFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -609,7 +603,6 @@ class CreateAlpha(Create):
     ops.enable_private_nodes = args.enable_private_nodes
     ops.enable_private_endpoint = args.enable_private_endpoint
     ops.master_ipv4_cidr = args.master_ipv4_cidr
-    ops.new_scopes_behavior = True
     ops.enable_tpu_service_networking = args.enable_tpu_service_networking
     ops.istio_config = args.istio_config
     ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
@@ -643,5 +636,6 @@ class CreateAlpha(Create):
                                                     'not fully specified.')
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
+    ops.linux_sysctls = args.linux_sysctls
 
     return ops

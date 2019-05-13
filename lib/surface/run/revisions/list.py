@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-class List(base.ListCommand):
+class List(commands.List):
   """List available revisions."""
 
   detailed_help = {
@@ -42,8 +42,8 @@ class List(base.ListCommand):
          """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddServiceFlag(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
@@ -61,13 +61,13 @@ class List(base.ListCommand):
         'name:label=REVISION,service_name:label=SERVICE,author,'
         'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label=CREATED)'.format(
             ready_column=pretty_print.READY_COLUMN))
+    parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   def Run(self, args):
     """List available revisions."""
-    if args.uri:
-      raise flags.ArgumentError('--uri flag is not supported for this resource')
     service_name = args.service
     conn_context = connection_context.GetConnectionContext(args)
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
+      self.SetCompleteApiEndpoint(conn_context.endpoint)
       return client.ListRevisions(namespace_ref, service_name)

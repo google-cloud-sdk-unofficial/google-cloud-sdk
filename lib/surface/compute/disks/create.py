@@ -318,7 +318,8 @@ class Create(base.Command):
   def Run(self, args):
     return self._Run(args, supports_kms_keys=True)
 
-  def _Run(self, args, supports_kms_keys=False, supports_physical_block=False):
+  def _Run(self, args, supports_kms_keys=False, supports_physical_block=False,
+           support_shared_disk=False):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = compute_holder.client
 
@@ -410,6 +411,14 @@ class Create(base.Command):
           type=type_uri,
           physicalBlockSizeBytes=physical_block_size_bytes,
           **kwargs)
+      if (support_shared_disk and disk_ref.Collection() == 'compute.regionDisks'
+          and args.IsSpecified('multi_writer')):
+        raise exceptions.InvalidArgumentException('--multi-writer', (
+            '--multi-writer can be used only with --zone flag'))
+
+      if (support_shared_disk and disk_ref.Collection() == 'compute.disks' and
+          args.IsSpecified('multi_writer')):
+        disk.multiWriter = args.multi_writer
 
       if guest_os_feature_messages:
         disk.guestOsFeatures = guest_os_feature_messages
@@ -489,9 +498,18 @@ class CreateAlpha(Create):
     resource_flags.AddResourcePoliciesArgs(parser, 'added to', 'disk')
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
+    parser.add_argument(
+        '--multi-writer',
+        action='store_true',
+        help=('Create the disk in shared mode so that it can be attached with '
+              'read-write access to multiple VMs. Available only for zonal '
+              'disks. Cannot be used with regional disks. Shared disk is '
+              'exposed only as an NVMe device. Shared PD does not yet support '
+              'resize and snapshot operations.'))
 
   def Run(self, args):
-    return self._Run(args, supports_kms_keys=True, supports_physical_block=True)
+    return self._Run(args, supports_kms_keys=True, supports_physical_block=True,
+                     support_shared_disk=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

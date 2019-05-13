@@ -660,7 +660,7 @@ def load_metadata(model_path):
     # pylint: disable=g-import-not-at-top
     from  explainers.tf import model_metadata
     # pylint: enable=g-import-not-at-top
-    metadata = model_metadata.read_model_metadata_from_file(metadata_file)
+    metadata = model_metadata.ModelMetadata.from_file(metadata_file)
   except IOError as e:
     error_msg = "Failed to read metadata.json: {}.".format(str(e))
     logging.critical(error_msg)

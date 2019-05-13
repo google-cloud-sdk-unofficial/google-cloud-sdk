@@ -65,7 +65,6 @@ class Describe(base.DescribeCommand):
             InstalledPackages.wua:format=
               "table[box,title='Installed Packages (Windows Update Agent)'](
                 Title:sort=1:wrap,
-                Description:wrap=11,
                 Categories.list():wrap,
                 KBArticleIDs.list():wrap=14,
                 SupportURL:wrap=11,
@@ -91,7 +90,6 @@ class Describe(base.DescribeCommand):
             PackageUpdates.wua:format=
               "table[box,title='Package Updates Available (Windows Update Agent)'](
                 Title:sort=1:wrap,
-                Description:wrap=11,
                 Categories.list():wrap,
                 KBArticleIDs.list():wrap=14,
                 SupportURL:wrap=11,

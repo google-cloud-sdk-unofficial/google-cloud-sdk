@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_heal
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
   r"""Update Google Compute Engine managed instance groups.
 
@@ -122,8 +122,69 @@ class UpdateGA(base.UpdateCommand):
               autoHealingPolicies=auto_healing_policies))
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(UpdateGA):
+  r"""Update Google Compute Engine managed instance groups.
+
+  *{command}* allows you to specify or modify AutoHealingPolicy for an existing
+  managed instance group.
+
+  When updating the AutoHealingPolicy, you may specify the health check, initial
+  delay, or both. If the field is unspecified, its value won't be modified. If
+  `--health-check` is specified, the health check will be used to monitor the
+  health of your application. Whenever the health check signal for the instance
+  becomes `UNHEALTHY`, the autohealing action (`RECREATE`) on an instance will
+  be performed.
+
+  If no health check is specified, the instance autohealing will be triggered by
+  the instance status only (i.e. the autohealing action (`RECREATE`) on an
+  instance will be performed if `instance.status` is not `RUNNING`).
+  """
+
+  @staticmethod
+  def Args(parser):
+    UpdateGA.Args(parser)
+    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+               .ResolveAsResource)(
+                   args,
+                   holder.resources,
+                   default_scope=compute_scope.ScopeEnum.ZONE,
+                   scope_lister=flags.GetDefaultScopeLister(client))
+
+    if igm_ref.Collection() not in [
+        'compute.instanceGroupManagers', 'compute.regionInstanceGroupManagers'
+    ]:
+      raise ValueError('Unknown reference type {0}'.format(
+          igm_ref.Collection()))
+
+    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
+        args.GetValue('instance_redistribution_type'), igm_ref)
+
+    igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
+        igm_ref, client)
+
+    update_policy = (managed_instance_groups_utils
+                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                         client, args.GetValue('instance_redistribution_type'),
+                         igm_resource.updatePolicy)
+
+    auto_healing_policies = self._GetValidatedAutohealingPolicies(
+        holder, client, args, igm_resource)
+
+    igm_updated_resource = client.messages.InstanceGroupManager(
+        updatePolicy=update_policy)
+    if auto_healing_policies is not None:
+      igm_updated_resource.autoHealingPolicies = auto_healing_policies
+    return self._MakePatchRequest(client, igm_ref, igm_updated_resource)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateGA):
+class UpdateAlpha(UpdateBeta):
   r"""Update Google Compute Engine managed instance groups.
 
   *{command}* allows you to specify or modify the StatefulPolicy and
@@ -149,9 +210,8 @@ class UpdateAlpha(UpdateGA):
 
   @staticmethod
   def Args(parser):
-    UpdateGA.Args(parser)
+    UpdateBeta.Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
-    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
   def _MakePreservedStateDiskEntry(self, client, stateful_disk_dict):
     """Create StatefulPolicyPreservedState from a list of device names."""

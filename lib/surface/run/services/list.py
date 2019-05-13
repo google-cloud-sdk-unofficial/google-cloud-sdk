@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import global_methods
-from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-class List(base.ListCommand):
+class List(commands.List):
   """List available services."""
 
   detailed_help = {
@@ -43,8 +43,8 @@ class List(base.ListCommand):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
@@ -64,16 +64,18 @@ class List(base.ListCommand):
         last_modifier:label="LAST DEPLOYED BY",
         last_transition_time:label="LAST DEPLOYED AT")""".format(
             ready_column=pretty_print.READY_COLUMN))
+    parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   def Run(self, args):
     """List available services."""
-    if args.uri:
-      raise flags.ArgumentError('--uri flag is not supported for this resource')
-    if not flags.IsGKE(args) and not getattr(args, 'region', None):
+    if not flags.ValidateIsGKE(args) and not getattr(args, 'region', None):
+      client = global_methods.GetServerlessClientInstance()
+      self.SetPartialApiEndpoint(client.url)
       locations_ref = args.CONCEPTS.region.Parse()
-      return global_methods.ListServices(locations_ref.RelativeName())
+      return global_methods.ListServices(client, locations_ref.RelativeName())
     else:
       conn_context = connection_context.GetConnectionContext(args)
       namespace_ref = args.CONCEPTS.namespace.Parse()
       with serverless_operations.Connect(conn_context) as client:
+        self.SetCompleteApiEndpoint(conn_context.endpoint)
         return client.ListServices(namespace_ref)

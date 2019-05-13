@@ -70,6 +70,13 @@ def _GetTranslateWorkflow(args):
   return args.custom_workflow
 
 
+def _AppendTranslateWorkflowArg(args, import_args):
+  if args.os:
+    daisy_utils.AppendArg(import_args, 'os', args.os)
+  daisy_utils.AppendArg(import_args, 'custom_translate_workflow',
+                        args.custom_workflow)
+
+
 def _CheckImageName(image_name):
   """Checks for a valid GCE image name."""
   name_message = ('Name must start with a lowercase letter followed by up to '
@@ -197,14 +204,44 @@ class Import(base.CreateCommand):
     _CheckForExistingImage(args.image_name, compute_holder)
 
     import_stager = self._CreateImportStager(args)
-    daisy_vars, workflow = import_stager.Stage()
+    import_metadata = self._Stage(import_stager)
 
     # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
     # warning message with a ProgressTracker spinner.
     log.warning('Importing image. This may take up to 2 hours.')
     tags = ['gce-daisy-image-import']
+
+    return self._RunImageImport(args, import_stager, import_metadata, tags)
+
+  def _Stage(self, import_stager):
+    """Prepares for import.
+
+    Args:
+      import_stager: BaseImportStager to do the actual staging job.
+
+    Returns:
+      list of str, which contains metadata for the import step
+    """
+    return import_stager.StageForDaisy()
+
+  def _RunImageImport(self, args, import_stager, import_metadata, tags):
+    """Run actual image import.
+
+    Args:
+      args: list of str, CLI args that might contain network/subnet args.
+      import_stager: BaseImportStager, to do actual stage steps.
+      import_metadata: list of str, contains metadata used by import. It can be
+        daisy vars or import wrapper args.
+      tags: A list of strings for adding tags to the Argo build.
+
+    Returns:
+      A cloud build that executes importing.
+    """
     return daisy_utils.RunDaisyBuild(
-        args, workflow, ','.join(daisy_vars), tags=tags,
+        args,
+        import_stager.GetDaisyWorkflow(),
+        ','.join(import_metadata),
+        tags=tags,
         daisy_bucket=import_stager.GetDaisyBucket(),
         user_zone=properties.VALUES.compute.zone.Get(),
         output_filter=_OUTPUT_FILTER)
@@ -246,29 +283,61 @@ class BaseImportStager(object):
     """
     return self.daisy_bucket
 
-  def Stage(self):
-    """Prepares import for execution and returns daisy variables/workflow.
+  def StageForDaisy(self):
+    """Prepares import for execution and returns daisy variables.
+
+    It supports native daisy, which is on the path of deprecation for image
+    import feature.
 
     Returns:
-      Tuple (daisy_vars, workflow).
       daisy_vars - array of strings, Daisy variables.
-      workflow - str, Daisy workflow.
     """
     daisy_vars = []
     self._BuildDaisyVars(daisy_vars)
-    return daisy_vars, self._GetDaisyWorkflow()
+    return daisy_vars
 
-  def _BuildDaisyVars(self, daisy_workflow):
-    daisy_workflow.append('image_name={}'.format(self.args.image_name))
+  def StageForImporter(self):
+    """Prepares import for execution and returns import variables.
+
+    It supports running new import wrapper (gce_vm_image_import).
+
+    Returns:
+      import_args - array of strings, import variables.
+    """
+    import_args = []
+    self._BuildImportArgs(import_args)
+    return import_args
+
+  def _BuildDaisyVars(self, daisy_vars):
+    daisy_vars.append('image_name={}'.format(self.args.image_name))
 
     if not self.args.guest_environment:
-      daisy_workflow.append('install_gce_packages={}'.format('false'))
+      daisy_vars.append('install_gce_packages={}'.format('false'))
 
-    daisy_workflow.extend(daisy_utils.ExtractNetworkAndSubnetDaisyVariables(
+    daisy_vars.extend(daisy_utils.ExtractNetworkAndSubnetDaisyVariables(
         self.args, daisy_utils.ImageOperation.IMPORT))
 
+  def _BuildImportArgs(self, import_args):
+    """Build args to support running new import wrapper - gce_vm_image_import.
+
+    Args:
+      import_args: array of str, args to build.
+    """
+    daisy_utils.AppendArg(import_args, 'zone',
+                          properties.VALUES.compute.zone.Get())
+    daisy_utils.AppendArg(import_args, 'scratch_bucket_gcs_path',
+                          'gs://{0}/'.format(self.GetDaisyBucket()))
+    daisy_utils.AppendArg(import_args, 'timeout',
+                          '{}s'.format(daisy_utils.GetDaisyTimeout(self.args)))
+
+    daisy_utils.AppendArg(import_args, 'client_id', 'gcloud')
+    daisy_utils.AppendArg(import_args, 'image_name', self.args.image_name)
+    daisy_utils.AppendBoolArg(import_args, 'no_guest_environment',
+                              not self.args.guest_environment)
+    daisy_utils.AppendNetworkAndSubnetArgs(self.args, import_args)
+
   @abc.abstractmethod
-  def _GetDaisyWorkflow(self):
+  def GetDaisyWorkflow(self):
     raise NotImplementedError
 
   def GetAndCreateDaisyBucket(self):
@@ -285,14 +354,24 @@ class ImportFromImageStager(BaseImportStager):
     daisy_vars.append(
         'translate_workflow={}'.format(_GetTranslateWorkflow(self.args)))
 
+    source_name = self._GetSourceImage()
+    daisy_vars.append('source_image={}'.format(source_name))
+
+  def _BuildImportArgs(self, import_args):
+    source_image_name = self._GetSourceImage()
+    daisy_utils.AppendArg(import_args, 'source_image', source_image_name)
+    _AppendTranslateWorkflowArg(self.args, import_args)
+    super(ImportFromImageStager, self)._BuildImportArgs(import_args)
+
+  def _GetSourceImage(self):
     ref = resources.REGISTRY.Parse(
         self.args.source_image, collection='compute.images',
         params={'project': properties.VALUES.core.project.GetOrFail})
     # source_name should be of the form 'global/images/image-name'.
     source_name = ref.RelativeName()[len(ref.Parent().RelativeName() + '/'):]
-    daisy_vars.append('source_image={}'.format(source_name))
+    return source_name
 
-  def _GetDaisyWorkflow(self):
+  def GetDaisyWorkflow(self):
     return _IMPORT_FROM_IMAGE_WORKFLOW
 
 
@@ -307,13 +386,32 @@ class BaseImportFromFileStager(BaseImportStager):
       daisy_vars.append(
           'translate_workflow={}'.format(_GetTranslateWorkflow(self.args)))
 
-  def _GetDaisyWorkflow(self):
+  def _BuildImportArgs(self, import_args):
+    # Import and (maybe) translate from the scratch bucket.
+    daisy_utils.AppendArg(import_args, 'source_file', self.gcs_uri)
+    if self.args.data_disk:
+      daisy_utils.AppendBoolArg(import_args, 'data_disk', self.args.data_disk)
+    else:
+      _AppendTranslateWorkflowArg(self.args, import_args)
+
+    super(BaseImportFromFileStager, self)._BuildImportArgs(import_args)
+
+  def GetDaisyWorkflow(self):
     if self.args.data_disk:
       return _IMPORT_WORKFLOW
     else:
       return _IMPORT_AND_TRANSLATE_WORKFLOW
 
-  def Stage(self):
+  def StageForDaisy(self):
+    self._FileStage()
+    return super(BaseImportFromFileStager, self).StageForDaisy()
+
+  def StageForImporter(self):
+    self._FileStage()
+    return super(BaseImportFromFileStager, self).StageForImporter()
+
+  def _FileStage(self):
+    """Prepare image file for importing."""
     # If the file is an OVA file, print a warning.
     if self.args.source_file.endswith('.ova'):
       log.warning(
@@ -328,9 +426,7 @@ class BaseImportFromFileStager(BaseImportStager):
           'using `gcloud compute images export`) then you can instead use '
           '`gcloud compute images create` to create your image from your '
           '.tar.gz file.')
-
     self.gcs_uri = self._CopySourceFileToScratchBucket()
-    return super(BaseImportFromFileStager, self).Stage()
 
   @abc.abstractmethod
   def _CopySourceFileToScratchBucket(self):
@@ -399,15 +495,23 @@ class ImportFromGSFileStager(BaseImportFromFileStager):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ImportBeta(Import):
-  """Import an image into Google Compute Engine for Alpha and Beta releases."""
+  """Import an image into Google Compute Engine for Beta releases."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ImportAlpha(ImportBeta):
+  """Import an image into Google Compute Engine for Alpha releases."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_ALPHA
+
+  def _Stage(self, import_stager):
+    return import_stager.StageForImporter()
+
+  def _RunImageImport(self, args, import_stager, import_metadata, tags):
+    return daisy_utils.RunImageImport(args, import_metadata, tags,
+                                      _OUTPUT_FILTER)
 
 
 Import.detailed_help = {

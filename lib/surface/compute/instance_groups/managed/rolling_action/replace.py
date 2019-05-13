@@ -57,17 +57,14 @@ class StartUpdate(base.Command):
     client = holder.client
     resources = holder.resources
 
-    cleared_fields = []
-
-    with client.apitools_client.IncludeFields(cleared_fields):
-      minimal_action = (client.messages.InstanceGroupManagerUpdatePolicy.
-                        MinimalActionValueValuesEnum.REPLACE)
-      max_surge = update_instances_utils.ParseFixedOrPercent(
-          '--max-surge', 'max-surge', args.max_surge, client.messages)
-      return client.MakeRequests([
-          rolling_action.CreateRequest(args, cleared_fields, client, resources,
-                                       minimal_action, max_surge)
-      ])
+    minimal_action = (client.messages.InstanceGroupManagerUpdatePolicy.
+                      MinimalActionValueValuesEnum.REPLACE)
+    max_surge = update_instances_utils.ParseFixedOrPercent(
+        '--max-surge', 'max-surge', args.max_surge, client.messages)
+    return client.MakeRequests([
+        rolling_action.CreateRequest(args, client, resources,
+                                     minimal_action, max_surge)
+    ])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

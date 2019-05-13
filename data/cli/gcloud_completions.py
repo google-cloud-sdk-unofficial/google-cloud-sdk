@@ -1101,6 +1101,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--folder": "value",
                 "--organization": "value",
                 "--output-path": "value",
+                "--output-path-prefix": "value",
                 "--snapshot-time": "value"
               }
             },
@@ -2617,6 +2618,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--kms-project": "dynamic",
                     "--labels": "value",
                     "--licenses": "value",
+                    "--multi-writer": "bool",
                     "--physical-block-size": [
                       "16384",
                       "4096"
@@ -5575,6 +5577,65 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "os-config": {
+              "commands": {
+                "patch-jobs": {
+                  "commands": {
+                    "cancel": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "describe": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "execute": {
+                      "commands": {},
+                      "flags": {
+                        "--apt-dist": "bool",
+                        "--async": "bool",
+                        "--description": "value",
+                        "--dry-run": "bool",
+                        "--duration": "value",
+                        "--instance-filter": "value",
+                        "--reboot-config": [
+                          "always",
+                          "default",
+                          "never"
+                        ],
+                        "--retry": "bool",
+                        "--windows-classifications": "value",
+                        "--windows-excludes": "value",
+                        "--yum-excludes": "value",
+                        "--yum-minimal": "bool",
+                        "--yum-security": "bool"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool"
+                      }
+                    },
+                    "list-instance-details": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
             "os-login": {
               "commands": {
                 "describe-profile": {
@@ -7849,7 +7910,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoupgrade": "bool",
                     "--enable-basic-auth": "bool",
                     "--enable-binauthz": "bool",
-                    "--enable-cloud-endpoints": "bool",
                     "--enable-cloud-logging": "bool",
                     "--enable-cloud-monitoring": "bool",
                     "--enable-intra-node-visibility": "bool",
@@ -7871,6 +7931,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--issue-client-certificate": "bool",
                     "--istio-config": "value",
                     "--labels": "value",
+                    "--linux-sysctls": "value",
                     "--local-ssd-count": "value",
                     "--local-ssd-volumes": "value",
                     "--machine-type": "value",
@@ -8181,8 +8242,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autorepair": "bool",
                     "--enable-autoscaling": "bool",
                     "--enable-autoupgrade": "bool",
-                    "--enable-cloud-endpoints": "bool",
                     "--image-type": "value",
+                    "--linux-sysctls": "value",
                     "--local-ssd-count": "value",
                     "--local-ssd-volumes": "value",
                     "--machine-type": "value",
@@ -11629,6 +11690,12 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--sort-by": "value",
                         "--uri": "bool"
                       }
+                    },
+                    "upload": {
+                      "commands": {},
+                      "flags": {
+                        "--iam-account": "dynamic"
+                      }
                     }
                   },
                   "flags": {}
@@ -12683,6 +12750,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--billing-account": "value",
+                    "--dlp-deidentify-template": "value",
+                    "--dlp-inspect-template": "value",
                     "--folder": "value",
                     "--include-children": "bool",
                     "--log-filter": "value",
@@ -12720,6 +12789,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--billing-account": "value",
+                    "--dlp-deidentify-template": "value",
+                    "--dlp-inspect-template": "value",
                     "--folder": "value",
                     "--log-filter": "value",
                     "--organization": "dynamic"
@@ -15117,6 +15188,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--uri": "bool"
                   }
                 },
+                "pause": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "resume": {
+                  "commands": {},
+                  "flags": {}
+                },
                 "run": {
                   "commands": {},
                   "flags": {}
@@ -16210,6 +16289,10 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {}
             }
           },
+          "flags": {}
+        },
+        "survey": {
+          "commands": {},
           "flags": {}
         },
         "tasks": {
@@ -18080,6 +18163,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--folder": "value",
                 "--organization": "value",
                 "--output-path": "value",
+                "--output-path-prefix": "value",
                 "--snapshot-time": "value"
               }
             },
@@ -20172,6 +20256,10 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--http-health-check": "value",
                         "--https-health-check": "value",
                         "--initial-delay": "value",
+                        "--instance-redistribution-type": [
+                          "NONE",
+                          "PROACTIVE"
+                        ],
                         "--region": "dynamic",
                         "--size": "value",
                         "--target-pool": "value",
@@ -20388,6 +20476,10 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--http-health-check": "value",
                         "--https-health-check": "value",
                         "--initial-delay": "value",
+                        "--instance-redistribution-type": [
+                          "NONE",
+                          "PROACTIVE"
+                        ],
                         "--region": "dynamic",
                         "--zone": "dynamic"
                       }
@@ -23872,7 +23964,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autoupgrade": "bool",
                     "--enable-basic-auth": "bool",
                     "--enable-binauthz": "bool",
-                    "--enable-cloud-endpoints": "bool",
                     "--enable-cloud-logging": "bool",
                     "--enable-cloud-monitoring": "bool",
                     "--enable-intra-node-visibility": "bool",
@@ -24127,7 +24218,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-autorepair": "bool",
                     "--enable-autoscaling": "bool",
                     "--enable-autoupgrade": "bool",
-                    "--enable-cloud-endpoints": "bool",
                     "--image-type": "value",
                     "--local-ssd-count": "value",
                     "--machine-type": "value",
@@ -29282,8 +29372,10 @@ STATIC_COMPLETION_CLI_TREE = {
             "deploy": {
               "commands": {},
               "flags": {
+                "--add-cloudsql-instances": "value",
                 "--allow-unauthenticated": "bool",
                 "--async": "bool",
+                "--clear-cloudsql-instances": "bool",
                 "--clear-env-vars": "bool",
                 "--cluster": "value",
                 "--cluster-location": "value",
@@ -29297,7 +29389,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--memory": "value",
                 "--namespace": "value",
                 "--region": "value",
+                "--remove-cloudsql-instances": "value",
                 "--remove-env-vars": "value",
+                "--set-cloudsql-instances": "value",
                 "--set-env-vars": "value",
                 "--timeout": "value",
                 "--update-env-vars": "value"
@@ -29493,7 +29587,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--add-cloudsql-instances": "value",
                     "--async": "bool",
+                    "--clear-cloudsql-instances": "bool",
                     "--clear-env-vars": "bool",
                     "--cluster": "value",
                     "--cluster-location": "value",
@@ -29502,7 +29598,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--memory": "value",
                     "--namespace": "value",
                     "--region": "value",
+                    "--remove-cloudsql-instances": "value",
                     "--remove-env-vars": "value",
+                    "--set-cloudsql-instances": "value",
                     "--set-env-vars": "value",
                     "--timeout": "value",
                     "--update-env-vars": "value"
@@ -29751,6 +29849,14 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--sort-by": "value",
                     "--uri": "bool"
                   }
+                },
+                "pause": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "resume": {
+                  "commands": {},
+                  "flags": {}
                 },
                 "run": {
                   "commands": {},
@@ -35912,7 +36018,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-autoscaling": "bool",
                 "--enable-autoupgrade": "bool",
                 "--enable-basic-auth": "bool",
-                "--enable-cloud-endpoints": "bool",
                 "--enable-cloud-logging": "bool",
                 "--enable-cloud-monitoring": "bool",
                 "--enable-ip-alias": "bool",
@@ -36119,7 +36224,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-autorepair": "bool",
                 "--enable-autoscaling": "bool",
                 "--enable-autoupgrade": "bool",
-                "--enable-cloud-endpoints": "bool",
                 "--image-type": "value",
                 "--local-ssd-count": "value",
                 "--machine-type": "value",

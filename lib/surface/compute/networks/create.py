@@ -43,6 +43,7 @@ def EpilogText(network_name):
   log.status.Print(textwrap.dedent(message))
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine network.
 
@@ -91,3 +92,29 @@ class Create(base.CreateCommand):
 
   def Epilog(self, resources_were_displayed=True):
     EpilogText(self._network_name)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine network.
+
+  *{command}* is used to create virtual networks. A network
+  performs the same function that a router does in a home
+  network: it describes the network range and gateway IP
+  address, handles communication between instances, and serves
+  as a gateway between instances and callers outside the
+  network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    cls.NETWORK_ARG = flags.NetworkArgument()
+    cls.NETWORK_ARG.AddArgument(parser, operation_type='create')
+
+    network_utils.AddCreateBaseArgs(parser)
+    network_utils.AddCreateSubnetModeArg(parser)
+    network_utils.AddCreateBgpRoutingModeArg(parser)
+    network_utils.AddMulticastModeArg(parser)
+
+    parser.display_info.AddCacheUpdater(flags.NetworksCompleter)

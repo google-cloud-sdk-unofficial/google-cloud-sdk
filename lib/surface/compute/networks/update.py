@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute.networks import network_utils
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine Network."""
 
@@ -54,13 +55,17 @@ class Update(base.UpdateCommand):
               project=network_ref.project,
               network=network_ref.Name()))
 
-    if args.bgp_routing_mode:
+    if args.bgp_routing_mode or getattr(args, 'multicast_mode', None):
       network_resource = messages.Network()
-      network_resource.routingConfig = messages.NetworkRoutingConfig()
-      network_resource.routingConfig.routingMode = (
-          messages.NetworkRoutingConfig.RoutingModeValueValuesEnum(
-              args.bgp_routing_mode.upper()))
-
+      if args.bgp_routing_mode:
+        network_resource.routingConfig = messages.NetworkRoutingConfig()
+        network_resource.routingConfig.routingMode = (
+            messages.NetworkRoutingConfig.RoutingModeValueValuesEnum(
+                args.bgp_routing_mode.upper()))
+      if getattr(args, 'multicast_mode', None):
+        network_resource.multicastMode = (
+            messages.Network.MulticastModeValueValuesEnum(
+                args.multicast_mode.upper()))
       resource = service.Patch(
           messages.ComputeNetworksPatchRequest(
               project=network_ref.project,
@@ -68,6 +73,17 @@ class Update(base.UpdateCommand):
               networkResource=network_resource))
 
     return resource
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Google Compute Engine Network."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.NETWORK_ARG = flags.NetworkArgument()
+    cls.NETWORK_ARG.AddArgument(parser)
+    network_utils.AddUpdateArgsAlpha(parser)
 
 
 Update.detailed_help = {

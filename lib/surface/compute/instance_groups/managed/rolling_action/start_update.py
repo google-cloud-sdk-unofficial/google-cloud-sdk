@@ -78,13 +78,10 @@ class StartUpdate(base.Command):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    cleared_fields = []
-    request = self.CreateRequest(args, cleared_fields, client, holder.resources)
+    request = self.CreateRequest(args, client, holder.resources)
+    return client.MakeRequests([request])
 
-    with client.apitools_client.IncludeFields(cleared_fields):
-      return client.MakeRequests([request])
-
-  def CreateRequest(self, args, cleared_fields, client, resources):
+  def CreateRequest(self, args, client, resources):
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     default_scope = compute_scope.ScopeEnum.ZONE
     scope_lister = flags.GetDefaultScopeLister(client)
@@ -164,15 +161,6 @@ class StartUpdate(base.Command):
           instanceGroupManagerResource=igm_resource,
           project=igm_ref.project,
           region=igm_ref.region))
-    # Due to 'Patch' semantics, we have to clear either 'fixed' or 'percent'.
-    # Otherwise, we'll get an error that both 'fixed' and 'percent' are set.
-    if max_surge is not None:
-      cleared_fields.append('updatePolicy.maxSurge.fixed' if max_surge.fixed is
-                            None else 'updatePolicy.maxSurge.percent')
-    if max_unavailable is not None:
-      cleared_fields.append('updatePolicy.maxUnavailable.fixed'
-                            if max_unavailable.fixed is None else
-                            'updatePolicy.maxUnavailable.percent')
     return service, 'Patch', request
 
 

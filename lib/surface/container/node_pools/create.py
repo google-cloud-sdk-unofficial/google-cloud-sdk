@@ -32,7 +32,6 @@ from googlecloudsdk.command_lib.container import container_command_util as cmd_u
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -111,10 +110,6 @@ for examples.
 
 def ParseCreateNodePoolOptionsBase(args):
   """Parses the flags provided with the node pool creation command."""
-  if (args.IsSpecified('enable_cloud_endpoints') and
-      properties.VALUES.container.new_scopes_behavior.GetBool()):
-    raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
-                     'property container/ new_scopes_behavior is set to true.')
   enable_autorepair = cmd_util.GetAutoRepair(args)
   flags.WarnForNodeModification(args, enable_autorepair)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
@@ -125,7 +120,6 @@ def ParseCreateNodePoolOptionsBase(args):
       disk_size_gb=utils.BytesToGb(args.disk_size),
       scopes=args.scopes,
       node_version=args.node_version,
-      enable_cloud_endpoints=args.enable_cloud_endpoints,
       num_nodes=args.num_nodes,
       local_ssd_count=args.local_ssd_count,
       tags=args.tags,
@@ -161,7 +155,7 @@ class Create(base.CreateCommand):
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
-    flags.AddDeprecatedNodePoolNodeIdentityFlags(parser)
+    flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
 
@@ -245,7 +239,6 @@ class CreateBeta(Create):
     ops = ParseCreateNodePoolOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
-    ops.new_scopes_behavior = True
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.sandbox = args.sandbox
     return ops
@@ -260,10 +253,10 @@ class CreateAlpha(Create):
     flags.WarnForNodeVersionAutoUpgrade(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_autoprovisioning = args.enable_autoprovisioning
-    ops.new_scopes_behavior = True
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.sandbox = args.sandbox
     ops.node_group = args.node_group
+    ops.linux_sysctls = args.linux_sysctls
     return ops
 
   @staticmethod
@@ -282,6 +275,7 @@ class CreateAlpha(Create):
     flags.AddSandboxFlag(parser)
     flags.AddNodeGroupFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
+    flags.AddLinuxSysctlFlags(parser, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

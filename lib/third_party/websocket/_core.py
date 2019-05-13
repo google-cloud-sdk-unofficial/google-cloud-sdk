@@ -24,6 +24,7 @@ from __future__ import print_function
 import socket
 import struct
 import threading
+import time
 
 import six
 
@@ -34,6 +35,7 @@ from ._handshake import *
 from ._http import *
 from ._logging import *
 from ._socket import *
+from ._ssl_compat import *
 from ._utils import *
 
 __all__ = ['WebSocket', 'create_connection']
@@ -176,6 +178,9 @@ class WebSocket(object):
         else:
             return None
 
+    def is_ssl(self):
+        return isinstance(self.sock, ssl.SSLSocket)
+
     headers = property(getheaders)
 
     def connect(self, url, **options):
@@ -197,6 +202,7 @@ class WebSocket(object):
         options: "header" -> custom http header list or dict.
                  "cookie" -> cookie value.
                  "origin" -> custom origin url.
+                 "suppress_origin" -> suppress outputting origin header.
                  "host"   -> custom host header string.
                  "http_proxy_host" - http proxy host name.
                  "http_proxy_port" - http proxy port. If not set, set to 80.
@@ -204,16 +210,27 @@ class WebSocket(object):
                  "http_proxy_auth" - http proxy auth information.
                                      tuple of username and password.
                                      default is None
+                 "redirect_limit" -> number of redirects to follow.
                  "subprotocols" - array of available sub protocols.
                                   default is None.
                  "socket" - pre-initialized stream socket.
 
         """
+        # FIXME: "subprotocols" are getting lost, not passed down
+        # FIXME: "header", "cookie", "origin" and "host" too
+        self.sock_opt.timeout = options.get('timeout', self.sock_opt.timeout)
         self.sock, addrs = connect(url, self.sock_opt, proxy_info(**options),
                                    options.pop('socket', None))
 
         try:
             self.handshake_response = handshake(self.sock, *addrs, **options)
+            for attempt in range(options.pop('redirect_limit', 3)):
+                if self.handshake_response.status in SUPPORTED_REDIRECT_STATUSES:
+                    url = self.handshake_response.headers['location']
+                    self.sock.close()
+                    self.sock, addrs =  connect(url, self.sock_opt, proxy_info(**options),
+                                                options.pop('socket', None))
+                    self.handshake_response = handshake(self.sock, *addrs, **options)
             self.connected = True
         except:
             if self.sock:
@@ -393,20 +410,25 @@ class WebSocket(object):
                           reason, ABNF.OPCODE_CLOSE)
                 sock_timeout = self.sock.gettimeout()
                 self.sock.settimeout(timeout)
-                try:
-                    frame = self.recv_frame()
-                    if isEnabledForError():
-                        recv_status = struct.unpack("!H", frame.data[0:2])[0]
-                        if recv_status != STATUS_NORMAL:
-                            error("close status: " + repr(recv_status))
-                except:
-                    pass
+                start_time = time.time()
+                while timeout is None or time.time() - start_time < timeout:
+                    try:
+                        frame = self.recv_frame()
+                        if frame.opcode != ABNF.OPCODE_CLOSE:
+                            continue
+                        if isEnabledForError():
+                            recv_status = struct.unpack("!H", frame.data[0:2])[0]
+                            if recv_status != STATUS_NORMAL:
+                                error("close status: " + repr(recv_status))
+                        break
+                    except:
+                        break
                 self.sock.settimeout(sock_timeout)
                 self.sock.shutdown(socket.SHUT_RDWR)
             except:
                 pass
 
-        self.shutdown()
+            self.shutdown()
 
     def abort(self):
         """
@@ -462,6 +484,7 @@ def create_connection(url, timeout=None, class_=WebSocket, **options):
     options: "header" -> custom http header list or dict.
              "cookie" -> cookie value.
              "origin" -> custom origin url.
+             "suppress_origin" -> suppress outputting origin header.
              "host"   -> custom host header string.
              "http_proxy_host" - http proxy host name.
              "http_proxy_port" - http proxy port. If not set, set to 80.
@@ -470,6 +493,7 @@ def create_connection(url, timeout=None, class_=WebSocket, **options):
                                     tuple of username and password.
                                     default is None
              "enable_multithread" -> enable lock for multithread.
+             "redirect_limit" -> number of redirects to follow.
              "sockopt" -> socket options
              "sslopt" -> ssl option
              "subprotocols" - array of available sub protocols.

@@ -19,11 +19,14 @@ Copyright (C) 2010 Hiroki Ohtani(liris)
     Boston, MA 02110-1335  USA
 
 """
-__all__ = ["HAVE_SSL", "ssl", "SSLError"]
+__all__ = ["HAVE_SSL", "ssl", "SSLError", "SSL_ERROR_WANT_READ", "SSL_ERROR_WANT_WRITE"]
 
 try:
     import ssl
     from ssl import SSLError
+    # TODO(b/131616418): Upstream a python 2.7.8 fix
+    from ssl import SSL_ERROR_WANT_READ
+    from ssl import SSL_ERROR_WANT_WRITE
     if hasattr(ssl, 'SSLContext') and hasattr(ssl.SSLContext, 'check_hostname'):
         HAVE_CONTEXT_CHECK_HOSTNAME = True
     else:
@@ -39,6 +42,12 @@ try:
 except ImportError:
     # dummy class of SSLError for ssl none-support environment.
     class SSLError(Exception):
+        pass
+
+    class SSLWantReadError(Exception):
+        pass
+
+    class SSLWantWriteError(Exception):
         pass
 
     HAVE_SSL = False

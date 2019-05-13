@@ -436,6 +436,7 @@ class UpdateBeta(Update):
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddEnableShieldedNodesFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -462,6 +463,7 @@ class UpdateBeta(Update):
     # mutually-exclusive, so we don't need special handling for these two.
     opts.identity_namespace = args.identity_namespace
     opts.disable_workload_identity = args.disable_workload_identity
+    opts.enable_shielded_nodes = args.enable_shielded_nodes
 
     return opts
 
@@ -507,6 +509,7 @@ class UpdateAlpha(Update):
     flags.AddPeeringRouteSharingFlag(group)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
+    flags.AddEnableShieldedNodesFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -536,5 +539,6 @@ class UpdateAlpha(Update):
     # mutually-exclusive, so we don't need special handling for these two.
     opts.identity_namespace = args.identity_namespace
     opts.disable_workload_identity = args.disable_workload_identity
+    opts.enable_shielded_nodes = args.enable_shielded_nodes
 
     return opts

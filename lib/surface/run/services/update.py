@@ -64,6 +64,7 @@ class Update(base.Command):
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
+    flags.AddCloudSQLFlags(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
@@ -126,7 +127,6 @@ class AlphaUpdate(Update):
   def Args(parser):
     Update.Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    flags.AddCloudSQLFlags(parser)
     flags.AddServiceAccountFlag(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

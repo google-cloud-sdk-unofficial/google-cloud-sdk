@@ -12,11 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Serves the survey and logs the response to clearcut tables.
-
-NOTE: We are waiting for approval from legal/privacy working group. Before it is
-approved, we cannot send the survey responses to backend.
-"""
+"""Serves the survey and logs the response to clearcut tables."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -58,10 +54,9 @@ def LogResponse(survey_instance):
     log.err.Print('Your response is not recorded.')
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Survey(base.Command):
-  """Invokes a customer survey for Cloud SDK."""
+  """Invoke a customer satisfaction survey for Cloud SDK."""
 
   @staticmethod
   def Args(parser):

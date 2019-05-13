@@ -25,6 +25,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   # pylint: disable=line-too-long
   """Creates a sink.
@@ -84,16 +85,7 @@ class Create(base.CreateCommand):
             parent=parent, logSink=messages.LogSink(**sink_data),
             uniqueWriterIdentity=True))
 
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The created sink with its destination.
-    """
+  def _Run(self, args, support_dlp=False):
     if not args.log_filter:
       # Attempt to create a sink with an empty filter.
       console_io.PromptContinue(
@@ -112,6 +104,15 @@ class Create(base.CreateCommand):
         'includeChildren': args.include_children
     }
 
+    if support_dlp:
+      dlp_options = {}
+      if args.IsSpecified('dlp_inspect_template'):
+        dlp_options['inspectTemplateName'] = args.dlp_inspect_template
+      if args.IsSpecified('dlp_deidentify_template'):
+        dlp_options['deidentifyTemplateName'] = args.dlp_deidentify_template
+      if dlp_options:
+        sink_data['dlpOptions'] = dlp_options
+
     result = self.CreateSink(util.GetParentFromArgs(args), sink_data)
 
     log.CreatedResource(sink_ref)
@@ -119,6 +120,46 @@ class Create(base.CreateCommand):
     self._epilog_writer_identity = result.writerIdentity
     return result
 
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The created sink with its destination.
+    """
+    return self._Run(args)
+
   def Epilog(self, unused_resources_were_displayed):
     util.PrintPermissionInstructions(self._epilog_result_destination,
                                      self._epilog_writer_identity)
+
+
+# pylint: disable=missing-docstring
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  __doc__ = Create.__doc__
+
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    dlp_group = parser.add_argument_group(
+        help='Settings for Cloud DLP enabled sinks.')
+    dlp_group.add_argument(
+        '--dlp-inspect-template',
+        required=True,
+        help=('Relative path to a Cloud DLP inspection template resource. For '
+              'example "projects/my-project/inspectTemplates/my-template" or '
+              '"organizations/my-org/inspectTemplates/my-template".'))
+    dlp_group.add_argument(
+        '--dlp-deidentify-template',
+        required=True,
+        help=('Relative path to a Cloud DLP de-identification template '
+              'resource. For example '
+              '"projects/my-project/deidentifyTemplates/my-template" or '
+              '"organizations/my-org/deidentifyTemplates/my-template".'))
+
+  def Run(self, args):
+    return self._Run(args, support_dlp=True)

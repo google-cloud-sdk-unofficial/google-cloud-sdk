@@ -47,15 +47,11 @@ class StartUpdate(base.Command):
     client = holder.client
     resources = holder.resources
 
-    cleared_fields = []
-
-    with client.apitools_client.IncludeFields(cleared_fields):
-      minimal_action = (client.messages.InstanceGroupManagerUpdatePolicy.
-                        MinimalActionValueValuesEnum.RESTART)
-      return client.MakeRequests([
-          rolling_action.CreateRequest(args, cleared_fields, client, resources,
-                                       minimal_action)
-      ])
+    minimal_action = (client.messages.InstanceGroupManagerUpdatePolicy.
+                      MinimalActionValueValuesEnum.RESTART)
+    return client.MakeRequests([
+        rolling_action.CreateRequest(args, client, resources, minimal_action)
+    ])
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

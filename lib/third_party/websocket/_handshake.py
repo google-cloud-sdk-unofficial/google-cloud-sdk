@@ -36,7 +36,15 @@ if six.PY3:
 else:
     from base64 import encodestring as base64encode
 
-__all__ = ["handshake_response", "handshake"]
+if six.PY3:
+    if six.PY34:
+        from http import client as HTTPStatus
+    else:
+        from http import HTTPStatus
+else:
+    import httplib as HTTPStatus
+
+__all__ = ["handshake_response", "handshake", "SUPPORTED_REDIRECT_STATUSES"]
 
 if hasattr(hmac, "compare_digest"):
     compare_digest = hmac.compare_digest
@@ -46,6 +54,8 @@ else:
 
 # websocket supported version.
 VERSION = 13
+
+SUPPORTED_REDIRECT_STATUSES = [HTTPStatus.MOVED_PERMANENTLY, HTTPStatus.FOUND, HTTPStatus.SEE_OTHER]
 
 CookieJar = SimpleCookieJar()
 
@@ -67,6 +77,8 @@ def handshake(sock, hostname, port, resource, **options):
     dump("request header", header_str)
 
     status, resp = _get_resp_headers(sock)
+    if status in SUPPORTED_REDIRECT_STATUSES:
+        return handshake_response(status, resp, None)
     success, subproto = _validate(resp, key, options.get("subprotocols"))
     if not success:
         raise WebSocketException("Invalid WebSocket Header")
@@ -96,14 +108,23 @@ def _get_handshake_headers(resource, host, port, options):
     else:
         headers.append("Host: %s" % hostport)
 
-    if "origin" in options and options["origin"] is not None:
-        headers.append("Origin: %s" % options["origin"])
-    else:
-        headers.append("Origin: http://%s" % hostport)
+    if "suppress_origin" not in options or not options["suppress_origin"]:
+        if "origin" in options and options["origin"] is not None:
+            headers.append("Origin: %s" % options["origin"])
+        else:
+            headers.append("Origin: http://%s" % hostport)
 
     key = _create_sec_websocket_key()
-    headers.append("Sec-WebSocket-Key: %s" % key)
-    headers.append("Sec-WebSocket-Version: %s" % VERSION)
+    
+    # Append Sec-WebSocket-Key & Sec-WebSocket-Version if not manually specified
+    if not 'header' in options or 'Sec-WebSocket-Key' not in options['header']:
+        key = _create_sec_websocket_key()
+        headers.append("Sec-WebSocket-Key: %s" % key)
+    else:
+        key = options['header']['Sec-WebSocket-Key']
+
+    if not 'header' in options or 'Sec-WebSocket-Version' not in options['header']:
+        headers.append("Sec-WebSocket-Version: %s" % VERSION)
 
     subprotocols = options.get("subprotocols")
     if subprotocols:
@@ -112,7 +133,11 @@ def _get_handshake_headers(resource, host, port, options):
     if "header" in options:
         header = options["header"]
         if isinstance(header, dict):
-            header = map(": ".join, header.items())
+            header = [
+                ": ".join([k, v])
+                for k, v in header.items()
+                if v is not None
+            ]
         headers.extend(header)
 
     server_cookie = CookieJar.get(host)
@@ -129,10 +154,10 @@ def _get_handshake_headers(resource, host, port, options):
     return headers, key
 
 
-def _get_resp_headers(sock, success_status=101):
-    status, resp_headers = read_headers(sock)
-    if status != success_status:
-        raise WebSocketBadStatusException("Handshake status %d", status)
+def _get_resp_headers(sock, success_statuses=(101, 301, 302, 303)):
+    status, resp_headers, status_message = read_headers(sock)
+    if status not in success_statuses:
+        raise WebSocketBadStatusException("Handshake status %d %s", status, status_message, resp_headers)
     return status, resp_headers
 
 _HEADERS_TO_CHECK = {

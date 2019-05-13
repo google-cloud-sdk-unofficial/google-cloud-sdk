@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-class List(base.ListCommand):
+class List(commands.List):
   """Lists domain mappings."""
 
   detailed_help = {
@@ -41,8 +41,8 @@ class List(base.ListCommand):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddRegionArgWithDefault(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
@@ -58,12 +58,12 @@ class List(base.ListCommand):
         metadata.name:label=DOMAIN,
         route_name:label=SERVICE,
         region:label=REGION)""")
+    parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   def Run(self, args):
     """List available domain mappings."""
-    if args.uri:
-      raise flags.ArgumentError('--uri flag is not supported for this resource')
     conn_context = connection_context.GetConnectionContext(args)
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
+      self.SetCompleteApiEndpoint(conn_context.endpoint)
       return client.ListDomainMappings(namespace_ref)
