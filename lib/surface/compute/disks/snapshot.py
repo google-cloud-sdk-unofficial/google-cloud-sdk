@@ -81,14 +81,7 @@ def _CommonArgs(parser):
       will result in `my-disk-1` being snapshotted as
       `snapshot-1`, `my-disk-2` as `snapshot-2`, and so on.
       """)
-  parser.add_argument(
-      '--guest-flush',
-      action='store_true',
-      default=False,
-      help=('Create an application consistent snapshot by informing the OS '
-            'to prepare for the snapshot process. Currently only supported '
-            'on Windows instances using the Volume Shadow Copy Service '
-            '(VSS).'))
+  flags.AddGuestFlushFlag(parser, 'snapshot')
   flags.AddStorageLocationFlag(parser, 'snapshot')
   csek_utils.AddCsekKeyArgs(parser, flags_about_creation=False)
 

@@ -26,6 +26,16 @@ from googlecloudsdk.command_lib.tasks import parsers
 
 class Describe(base.DescribeCommand):
   """Show details about a queue."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To describe queue:
+
+              $ {command} my-queue
+         """,
+  }
 
   @staticmethod
   def Args(parser):

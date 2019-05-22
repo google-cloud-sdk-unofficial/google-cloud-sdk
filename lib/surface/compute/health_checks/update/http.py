@@ -39,9 +39,10 @@ class Update(base.UpdateCommand):
   HEALTH_CHECK_ARG = None
 
   @classmethod
-  def Args(cls, parser, include_alpha=False):
+  def Args(cls, parser, include_l7_internal_load_balancing=False):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        'HTTP', include_alpha=include_alpha)
+        'HTTP',
+        include_l7_internal_load_balancing=include_l7_internal_load_balancing)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
     health_checks_utils.AddHttpRelatedUpdateArgs(parser)
     health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP')
@@ -179,7 +180,7 @@ class UpdateAlpha(Update):
 
   @staticmethod
   def Args(parser):
-    Update.Args(parser, include_alpha=True)
+    Update.Args(parser, include_l7_internal_load_balancing=True)
 
   def _GetRegionalGetRequest(self, client, health_check_ref):
     """Returns a request for fetching the existing health check."""

@@ -27,22 +27,21 @@ from googlecloudsdk.core import log
 
 
 @base.Deprecate(is_removed=False,
-                warning='This command group is deprecated. '
+                warning='This command is deprecated. '
                         'Use `gcloud beta tasks queues update` instead')
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateAppEngine(base.UpdateCommand):
-  """Update an App Engine queue.
+  """Update a Cloud Tasks queue.
 
-  The flags available to this command represent the fields of an App Engine
-  queue that are mutable. Attempting to use this command on a different type of
-  queue will result in an error.
+  The flags available to this command represent the fields of a queue that are
+  mutable.
   """
   detailed_help = {
       'DESCRIPTION': """\
           {description}
           """,
       'EXAMPLES': """\
-          To update an App Engine queue:
+          To update a Cloud Tasks queue:
 
               $ {command} my-queue
                 --clear-max-attempts --clear-max-retry-duration
@@ -62,7 +61,7 @@ class UpdateAppEngine(base.UpdateCommand):
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to update')
     flags.AddLocationFlag(parser)
-    flags.AddUpdateAppEngineQueueFlags(parser)
+    flags.AddUpdatePushQueueFlags(parser)
 
   def Run(self, args):
     parsers.CheckUpdateArgsSpecified(args,
@@ -76,7 +75,7 @@ class UpdateAppEngine(base.UpdateCommand):
         constants.PUSH_QUEUE,
         api.messages,
         is_update=True,
-        is_alpha=self.is_alpha)
+        release_track=self.ReleaseTrack)
     if not self.is_alpha:
       app_engine_routing_override = (
           queue_config.appEngineHttpQueue.appEngineRoutingOverride
@@ -96,15 +95,15 @@ class UpdateAppEngine(base.UpdateCommand):
 
 
 @base.Deprecate(is_removed=False,
-                warning='This command group is deprecated. '
+                warning='This command is deprecated. '
                         'Use `gcloud alpha tasks queues update` instead')
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdateAppEngine(UpdateAppEngine):
-  """Update an App Engine queue.
+  """Update a Cloud Tasks queue.
 
-  The flags available to this command represent the fields of an App Engine
-  queue that are mutable. Attempting to use this command on a different type of
-  queue will result in an error.
+  The flags available to this command represent the fields of a queue that are
+  mutable. Attempting to use this command on a different type of queue will
+  result in an error.
   """
 
   detailed_help = {
@@ -112,7 +111,7 @@ class AlphaUpdateAppEngine(UpdateAppEngine):
           {description}
           """,
       'EXAMPLES': """\
-          To update an App Engine queue:
+          To update a Cloud Tasks queue:
 
               $ {command} my-queue
                 --clear-max-attempts --clear-max-retry-duration
@@ -132,5 +131,5 @@ class AlphaUpdateAppEngine(UpdateAppEngine):
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to update')
     flags.AddLocationFlag(parser)
-    flags.AddUpdateAppEngineQueueFlags(parser, is_alpha=True)
+    flags.AddUpdatePushQueueFlags(parser, is_alpha=True)
 

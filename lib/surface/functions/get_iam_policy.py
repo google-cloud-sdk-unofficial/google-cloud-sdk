@@ -43,9 +43,5 @@ class GetIamPolicy(base.ListCommand):
     Returns:
       The specified function with its description and configured filter.
     """
-    client = util.GetApiClientInstance()
-    messages = client.MESSAGES_MODULE
     function_ref = args.CONCEPTS.name.Parse()
-    return client.projects_locations_functions.GetIamPolicy(
-        messages.CloudfunctionsProjectsLocationsFunctionsGetIamPolicyRequest(
-            resource=function_ref.RelativeName()))
+    return util.GetFunctionIamPolicy(function_ref.RelativeName())

@@ -96,35 +96,6 @@ class Deploy(base.Command):
 
     service_ref = flags.GetService(args)
     function_entrypoint = flags.GetFunction(args.function)
-    msg = ('Deploying {dep_type} to {operator} '
-           'service [{{bold}}{service}{{reset}}]'
-           ' in {ns_label} [{{bold}}{ns}{{reset}}]')
-
-    msg += conn_context.location_label
-
-    if function_entrypoint:
-      dep_type = 'function [{{bold}}{}{{reset}}]'.format(function_entrypoint)
-      pretty_print.Info(msg.format(
-          operator=conn_context.operator,
-          ns_label=conn_context.ns_label,
-          dep_type=dep_type,
-          function=function_entrypoint,
-          service=service_ref.servicesId,
-          ns=service_ref.namespacesId))
-    elif source_ref.source_type is source_ref.SourceType.IMAGE:
-      pretty_print.Info(msg.format(
-          operator=conn_context.operator,
-          ns_label=conn_context.ns_label,
-          dep_type='container',
-          service=service_ref.servicesId,
-          ns=service_ref.namespacesId))
-    else:
-      pretty_print.Info(msg.format(
-          operator=conn_context.operator,
-          ns_label=conn_context.ns_label,
-          dep_type='app',
-          service=service_ref.servicesId,
-          ns=service_ref.namespacesId))
 
     with serverless_operations.Connect(conn_context) as operations:
       if not (source_ref.source_type is source_ref.SourceType.IMAGE
@@ -160,6 +131,35 @@ class Deploy(base.Command):
               'This new service will require authentication to be invoked.')
       else:
         allow_unauth = False
+
+      msg = ('Deploying {dep_type} to {operator} '
+             'service [{{bold}}{service}{{reset}}]'
+             ' in {ns_label} [{{bold}}{ns}{{reset}}]')
+      msg += conn_context.location_label
+
+      if function_entrypoint:
+        dep_type = 'function [{{bold}}{}{{reset}}]'.format(function_entrypoint)
+        pretty_print.Info(msg.format(
+            operator=conn_context.operator,
+            ns_label=conn_context.ns_label,
+            dep_type=dep_type,
+            function=function_entrypoint,
+            service=service_ref.servicesId,
+            ns=service_ref.namespacesId))
+      elif source_ref.source_type is source_ref.SourceType.IMAGE:
+        pretty_print.Info(msg.format(
+            operator=conn_context.operator,
+            ns_label=conn_context.ns_label,
+            dep_type='container',
+            service=service_ref.servicesId,
+            ns=service_ref.namespacesId))
+      else:
+        pretty_print.Info(msg.format(
+            operator=conn_context.operator,
+            ns_label=conn_context.ns_label,
+            dep_type='app',
+            service=service_ref.servicesId,
+            ns=service_ref.namespacesId))
 
       deployment_stages = stages.ServiceStages(
           allow_unauth or args.allow_unauthenticated)

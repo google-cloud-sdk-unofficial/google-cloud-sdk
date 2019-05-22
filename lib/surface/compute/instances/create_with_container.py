@@ -44,6 +44,7 @@ def _Args(parser, deprecate_maintenance_policy=False,
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddContainerMountDiskFlag(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
+  instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
       parser, deprecate=deprecate_maintenance_policy)
@@ -84,6 +85,7 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
 
   def _ValidateArgs(self, args):
+    instances_flags.ValidateAcceleratorArgs(args)
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateKonletArgs(args)
@@ -166,10 +168,13 @@ class CreateWithContainer(base.CreateCommand):
       disks = instance_utils.CreateDiskMessages(
           holder, args, boot_disk_size_gb, image_uri, instance_ref,
           skip_defaults, match_container_mount_disks=True)
+      guest_accelerators = instance_utils.GetAccelerators(
+          args, client, holder.resources, instance_ref)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,
               disks=disks,
+              guestAccelerators=guest_accelerators,
               description=args.description,
               labels=labels,
               machineType=machine_type_uri,
@@ -262,10 +267,13 @@ class CreateWithContainerBeta(CreateWithContainer):
       disks = instance_utils.CreateDiskMessages(
           holder, args, boot_disk_size_gb, image_uri, instance_ref,
           skip_defaults, match_container_mount_disks=True)
+      guest_accelerators = instance_utils.GetAccelerators(
+          args, client, holder.resources, instance_ref)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,
               disks=disks,
+              guestAccelerators=guest_accelerators,
               description=args.description,
               labels=labels,
               machineType=machine_type_uri,
@@ -346,10 +354,13 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
       disks = instance_utils.CreateDiskMessages(
           holder, args, boot_disk_size_gb, image_uri, instance_ref,
           skip_defaults, match_container_mount_disks=True)
+      guest_accelerators = instance_utils.GetAccelerators(
+          args, client, holder.resources, instance_ref)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,
               disks=disks,
+              guestAccelerators=guest_accelerators,
               description=args.description,
               labels=labels,
               machineType=machine_type_uri,

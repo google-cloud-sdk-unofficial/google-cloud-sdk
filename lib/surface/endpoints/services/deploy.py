@@ -341,9 +341,8 @@ class _BaseDeploy(object):
       # being created
       if self.validate_only:
         if not console_io.CanPrompt():
-          log.error(VALIDATE_NEW_ERROR.format(
+          raise exceptions.InvalidConditionError(VALIDATE_NEW_ERROR.format(
               service_name=self.service_name, project_id=project_id))
-          return None
         if not console_io.PromptContinue(
             VALIDATE_NEW_PROMPT.format(
                 service_name=self.service_name, project_id=project_id)):

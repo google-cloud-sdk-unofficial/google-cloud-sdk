@@ -123,13 +123,22 @@ class UpdateGA(base.UpdateCommand):
     client = subscriptions.SubscriptionsClient()
     subscription_ref = args.CONCEPTS.subscription.Parse()
 
+    no_expiration = False
+    expiration_period = getattr(args, 'expiration_period', None)
+    if expiration_period:
+      if expiration_period == subscriptions.NEVER_EXPIRATION_PERIOD_VALUE:
+        no_expiration = True
+        expiration_period = None
+
     try:
       result = client.Patch(
           subscription_ref,
           ack_deadline=args.ack_deadline,
           push_config=util.ParsePushConfig(args),
           retain_acked_messages=args.retain_acked_messages,
-          message_retention_duration=args.message_retention_duration)
+          message_retention_duration=args.message_retention_duration,
+          no_expiration=no_expiration,
+          expiration_period=expiration_period)
     except subscriptions.NoFieldsSpecifiedError:
       raise
     else:

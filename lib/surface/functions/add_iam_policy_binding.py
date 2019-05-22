@@ -45,16 +45,6 @@ class AddIamPolicyBinding(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    client = util.GetApiClientInstance()
-    messages = client.MESSAGES_MODULE
     function_ref = args.CONCEPTS.name.Parse()
-    policy = client.projects_locations_functions.GetIamPolicy(
-        messages.CloudfunctionsProjectsLocationsFunctionsGetIamPolicyRequest(
-            resource=function_ref.RelativeName()))
-    iam_util.AddBindingToIamPolicy(messages.Binding, policy, args.member,
-                                   args.role)
-    return client.projects_locations_functions.SetIamPolicy(
-        messages.CloudfunctionsProjectsLocationsFunctionsSetIamPolicyRequest(
-            resource=function_ref.RelativeName(),
-            setIamPolicyRequest=messages.SetIamPolicyRequest(
-                policy=policy)))
+    return util.AddFunctionIamPolicyBinding(
+        function_ref.RelativeName(), args.member, args.role)

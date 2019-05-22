@@ -23,5 +23,5 @@ from googlecloudsdk.calliope import base
 
 
 class Subscriptions(base.Group):
-  """Manage Cloud Pubsub subscriptions."""
+  """Manage Cloud Pub/Sub subscriptions."""
   pass

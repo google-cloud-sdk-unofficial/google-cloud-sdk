@@ -4457,6 +4457,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-with-container": {
                   "commands": {},
                   "flags": {
+                    "--accelerator": "value",
                     "--address": "value",
                     "--boot-disk-auto-delete": "bool",
                     "--boot-disk-device-name": "value",
@@ -4932,19 +4933,7 @@ STATIC_COMPLETION_CLI_TREE = {
                               "500m",
                               "50g",
                               "50m",
-                              "5g",
-                              "bps-100m",
-                              "bps-10g",
-                              "bps-1g",
-                              "bps-200m",
-                              "bps-20g",
-                              "bps-2g",
-                              "bps-300m",
-                              "bps-400m",
-                              "bps-500m",
-                              "bps-50g",
-                              "bps-50m",
-                              "bps-5g"
+                              "5g"
                             ],
                             "--candidate-subnets": "value",
                             "--description": "value",
@@ -4970,19 +4959,7 @@ STATIC_COMPLETION_CLI_TREE = {
                               "500m",
                               "50g",
                               "50m",
-                              "5g",
-                              "bps-100m",
-                              "bps-10g",
-                              "bps-1g",
-                              "bps-200m",
-                              "bps-20g",
-                              "bps-2g",
-                              "bps-300m",
-                              "bps-400m",
-                              "bps-500m",
-                              "bps-50g",
-                              "bps-50m",
-                              "bps-5g"
+                              "5g"
                             ],
                             "--clear-labels": "bool",
                             "--description": "value",
@@ -5138,9 +5115,19 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
+                    "--csek-key-file": "value",
                     "--description": "value",
+                    "--guest-flush": "bool",
+                    "--kms-key": "dynamic",
+                    "--kms-keyring": "dynamic",
+                    "--kms-location": "dynamic",
+                    "--kms-project": "dynamic",
+                    "--require-csek-key-create": "bool",
+                    "--source-disk-csek-key": "value",
+                    "--source-disk-kms-key": "value",
                     "--source-instance": "dynamic",
-                    "--source-instance-zone": "dynamic"
+                    "--source-instance-zone": "dynamic",
+                    "--storage-location": "value"
                   }
                 },
                 "delete": {
@@ -8398,6 +8385,76 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "data-catalog": {
           "commands": {
+            "crawler-runs": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--crawler": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "start": {
+                  "commands": {},
+                  "flags": {}
+                }
+              },
+              "flags": {}
+            },
+            "crawlers": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--buckets": "value",
+                    "--bundle-specs": "value",
+                    "--crawl-scope": [
+                      "bucket",
+                      "organization",
+                      "project"
+                    ],
+                    "--description": "value",
+                    "--display-name": "value",
+                    "--run-option": [
+                      "manual",
+                      "scheduled"
+                    ],
+                    "--run-schedule": [
+                      "daily",
+                      "weekly"
+                    ]
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "entries": {
               "commands": {
                 "describe": {
@@ -10791,11 +10848,23 @@ STATIC_COMPLETION_CLI_TREE = {
             "deploy": {
               "commands": {},
               "flags": {
+                "--allow-unauthenticated": "bool",
                 "--clear-env-vars": "bool",
                 "--clear-labels": "bool",
                 "--clear-max-instances": "bool",
+                "--egress-settings": [
+                  "all",
+                  "private",
+                  "unspecified"
+                ],
                 "--entry-point": "value",
                 "--env-vars-file": "value",
+                "--ingress-settings": [
+                  "all",
+                  "internal-and-gclb",
+                  "internal-only",
+                  "unspecified"
+                ],
                 "--max-instances": "value",
                 "--memory": "value",
                 "--region": "dynamic",
@@ -12943,6 +13012,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "encoding-unspecified",
                       "flac",
                       "linear16",
+                      "mp3",
                       "mulaw",
                       "ogg-opus",
                       "speex-with-header-byte"
@@ -12969,6 +13039,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "encoding-unspecified",
                       "flac",
                       "linear16",
+                      "mp3",
                       "mulaw",
                       "ogg-opus",
                       "speex-with-header-byte"
@@ -13172,6 +13243,17 @@ STATIC_COMPLETION_CLI_TREE = {
                     ]
                   }
                 },
+                "detect-product": {
+                  "commands": {},
+                  "flags": {
+                    "--bounding-polygon": "value",
+                    "--category": "value",
+                    "--filter": "value",
+                    "--max-results": "value",
+                    "--product-set": "value",
+                    "--product-set-location": "value"
+                  }
+                },
                 "detect-safe-search": {
                   "commands": {},
                   "flags": {
@@ -13221,6 +13303,187 @@ STATIC_COMPLETION_CLI_TREE = {
                       "builtin/stable"
                     ]
                   }
+                },
+                "operations": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
+                },
+                "product-search": {
+                  "commands": {
+                    "images": {
+                      "commands": {
+                        "create": {
+                          "commands": {},
+                          "flags": {
+                            "--bounding-polygon": "value",
+                            "--location": "value",
+                            "--product": "value",
+                            "--storage-location": "value"
+                          }
+                        },
+                        "delete": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value",
+                            "--product": "value"
+                          }
+                        },
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value",
+                            "--product": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--location": "value",
+                            "--page-size": "value",
+                            "--product": "value",
+                            "--sort-by": "value",
+                            "--uri": "bool"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
+                    "product-sets": {
+                      "commands": {
+                        "add-product": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value",
+                            "--product": "value"
+                          }
+                        },
+                        "create": {
+                          "commands": {},
+                          "flags": {
+                            "--display-name": "value",
+                            "--location": "value"
+                          }
+                        },
+                        "delete": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value"
+                          }
+                        },
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value"
+                          }
+                        },
+                        "import": {
+                          "commands": {},
+                          "flags": {
+                            "--async": "bool",
+                            "--location": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--location": "value",
+                            "--page-size": "value",
+                            "--sort-by": "value",
+                            "--uri": "bool"
+                          }
+                        },
+                        "list-products": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--location": "value",
+                            "--page-size": "value",
+                            "--product-set": "value",
+                            "--sort-by": "value"
+                          }
+                        },
+                        "remove-product": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value",
+                            "--product": "value"
+                          }
+                        },
+                        "update": {
+                          "commands": {},
+                          "flags": {
+                            "--display-name": "value",
+                            "--location": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
+                    "products": {
+                      "commands": {
+                        "create": {
+                          "commands": {},
+                          "flags": {
+                            "--category": [
+                              "apparel",
+                              "homegoods",
+                              "toys"
+                            ],
+                            "--description": "value",
+                            "--display-name": "value",
+                            "--location": "value",
+                            "--product-labels": "value"
+                          }
+                        },
+                        "delete": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value"
+                          }
+                        },
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--location": "value",
+                            "--page-size": "value",
+                            "--sort-by": "value",
+                            "--uri": "bool"
+                          }
+                        },
+                        "update": {
+                          "commands": {},
+                          "flags": {
+                            "--add-product-labels": "value",
+                            "--clear-product-labels": "bool",
+                            "--description": "value",
+                            "--display-name": "value",
+                            "--location": "value",
+                            "--remove-product-labels": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
                 },
                 "suggest-crop": {
                   "commands": {},
@@ -15100,6 +15363,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "app-engine": {
                       "commands": {},
                       "flags": {
+                        "--attempt-deadline": "value",
                         "--description": "value",
                         "--headers": "value",
                         "--http-method": [
@@ -15125,6 +15389,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "http": {
                       "commands": {},
                       "flags": {
+                        "--attempt-deadline": "value",
                         "--description": "value",
                         "--headers": "value",
                         "--http-method": [
@@ -20910,6 +21175,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-with-container": {
                   "commands": {},
                   "flags": {
+                    "--accelerator": "value",
                     "--address": "value",
                     "--boot-disk-auto-delete": "bool",
                     "--boot-disk-device-name": "value",
@@ -21268,17 +21534,7 @@ STATIC_COMPLETION_CLI_TREE = {
                               "400m",
                               "500m",
                               "50m",
-                              "5g",
-                              "bps-100m",
-                              "bps-10g",
-                              "bps-1g",
-                              "bps-200m",
-                              "bps-2g",
-                              "bps-300m",
-                              "bps-400m",
-                              "bps-500m",
-                              "bps-50m",
-                              "bps-5g"
+                              "5g"
                             ],
                             "--candidate-subnets": "value",
                             "--description": "value",
@@ -21302,17 +21558,7 @@ STATIC_COMPLETION_CLI_TREE = {
                               "400m",
                               "500m",
                               "50m",
-                              "5g",
-                              "bps-100m",
-                              "bps-10g",
-                              "bps-1g",
-                              "bps-200m",
-                              "bps-2g",
-                              "bps-300m",
-                              "bps-400m",
-                              "bps-500m",
-                              "bps-50m",
-                              "bps-5g"
+                              "5g"
                             ],
                             "--clear-labels": "bool",
                             "--description": "value",
@@ -23364,6 +23610,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network": "value",
                     "--preemptible": "bool",
                     "--range": "value",
+                    "--reserved": "bool",
                     "--zone": "value"
                   }
                 },
@@ -26809,6 +27056,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "deploy": {
               "commands": {},
               "flags": {
+                "--allow-unauthenticated": "bool",
                 "--clear-env-vars": "bool",
                 "--clear-labels": "bool",
                 "--clear-max-instances": "bool",
@@ -28323,6 +28571,17 @@ STATIC_COMPLETION_CLI_TREE = {
                     ]
                   }
                 },
+                "detect-product": {
+                  "commands": {},
+                  "flags": {
+                    "--bounding-polygon": "value",
+                    "--category": "value",
+                    "--filter": "value",
+                    "--max-results": "value",
+                    "--product-set": "value",
+                    "--product-set-location": "value"
+                  }
+                },
                 "detect-safe-search": {
                   "commands": {},
                   "flags": {
@@ -28372,6 +28631,187 @@ STATIC_COMPLETION_CLI_TREE = {
                       "builtin/stable"
                     ]
                   }
+                },
+                "operations": {
+                  "commands": {
+                    "describe": {
+                      "commands": {},
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
+                },
+                "product-search": {
+                  "commands": {
+                    "images": {
+                      "commands": {
+                        "create": {
+                          "commands": {},
+                          "flags": {
+                            "--bounding-polygon": "value",
+                            "--location": "value",
+                            "--product": "value",
+                            "--storage-location": "value"
+                          }
+                        },
+                        "delete": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value",
+                            "--product": "value"
+                          }
+                        },
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value",
+                            "--product": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--location": "value",
+                            "--page-size": "value",
+                            "--product": "value",
+                            "--sort-by": "value",
+                            "--uri": "bool"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
+                    "product-sets": {
+                      "commands": {
+                        "add-product": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value",
+                            "--product": "value"
+                          }
+                        },
+                        "create": {
+                          "commands": {},
+                          "flags": {
+                            "--display-name": "value",
+                            "--location": "value"
+                          }
+                        },
+                        "delete": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value"
+                          }
+                        },
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value"
+                          }
+                        },
+                        "import": {
+                          "commands": {},
+                          "flags": {
+                            "--async": "bool",
+                            "--location": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--location": "value",
+                            "--page-size": "value",
+                            "--sort-by": "value",
+                            "--uri": "bool"
+                          }
+                        },
+                        "list-products": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--location": "value",
+                            "--page-size": "value",
+                            "--product-set": "value",
+                            "--sort-by": "value"
+                          }
+                        },
+                        "remove-product": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value",
+                            "--product": "value"
+                          }
+                        },
+                        "update": {
+                          "commands": {},
+                          "flags": {
+                            "--display-name": "value",
+                            "--location": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    },
+                    "products": {
+                      "commands": {
+                        "create": {
+                          "commands": {},
+                          "flags": {
+                            "--category": [
+                              "apparel",
+                              "homegoods",
+                              "toys"
+                            ],
+                            "--description": "value",
+                            "--display-name": "value",
+                            "--location": "value",
+                            "--product-labels": "value"
+                          }
+                        },
+                        "delete": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value"
+                          }
+                        },
+                        "describe": {
+                          "commands": {},
+                          "flags": {
+                            "--location": "value"
+                          }
+                        },
+                        "list": {
+                          "commands": {},
+                          "flags": {
+                            "--filter": "value",
+                            "--limit": "value",
+                            "--location": "value",
+                            "--page-size": "value",
+                            "--sort-by": "value",
+                            "--uri": "bool"
+                          }
+                        },
+                        "update": {
+                          "commands": {},
+                          "flags": {
+                            "--add-product-labels": "value",
+                            "--clear-product-labels": "bool",
+                            "--description": "value",
+                            "--display-name": "value",
+                            "--location": "value",
+                            "--remove-product-labels": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
                 },
                 "suggest-crop": {
                   "commands": {},
@@ -29762,6 +30202,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "app-engine": {
                       "commands": {},
                       "flags": {
+                        "--attempt-deadline": "value",
                         "--description": "value",
                         "--headers": "value",
                         "--http-method": [
@@ -29787,6 +30228,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "http": {
                       "commands": {},
                       "flags": {
+                        "--attempt-deadline": "value",
                         "--description": "value",
                         "--headers": "value",
                         "--http-method": [
@@ -33519,6 +33961,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "create-with-container": {
               "commands": {},
               "flags": {
+                "--accelerator": "value",
                 "--address": "value",
                 "--boot-disk-auto-delete": "bool",
                 "--boot-disk-device-name": "value",
@@ -33868,17 +34311,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "400m",
                           "500m",
                           "50m",
-                          "5g",
-                          "bps-100m",
-                          "bps-10g",
-                          "bps-1g",
-                          "bps-200m",
-                          "bps-2g",
-                          "bps-300m",
-                          "bps-400m",
-                          "bps-500m",
-                          "bps-50m",
-                          "bps-5g"
+                          "5g"
                         ],
                         "--candidate-subnets": "value",
                         "--description": "value",
@@ -33902,17 +34335,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "400m",
                           "500m",
                           "50m",
-                          "5g",
-                          "bps-100m",
-                          "bps-10g",
-                          "bps-1g",
-                          "bps-200m",
-                          "bps-2g",
-                          "bps-300m",
-                          "bps-400m",
-                          "bps-500m",
-                          "bps-50m",
-                          "bps-5g"
+                          "5g"
                         ],
                         "--description": "value",
                         "--enable-admin": "bool",
@@ -40045,6 +40468,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--ack-deadline": "value",
+                "--expiration-period": "value",
                 "--message-retention-duration": "value",
                 "--push-endpoint": "value",
                 "--retain-acked-messages": "bool",
@@ -40106,6 +40530,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--ack-deadline": "value",
+                "--expiration-period": "value",
                 "--message-retention-duration": "value",
                 "--push-endpoint": "value",
                 "--retain-acked-messages": "bool"
@@ -41393,6 +41818,173 @@ STATIC_COMPLETION_CLI_TREE = {
       },
       "flags": {}
     },
+    "tasks": {
+      "commands": {
+        "create-app-engine-task": {
+          "commands": {},
+          "flags": {
+            "--body-content": "value",
+            "--body-file": "value",
+            "--header": "value",
+            "--method": "value",
+            "--queue": "value",
+            "--relative-uri": "value",
+            "--routing": "value",
+            "--schedule-time": "value"
+          }
+        },
+        "delete": {
+          "commands": {},
+          "flags": {
+            "--queue": "value"
+          }
+        },
+        "describe": {
+          "commands": {},
+          "flags": {
+            "--queue": "value"
+          }
+        },
+        "list": {
+          "commands": {},
+          "flags": {
+            "--filter": "value",
+            "--limit": "value",
+            "--page-size": "value",
+            "--queue": "value",
+            "--sort-by": "value",
+            "--uri": "bool"
+          }
+        },
+        "locations": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "queues": {
+          "commands": {
+            "add-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--location": "value",
+                "--member": "value",
+                "--role": "dynamic"
+              }
+            },
+            "create": {
+              "commands": {},
+              "flags": {
+                "--max-attempts": "value",
+                "--max-backoff": "value",
+                "--max-concurrent-dispatches": "value",
+                "--max-dispatches-per-second": "value",
+                "--max-doublings": "value",
+                "--max-retry-duration": "value",
+                "--min-backoff": "value",
+                "--routing-override": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "get-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--location": "value",
+                "--page-size": "value",
+                "--sort-by": "value"
+              }
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            },
+            "pause": {
+              "commands": {},
+              "flags": {}
+            },
+            "purge": {
+              "commands": {},
+              "flags": {}
+            },
+            "remove-iam-policy-binding": {
+              "commands": {},
+              "flags": {
+                "--location": "value",
+                "--member": "value",
+                "--role": "dynamic"
+              }
+            },
+            "resume": {
+              "commands": {},
+              "flags": {}
+            },
+            "set-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--location": "value"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--clear-max-attempts": "bool",
+                "--clear-max-backoff": "bool",
+                "--clear-max-concurrent-dispatches": "bool",
+                "--clear-max-dispatches-per-second": "bool",
+                "--clear-max-doublings": "bool",
+                "--clear-max-retry-duration": "bool",
+                "--clear-min-backoff": "bool",
+                "--clear-routing-override": "bool",
+                "--max-attempts": "value",
+                "--max-backoff": "value",
+                "--max-concurrent-dispatches": "value",
+                "--max-dispatches-per-second": "value",
+                "--max-doublings": "value",
+                "--max-retry-duration": "value",
+                "--min-backoff": "value",
+                "--routing-override": "value"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "run": {
+          "commands": {},
+          "flags": {
+            "--queue": "value"
+          }
+        }
+      },
+      "flags": {}
+    },
     "topic": {
       "commands": {
         "accessibility": {
@@ -41469,6 +42061,7 @@ STATIC_COMPLETION_CLI_TREE = {
   },
   "flags": {
     "--account": "value",
+    "--billing-project": "value",
     "--configuration": "value",
     "--flags-file": "value",
     "--flatten": "value",

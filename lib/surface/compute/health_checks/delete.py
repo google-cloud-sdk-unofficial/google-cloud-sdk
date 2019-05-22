@@ -76,7 +76,7 @@ class DeleteAlpha(base.DeleteCommand):
   @classmethod
   def Args(cls, parser):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        '', plural=True, include_alpha=True)
+        '', plural=True, include_l7_internal_load_balancing=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='delete')
     parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha)
 

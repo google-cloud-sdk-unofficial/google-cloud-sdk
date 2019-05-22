@@ -29,6 +29,16 @@ from googlecloudsdk.core.console import console_io
 
 class Delete(base.DeleteCommand):
   """Delete a queue."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To delete a queue:
+
+              $ {command} my-queue
+         """,
+  }
 
   @staticmethod
   def Args(parser):

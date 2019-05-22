@@ -26,6 +26,16 @@ from googlecloudsdk.command_lib.tasks import parsers
 
 class List(base.ListCommand):
   """Lists the locations where Cloud Tasks is available."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To list the locations where Cloud Tasks is available:
+
+              $ {command}
+         """,
+  }
 
   @staticmethod
   def Args(parser):

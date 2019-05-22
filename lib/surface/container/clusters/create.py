@@ -475,6 +475,8 @@ class CreateBeta(Create):
     flags.WarnForNodeVersionAutoUpgrade(args)
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.autoprovisioning_config_file = args.autoprovisioning_config_file
+    ops.autoprovisioning_service_account = args.autoprovisioning_service_account
+    ops.autoprovisioning_scopes = args.autoprovisioning_scopes
     ops.min_cpu = args.min_cpu
     ops.max_cpu = args.max_cpu
     ops.min_memory = args.min_memory
@@ -622,6 +624,8 @@ class CreateAlpha(Create):
     ops.enable_peering_route_sharing = args.enable_peering_route_sharing
     ops.enable_shielded_nodes = args.enable_shielded_nodes
     ops.release_channel = args.release_channel
+    ops.autoprovisioning_service_account = args.autoprovisioning_service_account
+    ops.autoprovisioning_scopes = args.autoprovisioning_scopes
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()

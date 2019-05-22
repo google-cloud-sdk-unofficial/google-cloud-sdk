@@ -28,9 +28,19 @@ from googlecloudsdk.command_lib.tasks import parsers
 _DEFAULT_PAGE_SIZE = 25
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List tasks."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To list tasks in a queue:
+
+              $ {command} --queue=my-queue
+         """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -48,6 +58,16 @@ class List(base.ListCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaList(List):
   """List tasks."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To list tasks in a queue:
+
+              $ {command} --queue=my-queue
+         """,
+  }
 
   @staticmethod
   def Args(parser):

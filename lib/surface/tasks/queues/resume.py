@@ -28,6 +28,16 @@ from googlecloudsdk.core import log
 
 class Resume(base.Command):
   """Request to resume a paused or disabled queue."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To resume a queue:
+
+              $ {command} my-queue
+         """,
+  }
 
   @staticmethod
   def Args(parser):

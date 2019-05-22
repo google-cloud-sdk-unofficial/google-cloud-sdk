@@ -26,13 +26,9 @@ class Configurations(base.Group):
 
   detailed_help = {
       'EXAMPLES': """\
-          To update one or more env vars:
+          To describe the configuration managed by the service foo:
 
-            $ {command} update --update-env-vars KEY1=VALUE1,KEY2=VALUE2
-
-          To remove one or more env vars:
-
-            $ {command} update --remove-env-vars KEY1,KEY2
+            $ {command} describe foo
 
       """,
   }

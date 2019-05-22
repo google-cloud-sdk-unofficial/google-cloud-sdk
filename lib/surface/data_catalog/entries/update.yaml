@@ -18,18 +18,18 @@
             --location=global --entry-group=@pubsub \
             --schema-from-file="/tmp/schema.json"
 
-      To lookup the entry of a Cloud Pub/Sub topic and update its schema in one command, run:
+      To lookup the entry of a Cloud Pub/Sub topic by its SQL name and update its schema in one command, run:
 
         $ {command} \
-            --lookup-entry="pubsub.project1.topic1" \
+            --lookup-entry='pubsub.topic.`my-project1`.topic1' \
             --schema="column1=type1,column2=type2"
 
   request:
     collection: datacatalog.projects.locations.entryGroups.entries
     display_resource_type: entry
     modify_request_hooks:
-    - googlecloudsdk.command_lib.data_catalog.util:LookupAndParseEntry
-    - googlecloudsdk.command_lib.data_catalog.util:CorrectUpdateMask
+    - googlecloudsdk.command_lib.data_catalog.entries.util:LookupAndParseEntry
+    - googlecloudsdk.command_lib.data_catalog.entries.util:CorrectUpdateMask
 
   arguments:
     params:
@@ -65,7 +65,8 @@
 
           ```
         params:
-        - !REF googlecloudsdk.command_lib.data_catalog.flags:entry.schema
-        - !REF googlecloudsdk.command_lib.data_catalog.flags:entry.schema_from_file
+        - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:schema
+        - !REF googlecloudsdk.command_lib.data_catalog.entries.flags:schema_from_file
 
-    additional_arguments_hook: googlecloudsdk.command_lib.data_catalog.flags:AddEntryUpdateArgs
+    additional_arguments_hook: |-
+      googlecloudsdk.command_lib.data_catalog.entries.flags:AddEntryUpdateArgs

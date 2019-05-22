@@ -74,12 +74,14 @@ def _CommonArgs(parser,
                 enable_snapshots=False,
                 deprecate_maintenance_policy=False,
                 supports_display_device=False,
-                supports_reservation=False):
+                supports_reservation=False,
+                enable_resource_policy=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
   instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms,
-                                    enable_snapshots=enable_snapshots)
+                                    enable_snapshots=enable_snapshots,
+                                    resource_policy=enable_resource_policy)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddAcceleratorArgs(parser)
@@ -142,6 +144,7 @@ class Create(base.CreateCommand):
   _support_snapshots = False
   _support_display_device = False
   _support_reservation = False
+  _support_disk_resource_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -223,7 +226,8 @@ class Create(base.CreateCommand):
               getattr(args, 'create_disk', []),
               instance_ref,
               enable_kms=self._support_kms,
-              enable_snapshots=self._support_snapshots))
+              enable_snapshots=self._support_snapshots,
+              resource_policy=self._support_disk_resource_policy))
       local_nvdimms = []
       if self._support_nvdimm:
         local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
@@ -530,6 +534,7 @@ class CreateBeta(Create):
   _support_snapshots = False
   _support_display_device = True
   _support_reservation = True
+  _support_disk_resource_policy = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -543,7 +548,8 @@ class CreateBeta(Create):
         enable_regional=True,
         enable_kms=True,
         supports_display_device=True,
-        supports_reservation=cls._support_reservation
+        supports_reservation=cls._support_reservation,
+        enable_resource_policy=cls._support_disk_resource_policy
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
@@ -562,6 +568,7 @@ class CreateAlpha(CreateBeta):
   _support_snapshots = True
   _support_display_device = True
   _support_reservation = True
+  _support_disk_resource_policy = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -583,7 +590,8 @@ class CreateAlpha(CreateBeta):
         enable_snapshots=True,
         deprecate_maintenance_policy=True,
         supports_display_device=True,
-        supports_reservation=cls._support_reservation)
+        supports_reservation=cls._support_reservation,
+        enable_resource_policy=cls._support_disk_resource_policy)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

@@ -23,5 +23,5 @@ from googlecloudsdk.calliope import base
 
 
 class Topics(base.Group):
-  """Manage Cloud Pubsub topics."""
+  """Manage Cloud Pub/Sub topics."""
   pass

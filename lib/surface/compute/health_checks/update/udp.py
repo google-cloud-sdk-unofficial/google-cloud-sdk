@@ -41,7 +41,8 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('UDP', include_alpha=True)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
+        'UDP', include_l7_internal_load_balancing=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
     health_checks_utils.AddUdpRelatedArgs(parser,
                                           request_and_response_required=False)

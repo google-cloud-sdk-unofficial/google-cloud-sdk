@@ -89,7 +89,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Help for all or selected command:\nbq_main help [<command>]\n\nTo retrieve help with global flags:\nbq_main --help\n\nTo retrieve help with flags only from the main module:\nbq_main --helpshort [<command>]\n"
+        "DESCRIPTION": "Help for all or selected command:\nbq_lite help [<command>]\n\nTo retrieve help with global flags:\nbq_lite --help\n\nTo retrieve help with flags only from the main module:\nbq_lite --helpshort [<command>]\n"
       }
     },
     "init": {

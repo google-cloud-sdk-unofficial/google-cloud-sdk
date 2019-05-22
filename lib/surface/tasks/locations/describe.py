@@ -25,6 +25,16 @@ from googlecloudsdk.command_lib.tasks import parsers
 
 class Describe(base.DescribeCommand):
   """Show details about a location."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To describe a location:
+
+              $ {command} my-location
+         """,
+  }
 
   @staticmethod
   def Args(parser):

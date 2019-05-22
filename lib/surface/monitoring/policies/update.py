@@ -68,6 +68,7 @@ class Update(base.CreateCommand):
         args,
         ['policy', 'policy_from_file', 'display_name', 'enabled',
          'add_notification_channels', 'remove_notification_channels',
+         'set_notification_channels',
          'clear_notification_channels', 'documentation', 'documentation_format',
          'documentation_from_file', 'fields', 'update_user_labels',
          'remove_user_labels', 'clear_user_labels'],

@@ -34,6 +34,16 @@ class Purge(base.Command):
   purge takes effect. A purge is irreversible. All tasks created before this
   command is run are permanently deleted.
   """
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To purge a queue:
+
+              $ {command} my-queue
+         """,
+  }
 
   @staticmethod
   def Args(parser):

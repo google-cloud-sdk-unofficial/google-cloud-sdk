@@ -19,14 +19,19 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import csek_utils
+from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope
+from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.compute.machine_images import flags as machine_image_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create Google Compute Engine machine images."""
+  _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
 
   @staticmethod
   def Args(parser):
@@ -36,18 +41,14 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the machine image.')
-
+    csek_utils.AddCsekKeyArgs(parser, resource_type='machine image')
+    flags.AddStorageLocationFlag(parser, "machine image's")
+    flags.AddGuestFlushFlag(parser, 'machine image')
+    flags.AddSourceDiskKmsKeyArg(parser)
+    flags.AddSourceDiskCsekKeyArg(parser)
+    kms_resource_args.AddKmsKeyResourceArg(parser, 'machine image')
     Create.SOURCE_INSTANCE = machine_image_flags.MakeSourceInstanceArg()
     Create.SOURCE_INSTANCE.AddArgument(parser)
-
-  def _CreateRequest(self, messages, machine_image_ref, description,
-                     source_instance):
-    return messages.ComputeMachineImagesInsertRequest(
-        machineImage=messages.MachineImage(
-            name=machine_image_ref.Name(),
-            description=description,
-            sourceInstance=source_instance),
-        project=machine_image_ref.project)
 
   def Run(self, args):
     """Returns a list of requests necessary for adding machine images."""
@@ -61,10 +62,74 @@ class Create(base.CreateCommand):
         scope_lister=flags.GetDefaultScopeLister(client))
 
     source_instance = Create.SOURCE_INSTANCE.ResolveAsResource(
-        args, holder.resources).SelfLink()
+        args, holder.resources)
+
+    machine_image = client.messages.MachineImage(
+        name=machine_image_ref.Name(),
+        description=args.description,
+        sourceInstance=source_instance.SelfLink())
+
+    csek_keys = csek_utils.CsekKeyStore.FromArgs(
+        args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
+    if csek_keys:
+      machine_image.machineImageEncryptionKey = csek_utils.MaybeToMessage(
+          csek_keys.LookupKey(machine_image_ref,
+                              raise_if_missing=args.require_csek_key_create),
+          client.apitools_client)
+    machine_image.machineImageEncryptionKey = kms_utils.MaybeGetKmsKey(
+        args, client.messages, machine_image.machineImageEncryptionKey)
+
+    if args.IsSpecified('storage_location'):
+      machine_image.storageLocations = [args.storage_location]
+
+    if args.IsSpecified('guest_flush'):
+      machine_image.guestFlush = args.guest_flush
+
+    source_kms_keys = getattr(args, 'source_disk_kms_key', [])
+    source_csek_keys = getattr(args, 'source_disk_csek_key', [])
+
+    disk_keys = {}
+
+    if source_csek_keys:
+      for key in source_csek_keys:
+        disk_url = key.get('disk')
+        disk_ref = holder.resources.Parse(
+            disk_url, collection='compute.disks',
+            params={
+                'project': source_instance.project,
+                'zone': source_instance.project
+            })
+        key_store = csek_utils.CsekKeyStore.FromFile(
+            key.get('csek-key-file'),
+            self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
+
+        disk_key = csek_utils.MaybeToMessage(
+            key_store.LookupKey(disk_ref),
+            client.apitools_client)
+        disk_keys[disk_url] = disk_key
+
+    if source_kms_keys:
+      for key in source_kms_keys:
+        disk_url = key.get('disk')
+        disk_key = kms_utils.MaybeGetKmsKeyFromDict(
+            key, client.messages,
+            disk_keys.get(disk_url, None),
+            conflicting_arg='--source-disk-csek-key')
+        disk_keys[disk_url] = disk_key
+
+    source_disk_messages = []
+    if disk_keys:
+      for disk, key in disk_keys.items():
+        source_disk_message = client.messages.SourceDiskEncryptionKey(
+            sourceDisk=disk,
+            diskEncryptionKey=key
+        )
+        source_disk_messages.append(source_disk_message)
+
+    if source_disk_messages:
+      machine_image.sourceDiskEncryptionKeys = source_disk_messages
+
+    request = client.messages.ComputeMachineImagesInsertRequest(
+        machineImage=machine_image, project=machine_image_ref.project)
     return client.MakeRequests([(client.apitools_client.machineImages, 'Insert',
-                                 self._CreateRequest(
-                                     client.messages,
-                                     machine_image_ref,
-                                     description=args.description,
-                                     source_instance=source_instance))])
+                                 request)])

@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.flags import AutoDeleteFlag
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 
 # API allows up to 58 characters but asked us to send only 54 (unless user
@@ -71,6 +72,34 @@ def _AddInstanceGroupManagerArgs(parser):
 def _IsZonalGroup(ref):
   """Checks if reference to instance group is zonal."""
   return ref.Collection() == 'compute.instanceGroupManagers'
+
+
+def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
+                                              stateful_policy, client):
+  """Validates and fixed update policy for stateful MIG.
+
+  Sets default values in update_policy for stateful IGMs or throws exception
+  if the wrong value is set explicitly.
+
+  Args:
+    update_policy: Update policy to be validated
+    group_ref: Reference of IGM being validated
+    stateful_policy: Stateful policy to check if the group is stateful
+    client: The compute API client
+  """
+  if stateful_policy is None or update_policy is None:
+    return
+  if _IsZonalGroup(group_ref):
+    return
+  redistribution_type_none = (
+      client.messages.InstanceGroupManagerUpdatePolicy
+      .InstanceRedistributionTypeValueValuesEnum.NONE)
+  if update_policy.instanceRedistributionType is None:
+    update_policy.instanceRedistributionType = redistribution_type_none
+  elif update_policy.instanceRedistributionType != redistribution_type_none:
+    raise exceptions.Error(
+        'Stateful regional IGMs cannot use proactive instance redistribution. '
+        'Use --instance-redistribution-type=NONE')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -340,12 +369,15 @@ class CreateAlpha(CreateBeta):
             client.messages, health_check, args.initial_delay))
     managed_instance_groups_utils.ValidateAutohealingPolicies(
         auto_healing_policies)
+    instance_redistribution_type = args.GetValue('instance_redistribution_type')
     instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
-        args.GetValue('instance_redistribution_type'), group_ref)
-    update_policy = (managed_instance_groups_utils.
-                     ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                         client, args.GetValue('instance_redistribution_type'),
-                         None)
+        instance_redistribution_type, group_ref)
+    stateful_policy = self._CreateStatefulPolicy(args, client)
+    update_policy = (managed_instance_groups_utils
+                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                         client, instance_redistribution_type, None)
+    ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
+                                              stateful_policy, client)
 
     return client.messages.InstanceGroupManager(
         name=group_ref.Name(),
@@ -359,7 +391,7 @@ class CreateAlpha(CreateBeta):
         autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
             args.zones, holder.resources, client.messages),
-        statefulPolicy=self._CreateStatefulPolicy(args, client),
+        statefulPolicy=stateful_policy,
         updatePolicy=update_policy,
     )
 

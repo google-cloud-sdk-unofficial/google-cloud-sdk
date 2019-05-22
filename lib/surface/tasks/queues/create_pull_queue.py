@@ -51,7 +51,8 @@ class CreatePull(base.CreateCommand):
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args, constants.PULL_QUEUE, api.messages, is_alpha=True)
+        args, constants.PULL_QUEUE, api.messages,
+        release_track=base.ReleaseTrack.ALPHA)
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     create_response = queues_client.Create(
         location_ref, queue_ref,

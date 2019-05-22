@@ -26,6 +26,16 @@ from googlecloudsdk.command_lib.tasks import parsers
 
 class Run(base.Command):
   """Force a task to run now."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To run a task:
+
+              $ {command} --queue=my-queue my-task
+         """,
+  }
 
   @staticmethod
   def Args(parser):

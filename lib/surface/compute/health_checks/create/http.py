@@ -25,16 +25,47 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
-def _Run(args,
-         holder,
-         include_alpha=False):
+def _DetailedHelp():
+  return {
+      'brief':
+          'Create a HTTP health check to monitor load balanced instances.',
+      'DESCRIPTION':
+          """\
+      *{command}* is used to create an HTTP non-legacy health check. HTTP
+      health checks monitor instances in a load balancer controlled by a
+      target pool. All arguments to the command are optional except for the
+      name of the health check. For more information on load balancing, see
+      [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+      """,
+  }
+
+
+def _Args(parser, include_l7_internal_load_balancing=False):
+  """Set up arguments to create a HTTP HealthCheck."""
+  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+  flags.HealthCheckArgument(
+      'HTTP',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing
+  ).AddArgument(
+      parser, operation_type='create')
+  health_checks_utils.AddHttpRelatedCreationArgs(parser)
+  health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP')
+  health_checks_utils.AddHttpRelatedResponseArg(parser)
+  parser.display_info.AddCacheUpdater(
+      completers.HealthChecksCompleterAlpha if
+      include_l7_internal_load_balancing else completers.HealthChecksCompleter)
+
+
+def _Run(args, release_track, include_l7_internal_load_balancing=False):
   """Issues the request necessary for adding the health check."""
+  holder = base_classes.ComputeApiHolder(release_track)
   client = holder.client
   messages = client.messages
 
   health_check_ref = flags.HealthCheckArgument(
-      'HTTP', include_alpha=include_alpha).ResolveAsResource(
-          args, holder.resources)
+      'HTTP',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing
+  ).ResolveAsResource(args, holder.resources)
   proxy_header = messages.HTTPHealthCheck.ProxyHeaderValueValuesEnum(
       args.proxy_header)
   http_health_check = messages.HTTPHealthCheck(
@@ -79,55 +110,39 @@ def _Run(args,
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Create(base.CreateCommand):
-  """Create HTTP non-legacy health check to monitor load balanced instances."""
+class CreateGaAndBeta(base.CreateCommand):
+  """Create a GA/Beta HTTP non-legacy health check.
 
-  @classmethod
-  def Args(cls,
-           parser,
-           regionalized=False):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    flags.HealthCheckArgument(
-        'HTTP', include_alpha=regionalized).AddArgument(
-            parser, operation_type='create')
-    health_checks_utils.AddHttpRelatedCreationArgs(parser)
-    health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP')
-    health_checks_utils.AddHttpRelatedResponseArg(parser)
-    parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha
-                                        if regionalized else
-                                        completers.HealthChecksCompleter)
+  Business logic should be put in helper functions. Classes annotated with
+  @base.ReleaseTracks should only be concerned with calling helper functions
+  with the correct feature parameters.
+  """
 
-  def Run(self, args):
-    """Issues the request necessary for adding the health check."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create HTTP non-legacy health check to monitor load balanced instances."""
+  detailed_help = _DetailedHelp()
 
   @staticmethod
   def Args(parser):
-    Create.Args(parser, regionalized=True)
-    parser.display_info.AddCacheUpdater(completers.HealthChecksCompleter)
+    _Args(parser)
 
   def Run(self, args):
-    """Issues the request necessary for adding the health check."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return _Run(args, self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.CreateCommand):
+  """Create an Alpha HTTP non-legacy health check.
+
+  Business logic should be put in helper functions. Classes annotated with
+  @base.ReleaseTracks should only be concerned with calling helper functions
+  with the correct feature parameters.
+  """
+
+  detailed_help = _DetailedHelp()
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, include_l7_internal_load_balancing=True)
+
+  def Run(self, args):
     return _Run(
-        args,
-        holder,
-        include_alpha=True)
-
-
-Create.detailed_help = {
-    'brief': 'Create a HTTP health check to monitor load balanced instances',
-    'DESCRIPTION': """\
-        *{command}* is used to create an HTTP non-legacy health check. HTTP
-        health checks monitor instances in a load balancer controlled by a
-        target pool. All arguments to the command are optional except for the
-        name of the health check. For more information on load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
-        """,
-}
+        args, self.ReleaseTrack(), include_l7_internal_load_balancing=True)

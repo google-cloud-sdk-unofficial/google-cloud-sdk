@@ -444,6 +444,8 @@ class UpdateBeta(Update):
     opts.enable_binauthz = args.enable_binauthz
     opts.enable_autoprovisioning = args.enable_autoprovisioning
     opts.autoprovisioning_config_file = args.autoprovisioning_config_file
+    opts.autoprovisioning_service_account = args.autoprovisioning_service_account
+    opts.autoprovisioning_scopes = args.autoprovisioning_scopes
     opts.min_cpu = args.min_cpu
     opts.max_cpu = args.max_cpu
     opts.min_memory = args.min_memory
@@ -515,6 +517,8 @@ class UpdateAlpha(Update):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_autoprovisioning = args.enable_autoprovisioning
     opts.autoprovisioning_config_file = args.autoprovisioning_config_file
+    opts.autoprovisioning_service_account = args.autoprovisioning_service_account
+    opts.autoprovisioning_scopes = args.autoprovisioning_scopes
     opts.min_cpu = args.min_cpu
     opts.max_cpu = args.max_cpu
     opts.min_memory = args.min_memory

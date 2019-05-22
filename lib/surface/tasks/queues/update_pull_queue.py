@@ -56,7 +56,7 @@ class UpdatePull(base.UpdateCommand):
         constants.PULL_QUEUE,
         api.messages,
         is_update=True,
-        is_alpha=True)
+        release_track=base.ReleaseTrack.ALPHA)
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
         queue_ref, retry_config=queue_config.retryConfig)

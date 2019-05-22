@@ -292,6 +292,10 @@ class UpdateAlpha(UpdateBeta):
             args.IsSpecified('update_stateful_disk') or
             args.IsSpecified('remove_stateful_disks'))
 
+  def _StatefulnessIntroduced(self, args):
+    return (args.IsSpecified('stateful_names') or
+            args.IsSpecified('update_stateful_disk'))
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -313,6 +317,9 @@ class UpdateAlpha(UpdateBeta):
 
     igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
         igm_ref, client)
+    if self._StatefulnessIntroduced(args):
+      managed_instance_groups_utils.ValidateIgmReadyForStatefulness(
+          igm_resource, client)
 
     device_names = instance_groups_flags.ValidateUpdateStatefulPolicyParams(
         args, igm_resource.statefulPolicy)

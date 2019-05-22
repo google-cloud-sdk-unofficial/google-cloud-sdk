@@ -57,14 +57,15 @@ class ListInstances(base.ListCommand):
         """)
     parser.display_info.AddUriFunc(_GetUriFunction)
     arguments.ArgAdder(parser).AddInstance(
-        positional=False, required=False, multiple=True)
+        positional=False, required=True, multiple=True)
 
   def Run(self, args):
     if not grpc_available:
       raise core_exceptions.InternalError('gRPC is not available')
 
     channel = grpc_util.MakeSecureChannel('bigtableadmin.googleapis.com:443')
-    instances = args.instances or ['-']
+    instances = args.instances
+    results = []
     for instance in instances:
       instance_ref = resources.REGISTRY.Parse(
           instance,
@@ -76,6 +77,7 @@ class ListInstances(base.ListCommand):
       request = bigtable_table_admin_pb2.ListTablesRequest(
           parent=instance_ref.RelativeName(),
       )
-
-      return grpc_util.YieldFromList(
-          stub.ListTables, request, items_field='tables')
+      for table in grpc_util.YieldFromList(
+          stub.ListTables, request, items_field='tables'):
+        results.append(table)
+    return results

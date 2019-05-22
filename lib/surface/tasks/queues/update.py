@@ -26,20 +26,19 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateAppEngine(base.UpdateCommand):
-  """Update an App Engine queue.
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
+  """Update a Cloud Tasks queue.
 
-  The flags available to this command represent the fields of an App Engine
-  queue that are mutable. Attempting to use this command on a different type of
-  queue will result in an error.
+  The flags available to this command represent the fields of a queue that are
+  mutable.
   """
   detailed_help = {
       'DESCRIPTION': """\
           {description}
           """,
       'EXAMPLES': """\
-          To update an App Engine queue:
+          To update a Cloud Tasks queue:
 
               $ {command} my-queue
                 --clear-max-attempts --clear-max-retry-duration
@@ -52,14 +51,14 @@ class UpdateAppEngine(base.UpdateCommand):
   }
 
   def __init__(self, *args, **kwargs):
-    super(UpdateAppEngine, self).__init__(*args, **kwargs)
+    super(Update, self).__init__(*args, **kwargs)
     self.is_alpha = False
 
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to update')
     flags.AddLocationFlag(parser)
-    flags.AddUpdateAppEngineQueueFlags(parser)
+    flags.AddUpdatePushQueueFlags(parser)
 
   def Run(self, args):
     parsers.CheckUpdateArgsSpecified(args,
@@ -73,15 +72,17 @@ class UpdateAppEngine(base.UpdateCommand):
         constants.PUSH_QUEUE,
         api.messages,
         is_update=True,
-        is_alpha=self.is_alpha)
-    if not self.is_alpha:
+        release_track=self.ReleaseTrack())
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      app_engine_routing_override = (
+          queue_config.appEngineHttpTarget.appEngineRoutingOverride
+          if queue_config.appEngineHttpTarget is not None else None)
+    elif self.ReleaseTrack() == base.ReleaseTrack.BETA:
       app_engine_routing_override = (
           queue_config.appEngineHttpQueue.appEngineRoutingOverride
           if queue_config.appEngineHttpQueue is not None else None)
     else:
-      app_engine_routing_override = (
-          queue_config.appEngineHttpTarget.appEngineRoutingOverride
-          if queue_config.appEngineHttpTarget is not None else None)
+      app_engine_routing_override = queue_config.appEngineRoutingOverride
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     update_response = queues_client.Patch(
         queue_ref,
@@ -93,19 +94,19 @@ class UpdateAppEngine(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdateAppEngine(UpdateAppEngine):
-  """Update an App Engine queue.
+class AlphaUpdate(Update):
+  """Update a Cloud Tasks queue.
 
-  The flags available to this command represent the fields of an App Engine
-  queue that are mutable. Attempting to use this command on a different type of
-  queue will result in an error.
+  The flags available to this command represent the fields of a queue that are
+  mutable. Attempting to use this command on a different type of queue will
+  result in an error.
   """
   detailed_help = {
       'DESCRIPTION': """\
           {description}
           """,
       'EXAMPLES': """\
-          To update an App Engine queue:
+          To update a Cloud Tasks queue:
 
               $ {command} my-queue
                 --clear-max-attempts --clear-max-retry-duration
@@ -118,12 +119,12 @@ class AlphaUpdateAppEngine(UpdateAppEngine):
   }
 
   def __init__(self, *args, **kwargs):
-    super(AlphaUpdateAppEngine, self).__init__(*args, **kwargs)
+    super(AlphaUpdate, self).__init__(*args, **kwargs)
     self.is_alpha = True
 
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to update')
     flags.AddLocationFlag(parser)
-    flags.AddUpdateAppEngineQueueFlags(parser, is_alpha=True)
+    flags.AddUpdatePushQueueFlags(parser, is_alpha=True)
 

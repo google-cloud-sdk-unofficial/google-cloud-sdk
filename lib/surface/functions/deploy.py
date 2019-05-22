@@ -29,9 +29,12 @@ from googlecloudsdk.command_lib.functions.deploy import env_vars_util
 from googlecloudsdk.command_lib.functions.deploy import labels_util
 from googlecloudsdk.command_lib.functions.deploy import source_util
 from googlecloudsdk.command_lib.functions.deploy import trigger_util
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util as args_labels_util
 from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 def _ApplyEnvVarsArgsToFunction(function, args):
@@ -46,12 +49,25 @@ def _ApplyEnvVarsArgsToFunction(function, args):
   return updated_fields
 
 
+def _CreateBindPolicyCommand(function_name, region):
+  template = (
+      'gcloud alpha functions add-iam-policy-binding %s %s'
+      '--member=allUsers --role=roles/cloudfunctions.invoker')
+  region_flag = '--region=%s ' % region if region else ''
+  return template % (function_name, region_flag)
+
+
+def _GetProject(args):
+  return args.project or properties.VALUES.core.project.Get(required=True)
+
+
 def _Run(args,
          track=None,
          enable_runtime=True,
          enable_max_instances=False,
-         enable_connected_vpc=False,
-         enable_vpc_connector=False):
+         enable_vpc_connector=False,
+         enable_traffic_control=False,
+         enable_allow_unauthenticated=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
   labels_util.CheckNoDeploymentLabels('--remove-labels', args.remove_labels)
@@ -120,18 +136,35 @@ def _Run(args,
       max_instances = 0 if args.clear_max_instances else args.max_instances
       function.maxInstances = max_instances
       updated_fields.append('maxInstances')
-  if enable_connected_vpc:
-    if args.connected_vpc:
-      function.network = args.connected_vpc
-      updated_fields.append('network')
-    if args.IsSpecified('vpc_connector'):
-      function.vpcConnector = args.vpc_connector
-      updated_fields.append('vpcConnector')
   if enable_vpc_connector:
     if args.IsSpecified('vpc_connector'):
       function.vpcConnector = args.vpc_connector
       updated_fields.append('vpcConnector')
-
+      if enable_traffic_control:
+        if args.IsSpecified('egress_settings'):
+          egress_settings_enum = \
+              arg_utils.ChoiceEnumMapper(
+                  arg_name='egress_settings',
+                  message_enum=function.VpcConnectorEgressSettingsValueValuesEnum,
+                  custom_mappings=flags.EGRESS_SETTINGS_MAPPING,).GetEnumForChoice(
+                      args.egress_settings)
+          function.vpcConnectorEgressSettings = egress_settings_enum
+          updated_fields.append('vpcConnectorEgressSettings')
+        if (args.IsSpecified('egress_settings')
+            and not args.IsSpecified('vpc_connector')):
+          raise exceptions.RequiredArgumentException(
+              'vpc-connector', 'Flag `--vpc-connector` is '
+                               'required for setting egress_settings.')
+  if enable_traffic_control:
+    if args.IsSpecified('ingress_settings'):
+      ingress_settings_enum = \
+        arg_utils.ChoiceEnumMapper(
+            arg_name='ingress_settings',
+            message_enum=function.IngressSettingsValueValuesEnum,
+            custom_mappings=flags.INGRESS_SETTINGS_MAPPING,).GetEnumForChoice(
+                args.ingress_settings)
+      function.ingressSettings = ingress_settings_enum
+      updated_fields.append('ingressSettings')
   # Populate trigger properties of function based on trigger args.
   if args.trigger_http:
     function.httpsTrigger = messages.HttpsTrigger()
@@ -168,12 +201,53 @@ def _Run(args,
   # Apply environment variables args to function
   updated_fields.extend(_ApplyEnvVarsArgsToFunction(function, args))
 
+  ensure_all_users_invoke = (
+      enable_allow_unauthenticated and flags.ShouldEnsureAllUsersInvoke(args))
+  deny_all_users_invoke = (
+      enable_allow_unauthenticated and flags.ShouldDenyAllUsersInvoke(args))
+
   if is_new_function:
-    return api_util.CreateFunction(function,
-                                   function_ref.Parent().RelativeName())
-  if updated_fields:
-    return api_util.PatchFunction(function, updated_fields)
-  log.status.Print('Nothing to update.')
+    if (enable_allow_unauthenticated
+        and not ensure_all_users_invoke
+        and not deny_all_users_invoke
+        and api_util.CanAddFunctionIamPolicyBinding(_GetProject(args))):
+      ensure_all_users_invoke = console_io.PromptContinue(
+          prompt_string=(
+              'Allow unauthenticated invocations of new function [{}]?'.format(
+                  args.NAME)),
+          default=False)
+
+    op = api_util.CreateFunction(function, function_ref.Parent().RelativeName())
+    if (enable_allow_unauthenticated
+        and not ensure_all_users_invoke
+        and not deny_all_users_invoke):
+      template = (
+          'Function created with default IAM policy. '
+          'To enable unauthorized access consider "%s"')
+      log.warning(template % _CreateBindPolicyCommand(args.NAME, args.region))
+
+  elif updated_fields:
+    op = api_util.PatchFunction(function, updated_fields)
+
+  else:
+    op = None  # Nothing to wait for
+    if not ensure_all_users_invoke and not deny_all_users_invoke:
+      log.status.Print('Nothing to update.')
+      return
+
+  try:
+    if ensure_all_users_invoke:
+      api_util.AddFunctionIamPolicyBinding(function.name)
+    elif deny_all_users_invoke:
+      api_util.RemoveFunctionIamPolicyBindingIfFound(function.name)
+  except exceptions.HttpException:
+    log.warning(
+        'Setting IAM policy failed, try "%s"' % _CreateBindPolicyCommand(
+            args.NAME, args.region))
+
+  if op:
+    api_util.WaitForFunctionUpdateOperation(op)
+  return api_util.GetFunction(function.name)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -221,14 +295,16 @@ class DeployBeta(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddMaxInstancesFlag(parser)
-    flags.AddVPCMutexGroup(parser, enable_connected_vpc=False)
+    flags.AddVPCConnectorFlag(parser)
+    flags.AddAllowUnauthenticatedFlag(parser)
 
   def Run(self, args):
     return _Run(
         args,
         track=self.ReleaseTrack(),
         enable_max_instances=True,
-        enable_vpc_connector=True)
+        enable_vpc_connector=True,
+        enable_allow_unauthenticated=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -240,8 +316,16 @@ class DeployAlpha(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddMaxInstancesFlag(parser)
-    flags.AddVPCMutexGroup(parser, enable_connected_vpc=True)
+    flags.AddVPCConnectorFlag(parser)
+    flags.AddEgressSettingsFlag(parser)
+    flags.AddIngressSettingsFlag(parser)
+    flags.AddAllowUnauthenticatedFlag(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack(), enable_max_instances=True,
-                enable_connected_vpc=True)
+    return _Run(
+        args,
+        track=self.ReleaseTrack(),
+        enable_max_instances=True,
+        enable_vpc_connector=True,
+        enable_traffic_control=True,
+        enable_allow_unauthenticated=True)

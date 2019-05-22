@@ -27,12 +27,11 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateAppEngine(base.CreateCommand):
-  """Create an App Engine queue.
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a Cloud Tasks queue.
 
-  An App Engine queue is a push queue sent to an App Engine endpoint. The flags
-  available to this command represent the fields of an App Engine queue that are
+  The flags available to this command represent the fields of a queue that are
   mutable.
   """
   detailed_help = {
@@ -40,7 +39,7 @@ class CreateAppEngine(base.CreateCommand):
           {description}
           """,
       'EXAMPLES': """\
-          To create an App Engine queue:
+          To create a Cloud Tasks queue:
 
               $ {command} my-queue
                 --max-attempts=10 --max-retry-duration=5s
@@ -53,14 +52,14 @@ class CreateAppEngine(base.CreateCommand):
   }
 
   def __init__(self, *args, **kwargs):
-    super(CreateAppEngine, self).__init__(*args, **kwargs)
+    super(Create, self).__init__(*args, **kwargs)
     self.is_alpha = False
 
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
-    flags.AddCreateAppEngineQueueFlags(parser)
+    flags.AddCreatePushQueueFlags(parser)
 
   def Run(self, args):
     api = GetApiAdapter(self.ReleaseTrack())
@@ -68,9 +67,17 @@ class CreateAppEngine(base.CreateCommand):
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     location_ref = parsers.ExtractLocationRefFromQueueRef(queue_ref)
     queue_config = parsers.ParseCreateOrUpdateQueueArgs(
-        args, constants.PUSH_QUEUE, api.messages, self.is_alpha)
+        args, constants.PUSH_QUEUE, api.messages,
+        release_track=self.ReleaseTrack())
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
-    if not self.is_alpha:
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      create_response = queues_client.Create(
+          location_ref,
+          queue_ref,
+          retry_config=queue_config.retryConfig,
+          rate_limits=queue_config.rateLimits,
+          app_engine_http_target=queue_config.appEngineHttpTarget)
+    elif self.ReleaseTrack() == base.ReleaseTrack.BETA:
       create_response = queues_client.Create(
           location_ref,
           queue_ref,
@@ -83,17 +90,16 @@ class CreateAppEngine(base.CreateCommand):
           queue_ref,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
-          app_engine_http_target=queue_config.appEngineHttpTarget)
+          app_engine_routing_override=queue_config.appEngineRoutingOverride)
     log.CreatedResource(queue_ref.Name(), 'queue')
     return create_response
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreateAppEngine(CreateAppEngine):
-  """Create an App Engine queue.
+class AlphaCreate(Create):
+  """Create a Cloud Tasks queue.
 
-  An App Engine queue is a push queue sent to an App Engine endpoint. The flags
-  available to this command represent the fields of an App Engine queue that are
+  The flags available to this command represent the fields of a queue that are
   mutable.
   """
   detailed_help = {
@@ -101,7 +107,7 @@ class AlphaCreateAppEngine(CreateAppEngine):
           {description}
           """,
       'EXAMPLES': """\
-          To create an App Engine queue:
+          To create a Cloud Tasks queue:
 
               $ {command} my-queue
                 --max-attempts=10 --max-retry-duration=5s
@@ -114,11 +120,11 @@ class AlphaCreateAppEngine(CreateAppEngine):
   }
 
   def __init__(self, *args, **kwargs):
-    super(AlphaCreateAppEngine, self).__init__(*args, **kwargs)
+    super(AlphaCreate, self).__init__(*args, **kwargs)
     self.is_alpha = True
 
   @staticmethod
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
-    flags.AddCreateAppEngineQueueFlags(parser, is_alpha=True)
+    flags.AddCreatePushQueueFlags(parser, is_alpha=True)

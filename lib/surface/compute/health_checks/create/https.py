@@ -25,16 +25,15 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
-def _Run(args,
-         holder,
-         include_alpha=False):
+def _Run(args, holder, include_l7_internal_load_balancing=False):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
 
   health_check_ref = flags.HealthCheckArgument(
-      'HTTPS', include_alpha=include_alpha).ResolveAsResource(
-          args, holder.resources)
+      'HTTPS',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing
+  ).ResolveAsResource(args, holder.resources)
   proxy_header = messages.HTTPSHealthCheck.ProxyHeaderValueValuesEnum(
       args.proxy_header)
 
@@ -90,7 +89,7 @@ class Create(base.CreateCommand):
            regionalized=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.HealthCheckArgument(
-        'HTTPS', include_alpha=regionalized).AddArgument(
+        'HTTPS', include_l7_internal_load_balancing=regionalized).AddArgument(
             parser, operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTPS')
@@ -116,10 +115,7 @@ class CreateAlpha(Create):
   def Run(self, args):
     """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(
-        args,
-        holder,
-        include_alpha=True)
+    return _Run(args, holder, include_l7_internal_load_balancing=True)
 
 
 Create.detailed_help = {

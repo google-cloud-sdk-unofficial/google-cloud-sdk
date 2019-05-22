@@ -32,13 +32,14 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(parser,
-          include_beta,
-          include_alpha=False,
-          support_global_access=False):
-  """Argument parsing."""
-  flags.AddUpdateArgs(parser, include_beta=include_beta,
-                      include_alpha=include_alpha)
+def _Args(parser, support_global_access, support_traffic_director,
+          support_l7_internal_load_balancing):
+  """Add the flags to create a forwarding rule."""
+
+  flags.AddUpdateArgs(
+      parser,
+      include_traffic_director=support_traffic_director,
+      include_l7_internal_load_balancing=support_l7_internal_load_balancing)
   flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -56,27 +57,35 @@ def _Args(parser,
            'name for this forwarding rule. The full name will be internally '
            'generated and output as dnsName. If this field is not specified, '
            'no DNS record will be generated and no DNS name will be output. ')
+  flags.AddAddressesAndIPVersions(
+      parser,
+      required=False,
+      include_traffic_director=support_traffic_director,
+      include_l7_internal_load_balancing=support_l7_internal_load_balancing)
+  forwarding_rule_arg = flags.ForwardingRuleArgument()
+  forwarding_rule_arg.AddArgument(parser, operation_type='create')
+  parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
+  return forwarding_rule_arg
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base.CreateCommand):
-  """Create a forwarding rule to direct network traffic to a load balancer."""
+class CreateHelper(object):
+  """Helper class to create a fowarding rule."""
 
   FORWARDING_RULE_ARG = None
-  _support_global_access = False
-  _support_traffic_director = False
+
+  def __init__(self, holder, support_global_access, support_traffic_director,
+               support_l7_internal_load_balancing):
+    self._holder = holder
+    self._support_global_access = support_global_access
+    self._support_traffic_director = support_traffic_director
+    self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
 
   @classmethod
-  def Args(cls, parser):
-    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    _Args(
-        parser,
-        include_beta=False,
-        include_alpha=False,
-        support_global_access=cls._support_global_access)
-    flags.AddAddressesAndIPVersions(parser, required=False)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
-    parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
+  def Args(cls, parser, support_global_access, support_traffic_director,
+           support_l7_internal_load_balancing):
+    cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
+                                    support_traffic_director,
+                                    support_l7_internal_load_balancing)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -86,28 +95,20 @@ class Create(base.CreateCommand):
       return
 
   def Run(self, args):
-    return self._Run(args)
-
-  def _Run(self, args, validate_beta_args=False):
     """Issues requests necessary to create Forwarding Rules."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    client = self._holder.client
 
     forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
         args,
-        holder.resources,
+        self._holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     if forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
-      requests = self._CreateGlobalRequests(client, holder.resources, args,
-                                            forwarding_rule_ref)
+      requests = self._CreateGlobalRequests(client, self._holder.resources,
+                                            args, forwarding_rule_ref)
     elif forwarding_rule_ref.Collection() == 'compute.forwardingRules':
-      requests = self._CreateRegionalRequests(
-          client,
-          holder.resources,
-          args,
-          forwarding_rule_ref,
-          validate_beta_args=validate_beta_args)
+      requests = self._CreateRegionalRequests(client, self._holder.resources,
+                                              args, forwarding_rule_ref)
 
     return client.MakeRequests(requests)
 
@@ -148,9 +149,11 @@ class Create(base.CreateCommand):
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=_GetLoadBalancingScheme(args, client.messages))
 
-    if args.network is not None:
-      forwarding_rule.network = flags.NETWORK_ARG_ALPHA.ResolveAsResource(
-          args, resources).SelfLink()
+    if args.IsSpecified('network'):
+      forwarding_rule.network = flags.NetworkArg(
+          self._support_traffic_director,
+          self._support_l7_internal_load_balancing).ResolveAsResource(
+              args, resources).SelfLink()
 
     if self._support_global_access and args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
@@ -161,19 +164,16 @@ class Create(base.CreateCommand):
 
     return [(client.apitools_client.globalForwardingRules, 'Insert', request)]
 
-  def _CreateRegionalRequests(self,
-                              client,
-                              resources,
-                              args,
-                              forwarding_rule_ref,
-                              validate_beta_args=False):
+  def _CreateRegionalRequests(self, client, resources, args,
+                              forwarding_rule_ref):
     """Create a regionally scoped request."""
     target_ref, region_ref = utils.GetRegionalTarget(
         client,
         resources,
         args,
         forwarding_rule_ref,
-        include_alpha=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
+        include_l7_internal_load_balancing=self
+        ._support_l7_internal_load_balancing)
     if not args.region and region_ref:
       args.region = region_ref
     protocol = self.ConstructProtocol(client.messages, args)
@@ -211,8 +211,10 @@ class Create(base.CreateCommand):
         forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
             args, resources).SelfLink()
       if args.network is not None:
-        forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
-            args, resources).SelfLink()
+        forwarding_rule.network = flags.NetworkArg(
+            self._support_traffic_director,
+            self._support_l7_internal_load_balancing).ResolveAsResource(
+                args, resources).SelfLink()
     elif ((target_ref.Collection() == 'compute.regionTargetHttpProxies' or
            target_ref.Collection() == 'compute.regionTargetHttpsProxies') and
           args.load_balancing_scheme == 'INTERNAL'):
@@ -223,8 +225,10 @@ class Create(base.CreateCommand):
         forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
             args, resources).SelfLink()
       if args.network is not None:
-        forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
-            args, resources).SelfLink()
+        forwarding_rule.network = flags.NetworkArg(
+            self._support_traffic_director,
+            self._support_l7_internal_load_balancing).ResolveAsResource(
+                args, resources).SelfLink()
       forwarding_rule.target = target_ref.SelfLink()
     elif args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.InvalidArgumentException(
@@ -240,8 +244,10 @@ class Create(base.CreateCommand):
         forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
             args, resources).SelfLink()
       if args.network is not None:
-        forwarding_rule.network = flags.NETWORK_ARG.ResolveAsResource(
-            args, resources).SelfLink()
+        forwarding_rule.network = flags.NetworkArg(
+            self._support_traffic_director,
+            self._support_l7_internal_load_balancing).ResolveAsResource(
+                args, resources).SelfLink()
       forwarding_rule.target = target_ref.SelfLink()
     else:
       forwarding_rule.portRange = (
@@ -261,6 +267,8 @@ class Create(base.CreateCommand):
     return [(client.apitools_client.forwardingRules, 'Insert', request)]
 
   def _ResolveAddress(self, resources, args, scope, forwarding_rule_ref):
+    """Resolve address resource."""
+
     # Address takes either an ip address or an address resource. If parsing as
     # an IP address fails, then we resolve as a resource.
     address = args.address
@@ -275,12 +283,34 @@ class Create(base.CreateCommand):
           if not args.global_address and not args.address_region:
             if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
               args.address_region = forwarding_rule_ref.region
-        address_ref = flags.ADDRESS_ARG.ResolveAsResource(
-            args, resources,
-            default_scope=scope)
+        address_ref = flags.AddressArg(
+            self._support_traffic_director,
+            self._support_l7_internal_load_balancing).ResolveAsResource(
+                args, resources, default_scope=scope)
         address = address_ref.SelfLink()
 
     return address
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a forwarding rule to direct network traffic to a load balancer."""
+
+  _support_global_access = False
+  _support_traffic_director = False
+  _support_l7_internal_load_balancing = False
+
+  @classmethod
+  def Args(cls, parser):
+    CreateHelper.Args(parser, cls._support_global_access,
+                      cls._support_traffic_director,
+                      cls._support_l7_internal_load_balancing)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return CreateHelper(holder, self._support_global_access,
+                        self._support_traffic_director,
+                        self._support_l7_internal_load_balancing).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -288,21 +318,7 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = False
   _support_traffic_director = True
-
-  @classmethod
-  def Args(cls, parser):
-    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    _Args(
-        parser,
-        include_beta=True,
-        include_alpha=False,
-        support_global_access=cls._support_global_access)
-    flags.AddAddressesAndIPVersions(parser, required=False, include_beta=True)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
-    parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
-
-  def Run(self, args):
-    return self._Run(args, validate_beta_args=True)
+  _support_l7_internal_load_balancing = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -310,19 +326,7 @@ class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_traffic_director = True
-
-  @classmethod
-  def Args(cls, parser):
-    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    _Args(
-        parser,
-        include_beta=True,
-        include_alpha=True,
-        support_global_access=cls._support_global_access)
-    flags.AddAddressesAndIPVersions(
-        parser, required=False, include_beta=True, include_alpha=True)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='create')
-    parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
+  _support_l7_internal_load_balancing = True
 
 
 Create.detailed_help = {

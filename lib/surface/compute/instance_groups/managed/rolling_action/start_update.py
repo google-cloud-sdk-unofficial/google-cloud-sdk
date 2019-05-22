@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as instance_groups_managed_flags
+from googlecloudsdk.command_lib.compute.instance_groups.managed import rolling_action
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
@@ -140,10 +141,13 @@ class StartUpdate(base.Command):
     if hasattr(args, 'min_ready'):
       update_policy.minReadySec = args.min_ready
     # replacement_method is available in alpha API only
-    if hasattr(args, 'replacement_method') and args.replacement_method:
+    if hasattr(args, 'replacement_method'):
       replacement_method = update_instances_utils.ParseReplacementMethod(
           args.replacement_method, client.messages)
       update_policy.replacementMethod = replacement_method
+
+    rolling_action.ValidateAndFixUpdaterAgainstStateful(update_policy, igm_ref,
+                                                        igm_info, client, args)
 
     igm_resource = client.messages.InstanceGroupManager(
         instanceTemplate=None, updatePolicy=update_policy, versions=versions)

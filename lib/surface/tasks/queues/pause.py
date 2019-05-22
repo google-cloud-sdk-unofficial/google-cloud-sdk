@@ -32,6 +32,16 @@ class Pause(base.Command):
   If a queue is paused then the system will stop executing the tasks in the
   queue until it is resumed. Tasks can still be added when the queue is paused.
   """
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To pause a queue:
+
+              $ {command} my-queue
+         """,
+  }
 
   @staticmethod
   def Args(parser):

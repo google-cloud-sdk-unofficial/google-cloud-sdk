@@ -203,7 +203,7 @@ class UpdateAlpha(Update):
   @classmethod
   def Args(cls, parser):
     cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        'HTTP2', include_alpha=True)
+        'HTTP2', include_l7_internal_load_balancing=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
     health_checks_utils.AddHttpRelatedUpdateArgs(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)

@@ -27,6 +27,16 @@ from googlecloudsdk.core import log
 
 class Delete(base.DeleteCommand):
   """Delete a task from a queue."""
+  detailed_help = {
+      'DESCRIPTION': """\
+          {description}
+          """,
+      'EXAMPLES': """\
+          To delete a task:
+
+              $ {command} --queue=my-queue my-task
+         """,
+  }
 
   @staticmethod
   def Args(parser):

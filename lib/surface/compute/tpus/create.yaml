@@ -42,6 +42,8 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:range
       required: true
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:preemptible
+    - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:reserved
+      release_tracks: [BETA]
 
 
 - release_tracks: [ALPHA]

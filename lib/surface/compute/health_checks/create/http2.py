@@ -34,7 +34,8 @@ def _Run(args,
   messages = client.messages
 
   health_check_ref = flags.HealthCheckArgument(
-      'HTTP2', include_alpha=regionalized).ResolveAsResource(
+      'HTTP2',
+      include_l7_internal_load_balancing=regionalized).ResolveAsResource(
           args, holder.resources)
   proxy_header = messages.HTTP2HealthCheck.ProxyHeaderValueValuesEnum(
       args.proxy_header)
@@ -90,7 +91,7 @@ class Create(base.CreateCommand):
   def Args(parser, supports_use_serving_port=True, regionalized=False):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     flags.HealthCheckArgument(
-        'HTTP2', include_alpha=regionalized).AddArgument(
+        'HTTP2', include_l7_internal_load_balancing=regionalized).AddArgument(
             parser, operation_type='create')
     health_checks_utils.AddHttpRelatedCreationArgs(parser)
     health_checks_utils.AddHttpRelatedResponseArg(parser)

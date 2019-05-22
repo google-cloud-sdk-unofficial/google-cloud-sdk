@@ -42,7 +42,8 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument('UDP', include_alpha=True)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
+        'UDP', include_l7_internal_load_balancing=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='create')
     health_checks_utils.AddUdpRelatedArgs(parser)
     health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'UDP')

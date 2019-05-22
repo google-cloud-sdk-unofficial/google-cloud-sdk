@@ -34,7 +34,7 @@ class Set(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddUpdateArgs(parser, include_beta=False)
+    flags.AddUpdateArgs(parser)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -96,7 +96,7 @@ class SetBeta(Set):
   @classmethod
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddUpdateArgs(parser, include_beta=True)
+    flags.AddUpdateArgs(parser, include_traffic_director=True)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
 
@@ -107,7 +107,10 @@ class SetAlpha(Set):
   @classmethod
   def Args(cls, parser):
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddUpdateArgs(parser, include_beta=True, include_alpha=True)
+    flags.AddUpdateArgs(
+        parser,
+        include_traffic_director=True,
+        include_l7_internal_load_balancing=True)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
 

@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: Get the IAM policy for a queue.
@@ -16,7 +16,9 @@ help_text:
 
 request:
   collection: cloudtasks.projects.locations.queues
-  api_version: v2beta3
+  api_version: v2
+  BETA:
+    api_version: v2beta3
   ALPHA:
     api_version: v2beta2
 
