@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2015 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -191,7 +191,8 @@ def _Run(args,
   if (args.source or args.stage_bucket or is_new_function or
       function.sourceUploadUrl):
     updated_fields.extend(source_util.SetFunctionSourceProps(
-        function, function_ref, args.source, args.stage_bucket))
+        function, function_ref, args.source, args.stage_bucket,
+        args.ignore_file))
 
   # Apply label args to function
   if labels_util.SetFunctionLabels(function, args.update_labels,
@@ -281,6 +282,9 @@ class Deploy(base.Command):
 
     # Add args for specifying environment variables
     env_vars_util.AddUpdateEnvVarsFlags(parser)
+
+    # Add args for specifying ignore files to upload source
+    flags.AddIgnoreFileFlag(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack())

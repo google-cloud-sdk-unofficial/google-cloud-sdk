@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2014 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,38 +24,49 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
+def _Args(parser):
+  """Add flags to list forwarding rules to the parser."""
+
+  parser.display_info.AddFormat("""\
+      table(
+        name,
+        region.basename(),
+        IPAddress,
+        IPProtocol,
+        firstof(
+            target,
+            backendService).scope():label=TARGET
+      )
+      """)
+  lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+  parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
+
+
+def _Run(args, holder):
+  """Issues request necessary to list forwarding rules."""
+  client = holder.client
+
+  request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+  list_implementation = lister.MultiScopeLister(
+      client,
+      regional_service=client.apitools_client.forwardingRules,
+      global_service=client.apitools_client.globalForwardingRules,
+      aggregation_service=client.apitools_client.forwardingRules)
+
+  return lister.Invoke(request_data, list_implementation)
+
+
 class List(base.ListCommand):
   """List forwarding rules."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""\
-        table(
-          name,
-          region.basename(),
-          IPAddress,
-          IPProtocol,
-          firstof(
-              target,
-              backendService).scope():label=TARGET
-        )
-        """)
-    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
-    parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
+    _Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
-
-    list_implementation = lister.MultiScopeLister(
-        client,
-        regional_service=client.apitools_client.forwardingRules,
-        global_service=client.apitools_client.globalForwardingRules,
-        aggregation_service=client.apitools_client.forwardingRules)
-
-    return lister.Invoke(request_data, list_implementation)
+    return _Run(args, holder)
 
 
 List.detailed_help = (

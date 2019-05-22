@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2017 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ class CreatePull(base.CreateCommand):
     task_ref = parsers.ParseTask(args.task,
                                  queue_ref) if args.task else None
     task_config = parsers.ParseCreateTaskArgs(
-        args, constants.PULL_QUEUE, api.messages, is_alpha=True)
+        args, constants.PULL_TASK, api.messages,
+        release_track=self.ReleaseTrack())
     create_response = tasks_client.Create(
         queue_ref, task_ref,
         schedule_time=task_config.scheduleTime,

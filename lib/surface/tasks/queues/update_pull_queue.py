@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2017 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,8 @@ class UpdatePull(base.UpdateCommand):
     flags.AddUpdatePullQueueFlags(parser)
 
   def Run(self, args):
-    parsers.CheckUpdateArgsSpecified(args, constants.PULL_QUEUE, is_alpha=True)
+    parsers.CheckUpdateArgsSpecified(args, constants.PULL_QUEUE,
+                                     release_track=self.ReleaseTrack())
     api = GetApiAdapter(self.ReleaseTrack())
     queues_client = api.queues
     queue_ref = parsers.ParseQueue(args.queue, args.location)

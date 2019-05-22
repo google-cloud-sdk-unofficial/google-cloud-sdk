@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2015 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ from apitools.base.py import exceptions as api_ex
 
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.api_lib.util import exceptions
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.pubsub import resource_args
@@ -33,7 +34,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _Run(args, enable_labels=False, legacy_output=False, enable_kms=False):
+def _Run(args,
+         enable_labels=False,
+         legacy_output=False,
+         enable_kms=False,
+         enable_geofencing=False):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
@@ -56,11 +61,20 @@ def _Run(args, enable_labels=False, legacy_output=False, enable_kms=False):
           raise core_exceptions.Error(
               '--topic-encryption-key was not fully specified.')
 
+  message_storage_policy_allowed_regions = None
+  if enable_geofencing:
+    message_storage_policy_allowed_regions = args.message_storage_policy_allowed_regions
+
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
 
     try:
-      result = client.Create(topic_ref, labels=labels, kms_key=kms_key)
+      result = client.Create(
+          topic_ref,
+          labels=labels,
+          kms_key=kms_key,
+          message_storage_policy_allowed_regions=message_storage_policy_allowed_regions
+      )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(topic_ref.RelativeName(), kind='topic',
@@ -144,8 +158,18 @@ class CreateAlpha(Create):
     resource_args.AddResourceArgs(
         parser, [kms_key_presentation_spec, topic_presentation_spec])
     labels_util.AddCreateLabelsFlags(parser)
+    parser.add_argument(
+        '--message-storage-policy-allowed-regions',
+        metavar='REGION',
+        type=arg_parsers.ArgList(),
+        help='A list of one or more Cloud regions where messages are allowed to'
+        ' be stored at rest.')
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, enable_labels=True, enable_kms=True,
-                legacy_output=legacy_output)
+    return _Run(
+        args,
+        enable_labels=True,
+        enable_kms=True,
+        enable_geofencing=True,
+        legacy_output=legacy_output)

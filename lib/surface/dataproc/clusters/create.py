@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2015 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,7 +93,8 @@ class Create(base.CreateCommand):
 
     cluster_config = clusters.GetClusterConfig(args, dataproc,
                                                cluster_ref.projectId,
-                                               compute_resources, self.BETA)
+                                               compute_resources, self.BETA,
+                                               include_ttl_config=True)
 
     cluster = dataproc.messages.Cluster(
         config=cluster_config,
@@ -119,7 +120,7 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, beta=True)
-    clusters.BetaArgsForClusterRef(parser)
+    clusters.BetaArgsForClusterRef(parser, include_ttl_config=True)
 
   @staticmethod
   def ValidateArgs(args):

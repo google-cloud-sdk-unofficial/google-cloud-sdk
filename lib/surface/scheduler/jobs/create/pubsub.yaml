@@ -14,15 +14,17 @@
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
       removed_flags: [location]
     params:
-    - _REF_googlecloudsdk.command_lib.scheduler.flags:args
-    - _REF_googlecloudsdk.command_lib.scheduler.flags:retry_args
-    - api_field: job.pubsubTarget.topicName
-      arg_name: topic
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:schedule
       required: true
-      type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=pubsub.projects.topics
-      processor: googlecloudsdk.command_lib.util.hooks.processors:RelativeName
-      help_text: |
-        Name of the Google Cloud Pub/Sub topic to publish to when the job runs.
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:timezone
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:description
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_attempts
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_duration
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:min_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_doublings
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:pubsub_topic
+      required: true
     - group:
         mutex: true
         required: true

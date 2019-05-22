@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -81,37 +81,35 @@ class Import(base.CreateCommand):
 
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
-  def _ValidateInstanceNames(self, args):
-    """Raise an exception if any of the requested instance names are invalid."""
+  def _ValidateInstanceName(self, args):
+    """Raise an exception if requested instance name is invalid."""
     instance_name_pattern = re.compile('^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$')
-    for instance_name in args.instance_names:
-      if not instance_name_pattern.match(instance_name):
-        raise exceptions.InvalidArgumentException(
-            'INSTANCE_NAMES',
-            'Name must start with a lowercase letter followed by up to '
-            '63 lowercase letters, numbers, or hyphens, and cannot end '
-            'with a hyphen.')
+    if not instance_name_pattern.match(args.instance_name):
+      raise exceptions.InvalidArgumentException(
+          'INSTANCE_NAME',
+          'Name must start with a lowercase letter followed by up to '
+          '63 lowercase letters, numbers, or hyphens, and cannot end '
+          'with a hyphen.')
 
-  def _CheckForExistingInstances(self, instance_names, client):
+  def _CheckForExistingInstances(self, instance_name, client):
     """Check that the destination instances do not already exist."""
 
-    for instance_name in instance_names:
-      request = (client.apitools_client.instances, 'Get',
-                 client.messages.ComputeInstancesGetRequest(
-                     instance=instance_name,
-                     project=properties.VALUES.core.project.GetOrFail(),
-                     zone=properties.VALUES.compute.zone.GetOrFail()))
-      errors = []
-      client.MakeRequests([request], errors_to_collect=errors)
-      if not errors:
-        message = 'The instance [{0}] already exists.'.format(instance_name)
-        raise exceptions.InvalidArgumentException('INSTANCE_NAMES', message)
+    request = (client.apitools_client.instances, 'Get',
+               client.messages.ComputeInstancesGetRequest(
+                   instance=instance_name,
+                   project=properties.VALUES.core.project.GetOrFail(),
+                   zone=properties.VALUES.compute.zone.GetOrFail()))
+    errors = []
+    client.MakeRequests([request], errors_to_collect=errors)
+    if not errors:
+      message = 'The instance [{0}] already exists.'.format(instance_name)
+      raise exceptions.InvalidArgumentException('INSTANCE_NAME', message)
 
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
-    self._ValidateInstanceNames(args)
-    self._CheckForExistingInstances(args.instance_names, compute_holder.client)
+    self._ValidateInstanceName(args)
+    self._CheckForExistingInstances(args.instance_name, compute_holder.client)
 
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateNetworkTierArgs(args)
@@ -127,7 +125,7 @@ class Import(base.CreateCommand):
 
     return daisy_utils.RunOVFImportBuild(
         args=args,
-        instance_names=args.instance_names,
+        instance_name=args.instance_name,
         source_uri=daisy_utils.MakeGcsUri(args.source_uri),
         no_guest_environment=not args.guest_environment,
         can_ip_forward=args.can_ip_forward,

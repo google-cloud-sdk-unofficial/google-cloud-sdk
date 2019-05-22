@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2015 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,9 +46,9 @@ class SetManagedCluster(base.UpdateCommand):
     flags.AddTemplateResourceArg(
         parser, 'set managed cluster', api_version='v1')
 
-  def GetCluster(self, cluster_name):
+  def GetCluster(self, cluster_name, cluster_region):
     return compute_helpers.GetComputeResources(
-        base.ReleaseTrack.GA, cluster_name)
+        base.ReleaseTrack.GA, cluster_name, cluster_region)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -63,7 +63,7 @@ class SetManagedCluster(base.UpdateCommand):
     else:
       cluster_name = template_ref.workflowTemplatesId
 
-    compute_resources = self.GetCluster(cluster_name)
+    compute_resources = self.GetCluster(cluster_name, args.region)
 
     cluster_config = clusters.GetClusterConfig(
         args,
@@ -99,6 +99,6 @@ class SetManagedClusterBeta(SetManagedCluster):
         parser, 'set managed cluster', api_version='v1beta2')
     clusters.BetaArgsForClusterRef(parser)
 
-  def GetCluster(self, cluster_name):
+  def GetCluster(self, cluster_name, cluster_region):
     return compute_helpers.GetComputeResources(
-        base.ReleaseTrack.BETA, cluster_name)
+        base.ReleaseTrack.BETA, cluster_name, cluster_region)

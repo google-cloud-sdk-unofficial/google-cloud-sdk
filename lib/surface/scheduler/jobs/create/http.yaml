@@ -14,8 +14,16 @@
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
       removed_flags: [location]
     params:
-    - _REF_googlecloudsdk.command_lib.scheduler.flags:args
-    - _REF_googlecloudsdk.command_lib.scheduler.flags:retry_args
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:schedule
+      required: true
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:timezone
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:description
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:attempt_deadline
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_attempts
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_duration
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:min_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_doublings
     - api_field: job.httpTarget.uri
       arg_name: uri
       required: true
@@ -58,13 +66,6 @@
         KEY=VALUE pairs of HTTP headers to include in the request.
         *Cannot be repeated*. For example:
         `--headers Accept-Language=en-us,Accept=text/plain`
-    - api_field: job.attemptDeadline
-      arg_name: attempt-deadline
-      type: googlecloudsdk.core.util.times:ParseDuration
-      processor: googlecloudsdk.core.util.times:FormatDurationForJson
-      help_text: |-
-        The deadline for job attempts. If the request handler doesn't respond by this dealine,
-        the request is cancelled and the attempt is marked as failed. For example, 20s.
     - group:
         mutex: true
         params:
@@ -88,41 +89,5 @@
           authenticated.
         mutex: true
         params:
-        - group:
-            help_text: OpenId Connect
-            params:
-            - api_field: job.httpTarget.oidcToken.serviceAccountEmail
-              arg_name: oidc-service-account-email
-              required: true
-              help_text: |
-                The service account email to be used for generating an OpenId
-                Connect token to be included in the request sent to the target
-                when executing the job. The service account must be within the
-                same project as the job. The caller must have
-                iam.serviceAccounts.actAs permission for the service account.
-            - api_field: job.httpTarget.oidcToken.audience
-              arg_name: oidc-token-audience
-              help_text: |
-                The audience to be used when generating an OpenId Connect token
-                to be included in the request sent to the target when executing
-                the job. If not specified, the URI specified in target will be
-                used.
-        - group:
-            help_text: OAuth2
-            params:
-            - api_field: job.httpTarget.oauthToken.serviceAccountEmail
-              arg_name: oauth-service-account-email
-              required: true
-              help_text: |
-                The service account email to be used for generating an OAuth2
-                access token to be included in the request sent to the target
-                when executing the job. The service account must be within the
-                same project as the job. The caller must have
-                iam.serviceAccounts.actAs permission for the service account.
-            - api_field: job.httpTarget.oauthToken.scope
-              arg_name: oauth-token-scope
-              help_text: |
-                The scope to be used when generating an OAuth2 access token to
-                be included in the request sent to the target when executing the
-                job. If not specified,
-                "https://www.googleapis.com/auth/cloud-platform" will be used.
+        - _REF_: googlecloudsdk.command_lib.scheduler.flags:auth_token_openid
+        - _REF_: googlecloudsdk.command_lib.scheduler.flags:auth_token_oauth

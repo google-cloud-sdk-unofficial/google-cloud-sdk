@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2018 Google Inc. All Rights Reserved.
+# Copyright 2018 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ class Create(base.CreateCommand):
     csek_utils.AddCsekKeyArgs(parser, resource_type='machine image')
     flags.AddStorageLocationFlag(parser, "machine image's")
     flags.AddGuestFlushFlag(parser, 'machine image')
-    flags.AddSourceDiskKmsKeyArg(parser)
     flags.AddSourceDiskCsekKeyArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(parser, 'machine image')
     Create.SOURCE_INSTANCE = machine_image_flags.MakeSourceInstanceArg()
@@ -85,7 +84,6 @@ class Create(base.CreateCommand):
     if args.IsSpecified('guest_flush'):
       machine_image.guestFlush = args.guest_flush
 
-    source_kms_keys = getattr(args, 'source_disk_kms_key', [])
     source_csek_keys = getattr(args, 'source_disk_csek_key', [])
 
     disk_keys = {}
@@ -106,15 +104,6 @@ class Create(base.CreateCommand):
         disk_key = csek_utils.MaybeToMessage(
             key_store.LookupKey(disk_ref),
             client.apitools_client)
-        disk_keys[disk_url] = disk_key
-
-    if source_kms_keys:
-      for key in source_kms_keys:
-        disk_url = key.get('disk')
-        disk_key = kms_utils.MaybeGetKmsKeyFromDict(
-            key, client.messages,
-            disk_keys.get(disk_url, None),
-            conflicting_arg='--source-disk-csek-key')
         disk_keys[disk_url] = disk_key
 
     source_disk_messages = []

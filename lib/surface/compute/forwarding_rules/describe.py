@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2014 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,33 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
+def _Args(parser):
+  forwarding_rules_arg = flags.ForwardingRuleArgument()
+  forwarding_rules_arg.AddArgument(parser, operation_type='describe')
+  return forwarding_rules_arg
+
+
+def _Run(args, holder, forwarding_rules_arg):
+  """Issues request necessary to describe the Forwarding Rule."""
+  client = holder.client
+
+  forwarding_rule_ref = forwarding_rules_arg.ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+  if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
+    service = client.apitools_client.forwardingRules
+    request = client.messages.ComputeForwardingRulesGetRequest(
+        **forwarding_rule_ref.AsDict())
+  elif forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
+    service = client.apitools_client.globalForwardingRules
+    request = client.messages.ComputeGlobalForwardingRulesGetRequest(
+        **forwarding_rule_ref.AsDict())
+
+  return client.MakeRequests([(service, 'Get', request)])[0]
+
+
 class Describe(base.DescribeCommand):
   """Display detailed information about a forwarding rule.
 
@@ -44,26 +71,8 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    Describe.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    Describe.FORWARDING_RULE_ARG.AddArgument(parser, operation_type='describe')
+    Describe.FORWARDING_RULE_ARG = _Args(parser)
 
   def Run(self, args):
-    """Issues request necessary to describe the Forwarding Rule."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    forwarding_rule_ref = Describe.FORWARDING_RULE_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
-      service = client.apitools_client.forwardingRules
-      request = client.messages.ComputeForwardingRulesGetRequest(
-          **forwarding_rule_ref.AsDict())
-    elif forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
-      service = client.apitools_client.globalForwardingRules
-      request = client.messages.ComputeGlobalForwardingRulesGetRequest(
-          **forwarding_rule_ref.AsDict())
-
-    return client.MakeRequests([(service, 'Get', request)])[0]
+    return _Run(args, holder, self.FORWARDING_RULE_ARG)

@@ -14,8 +14,16 @@
       spec: !REF googlecloudsdk.command_lib.scheduler.resources:job
       removed_flags: [location]
     params:
-    - _REF_googlecloudsdk.command_lib.scheduler.flags:args
-    - _REF_googlecloudsdk.command_lib.scheduler.flags:retry_args
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:schedule
+      required: true
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:timezone
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:description
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:attempt_deadline
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_attempts
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:retry_duration
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:min_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_backoff
+    - _REF_: googlecloudsdk.command_lib.scheduler.flags:max_doublings
     - api_field: job.appEngineHttpTarget.relativeUri
       arg_name: relative-url
       default: /
@@ -60,13 +68,6 @@
         KEY=VALUE pairs of HTTP headers to include in the request.
         *Cannot be repeated*. For example:
         `--headers Accept-Language=en-us,Accept=text/plain`
-    - api_field: job.attemptDeadline
-      arg_name: attempt-deadline
-      type: googlecloudsdk.core.util.times:ParseDuration
-      processor: googlecloudsdk.core.util.times:FormatDurationForJson
-      help_text: |-
-        The deadline for job attempts. If the request handler doesn't respond by this dealine,
-        the request is cancelled and the attempt is marked as failed. For example, 20s.
     - group:
         mutex: true
         params:

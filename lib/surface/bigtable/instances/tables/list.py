@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2017 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,16 @@ def _GetUriFunction(resource):
 
 
 class ListInstances(base.ListCommand):
-  """List existing Bigtable instance tables."""
+  """List existing Bigtable instance tables.
+
+  ## EXAMPLES
+  To list all tables in an instance, run:
+
+    $ {command} --instances=INSTANCE_NAME
+
+  To list all tables in several instances, run:
+    $ {command} --instances=INSTANCE_NAME1,INSTANCE_NAME2
+  """
 
   @staticmethod
   def Args(parser):

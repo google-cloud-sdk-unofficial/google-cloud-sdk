@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2016 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -56,8 +56,12 @@ def _MakeRequests(client, requests, is_async):
 class Create(base.Command):
   """Create a Google Compute Engine network peering."""
 
-  @staticmethod
-  def ArgsCommon(parser):
+  enable_custom_route = False
+  enable_subnet_routes_with_public_ip = False
+  enable_nested_network_peering = False
+
+  @classmethod
+  def ArgsCommon(cls, parser):
 
     parser.add_argument('name', help='The name of the peering.')
 
@@ -65,7 +69,7 @@ class Create(base.Command):
         '--network',
         required=True,
         help='The name of the network in the current project to be peered '
-        'with the peer network.')
+             'with the peer network.')
 
     parser.add_argument(
         '--peer-network',
@@ -76,21 +80,29 @@ class Create(base.Command):
         '--peer-project',
         required=False,
         help='The name of the project for the peer network.  If not specified, '
-        'defaults to current project.')
+             'defaults to current project.')
 
     base.ASYNC_FLAG.AddToParser(parser)
 
-  @staticmethod
-  def Args(parser):
-    Create.ArgsCommon(parser)
+    if cls.enable_custom_route:
+      flags.AddImportCustomRoutesFlag(parser)
+      flags.AddExportCustomRoutesFlag(parser)
+
+    if cls.enable_subnet_routes_with_public_ip:
+      flags.AddImportSubnetRoutesWithPublicIpFlag(parser)
+      flags.AddExportSubnetRoutesWithPublicIpFlag(parser)
+
+  @classmethod
+  def Args(cls, parser):
+    cls.ArgsCommon(parser)
     parser.add_argument(
         '--auto-create-routes',
         action='store_true',
         default=False,
         required=False,
         help='If set, will automatically create routes for the network '
-        'peering.  Note that a backend error will be returned if this is '
-        'not set.')
+             'peering.  Note that a backend error will be returned if this is '
+             'not set.')
 
   def Run(self, args):
     """Issues the request necessary for adding the peering."""
@@ -105,27 +117,50 @@ class Create(base.Command):
         },
         collection='compute.networks')
 
-    request = client.messages.ComputeNetworksAddPeeringRequest(
-        network=args.network,
-        networksAddPeeringRequest=client.messages.NetworksAddPeeringRequest(
-            autoCreateRoutes=args.auto_create_routes,
-            name=args.name,
-            peerNetwork=peer_network_ref.RelativeName()),
-        project=properties.VALUES.core.project.GetOrFail())
+    if self.enable_nested_network_peering:
+      network_peering = client.messages.NetworkPeering(
+          name=args.name,
+          network=peer_network_ref.RelativeName(),
+          exchangeSubnetRoutes=True)
+
+      if self.enable_custom_route:
+        network_peering.exportCustomRoutes = args.export_custom_routes
+        network_peering.importCustomRoutes = args.import_custom_routes
+
+      if self.enable_subnet_routes_with_public_ip:
+        network_peering.exportSubnetRoutesWithPublicIp = \
+          args.export_subnet_routes_with_public_ip
+        network_peering.importSubnetRoutesWithPublicIp = \
+          args.import_subnet_routes_with_public_ip
+
+      request = client.messages.ComputeNetworksAddPeeringRequest(
+          network=args.network,
+          networksAddPeeringRequest=client.messages.NetworksAddPeeringRequest(
+              networkPeering=network_peering),
+          project=properties.VALUES.core.project.GetOrFail())
+    else:
+      request = client.messages.ComputeNetworksAddPeeringRequest(
+          network=args.network,
+          networksAddPeeringRequest=client.messages.NetworksAddPeeringRequest(
+              autoCreateRoutes=args.auto_create_routes,
+              name=args.name,
+              peerNetwork=peer_network_ref.RelativeName()),
+          project=properties.VALUES.core.project.GetOrFail())
 
     requests = [(client.apitools_client.networks, 'AddPeering', request)]
     return _MakeRequests(client, requests, args.async)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateAlphaBeta(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Create a Google Compute Engine network peering."""
 
-  @staticmethod
-  def Args(parser):
-    super(CreateAlphaBeta, CreateAlphaBeta).ArgsCommon(parser)
-    flags.AddImportCustomRoutesFlag(parser)
-    flags.AddExportCustomRoutesFlag(parser)
+  enable_custom_route = True
+  enable_nested_network_peering = True
+
+  @classmethod
+  def Args(cls, parser):
+    cls.ArgsCommon(parser)
 
     action = actions.DeprecationAction(
         'auto-create-routes',
@@ -141,29 +176,9 @@ class CreateAlphaBeta(Create):
         'network peering. Flag auto-create-routes is deprecated. Peer network '
         'subnet routes are always created in a network when peered.')
 
-  def Run(self, args):
-    """Issues the request necessary for adding the peering."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
 
-    peer_network_ref = resources.REGISTRY.Parse(
-        args.peer_network,
-        params={
-            'project':
-                args.peer_project or properties.VALUES.core.project.GetOrFail
-        },
-        collection='compute.networks')
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Google Compute Engine network peering."""
 
-    request = client.messages.ComputeNetworksAddPeeringRequest(
-        network=args.network,
-        networksAddPeeringRequest=client.messages.NetworksAddPeeringRequest(
-            networkPeering=client.messages.NetworkPeering(
-                name=args.name,
-                network=peer_network_ref.RelativeName(),
-                exportCustomRoutes=args.export_custom_routes,
-                importCustomRoutes=args.import_custom_routes,
-                exchangeSubnetRoutes=True)),
-        project=properties.VALUES.core.project.GetOrFail())
-
-    requests = [(client.apitools_client.networks, 'AddPeering', request)]
-    return _MakeRequests(client, requests, args.async)
+  enable_subnet_routes_with_public_ip = True

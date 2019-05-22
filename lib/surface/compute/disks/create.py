@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2014 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,7 +104,8 @@ def _SourceArgs(parser, source_snapshot_arg):
 
 def _CommonArgs(parser,
                 source_snapshot_arg,
-                include_physical_block_size_support=False):
+                include_physical_block_size_support=False,
+                vss_erase_enabled=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -162,6 +163,8 @@ def _CommonArgs(parser,
 Physical block size of the persistent disk in bytes.
 Valid values are 4096(default) and 16384.
 """)
+  if vss_erase_enabled:
+    flags.AddEraseVssSignature(parser, resource='a source snapshot')
 
 
 def _AddReplicaZonesArg(parser):
@@ -319,7 +322,7 @@ class Create(base.Command):
     return self._Run(args, supports_kms_keys=True)
 
   def _Run(self, args, supports_kms_keys=False, supports_physical_block=False,
-           support_shared_disk=False):
+           support_shared_disk=False, support_vss_erase=False):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = compute_holder.client
 
@@ -423,6 +426,9 @@ class Create(base.Command):
       if guest_os_feature_messages:
         disk.guestOsFeatures = guest_os_feature_messages
 
+      if support_vss_erase and args.IsSpecified('erase_windows_vss_signature'):
+        disk.eraseWindowsVssSignature = args.erase_windows_vss_signature
+
       disk.licenses = self.ParseLicenses(args)
 
       if disk_ref.Collection() == 'compute.disks':
@@ -492,7 +498,8 @@ class CreateAlpha(Create):
     _CommonArgs(
         parser,
         disks_flags.SOURCE_SNAPSHOT_ARG,
-        include_physical_block_size_support=True)
+        include_physical_block_size_support=True,
+        vss_erase_enabled=True)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     _AddReplicaZonesArg(parser)
     resource_flags.AddResourcePoliciesArgs(parser, 'added to', 'disk')
@@ -509,7 +516,7 @@ class CreateAlpha(Create):
 
   def Run(self, args):
     return self._Run(args, supports_kms_keys=True, supports_physical_block=True,
-                     support_shared_disk=True)
+                     support_shared_disk=True, support_vss_erase=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):

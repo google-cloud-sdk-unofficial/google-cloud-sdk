@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2016 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.Command):
   """Update a Google Compute Engine network peering."""
 
-  @staticmethod
-  def Args(parser):
+  enable_subnet_routes_with_public_ip = False
+
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument('name', help='The name of the peering.')
     parser.add_argument(
         '--network',
@@ -40,20 +42,29 @@ class UpdateAlpha(base.Command):
     flags.AddImportCustomRoutesFlag(parser)
     flags.AddExportCustomRoutesFlag(parser)
 
+    if cls.enable_subnet_routes_with_public_ip:
+      flags.AddImportSubnetRoutesWithPublicIpFlag(parser)
+      flags.AddExportSubnetRoutesWithPublicIpFlag(parser)
+
   def Run(self, args):
     """Issues the request necessary for updating the peering."""
     self.ValidateArgs(args)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = holder.client.messages
+    network_peering = messages.NetworkPeering(
+        name=args.name,
+        exportCustomRoutes=args.export_custom_routes,
+        importCustomRoutes=args.import_custom_routes)
+
+    if self.enable_subnet_routes_with_public_ip:
+      network_peering.exportSubnetRoutesWithPublicIp = args.export_subnet_routes_with_public_ip
+      network_peering.importSubnetRoutesWithPublicIp = args.import_subnet_routes_with_public_ip
+
     request = client.messages.ComputeNetworksUpdatePeeringRequest(
         network=args.network,
         networksUpdatePeeringRequest=client.messages
-        .NetworksUpdatePeeringRequest(
-            networkPeering=messages.NetworkPeering(
-                name=args.name,
-                exportCustomRoutes=args.export_custom_routes,
-                importCustomRoutes=args.import_custom_routes)),
+        .NetworksUpdatePeeringRequest(networkPeering=network_peering),
         project=properties.VALUES.core.project.GetOrFail())
 
     return client.MakeRequests([(client.apitools_client.networks,
@@ -61,8 +72,20 @@ class UpdateAlpha(base.Command):
 
   def ValidateArgs(self, args):
     """Validate arguments."""
-    if not any([
-        args.export_custom_routes is not None,
-        args.import_custom_routes is not None,
-    ]):
+    check_args = [
+        args.export_custom_routes is None,
+        args.import_custom_routes is None]
+
+    if self.enable_subnet_routes_with_public_ip:
+      check_args.extend([
+          args.export_subnet_routes_with_public_ip is None,
+          args.import_subnet_routes_with_public_ip is None])
+
+    if all(check_args):
       raise exceptions.ToolException('At least one property must be modified.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Google Compute Engine network peering."""
+  enable_subnet_routes_with_public_ip = True

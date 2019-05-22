@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ class CreateAppEngine(base.CreateCommand):
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
-    flags.AddCreatePushQueueFlags(parser)
+    flags.AddCreatePushQueueFlags(parser, release_track=base.ReleaseTrack.BETA)
 
   def Run(self, args):
     api = GetApiAdapter(self.ReleaseTrack())
@@ -79,7 +79,8 @@ class CreateAppEngine(base.CreateCommand):
           queue_ref,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
-          app_engine_http_queue=queue_config.appEngineHttpQueue)
+          app_engine_http_queue=queue_config.appEngineHttpQueue,
+          stackdriver_logging_config=queue_config.stackdriverLoggingConfig)
     else:
       create_response = queues_client.Create(
           location_ref,
@@ -127,4 +128,4 @@ class AlphaCreateAppEngine(CreateAppEngine):
   def Args(parser):
     flags.AddQueueResourceArg(parser, 'to create')
     flags.AddLocationFlag(parser)
-    flags.AddCreatePushQueueFlags(parser, is_alpha=True)
+    flags.AddCreatePushQueueFlags(parser, release_track=base.ReleaseTrack.ALPHA)

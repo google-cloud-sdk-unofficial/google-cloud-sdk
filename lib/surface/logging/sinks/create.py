@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2014 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,8 +104,8 @@ class Create(base.CreateCommand):
         'includeChildren': args.include_children
     }
 
+    dlp_options = {}
     if support_dlp:
-      dlp_options = {}
       if args.IsSpecified('dlp_inspect_template'):
         dlp_options['inspectTemplateName'] = args.dlp_inspect_template
       if args.IsSpecified('dlp_deidentify_template'):
@@ -118,6 +118,7 @@ class Create(base.CreateCommand):
     log.CreatedResource(sink_ref)
     self._epilog_result_destination = result.destination
     self._epilog_writer_identity = result.writerIdentity
+    self._epilog_is_dlp_sink = bool(dlp_options)
     return result
 
   def Run(self, args):
@@ -134,7 +135,8 @@ class Create(base.CreateCommand):
 
   def Epilog(self, unused_resources_were_displayed):
     util.PrintPermissionInstructions(self._epilog_result_destination,
-                                     self._epilog_writer_identity)
+                                     self._epilog_writer_identity,
+                                     self._epilog_is_dlp_sink)
 
 
 # pylint: disable=missing-docstring

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2015 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -431,7 +431,7 @@ class UpdateBeta(Update):
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
     flags.AddVerticalPodAutoscalingFlag(group)
-    flags.AddResourceUsageExportFlags(group, add_clear_flag=True)
+    flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddIstioConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadIdentityFlags(group)
@@ -459,6 +459,7 @@ class UpdateBeta(Update):
     opts.clear_resource_usage_bigquery_dataset = \
         args.clear_resource_usage_bigquery_dataset
     opts.enable_network_egress_metering = args.enable_network_egress_metering
+    opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
 
     # Top-level update options are automatically forced to be
@@ -503,7 +504,7 @@ class UpdateAlpha(Update):
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
-    flags.AddResourceUsageExportFlags(group, add_clear_flag=True)
+    flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddSecurityProfileForUpdateFlag(group)
     flags.AddIstioConfigFlag(parser)
@@ -512,6 +513,7 @@ class UpdateAlpha(Update):
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddEnableShieldedNodesFlags(group)
+    flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -536,6 +538,7 @@ class UpdateAlpha(Update):
     opts.istio_config = args.istio_config
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_network_egress_metering = args.enable_network_egress_metering
+    opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_peering_route_sharing = args.enable_peering_route_sharing
 
@@ -544,5 +547,6 @@ class UpdateAlpha(Update):
     opts.identity_namespace = args.identity_namespace
     opts.disable_workload_identity = args.disable_workload_identity
     opts.enable_shielded_nodes = args.enable_shielded_nodes
+    opts.disable_default_snat = args.disable_default_snat
 
     return opts

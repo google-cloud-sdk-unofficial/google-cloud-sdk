@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2014 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,7 +82,6 @@ class Update(base.UpdateCommand):
     sink_ref = util.GetSinkReference(args.sink_name, args)
 
     sink_data = {'name': sink_ref.sinksId}
-    dlp_options = {}
     update_mask = []
     if args.IsSpecified('destination'):
       sink_data['destination'] = args.destination
@@ -92,6 +91,7 @@ class Update(base.UpdateCommand):
       update_mask.append('filter')
 
     parameter_names = ['[destination]', '--log-filter']
+    dlp_options = {}
     if support_dlp:
       parameter_names.extend(
           ['--dlp-inspect-template', '--dlp-deidentify-template'])
@@ -125,6 +125,7 @@ class Update(base.UpdateCommand):
     log.UpdatedResource(sink_ref)
     self._epilog_result_destination = result.destination
     self._epilog_writer_identity = result.writerIdentity
+    self._epilog_is_dlp_sink = bool(dlp_options)
     return result
 
   def Run(self, args):
@@ -141,7 +142,8 @@ class Update(base.UpdateCommand):
 
   def Epilog(self, unused_resources_were_displayed):
     util.PrintPermissionInstructions(self._epilog_result_destination,
-                                     self._epilog_writer_identity)
+                                     self._epilog_writer_identity,
+                                     self._epilog_is_dlp_sink)
 
 
 # pylint: disable=missing-docstring

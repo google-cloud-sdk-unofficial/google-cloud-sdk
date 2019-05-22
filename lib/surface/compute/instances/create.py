@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2014 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
@@ -145,6 +146,7 @@ class Create(base.CreateCommand):
   _support_display_device = False
   _support_reservation = False
   _support_disk_resource_policy = False
+  _support_erase_vss = False
 
   @classmethod
   def Args(cls, parser):
@@ -437,6 +439,10 @@ class Create(base.CreateCommand):
       if shielded_instance_config:
         instance.shieldedInstanceConfig = shielded_instance_config
 
+      if self._support_erase_vss and \
+        args.IsSpecified('erase_windows_vss_signature'):
+        instance.eraseWindowsVssSignature = args.erase_windows_vss_signature
+
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
           project=instance_ref.project,
@@ -535,6 +541,7 @@ class CreateBeta(Create):
   _support_display_device = True
   _support_reservation = True
   _support_disk_resource_policy = True
+  _support_erase_vss = False
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -569,6 +576,7 @@ class CreateAlpha(CreateBeta):
   _support_display_device = True
   _support_reservation = True
   _support_disk_resource_policy = True
+  _support_erase_vss = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -602,6 +610,8 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddLocalNvdimmArgs(parser)
+    flags.AddEraseVssSignature(parser, 'source snapshots or source machine'
+                                       ' image')
     maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
 Create.detailed_help = DETAILED_HELP

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2018 Google Inc. All Rights Reserved.
+# Copyright 2018 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ def _CommonArgs(parser):
   flags.AddCreateArgsToParser(parser)
 
 
-def _Run(args, track, enable_server_binding=False):
+def _Run(args, track, enable_server_binding=False, enable_disk=False):
   """Creates a node template."""
   holder = base_classes.ComputeApiHolder(track)
   client = holder.client
@@ -43,7 +43,8 @@ def _Run(args, track, enable_server_binding=False):
 
   messages = holder.client.messages
   node_template = util.CreateNodeTemplate(node_template_ref, args, messages,
-                                          enable_server_binding)
+                                          enable_server_binding,
+                                          enable_disk=enable_disk)
   request = messages.ComputeNodeTemplatesInsertRequest(
       nodeTemplate=node_template,
       project=node_template_ref.project,
@@ -88,3 +89,9 @@ class CreateAlpha(CreateBeta):
     _CommonArgs(parser)
     messages = apis.GetMessagesModule('compute', 'alpha')
     flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
+    flags.AddDiskArgToParser(parser)
+
+  def Run(self, args):
+    return _Run(args, self.ReleaseTrack(), enable_server_binding=True,
+                enable_disk=True)
+

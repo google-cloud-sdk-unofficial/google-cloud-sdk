@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2014 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,33 +25,42 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Set(base.UpdateCommand):
-  """Modify a forwarding rule to direct network traffic to a new target."""
+class SetTargetHelper(object):
+  """Helper that sets a forwarding rule's target."""
 
   FORWARDING_RULE_ARG = None
 
+  def __init__(self, holder, include_traffic_director,
+               include_l7_internal_load_balancing):
+    self._holder = holder
+    self._include_traffic_director = include_traffic_director
+    self._include_l7_internal_load_balancing = include_l7_internal_load_balancing
+
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, include_traffic_director,
+           include_l7_internal_load_balancing):
+    """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddUpdateArgs(parser)
+    flags.AddUpdateArgs(
+        parser,
+        include_traffic_director=include_traffic_director,
+        include_l7_internal_load_balancing=include_l7_internal_load_balancing)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
     """Issues requests necessary to set target on Forwarding Rule."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    client = self._holder.client
 
     forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
         args,
-        holder.resources,
+        self._holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     if forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
-      requests = self.CreateGlobalRequests(client, holder.resources,
+      requests = self.CreateGlobalRequests(client, self._holder.resources,
                                            forwarding_rule_ref, args)
     elif forwarding_rule_ref.Collection() == 'compute.forwardingRules':
-      requests = self.CreateRegionalRequests(client, holder.resources,
+      requests = self.CreateRegionalRequests(client, self._holder.resources,
                                              forwarding_rule_ref, args)
 
     return client.MakeRequests(requests)
@@ -89,29 +98,37 @@ class Set(base.UpdateCommand):
     return [(client.apitools_client.forwardingRules, 'SetTarget', request)]
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Set(base.UpdateCommand):
+  """Modify a forwarding rule to direct network traffic to a new target."""
+
+  FORWARDING_RULE_ARG = None
+  _include_traffic_director = False
+  _include_l7_internal_load_balancing = False
+
+  @classmethod
+  def Args(cls, parser):
+    SetTargetHelper.Args(parser, cls._include_traffic_director,
+                         cls._include_l7_internal_load_balancing)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return SetTargetHelper(holder, self._include_traffic_director,
+                           self._include_l7_internal_load_balancing).Run(args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
-  @classmethod
-  def Args(cls, parser):
-    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddUpdateArgs(parser, include_traffic_director=True)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser)
+  _include_traffic_director = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAlpha(Set):
+class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
-  @classmethod
-  def Args(cls, parser):
-    cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddUpdateArgs(
-        parser,
-        include_traffic_director=True,
-        include_l7_internal_load_balancing=True)
-    cls.FORWARDING_RULE_ARG.AddArgument(parser)
+  _include_l7_internal_load_balancing = True
 
 
 Set.detailed_help = {

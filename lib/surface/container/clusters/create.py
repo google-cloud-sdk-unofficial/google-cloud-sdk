@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2014 Google Inc. All Rights Reserved.
+# Copyright 2014 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -204,6 +204,13 @@ def ParseCreateOptionsBase(args):
                 'certificate issued. You can manually enable (or disable) the '
                 'issuance of the client certificate using the '
                 '`--[no-]issue-client-certificate` flag.')
+  if args.IsSpecified('addons') and api_adapter.DASHBOARD in args.addons:
+    log.warning(
+        'The `KubernetesDashboard` addon is deprecated, and will be removed as '
+        'an option for new clusters starting in 1.15. It is recommended to use '
+        'the Cloud Console to manage and monitor your Kubernetes clusters, '
+        'workloads and applications. See: '
+        'https://cloud.google.com/kubernetes-engine/docs/concepts/dashboards')
 
   flags.MungeBasicAuthFlags(args)
 
@@ -494,6 +501,7 @@ class CreateBeta(Create):
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.enable_network_egress_metering = args.enable_network_egress_metering
+    ops.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.security_group = args.security_group
     ops.identity_namespace = args.identity_namespace
@@ -560,6 +568,7 @@ class CreateAlpha(Create):
     flags.AddEnablePrivateIpv6AccessFlag(parser, hidden=True)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddEnableShieldedNodesFlags(parser)
+    flags.AddDisableDefaultSnatFlag(parser, for_cluster_create=True)
 
     versioning_groups = parser.add_mutually_exclusive_group("""\
 `--release-channel` cannot be specified if `--cluster-version` or
@@ -619,6 +628,7 @@ class CreateAlpha(Create):
     ops.security_profile_runtime_rules = args.security_profile_runtime_rules
     ops.node_pool_name = args.node_pool_name
     ops.enable_network_egress_metering = args.enable_network_egress_metering
+    ops.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
     ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.enable_peering_route_sharing = args.enable_peering_route_sharing
@@ -641,5 +651,6 @@ class CreateAlpha(Create):
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.linux_sysctls = args.linux_sysctls
+    ops.disable_default_snat = args.disable_default_snat
 
     return ops

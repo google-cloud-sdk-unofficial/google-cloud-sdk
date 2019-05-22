@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2018 Google Inc. All Rights Reserved.
+# Copyright 2018 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
@@ -84,7 +84,7 @@ class Deploy(base.Command):
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
-    source_ref = flags.GetSourceRef(args.source, args.image)
+    image = args.image
 
     conn_context = connection_context.GetConnectionContext(args)
     config_changes = flags.GetConfigurationChanges(args)
@@ -95,16 +95,10 @@ class Deploy(base.Command):
       flags.VerifyGKEFlags(args)
 
     service_ref = flags.GetService(args)
-    function_entrypoint = flags.GetFunction(args.function)
 
     with serverless_operations.Connect(conn_context) as operations:
-      if not (source_ref.source_type is source_ref.SourceType.IMAGE
-              or operations.IsSourceBranch()):
-        raise exceptions.SourceNotSupportedError()
-      new_deployable = operations.Detect(service_ref.Parent(),
-                                         source_ref, function_entrypoint)
-      operations.Upload(new_deployable)
-      changes = [new_deployable]
+      image_change = config_changes_mod.ImageChange(image)
+      changes = [image_change]
       if config_changes:
         changes.extend(config_changes)
       if args.connectivity == 'internal':
@@ -137,29 +131,12 @@ class Deploy(base.Command):
              ' in {ns_label} [{{bold}}{ns}{{reset}}]')
       msg += conn_context.location_label
 
-      if function_entrypoint:
-        dep_type = 'function [{{bold}}{}{{reset}}]'.format(function_entrypoint)
-        pretty_print.Info(msg.format(
-            operator=conn_context.operator,
-            ns_label=conn_context.ns_label,
-            dep_type=dep_type,
-            function=function_entrypoint,
-            service=service_ref.servicesId,
-            ns=service_ref.namespacesId))
-      elif source_ref.source_type is source_ref.SourceType.IMAGE:
-        pretty_print.Info(msg.format(
-            operator=conn_context.operator,
-            ns_label=conn_context.ns_label,
-            dep_type='container',
-            service=service_ref.servicesId,
-            ns=service_ref.namespacesId))
-      else:
-        pretty_print.Info(msg.format(
-            operator=conn_context.operator,
-            ns_label=conn_context.ns_label,
-            dep_type='app',
-            service=service_ref.servicesId,
-            ns=service_ref.namespacesId))
+      pretty_print.Info(msg.format(
+          operator=conn_context.operator,
+          ns_label=conn_context.ns_label,
+          dep_type='container',
+          service=service_ref.servicesId,
+          ns=service_ref.namespacesId))
 
       deployment_stages = stages.ServiceStages(
           allow_unauth or args.allow_unauthenticated)

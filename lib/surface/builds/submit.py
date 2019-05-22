@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2016 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -102,7 +102,8 @@ class Submit(base.CreateCommand):
         help='The location of the source to build. The location can be a '
         'directory on a local disk or a gzipped archive file (.tar.gz) in '
         'Google Cloud Storage. If the source is a local directory, this '
-        'command skips the files specified in the `.gcloudignore` file. If a '
+        'command skips the files specified in the `--ignore-file`. If '
+        '`--ignore-file` is not specified, use`.gcloudignore` file. If a '
         '`.gitignore` file is present in the local source directory, gcloud '
         'will use a Git-compatible `.gcloudignore` file that respects your '
         '.gitignored files. The global `.gitignore` is not respected. For more '
@@ -210,6 +211,11 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
         """)
     # Do not try to create a URI to update the cache.
     parser.display_info.AddCacheUpdater(None)
+
+    parser.add_argument(
+        '--ignore-file',
+        help='Override the `.gcloudignore` file and use the specified file '
+        'instead.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -386,7 +392,8 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
           raise c_exceptions.BadFileException(
               'could not find source [{src}]'.format(src=args.source))
         if os.path.isdir(args.source):
-          source_snapshot = snapshot.Snapshot(args.source)
+          source_snapshot = snapshot.Snapshot(args.source,
+                                              ignore_file=args.ignore_file)
           size_str = resource_transform.TransformSize(
               source_snapshot.uncompressed_size)
           log.status.Print(
@@ -394,7 +401,7 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
               ' totalling {size} before compression.'.format(
                   num_files=len(source_snapshot.files), size=size_str))
           staged_source_obj = source_snapshot.CopyTarballToGCS(
-              gcs_client, gcs_source_staging)
+              gcs_client, gcs_source_staging, ignore_file=args.ignore_file)
           build_config.source = messages.Source(
               storageSource=messages.StorageSource(
                   bucket=staged_source_obj.bucket,
