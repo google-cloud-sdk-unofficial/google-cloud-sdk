@@ -27,8 +27,169 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 
+def _Args(parser, include_l7_internal_load_balancing):
+  health_check_arg = flags.HealthCheckArgument(
+      'HTTP',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+  health_check_arg.AddArgument(parser, operation_type='update')
+  health_checks_utils.AddHttpRelatedUpdateArgs(parser)
+  health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP')
+  health_checks_utils.AddHttpRelatedResponseArg(parser)
+
+
+def _GetGetRequest(client, health_check_ref):
+  """Returns a request for fetching the existing health check."""
+  return (client.apitools_client.healthChecks, 'Get',
+          client.messages.ComputeHealthChecksGetRequest(
+              healthCheck=health_check_ref.Name(),
+              project=health_check_ref.project))
+
+
+def _GetSetRequest(client, health_check_ref, replacement):
+  """Returns a request for updating the health check."""
+  return (client.apitools_client.healthChecks, 'Update',
+          client.messages.ComputeHealthChecksUpdateRequest(
+              healthCheck=health_check_ref.Name(),
+              healthCheckResource=replacement,
+              project=health_check_ref.project))
+
+
+def _GetRegionalGetRequest(client, health_check_ref):
+  """Returns a request for fetching the existing health check."""
+  return (client.apitools_client.regionHealthChecks, 'Get',
+          client.messages.ComputeRegionHealthChecksGetRequest(
+              healthCheck=health_check_ref.Name(),
+              project=health_check_ref.project,
+              region=health_check_ref.region))
+
+
+def _GetRegionalSetRequest(client, health_check_ref, replacement):
+  """Returns a request for updating the health check."""
+  return (client.apitools_client.regionHealthChecks, 'Update',
+          client.messages.ComputeRegionHealthChecksUpdateRequest(
+              healthCheck=health_check_ref.Name(),
+              healthCheckResource=replacement,
+              project=health_check_ref.project,
+              region=health_check_ref.region))
+
+
+def _Modify(client, args, existing_check):
+  """Returns a modified HealthCheck message."""
+  # We do not support using 'update http' with a health check of a
+  # different protocol.
+  if (existing_check.type !=
+      client.messages.HealthCheck.TypeValueValuesEnum.HTTP):
+    raise core_exceptions.Error(
+        'update http subcommand applied to health check with protocol ' +
+        existing_check.type.name)
+
+  # Description, PortName, and Host are the only attributes that can be
+  # cleared by passing in an empty string (but we don't want to set it to
+  # an empty string).
+  if args.description:
+    description = args.description
+  elif args.description is None:
+    description = existing_check.description
+  else:
+    description = None
+
+  if args.host:
+    host = args.host
+  elif args.host is None:
+    host = existing_check.httpHealthCheck.host
+  else:
+    host = None
+
+  port, port_name, port_specification = health_checks_utils.\
+    HandlePortRelatedFlagsForUpdate(
+        args, existing_check.httpHealthCheck)
+
+  proxy_header = existing_check.httpHealthCheck.proxyHeader
+  if args.proxy_header is not None:
+    proxy_header = client.messages.HTTPHealthCheck.ProxyHeaderValueValuesEnum(
+        args.proxy_header)
+
+  if args.response:
+    response = args.response
+  elif args.response is None:
+    response = existing_check.httpHealthCheck.response
+  else:
+    response = None
+
+  new_health_check = client.messages.HealthCheck(
+      name=existing_check.name,
+      description=description,
+      type=client.messages.HealthCheck.TypeValueValuesEnum.HTTP,
+      httpHealthCheck=client.messages.HTTPHealthCheck(
+          host=host,
+          port=port,
+          portName=port_name,
+          requestPath=(args.request_path or
+                       existing_check.httpHealthCheck.requestPath),
+          portSpecification=port_specification,
+          proxyHeader=proxy_header,
+          response=response),
+      checkIntervalSec=(args.check_interval or existing_check.checkIntervalSec),
+      timeoutSec=args.timeout or existing_check.timeoutSec,
+      healthyThreshold=(args.healthy_threshold or
+                        existing_check.healthyThreshold),
+      unhealthyThreshold=(args.unhealthy_threshold or
+                          existing_check.unhealthyThreshold),
+  )
+
+  return new_health_check
+
+
+def _ValidateArgs(args):
+  health_checks_utils.CheckProtocolAgnosticArgs(args)
+
+  args_unset = not (args.port or args.request_path or args.check_interval or
+                    args.timeout or args.healthy_threshold or
+                    args.unhealthy_threshold or args.proxy_header or
+                    args.use_serving_port)
+  if (args.description is None and args.host is None and
+      args.response is None and args.port_name is None and args_unset):
+    raise exceptions.ToolException('At least one property must be modified.')
+
+
+def _Run(args, holder, include_l7_internal_load_balancing):
+  """Issues the requests necessary for updating the health check."""
+  client = holder.client
+
+  _ValidateArgs(args)
+
+  health_check_arg = flags.HealthCheckArgument(
+      'HTTP',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+
+  health_check_ref = health_check_arg.ResolveAsResource(args, holder.resources)
+
+  if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
+    get_request = _GetRegionalGetRequest(client, health_check_ref)
+  else:
+    get_request = _GetGetRequest(client, health_check_ref)
+
+  objects = client.MakeRequests([get_request])
+
+  new_object = _Modify(client, args, objects[0])
+
+  # If existing object is equal to the proposed object or if
+  # _Modify() returns None, then there is no work to be done, so we
+  # print the resource and return.
+  if objects[0] == new_object:
+    log.status.Print('No change requested; skipping update for [{0}].'.format(
+        objects[0].name))
+    return objects
+
+  if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
+    set_request = _GetRegionalSetRequest(client, health_check_ref, new_object)
+  else:
+    set_request = _GetSetRequest(client, health_check_ref, new_object)
+  return client.MakeRequests([set_request])
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+class UpdateBetaAndGa(base.UpdateCommand):
   """Update a HTTP health check.
 
   *{command}* is used to update an existing HTTP health check. Only
@@ -36,141 +197,19 @@ class Update(base.UpdateCommand):
   attributes will remain unaffected.
   """
 
-  HEALTH_CHECK_ARG = None
+  _include_l7_internal_load_balancing = False
 
   @classmethod
-  def Args(cls, parser, include_l7_internal_load_balancing=False):
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        'HTTP',
-        include_l7_internal_load_balancing=include_l7_internal_load_balancing)
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='update')
-    health_checks_utils.AddHttpRelatedUpdateArgs(parser)
-    health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTP')
-    health_checks_utils.AddHttpRelatedResponseArg(parser)
-
-  def _GetGetRequest(self, client, health_check_ref):
-    """Returns a request for fetching the existing health check."""
-    return (client.apitools_client.healthChecks,
-            'Get',
-            client.messages.ComputeHealthChecksGetRequest(
-                healthCheck=health_check_ref.Name(),
-                project=health_check_ref.project))
-
-  def _GetSetRequest(self, client, health_check_ref, replacement):
-    """Returns a request for updating the health check."""
-    return (client.apitools_client.healthChecks,
-            'Update',
-            client.messages.ComputeHealthChecksUpdateRequest(
-                healthCheck=health_check_ref.Name(),
-                healthCheckResource=replacement,
-                project=health_check_ref.project))
-
-  def Modify(self, client, args, existing_check):
-    """Returns a modified HealthCheck message."""
-    # We do not support using 'update http' with a health check of a
-    # different protocol.
-    if (existing_check.type !=
-        client.messages.HealthCheck.TypeValueValuesEnum.HTTP):
-      raise core_exceptions.Error(
-          'update http subcommand applied to health check with protocol ' +
-          existing_check.type.name)
-
-    # Description, PortName, and Host are the only attributes that can be
-    # cleared by passing in an empty string (but we don't want to set it to
-    # an empty string).
-    if args.description:
-      description = args.description
-    elif args.description is None:
-      description = existing_check.description
-    else:
-      description = None
-
-    if args.host:
-      host = args.host
-    elif args.host is None:
-      host = existing_check.httpHealthCheck.host
-    else:
-      host = None
-
-    port, port_name, port_specification = health_checks_utils.\
-      HandlePortRelatedFlagsForUpdate(
-          args, existing_check.httpHealthCheck)
-
-    proxy_header = existing_check.httpHealthCheck.proxyHeader
-    if args.proxy_header is not None:
-      proxy_header = client.messages.HTTPHealthCheck.ProxyHeaderValueValuesEnum(
-          args.proxy_header)
-
-    if args.response:
-      response = args.response
-    elif args.response is None:
-      response = existing_check.httpHealthCheck.response
-    else:
-      response = None
-
-    new_health_check = client.messages.HealthCheck(
-        name=existing_check.name,
-        description=description,
-        type=client.messages.HealthCheck.TypeValueValuesEnum.HTTP,
-        httpHealthCheck=client.messages.HTTPHealthCheck(
-            host=host,
-            port=port,
-            portName=port_name,
-            requestPath=(args.request_path or
-                         existing_check.httpHealthCheck.requestPath),
-            portSpecification=port_specification,
-            proxyHeader=proxy_header,
-            response=response),
-        checkIntervalSec=(args.check_interval or
-                          existing_check.checkIntervalSec),
-        timeoutSec=args.timeout or existing_check.timeoutSec,
-        healthyThreshold=(args.healthy_threshold or
-                          existing_check.healthyThreshold),
-        unhealthyThreshold=(args.unhealthy_threshold or
-                            existing_check.unhealthyThreshold),
-    )
-
-    return new_health_check
-
-  def ValidateArgs(self, args):
-    health_checks_utils.CheckProtocolAgnosticArgs(args)
-
-    args_unset = not (args.port or args.request_path or args.check_interval or
-                      args.timeout or args.healthy_threshold or
-                      args.unhealthy_threshold or args.proxy_header or
-                      args.use_serving_port)
-    if (args.description is None and args.host is None and
-        args.response is None and args.port_name is None and args_unset):
-      raise exceptions.ToolException('At least one property must be modified.')
+  def Args(cls, parser):
+    _Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    self.ValidateArgs(args)
-    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, holder.resources)
-    get_request = self._GetGetRequest(client, health_check_ref)
-
-    objects = client.MakeRequests([get_request])
-
-    new_object = self.Modify(client, args, objects[0])
-
-    # If existing object is equal to the proposed object or if
-    # Modify() returns None, then there is no work to be done, so we
-    # print the resource and return.
-    if objects[0] == new_object:
-      log.status.Print(
-          'No change requested; skipping update for [{0}].'.format(
-              objects[0].name))
-      return objects
-
-    return client.MakeRequests(
-        [self._GetSetRequest(client, health_check_ref, new_object)])
+    return _Run(args, holder, self._include_l7_internal_load_balancing)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBetaAndGa):
   """Update a HTTP health check.
 
   *{command}* is used to update an existing HTTP health check. Only
@@ -178,54 +217,4 @@ class UpdateAlpha(Update):
   attributes will remain unaffected.
   """
 
-  @staticmethod
-  def Args(parser):
-    Update.Args(parser, include_l7_internal_load_balancing=True)
-
-  def _GetRegionalGetRequest(self, client, health_check_ref):
-    """Returns a request for fetching the existing health check."""
-    return (client.apitools_client.regionHealthChecks, 'Get',
-            client.messages.ComputeRegionHealthChecksGetRequest(
-                healthCheck=health_check_ref.Name(),
-                project=health_check_ref.project,
-                region=health_check_ref.region))
-
-  def _GetRegionalSetRequest(self, client, health_check_ref, replacement):
-    """Returns a request for updating the health check."""
-    return (client.apitools_client.regionHealthChecks, 'Update',
-            client.messages.ComputeRegionHealthChecksUpdateRequest(
-                healthCheck=health_check_ref.Name(),
-                healthCheckResource=replacement,
-                project=health_check_ref.project,
-                region=health_check_ref.region))
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    self.ValidateArgs(args)
-    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, holder.resources)
-    if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
-      get_request = self._GetRegionalGetRequest(client, health_check_ref)
-    else:
-      get_request = self._GetGetRequest(client, health_check_ref)
-
-    objects = client.MakeRequests([get_request])
-
-    new_object = self.Modify(client, args, objects[0])
-
-    # If existing object is equal to the proposed object or if
-    # Modify() returns None, then there is no work to be done, so we
-    # print the resource and return.
-    if objects[0] == new_object:
-      log.status.Print('No change requested; skipping update for [{0}].'.format(
-          objects[0].name))
-      return objects
-
-    if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
-      set_request = self._GetRegionalSetRequest(client, health_check_ref,
-                                                new_object)
-    else:
-      set_request = self._GetSetRequest(client, health_check_ref, new_object)
-    return client.MakeRequests([set_request])
+  _include_l7_internal_load_balancing = True

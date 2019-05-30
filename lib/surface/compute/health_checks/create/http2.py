@@ -25,18 +25,49 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
+def _DetailedHelp():
+  return {
+      'brief':
+          'Create a HTTP2 health check to monitor load balanced instances',
+      'DESCRIPTION':
+          """\
+          *{command}* is used to create a HTTP2 health check. HTTP2 health
+          checks monitor instances in a load balancer controlled by a target
+          pool. All arguments to the command are optional except for the name of
+          the health check. For more information on load balancing, see
+          [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+          """,
+  }
+
+
+def _Args(parser, include_l7_internal_load_balancing=False):
+  """Set up arguments to create an HTTP2 HealthCheck."""
+  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+  flags.HealthCheckArgument(
+      'HTTP2',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing
+  ).AddArgument(
+      parser, operation_type='create')
+  health_checks_utils.AddHttpRelatedCreationArgs(parser)
+  health_checks_utils.AddHttpRelatedResponseArg(parser)
+  health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP2')
+  parser.display_info.AddCacheUpdater(
+      completers.HealthChecksCompleterAlpha if
+      include_l7_internal_load_balancing else completers.HealthChecksCompleter)
+
+
 def _Run(args,
          holder,
          supports_response=False,
-         regionalized=False):
+         include_l7_internal_load_balancing=False):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
 
   health_check_ref = flags.HealthCheckArgument(
       'HTTP2',
-      include_l7_internal_load_balancing=regionalized).ResolveAsResource(
-          args, holder.resources)
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing
+  ).ResolveAsResource(args, holder.resources)
   proxy_header = messages.HTTP2HealthCheck.ProxyHeaderValueValuesEnum(
       args.proxy_header)
   http2_health_check = messages.HTTP2HealthCheck(
@@ -84,53 +115,42 @@ def _Run(args,
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Create(base.CreateCommand):
-  """Create a HTTP2 health check to monitor load balanced instances."""
+class CreateBeta(base.CreateCommand):
+  """Create a Beta HTTP2 health check to monitor load balanced instances.
 
-  @staticmethod
-  def Args(parser, supports_use_serving_port=True, regionalized=False):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    flags.HealthCheckArgument(
-        'HTTP2', include_l7_internal_load_balancing=regionalized).AddArgument(
-            parser, operation_type='create')
-    health_checks_utils.AddHttpRelatedCreationArgs(parser)
-    health_checks_utils.AddHttpRelatedResponseArg(parser)
-    health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP2')
-    parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha
-                                        if regionalized else
-                                        completers.HealthChecksCompleter)
+  Business logic should be put in helper functions. Classes annotated with
+  @base.ReleaseTracks should only be concerned with calling helper functions
+  with the correct feature parameters.
+  """
 
-  def Run(self, args):
-    """Issues the request necessary for adding the health check."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, supports_response=True)
+  _include_l7_internal_load_balancing = False
+  _supports_response = True
+  detailed_help = _DetailedHelp()
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create a HTTP2 health check to monitor load balanced instances."""
-
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser, regionalized=True)
+  @classmethod
+  def Args(cls, parser):
+    _Args(
+        parser,
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
 
   def Run(self, args):
-    """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(
         args,
         holder,
-        supports_response=True,
-        regionalized=True)
+        include_l7_internal_load_balancing=self
+        ._include_l7_internal_load_balancing,
+        supports_response=self._supports_response)
 
 
-Create.detailed_help = {
-    'brief': ('Create a HTTP2 health check to monitor load balanced instances'),
-    'DESCRIPTION': """\
-        *{command}* is used to create a HTTP2 health check. HTTP2 health checks
-        monitor instances in a load balancer controlled by a target pool. All
-        arguments to the command are optional except for the name of the health
-        check. For more information on load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
-        """,
-}
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a HTTP2 health check to monitor load balanced instances.
+
+  Business logic should be put in helper functions. Classes annotated with
+  @base.ReleaseTracks should only be concerned with calling helper functions
+  with the correct feature parameters.
+  """
+
+  _include_l7_internal_load_balancing = True

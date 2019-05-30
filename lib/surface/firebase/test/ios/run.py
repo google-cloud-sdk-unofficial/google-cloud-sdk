@@ -213,3 +213,4 @@ class RunBeta(Run):
   @staticmethod
   def Args(parser):
     super(RunBeta, RunBeta).Args(parser)
+    arg_util.AddBetaArgs(parser)

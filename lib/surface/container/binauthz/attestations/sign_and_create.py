@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import json
 import textwrap
 
 from googlecloudsdk.api_lib.container.binauthz import apis
@@ -129,8 +128,7 @@ class SignAndCreate(base.CreateCommand):
           prompt_string='Create and upload Attestation anyway?',
           cancel_on_no=True)
 
-    payload_dict = binauthz_command_util.MakeSignaturePayload(args.artifact_url)
-    payload = json.dumps(payload_dict).encode('utf8')
+    payload = binauthz_command_util.MakeSignaturePayload(args.artifact_url)
 
     kms_client = kms.Client()
     pubkey_response = kms_client.GetPublicKey(key_ref.RelativeName())

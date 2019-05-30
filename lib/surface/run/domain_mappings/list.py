@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -55,9 +56,10 @@ class List(commands.List):
         namespace_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
         """table(
+        {ready_column},
         metadata.name:label=DOMAIN,
         route_name:label=SERVICE,
-        region:label=REGION)""")
+        region:label=REGION)""".format(ready_column=pretty_print.READY_COLUMN))
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   def Run(self, args):

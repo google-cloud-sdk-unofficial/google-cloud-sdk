@@ -1,6 +1,10 @@
 - help_text:
     brief: Show details about a job.
     description: Show details about a job.
+    examples: |
+      The following command shows details about a job:
+
+        $ {command} my-job
 
   request:
     collection: cloudscheduler.projects.locations.jobs

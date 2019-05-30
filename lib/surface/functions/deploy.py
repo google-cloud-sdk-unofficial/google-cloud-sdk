@@ -77,7 +77,6 @@ def _Run(args,
   trigger_util.ValidateTriggerArgs(
       args.trigger_event, args.trigger_resource,
       args.IsSpecified('retry'), args.IsSpecified('trigger_http'))
-
   trigger_params = trigger_util.GetTriggerEventParams(
       args.trigger_http, args.trigger_bucket, args.trigger_topic,
       args.trigger_event, args.trigger_resource)
@@ -90,6 +89,8 @@ def _Run(args,
   # Get an existing function or create a new one.
   function = api_util.GetFunction(function_url)
   is_new_function = function is None
+  had_vpc_connector = bool(
+      function.vpcConnector) if not is_new_function else False
   if is_new_function:
     trigger_util.CheckTriggerSpecified(args)
     function = messages.CloudFunction()
@@ -140,29 +141,25 @@ def _Run(args,
     if args.IsSpecified('vpc_connector'):
       function.vpcConnector = args.vpc_connector
       updated_fields.append('vpcConnector')
-      if enable_traffic_control:
-        if args.IsSpecified('egress_settings'):
-          egress_settings_enum = \
-              arg_utils.ChoiceEnumMapper(
-                  arg_name='egress_settings',
-                  message_enum=function.VpcConnectorEgressSettingsValueValuesEnum,
-                  custom_mappings=flags.EGRESS_SETTINGS_MAPPING,).GetEnumForChoice(
-                      args.egress_settings)
-          function.vpcConnectorEgressSettings = egress_settings_enum
-          updated_fields.append('vpcConnectorEgressSettings')
-        if (args.IsSpecified('egress_settings')
-            and not args.IsSpecified('vpc_connector')):
-          raise exceptions.RequiredArgumentException(
-              'vpc-connector', 'Flag `--vpc-connector` is '
-                               'required for setting egress_settings.')
   if enable_traffic_control:
+    if args.IsSpecified('egress_settings'):
+      if not (had_vpc_connector or args.IsSpecified('vpc_connector')):
+        raise exceptions.RequiredArgumentException(
+            'vpc-connector', 'Flag `--vpc-connector` is '
+            'required for setting `egress-settings`.')
+      egress_settings_enum = arg_utils.ChoiceEnumMapper(
+          arg_name='egress_settings',
+          message_enum=function.VpcConnectorEgressSettingsValueValuesEnum,
+          custom_mappings=flags.EGRESS_SETTINGS_MAPPING).GetEnumForChoice(
+              args.egress_settings)
+      function.vpcConnectorEgressSettings = egress_settings_enum
+      updated_fields.append('vpcConnectorEgressSettings')
     if args.IsSpecified('ingress_settings'):
-      ingress_settings_enum = \
-        arg_utils.ChoiceEnumMapper(
-            arg_name='ingress_settings',
-            message_enum=function.IngressSettingsValueValuesEnum,
-            custom_mappings=flags.INGRESS_SETTINGS_MAPPING,).GetEnumForChoice(
-                args.ingress_settings)
+      ingress_settings_enum = arg_utils.ChoiceEnumMapper(
+          arg_name='ingress_settings',
+          message_enum=function.IngressSettingsValueValuesEnum,
+          custom_mappings=flags.INGRESS_SETTINGS_MAPPING).GetEnumForChoice(
+              args.ingress_settings)
       function.ingressSettings = ingress_settings_enum
       updated_fields.append('ingressSettings')
   # Populate trigger properties of function based on trigger args.

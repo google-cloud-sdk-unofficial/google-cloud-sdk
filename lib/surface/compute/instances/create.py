@@ -147,6 +147,7 @@ class Create(base.CreateCommand):
   _support_reservation = False
   _support_disk_resource_policy = False
   _support_erase_vss = False
+  _support_machine_image_key = False
 
   @classmethod
   def Args(cls, parser):
@@ -453,6 +454,18 @@ class Create(base.CreateCommand):
 
       if source_machine_image:
         request.instance.sourceMachineImage = source_machine_image
+        if args.IsSpecified('source_machine_image_csek_key_file'):
+          key = instance_utils.GetSourceMachineImageKey(
+              args, self.SOURCE_MACHINE_IMAGE, compute_client, holder)
+          request.instance.sourceMachineImageEncryptionKey = key
+
+      if self._support_machine_image_key and \
+          args.IsSpecified('source_machine_image_csek_key_file'):
+        if not args.IsSpecified('source_machine_image'):
+          raise exceptions.RequiredArgumentException(
+              '`--source-machine-image`',
+              '`--source-machine-image-csek-key-file` requires '
+              '`--source-machine-image` to be specified`')
 
       if (self._support_display_device and
           args.IsSpecified('enable_display_device')):
@@ -542,6 +555,7 @@ class CreateBeta(Create):
   _support_reservation = True
   _support_disk_resource_policy = True
   _support_erase_vss = False
+  _support_machine_image_key = False
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -577,6 +591,7 @@ class CreateAlpha(CreateBeta):
   _support_reservation = True
   _support_disk_resource_policy = True
   _support_erase_vss = True
+  _support_machine_image_key = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -606,6 +621,7 @@ class CreateAlpha(CreateBeta):
     CreateAlpha.SOURCE_MACHINE_IMAGE = (
         instances_flags.AddMachineImageArg())
     CreateAlpha.SOURCE_MACHINE_IMAGE.AddArgument(parser)
+    instances_flags.AddSourceMachineImageEncryptionKey(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)

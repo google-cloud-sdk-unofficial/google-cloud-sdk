@@ -31,12 +31,18 @@ from googlecloudsdk.command_lib.compute.instances.os_inventory import exceptions
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine virtual instance's OS inventory data.
 
   *{command}* displays all OS inventory data associated with a Google Compute
   Engine virtual machine instance.
+
+  ## EXAMPLES
+
+  To see OS inventory of an instance named my-instance, run:
+
+        $ {command} my-instance
   """
 
   _GUEST_ATTRIBUTES_PACKAGE_FIELD_KEYS = ('InstalledPackages', 'PackageUpdates')

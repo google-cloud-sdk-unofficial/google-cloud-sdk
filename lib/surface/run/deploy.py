@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
-from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -101,30 +100,17 @@ class Deploy(base.Command):
       changes = [image_change]
       if config_changes:
         changes.extend(config_changes)
-      if args.connectivity == 'internal':
-        private_endpoint = True
-      elif args.connectivity == 'external':
-        private_endpoint = False
-      else:
-        private_endpoint = None
+      endpoint_visibility = flags.GetEndpointVisibility(args)
       exists = operations.GetService(service_ref)
-
-      if (not exists and not args.allow_unauthenticated and
-          conn_context.supports_one_platform):
-
-        if operations.CanAddIamPolicyBinding(service_ref):
-          allow_unauth = console_io.PromptContinue(
-              prompt_string=(
-                  'Allow unauthenticated invocations '
-                  'to new service [{}]?'.format(
-                      service_ref.servicesId)),
-              default=False)
-        else:
-          allow_unauth = False
-          pretty_print.Info(
-              'This new service will require authentication to be invoked.')
-      else:
-        allow_unauth = False
+      allow_unauth = None
+      if conn_context.supports_one_platform:
+        allow_unauth = flags.GetAllowUnauthenticated(args,
+                                                     operations,
+                                                     service_ref,
+                                                     not exists)
+        # Don't try to remove a policy binding from a service that doesn't exist
+        if not exists and not allow_unauth:
+          allow_unauth = None
 
       msg = ('Deploying {dep_type} to {operator} '
              'service [{{bold}}{service}{{reset}}]'
@@ -138,8 +124,7 @@ class Deploy(base.Command):
           service=service_ref.servicesId,
           ns=service_ref.namespacesId))
 
-      deployment_stages = stages.ServiceStages(
-          allow_unauth or args.allow_unauthenticated)
+      deployment_stages = stages.ServiceStages(allow_unauth is not None)
       header = 'Deploying...' if exists else 'Deploying new service...'
       with progress_tracker.StagedProgressTracker(
           header,
@@ -151,8 +136,8 @@ class Deploy(base.Command):
             changes,
             tracker,
             asyn=args.async,
-            private_endpoint=private_endpoint,
-            allow_unauthenticated=allow_unauth or args.allow_unauthenticated)
+            private_endpoint=endpoint_visibility,
+            allow_unauthenticated=allow_unauth)
       if args.async:
         pretty_print.Success(
             'Service [{{bold}}{serv}{{reset}}] is deploying '

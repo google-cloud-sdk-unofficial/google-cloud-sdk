@@ -22,11 +22,10 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.app.api import appengine_domains_api_client as api_client
-from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.run import global_methods as run_methods
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -63,20 +62,8 @@ class ListUserVerified(base.Command):
     except (apitools_exceptions.HttpNotFoundError,
             apitools_exceptions.HttpForbiddenError) as appengine_err:
       try:
-        # TODO(b/129705144) Hard-coding the region is temporary, the control
-        # plane is working on the fix to not require a region at all.
-        region = 'us-central1'
-        location = resources.REGISTRY.Parse(
-            region,
-            params={'projectsId': project},
-            collection='run.projects.locations')
-        run_client = apis.GetClientInstance('run', 'v1alpha1')
-        msgs = run_client.MESSAGES_MODULE
-        req = msgs.RunProjectsLocationsAuthorizeddomainsListRequest(
-            parent=location.RelativeName())
-
-        response = run_client.projects_locations_authorizeddomains.List(req)
-        return response.domains
+        run_client = run_methods.GetServerlessClientInstance()
+        return run_methods.ListVerifiedDomains(run_client)
       except (apitools_exceptions.HttpNotFoundError,
               apitools_exceptions.HttpForbiddenError):
         log.error('To list user-verified domains, you must activate either'

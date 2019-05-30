@@ -70,6 +70,12 @@ class Upload(base.CreateCommand):
         help="""\
             The directory in which to create the source context file.
         """)
+    parser.add_argument(
+        '--ignore-file',
+        help="""
+            Override the `.gcloudignore` file and use the specified file instead.
+            See $ gcloud topic gcloudignore for more information.
+        """)
     parser.display_info.AddFormat("""
           flattened(
             branch,
@@ -85,7 +91,7 @@ class Upload(base.CreateCommand):
           'directory', args.directory + ' is not a directory.')
 
     mgr = upload.UploadManager()
-    result = mgr.Upload(args.branch, args.directory)
+    result = mgr.Upload(args.branch, args.directory, args.ignore_file)
 
     output_dir = args.source_context_directory
     if output_dir:

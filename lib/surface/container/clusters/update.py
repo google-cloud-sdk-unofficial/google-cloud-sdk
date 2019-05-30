@@ -416,6 +416,7 @@ class UpdateBeta(Update):
         group_logging_monitoring, enable_kubernetes=True)
     flags.AddMonitoringServiceFlag(
         group_logging_monitoring, enable_kubernetes=True)
+    flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -446,6 +447,7 @@ class UpdateBeta(Update):
     opts.autoprovisioning_config_file = args.autoprovisioning_config_file
     opts.autoprovisioning_service_account = args.autoprovisioning_service_account
     opts.autoprovisioning_scopes = args.autoprovisioning_scopes
+    opts.autoprovisioning_locations = args.autoprovisioning_locations
     opts.min_cpu = args.min_cpu
     opts.max_cpu = args.max_cpu
     opts.min_memory = args.min_memory
@@ -461,6 +463,7 @@ class UpdateBeta(Update):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+    opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.
@@ -489,6 +492,7 @@ class UpdateAlpha(Update):
         group_logging_monitoring, enable_kubernetes=True)
     flags.AddMonitoringServiceFlag(
         group_logging_monitoring, enable_kubernetes=True)
+    flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -521,6 +525,7 @@ class UpdateAlpha(Update):
     opts.autoprovisioning_config_file = args.autoprovisioning_config_file
     opts.autoprovisioning_service_account = args.autoprovisioning_service_account
     opts.autoprovisioning_scopes = args.autoprovisioning_scopes
+    opts.autoprovisioning_locations = args.autoprovisioning_locations
     opts.min_cpu = args.min_cpu
     opts.max_cpu = args.max_cpu
     opts.min_memory = args.min_memory
@@ -541,6 +546,7 @@ class UpdateAlpha(Update):
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_peering_route_sharing = args.enable_peering_route_sharing
+    opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.

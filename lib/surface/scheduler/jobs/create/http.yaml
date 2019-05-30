@@ -1,6 +1,12 @@
 - help_text:
     brief: Create a Cloud Scheduler job that triggers an action via HTTP.
     description: Create a Cloud Scheduler job that triggers an action via HTTP.
+    examples: |
+      The following command creates a job that sends a HTTP GET request to
+      'http://example.com/path' every 3 hours:
+
+        $ {command} my-job --schedule="0 */3 * * *"
+          --uri="http://example.com/path" --http-method=GET
 
   request:
     collection: cloudscheduler.projects.locations.jobs

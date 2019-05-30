@@ -4,7 +4,7 @@
     examples: |
       The following command resumes execution of a paused job:
 
-        $ {command} JOB
+        $ {command} my-job
 
   request:
     collection: cloudscheduler.projects.locations.jobs

@@ -396,7 +396,8 @@ def _RunCreate(compute_api,
       machine_type=args.machine_type,
       custom_cpu=args.custom_cpu,
       custom_memory=args.custom_memory,
-      ext=getattr(args, 'custom_extensions', None))
+      ext=getattr(args, 'custom_extensions', None),
+      vm_gen=getattr(args, 'custom_vm_gen', None))
 
   guest_accelerators = (
       instance_template_utils.CreateAcceleratorConfigMessages(

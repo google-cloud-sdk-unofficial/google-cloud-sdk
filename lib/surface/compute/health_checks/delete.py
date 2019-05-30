@@ -27,80 +27,77 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Delete(base.DeleteCommand):
-  """Delete health checks.
+def _DetailedHelp():
+  return {
+      'brief':
+          'Delete health checks.',
+      'DESCRIPTION':
+          """\
+      *{command}* deletes one or more Google Compute Engine
+      health checks.
+      """,
+  }
 
-  *{command}* deletes one or more Google Compute Engine
-  health checks.
-  """
 
-  HEALTH_CHECK_ARG = None
+def _Args(parser, include_l7_internal_load_balancing):
+  health_check_arg = flags.HealthCheckArgument(
+      '',
+      plural=True,
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+  health_check_arg.AddArgument(parser, operation_type='delete')
+  parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha
+                                      if include_l7_internal_load_balancing
+                                      else completers.HealthChecksCompleter)
 
-  @staticmethod
-  def Args(parser):
-    Delete.HEALTH_CHECK_ARG = flags.HealthCheckArgument('', plural=True)
-    Delete.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(completers.HealthChecksCompleter)
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+def _Run(holder, args, include_l7_internal_load_balancing):
+  """Issues the request necessary for deleting the health check."""
+  client = holder.client
 
-    health_check_refs = Delete.HEALTH_CHECK_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+  health_check_arg = flags.HealthCheckArgument(
+      '',
+      plural=True,
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+  health_check_refs = health_check_arg.ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    utils.PromptForDeletion(health_check_refs)
+  utils.PromptForDeletion(health_check_refs)
 
-    requests = []
-    for health_check_ref in health_check_refs:
+  requests = []
+
+  for health_check_ref in health_check_refs:
+    if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
+      requests.append((client.apitools_client.regionHealthChecks, 'Delete',
+                       client.messages.ComputeRegionHealthChecksDeleteRequest(
+                           **health_check_ref.AsDict())))
+    else:
       requests.append((client.apitools_client.healthChecks, 'Delete',
                        client.messages.ComputeHealthChecksDeleteRequest(
                            **health_check_ref.AsDict())))
 
-    return client.MakeRequests(requests)
+  return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base.DeleteCommand):
-  """Delete health checks.
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class DeleteGaAndBeta(base.DeleteCommand):
+  """Delete Ga/Beta health checks."""
 
-  *{command}* deletes one or more Google Compute Engine
-  health checks.
-  """
-
-  HEALTH_CHECK_ARG = None
+  _include_l7_internal_load_balancing = False
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        '', plural=True, include_l7_internal_load_balancing=True)
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(completers.HealthChecksCompleterAlpha)
+    _Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
-    # TODO(b/111311137): Cleanup to avoid code duplication.
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    return _Run(holder, args, self._include_l7_internal_load_balancing)
 
-    health_check_refs = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    utils.PromptForDeletion(health_check_refs)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteGaAndBeta):
+  """Delete Alpha health checks."""
 
-    requests = []
-    for health_check_ref in health_check_refs:
-      if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
-        requests.append((client.apitools_client.regionHealthChecks, 'Delete',
-                         client.messages.ComputeRegionHealthChecksDeleteRequest(
-                             **health_check_ref.AsDict())))
-      else:
-        requests.append((client.apitools_client.healthChecks, 'Delete',
-                         client.messages.ComputeHealthChecksDeleteRequest(
-                             **health_check_ref.AsDict())))
-
-    return client.MakeRequests(requests)
+  _include_l7_internal_load_balancing = True

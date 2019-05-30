@@ -34,7 +34,7 @@ def _CommonArgs(parser, beta=False):
   """Register flags common to all tracks."""
   base.ASYNC_FLAG.AddToParser(parser)
   parser.add_argument('name', help='The name of this cluster.')
-  clusters.ArgsForClusterRef(parser, beta)
+  clusters.ArgsForClusterRef(parser, beta, include_ttl_config=True)
   # Add gce-pd-kms-key args
   kms_flag_overrides = {'kms-key': '--gce-pd-kms-key',
                         'kms-keyring': '--gce-pd-kms-key-keyring',
@@ -120,7 +120,7 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, beta=True)
-    clusters.BetaArgsForClusterRef(parser, include_ttl_config=True)
+    clusters.BetaArgsForClusterRef(parser)
 
   @staticmethod
   def ValidateArgs(args):

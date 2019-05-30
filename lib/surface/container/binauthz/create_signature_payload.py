@@ -41,7 +41,12 @@ class CreateSignaturePayload(base.Command):
   @classmethod
   def Args(cls, parser):
     binauthz_flags.AddArtifactUrlFlag(parser)
-    parser.display_info.AddFormat('json')
+    parser.display_info.AddFormat('object')
 
   def Run(self, args):
-    return binauthz_command_util.MakeSignaturePayload(args.artifact_url)
+    # Dumping a bytestring to the object formatter doesn't output the string in
+    # PY3 but rather the repr of the object. Decoding it to a unicode string
+    # achieves the desired result.
+    payload_bytes = binauthz_command_util.MakeSignaturePayload(
+        args.artifact_url)
+    return payload_bytes.decode('utf8')

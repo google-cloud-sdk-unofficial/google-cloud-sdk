@@ -27,8 +27,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.images import os_choices
-from googlecloudsdk.command_lib.compute.instances \
-  import flags as instances_flags
+from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -81,6 +81,8 @@ class Import(base.CreateCommand):
 
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
+    sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
+
   def _ValidateInstanceName(self, args):
     """Raise an exception if requested instance name is invalid."""
     instance_name_pattern = re.compile('^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$')
@@ -117,14 +119,18 @@ class Import(base.CreateCommand):
     log.warning('Importing OVF. This may take 40 minutes for smaller OVFs '
                 'and up to a couple of hours for larger OVFs.')
 
-    machine_type = instance_utils.InterpretMachineType(
-        machine_type=args.machine_type,
-        custom_cpu=args.custom_cpu,
-        custom_memory=args.custom_memory,
-        ext=getattr(args, 'custom_extensions', None))
+    machine_type = None
+    if args.machine_type or args.custom_cpu or args.custom_memory:
+      machine_type = instance_utils.InterpretMachineType(
+          machine_type=args.machine_type,
+          custom_cpu=args.custom_cpu,
+          custom_memory=args.custom_memory,
+          ext=getattr(args, 'custom_extensions', None),
+          vm_gen=getattr(args, 'custom_vm_gen', None))
 
     return daisy_utils.RunOVFImportBuild(
         args=args,
+        compute_client=compute_holder.client,
         instance_name=args.instance_name,
         source_uri=daisy_utils.MakeGcsUri(args.source_uri),
         no_guest_environment=not args.guest_environment,
@@ -142,7 +148,8 @@ class Import(base.CreateCommand):
         tags=args.tags,
         zone=properties.VALUES.compute.zone.Get(),
         project=args.project,
-        output_filter=_OUTPUT_FILTER)
+        output_filter=_OUTPUT_FILTER,
+    )
 
 
 Import.detailed_help = {

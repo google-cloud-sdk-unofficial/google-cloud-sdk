@@ -1,6 +1,10 @@
 - help_text:
     brief: Delete a job.
     description: Delete a job.
+    examples: |
+      The following command deletes a job:
+
+        $ {command} my-job
 
   request:
     collection: cloudscheduler.projects.locations.jobs

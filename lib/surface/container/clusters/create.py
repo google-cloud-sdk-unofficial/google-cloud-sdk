@@ -484,6 +484,7 @@ class CreateBeta(Create):
     ops.autoprovisioning_config_file = args.autoprovisioning_config_file
     ops.autoprovisioning_service_account = args.autoprovisioning_service_account
     ops.autoprovisioning_scopes = args.autoprovisioning_scopes
+    ops.autoprovisioning_locations = args.autoprovisioning_locations
     ops.min_cpu = args.min_cpu
     ops.max_cpu = args.max_cpu
     ops.min_memory = args.min_memory
@@ -592,6 +593,7 @@ class CreateAlpha(Create):
     flags.AddSurgeUpgradeFlag(parser)
     flags.AddMaxUnavailableUpgradeFlag(parser)
     flags.AddLinuxSysctlFlags(parser)
+    flags.AddShieldedInstanceFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -636,6 +638,7 @@ class CreateAlpha(Create):
     ops.release_channel = args.release_channel
     ops.autoprovisioning_service_account = args.autoprovisioning_service_account
     ops.autoprovisioning_scopes = args.autoprovisioning_scopes
+    ops.autoprovisioning_locations = args.autoprovisioning_locations
     kms_ref = args.CONCEPTS.kms_key.Parse()
     if kms_ref:
       ops.database_encryption = kms_ref.RelativeName()
@@ -652,5 +655,8 @@ class CreateAlpha(Create):
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.linux_sysctls = args.linux_sysctls
     ops.disable_default_snat = args.disable_default_snat
+
+    ops.shielded_secure_boot = args.shielded_secure_boot
+    ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
 
     return ops

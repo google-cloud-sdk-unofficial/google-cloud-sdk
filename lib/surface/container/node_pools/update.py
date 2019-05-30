@@ -134,6 +134,8 @@ class UpdateBeta(Update):
 
     flags.AddWorkloadMetadataFromNodeFlag(group)
 
+    flags.AddNodePoolLocationsFlag(group)
+
   def ParseUpdateNodePoolOptions(self, args):
     ops = api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
@@ -142,7 +144,8 @@ class UpdateBeta(Update):
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
         enable_autoprovisioning=args.enable_autoprovisioning,
-        workload_metadata_from_node=args.workload_metadata_from_node)
+        workload_metadata_from_node=args.workload_metadata_from_node,
+        node_locations=args.node_locations)
     return ops
 
 
@@ -164,6 +167,8 @@ class UpdateAlpha(Update):
 
     flags.AddWorkloadMetadataFromNodeFlag(group)
 
+    flags.AddNodePoolLocationsFlag(group)
+
   def ParseUpdateNodePoolOptions(self, args):
     ops = api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
@@ -172,7 +177,8 @@ class UpdateAlpha(Update):
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
         enable_autoprovisioning=args.enable_autoprovisioning,
-        workload_metadata_from_node=args.workload_metadata_from_node)
+        workload_metadata_from_node=args.workload_metadata_from_node,
+        node_locations=args.node_locations)
     return ops
 
 

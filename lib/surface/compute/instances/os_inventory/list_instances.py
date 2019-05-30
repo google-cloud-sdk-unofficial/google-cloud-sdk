@@ -35,7 +35,7 @@ from googlecloudsdk.core.resource import resource_filter
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListInstances(base.ListCommand):
   r"""List instances with specific OS inventory data values.
 

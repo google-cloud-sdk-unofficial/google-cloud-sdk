@@ -18,13 +18,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+
+DOMAIN_MAPPINGS_HELP_DOCS_URL = ('https://cloud.google.com/run/docs/'
+                                 'mapping-custom-domains/')
 
 
 class Create(base.Command):
@@ -65,5 +70,26 @@ class Create(base.Command):
     """Create a domain mapping."""
     conn_context = connection_context.GetConnectionContext(args)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
+
+    # Check if the provided domain has already been verified
+    # if mapping to a non-CRoGKE service
+    if conn_context.supports_one_platform:
+      client = global_methods.GetServerlessClientInstance()
+      all_domains = global_methods.ListVerifiedDomains(client)
+      # If not already verified, explain and error out
+      if all(d.id not in domain_mapping_ref.Name() for d in all_domains):
+        if not all_domains:
+          domains_text = 'You currently have no verified domains.'
+        else:
+          domains = ['* {}'.format(d.id) for d in all_domains]
+          domains_text = ('Currently verified domains:\n{}'.format(
+              '\n'.join(domains)))
+        raise exceptions.DomainMappingCreationError(
+            'The provided domain does not appear to be verified '
+            'for the current account so a domain mapping '
+            'cannot be created. Visit [{help}] for more information.'
+            '\n{domains}'.format(
+                help=DOMAIN_MAPPINGS_HELP_DOCS_URL, domains=domains_text))
+
     with serverless_operations.Connect(conn_context) as client:
       return client.CreateDomainMapping(domain_mapping_ref, args.service)

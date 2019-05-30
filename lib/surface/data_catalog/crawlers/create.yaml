@@ -19,6 +19,8 @@
     collection: datacatalog.projects.crawlers
     api_version: v1alpha3
     modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.crawlers.util:ValidateScopeFlagsForCreate
+    - googlecloudsdk.command_lib.data_catalog.crawlers.util:ValidateSchedulingFlagsForCreate
     - googlecloudsdk.command_lib.data_catalog.crawlers.util:ParseScopeFlagsForCreate
     - googlecloudsdk.command_lib.data_catalog.crawlers.util:ParseSchedulingFlagsForCreate
 

@@ -65,6 +65,8 @@ class Update(base.Command):
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     flags.AddCloudSQLFlags(parser)
+    flags.AddEndpointVisibilityEnum(parser)
+    flags.AddAllowUnauthenticatedFlag(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
@@ -87,18 +89,29 @@ class Update(base.Command):
 
     with serverless_operations.Connect(conn_context) as client:
       changes = flags.GetConfigurationChanges(args)
-      if not changes:
+      endpoint_visibility = flags.GetEndpointVisibility(args)
+      allow_unauth = None
+      if conn_context.supports_one_platform:
+        allow_unauth = flags.GetAllowUnauthenticated(args, client, service_ref)
+      if not changes and endpoint_visibility is None and allow_unauth is None:
         raise exceptions.NoConfigurationChangeError(
             'No configuration change requested. '
             'Did you mean to include the flags `--update-env-vars`, '
-            '`--memory`, `--concurrency`, or `--timeout`?')
-      deployment_stages = stages.ServiceStages()
+            '`--memory`, `--concurrency`, `--timeout`, `--connectivity`, '
+            'or `--allow-unauthenticated`?')
+      deployment_stages = stages.ServiceStages(allow_unauth is not None)
       with progress_tracker.StagedProgressTracker(
           'Deploying...',
           deployment_stages,
           failure_message='Deployment failed',
           suppress_output=args.async) as tracker:
-        client.ReleaseService(service_ref, changes, tracker, args.async)
+        client.ReleaseService(
+            service_ref,
+            changes,
+            tracker,
+            asyn=args.async,
+            private_endpoint=endpoint_visibility,
+            allow_unauthenticated=allow_unauth)
       if args.async:
         pretty_print.Success(
             'Deploying asynchronously.')

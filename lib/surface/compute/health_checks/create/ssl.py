@@ -24,6 +24,33 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
+def _DetailedHelp():
+  return {
+      'brief':
+          'Create a SSL health check to monitor load balanced instances.',
+      'DESCRIPTION':
+          """\
+          *{command}* is used to create a SSL health check. SSL health checks
+          monitor instances in a load balancer controlled by a target pool. All
+          arguments to the command are optional except for the name of the
+          health check. For more information on load balancing, see
+          [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+          """,
+  }
+
+
+def _Args(parser, include_l7_internal_load_balancing=False):
+  """Set up arguments to create an SSL HealthCheck."""
+  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+  flags.HealthCheckArgument(
+      'SSL',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing
+  ).AddArgument(
+      parser, operation_type='create')
+  health_checks_utils.AddTcpRelatedCreationArgs(parser)
+  health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'SSL')
+
+
 def _Run(args, holder, include_l7_internal_load_balancing=False):
   """Issues the request necessary for adding the health check."""
   client = holder.client
@@ -77,47 +104,40 @@ def _Run(args, holder, include_l7_internal_load_balancing=False):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Create(base.CreateCommand):
-  """Create a SSL health check to monitor load balanced instances."""
+class CreateGaAndBeta(base.CreateCommand):
+  """Create a SSL health check to monitor load balanced instances.
+
+  Business logic should be put in helper functions. Classes annotated with
+  @base.ReleaseTracks should only be concerned with calling helper functions
+  with the correct feature parameters.
+  """
+
+  _include_l7_internal_load_balancing = False
+  detailed_help = _DetailedHelp()
 
   @classmethod
-  def Args(cls,
-           parser,
-           regionalized=False):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    flags.HealthCheckArgument(
-        'SSL', include_l7_internal_load_balancing=regionalized).AddArgument(
-            parser, operation_type='create')
-    health_checks_utils.AddTcpRelatedCreationArgs(parser)
-    health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'SSL')
+  def Args(cls, parser):
+    _Args(
+        parser,
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
 
   def Run(self, args):
-    """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder)
+    return _Run(
+        args,
+        holder,
+        include_l7_internal_load_balancing=self
+        ._include_l7_internal_load_balancing)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create a SSL health check to monitor load balanced instances."""
+class CreateAlpha(CreateGaAndBeta):
+  """Create a SSL health check to monitor load balanced instances.
 
-  @staticmethod
-  def Args(parser):
-    Create.Args(parser, regionalized=True)
+  Business logic should be put in helper functions. Classes annotated with
+  @base.ReleaseTracks should only be concerned with calling helper functions
+  with the correct feature parameters.
+  """
 
-  def Run(self, args):
-    """Issues the request necessary for adding the health check."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, include_l7_internal_load_balancing=True)
-
-
-Create.detailed_help = {
-    'brief': 'Create a SSL health check to monitor load balanced instances.',
-    'DESCRIPTION': """\
-        *{command}* is used to create a SSL health check. SSL health checks
-        monitor instances in a load balancer controlled by a target pool. All
-        arguments to the command are optional except for the name of the health
-        check. For more information on load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
-        """,
-}
+  _include_l7_internal_load_balancing = True

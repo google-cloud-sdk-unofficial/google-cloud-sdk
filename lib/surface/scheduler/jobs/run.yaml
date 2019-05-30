@@ -1,6 +1,10 @@
 - help_text:
     brief: Trigger an on-demand execution of a job.
     description: Trigger an on-demand execution of a job.
+    examples: |
+      The following command runs a jobs:
+
+        $ {command} my-job
 
   request:
     collection: cloudscheduler.projects.locations.jobs

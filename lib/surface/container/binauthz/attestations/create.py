@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.container.binauthz import util as binauthz_comma
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -149,6 +150,22 @@ class CreateAlpha(base.CreateCommand):
         help=textwrap.dedent("""\
           Path to file containing the signature to store, or `-` to read
           signature from stdin."""))
+    parser.add_argument(
+        '--payload-file',
+        required=False,
+        type=str,
+        help=textwrap.dedent("""\
+          Path to file containing the payload over which the signature was
+          calculated.
+
+          This defaults to the output of the standard payload command:
+
+              $ {grandparent_command} create-signature-payload
+
+          NOTE: If you sign a payload with e.g. different whitespace or
+          formatting, you must explicitly provide the payload content via this
+          flag.
+          """))
 
     flags.AddConcepts(
         parser,
@@ -191,6 +208,11 @@ class CreateAlpha(base.CreateCommand):
     normalized_artifact_url = binauthz_command_util.NormalizeArtifactUrl(
         args.artifact_url)
     signature = console_io.ReadFromFileOrStdin(args.signature_file, binary=True)
+    if args.payload_file:
+      payload = files.ReadBinaryFileContents(args.payload_file)
+    else:
+      payload = binauthz_command_util.MakeSignaturePayload(
+          normalized_artifact_url)
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
     api_version = apis.GetApiVersion(self.ReleaseTrack())
@@ -206,6 +228,5 @@ class CreateAlpha(base.CreateCommand):
         artifact_url=normalized_artifact_url,
         public_key_id=args.public_key_id,
         signature=signature,
-        plaintext=binauthz_command_util.MakeSignaturePayload(
-            normalized_artifact_url),
+        plaintext=payload,
     )

@@ -234,6 +234,7 @@ class CreateBeta(Create):
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
     flags.AddSandboxFlag(parser)
+    flags.AddNodePoolLocationsFlag(parser, for_create=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -241,6 +242,7 @@ class CreateBeta(Create):
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.sandbox = args.sandbox
+    ops.node_locations = args.node_locations
     return ops
 
 
@@ -259,6 +261,9 @@ class CreateAlpha(Create):
     ops.linux_sysctls = args.linux_sysctls
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
+    ops.node_locations = args.node_locations
+    ops.shielded_secure_boot = args.shielded_secure_boot
+    ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
     return ops
 
   @staticmethod
@@ -280,6 +285,8 @@ class CreateAlpha(Create):
     flags.AddLinuxSysctlFlags(parser, for_node_pool=True)
     flags.AddSurgeUpgradeFlag(parser, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(parser, for_node_pool=True)
+    flags.AddNodePoolLocationsFlag(parser, for_create=True)
+    flags.AddShieldedInstanceFlags(parser)
 
 
 Create.detailed_help = DETAILED_HELP

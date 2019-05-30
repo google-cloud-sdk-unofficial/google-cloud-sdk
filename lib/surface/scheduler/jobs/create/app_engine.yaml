@@ -1,6 +1,12 @@
 - help_text:
     brief: Create a Cloud Scheduler job with an App Engine target.
     description: Create a Cloud Scheduler job with an App Engine target.
+    examples: |
+      The following command creates a job that sends a request to the
+      '/cron-handler' path in you App Engine app every 3 hours:
+
+        $ {command} my-job --schedule="0 */3 * * *"
+          --relative-url="/cron-handler"
 
   request:
     collection: cloudscheduler.projects.locations.jobs

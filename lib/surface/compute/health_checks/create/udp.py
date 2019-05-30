@@ -25,80 +25,112 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
+def _DetailedHelp():
+  return {
+      'brief':
+          'Create a UDP health check to monitor load balanced instances.',
+      'DESCRIPTION':
+          """\
+          *{command}* is used to create a UDP health check. UDP health checks
+        monitor instances in a load balancer controlled by a target pool. All
+        arguments to the command are optional except for the name of the health
+        check, request and response. For more information on load balancing, see
+        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+          """,
+  }
+
+
+def _Args(parser, include_l7_internal_load_balancing=False):
+  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+  flags.HealthCheckArgument(
+      'UDP',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing
+  ).AddArgument(
+      parser, operation_type='create')
+  health_checks_utils.AddUdpRelatedArgs(parser)
+  health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'UDP')
+
+
+def _Run(args, holder, include_l7_internal_load_balancing=False):
+  """Issues the request necessary for adding the health check."""
+  client = holder.client
+
+  health_check_ref = flags.HealthCheckArgument(
+      'UDP',
+      include_l7_internal_load_balancing=include_l7_internal_load_balancing
+  ).ResolveAsResource(args, holder.resources)
+
+  # Check that request and response are not None and empty.
+  if not args.request:
+    raise exceptions.ToolException('"request" field for UDP can not be empty.')
+  if not args.response:
+    raise exceptions.ToolException('"response" field for UDP can not be empty.')
+
+  if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
+    request = client.messages.ComputeRegionHealthChecksInsertRequest(
+        healthCheck=client.messages.HealthCheck(
+            name=health_check_ref.Name(),
+            description=args.description,
+            type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
+            udpHealthCheck=client.messages.UDPHealthCheck(
+                request=args.request,
+                response=args.response,
+                port=args.port,
+                portName=args.port_name),
+            checkIntervalSec=args.check_interval,
+            timeoutSec=args.timeout,
+            healthyThreshold=args.healthy_threshold,
+            unhealthyThreshold=args.unhealthy_threshold,
+        ),
+        project=health_check_ref.project,
+        region=health_check_ref.region)
+    collection = client.apitools_client.regionHealthChecks
+  else:
+    request = client.messages.ComputeHealthChecksInsertRequest(
+        healthCheck=client.messages.HealthCheck(
+            name=health_check_ref.Name(),
+            description=args.description,
+            type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
+            udpHealthCheck=client.messages.UDPHealthCheck(
+                request=args.request,
+                response=args.response,
+                port=args.port,
+                portName=args.port_name),
+            checkIntervalSec=args.check_interval,
+            timeoutSec=args.timeout,
+            healthyThreshold=args.healthy_threshold,
+            unhealthyThreshold=args.unhealthy_threshold,
+        ),
+        project=health_check_ref.project)
+    collection = client.apitools_client.healthChecks
+
+  return client.MakeRequests([(collection, 'Insert', request)])
+
+
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
-  """Create a UDP health check to monitor load balanced instances.
+class CreateAlpha(base.CreateCommand):
+  """Create an Alpha UDP health check to monitor load balanced instances.
 
-    *{command}* is used to create a UDP health check. UDP health checks
-  monitor instances in a load balancer controlled by a target pool. All
-  arguments to the command are optional except for the name of the health
-  check, request and response. For more information on load balancing, see
-  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+  Business logic should be put in helper functions. Classes annotated with
+  @base.ReleaseTracks should only be concerned with calling helper functions
+  with the correct feature parameters.
   """
 
-  HEALTH_CHECK_ARG = None
+  _include_l7_internal_load_balancing = True
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        'UDP', include_l7_internal_load_balancing=True)
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='create')
-    health_checks_utils.AddUdpRelatedArgs(parser)
-    health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'UDP')
+    _Args(
+        parser,
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
 
   def Run(self, args):
-    """Issues the request necessary for adding the health check."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
-        args, holder.resources)
-    # Check that request and response are not None and empty.
-    if not args.request:
-      raise exceptions.ToolException(
-          '"request" field for UDP can not be empty.')
-    if not args.response:
-      raise exceptions.ToolException(
-          '"response" field for UDP can not be empty.')
-
-    if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
-      request = client.messages.ComputeRegionHealthChecksInsertRequest(
-          healthCheck=client.messages.HealthCheck(
-              name=health_check_ref.Name(),
-              description=args.description,
-              type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
-              udpHealthCheck=client.messages.UDPHealthCheck(
-                  request=args.request,
-                  response=args.response,
-                  port=args.port,
-                  portName=args.port_name),
-              checkIntervalSec=args.check_interval,
-              timeoutSec=args.timeout,
-              healthyThreshold=args.healthy_threshold,
-              unhealthyThreshold=args.unhealthy_threshold,
-          ),
-          project=health_check_ref.project,
-          region=health_check_ref.region)
-      collection = client.apitools_client.regionHealthChecks
-    else:
-      request = client.messages.ComputeHealthChecksInsertRequest(
-          healthCheck=client.messages.HealthCheck(
-              name=health_check_ref.Name(),
-              description=args.description,
-              type=client.messages.HealthCheck.TypeValueValuesEnum.UDP,
-              udpHealthCheck=client.messages.UDPHealthCheck(
-                  request=args.request,
-                  response=args.response,
-                  port=args.port,
-                  portName=args.port_name),
-              checkIntervalSec=args.check_interval,
-              timeoutSec=args.timeout,
-              healthyThreshold=args.healthy_threshold,
-              unhealthyThreshold=args.unhealthy_threshold,
-          ),
-          project=health_check_ref.project)
-      collection = client.apitools_client.healthChecks
-
-    return client.MakeRequests([(collection, 'Insert', request)])
+    return _Run(
+        args,
+        holder,
+        include_l7_internal_load_balancing=self
+        ._include_l7_internal_load_balancing)

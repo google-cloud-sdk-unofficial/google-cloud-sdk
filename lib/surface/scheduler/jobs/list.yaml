@@ -1,6 +1,10 @@
 - help_text:
     brief: List jobs.
     description: List jobs.
+    examples: |
+      The following command lists all jobs in a project:
+
+        $ {command}
 
   request:
     collection: cloudscheduler.projects.locations.jobs
