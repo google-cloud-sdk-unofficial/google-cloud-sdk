@@ -23,12 +23,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.command_lib.config import config_helper
 from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
 
 class IdentityToken(base.Command):
-  """Print an identity token for the active account."""
+  """Print an identity token for the specified account."""
   detailed_help = {
       'DESCRIPTION': """\
         {description}
@@ -37,26 +38,30 @@ class IdentityToken(base.Command):
         To print identity tokens:
 
           $ {command}
+
+        To print identity token for account foo@example.com:
+
+          $ {command} foo@example.com
         """,
   }
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        '--force-auth-refresh',
-        action='store_true',
-        help='Force a refresh of the credentials even if they have not '
-             'expired yet. By default, credentials will only be refreshed when '
-             'necessary.')
+        'account', nargs='?',
+        help=('Account to print the identity token for. If not specified, '
+              'the current active account will be used.'))
+    parser.display_info.AddFormat('value(id_token)')
 
   @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError, client.Error)
   def Run(self, args):
     """Run the print_identity_token command."""
 
-    cred = c_store.Load()
-    if args.force_auth_refresh:
-      c_store.Refresh(cred)
-    if not cred.id_token64:
+    cred = c_store.Load(args.account)
+    c_store.Refresh(cred)
+
+    credential = config_helper.Credential(cred)
+    if not credential.id_token:
       raise auth_exceptions.InvalidIdentityTokenError(
           'No identity token can be obtained from the current credentials.')
-    return cred.id_tokenb64
+    return credential

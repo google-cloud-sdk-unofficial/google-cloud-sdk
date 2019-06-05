@@ -36,7 +36,7 @@ class SetDefaultServiceAccount(base.SilentCommand):
 
   For example,
 
-    $ {command} --email=example@developers.gserviceaccount.com
+    $ {command} --service-account=example@developers.gserviceaccount.com
     $ gcloud compute instances create instance-name
 
   will set the project's default service account as

@@ -30,7 +30,21 @@ from googlecloudsdk.core import yaml_validator
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        Imports a URL map's configuration to a file.
+        """,
+    'EXAMPLES':
+        """\
+        A URL map can be imported by running:
+
+          $ {command} NAME --source=<path-to-file>
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Import(base.UpdateCommand):
   """Import a URL map.
 
@@ -41,6 +55,7 @@ class Import(base.UpdateCommand):
   """
 
   URL_MAP_ARG = None
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def GetApiVersion(cls):

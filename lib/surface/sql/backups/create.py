@@ -18,11 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -71,6 +74,17 @@ class CreateBackup(base.CreateCommand):
         args.instance,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances')
+
+    # Check if instance has customer-managed key; show warning if so.
+    try:
+      instance_resource = sql_client.instances.Get(
+          sql_messages.SqlInstancesGetRequest(
+              project=instance_ref.project, instance=instance_ref.instance))
+      if instance_resource.diskEncryptionConfiguration:
+        command_util.ShowCmekWarning('backup', 'this instance')
+    except apitools_exceptions.HttpError:
+      # This is for informational purposes, so don't throw an error if failure.
+      pass
 
     result_operation = sql_client.backupRuns.Insert(
         sql_messages.SqlBackupRunsInsertRequest(

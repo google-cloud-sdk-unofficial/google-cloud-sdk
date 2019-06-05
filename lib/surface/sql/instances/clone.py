@@ -18,12 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
+
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -159,6 +162,18 @@ class Clone(base.CreateCommand):
                 destinationInstanceName=destination_instance_ref.instance)))
 
     self._UpdateRequestFromArgs(request, args, sql_messages)
+
+    # Check if source has customer-managed key; show warning if so.
+    try:
+      source_instance_resource = sql_client.instances.Get(
+          sql_messages.SqlInstancesGetRequest(
+              project=source_instance_ref.project,
+              instance=source_instance_ref.instance))
+      if source_instance_resource.diskEncryptionConfiguration:
+        command_util.ShowCmekWarning('clone', 'the source instance')
+    except apitools_exceptions.HttpError:
+      # This is for informational purposes, so don't throw an error if failure.
+      pass
 
     result = sql_client.instances.Clone(request)
 

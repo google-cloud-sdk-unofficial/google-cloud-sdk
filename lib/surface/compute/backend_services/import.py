@@ -30,7 +30,22 @@ from googlecloudsdk.core import yaml_validator
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        Imports a backend service's configuration to a file.
+        This configuration can be imported at a later time.
+        """,
+    'EXAMPLES':
+        """\
+        A backend service can be imported by running:
+
+          $ {command} NAME --source=<path-to-file> --global
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Import(base.UpdateCommand):
   """Import a backend service.
 
@@ -39,6 +54,8 @@ class Import(base.UpdateCommand):
   To edit a backend service you can export the backend service to a file,
   edit its configuration, and then import the new configuration.
   """
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def GetApiVersion(cls):
@@ -138,15 +155,15 @@ class Import(base.UpdateCommand):
 
     # Unspecified fields are assumed to be cleared.
     cleared_fields = []
-    if backend_service.securitySettings is None:
+    if hasattr(backend_service, 'securitySettings') is None:
       cleared_fields.append('securitySettings')
-    if backend_service.localityLbPolicy is None:
+    if hasattr(backend_service, 'localityLbPolicy') is None:
       cleared_fields.append('localityLbPolicy')
-    if backend_service.circuitBreakers is None:
+    if hasattr(backend_service, 'circuitBreakers') is None:
       cleared_fields.append('circuitBreakers')
-    if backend_service.consistentHash is None:
+    if hasattr(backend_service, 'consistentHash') is None:
       cleared_fields.append('consistentHash')
-    if backend_service.outlierDetection is None:
+    if hasattr(backend_service, 'outlierDetection') is None:
       cleared_fields.append('outlierDetection')
 
     with client.apitools_client.IncludeFields(cleared_fields):

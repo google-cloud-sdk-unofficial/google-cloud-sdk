@@ -27,7 +27,21 @@ from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        Exports a forwarding rule's configuration to a file.
+        """,
+    'EXAMPLES':
+        """\
+        A forwarding rule can be exported by running:
+
+          $ {command} NAME --destination=<path-to-file>
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Export(base.Command):
   """Export a forwarding rule.
 
@@ -36,6 +50,7 @@ class Export(base.Command):
   """
 
   FORWARDING_RULE_ARG = None
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def GetApiVersion(cls):

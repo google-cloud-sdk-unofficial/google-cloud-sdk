@@ -32,21 +32,6 @@
       help_text: |
         Arguments and flags that specify the VPC Access connector you want to create.
     params:
-    - arg_name: type
-      release_tracks: [ALPHA]
-      api_field: connector.type
-      required: false
-      help_text: |
-        The type of the connector: 'extended' or 'basic'. Extended is the
-        default and provides internal load balancer support.
-      choices:
-      - enum_value: EXTENDED
-        arg_value: extended
-        help_text: Extended with support for internal load balancer
-      - enum_value: BASIC
-        arg_value: basic
-        help_text: Basic support for single VM connectivity
-      default: extended
     - arg_name: network
       api_field: connector.network
       required: false

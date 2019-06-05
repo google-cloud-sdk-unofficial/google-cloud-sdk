@@ -30,17 +30,27 @@ from googlecloudsdk.core import yaml_validator
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        Imports a forwarding rule's configuration from a file.
+        """,
+    'EXAMPLES':
+        """\
+        A forwarding rule can be imported by running:
+
+          $ {command} NAME --source=<path-to-file>
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Import(base.UpdateCommand):
   """Import a forwarding rule.
-
-  If the specified forwarding rule already exists, it will be overwritten.
-  Otherwise, a new forwarding rule will be created.
-  To edit a forwarding rule you can export the forwarding rule to a file,
-  edit its configuration, and then import the new configuration.
   """
 
   FORWARDING_RULE_ARG = None
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def GetApiVersion(cls):

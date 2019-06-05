@@ -28,13 +28,30 @@ from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        Exports a backend service's configuration to a file.
+        This configuration can be imported at a later time.
+        """,
+    'EXAMPLES':
+        """\
+        A backend service can be exported by running:
+
+          $ {command} NAME --destination=<path-to-file> --global
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Export(base.Command):
   """Export a backend service.
 
   Exports a backend service's configuration to a file.
   This configuration can be imported at a later time.
   """
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def GetApiVersion(cls):

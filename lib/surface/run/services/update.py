@@ -119,10 +119,11 @@ class Update(base.Command):
         url = client.GetServiceUrl(service_ref)
         active_revs = client.GetActiveRevisions(service_ref)
 
-        msg = ('{{bold}}Service [{serv}] revision{plural} {rev_msg} is active'
-               ' and serving traffic at{{reset}} {url}')
+        msg = ('Service [{{bold}}{serv}{{reset}}] revision{plural} {rev_msg} '
+               'is active and serving traffic at {{bold}}{url}{{reset}}')
 
-        rev_msg = ' '.join(['[{}]'.format(rev) for rev in active_revs])
+        rev_msg = ' '.join(
+            ['[{{bold}}{}{{reset}}]'.format(rev) for rev in active_revs])
 
         msg = msg.format(
             serv=service_ref.servicesId,

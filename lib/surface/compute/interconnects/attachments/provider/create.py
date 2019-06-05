@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.interconnects import flags as interconne
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine partner provider interconnect attachment.
 
@@ -85,4 +86,21 @@ class Create(base.CreateCommand):
         partner_asn=args.partner_asn,
         partner_name=args.partner_name,
         partner_interconnect=args.partner_interconnect_name,
-        partner_portal_url=args.partner_portal_url)
+        partner_portal_url=args.partner_portal_url,
+        validate_only=getattr(args, 'dry_run', None))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Google Compute Engine partner provider interconnect attachment.
+
+  *{command}* is used to create partner provider interconnect attachments. An
+  interconnect attachment binds the underlying connectivity of an Interconnect
+  to a path into and out of the customer's cloud network. Partner provider
+  attachments can only be created by approved network partners.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    attachment_flags.AddDryRun(parser)

@@ -132,6 +132,7 @@ class CreateBeta(CreateGA):
   @staticmethod
   def Args(parser):
     _AddCreateArgs(parser)
+    flags.SERVICE_ACCOUNT.AddToParser(parser)
     flags.AddMachineTypeFlagToParser(parser)
     flags.AddUserCodeArgs(parser)
 
@@ -154,6 +155,7 @@ class CreateBeta(CreateGA):
         machine_type=args.machine_type,
         framework=framework,
         python_version=args.python_version,
+        service_account=args.service_account,
         prediction_class=args.prediction_class,
         package_uris=args.package_uris)
 

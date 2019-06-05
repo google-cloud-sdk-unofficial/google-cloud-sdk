@@ -28,7 +28,7 @@ from oauth2client import client
 
 
 class AccessToken(base.Command):
-  """Print an access token for the active account."""
+  """Print an access token for the specified account."""
   detailed_help = {
       'DESCRIPTION': """\
         {description}
@@ -44,16 +44,9 @@ class AccessToken(base.Command):
   def Args(parser):
     parser.add_argument(
         'account', nargs='?',
-        help=('The account to get the access token for. Leave empty for the '
-              'active account.'))
+        help=('Account to get the access token for. If not specified, '
+              'the current active account will be used.'))
     parser.display_info.AddFormat('value(access_token)')
-
-    parser.add_argument(
-        '--force-auth-refresh',
-        action='store_true',
-        help='Force a refresh of the credentials even if they have not '
-             'expired yet. By default, credentials will only be refreshed when '
-             'necessary.')
 
   @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError, client.Error)
   def Run(self, args):
@@ -61,9 +54,6 @@ class AccessToken(base.Command):
 
     cred = c_store.Load(args.account)
     c_store.Refresh(cred)
-
-    if args.force_auth_refresh:
-      c_store.Refresh(cred)
     if not cred.access_token:
       raise auth_exceptions.InvalidCredentialsError(
           'No access token could be obtained from the current credentials.')

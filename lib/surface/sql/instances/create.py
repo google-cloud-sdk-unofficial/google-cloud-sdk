@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.command_lib.sql import validate as command_validate
@@ -188,6 +189,9 @@ def RunBaseCreateCommand(args, release_track):
       args.database_version = master_instance_resource.databaseVersion
     if not args.IsSpecified('tier') and master_instance_resource.settings:
       args.tier = master_instance_resource.settings.tier
+    # Check for CMEK usage; warn the user about replica inheriting the setting.
+    if master_instance_resource.diskEncryptionConfiguration:
+      command_util.ShowCmekWarning('replica', 'the master instance')
 
   instance_resource = (
       command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
@@ -264,7 +268,7 @@ class Create(base.Command):
     flags.AddDatabaseVersion(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.Command):
   """Creates a new Cloud SQL instance."""
 
@@ -277,3 +281,33 @@ class CreateBeta(base.Command):
     AddBaseArgs(parser)
     AddBetaArgs(parser)
     flags.AddDatabaseVersion(parser, restrict_choices=False)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.Command):
+  """Creates a new Cloud SQL instance."""
+
+  def Run(self, args):
+    return RunBaseCreateCommand(args, self.ReleaseTrack())
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    AddBaseArgs(parser)
+    AddBetaArgs(parser)
+    flags.AddDatabaseVersion(parser, restrict_choices=False)
+    kms_flag_overrides = {
+        'kms-key': '--disk-encryption-key',
+        'kms-keyring': '--disk-encryption-key-keyring',
+        'kms-location': '--disk-encryption-key-location',
+        'kms-project': '--disk-encryption-key-project'
+    }
+    permission_info = (
+        'Please ensure that you have the '
+        '`resourcemanager.projects.setIamPolicy` permission for the project '
+        'associated with the key')
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser,
+        'instance',
+        flag_overrides=kms_flag_overrides,
+        permission_info=permission_info)

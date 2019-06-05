@@ -28,7 +28,22 @@ from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+        Exports a URL map's configuration to a file.
+        This configuration can be imported at a later time.
+        """,
+    'EXAMPLES':
+        """\
+        A URL map can be exported by running:
+
+          $ {command} NAME --destination=<path-to-file>
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Export(base.Command):
   """Export a URL map.
 
@@ -37,6 +52,7 @@ class Export(base.Command):
   """
 
   URL_MAP_ARG = None
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def GetApiVersion(cls):

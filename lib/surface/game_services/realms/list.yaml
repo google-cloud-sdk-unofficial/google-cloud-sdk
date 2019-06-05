@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  is_hidden: true
+
+  help_text:
+    brief: List Realms.
+    description: List Cloud Game Services Realms.
+
+  request:
+    collection: gameservices.projects.locations.realms
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Cloud Game Services Location of the Realms to list.
+      spec: !REF googlecloudsdk.command_lib.game_services.resources:location
+
+  output:
+    format: |
+      table(
+         name.basename():label=NAME,
+         description:label=DESCRIPTION,
+         createTime,
+         updateTime,
+         labels,
+         timeZone
+       )
