@@ -35,7 +35,7 @@ class GetIamPolicy(base.ListCommand):
   The following command gets the IAM policy for the keyring `fellowship`
   within the location `us-central1`:
 
-    $ {command} fellowship --location us-central1
+    $ {command} fellowship --location=us-central1
   """
 
   @staticmethod

@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update a key.
 
@@ -59,17 +58,17 @@ class Update(base.UpdateCommand):
   starting at the specified time:
 
     $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --rotation-period 30d \
-        --next-rotation-time 2017-10-12T12:34:56.1234Z
+        --location=global \
+        --keyring=fellowship \
+        --rotation-period=30d \
+        --next-rotation-time=2017-10-12T12:34:56.1234Z
 
   The following command removes the rotation schedule for the key
   named `frodo` within the keyring `fellowship` and location `global`:
 
     $ {command} frodo \
-        --location global \
-        --keyring fellowship \
+        --location=global \
+        --keyring=fellowship \
         --remove-rotation-schedule
 
   The following command updates the labels value for the key
@@ -77,25 +76,35 @@ class Update(base.UpdateCommand):
   label key does not exist at the time, it will be added:
 
     $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --update-labels k1=v1
+        --location=global \
+        --keyring=fellowship \
+        --update-labels=k1=v1
 
   The following command removes labels k1 and k2 from the key
   named `frodo` within the keyring `fellowship` and location `global`:
 
     $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --remove-labels k1,k2
+        --location=global \
+        --keyring=fellowship \
+        --remove-labels=k1,k2
 
   The following command updates the primary version for the key
   named `frodo` within the keyring `fellowship` and location `global`:
 
     $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --primary-version 1
+        --location=global \
+        --keyring=fellowship \
+        --primary-version=1
+
+  The following command updates the default algorithm for the key named `frodo`
+  within the keyring `fellowship` and location `global`, assuming the key
+  originally has purpose 'asymmetric-encryption' and algorithm
+  'rsa-decrypt-oaep-2048-sha256':
+
+    $ {command} frodo \
+        --location=global \
+        --keyring=fellowship \
+        --default-algorithm=rsa-decrypt-oaep-4096-sha256
   """
 
   @staticmethod
@@ -106,6 +115,7 @@ class Update(base.UpdateCommand):
     flags.AddRemoveRotationScheduleFlag(parser)
     flags.AddCryptoKeyPrimaryVersionFlag(parser, 'to make primary')
     labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddDefaultAlgorithmFlag(parser)
 
   def ProcessFlags(self, args):
     fields_to_update = []
@@ -123,14 +133,16 @@ class Update(base.UpdateCommand):
       fields_to_update.append('rotationPeriod')
     if args.next_rotation_time:
       fields_to_update.append('nextRotationTime')
+    if args.default_algorithm:
+      fields_to_update.append('versionTemplate.algorithm')
 
     # Raise an exception when no update field is specified.
     if not args.primary_version and not fields_to_update:
       raise exceptions.ToolException(
           'At least one of --primary-version or --update-labels or '
           '--remove-labels or --clear-labels or --rotation-period or '
-          '--next-rotation-time or --remove-rotation-schedule must be '
-          'specified.')
+          '--next-rotation-time or --remove-rotation-schedule or '
+          '--default-algorithm must be specified.')
 
     return fields_to_update
 
@@ -156,6 +168,7 @@ class Update(base.UpdateCommand):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
     crypto_key_ref = flags.ParseCryptoKeyName(args)
+
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysPatchRequest(
         name=crypto_key_ref.RelativeName(),
         cryptoKey=messages.CryptoKey(
@@ -164,6 +177,18 @@ class Update(base.UpdateCommand):
     req.updateMask = ','.join(fields_to_update)
     flags.SetNextRotationTime(args, req.cryptoKey)
     flags.SetRotationPeriod(args, req.cryptoKey)
+    if args.default_algorithm:
+      valid_algorithms = maps.VALID_ALGORITHMS_MAP[crypto_key.purpose]
+      if args.default_algorithm not in valid_algorithms:
+        raise exceptions.ToolException(
+            'Update failed: Algorithm {algorithm} is not valid. Here are the '
+            'valid algorithm(s) for purpose {purpose}: {all_algorithms}'.format(
+                algorithm=args.default_algorithm,
+                purpose=crypto_key.purpose,
+                all_algorithms=', '.join(valid_algorithms)))
+      req.cryptoKey.versionTemplate = messages.CryptoKeyVersionTemplate(
+          algorithm=maps.ALGORITHM_MAPPER.GetEnumForChoice(
+              args.default_algorithm))
 
     try:
       response = client.projects_locations_keyRings_cryptoKeys.Patch(req)
@@ -240,163 +265,3 @@ class Update(base.UpdateCommand):
                         other_updates_succeed, fields_to_update)
     else:
       return crypto_key
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateALPHA(Update):
-  r"""Update a key.
-
-  1. Update the rotation schedule for the given key.
-
-  Updates the rotation schedule for the given key. The schedule
-  automatically creates a new primary version for the key
-  according to the `next-rotation-time` and `rotation-period` flags.
-
-  The flag `next-rotation-time` must be in ISO 8601 or RFC3339 format,
-  and `rotation-period` must be in the form INTEGER[UNIT], where units
-  can be one of seconds (s), minutes (m), hours (h) or days (d).
-
-  Key rotations performed manually via `update-primary-version` and the
-  version `create` do not affect the stored `next-rotation-time`.
-
-  2. Remove the rotation schedule for the given key with
-  `remove-rotation-schedule` flag.
-
-  3. Update/Remove the labels for the given key with `update-labels` and/or
-  `remove-labels` flags.
-
-  4. Update the primary version for the given key with `primary-version` flag.
-
-  5. Update the default algorithm for the given key with `default-algorithm`
-  flag. The set of possible algorithms is constrained by the given key's
-  purpose, which is not mutable. For example, if you have an
-  "asymmetric-encryption" key, you can only pick an "rsa-decrypt-*" algorithm;
-  "google-symmetric-encryption", "ec-sign-*" and "rsa-sign-*" algorithms are not
-  allowed.
-
-  ## EXAMPLES
-
-  The following command sets a 30 day rotation period for the key
-  named `frodo` within the keyring `fellowship` and location `global`
-  starting at the specified time:
-
-    $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --rotation-period 30d \
-        --next-rotation-time 2017-10-12T12:34:56.1234Z
-
-  The following command removes the rotation schedule for the key
-  named `frodo` within the keyring `fellowship` and location `global`:
-
-    $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --remove-rotation-schedule
-
-  The following command updates the labels value for the key
-  named `frodo` within the keyring `fellowship` and location `global`. If the
-  label key does not exist at the time, it will be added:
-
-    $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --update-labels k1=v1
-
-  The following command removes labels k1 and k2 from the key
-  named `frodo` within the keyring `fellowship` and location `global`:
-
-    $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --remove-labels k1,k2
-
-  The following command updates the primary version for the key
-  named `frodo` within the keyring `fellowship` and location `global`:
-
-    $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --primary-version 1
-
-  The following command updates the default algorithm for the key named `frodo`
-  within the keyring `fellowship` and location `global`, assuming the key
-  originally has purpose 'asymmetric-encryption' and algorithm
-  'rsa-decrypt-oaep-2048-sha256':
-
-    $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --default-algorithm rsa-decrypt-oaep-4096-sha256
-  """
-
-  @staticmethod
-  def Args(parser):
-    super(UpdateALPHA, UpdateALPHA).Args(parser)
-    flags.AddDefaultAlgorithmFlag(parser)
-
-  def ProcessFlags(self, args):
-    """Parses the flags and returns a list of fields that need to be updated."""
-
-    fields_to_update = []
-
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if labels_diff.MayHaveUpdates():
-      fields_to_update.append('labels')
-    if args.remove_rotation_schedule:
-      if args.rotation_period or args.next_rotation_time:
-        raise exceptions.ToolException(
-            'You cannot set and remove rotation schedule at the same time.')
-      fields_to_update.append('rotationPeriod')
-      fields_to_update.append('nextRotationTime')
-    if args.rotation_period:
-      fields_to_update.append('rotationPeriod')
-    if args.next_rotation_time:
-      fields_to_update.append('nextRotationTime')
-    if args.default_algorithm:
-      fields_to_update.append('versionTemplate.algorithm')
-
-    # Raise an exception when no update field is specified.
-    if not args.primary_version and not fields_to_update:
-      raise exceptions.ToolException(
-          'At least one of --primary-version or --update-labels or '
-          '--remove-labels or --clear-labels or --rotation-period or '
-          '--next-rotation-time or --remove-rotation-schedule or '
-          '--default-algorithm must be specified.')
-
-    return fields_to_update
-
-  def UpdateOthers(self, args, crypto_key, fields_to_update):
-    """Updates labels,  nextRotationTime, rotationPeriod, and algorithm."""
-
-    client = cloudkms_base.GetClientInstance()
-    messages = cloudkms_base.GetMessagesModule()
-    crypto_key_ref = flags.ParseCryptoKeyName(args)
-    valid_algorithms = maps.VALID_ALGORITHMS_MAP[crypto_key.purpose]
-
-    req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysPatchRequest(
-        name=crypto_key_ref.RelativeName(),
-        cryptoKey=messages.CryptoKey(
-            labels=labels_util.Diff.FromUpdateArgs(args).Apply(
-                messages.CryptoKey.LabelsValue, crypto_key.labels).GetOrNone()))
-    req.updateMask = ','.join(fields_to_update)
-    flags.SetNextRotationTime(args, req.cryptoKey)
-    flags.SetRotationPeriod(args, req.cryptoKey)
-    if args.default_algorithm:
-      if args.default_algorithm not in valid_algorithms:
-        raise exceptions.ToolException(
-            'Update failed: Algorithm {algorithm} is not valid. Here are the '
-            'valid algorithm(s) for purpose {purpose}: {all_algorithms}'.format(
-                algorithm=args.default_algorithm,
-                purpose=crypto_key.purpose,
-                all_algorithms=', '.join(valid_algorithms)))
-      req.cryptoKey.versionTemplate = messages.CryptoKeyVersionTemplate(
-          algorithm=maps.ALGORITHM_MAPPER.GetEnumForChoice(
-              args.default_algorithm))
-
-    try:
-      response = client.projects_locations_keyRings_cryptoKeys.Patch(req)
-    except apitools_exceptions.HttpError:
-      return None
-
-    return response

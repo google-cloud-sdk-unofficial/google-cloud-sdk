@@ -200,7 +200,7 @@ def _Run(args, holder, include_l7_internal_load_balancing):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateGa(base.UpdateCommand):
+class Update(base.UpdateCommand):
   """Update a HTTPS health check."""
 
   _include_l7_internal_load_balancing = False
@@ -216,7 +216,7 @@ class UpdateGa(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(UpdateGa):
+class UpdateBeta(Update):
   pass
 
 

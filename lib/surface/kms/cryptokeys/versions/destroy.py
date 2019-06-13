@@ -40,7 +40,7 @@ class Destroy(base.UpdateCommand):
   The following command schedules version 9 of CryptoKey `frodo` within
   KeyRing `fellowship` and Location `us-east1` for destruction:
 
-    $ {command} 9 --location us-east1 --keyring fellowship --cryptokey frodo
+    $ {command} 9 --location=us-east1 --keyring=fellowship --cryptokey=frodo
   """
 
   @staticmethod

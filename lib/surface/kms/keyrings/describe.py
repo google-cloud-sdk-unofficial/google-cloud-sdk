@@ -34,7 +34,7 @@ class Describe(base.DescribeCommand):
   The following command returns the metadata for the keyring `towers`
   in the location `us-east1`:
 
-    $ {command} towers --location us-east1
+    $ {command} towers --location=us-east1
   """
 
   @staticmethod

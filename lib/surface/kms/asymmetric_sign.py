@@ -27,7 +27,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AsymmetricSign(base.Command):
   r"""Sign a user input file using an asymmetric-signing key version.
 
@@ -43,13 +42,13 @@ class AsymmetricSign(base.Command):
   '/tmp/my/signature'.
 
     $ {command} \
-    --location us-central1 \
-    --keyring hitchhiker \
-    --key dont-panic \
-    --version 1 \
-    --digest-algorithm sha256 \
-    --input-file /tmp/my/file.to.sign \
-    --signature-file /tmp/my/signature
+    --location=us-central1 \
+    --keyring=hitchhiker \
+    --key=dont-panic \
+    --version=1 \
+    --digest-algorithm=sha256 \
+    --input-file=/tmp/my/file.to.sign \
+    --signature-file=/tmp/my/signature
 
   """
 

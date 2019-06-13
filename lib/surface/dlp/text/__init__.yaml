@@ -23,7 +23,7 @@ text_args:
       params:
       - api_field: googlePrivacyDlpV2DeidentifyContentRequest.item.value
         arg_name: content-file
-        type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+        type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
         help_text: |
           Text file to scan for sensitive data to redact. Can also be a CSV
           file specifying tabular data. For CSV files, up to 50,000 values
@@ -40,7 +40,7 @@ text_args:
       params:
       - api_field: googlePrivacyDlpV2InspectContentRequest.item.value
         arg_name: content-file
-        type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+        type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
         help_text: |
           Text file to inspect for sensitive data. Can also be a CSV
           file specifying tabular data. For CSV files, up to 50,000 values

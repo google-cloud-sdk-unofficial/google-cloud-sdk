@@ -26,13 +26,15 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_templates import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_templates import util
 
 
-def _CommonArgs(parser):
+def _CommonArgs(parser, api_version):
   """Common arguments for each release track."""
+  messages = apis.GetMessagesModule('compute', api_version)
   flags.MakeNodeTemplateArg().AddArgument(parser)
   flags.AddCreateArgsToParser(parser)
+  flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
 
 
-def _Run(args, track, enable_server_binding=False, enable_disk=False):
+def _Run(args, track, enable_disk=False):
   """Creates a node template."""
   holder = base_classes.ComputeApiHolder(track)
   client = holder.client
@@ -43,7 +45,6 @@ def _Run(args, track, enable_server_binding=False, enable_disk=False):
 
   messages = holder.client.messages
   node_template = util.CreateNodeTemplate(node_template_ref, args, messages,
-                                          enable_server_binding,
                                           enable_disk=enable_disk)
   request = messages.ComputeNodeTemplatesInsertRequest(
       nodeTemplate=node_template,
@@ -60,7 +61,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, 'v1')
 
   def Run(self, args):
     return _Run(args, self.ReleaseTrack())
@@ -72,12 +73,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
-    messages = apis.GetMessagesModule('compute', 'beta')
-    flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
-
-  def Run(self, args):
-    return _Run(args, self.ReleaseTrack(), enable_server_binding=True)
+    _CommonArgs(parser, 'beta')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -86,12 +82,9 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
-    messages = apis.GetMessagesModule('compute', 'alpha')
-    flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
+    _CommonArgs(parser, 'alpha')
     flags.AddDiskArgToParser(parser)
 
   def Run(self, args):
-    return _Run(args, self.ReleaseTrack(), enable_server_binding=True,
-                enable_disk=True)
+    return _Run(args, self.ReleaseTrack(), enable_disk=True)
 

@@ -42,8 +42,7 @@ class List(base.ListCommand):
         parser, operation_type='list instance configs for')
 
     parser.display_info.AddFormat('yaml')
-    parser.display_info.AddUriFunc(
-        instance_groups_utils.UriFuncForListInstanceRelatedObjects)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

@@ -33,7 +33,7 @@ class Describe(base.DescribeCommand):
   The following command returns metadata for version 2 within CryptoKey `frodo`
   within the KeyRing `fellowship` in the location `us-east1`:
 
-    $ {command} 2 --cryptokey frodo --keyring fellowship --location us-east1
+    $ {command} 2 --cryptokey=frodo --keyring=fellowship --location=us-east1
   """
 
   @staticmethod

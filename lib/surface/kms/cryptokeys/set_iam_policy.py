@@ -38,7 +38,7 @@ class SetIamPolicy(base.Command):
   'policy.json' and set it for the CryptoKey `frodo` with the KeyRing
   `fellowship` and Location `global`:
 
-    $ {command} frodo policy.json --keyring fellowship --location global
+    $ {command} frodo policy.json --keyring=fellowship --location=global
   """
   # Text from above based on output of function call below
   # detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(

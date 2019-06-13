@@ -25,142 +25,108 @@ from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_p
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 
-def _Args(parser, include_alpha=False):
-  """Add the target http proxies comamnd line flags to the parser."""
+def _DetailedHelp():
+  return {
+      'brief':
+          'Create a target HTTP proxy.',
+      'DESCRIPTION':
+          """\
+      *{command}* is used to create target HTTP proxies. A target
+      HTTP proxy is referenced by one or more forwarding rules which
+      specify the network traffic that the proxy is responsible for
+      routing. The target HTTP proxy points to a URL map that defines
+      the rules for routing the requests. The URL map's job is to map
+      URLs to backend services which handle the actual requests.
+      """,
+      'EXAMPLES':
+          """\
+      If there is an already-created URL map with the name URL_MAP, create a
+      target HTTP proxy pointing to this map by running:
 
+        $ {command} PROXY_NAME --url-map URL_MAP
+
+      To create a proxy with a textual description, run:
+
+        $ {command} PROXY_NAME --url-map URL_MAP --description "default proxy"
+      """,
+  }
+
+
+def _Args(parser, include_l7_internal_load_balancing):
+  """Add the target http proxies comamnd line flags to the parser."""
+  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   parser.add_argument(
       '--description',
       help='An optional, textual description for the target HTTP proxy.')
+  parser.display_info.AddCacheUpdater(
+      flags.TargetHttpProxiesCompleterAlpha if
+      include_l7_internal_load_balancing else flags.TargetHttpProxiesCompleter)
 
-  parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleterAlpha
-                                      if include_alpha else
-                                      flags.TargetHttpProxiesCompleter)
 
+def _Run(args, holder, url_map_ref, target_http_proxy_ref):
+  """Issue a Target HTTP Proxy Insert request."""
+  client = holder.client
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Create(base.CreateCommand):
-  """Create a target HTTP proxy.
-
-  *{command}* is used to create target HTTP proxies. A target
-  HTTP proxy is referenced by one or more forwarding rules which
-  specify the network traffic that the proxy is responsible for
-  routing. The target HTTP proxy points to a URL map that defines
-  the rules for routing the requests. The URL map's job is to map
-  URLs to backend services which handle the actual requests.
-
-  ## EXAMPLES
-
-  If there is an already-created URL map with the name URL_MAP, create a target
-  HTTP proxy pointing to this map by running:
-
-    $ {command} PROXY_NAME --url-map URL_MAP
-
-  To create a proxy with a textual description, run:
-
-    $ {command} PROXY_NAME --url-map URL_MAP --description "default proxy"
-  """
-
-  TARGET_HTTP_PROXY_ARG = None
-  URL_MAP_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
-    cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='create')
-    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
-    cls.URL_MAP_ARG.AddArgument(parser)
-
-    _Args(parser)
-
-  def Run(self, args):
-    """Issue a Target HTTP Proxy Insert request."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
-
-    target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
-        args, holder.resources)
-
+  if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
+      target_http_proxy_ref):
+    request = client.messages.ComputeRegionTargetHttpProxiesInsertRequest(
+        project=target_http_proxy_ref.project,
+        region=target_http_proxy_ref.region,
+        targetHttpProxy=client.messages.TargetHttpProxy(
+            description=args.description,
+            name=target_http_proxy_ref.Name(),
+            urlMap=url_map_ref.SelfLink()))
+    collection = client.apitools_client.regionTargetHttpProxies
+  else:
     request = client.messages.ComputeTargetHttpProxiesInsertRequest(
         project=target_http_proxy_ref.project,
         targetHttpProxy=client.messages.TargetHttpProxy(
             description=args.description,
             name=target_http_proxy_ref.Name(),
             urlMap=url_map_ref.SelfLink()))
+    collection = client.apitools_client.targetHttpProxies
 
-    return client.MakeRequests([(client.apitools_client.targetHttpProxies,
-                                 'Insert', request)])
+  return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Create a target HTTP proxy.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a target HTTP proxy."""
 
-  *{command}* is used to create target HTTP proxies. A target
-  HTTP proxy is referenced by one or more forwarding rules which
-  specify the network traffic that the proxy is responsible for
-  routing. The target HTTP proxy points to a URL map that defines
-  the rules for routing the requests. The URL map's job is to map
-  URLs to backend services which handle the actual requests.
+  _include_l7_internal_load_balancing = False
 
-  ## EXAMPLES
-
-  If there is an already-created URL map with the name URL_MAP, create a target
-  HTTP proxy pointing to this map by running:
-
-    $ {command} PROXY_NAME --url-map URL_MAP
-
-  To create a proxy with a textual description, run:
-
-    $ {command} PROXY_NAME --url-map URL_MAP --description "default proxy"
-  """
-  # TODO(b/111311137): Specify detailed_help as a dictionary.
-
-  TARGET_HTTP_PROXY_ARG = None
   URL_MAP_ARG = None
+  TARGET_HTTP_PROXY_ARG = None
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument(
-        include_alpha=True)
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='create')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        include_alpha=True)
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser)
-
-    _Args(parser, include_alpha=True)
+    _Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
     """Issue a Target HTTP Proxy Insert request."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
     target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
         args, holder.resources)
-
     url_map_ref = target_http_proxies_utils.ResolveTargetHttpProxyUrlMap(
         args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources)
+    return _Run(args, holder, url_map_ref, target_http_proxy_ref)
 
-    if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
-        target_http_proxy_ref):
-      request = client.messages.ComputeRegionTargetHttpProxiesInsertRequest(
-          project=target_http_proxy_ref.project,
-          region=target_http_proxy_ref.region,
-          targetHttpProxy=client.messages.TargetHttpProxy(
-              description=args.description,
-              name=target_http_proxy_ref.Name(),
-              urlMap=url_map_ref.SelfLink()))
-      collection = client.apitools_client.regionTargetHttpProxies
-    else:
-      request = client.messages.ComputeTargetHttpProxiesInsertRequest(
-          project=target_http_proxy_ref.project,
-          targetHttpProxy=client.messages.TargetHttpProxy(
-              description=args.description,
-              name=target_http_proxy_ref.Name(),
-              urlMap=url_map_ref.SelfLink()))
-      collection = client.apitools_client.targetHttpProxies
 
-    return client.MakeRequests([(collection, 'Insert', request)])
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+
+  _include_l7_internal_load_balancing = True

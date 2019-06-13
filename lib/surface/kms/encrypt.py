@@ -50,11 +50,11 @@ class Encrypt(base.Command):
   write the ciphertext to 'path/to/ciphertext'.
 
     $ {command} \
-        --key frodo \
-        --keyring fellowship \
-        --location global \
-        --plaintext-file path/to/input/plaintext \
-        --ciphertext-file path/to/output/ciphertext
+        --key=frodo \
+        --keyring=fellowship \
+        --location=global \
+        --plaintext-file=path/to/input/plaintext \
+        --ciphertext-file=path/to/output/ciphertext
   """
 
   @staticmethod

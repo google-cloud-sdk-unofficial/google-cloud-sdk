@@ -26,99 +26,13 @@ from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a new key.
 
   Creates a new key within the given keyring.
 
-  The optional flags `rotation-period` and `next-rotation-time` define a
-  rotation schedule for the key. A schedule can also be defined
-  by the `create-rotation-schedule` command.
-
-  The flag `next-rotation-time` must be in ISO 8601 or RFC3339 format,
-  and `rotation-period` must be in the form INTEGER[UNIT], where units
-  can be one of seconds (s), minutes (m), hours (h) or days (d).
-
-  The optional flag 'labels' defines a user specified key/value pair for the
-  given key.
-
-  ## EXAMPLES
-
-  The following command creates a key named `frodo` within the
-  keyring `fellowship` and location `us-east1`:
-
-    $ {command} frodo \
-        --location us-east1 \
-        --keyring fellowship \
-        --purpose encryption
-
-  The following command creates a key named `strider` within the
-  keyring `rangers` and location `global` with a specified rotation
-  schedule:
-
-    $ {command} strider \
-        --location global --keyring rangers \
-        --purpose encryption \
-        --rotation-period 30d \
-        --next-rotation-time 2017-10-12T12:34:56.1234Z
-
-  The following command creates a key named `foo` within the
-  keyring `fellowship` and location `us-east1` with two specified labels:
-
-    $ {command} foo \
-        --location us-east1 \
-        --keyring fellowship \
-        --purpose encryption \
-        --labels env=prod,team=kms
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddKeyResourceArgument(parser, 'to create')
-    flags.AddRotationPeriodFlag(parser)
-    flags.AddNextRotationTimeFlag(parser)
-    labels_util.AddCreateLabelsFlags(parser)
-    parser.add_argument(
-        '--purpose',
-        choices=sorted(maps.PURPOSE_MAP.keys()),
-        required=True,
-        help='The "purpose" of the key.')
-    parser.display_info.AddCacheUpdater(flags.KeyRingCompleter)
-
-  def _CreateRequest(self, args):
-    messages = cloudkms_base.GetMessagesModule()
-
-    crypto_key_ref = flags.ParseCryptoKeyName(args)
-    parent_ref = flags.ParseParentFromResource(crypto_key_ref)
-
-    req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCreateRequest(
-        parent=parent_ref.RelativeName(),
-        cryptoKeyId=crypto_key_ref.Name(),
-        cryptoKey=messages.CryptoKey(
-            # TODO(b/35914817): Find a better way to get the enum value by name.
-            purpose=maps.PURPOSE_MAP[args.purpose],
-            labels=labels_util.ParseCreateArgs(args,
-                                               messages.CryptoKey.LabelsValue)))
-
-    flags.SetNextRotationTime(args, req.cryptoKey)
-    flags.SetRotationPeriod(args, req.cryptoKey)
-    return req
-
-  def Run(self, args):
-    client = cloudkms_base.GetClientInstance()
-    return client.projects_locations_keyRings_cryptoKeys.Create(
-        self._CreateRequest(args))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateALPHA(Create):
-  r"""Create a new key.
-
-  Creates a new key within the given keyring.
-
-  The flag 'purpose' is always required when creating a key.
-  The flag 'default-algorithm' is required when creating an asymmetric key.
+  The flag `purpose` is always required when creating a key.
+  The flag `default-algorithm` is required when creating an asymmetric key.
   Algorithm and purpose should be compatible.
 
   The optional flags `rotation-period` and `next-rotation-time` define a
@@ -133,40 +47,70 @@ class CreateALPHA(Create):
   created key. The default is software; use "HSM" to create a hardware-backed
   key.
 
+  The optional flag `labels` defines a user specified key/value pair for the
+  given key.
   ## EXAMPLES
 
-  The following command creates a key named `frodo` within the
-  keyring `fellowship` and location `us-east1`:
+  The following command creates a key named `frodo` with protection level
+  `software` within the keyring `fellowship` and location `us-east1`:
 
     $ {command} frodo \
-        --location us-east1 \
-        --keyring fellowship \
-        --purpose encryption
+        --location=us-east1 \
+        --keyring=fellowship \
+        --purpose=encryption
 
-  The following command creates a key named `strider` within the
-  keyring `rangers` and location `global` with a specified rotation
-  schedule:
+  The following command creates a key named `strider` with protection level
+  `software` within the keyring `rangers` and location `global` with a specified
+  rotation schedule:
 
     $ {command} strider \
-        --location global --keyring rangers \
-        --purpose encryption \
-        --rotation-period 30d \
-        --next-rotation-time 2017-10-12T12:34:56.1234Z
+        --location=global --keyring=rangers \
+        --purpose=encryption \
+        --rotation-period=30d \
+        --next-rotation-time=2017-10-12T12:34:56.1234Z
 
-  The following command creates an asymmetric key named `samwise` with default
-  algorithm 'ec-sign-p256-sha256' within the keyring `fellowship` and location
-  `us-east1`:
+  The following command creates a key named `foo` with protection level
+  `software` within the keyring `fellowship` and location `us-east1` with two
+  specified labels:
+
+    $ {command} foo \
+        --location=us-east1 \
+        --keyring=fellowship \
+        --purpose=encryption \
+        --labels=env=prod,team=kms
+
+  The following command creates an asymmetric key named `samwise` with
+  protection level `software` and default algorithm `ec-sign-p256-sha256`
+  within the keyring `fellowship` and location `us-east1`:
 
     $ {command} samwise \
-        --location us-east1 \
-        --keyring fellowship \
-        --purpose asymmetric-signing \
-        --default-algorithm ec-sign-p256-sha256
+        --location=us-east1 \
+        --keyring=fellowship \
+        --purpose=asymmetric-signing \
+        --default-algorithm=ec-sign-p256-sha256
+
+  The following command creates a key named `gimli` with protection level `hsm`
+  and default algorithm `google-symmetric-encryption` within the keyring
+  `fellowship` and location `us-east1`:
+
+    $ {command} gimli \
+        --location=us-east1 \
+        --keyring=fellowship \
+        --protection-level=hsm
   """
 
   @staticmethod
   def Args(parser):
-    super(CreateALPHA, CreateALPHA).Args(parser)
+    flags.AddKeyResourceArgument(parser, 'to create')
+    flags.AddRotationPeriodFlag(parser)
+    flags.AddNextRotationTimeFlag(parser)
+    labels_util.AddCreateLabelsFlags(parser)
+    parser.add_argument(
+        '--purpose',
+        choices=sorted(maps.PURPOSE_MAP.keys()),
+        required=True,
+        help='The "purpose" of the key.')
+    parser.display_info.AddCacheUpdater(flags.KeyRingCompleter)
     flags.AddProtectionLevelFlag(parser)
     flags.AddDefaultAlgorithmFlag(parser)
 
@@ -202,8 +146,6 @@ class CreateALPHA(Create):
         cryptoKey=messages.CryptoKey(
             purpose=purpose,
             versionTemplate=messages.CryptoKeyVersionTemplate(
-                # TODO(b/35914817): Find a better way to get the enum value by
-                # name.
                 protectionLevel=maps.PROTECTION_LEVEL_MAPPER.GetEnumForChoice(
                     args.protection_level),
                 algorithm=maps.ALGORITHM_MAPPER.GetEnumForChoice(
@@ -215,3 +157,8 @@ class CreateALPHA(Create):
     flags.SetRotationPeriod(args, req.cryptoKey)
 
     return req
+
+  def Run(self, args):
+    client = cloudkms_base.GetClientInstance()
+    return client.projects_locations_keyRings_cryptoKeys.Create(
+        self._CreateRequest(args))

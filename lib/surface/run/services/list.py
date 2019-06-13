@@ -72,10 +72,11 @@ class List(commands.List):
       client = global_methods.GetServerlessClientInstance()
       self.SetPartialApiEndpoint(client.url)
       locations_ref = args.CONCEPTS.region.Parse()
-      return global_methods.ListServices(client, locations_ref.RelativeName())
+      return commands.SortByName(
+          global_methods.ListServices(client, locations_ref.RelativeName()))
     else:
       conn_context = connection_context.GetConnectionContext(args)
       namespace_ref = args.CONCEPTS.namespace.Parse()
       with serverless_operations.Connect(conn_context) as client:
         self.SetCompleteApiEndpoint(conn_context.endpoint)
-        return client.ListServices(namespace_ref)
+        return commands.SortByName(client.ListServices(namespace_ref))

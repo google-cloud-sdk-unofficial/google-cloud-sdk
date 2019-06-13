@@ -34,9 +34,9 @@ class List(base.ListCommand):
   The following command lists all versions within the
   key `frodo`, keyring `fellowship`, and location `global`:
 
-    $ {command} --location global \
-        --keyring fellowship \
-        --key frodo
+    $ {command} --location=global \
+        --keyring=fellowship \
+        --key=frodo
   """
 
   @staticmethod

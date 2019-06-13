@@ -138,12 +138,16 @@ def _Run(args,
       function.maxInstances = max_instances
       updated_fields.append('maxInstances')
   if enable_vpc_connector:
-    if args.IsSpecified('vpc_connector'):
-      function.vpcConnector = args.vpc_connector
+    if args.vpc_connector or args.clear_vpc_connector:
+      function.vpcConnector = ('' if args.clear_vpc_connector else
+                               args.vpc_connector)
       updated_fields.append('vpcConnector')
   if enable_traffic_control:
     if args.IsSpecified('egress_settings'):
-      if not (had_vpc_connector or args.IsSpecified('vpc_connector')):
+      will_have_vpc_connector = ((had_vpc_connector and
+                                  not args.clear_vpc_connector) or
+                                 args.vpc_connector)
+      if not will_have_vpc_connector:
         raise exceptions.RequiredArgumentException(
             'vpc-connector', 'Flag `--vpc-connector` is '
             'required for setting `egress-settings`.')
@@ -296,7 +300,7 @@ class DeployBeta(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddMaxInstancesFlag(parser)
-    flags.AddVPCConnectorFlag(parser)
+    flags.AddVPCConnectorMutexGroup(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
 
   def Run(self, args):
@@ -317,7 +321,7 @@ class DeployAlpha(base.Command):
     """Register flags for this command."""
     Deploy.Args(parser)
     flags.AddMaxInstancesFlag(parser)
-    flags.AddVPCConnectorFlag(parser)
+    flags.AddVPCConnectorMutexGroup(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddIngressSettingsFlag(parser)
     flags.AddAllowUnauthenticatedFlag(parser)

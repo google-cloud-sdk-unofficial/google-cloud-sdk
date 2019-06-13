@@ -102,14 +102,9 @@ def _Run(args, holder, include_l7_internal_load_balancing=False):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class CreateGaAndBeta(base.CreateCommand):
-  """Create a Ga/Beta TCP health check to monitor load balanced instances.
-
-  Business logic should be put in helper functions. Classes annotated with
-  @base.ReleaseTracks should only be concerned with calling helper functions
-  with the correct feature parameters.
-  """
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a TCP health."""
 
   _include_l7_internal_load_balancing = False
   detailed_help = _DetailedHelp()
@@ -130,13 +125,12 @@ class CreateGaAndBeta(base.CreateCommand):
         ._include_l7_internal_load_balancing)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGaAndBeta):
-  """Create an Alpha TCP health check to monitor load balanced instances.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  pass
 
-  Business logic should be put in helper functions. Classes annotated with
-  @base.ReleaseTracks should only be concerned with calling helper functions
-  with the correct feature parameters.
-  """
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
 
   _include_l7_internal_load_balancing = True

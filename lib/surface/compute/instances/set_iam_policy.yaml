@@ -22,8 +22,7 @@ request:
 arguments:
   resource:
     help_text:
-      Instance resource - The instance to set the IAM policy of. The arguments in this group can
-      be used to specify the attributes of this resource.
+      The instance to set the IAM policy of.
     spec: !REF googlecloudsdk.command_lib.compute.resources:instance
 iam:
   set_iam_policy_request_path: zoneSetPolicyRequest

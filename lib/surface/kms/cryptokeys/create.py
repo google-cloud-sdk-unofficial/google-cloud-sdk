@@ -44,19 +44,19 @@ class Create(base.CreateCommand):
   KeyRing `fellowship` and location `us-east1`:
 
     $ {command} frodo \
-        --location us-east1 \
-        --keyring fellowship \
-        --purpose encryption
+        --location=us-east1 \
+        --keyring=fellowship \
+        --purpose=encryption
 
   The following command creates a CryptoKey named `strider` within the
   KeyRing `rangers` and location `global` with a specified rotation
   schedule:
 
     $ {command} strider \
-        --location global --keyring rangers \
-        --purpose encryption \
-        --rotation-period 30d \
-        --next-rotation-time 2017-10-12T12:34:56.1234Z
+        --location=global --keyring=rangers \
+        --purpose=encryption \
+        --rotation-period=30d \
+        --next-rotation-time=2017-10-12T12:34:56.1234Z
   """
 
   @staticmethod
@@ -81,7 +81,6 @@ class Create(base.CreateCommand):
         parent=parent_ref.RelativeName(),
         cryptoKeyId=crypto_key_ref.Name(),
         cryptoKey=messages.CryptoKey(
-            # TODO(b/35914817): Find a better way to get the enum value by name.
             purpose=getattr(messages.CryptoKey.PurposeValueValuesEnum,
                             PURPOSE_MAP[args.purpose]),),)
 

@@ -26,40 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Get metadata for a given version.
-
-  Returns metadata for the given version.
-
-  ## EXAMPLES
-
-  The following command returns metadata for version 2 within key `frodo`
-  within the keyring `fellowship` in the location `us-east1`:
-
-    $ {command} 2 --key frodo --keyring fellowship --location us-east1
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddKeyVersionResourceArgument(parser, 'to describe')
-
-  def Run(self, args):
-    client = cloudkms_base.GetClientInstance()
-    messages = cloudkms_base.GetMessagesModule()
-
-    version_ref = flags.ParseCryptoKeyVersionName(args)
-    if not version_ref.Name():
-      raise exceptions.InvalidArgumentException('version',
-                                                'version id must be non-empty.')
-    return client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions.Get(
-        messages.
-        CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetRequest(
-            name=version_ref.RelativeName()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeALPHA(base.DescribeCommand):
   r"""Get metadata for a given version.
 
   Returns metadata for the given version.
@@ -74,13 +41,13 @@ class DescribeALPHA(base.DescribeCommand):
   The following command returns metadata for version 2 within key `frodo`
   within the keyring `fellowship` in the location `us-east1`:
 
-    $ {command} 2 --key frodo --keyring fellowship --location us-east1
+    $ {command} 2 --key=frodo --keyring=fellowship --location=us-east1
 
   For key versions with protection level `HSM`, use the `--attestation-file`
   flag to save the attestation to a local file.
 
-    $ {command} 2 --key frodo --keyring fellowship --location us-east1 \
-        --attestation-file path/to/attestation.dat
+    $ {command} 2 --key=frodo --keyring=fellowship --location=us-east1 \
+        --attestation-file=path/to/attestation.dat
   """
 
   @staticmethod

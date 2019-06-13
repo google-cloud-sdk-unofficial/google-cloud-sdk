@@ -196,12 +196,22 @@ class Update(base.UpdateCommand):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
-    flags.AddLoggingServiceFlag(group, enable_kubernetes=False)
-    flags.AddMonitoringServiceFlag(group, enable_kubernetes=False)
+    group_logging_monitoring = group.add_group()
+    flags.AddLoggingServiceFlag(group_logging_monitoring)
+    flags.AddMonitoringServiceFlag(group_logging_monitoring)
+    flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
+    flags.AddResourceUsageExportFlags(group, is_update=True, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
-    return container_command_util.ParseUpdateOptionsBase(args, locations)
+    opts = container_command_util.ParseUpdateOptionsBase(args, locations)
+    opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
+    opts.clear_resource_usage_bigquery_dataset = \
+        args.clear_resource_usage_bigquery_dataset
+    opts.enable_network_egress_metering = args.enable_network_egress_metering
+    opts.enable_resource_consumption_metering = \
+        args.enable_resource_consumption_metering
+    return opts
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -412,10 +422,8 @@ class UpdateBeta(Update):
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
     group_logging_monitoring = group.add_group()
-    flags.AddLoggingServiceFlag(
-        group_logging_monitoring, enable_kubernetes=True)
-    flags.AddMonitoringServiceFlag(
-        group_logging_monitoring, enable_kubernetes=True)
+    flags.AddLoggingServiceFlag(group_logging_monitoring)
+    flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
@@ -488,10 +496,8 @@ class UpdateAlpha(Update):
     _AddAdditionalZonesArg(group_locations, deprecated=True)
     flags.AddNodeLocationsFlag(group_locations)
     group_logging_monitoring = group.add_group()
-    flags.AddLoggingServiceFlag(
-        group_logging_monitoring, enable_kubernetes=True)
-    flags.AddMonitoringServiceFlag(
-        group_logging_monitoring, enable_kubernetes=True)
+    flags.AddLoggingServiceFlag(group_logging_monitoring)
+    flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)

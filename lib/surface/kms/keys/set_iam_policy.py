@@ -39,7 +39,7 @@ class SetIamPolicy(base.Command):
   'policy.json' and set it for the key `frodo` with the keyring
   `fellowship` and location `global`:
 
-    $ {command} frodo policy.json --keyring fellowship --location global
+    $ {command} frodo policy.json --keyring=fellowship --location=global
   """
   # Text from above based on output of function call below
   # detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(

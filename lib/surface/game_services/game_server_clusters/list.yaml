@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  is_hidden: true
+
+  help_text:
+    brief: List Game Server Clusters.
+    description: List Cloud Game Services Game Server Clusters.
+
+  request:
+    collection: gameservices.projects.locations.realms.gameServerClusters
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Cloud Game Services Location of the Game Server Cluster to list.
+      spec: !REF googlecloudsdk.command_lib.game_services.resources:realm
+
+  output:
+    format: |
+      table(
+         name.basename():label=NAME,
+         description:label=DESCRIPTION,
+         createTime,
+         updateTime,
+         namespace,
+         gke-name,
+         labels
+       )

@@ -94,7 +94,7 @@ class Update(base.UpdateCommand):
           preserved_disk.source = source
         if mode:
           preserved_disk.mode = instance_configs_messages.GetMode(
-              messages=messages, mode=mode, preserved_state_mode=True)
+              messages=messages, mode=mode)
         if auto_delete:
           preserved_disk.autoDelete = auto_delete.GetAutoDeleteEnumValue(
               messages.PreservedStatePreservedDisk.AutoDeleteValueValuesEnum)
@@ -137,13 +137,6 @@ class Update(base.UpdateCommand):
             for key, value in sorted(six.iteritems(new_stateful_metadata))]
     )
     per_instance_config.preservedState = preserved_state
-
-    # Create overrides (only if required)
-    if per_instance_config.override:
-      per_instance_config.override = \
-          instance_configs_messages.MakeOverridesFromPreservedState(
-              messages, preserved_state)
-      per_instance_config.override.reset('origin')
     return per_instance_config
 
   @staticmethod

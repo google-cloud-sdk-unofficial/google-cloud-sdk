@@ -40,7 +40,7 @@ class Destroy(base.UpdateCommand):
   The following command schedules version 9 of key `frodo` within
   keyring `fellowship` and location `us-east1` for destruction:
 
-    $ {command} 9 --location us-east1 --keyring fellowship --key frodo
+    $ {command} 9 --location=us-east1 --keyring=fellowship --key=frodo
   """
 
   @staticmethod

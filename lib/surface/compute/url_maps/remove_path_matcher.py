@@ -28,26 +28,125 @@ from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+def _DetailedHelp():
+  return {
+      'brief':
+          'Remove a path matcher from a URL map.',
+      'DESCRIPTION':
+          """\
+      *{command}* is used to remove a path matcher from a URL
+      map. When a path matcher is removed, all host rules that
+      refer to the path matcher are also removed.
+      """,
+      'EXAMPLES':
+          """\
+      To remove the path matcher named ``MY-MATCHER'' from the URL map named
+      ``MY-URL-MAP'', you can use this command:
+
+        $ {command} MY-URL-MAP --path-matcher MY-MATCHER
+      """,
+  }
+
+
+def _GetGetRequest(client, url_map_ref):
+  """Returns the request for the existing URL map resource."""
+  return (client.apitools_client.urlMaps, 'Get',
+          client.messages.ComputeUrlMapsGetRequest(
+              urlMap=url_map_ref.Name(), project=url_map_ref.project))
+
+
+def _GetSetRequest(client, url_map_ref, replacement):
+  return (client.apitools_client.urlMaps, 'Update',
+          client.messages.ComputeUrlMapsUpdateRequest(
+              urlMap=url_map_ref.Name(),
+              urlMapResource=replacement,
+              project=url_map_ref.project))
+
+
+def _Modify(args, existing):
+  """Returns a modified URL map message."""
+  replacement = encoding.CopyProtoMessage(existing)
+
+  # Removes the path matcher.
+  new_path_matchers = []
+  path_matcher_found = False
+  for path_matcher in existing.pathMatchers:
+    if path_matcher.name == args.path_matcher_name:
+      path_matcher_found = True
+    else:
+      new_path_matchers.append(path_matcher)
+
+  if not path_matcher_found:
+    raise exceptions.ToolException(
+        'No path matcher with the name [{0}] was found.'.format(
+            args.path_matcher_name))
+
+  replacement.pathMatchers = new_path_matchers
+
+  # Removes all host rules that refer to the path matcher.
+  new_host_rules = []
+  for host_rule in existing.hostRules:
+    if host_rule.pathMatcher != args.path_matcher_name:
+      new_host_rules.append(host_rule)
+  replacement.hostRules = new_host_rules
+
+  return replacement
+
+
+def _GetRegionalGetRequest(client, url_map_ref):
+  """Returns the request to get an existing regional URL map resource."""
+  return (client.apitools_client.regionUrlMaps, 'Get',
+          client.messages.ComputeRegionUrlMapsGetRequest(
+              urlMap=url_map_ref.Name(),
+              project=url_map_ref.project,
+              region=url_map_ref.region))
+
+
+def _GetRegionalSetRequest(client, url_map_ref, replacement):
+  """Returns the request to update an existing regional URL map resource."""
+  return (client.apitools_client.regionUrlMaps, 'Update',
+          client.messages.ComputeRegionUrlMapsUpdateRequest(
+              urlMap=url_map_ref.Name(),
+              urlMapResource=replacement,
+              project=url_map_ref.project,
+              region=url_map_ref.region))
+
+
+def _Run(args, holder, url_map_arg):
+  """Issues requests necessary to remove path matcher on URL maps."""
+  client = holder.client
+
+  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
+    get_request = _GetRegionalGetRequest(client, url_map_ref)
+  else:
+    get_request = _GetGetRequest(client, url_map_ref)
+
+  url_map = client.MakeRequests([get_request])[0]
+  modified_url_map = _Modify(args, url_map)
+
+  if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
+    set_request = _GetRegionalSetRequest(client, url_map_ref, modified_url_map)
+  else:
+    set_request = _GetSetRequest(client, url_map_ref, modified_url_map)
+
+  return client.MakeRequests([set_request])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemovePathMatcher(base.UpdateCommand):
-  """Remove a path matcher from a URL map.
+  """Remove a path matcher from a URL map."""
 
-  *{command}* is used to remove a path matcher from a URL
-  map. When a path matcher is removed, all host rules that
-  refer to the path matcher are also removed.
+  _include_l7_internal_load_balancing = False
 
-  ## EXAMPLES
-  To remove the path matcher named ``MY-MATCHER'' from the URL map named
-  ``MY-URL-MAP'', you can use this command:
-
-    $ {command} MY-URL-MAP --path-matcher MY-MATCHER
-  """
-
+  detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument()
+    cls.URL_MAP_ARG = flags.UrlMapArgument(
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser)
 
     parser.add_argument(
@@ -55,126 +154,17 @@ class RemovePathMatcher(base.UpdateCommand):
         required=True,
         help='The name of the path matcher to remove.')
 
-  def _GetGetRequest(self, client, url_map_ref):
-    """Returns the request for the existing URL map resource."""
-    return (client.apitools_client.urlMaps,
-            'Get',
-            client.messages.ComputeUrlMapsGetRequest(
-                urlMap=url_map_ref.Name(),
-                project=url_map_ref.project))
-
-  def _GetSetRequest(self, client, url_map_ref, replacement):
-    return (client.apitools_client.urlMaps,
-            'Update',
-            client.messages.ComputeUrlMapsUpdateRequest(
-                urlMap=url_map_ref.Name(),
-                urlMapResource=replacement,
-                project=url_map_ref.project))
-
-  def _Modify(self, args, existing):
-    """Returns a modified URL map message."""
-    replacement = encoding.CopyProtoMessage(existing)
-
-    # Removes the path matcher.
-    new_path_matchers = []
-    path_matcher_found = False
-    for path_matcher in existing.pathMatchers:
-      if path_matcher.name == args.path_matcher_name:
-        path_matcher_found = True
-      else:
-        new_path_matchers.append(path_matcher)
-
-    if not path_matcher_found:
-      raise exceptions.ToolException(
-          'No path matcher with the name [{0}] was found.'.format(
-              args.path_matcher_name))
-
-    replacement.pathMatchers = new_path_matchers
-
-    # Removes all host rules that refer to the path matcher.
-    new_host_rules = []
-    for host_rule in existing.hostRules:
-      if host_rule.pathMatcher != args.path_matcher_name:
-        new_host_rules.append(host_rule)
-    replacement.hostRules = new_host_rules
-
-    return replacement
-
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    return _Run(args, holder, self.URL_MAP_ARG)
 
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
-    get_request = self._GetGetRequest(client, url_map_ref)
 
-    url_map = client.MakeRequests([get_request])[0]
-
-    modified_url_map = self._Modify(args, url_map)
-
-    return client.MakeRequests(
-        [self._GetSetRequest(client, url_map_ref, modified_url_map)])
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemovePathMatcherBeta(RemovePathMatcher):
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemovePathMatcherAlpha(RemovePathMatcher):
-  """Remove a path matcher from a URL map.
+class RemovePathMatcherAlpha(RemovePathMatcherBeta):
 
-  *{command}* is used to remove a path matcher from a URL
-  map. When a path matcher is removed, all host rules that
-  refer to the path matcher are also removed.
-
-  ## EXAMPLES
-  To remove the path matcher named ``MY-MATCHER'' from the URL map named
-  ``MY-URL-MAP'', you can use this command:
-
-    $ {command} MY-URL-MAP --path-matcher MY-MATCHER
-  """
-  URL_MAP_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(include_alpha=True)
-    cls.URL_MAP_ARG.AddArgument(parser)
-
-    parser.add_argument(
-        '--path-matcher-name',
-        required=True,
-        help='The name of the path matcher to remove.')
-
-  def _GetRegionalGetRequest(self, client, url_map_ref):
-    """Returns the request to get an existing regional URL map resource."""
-    return (client.apitools_client.regionUrlMaps, 'Get',
-            client.messages.ComputeRegionUrlMapsGetRequest(
-                urlMap=url_map_ref.Name(),
-                project=url_map_ref.project,
-                region=url_map_ref.region))
-
-  def _GetRegionalSetRequest(self, client, url_map_ref, replacement):
-    """Returns the request to update an existing regional URL map resource."""
-    return (client.apitools_client.regionUrlMaps, 'Update',
-            client.messages.ComputeRegionUrlMapsUpdateRequest(
-                urlMap=url_map_ref.Name(),
-                urlMapResource=replacement,
-                project=url_map_ref.project,
-                region=url_map_ref.region))
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
-    if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
-      get_request = self._GetRegionalGetRequest(client, url_map_ref)
-    else:
-      get_request = self._GetGetRequest(client, url_map_ref)
-
-    url_map = client.MakeRequests([get_request])[0]
-    modified_url_map = self._Modify(args, url_map)
-
-    if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
-      set_request = self._GetRegionalSetRequest(client, url_map_ref,
-                                                modified_url_map)
-    else:
-      set_request = self._GetSetRequest(client, url_map_ref, modified_url_map)
-
-    return client.MakeRequests([set_request])
+  _include_l7_internal_load_balancing = True

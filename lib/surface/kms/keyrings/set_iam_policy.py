@@ -37,7 +37,7 @@ class SetIamPolicy(base.Command):
   The following command will read am IAM policy defined in a JSON file
   'policy.json' and set it for the keyring `fellowship` with location `global`:
 
-    $ {command} fellowship policy.json --location global
+    $ {command} fellowship policy.json --location=global
   """
 
   @staticmethod

@@ -35,7 +35,7 @@
       api_field: tableDataInsertAllRequest.rows
       required: true
       repeated: false
-      type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
       processor: googlecloudsdk.command_lib.bq.hooks:BqTableDataFileProcessor
       help_text: |-
         The file containing the newline-delimited array of JSON objects representing rows to insert.

@@ -40,7 +40,7 @@
         - arg_name: message-body
           help_text: Body of the message.
         - arg_name: message-body-from-file
-          type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
           help_text: Path to a file containing the body of the message.
     - group:
         mutex: true

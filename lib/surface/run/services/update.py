@@ -67,6 +67,7 @@ class Update(base.Command):
     flags.AddCloudSQLFlags(parser)
     flags.AddEndpointVisibilityEnum(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
+    flags.AddServiceAccountFlag(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
@@ -141,6 +142,5 @@ class AlphaUpdate(Update):
   def Args(parser):
     Update.Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    flags.AddServiceAccountFlag(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

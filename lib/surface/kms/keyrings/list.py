@@ -34,7 +34,7 @@ class List(base.ListCommand):
   The following command lists a maximum of five keyrings in the location
   `global`:
 
-    $ {command} --location global --limit=5
+    $ {command} --location=global --limit=5
   """
 
   @staticmethod

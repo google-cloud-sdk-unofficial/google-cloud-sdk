@@ -111,7 +111,7 @@
             or POST).
         - api_field: job.appEngineHttpTarget.body
           arg_name: message-body-from-file
-          type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:binary=True"
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:binary=True"
           help_text: |
             Path to file containing the data payload to be included as the
             body of the HTTP request. May only be given with compatible HTTP

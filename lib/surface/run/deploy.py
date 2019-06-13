@@ -77,6 +77,7 @@ class Deploy(base.Command):
     flags.AddEndpointVisibilityEnum(parser)
     flags.AddCloudSQLFlags(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
+    flags.AddServiceAccountFlag(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
@@ -164,6 +165,5 @@ class AlphaDeploy(Deploy):
   def Args(parser):
     Deploy.Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    flags.AddServiceAccountFlag(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

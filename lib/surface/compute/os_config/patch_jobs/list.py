@@ -102,8 +102,12 @@ class List(base.ListCommand):
     project = properties.VALUES.core.project.GetOrFail()
 
     release_track = self.ReleaseTrack()
-    client = osconfig_utils.GetClientInstance(release_track)
-    messages = osconfig_utils.GetClientMessages(release_track)
+    # TODO(b/133780270): Migrate to v1alpha2.
+    api_version = 'v1alpha1'
+    client = osconfig_utils.GetClientInstance(
+        release_track, api_version_override=api_version)
+    messages = osconfig_utils.GetClientMessages(
+        release_track, api_version_override=api_version)
 
     request = messages.OsconfigProjectsPatchJobsListRequest(
         pageSize=args.page_size,

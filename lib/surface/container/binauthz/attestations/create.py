@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import containeranalysis
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
@@ -51,7 +52,7 @@ class CreateBeta(base.CreateCommand):
           --artifact-url='gcr.io/example-project/example-image@sha256:abcd' \
           --attestor=projects/foo/attestors/bar \
           --signature-file=signed_artifact_attestation.pgp.sig \
-          --pgp-key-fingerprint=AAAA0000000000000000FFFFFFFFFFFFFFFFFFFF
+          --public-key-id=AAAA0000000000000000FFFFFFFFFFFFFFFFFFFF
   """
 
   @classmethod
@@ -82,14 +83,28 @@ class CreateBeta(base.CreateCommand):
               `containeranalysis.notes.attacher` role).""")),
     )
 
-    parser.add_argument(
+    mutex_group = parser.add_mutually_exclusive_group(required=True)
+    mutex_group.add_argument(
         '--pgp-key-fingerprint',
-        required=True,
+        action=actions.DeprecationAction(
+            'pgp-key-fingerprint',
+            warn='This flag is deprecated. Use --public-key-id instead.'),
         type=str,
         help=textwrap.dedent("""\
           The cryptographic ID of the key used to generate the signature.  For
           Binary Authorization, this must be the version 4, full 160-bit
           fingerprint, expressed as a 40 character hexadecimal string.  See
+          https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
+    mutex_group.add_argument(
+        '--public-key-id',
+        type=str,
+        help=textwrap.dedent("""\
+          The ID of the public key that will be used to verify the signature
+          of the created Attestation. This ID must match the one found on the
+          Attestor resource(s) which will verify this Attestation.
+
+          For PGP keys, this must be the version 4, full 160-bit fingerprint,
+          expressed as a 40 character hexadecimal string. See
           https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
 
   def Run(self, args):
@@ -113,7 +128,7 @@ class CreateBeta(base.CreateCommand):
         project_ref=project_ref,
         note_ref=note_ref,
         artifact_url=normalized_artifact_url,
-        pgp_key_fingerprint=args.pgp_key_fingerprint,
+        pgp_key_fingerprint=args.public_key_id or args.pgp_key_fingerprint,
         signature=signature,
     )
 
@@ -190,8 +205,8 @@ class CreateAlpha(base.CreateCommand):
         type=str,
         help=textwrap.dedent("""\
           The ID of the public key that will be used to verify the signature
-          of the created Attestation. This ID should match the one found on the
-          Attestor resource(s) which will use this Attestation.
+          of the created Attestation. This ID must match the one found on the
+          Attestor resource(s) which will verify this Attestation.
 
           For PKIX keys, this will be the URI-formatted `id` field of the
           associated Attestor public key.

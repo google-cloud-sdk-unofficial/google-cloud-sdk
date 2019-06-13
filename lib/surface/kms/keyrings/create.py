@@ -33,7 +33,7 @@ class Create(base.CreateCommand):
   The following command creates a keyring named `fellowship` within the
   location `global`:
 
-    $ {command} fellowship --location global
+    $ {command} fellowship --location=global
   """
 
   @staticmethod

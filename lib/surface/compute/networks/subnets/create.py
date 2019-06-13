@@ -279,7 +279,7 @@ def _Run(args, holder, include_alpha_logging, include_beta_logging,
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateGa(base.CreateCommand):
+class Create(base.CreateCommand):
   """Create a GA subnet."""
 
   _include_alpha_logging = False
@@ -305,15 +305,13 @@ class CreateGa(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(CreateGa):
-  """Create a beta subnet."""
+class CreateBeta(Create):
 
   _include_beta_logging = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create a alpha subnet."""
 
   _include_alpha_logging = True
   _include_beta_logging = False

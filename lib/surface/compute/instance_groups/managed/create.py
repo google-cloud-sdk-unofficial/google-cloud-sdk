@@ -340,14 +340,7 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def _CreateStatefulPolicy(args, client):
     if args.stateful_disk:
-      disks = [
-          client.messages.StatefulPolicyPreservedDisk(
-              deviceName=stateful_disk.get('device-name'))
-          for stateful_disk in args.stateful_disk
-      ]
       return client.messages.StatefulPolicy(
-          preservedResources=client.messages.StatefulPolicyPreservedResources(
-              disks=disks),
           preservedState=CreateAlpha._MakePreservedStateWithDisks(
               client, args.stateful_disk))
     # Create empty stateful policy in case --stateful-names flag is specified to

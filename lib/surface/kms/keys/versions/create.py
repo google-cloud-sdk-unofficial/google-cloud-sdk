@@ -36,9 +36,9 @@ class Create(base.CreateCommand):
   key, `fellowship` keyring, and `global` location and sets it as
   the primary version:
 
-    $ {command} --location global \
-        --keyring fellowship \
-        --key frodo --primary
+    $ {command} --location=global \
+        --keyring=fellowship \
+        --key=frodo --primary
   """
 
   @staticmethod
@@ -63,7 +63,6 @@ class Create(base.CreateCommand):
     new_version = ckv.Create(req)
 
     if args.primary:
-      # TODO(b/35914817): Find a better way to parse this.
       version_id = os.path.basename(new_version.name)
 
       req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionRequest(

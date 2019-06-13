@@ -45,10 +45,10 @@ class SetRotationSchedule(base.UpdateCommand):
   starting at the specified time:
 
     $ {command} frodo \
-        --location global \
-        --keyring fellowship \
-        --rotation-period 30d \
-        --next-rotation-time 2017-10-12T12:34:56.1234Z
+        --location=global \
+        --keyring=fellowship \
+        --rotation-period=30d \
+        --next-rotation-time=2017-10-12T12:34:56.1234Z
   """
 
   @staticmethod

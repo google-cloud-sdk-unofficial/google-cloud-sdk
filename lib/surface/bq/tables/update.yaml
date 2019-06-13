@@ -74,7 +74,7 @@
             For more details on BigQuery schemas see: https://cloud.google.com/bigquery/docs/schemas.
         - arg_name: add-columns-file
           api_field: table.schema
-          type: "googlecloudsdk.calliope.arg_parsers:BufferedFileInput:"
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
           processor: googlecloudsdk.command_lib.bq.hooks:BqTableSchemaFileProcessor
           help_text: |-
             The name of a JSON file containing a single object containing an array each element

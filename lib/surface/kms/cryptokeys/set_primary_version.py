@@ -35,7 +35,7 @@ class SetPrimaryVersion(base.Command):
   The following command sets version 9 as the primary version of the
   CryptoKey `samwise` within KeyRing `fellowship` and location `global`:
 
-    $ {command} samwise --version 9 --keyring fellowship --location global
+    $ {command} samwise --version=9 --keyring=fellowship --location=global
   """
 
   @staticmethod

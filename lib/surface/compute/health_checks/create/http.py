@@ -40,7 +40,7 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing=False):
+def _Args(parser, include_l7_internal_load_balancing):
   """Set up arguments to create a HTTP HealthCheck."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   flags.HealthCheckArgument(
@@ -56,9 +56,8 @@ def _Args(parser, include_l7_internal_load_balancing=False):
       include_l7_internal_load_balancing else completers.HealthChecksCompleter)
 
 
-def _Run(args, release_track, include_l7_internal_load_balancing=False):
+def _Run(args, holder, include_l7_internal_load_balancing):
   """Issues the request necessary for adding the health check."""
-  holder = base_classes.ComputeApiHolder(release_track)
   client = holder.client
   messages = client.messages
 
@@ -109,40 +108,29 @@ def _Run(args, release_track, include_l7_internal_load_balancing=False):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class CreateGaAndBeta(base.CreateCommand):
-  """Create a GA/Beta HTTP non-legacy health check.
-
-  Business logic should be put in helper functions. Classes annotated with
-  @base.ReleaseTracks should only be concerned with calling helper functions
-  with the correct feature parameters.
-  """
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
+  """Create a HTTP health check."""
 
   detailed_help = _DetailedHelp()
 
-  @staticmethod
-  def Args(parser):
-    _Args(parser)
+  _include_l7_internal_load_balancing = False
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
-    return _Run(args, self.ReleaseTrack())
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return _Run(args, holder, self._include_l7_internal_load_balancing)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
-  """Create an Alpha HTTP non-legacy health check.
+class CreateAlpha(CreateBeta):
 
-  Business logic should be put in helper functions. Classes annotated with
-  @base.ReleaseTracks should only be concerned with calling helper functions
-  with the correct feature parameters.
-  """
-
-  detailed_help = _DetailedHelp()
-
-  @staticmethod
-  def Args(parser):
-    _Args(parser, include_l7_internal_load_balancing=True)
-
-  def Run(self, args):
-    return _Run(
-        args, self.ReleaseTrack(), include_l7_internal_load_balancing=True)
+  _include_l7_internal_load_balancing = True

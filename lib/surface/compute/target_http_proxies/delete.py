@@ -26,79 +26,73 @@ from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_proxies_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Delete(base.DeleteCommand):
-  """Delete target HTTP proxies.
+def _DetailedHelp():
+  return {
+      'brief':
+          'Delete target HTTP proxies.',
+      'DESCRIPTION':
+          """\
+      *{command}* deletes one or more target HTTP proxies.
+      """,
+  }
 
-  *{command}* deletes one or more target HTTP proxies.
-  """
 
-  TARGET_HTTP_PROXY_ARG = None
+def _Run(holder, target_http_proxy_refs):
+  """Issues requests necessary to delete Target HTTP Proxies."""
+  client = holder.client
+  utils.PromptForDeletion(target_http_proxy_refs)
 
-  @staticmethod
-  def Args(parser):
-    Delete.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument(plural=True)
-    Delete.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleter)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    target_http_proxy_refs = Delete.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    utils.PromptForDeletion(target_http_proxy_refs)
-
-    requests = []
-    for target_http_proxy_ref in target_http_proxy_refs:
+  requests = []
+  for target_http_proxy_ref in target_http_proxy_refs:
+    if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
+        target_http_proxy_ref):
+      requests.append(
+          (client.apitools_client.regionTargetHttpProxies, 'Delete',
+           client.messages.ComputeRegionTargetHttpProxiesDeleteRequest(
+               **target_http_proxy_ref.AsDict())))
+    else:
       requests.append((client.apitools_client.targetHttpProxies, 'Delete',
                        client.messages.ComputeTargetHttpProxiesDeleteRequest(
                            **target_http_proxy_ref.AsDict())))
 
-    return client.MakeRequests(requests)
+  return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
-  """Delete target HTTP proxies.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
+  """Delete target HTTP proxies."""
 
-  *{command}* deletes one or more target HTTP proxies.
-  """
+  _include_l7_internal_load_balancing = False
 
   TARGET_HTTP_PROXY_ARG = None
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument(
-        plural=True, include_alpha=True)
+        plural=True,
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleterAlpha)
+    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleterAlpha if
+                                        cls._include_l7_internal_load_balancing
+                                        else flags.TargetHttpProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
     target_http_proxy_refs = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+    return _Run(holder, target_http_proxy_refs)
 
-    utils.PromptForDeletion(target_http_proxy_refs)
 
-    requests = []
-    for target_http_proxy_ref in target_http_proxy_refs:
-      if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
-          target_http_proxy_ref):
-        requests.append(
-            (client.apitools_client.regionTargetHttpProxies, 'Delete',
-             client.messages.ComputeRegionTargetHttpProxiesDeleteRequest(
-                 **target_http_proxy_ref.AsDict())))
-      else:
-        requests.append((client.apitools_client.targetHttpProxies, 'Delete',
-                         client.messages.ComputeTargetHttpProxiesDeleteRequest(
-                             **target_http_proxy_ref.AsDict())))
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  pass
 
-    return client.MakeRequests(requests)
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+
+  _include_l7_internal_load_balancing = True

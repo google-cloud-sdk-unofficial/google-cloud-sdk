@@ -65,9 +65,10 @@ class Sql(base.Command):
     import_util.AddBaseImportFlags(parser, filetype='MySQL dump')
     flags.AddDatabase(
         parser,
-        'Database (for example, guestbook) to which the import is'
-        ' made. If not set, it is assumed that the database is specified in'
-        ' the file to be imported.')
+        'Database to which the import is made. If not set, it is assumed that '
+        'the database is specified in the file to be imported. If your SQL '
+        'dump file includes a database statement, it will override the '
+        'database set in this flag.')
 
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""

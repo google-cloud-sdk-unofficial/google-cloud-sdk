@@ -238,6 +238,7 @@ def ParseCreateOptionsBase(args):
       enable_autorepair=enable_autorepair,
       enable_autoscaling=args.enable_autoscaling,
       enable_autoupgrade=cmd_util.GetAutoUpgrade(args),
+      enable_stackdriver_kubernetes=args.enable_stackdriver_kubernetes,
       enable_cloud_logging=args.enable_cloud_logging,
       enable_cloud_monitoring=args.enable_cloud_monitoring,
       enable_ip_alias=args.enable_ip_alias,
@@ -281,7 +282,11 @@ def ParseCreateOptionsBase(args):
       default_max_pods_per_node=args.default_max_pods_per_node,
       max_pods_per_node=args.max_pods_per_node,
       enable_tpu=args.enable_tpu,
-      tpu_ipv4_cidr=args.tpu_ipv4_cidr)
+      tpu_ipv4_cidr=args.tpu_ipv4_cidr,
+      resource_usage_bigquery_dataset=args.resource_usage_bigquery_dataset,
+      enable_network_egress_metering=args.enable_network_egress_metering,
+      enable_resource_consumption_metering=\
+          args.enable_resource_consumption_metering)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -298,6 +303,7 @@ class Create(base.CreateCommand):
     flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
+    flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser)
     flags.AddLabelsFlag(parser)
@@ -315,6 +321,7 @@ class Create(base.CreateCommand):
     flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
+    flags.AddResourceUsageExportFlags(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     flags.WarnGAForFutureAutoUpgradeChange()
@@ -500,9 +507,6 @@ class CreateBeta(Create):
     ops.enable_binauthz = args.enable_binauthz
     ops.istio_config = args.istio_config
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
-    ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
-    ops.enable_network_egress_metering = args.enable_network_egress_metering
-    ops.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.security_group = args.security_group
     ops.identity_namespace = args.identity_namespace
@@ -622,7 +626,6 @@ class CreateAlpha(Create):
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
     ops.identity_namespace = args.identity_namespace
     ops.federating_service_account = args.federating_service_account
-    ops.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     ops.security_group = args.security_group
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling

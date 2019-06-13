@@ -16,16 +16,24 @@
         Project name.
       spec: !REF googlecloudsdk.command_lib.filestore.resources:project
       override_resource_collection: true
+
     params:
-    - arg_name: region
-      help_text: |
-        Region of the snapshots to display. If unspecified, all snapshots will be listed.
+    - group:
+        mutex: true
+        params:
+        - arg_name: zone
+          help_text: |
+            The zone of the Local Snapshots to display. If unspecified, all snapshots will be
+            listed.
+        - arg_name: region
+          help_text: |
+            The region of the Snapshots to display. If unspecified, all snapshots will be listed.
 
   request:
     api_version: v1p1alpha1
     collection: file.projects.locations.snapshots
     modify_request_hooks:
-    - googlecloudsdk.command_lib.filestore.util:AddDefaultRegionToListRequest
+    - googlecloudsdk.command_lib.filestore.util:AddDefaultLocationToListRequest
 
   response:
     id_field: name
@@ -34,7 +42,7 @@
     format: |
       table(
         name.basename():label=NAME:sort=1,
-        name.segment(3):label=REGION,
+        name.segment(3):label=LOCATION,
         sourceInstance.split('/').slice(3:).join('/'):label=SRC_INSTANCE,
         sourceFileShare:label=SRC_FILE_SHARE,
         state

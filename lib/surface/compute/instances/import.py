@@ -23,6 +23,7 @@ import re
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import daisy_utils
 from googlecloudsdk.api_lib.compute import instance_utils
+from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
@@ -128,11 +129,18 @@ class Import(base.CreateCommand):
           ext=getattr(args, 'custom_extensions', None),
           vm_gen=getattr(args, 'custom_vm_gen', None))
 
+    try:
+      source_uri = daisy_utils.MakeGcsObjectOrPathUri(args.source_uri)
+    except storage_util.InvalidObjectNameError:
+      raise exceptions.InvalidArgumentException(
+          'source-uri',
+          'must be a path to an object or a directory in Google Cloud Storage')
+
     return daisy_utils.RunOVFImportBuild(
         args=args,
         compute_client=compute_holder.client,
         instance_name=args.instance_name,
-        source_uri=daisy_utils.MakeGcsUri(args.source_uri),
+        source_uri=source_uri,
         no_guest_environment=not args.guest_environment,
         can_ip_forward=args.can_ip_forward,
         deletion_protection=args.deletion_protection,

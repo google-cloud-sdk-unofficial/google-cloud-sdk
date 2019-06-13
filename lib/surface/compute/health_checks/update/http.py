@@ -27,6 +27,19 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 
+def _DetailedHelp():
+  return {
+      'brief':
+          'Update a HTTP health check.',
+      'DESCRIPTION':
+          """\
+      *{command}* is used to update an existing HTTP health check. Only
+      arguments passed in will be updated on the health check. Other
+      attributes will remain unaffected.
+      """,
+  }
+
+
 def _Args(parser, include_l7_internal_load_balancing):
   health_check_arg = flags.HealthCheckArgument(
       'HTTP',
@@ -188,16 +201,12 @@ def _Run(args, holder, include_l7_internal_load_balancing):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class UpdateBetaAndGa(base.UpdateCommand):
-  """Update a HTTP health check.
-
-  *{command}* is used to update an existing HTTP health check. Only
-  arguments passed in will be updated on the health check. Other
-  attributes will remain unaffected.
-  """
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
+  """Update a HTTP health check."""
 
   _include_l7_internal_load_balancing = False
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
@@ -208,13 +217,12 @@ class UpdateBetaAndGa(base.UpdateCommand):
     return _Run(args, holder, self._include_l7_internal_load_balancing)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBetaAndGa):
-  """Update a HTTP health check.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  pass
 
-  *{command}* is used to update an existing HTTP health check. Only
-  arguments passed in will be updated on the health check. Other
-  attributes will remain unaffected.
-  """
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
 
   _include_l7_internal_load_balancing = True

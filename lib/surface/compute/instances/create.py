@@ -64,7 +64,7 @@ DETAILED_HELP = {
         To create an instance with the latest ``Red Hat Enterprise Linux
         7'' image available, run:
 
-          $ {command} example-instance --image-family rhel-7 --image-project rhel-cloud --zone us-central1-a
+          $ {command} example-instance --image-family=rhel-7 --image-project=rhel-cloud --zone=us-central1-a
         """,
 }
 
@@ -76,13 +76,15 @@ def _CommonArgs(parser,
                 deprecate_maintenance_policy=False,
                 supports_display_device=False,
                 supports_reservation=False,
-                enable_resource_policy=False):
+                enable_resource_policy=False,
+                csek_key_file=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
   instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms,
                                     enable_snapshots=enable_snapshots,
-                                    resource_policy=enable_resource_policy)
+                                    resource_policy=enable_resource_policy,
+                                    csek_key_file=csek_key_file)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddAcceleratorArgs(parser)
@@ -550,7 +552,7 @@ class CreateBeta(Create):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_snapshots = False
+  _support_snapshots = True
   _support_display_device = True
   _support_reservation = True
   _support_disk_resource_policy = True
@@ -568,9 +570,10 @@ class CreateBeta(Create):
         parser,
         enable_regional=True,
         enable_kms=True,
+        enable_snapshots=True,
         supports_display_device=True,
         supports_reservation=cls._support_reservation,
-        enable_resource_policy=cls._support_disk_resource_policy
+        enable_resource_policy=cls._support_disk_resource_policy,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
@@ -614,7 +617,8 @@ class CreateAlpha(CreateBeta):
         deprecate_maintenance_policy=True,
         supports_display_device=True,
         supports_reservation=cls._support_reservation,
-        enable_resource_policy=cls._support_disk_resource_policy)
+        enable_resource_policy=cls._support_disk_resource_policy,
+        csek_key_file=True)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

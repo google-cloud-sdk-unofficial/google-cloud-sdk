@@ -1,0 +1,81 @@
+- release_tracks: [ALPHA]
+  is_hidden: true
+
+  help_text:
+    brief: Update an Allocation Policy.
+    description: Update a Cloud Game Services Allocation Policy.
+
+  request:
+    collection: gameservices.projects.locations.allocationPolicies
+
+  arguments:
+    resource:
+      help_text: Cloud Game Services Allocation Policy to update.
+      spec: !REF googlecloudsdk.command_lib.game_services.resources:allocation_policy
+
+    params:
+    - arg_name: priority
+      api_field: allocationPolicy.priority
+      help_text: |
+        Priority of the Allocation Policy.
+    - arg_name: weight
+      api_field: allocationPolicy.weight
+      help_text: |
+        Relative weight of the Allocation Policy.
+
+        If there are multiple policies with the same priority, a policy will
+        be selected at random, where the probability of a given policy being
+        selected is based on its weight. For example, if there are two
+        policies with priority 1, where policy A has weight 100 and policy B
+        has weight 300, policy A will be selected 25% of the time, and policy
+        B will be selected 75% of the time.
+    - arg_name: match-clusters
+      api_field: allocationPolicy.clusterSelectors.labels.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        Labels to select clusters to which this Allocation Policy applies. This flag can be repeated.
+        Example:
+          $ {command} example-policy --match-clusters=label_a=value1,label_b=value2 \
+                                     --match-clusters=label_c=value3,label_d=value4
+        With the above command, this policy is applicable to clusters that have
+        either label_a=value1 and label_b=value2, or label_c=value3,label_d=value4.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+    - arg_name: schedule
+      api_field: allocationPolicy.schedules
+      help_text: |
+        Event schedules. Schedules allow allocation policies to be adjusted for planned events. For
+        example, you can add policies to allocate from specific clusters during an event. This flag can
+        be repeated.
+
+        The following keys are allowed:
+
+        *cron-spec*::: Cron definition of the scheduled event. See https://en.wikipedia.org/wiki/Cron.
+        The cron spec specification is in the local time as defined by the realm. Requires
+        cron-job-duration to be specified.
+
+        *cron-job-duration*::: Duration for the cron job event. The duration of the event is effective
+        after the cron job's start time. See $ gcloud topic datetimes for information on
+        duration formats. Required if cron-spec is specified.
+
+        *start-time*::: Start time of the event. See $ gcloud topic datetimes for information on
+        duration formats. Either start-time or cron-spec should be specified.
+
+        *end-time*::: End time of the event. See $ gcloud topic datetimes for information on
+        duration formats.
+
+        Example:
+        $ {command} example-policy --schedule=cron-spec="10 0 1-7 5,12 *",cron-job-duration=4H10M,start-time=2019-10-01T10:00,end-time=2020-10-01T10:00 \
+                                   --schedule=start-time=2021-09-25
+      type:
+        arg_dict:
+          flatten: false
+          spec:
+          - api_field: cronSpec
+          - api_field: cronJobDuration
+          - api_field: startTime
+          - api_field: endTime

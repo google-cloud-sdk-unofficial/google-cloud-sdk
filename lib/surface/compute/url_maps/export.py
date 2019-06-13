@@ -28,74 +28,87 @@ from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
 
-DETAILED_HELP = {
-    'DESCRIPTION':
-        """\
-        Exports a URL map's configuration to a file.
-        This configuration can be imported at a later time.
-        """,
-    'EXAMPLES':
-        """\
-        A URL map can be exported by running:
+def _DetailedHelp():
+  return {
+      'brief':
+          'Export a URL map.',
+      'DESCRIPTION':
+          """\
+          Exports a URL map's configuration to a file.
+          This configuration can be imported at a later time.
+          """,
+      'EXAMPLES':
+          """\
+          A URL map can be exported by running:
 
-          $ {command} NAME --destination=<path-to-file>
-        """
-}
+            $ {command} NAME --destination=<path-to-file>
+          """
+  }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class Export(base.Command):
-  """Export a URL map.
+def _GetApiVersion(release_track):
+  """Returns the API version based on the release track."""
+  if release_track == base.ReleaseTrack.ALPHA:
+    return 'alpha'
+  elif release_track == base.ReleaseTrack.BETA:
+    return 'beta'
+  return 'v1'
 
-  Exports a URL map's configuration to a file.
-  This configuration can be imported at a later time.
-  """
 
+def _GetSchemaPath(release_track, for_help=False):
+  """Returns the resource schema path."""
+  return export_util.GetSchemaPath(
+      'compute', _GetApiVersion(release_track), 'UrlMap', for_help=for_help)
+
+
+def _Run(args, holder, url_map_arg, release_track):
+  """Issues requests necessary to export URL maps."""
+  client = holder.client
+
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(client))
+
+  url_map = url_maps_utils.SendGetRequest(client, url_map_ref)
+
+  if args.destination:
+    with files.FileWriter(args.destination) as stream:
+      export_util.Export(
+          message=url_map,
+          stream=stream,
+          schema_path=_GetSchemaPath(release_track))
+  else:
+    export_util.Export(
+        message=url_map,
+        stream=sys.stdout,
+        schema_path=_GetSchemaPath(release_track))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ExportBeta(base.Command):
+  """Export a URL map."""
+
+  _include_l7_internal_load_balancing = False
+
+  detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
-  detailed_help = DETAILED_HELP
-
-  @classmethod
-  def GetApiVersion(cls):
-    """Returns the API version based on the release track."""
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      return 'alpha'
-    elif cls.ReleaseTrack() == base.ReleaseTrack.BETA:
-      return 'beta'
-    return 'v1'
-
-  @classmethod
-  def GetSchemaPath(cls, for_help=False):
-    """Returns the resource schema path."""
-    return export_util.GetSchemaPath(
-        'compute', cls.GetApiVersion(), 'UrlMap', for_help=for_help)
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      cls.URL_MAP_ARG = flags.UrlMapArgument(include_alpha=True)
-    else:
-      cls.URL_MAP_ARG = flags.UrlMapArgument()
-
+    cls.URL_MAP_ARG = flags.UrlMapArgument(
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='export')
-    export_util.AddExportFlags(parser, cls.GetSchemaPath(for_help=True))
+    export_util.AddExportFlags(
+        parser, _GetSchemaPath(cls.ReleaseTrack(), for_help=True))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    return _Run(args, holder, self.URL_MAP_ARG, self.ReleaseTrack())
 
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    url_map = url_maps_utils.SendGetRequest(client, url_map_ref)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ExportAlpha(ExportBeta):
 
-    if args.destination:
-      with files.FileWriter(args.destination) as stream:
-        export_util.Export(message=url_map,
-                           stream=stream,
-                           schema_path=self.GetSchemaPath())
-    else:
-      export_util.Export(message=url_map,
-                         stream=sys.stdout,
-                         schema_path=self.GetSchemaPath())
+  _include_l7_internal_load_balancing = True

@@ -23,6 +23,6 @@
          description:label=DESCRIPTION,
          createTime,
          updateTime,
-         labels,
-         timeZone
+         timeZone,
+         labels
        )

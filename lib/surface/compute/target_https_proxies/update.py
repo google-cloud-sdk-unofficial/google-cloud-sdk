@@ -32,73 +32,90 @@ from googlecloudsdk.command_lib.compute.target_https_proxies import target_https
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Update(base.SilentCommand):
-  """Update a target HTTPS proxy.
+def _DetailedHelp():
+  return {
+      'brief':
+          'Update a target HTTPS proxy.',
+      'DESCRIPTION':
+          """\
+      *{command}* is used to change the SSL certificate and/or URL map of
+      existing target HTTPS proxies. A target HTTPS proxy is referenced by
+      one or more forwarding rules which specify the network traffic that
+      the proxy is responsible for routing. The target HTTPS proxy in turn
+      points to a URL map that defines the rules for routing the requests.
+      The URL map's job is to map URLs to backend services which handle
+      the actual requests. The target HTTPS proxy also points to at most
+      15 SSL certificates used for server-side authentication. The target
+      HTTPS proxy can be associated with at most one SSL policy.
+      """,
+  }
 
-  *{command}* is used to change the SSL certificate and/or URL map of
-  existing target HTTPS proxies. A target HTTPS proxy is referenced by
-  one or more forwarding rules which specify the network traffic that
-  the proxy is responsible for routing. The target HTTPS proxy in turn
-  points to a URL map that defines the rules for routing the requests.
-  The URL map's job is to map URLs to backend services which handle
-  the actual requests. The target HTTPS proxy also points to at most
-  15 SSL certificates used for server-side authentication. The target
-  HTTPS proxy can be associated with at most one SSL policy.
-  """
 
-  SSL_CERTIFICATES_ARG = None
-  TARGET_HTTPS_PROXY_ARG = None
-  URL_MAP_ARG = None
-  SSL_POLICY_ARG = None
+def _CheckMissingArgument(args):
+  if not sum(
+      args.IsSpecified(arg) for arg in [
+          'ssl_certificates', 'url_map', 'quic_override', 'ssl_policy',
+          'clear_ssl_policy'
+      ]):
+    raise exceptions.ToolException(
+        'You must specify at least one of [--ssl-certificates], '
+        '[--url-map], [--quic-override], [--ssl-policy] or '
+        '[--clear-ssl-policy].')
 
-  @classmethod
-  def Args(cls, parser):
-    cls.SSL_CERTIFICATES_ARG = (
-        ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target HTTPS proxy', required=False))
-    cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
 
-    cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
-    cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='update')
-    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        required=False, proxy_type='HTTPS')
-    cls.URL_MAP_ARG.AddArgument(parser)
+def _Run(args, holder, ssl_certificates_arg, target_https_proxy_arg,
+         url_map_arg, ssl_policy_arg):
+  """Issues requests necessary to update Target HTTPS Proxies."""
+  client = holder.client
 
-    group = parser.add_mutually_exclusive_group()
-    cls.SSL_POLICY_ARG = (
-        ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
-            'HTTPS', required=False))
-    cls.SSL_POLICY_ARG.AddArgument(group)
-    ssl_policies_flags.GetClearSslPolicyArgumentForOtherResource(
-        'HTTPS', required=False).AddToParser(group)
+  requests = []
+  target_https_proxy_ref = target_https_proxy_arg.ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
+  if args.ssl_certificates:
+    ssl_cert_refs = target_https_proxies_utils.ResolveSslCertificates(
+        args, ssl_certificates_arg, target_https_proxy_ref, holder.resources)
+    if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
+        target_https_proxy_ref):
+      requests.append((
+          client.apitools_client.regionTargetHttpsProxies, 'SetSslCertificates',
+          client.messages
+          .ComputeRegionTargetHttpsProxiesSetSslCertificatesRequest(
+              project=target_https_proxy_ref.project,
+              region=target_https_proxy_ref.region,
+              targetHttpsProxy=target_https_proxy_ref.Name(),
+              regionTargetHttpsProxiesSetSslCertificatesRequest=(
+                  client.messages
+                  .RegionTargetHttpsProxiesSetSslCertificatesRequest(
+                      sslCertificates=[ref.SelfLink()
+                                       for ref in ssl_cert_refs])))))
+    else:
+      requests.append((
+          client.apitools_client.targetHttpsProxies, 'SetSslCertificates',
+          client.messages.ComputeTargetHttpsProxiesSetSslCertificatesRequest(
+              project=target_https_proxy_ref.project,
+              targetHttpsProxy=target_https_proxy_ref.Name(),
+              targetHttpsProxiesSetSslCertificatesRequest=(
+                  client.messages.TargetHttpsProxiesSetSslCertificatesRequest(
+                      sslCertificates=[ref.SelfLink()
+                                       for ref in ssl_cert_refs])))))
 
-  def _SendRequests(self, args, quic_override=None):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    requests = []
-    target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
-        args, holder.resources)
-
-    if args.ssl_certificates:
-      ssl_cert_refs = self.SSL_CERTIFICATES_ARG.ResolveAsResource(
-          args, holder.resources)
+  if args.url_map:
+    url_map_ref = target_https_proxies_utils.ResolveTargetHttpsProxyUrlMap(
+        args, url_map_arg, target_https_proxy_ref, holder.resources)
+    if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
+        target_https_proxy_ref):
       requests.append(
-          (client.apitools_client.targetHttpsProxies, 'SetSslCertificates',
-           client.messages.ComputeTargetHttpsProxiesSetSslCertificatesRequest(
+          (client.apitools_client.regionTargetHttpsProxies, 'SetUrlMap',
+           client.messages.ComputeRegionTargetHttpsProxiesSetUrlMapRequest(
                project=target_https_proxy_ref.project,
+               region=target_https_proxy_ref.region,
                targetHttpsProxy=target_https_proxy_ref.Name(),
-               targetHttpsProxiesSetSslCertificatesRequest=(
-                   client.messages.TargetHttpsProxiesSetSslCertificatesRequest(
-                       sslCertificates=[
-                           ref.SelfLink() for ref in ssl_cert_refs
-                       ])))))
-
-    if args.url_map:
-      url_map_ref = self.URL_MAP_ARG.ResolveAsResource(args, holder.resources)
+               urlMapReference=client.messages.UrlMapReference(
+                   urlMap=url_map_ref.SelfLink()))))
+    else:
       requests.append(
           (client.apitools_client.targetHttpsProxies, 'SetUrlMap',
            client.messages.ComputeTargetHttpsProxiesSetUrlMapRequest(
@@ -107,83 +124,66 @@ class Update(base.SilentCommand):
                urlMapReference=client.messages.UrlMapReference(
                    urlMap=url_map_ref.SelfLink()))))
 
-    if args.IsSpecified('quic_override'):
-      quic_override = (
-          client.messages.TargetHttpsProxiesSetQuicOverrideRequest.
-          QuicOverrideValueValuesEnum(args.quic_override))
-      requests.append(
-          (client.apitools_client.targetHttpsProxies, 'SetQuicOverride',
-           client.messages.ComputeTargetHttpsProxiesSetQuicOverrideRequest(
-               project=target_https_proxy_ref.project,
-               targetHttpsProxy=target_https_proxy_ref.Name(),
-               targetHttpsProxiesSetQuicOverrideRequest=(
-                   client.messages.TargetHttpsProxiesSetQuicOverrideRequest(
-                       quicOverride=quic_override)))))
+  if args.IsSpecified('quic_override'):
+    quic_override = (
+        client.messages.TargetHttpsProxiesSetQuicOverrideRequest
+        .QuicOverrideValueValuesEnum(args.quic_override))
+    requests.append(
+        (client.apitools_client.targetHttpsProxies, 'SetQuicOverride',
+         client.messages.ComputeTargetHttpsProxiesSetQuicOverrideRequest(
+             project=target_https_proxy_ref.project,
+             targetHttpsProxy=target_https_proxy_ref.Name(),
+             targetHttpsProxiesSetQuicOverrideRequest=(
+                 client.messages.TargetHttpsProxiesSetQuicOverrideRequest(
+                     quicOverride=quic_override)))))
 
-    ssl_policy = client.messages.SslPolicyReference(
-        sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
-        .SelfLink()) if args.IsSpecified('ssl_policy') else None
-    clear_ssl_policy = args.IsSpecified('clear_ssl_policy')
+  ssl_policy = client.messages.SslPolicyReference(
+      sslPolicy=ssl_policy_arg.ResolveAsResource(args, holder.resources)
+      .SelfLink()) if args.IsSpecified('ssl_policy') else None
+  clear_ssl_policy = args.IsSpecified('clear_ssl_policy')
 
-    if ssl_policy or clear_ssl_policy:
-      requests.append(
-          (client.apitools_client.targetHttpsProxies, 'SetSslPolicy',
-           client.messages.ComputeTargetHttpsProxiesSetSslPolicyRequest(
-               project=target_https_proxy_ref.project,
-               targetHttpsProxy=target_https_proxy_ref.Name(),
-               sslPolicyReference=ssl_policy)))
+  if ssl_policy or clear_ssl_policy:
+    requests.append(
+        (client.apitools_client.targetHttpsProxies, 'SetSslPolicy',
+         client.messages.ComputeTargetHttpsProxiesSetSslPolicyRequest(
+             project=target_https_proxy_ref.project,
+             targetHttpsProxy=target_https_proxy_ref.Name(),
+             sslPolicyReference=ssl_policy)))
 
-    return client.MakeRequests(requests)
-
-  def _CheckMissingArgument(self, args):
-    if not sum(
-        args.IsSpecified(arg) for arg in [
-            'ssl_certificates', 'url_map', 'quic_override', 'ssl_policy',
-            'clear_ssl_policy'
-        ]):
-      raise exceptions.ToolException(
-          'You must specify at least one of [--ssl-certificates], '
-          '[--url-map], [--quic-override], [--ssl-policy] or '
-          '[--clear-ssl-policy].')
-
-  def Run(self, args):
-    self._CheckMissingArgument(args)
-    return self._SendRequests(args)
+  return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a target HTTPS proxy.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.SilentCommand):
+  """Update a target HTTPS proxy."""
 
-  *{command}* is used to change the SSL certificate and/or URL map of
-  existing target HTTPS proxies. A target HTTPS proxy is referenced by
-  one or more forwarding rules which specify the network traffic that
-  the proxy is responsible for routing. The target HTTPS proxy in turn
-  points to a URL map that defines the rules for routing the requests.
-  The URL map's job is to map URLs to backend services which handle
-  the actual requests. The target HTTPS proxy also points to at most
-  15 SSL certificates used for server-side authentication. The target
-  HTTPS proxy can be associated with at most one SSL policy.
-  """
+  _include_l7_internal_load_balancing = False
 
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
   URL_MAP_ARG = None
   SSL_POLICY_ARG = None
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
-            'target HTTPS proxy', required=False, include_alpha=True))
+            'target HTTPS proxy',
+            required=False,
+            include_alpha=cls._include_l7_internal_load_balancing))
     cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
 
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
-        include_alpha=True)
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='update')
 
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
-        required=False, proxy_type='HTTPS', include_alpha=True)
+        required=False,
+        proxy_type='HTTPS',
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser)
 
     group = parser.add_mutually_exclusive_group()
@@ -196,94 +196,20 @@ class UpdateAlpha(Update):
 
     target_proxies_utils.AddQuicOverrideUpdateArgs(parser)
 
-  def _SendRequests(self, args, quic_override=None):
+  def Run(self, args):
+    _CheckMissingArgument(args)
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    return _Run(args, holder, self.SSL_CERTIFICATES_ARG,
+                self.TARGET_HTTPS_PROXY_ARG, self.URL_MAP_ARG,
+                self.SSL_POLICY_ARG)
 
-    requests = []
-    target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    if args.ssl_certificates:
-      ssl_cert_refs = target_https_proxies_utils.ResolveSslCertificates(
-          args, self.SSL_CERTIFICATES_ARG, target_https_proxy_ref,
-          holder.resources)
-      if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
-          target_https_proxy_ref):
-        requests.append(
-            (client.apitools_client.regionTargetHttpsProxies,
-             'SetSslCertificates',
-             client.messages.
-             ComputeRegionTargetHttpsProxiesSetSslCertificatesRequest(
-                 project=target_https_proxy_ref.project,
-                 region=target_https_proxy_ref.region,
-                 targetHttpsProxy=target_https_proxy_ref.Name(),
-                 regionTargetHttpsProxiesSetSslCertificatesRequest=(
-                     client.messages.
-                     RegionTargetHttpsProxiesSetSslCertificatesRequest(
-                         sslCertificates=[
-                             ref.SelfLink() for ref in ssl_cert_refs
-                         ])))))
-      else:
-        requests.append((
-            client.apitools_client.targetHttpsProxies, 'SetSslCertificates',
-            client.messages.ComputeTargetHttpsProxiesSetSslCertificatesRequest(
-                project=target_https_proxy_ref.project,
-                targetHttpsProxy=target_https_proxy_ref.Name(),
-                targetHttpsProxiesSetSslCertificatesRequest=(
-                    client.messages.TargetHttpsProxiesSetSslCertificatesRequest(
-                        sslCertificates=[
-                            ref.SelfLink() for ref in ssl_cert_refs
-                        ])))))
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  pass
 
-    if args.url_map:
-      url_map_ref = target_https_proxies_utils.ResolveTargetHttpsProxyUrlMap(
-          args, self.URL_MAP_ARG, target_https_proxy_ref, holder.resources)
-      if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
-          target_https_proxy_ref):
-        requests.append(
-            (client.apitools_client.regionTargetHttpsProxies, 'SetUrlMap',
-             client.messages.ComputeRegionTargetHttpsProxiesSetUrlMapRequest(
-                 project=target_https_proxy_ref.project,
-                 region=target_https_proxy_ref.region,
-                 targetHttpsProxy=target_https_proxy_ref.Name(),
-                 urlMapReference=client.messages.UrlMapReference(
-                     urlMap=url_map_ref.SelfLink()))))
-      else:
-        requests.append(
-            (client.apitools_client.targetHttpsProxies, 'SetUrlMap',
-             client.messages.ComputeTargetHttpsProxiesSetUrlMapRequest(
-                 project=target_https_proxy_ref.project,
-                 targetHttpsProxy=target_https_proxy_ref.Name(),
-                 urlMapReference=client.messages.UrlMapReference(
-                     urlMap=url_map_ref.SelfLink()))))
 
-    if args.IsSpecified('quic_override'):
-      quic_override = (
-          client.messages.TargetHttpsProxiesSetQuicOverrideRequest.
-          QuicOverrideValueValuesEnum(args.quic_override))
-      requests.append(
-          (client.apitools_client.targetHttpsProxies, 'SetQuicOverride',
-           client.messages.ComputeTargetHttpsProxiesSetQuicOverrideRequest(
-               project=target_https_proxy_ref.project,
-               targetHttpsProxy=target_https_proxy_ref.Name(),
-               targetHttpsProxiesSetQuicOverrideRequest=(
-                   client.messages.TargetHttpsProxiesSetQuicOverrideRequest(
-                       quicOverride=quic_override)))))
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
 
-    ssl_policy = client.messages.SslPolicyReference(
-        sslPolicy=self.SSL_POLICY_ARG.ResolveAsResource(args, holder.resources)
-        .SelfLink()) if args.IsSpecified('ssl_policy') else None
-    clear_ssl_policy = args.IsSpecified('clear_ssl_policy')
-
-    if ssl_policy or clear_ssl_policy:
-      requests.append(
-          (client.apitools_client.targetHttpsProxies, 'SetSslPolicy',
-           client.messages.ComputeTargetHttpsProxiesSetSslPolicyRequest(
-               project=target_https_proxy_ref.project,
-               targetHttpsProxy=target_https_proxy_ref.Name(),
-               sslPolicyReference=ssl_policy)))
-
-    return client.MakeRequests(requests)
+  _include_l7_internal_load_balancing = True

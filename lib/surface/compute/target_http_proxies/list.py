@@ -24,58 +24,72 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class List(base.ListCommand):
-  """List target HTTP proxies."""
+def _DetailedHelp(include_l7_internal_load_balancing):
+  if include_l7_internal_load_balancing:
+    return base_classes.GetMultiScopeListerHelp(
+        'target HTTP proxies',
+        scopes=[
+            base_classes.ScopeType.global_scope,
+            base_classes.ScopeType.regional_scope
+        ])
+  else:
+    return base_classes.GetGlobalListerHelp('target HTTP proxies')
 
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+
+def _Args(parser, include_l7_internal_load_balancing):
+  parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+  if include_l7_internal_load_balancing:
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleterAlpha)
+  else:
     lister.AddBaseListerArgs(parser)
     parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleter)
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
 
-    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+def _Run(args, holder, include_l7_internal_load_balancing):
+  """Issues requests necessary to list Target HTTP Proxies."""
+  client = holder.client
 
-    list_implementation = lister.GlobalLister(
-        client, client.apitools_client.targetHttpProxies)
-
-    return lister.Invoke(request_data, list_implementation)
-
-
-List.detailed_help = base_classes.GetGlobalListerHelp('target HTTP proxies')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
-  """List Target HTTP Proxies.."""
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
-    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleterAlpha)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
+  if include_l7_internal_load_balancing:
     request_data = lister.ParseMultiScopeFlags(args, holder.resources)
     list_implementation = lister.MultiScopeLister(
         client,
         regional_service=client.apitools_client.regionTargetHttpProxies,
         global_service=client.apitools_client.targetHttpProxies,
         aggregation_service=client.apitools_client.targetHttpProxies)
+  else:
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+    list_implementation = lister.GlobalLister(
+        client, client.apitools_client.targetHttpProxies)
 
-    return lister.Invoke(request_data, list_implementation)
+  return lister.Invoke(request_data, list_implementation)
 
 
-ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
-    'target HTTP proxies',
-    scopes=[
-        base_classes.ScopeType.global_scope,
-        base_classes.ScopeType.regional_scope
-    ])
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(base.ListCommand):
+  """List target HTTP proxies."""
+
+  _include_l7_internal_load_balancing = False
+
+  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, cls._include_l7_internal_load_balancing)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return _Run(args, holder, self._include_l7_internal_load_balancing)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+
+  _include_l7_internal_load_balancing = True
+
+  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)

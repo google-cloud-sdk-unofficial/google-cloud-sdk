@@ -35,9 +35,9 @@ class List(base.ListCommand):
   The following command lists all CryptoKeyVersions within the
   CryptoKey `frodo`, KeyRing `fellowship`, and Location `global`:
 
-    $ {command} --location global \
-        --keyring fellowship \
-        --cryptokey frodo
+    $ {command} --location=global \
+        --keyring=fellowship \
+        --cryptokey=frodo
   """
 
   @staticmethod

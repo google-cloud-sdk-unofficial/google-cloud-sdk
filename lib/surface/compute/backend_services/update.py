@@ -313,7 +313,8 @@ class UpdateAlpha(UpdateGA):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
         parser, operation_type='update')
     flags.AddDescription(parser)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(include_alpha=True)
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
+        support_regional_health_check=True)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
     cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
     cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
@@ -365,11 +366,11 @@ class UpdateAlpha(UpdateGA):
         is_update=True,
         apply_signed_url_cache_max_age=True)
 
-    backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
-                                                   replacement)
+    backend_services_utils.ApplyFailoverPolicyArgs(
+        client.messages, args, replacement, support_failover=True)
 
-    backend_services_utils.ApplyLogConfigArgs(client.messages, args,
-                                              replacement)
+    backend_services_utils.ApplyLogConfigArgs(
+        client.messages, args, replacement, support_logging=True)
 
     return replacement, cleared_fields
 
@@ -489,11 +490,11 @@ class UpdateBeta(UpdateGA):
         is_update=True,
         apply_signed_url_cache_max_age=True)
 
-    backend_services_utils.ApplyFailoverPolicyArgs(client.messages, args,
-                                                   replacement)
+    backend_services_utils.ApplyFailoverPolicyArgs(
+        client.messages, args, replacement, support_failover=True)
 
-    backend_services_utils.ApplyLogConfigArgs(client.messages, args,
-                                              replacement)
+    backend_services_utils.ApplyLogConfigArgs(
+        client.messages, args, replacement, support_logging=True)
 
     return replacement, cleared_fields
 

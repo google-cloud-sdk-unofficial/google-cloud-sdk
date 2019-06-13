@@ -25,71 +25,67 @@ from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Describe(base.DescribeCommand):
-  """Display detailed information about a target HTTPS proxy.
+def _DetailedHelp():
+  return {
+      'brief':
+          'Display detailed information about a target HTTPS proxy.',
+      'DESCRIPTION':
+          """\
+      *{command}* displays all data associated with a target HTTPS proxy
+      in a project.
+      """,
+  }
 
-    *{command}* displays all data associated with a target HTTPS proxy
-  in a project.
-  """
 
-  TARGET_HTTPS_PROXY_ARG = None
+def _Run(args, holder, target_https_proxy_arg):
+  """Issues requests necessary to describe Target HTTPS Proxies."""
+  client = holder.client
 
-  @staticmethod
-  def Args(parser):
-    Describe.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument()
-    Describe.TARGET_HTTPS_PROXY_ARG.AddArgument(
-        parser, operation_type='describe')
+  target_https_proxy_ref = target_https_proxy_arg.ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
+  if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
+      target_https_proxy_ref):
+    request = client.messages.ComputeRegionTargetHttpsProxiesGetRequest(
+        **target_https_proxy_ref.AsDict())
+    collection = client.apitools_client.regionTargetHttpsProxies
+  else:
     request = client.messages.ComputeTargetHttpsProxiesGetRequest(
         **target_https_proxy_ref.AsDict())
+    collection = client.apitools_client.targetHttpsProxies
 
-    return client.MakeRequests([(client.apitools_client.targetHttpsProxies,
-                                 'Get', request)])[0]
+  return client.MakeRequests([(collection, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
-  """Display detailed information about a target HTTPS proxy.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Display detailed information about a target HTTPS proxy."""
 
-  *{command}* displays all data associated with a target HTTPS proxy
-  in a project.
-  """
+  _include_l7_internal_load_balancing = False
 
   TARGET_HTTPS_PROXY_ARG = None
+  detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
-        include_alpha=True)
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    return _Run(args, holder, self.TARGET_HTTPS_PROXY_ARG)
 
-    target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
-        target_https_proxy_ref):
-      request = client.messages.ComputeRegionTargetHttpsProxiesGetRequest(
-          **target_https_proxy_ref.AsDict())
-      collection = client.apitools_client.regionTargetHttpsProxies
-    else:
-      request = client.messages.ComputeTargetHttpsProxiesGetRequest(
-          **target_https_proxy_ref.AsDict())
-      collection = client.apitools_client.targetHttpsProxies
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  pass
 
-    return client.MakeRequests([(collection, 'Get', request)])[0]
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+
+  _include_l7_internal_load_balancing = True

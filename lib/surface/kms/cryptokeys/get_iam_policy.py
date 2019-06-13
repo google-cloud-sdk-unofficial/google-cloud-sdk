@@ -36,7 +36,7 @@ class GetIamPolicy(base.ListCommand):
   The following command gets the IAM policy for the CryptoKey `frodo` within
   the KeyRing `fellowship` and Location `global`:
 
-    $ {command} frodo --keyring fellowship --location global
+    $ {command} frodo --keyring=fellowship --location=global
   """
 
   @staticmethod

@@ -86,8 +86,6 @@
           - api_field: value
     - arg_name: redis-version
       api_field: instance.redisVersion
-      GA:
-        hidden: true
       metavar: VERSION
       help_text: The version of Redis software.
       choices:

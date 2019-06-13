@@ -39,7 +39,7 @@ class RemoveIamPolicyBinding(base.Command):
   `frodo` with the KeyRing `fellowship` and Location `global`:
 
     $ {command} frodo \
-        --keyring fellowship --location global \
+        --keyring=fellowship --location=global \
         --member='user:test-user@gmail.com' \
         --role='roles/editor'
   """

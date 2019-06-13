@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA]
+  is_hidden: true
+
+  help_text:
+    brief: List Scaling Policies.
+    description: List Cloud Game Services Scaling Policies.
+
+  request:
+    collection: gameservices.projects.locations.scalingPolicies
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Cloud Game Services Location of the Scaling Policies to list.
+      spec: !REF googlecloudsdk.command_lib.game_services.resources:location
+
+  output:
+    format: |
+      table(
+         name.basename():label=NAME,
+         description:label=DESCRIPTION,
+         createTime,
+         updateTime,
+         perioriy,
+         deployment,
+         buffer-size,
+         min-replicas,
+         max-replicas,
+         match-clusters,
+         schedule,
+         labels
+       )

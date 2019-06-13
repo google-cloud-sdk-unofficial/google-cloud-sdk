@@ -154,7 +154,7 @@ class UpdateBeta(base.UpdateCommand):
                               help=('A path to a YAML file specifying the '
                                     'updates to be made to the logs-based '
                                     'metric.'),
-                              type=arg_parsers.BufferedFileInput())
+                              type=arg_parsers.FileContents())
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

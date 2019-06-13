@@ -73,4 +73,4 @@ class List(commands.List):
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
-      return client.ListConfigurations(namespace_ref)
+      return commands.SortByName(client.ListConfigurations(namespace_ref))

@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import kms
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import exceptions
@@ -45,12 +46,20 @@ class AddBeta(base.Command):
                 'The attestor to which the public key should be added.'),
         ),
     )
-    parser.add_argument(
+    pgp_group = parser.add_mutually_exclusive_group(required=True)
+    pgp_group.add_argument(
         '--public-key-file',
-        type=arg_parsers.BufferedFileInput(),
+        action=actions.DeprecationAction(
+            'public-key-file',
+            warn='This flag is deprecated. Use --pgp-public-key-file instead.'),
+        type=arg_parsers.FileContents(),
         help='The path to the file containing the '
-        'ASCII-armored PGP public key to add.',
-        required=True)
+        'ASCII-armored PGP public key to add.')
+    pgp_group.add_argument(
+        '--pgp-public-key-file',
+        type=arg_parsers.FileContents(),
+        help='The path to the file containing the '
+        'ASCII-armored PGP public key to add.')
     parser.add_argument(
         '--comment', help='The comment describing the public key.')
 
@@ -63,7 +72,7 @@ class AddBeta(base.Command):
     # TODO(b/71700164): Validate the contents of the public key file.
     return attestors_client.AddPgpKey(
         attestor_ref,
-        pgp_pubkey_content=args.public_key_file,
+        pgp_pubkey_content=args.public_key_file or args.pgp_public_key_file,
         comment=args.comment)
 
 
@@ -89,7 +98,7 @@ class AddAlpha(base.Command):
     pgp_group = key_group.add_group()
     pgp_group.add_argument(
         '--pgp-public-key-file',
-        type=arg_parsers.BufferedFileInput(),
+        type=arg_parsers.FileContents(),
         help='The path to the file containing the '
         'ASCII-armored PGP public key to add.')
     kms_group = key_group.add_group()
@@ -108,7 +117,7 @@ class AddAlpha(base.Command):
     pkix_group.add_argument(
         '--pkix-public-key-file',
         required=True,
-        type=arg_parsers.BufferedFileInput(),
+        type=arg_parsers.FileContents(),
         help='The path to the file containing the PKIX public key to add.')
     pkix_group.add_argument(
         '--pkix-public-key-algorithm',

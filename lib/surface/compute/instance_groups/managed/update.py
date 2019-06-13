@@ -237,7 +237,6 @@ class UpdateAlpha(UpdateBeta):
         update_disk.get('device-name'): update_disk
         for update_disk in update_disks
     }
-    preserved_disks = []
     additional_properties = []
     if current_stateful_policy and current_stateful_policy.preservedState \
         and current_stateful_policy.preservedState.disks:
@@ -250,20 +249,12 @@ class UpdateAlpha(UpdateBeta):
         continue
       if disk_entry.key not in update_map:
         additional_properties.append(disk_entry)
-        preserved_disks.append(
-            client.messages.StatefulPolicyPreservedDisk(
-                deviceName=disk_entry.key))
-    for device_name, stateful_disk in six.iteritems(update_map):
+    for _, stateful_disk in six.iteritems(update_map):
       additional_properties.append(
           self._MakePreservedStateDiskEntry(client, stateful_disk))
-      preserved_disks.append(
-          client.messages.StatefulPolicyPreservedDisk(deviceName=device_name))
     additional_properties.sort(key=lambda x: x.key)
-    preserved_disks.sort(key=lambda x: x.deviceName)
-    if preserved_disks:
+    if additional_properties:
       return client.messages.StatefulPolicy(
-          preservedResources=client.messages.StatefulPolicyPreservedResources(
-              disks=preserved_disks),
           preservedState=client.messages.StatefulPolicyPreservedState(
               disks=client.messages.StatefulPolicyPreservedState.DisksValue(
                   additionalProperties=additional_properties)))

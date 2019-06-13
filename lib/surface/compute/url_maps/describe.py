@@ -25,67 +25,65 @@ from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class Describe(base.DescribeCommand):
-  """Describe a URL map.
+def _DetailedHelp():
+  return {
+      'brief':
+          'Describe a URL map.',
+      'DESCRIPTION':
+          """\
+      *{command}* displays all data associated with a URL map in a
+      project.
+      """,
+  }
 
-  *{command}* displays all data associated with a URL map in a
-  project.
-  """
 
-  URL_MAP_ARG = None
+def _Run(args, holder, url_map_arg):
+  """Issues requests necessary to describe URL maps."""
+  client = holder.client
 
-  @staticmethod
-  def Args(parser):
-    Describe.URL_MAP_ARG = flags.UrlMapArgument()
-    Describe.URL_MAP_ARG.AddArgument(parser, operation_type='describe')
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args,
+      holder.resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    request = client.messages.ComputeUrlMapsGetRequest(
+  if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
+    service = client.apitools_client.regionUrlMaps
+    request = client.messages.ComputeRegionUrlMapsGetRequest(
         **url_map_ref.AsDict())
+  else:
+    service = client.apitools_client.urlMaps
+    request = client.messages.ComputeUrlMapsGetRequest(**url_map_ref.AsDict())
 
-    return client.MakeRequests([(client.apitools_client.urlMaps,
-                                 'Get', request)])[0]
+  return client.MakeRequests([(service, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
-  """Describe a URL map.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
+  """Describe a URL map."""
 
-  *{command}* displays all data associated with a URL map in a
-  project.
-  """
+  _include_l7_internal_load_balancing = False
 
+  detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
   def Args(cls, parser):
-    cls.URL_MAP_ARG = flags.UrlMapArgument(include_alpha=True)
+    cls.URL_MAP_ARG = flags.UrlMapArgument(
+        include_l7_internal_load_balancing=cls
+        ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+    return _Run(args, holder, self.URL_MAP_ARG)
 
-    url_map_ref = self.URL_MAP_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
-      service = client.apitools_client.regionUrlMaps
-      request = client.messages.ComputeRegionUrlMapsGetRequest(
-          **url_map_ref.AsDict())
-    else:
-      service = client.apitools_client.urlMaps
-      request = client.messages.ComputeUrlMapsGetRequest(**url_map_ref.AsDict())
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  pass
 
-    return client.MakeRequests([(service, 'Get', request)])[0]
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+
+  _include_l7_internal_load_balancing = True

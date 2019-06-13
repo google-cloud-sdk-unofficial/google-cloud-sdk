@@ -35,7 +35,7 @@ class List(base.ListCommand):
   The following command lists all CryptoKeys within the
   KeyRing `fellowship` and Location `global`:
 
-    $ {command} --keyring fellowship --location global
+    $ {command} --keyring=fellowship --location=global
   """
 
   def GetUriFunc(self):

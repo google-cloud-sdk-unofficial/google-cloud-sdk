@@ -246,13 +246,16 @@ class Import(base.CreateCommand):
         user_zone=properties.VALUES.compute.zone.Get(),
         output_filter=_OUTPUT_FILTER)
 
+  def _MakeGcsUri(self, uri):
+    return daisy_utils.MakeGcsUri(uri)
+
   def _CreateImportStager(self, args):
     if args.source_image:
       return ImportFromImageStager(self.storage_client, args)
     elif _IsLocalFile(args.source_file):
       return ImportFromLocalFileStager(self.storage_client, args)
     else:
-      return ImportFromGSFileStager(self.storage_client, args)
+      return ImportFromGSFileStager(self.storage_client, args, self._MakeGcsUri)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -468,8 +471,8 @@ class ImportFromLocalFileStager(BaseImportFromFileStager):
 class ImportFromGSFileStager(BaseImportFromFileStager):
   """Image import stager from a file in GCS."""
 
-  def __init__(self, storage_client, args):
-    self.source_file_gcs_uri = daisy_utils.MakeGcsUri(args.source_file)
+  def __init__(self, storage_client, args, makeGcsUri):
+    self.source_file_gcs_uri = makeGcsUri(args.source_file)
     super(ImportFromGSFileStager, self).__init__(storage_client, args)
 
   def GetAndCreateDaisyBucket(self):
@@ -498,6 +501,13 @@ class ImportBeta(Import):
   """Import an image into Google Compute Engine for Beta releases."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
+
+  def _MakeGcsUri(self, uri):
+    try:
+      return daisy_utils.MakeGcsObjectOrPathUri(uri)
+    except storage_util.InvalidObjectNameError:
+      raise exceptions.InvalidArgumentException(
+          'source-file', 'must be a path to an object in Google Cloud Storage')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

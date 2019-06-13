@@ -116,12 +116,7 @@ def _Run(args,
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.CreateCommand):
-  """Create a Beta HTTP2 health check to monitor load balanced instances.
-
-  Business logic should be put in helper functions. Classes annotated with
-  @base.ReleaseTracks should only be concerned with calling helper functions
-  with the correct feature parameters.
-  """
+  """Create a HTTP2 health check."""
 
   _include_l7_internal_load_balancing = False
   _supports_response = True
@@ -146,11 +141,5 @@ class CreateBeta(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create a HTTP2 health check to monitor load balanced instances.
-
-  Business logic should be put in helper functions. Classes annotated with
-  @base.ReleaseTracks should only be concerned with calling helper functions
-  with the correct feature parameters.
-  """
 
   _include_l7_internal_load_balancing = True

@@ -36,7 +36,7 @@ class Disable(base.Command):
   The following command disables version 3 of key `frodo` within
   keyring `fellowship` and location `us-east1`:
 
-    $ {command} 3 --location us-east1 --keyring fellowship --key frodo
+    $ {command} 3 --location=us-east1 --keyring=fellowship --key=frodo
   """
 
   @staticmethod

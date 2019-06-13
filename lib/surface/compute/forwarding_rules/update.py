@@ -58,6 +58,7 @@ class Update(base.UpdateCommand):
   """
 
   FORWARDING_RULE_ARG = None
+  _support_global_access = False
 
   @classmethod
   def Args(cls, parser):
@@ -162,11 +163,14 @@ class UpdateAlpha(Update):
 
   """
 
+  _support_global_access = True
+
   @classmethod
   def Args(cls, parser):
     _Args(cls, parser)
     flags.AddNetworkTier(
         parser, supports_network_tier_flag=True, for_update=True)
+    flags.AddAllowGlobalAccess(parser)
 
   def ConstructNetworkTier(self, messages, network_tier):
     if network_tier:
@@ -182,12 +186,21 @@ class UpdateAlpha(Update):
 
   def Modify(self, messages, args, existing):
     """Returns a modified forwarding rule message and included fields."""
-    if args.network_tier is None:
+    has_change = False
+    forwarding_rule = messages.ForwardingRule(name=existing.name)
+    if args.network_tier is not None:
+      forwarding_rule.networkTier = self.ConstructNetworkTier(
+          messages, args.network_tier)
+      has_change = True
+
+    if self._support_global_access and args.IsSpecified('allow_global_access'):
+      forwarding_rule.allowGlobalAccess = args.allow_global_access
+      has_change = True
+
+    if not has_change:
       return None
-    else:
-      return messages.ForwardingRule(
-          name=existing.name,
-          networkTier=self.ConstructNetworkTier(messages, args.network_tier))
+
+    return forwarding_rule
 
   def Run(self, args):
     """Returns a list of requests necessary for updating forwarding rules."""
@@ -201,7 +214,10 @@ class UpdateAlpha(Update):
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if not labels_diff.MayHaveUpdates() and args.network_tier is None:
+    global_access_specified = self._support_global_access and args.IsSpecified(
+        'allow_global_access')
+    if not labels_diff.MayHaveUpdates() and args.network_tier is None and (
+        not global_access_specified):
       raise calliope_exceptions.ToolException(
           'At least one property must be specified.')
 

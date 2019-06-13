@@ -129,7 +129,7 @@ class CreateBeta(base.CreateCommand):
     config_group.add_argument('--config-from-file',
                               help=('A path to a YAML or JSON file specifying '
                                     'the logs-based metric to create.'),
-                              type=arg_parsers.BufferedFileInput())
+                              type=arg_parsers.FileContents())
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

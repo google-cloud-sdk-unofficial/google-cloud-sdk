@@ -37,7 +37,7 @@ class Restore(base.UpdateCommand):
   KeyRing `fellowship` and Location `us-east1` which was previously scheduled
   for destruction:
 
-    $ {command} 9 --location us-east1 --keyring fellowship --cryptokey frodo
+    $ {command} 9 --location=us-east1 --keyring=fellowship --cryptokey=frodo
   """
 
   @staticmethod

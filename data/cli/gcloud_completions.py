@@ -3019,6 +3019,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--allow-global-access": "bool",
                     "--clear-labels": "bool",
                     "--global": "bool",
                     "--network-tier": "value",
@@ -3790,7 +3791,6 @@ STATIC_COMPLETION_CLI_TREE = {
                             "--page-size": "value",
                             "--region": "dynamic",
                             "--sort-by": "value",
-                            "--uri": "bool",
                             "--zone": "dynamic"
                           }
                         },
@@ -5591,6 +5591,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--async": "bool",
                     "--bgp-routing-mode": [
                       "global",
                       "regional"
@@ -7467,13 +7468,9 @@ STATIC_COMPLETION_CLI_TREE = {
                 "list-cdn-cache-invalidations": {
                   "commands": {},
                   "flags": {
-                    "--filter": "value",
                     "--global": "bool",
                     "--limit": "value",
-                    "--page-size": "value",
-                    "--region": "dynamic",
-                    "--sort-by": "value",
-                    "--uri": "bool"
+                    "--region": "dynamic"
                   }
                 },
                 "remove-host-rule": {
@@ -7977,6 +7974,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-pod-security-policy": "bool",
                     "--enable-private-endpoint": "bool",
                     "--enable-private-nodes": "bool",
+                    "--enable-resource-consumption-metering": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-tpu": "bool",
                     "--enable-tpu-service-networking": "bool",
@@ -8111,6 +8109,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-network-policy": "bool",
                     "--enable-peering-route-sharing": "bool",
                     "--enable-pod-security-policy": "bool",
+                    "--enable-resource-consumption-metering": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-vertical-pod-autoscaling": "bool",
                     "--generate-password": "bool",
@@ -8252,7 +8251,8 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
-                    "--description": "value"
+                    "--description": "value",
+                    "--labels": "value"
                   }
                 },
                 "delete": {
@@ -8279,7 +8279,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool",
-                    "--description": "value"
+                    "--clear-labels": "bool",
+                    "--description": "value",
+                    "--remove-labels": "value",
+                    "--update-labels": "value"
                   }
                 }
               },
@@ -10952,6 +10955,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-env-vars": "bool",
                 "--clear-labels": "bool",
                 "--clear-max-instances": "bool",
+                "--clear-vpc-connector": "bool",
                 "--egress-settings": [
                   "all",
                   "private-ranges-only"
@@ -14600,6 +14604,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic"
                   }
                 },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "dynamic"
+                  }
+                },
                 "failover": {
                   "commands": {},
                   "flags": {
@@ -14608,6 +14619,13 @@ STATIC_COMPLETION_CLI_TREE = {
                       "force-data-loss",
                       "limited-data-loss"
                     ],
+                    "--region": "dynamic"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
                     "--region": "dynamic"
                   }
                 },
@@ -14641,6 +14659,12 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "operations": {
               "commands": {
+                "cancel": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
                 "describe": {
                   "commands": {},
                   "flags": {
@@ -21458,6 +21482,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--shielded-secure-boot": "bool",
                     "--shielded-vtpm": "bool",
                     "--source-instance-template": "dynamic",
+                    "--source-snapshot": "value",
                     "--subnet": "value",
                     "--tags": "value",
                     "--zone": "dynamic"
@@ -22324,6 +22349,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--async": "bool",
                     "--bgp-routing-mode": [
                       "global",
                       "regional"
@@ -24349,6 +24375,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--attestor": "value",
                         "--attestor-project": "value",
                         "--pgp-key-fingerprint": "value",
+                        "--public-key-id": "value",
                         "--signature-file": "value"
                       }
                     },
@@ -24420,6 +24447,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "flags": {
                             "--attestor": "value",
                             "--comment": "value",
+                            "--pgp-public-key-file": "value",
                             "--public-key-file": "value"
                           }
                         },
@@ -24434,6 +24462,7 @@ STATIC_COMPLETION_CLI_TREE = {
                           "flags": {
                             "--attestor": "value",
                             "--comment": "value",
+                            "--pgp-public-key-file": "value",
                             "--public-key-file": "value"
                           }
                         }
@@ -24555,6 +24584,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-pod-security-policy": "bool",
                     "--enable-private-endpoint": "bool",
                     "--enable-private-nodes": "bool",
+                    "--enable-resource-consumption-metering": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-tpu": "bool",
                     "--enable-vertical-pod-autoscaling": "bool",
@@ -24674,6 +24704,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
                     "--enable-pod-security-policy": "bool",
+                    "--enable-resource-consumption-metering": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-vertical-pod-autoscaling": "bool",
                     "--generate-password": "bool",
@@ -24982,6 +25013,58 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "data-fusion": {
           "commands": {
+            "instances": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--edition": [
+                      "basic",
+                      "enterprise"
+                    ],
+                    "--enable_stackdriver_logging": "bool",
+                    "--enable_stackdriver_monitoring": "bool",
+                    "--labels": "value",
+                    "--location": "value",
+                    "--options": "value",
+                    "--zone": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "restart": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--location": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "operations": {
               "commands": {
                 "delete": {
@@ -27426,6 +27509,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-env-vars": "bool",
                 "--clear-labels": "bool",
                 "--clear-max-instances": "bool",
+                "--clear-vpc-connector": "bool",
                 "--entry-point": "value",
                 "--env-vars-file": "value",
                 "--ignore-file": "value",
@@ -28160,6 +28244,31 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "kms": {
           "commands": {
+            "asymmetric-decrypt": {
+              "commands": {},
+              "flags": {
+                "--ciphertext-file": "value",
+                "--key": "dynamic",
+                "--keyring": "dynamic",
+                "--location": "dynamic",
+                "--plaintext-file": "value"
+              }
+            },
+            "asymmetric-sign": {
+              "commands": {},
+              "flags": {
+                "--digest-algorithm": [
+                  "sha256",
+                  "sha384",
+                  "sha512"
+                ],
+                "--input-file": "value",
+                "--key": "dynamic",
+                "--keyring": "dynamic",
+                "--location": "dynamic",
+                "--signature-file": "value"
+              }
+            },
             "decrypt": {
               "commands": {},
               "flags": {
@@ -28256,10 +28365,31 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
+                    "--default-algorithm": [
+                      "ec-sign-p256-sha256",
+                      "ec-sign-p384-sha384",
+                      "google-symmetric-encryption",
+                      "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-decrypt-oaep-4096-sha256",
+                      "rsa-decrypt-oaep-4096-sha512",
+                      "rsa-sign-pkcs1-2048-sha256",
+                      "rsa-sign-pkcs1-3072-sha256",
+                      "rsa-sign-pkcs1-4096-sha256",
+                      "rsa-sign-pkcs1-4096-sha512",
+                      "rsa-sign-pss-2048-sha256",
+                      "rsa-sign-pss-3072-sha256",
+                      "rsa-sign-pss-4096-sha256",
+                      "rsa-sign-pss-4096-sha512"
+                    ],
                     "--keyring": "dynamic",
                     "--labels": "value",
                     "--location": "dynamic",
                     "--next-rotation-time": "value",
+                    "--protection-level": [
+                      "hsm",
+                      "software"
+                    ],
                     "--purpose": [
                       "asymmetric-encryption",
                       "asymmetric-signing",
@@ -28341,6 +28471,23 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--clear-labels": "bool",
+                    "--default-algorithm": [
+                      "ec-sign-p256-sha256",
+                      "ec-sign-p384-sha384",
+                      "google-symmetric-encryption",
+                      "rsa-decrypt-oaep-2048-sha256",
+                      "rsa-decrypt-oaep-3072-sha256",
+                      "rsa-decrypt-oaep-4096-sha256",
+                      "rsa-decrypt-oaep-4096-sha512",
+                      "rsa-sign-pkcs1-2048-sha256",
+                      "rsa-sign-pkcs1-3072-sha256",
+                      "rsa-sign-pkcs1-4096-sha256",
+                      "rsa-sign-pkcs1-4096-sha512",
+                      "rsa-sign-pss-2048-sha256",
+                      "rsa-sign-pss-3072-sha256",
+                      "rsa-sign-pss-4096-sha256",
+                      "rsa-sign-pss-4096-sha512"
+                    ],
                     "--keyring": "dynamic",
                     "--location": "dynamic",
                     "--next-rotation-time": "value",
@@ -28365,6 +28512,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "describe": {
                       "commands": {},
                       "flags": {
+                        "--attestation-file": "value",
                         "--key": "dynamic",
                         "--keyring": "dynamic",
                         "--location": "dynamic"
@@ -28392,6 +28540,15 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--key": "dynamic",
                         "--keyring": "dynamic",
                         "--location": "dynamic"
+                      }
+                    },
+                    "get-public-key": {
+                      "commands": {},
+                      "flags": {
+                        "--key": "dynamic",
+                        "--keyring": "dynamic",
+                        "--location": "dynamic",
+                        "--output-file": "value"
                       }
                     },
                     "list": {
@@ -29797,7 +29954,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create": {
                   "commands": {},
                   "flags": {
-                    "--labels": "value"
+                    "--labels": "value",
+                    "--topic-encryption-key": "dynamic",
+                    "--topic-encryption-key-keyring": "dynamic",
+                    "--topic-encryption-key-location": "dynamic",
+                    "--topic-encryption-key-project": "dynamic"
                   }
                 },
                 "delete": {
@@ -29901,6 +30062,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "dynamic"
                   }
                 },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--region": "dynamic"
+                  }
+                },
                 "failover": {
                   "commands": {},
                   "flags": {
@@ -29909,6 +30077,13 @@ STATIC_COMPLETION_CLI_TREE = {
                       "force-data-loss",
                       "limited-data-loss"
                     ],
+                    "--region": "dynamic"
+                  }
+                },
+                "import": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
                     "--region": "dynamic"
                   }
                 },
@@ -29942,6 +30117,12 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "operations": {
               "commands": {
+                "cancel": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
                 "describe": {
                   "commands": {},
                   "flags": {
@@ -30203,6 +30384,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--region": "value",
                 "--remove-cloudsql-instances": "value",
                 "--remove-env-vars": "value",
+                "--service-account": "value",
                 "--set-cloudsql-instances": "value",
                 "--set-env-vars": "value",
                 "--timeout": "value",
@@ -30417,6 +30599,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--region": "value",
                     "--remove-cloudsql-instances": "value",
                     "--remove-env-vars": "value",
+                    "--service-account": "value",
                     "--set-cloudsql-instances": "value",
                     "--set-env-vars": "value",
                     "--timeout": "value",
@@ -32797,7 +32980,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--iap": "value",
                 "--load-balancing-scheme": [
                   "EXTERNAL",
-                  "INTERNAL"
+                  "INTERNAL",
+                  "INTERNAL_SELF_MANAGED"
                 ],
                 "--port-name": "value",
                 "--protocol": "value",
@@ -33274,7 +33458,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 ],
                 "--load-balancing-scheme": [
                   "EXTERNAL",
-                  "INTERNAL"
+                  "INTERNAL",
+                  "INTERNAL_SELF_MANAGED"
                 ],
                 "--network": "value",
                 "--network-tier": "value",
@@ -33332,7 +33517,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--global-backend-service": "bool",
                 "--load-balancing-scheme": [
                   "EXTERNAL",
-                  "INTERNAL"
+                  "INTERNAL",
+                  "INTERNAL_SELF_MANAGED"
                 ],
                 "--network": "value",
                 "--region": "dynamic",
@@ -35229,6 +35415,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "update": {
               "commands": {},
               "flags": {
+                "--async": "bool",
                 "--bgp-routing-mode": [
                   "global",
                   "regional"
@@ -35486,7 +35673,13 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--auto-allocate-nat-external-ips": "bool",
+                    "--enable-logging": "bool",
                     "--icmp-idle-timeout": "value",
+                    "--log-filter": [
+                      "ALL",
+                      "ERRORS_ONLY",
+                      "TRANSLATIONS_ONLY"
+                    ],
                     "--min-ports-per-vm": "value",
                     "--nat-all-subnet-ip-ranges": "bool",
                     "--nat-custom-subnet-ip-ranges": "value",
@@ -35530,7 +35723,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--clear-tcp-established-idle-timeout": "bool",
                     "--clear-tcp-transitory-idle-timeout": "bool",
                     "--clear-udp-idle-timeout": "bool",
+                    "--enable-logging": "bool",
                     "--icmp-idle-timeout": "value",
+                    "--log-filter": [
+                      "ALL",
+                      "ERRORS_ONLY",
+                      "TRANSLATIONS_ONLY"
+                    ],
                     "--min-ports-per-vm": "value",
                     "--nat-all-subnet-ip-ranges": "bool",
                     "--nat-custom-subnet-ip-ranges": "value",
@@ -36034,7 +36233,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--node-affinity-labels": "value",
                     "--node-requirements": "value",
                     "--node-type": "value",
-                    "--region": "dynamic"
+                    "--region": "dynamic",
+                    "--server-binding": [
+                      "restart-node-on-any-server",
+                      "restart-node-on-minimal-servers"
+                    ]
                   }
                 },
                 "delete": {
@@ -36961,6 +37164,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-network-policy": "bool",
                 "--enable-private-endpoint": "bool",
                 "--enable-private-nodes": "bool",
+                "--enable-stackdriver-kubernetes": "bool",
                 "--enable-tpu": "bool",
                 "--image-type": "value",
                 "--issue-client-certificate": "bool",
@@ -37054,6 +37258,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--enable-legacy-authorization": "bool",
                 "--enable-master-authorized-networks": "bool",
                 "--enable-network-policy": "bool",
+                "--enable-stackdriver-kubernetes": "bool",
                 "--generate-password": "bool",
                 "--logging-service": "value",
                 "--maintenance-window": "value",
@@ -39790,6 +39995,31 @@ STATIC_COMPLETION_CLI_TREE = {
     },
     "kms": {
       "commands": {
+        "asymmetric-decrypt": {
+          "commands": {},
+          "flags": {
+            "--ciphertext-file": "value",
+            "--key": "dynamic",
+            "--keyring": "dynamic",
+            "--location": "dynamic",
+            "--plaintext-file": "value"
+          }
+        },
+        "asymmetric-sign": {
+          "commands": {},
+          "flags": {
+            "--digest-algorithm": [
+              "sha256",
+              "sha384",
+              "sha512"
+            ],
+            "--input-file": "value",
+            "--key": "dynamic",
+            "--keyring": "dynamic",
+            "--location": "dynamic",
+            "--signature-file": "value"
+          }
+        },
         "decrypt": {
           "commands": {},
           "flags": {
@@ -39886,10 +40116,31 @@ STATIC_COMPLETION_CLI_TREE = {
             "create": {
               "commands": {},
               "flags": {
+                "--default-algorithm": [
+                  "ec-sign-p256-sha256",
+                  "ec-sign-p384-sha384",
+                  "google-symmetric-encryption",
+                  "rsa-decrypt-oaep-2048-sha256",
+                  "rsa-decrypt-oaep-3072-sha256",
+                  "rsa-decrypt-oaep-4096-sha256",
+                  "rsa-decrypt-oaep-4096-sha512",
+                  "rsa-sign-pkcs1-2048-sha256",
+                  "rsa-sign-pkcs1-3072-sha256",
+                  "rsa-sign-pkcs1-4096-sha256",
+                  "rsa-sign-pkcs1-4096-sha512",
+                  "rsa-sign-pss-2048-sha256",
+                  "rsa-sign-pss-3072-sha256",
+                  "rsa-sign-pss-4096-sha256",
+                  "rsa-sign-pss-4096-sha512"
+                ],
                 "--keyring": "dynamic",
                 "--labels": "value",
                 "--location": "dynamic",
                 "--next-rotation-time": "value",
+                "--protection-level": [
+                  "hsm",
+                  "software"
+                ],
                 "--purpose": [
                   "asymmetric-encryption",
                   "asymmetric-signing",
@@ -39971,6 +40222,23 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--clear-labels": "bool",
+                "--default-algorithm": [
+                  "ec-sign-p256-sha256",
+                  "ec-sign-p384-sha384",
+                  "google-symmetric-encryption",
+                  "rsa-decrypt-oaep-2048-sha256",
+                  "rsa-decrypt-oaep-3072-sha256",
+                  "rsa-decrypt-oaep-4096-sha256",
+                  "rsa-decrypt-oaep-4096-sha512",
+                  "rsa-sign-pkcs1-2048-sha256",
+                  "rsa-sign-pkcs1-3072-sha256",
+                  "rsa-sign-pkcs1-4096-sha256",
+                  "rsa-sign-pkcs1-4096-sha512",
+                  "rsa-sign-pss-2048-sha256",
+                  "rsa-sign-pss-3072-sha256",
+                  "rsa-sign-pss-4096-sha256",
+                  "rsa-sign-pss-4096-sha512"
+                ],
                 "--keyring": "dynamic",
                 "--location": "dynamic",
                 "--next-rotation-time": "value",
@@ -39995,6 +40263,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "describe": {
                   "commands": {},
                   "flags": {
+                    "--attestation-file": "value",
                     "--key": "dynamic",
                     "--keyring": "dynamic",
                     "--location": "dynamic"
@@ -40022,6 +40291,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--key": "dynamic",
                     "--keyring": "dynamic",
                     "--location": "dynamic"
+                  }
+                },
+                "get-public-key": {
+                  "commands": {},
+                  "flags": {
+                    "--key": "dynamic",
+                    "--keyring": "dynamic",
+                    "--location": "dynamic",
+                    "--output-file": "value"
                   }
                 },
                 "list": {
@@ -41115,6 +41393,10 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--labels": "value",
                 "--network": "value",
                 "--redis-config": "value",
+                "--redis-version": [
+                  "redis_3_2",
+                  "redis_4_0"
+                ],
                 "--region": "dynamic",
                 "--reserved-ip-range": "value",
                 "--size": "value",

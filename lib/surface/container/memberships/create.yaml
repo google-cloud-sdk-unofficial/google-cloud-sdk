@@ -21,3 +21,5 @@
       arg_name: description
       required: true
       help_text: description of the membership resource.
+    labels:
+      api_field: membership.labels

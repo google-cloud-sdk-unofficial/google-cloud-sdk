@@ -19,9 +19,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks import flags
 from googlecloudsdk.command_lib.compute.networks import network_utils
+from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -35,6 +39,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
     network_utils.AddUpdateArgs(parser)
 
   def Run(self, args):
@@ -49,11 +54,26 @@ class Update(base.UpdateCommand):
           network_ref.Name()) + 'This operation cannot be undone.'
       console_io.PromptContinue(
           message=prompt_msg, default=True, cancel_on_no=True)
-
-      resource = service.SwitchToCustomMode(
+      result = service.SwitchToCustomMode(
           messages.ComputeNetworksSwitchToCustomModeRequest(
-              project=network_ref.project,
-              network=network_ref.Name()))
+              project=network_ref.project, network=network_ref.Name()))
+      operation_ref = resources.REGISTRY.Parse(
+          result.name,
+          params={'project': network_ref.project},
+          collection='compute.globalOperations')
+
+      if args.async:
+        log.UpdatedResource(
+            operation_ref,
+            kind='network {0}'.format(network_ref.Name()),
+            is_async=True,
+            details='Run the [gcloud compute operations describe] command '
+            'to check the status of this operation.')
+        return result
+
+      operation_poller = poller.Poller(service, network_ref)
+      return waiter.WaitFor(operation_poller, operation_ref,
+                            'Switching network to custom-mode')
 
     if args.bgp_routing_mode or getattr(args, 'multicast_mode', None):
       network_resource = messages.Network()
@@ -83,6 +103,7 @@ class UpdateAlpha(Update):
   def Args(cls, parser):
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
     network_utils.AddUpdateArgsAlpha(parser)
 
 

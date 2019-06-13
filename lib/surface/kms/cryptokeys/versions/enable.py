@@ -36,7 +36,7 @@ class Enable(base.Command):
   The following command enables version 3 of CryptoKey `frodo` within
   KeyRing `fellowship` and Location `us-east1`:
 
-    $ {command} 3 --location us-east1 --keyring fellowship --cryptokey frodo
+    $ {command} 3 --location=us-east1 --keyring=fellowship --cryptokey=frodo
   """
 
   @staticmethod

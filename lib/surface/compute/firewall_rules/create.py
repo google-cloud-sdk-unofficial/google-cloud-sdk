@@ -123,9 +123,12 @@ class Create(base.CreateCommand):
     firewall, project = self._CreateFirewall(holder, args)
     request = client.messages.ComputeFirewallsInsertRequest(
         firewall=firewall, project=project)
-    with progress_tracker.ProgressTracker('Creating firewall'):
+    with progress_tracker.ProgressTracker(
+        'Creating firewall',
+        autotick=False
+    ) as tracker:
       return client.MakeRequests([(client.apitools_client.firewalls, 'Insert',
-                                   request)])
+                                   request)], progress_tracker=tracker)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

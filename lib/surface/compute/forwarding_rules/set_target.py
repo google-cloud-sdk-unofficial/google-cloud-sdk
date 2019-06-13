@@ -30,20 +30,16 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, include_traffic_director,
-               include_l7_internal_load_balancing):
+  def __init__(self, holder, include_l7_internal_load_balancing):
     self._holder = holder
-    self._include_traffic_director = include_traffic_director
     self._include_l7_internal_load_balancing = include_l7_internal_load_balancing
 
   @classmethod
-  def Args(cls, parser, include_traffic_director,
-           include_l7_internal_load_balancing):
+  def Args(cls, parser, include_l7_internal_load_balancing):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     flags.AddUpdateArgs(
         parser,
-        include_traffic_director=include_traffic_director,
         include_l7_internal_load_balancing=include_l7_internal_load_balancing)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
@@ -98,51 +94,36 @@ class SetTargetHelper(object):
     return [(client.apitools_client.forwardingRules, 'SetTarget', request)]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   FORWARDING_RULE_ARG = None
-  _include_traffic_director = False
   _include_l7_internal_load_balancing = False
+  detailed_help = {
+      'DESCRIPTION': ("""\
+          *{{command}}* is used to set a new target for a forwarding
+          rule. {overview}
+
+          When creating a forwarding rule, exactly one of  ``--target-instance'',
+          ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
+          ``--target-ssl-proxy'', ``--target-tcp-proxy'' or
+          ``--target-vpn-gateway'' must be specified.""".format(
+              overview=flags.FORWARDING_RULES_OVERVIEW)),
+  }
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser, cls._include_traffic_director,
-                         cls._include_l7_internal_load_balancing)
+    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder, self._include_traffic_director,
+    return SetTargetHelper(holder,
                            self._include_l7_internal_load_balancing).Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SetBeta(Set):
-  """Modify a forwarding rule to direct network traffic to a new target."""
-
-  _include_traffic_director = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAlpha(SetBeta):
+class SetAlpha(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   _include_l7_internal_load_balancing = True
-
-
-Set.detailed_help = {
-    'DESCRIPTION': ("""\
-        *{{command}}* is used to set a new target for a forwarding
-        rule. {overview}
-
-        When creating a forwarding rule, exactly one of  ``--target-instance'',
-        ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
-        ``--target-ssl-proxy'', ``--target-tcp-proxy'' or
-        ``--target-vpn-gateway'' must be specified.""".format(
-            overview=flags.FORWARDING_RULES_OVERVIEW)),
-}
-
-
-SetBeta.detailed_help = Set.detailed_help
-SetAlpha.detailed_help = Set.detailed_help
