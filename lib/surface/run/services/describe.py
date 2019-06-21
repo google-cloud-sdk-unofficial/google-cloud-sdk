@@ -44,6 +44,8 @@ class Describe(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddRegionArg(parser)
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(),

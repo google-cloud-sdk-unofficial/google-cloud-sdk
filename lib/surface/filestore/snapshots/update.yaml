@@ -1,0 +1,43 @@
+- help_text:
+    brief: |
+      Update a Cloud Filestore snapshot.
+    description: |
+      Update the metadata of a Cloud Filestore snapshot.
+
+      This command can fail for the following reasons:
+        * The snapshot specified does not exist.
+        * The active account does not have permission to update the given
+          snapshot.
+    examples: |
+      The following command updates the Cloud Filestore snapshot named 'my-snapshot' to change the
+      description to 'A new description.'
+
+      $ {command} my-snapshot --description "A new description."
+
+      The following command updates a Cloud Filestore snapshot named 'my-snapshot' to add the
+      label 'key1=value1' and remove any label with the key 'key2'.
+
+      $ {command} my-snapshot --update-labels key1=value1 --remove-labels key2
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.filestore.resources:snapshot
+      help_text: |
+        Snapshot resource - The snapshot to update. The arguments in this group can be used to specify the attributes of this resource.
+    params:
+    - arg_name: description
+      api_field: snapshot.description
+      help_text: |
+        Description of the snapshot.
+    additional_arguments_hook: googlecloudsdk.command_lib.filestore.snapshots.update_util:AdditionalSnapshotUpdateArguments
+
+  async:
+    collection: file.projects.locations.operations
+
+  request:
+    api_version: v1p1alpha1
+    collection: file.projects.locations.snapshots
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.snapshots.update_util:GetExistingSnapshot
+    - googlecloudsdk.command_lib.filestore.snapshots.update_util:AddDescription
+    - googlecloudsdk.command_lib.filestore.snapshots.update_util:UpdateLabels

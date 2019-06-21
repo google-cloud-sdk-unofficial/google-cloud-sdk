@@ -48,6 +48,8 @@ class List(commands.List):
   @classmethod
   def Args(cls, parser):
     flags.AddRegionArgWithDefault(parser)
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),

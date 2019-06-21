@@ -52,6 +52,8 @@ class List(commands.List):
         required=True,
         prefixes=False)
     flags.AddRegionArgWithDefault(parser)
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         namespace_presentation]).AddToParser(parser)

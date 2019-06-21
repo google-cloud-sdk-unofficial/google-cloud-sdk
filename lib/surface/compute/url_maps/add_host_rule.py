@@ -188,12 +188,12 @@ class AddHostRule(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddHostRuleBeta(AddHostRule):
-  pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddHostRuleAlpha(AddHostRuleBeta):
 
   _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddHostRuleAlpha(AddHostRuleBeta):
+  pass

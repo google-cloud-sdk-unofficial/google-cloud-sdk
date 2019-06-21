@@ -32,6 +32,8 @@
       help_text: |
         The memory size of the instance in GiB.
     additional_arguments_hook: googlecloudsdk.command_lib.redis.util:AdditionalInstanceUpdateArguments
+    labels:
+      api_field: instance.labels
 
   async:
     collection: redis.projects.locations.operations
@@ -40,11 +42,11 @@
     api_version: v1
     collection: redis.projects.locations.instances
     modify_request_hooks:
-    - googlecloudsdk.command_lib.redis.instances_update_util:ResetDefaultMaskField
     - googlecloudsdk.command_lib.redis.instances_update_util:CheckFieldsSpecified
-    - googlecloudsdk.command_lib.redis.instances_update_util:GetExistingInstance
     - googlecloudsdk.command_lib.redis.instances_update_util:AddDisplayName
     - googlecloudsdk.command_lib.redis.instances_update_util:AddSize
     - googlecloudsdk.command_lib.redis.instances_update_util:RemoveRedisConfigs
     - googlecloudsdk.command_lib.redis.instances_update_util:UpdateRedisConfigs
-    - googlecloudsdk.command_lib.redis.instances_update_util:UpdateLabels
+  update:
+    read_modify_update: true
+    disable_auto_field_mask: true

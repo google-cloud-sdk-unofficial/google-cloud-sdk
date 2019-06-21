@@ -25,6 +25,9 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+_DEFAULT_LIMIT = 10
+
+
 def _TransformPatchJobDescription(resource):
   max_len = 30  # Show only the first 30 characters if description is long.
   description = resource.get('description', '')
@@ -82,6 +85,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    base.LIMIT_FLAG.SetDefault(parser, _DEFAULT_LIMIT)
     parser.display_info.AddFormat("""
           table(
             name.basename(),

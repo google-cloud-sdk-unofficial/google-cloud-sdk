@@ -176,10 +176,10 @@ class SetDefaultService(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetDefaultServiceBeta(SetDefaultService):
-  pass
+
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetDefaultServiceAlpha(SetDefaultServiceBeta):
-
-  _include_l7_internal_load_balancing = True
+  pass

@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Display detailed information about a health check.
 
@@ -56,8 +56,8 @@ class Describe(base.DescribeCommand):
                                  'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeAlphaAndBeta(Describe):
   """Display detailed information about a health check.
 
   *{command}* displays all data associated with a Google Compute

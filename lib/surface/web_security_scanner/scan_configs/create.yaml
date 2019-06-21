@@ -44,4 +44,5 @@
     - !REF googlecloudsdk.command_lib.web_security_scanner.flags:user_agent
     - !REF googlecloudsdk.command_lib.web_security_scanner.flags:blacklist_patterns
     - !REF googlecloudsdk.command_lib.web_security_scanner.flags:export_to_security_center
+    - !REF googlecloudsdk.command_lib.web_security_scanner.flags:risk_level
     additional_arguments_hook: googlecloudsdk.command_lib.web_security_scanner.auth:AuthFlags

@@ -386,15 +386,12 @@ class AddPathMatcher(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AddPathMatcherBeta(AddPathMatcher):
-  pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddPathMatcherAlpha(AddPathMatcherBeta):
 
   _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
-  BACKEND_SERVICE_ARG = None
-  BACKEND_BUCKET_ARG = None
-  URL_MAP_ARG = None
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddPathMatcherAlpha(AddPathMatcherBeta):
+  pass

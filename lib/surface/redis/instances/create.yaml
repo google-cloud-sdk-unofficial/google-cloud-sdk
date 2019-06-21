@@ -73,17 +73,6 @@
           spec:
           - api_field: key
           - api_field: value
-    - api_field: instance.labels.additionalProperties
-      arg_name: labels
-      metavar: KEY=VALUE
-      help_text: |
-        A list of label KEY=VALUE pairs to add.
-      type:
-        arg_dict:
-          flatten: true
-          spec:
-          - api_field: key
-          - api_field: value
     - arg_name: redis-version
       api_field: instance.redisVersion
       metavar: VERSION
@@ -109,6 +98,8 @@
         will be used.
       type: long
       default: 1
+    labels:
+      api_field: instance.labels
 
   async:
     collection: redis.projects.locations.operations

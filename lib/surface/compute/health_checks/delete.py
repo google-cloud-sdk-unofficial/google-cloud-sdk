@@ -80,8 +80,8 @@ def _Run(holder, args, include_l7_internal_load_balancing):
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
-class DeleteGaAndBeta(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
   """Delete Ga/Beta health checks."""
 
   _include_l7_internal_load_balancing = False
@@ -96,8 +96,12 @@ class DeleteGaAndBeta(base.DeleteCommand):
     return _Run(holder, args, self._include_l7_internal_load_balancing)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteGaAndBeta):
-  """Delete Alpha health checks."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
 
   _include_l7_internal_load_balancing = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+  pass

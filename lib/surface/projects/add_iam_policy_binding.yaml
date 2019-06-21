@@ -13,9 +13,9 @@ help_text:
       $ {command} example-project-id-1 --member='user:test-user@gmail.com' --role='roles/editor'
 
     To add an IAM policy binding for the role of 'roles/editor' to the service
-    account 'test-proj1@example.domain.com', run:
+    account 'test-proj1@example.domain.com' for the same project, run:
 
-      $ {command} test-proj1@example.domain.com --member='serviceAccount:test-proj1@example.domain.com' --role='roles/editor'
+      $ {command} example-project-id-1 --member='serviceAccount:test-proj1@example.domain.com' --role='roles/editor'
 
     To add an IAM policy binding for the role of 'roles/editor' for all
     authenticated users on a project with identifier 'example-project-id-1',

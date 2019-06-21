@@ -89,7 +89,7 @@ def _Run(args, holder, url_map_arg, release_track):
 class ExportBeta(base.Command):
   """Export a URL map."""
 
-  _include_l7_internal_load_balancing = False
+  _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
@@ -110,5 +110,4 @@ class ExportBeta(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ExportAlpha(ExportBeta):
-
-  _include_l7_internal_load_balancing = True
+  pass

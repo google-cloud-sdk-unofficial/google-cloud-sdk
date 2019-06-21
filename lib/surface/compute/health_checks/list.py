@@ -137,8 +137,20 @@ class List(base_classes.BaseLister):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(List):
+class ListBeta(base_classes.MultiScopeLister, List):
   """List health checks in Beta."""
+
+  @staticmethod
+  def Args(parser):
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+
+    parser.add_argument(
+        '--protocol',
+        help="""\
+        If protocol is specified, only health checks for that protocol are
+        listed, and protocol-specific columns are added to the output. By
+        default, health checks for all protocols are listed.
+        """)
 
   def _ProtocolWhitelist(self):
     # Returns a list of whitelisted protocols.
@@ -163,39 +175,6 @@ class ListBeta(List):
     columns = self._GetValidColumns(args)
     return 'table[]({columns})'.format(columns=','.join(columns))
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base_classes.MultiScopeLister, ListBeta):
-  """List health checks in Alpha."""
-
-  @staticmethod
-  def Args(parser):
-    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
-
-    parser.add_argument(
-        '--protocol',
-        help="""\
-        If protocol is specified, only health checks for that protocol are
-        listed, and protocol-specific columns are added to the output. By
-        default, health checks for all protocols are listed.
-        """)
-
-  def _ProtocolWhitelist(self):
-    # Returns a list of whitelisted protocols.
-    whitelist = super(ListAlpha, self)._ProtocolWhitelist()
-    return whitelist
-
-  def _Format(self, args):
-    columns = super(ListAlpha, self)._GetValidColumns(args)
-    if args.protocol is not None:
-      protocol_value = self._ConvertProtocolArgToValue(args)
-      if (protocol_value ==
-          self.messages.HealthCheck.TypeValueValuesEnum.UDP.number):
-        columns.extend(['udpHealthCheck.port:label=PORT',
-                        'udpHealthCheck.request:label=REQUEST',
-                        'udpHealthCheck.response:label=RESPONSE'])
-    return 'table[]({columns})'.format(columns=','.join(columns))
-
   @property
   def global_service(self):
     """The service used to list global resources."""
@@ -217,7 +196,7 @@ class ListAlpha(base_classes.MultiScopeLister, ListBeta):
     return self.compute.healthChecks
 
   def GetResources(self, args, errors):
-    health_checks = super(ListAlpha, self).GetResources(args, errors)
+    health_checks = super(ListBeta, self).GetResources(args, errors)
 
     # If a protocol is specified, check that it is one we support, and convert
     # it to a number.
@@ -233,6 +212,29 @@ class ListAlpha(base_classes.MultiScopeLister, ListBeta):
       if (protocol_value is None or
           health_check['type'] == args.protocol.upper()):
         yield health_check
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List health checks in Alpha."""
+
+  def _ProtocolWhitelist(self):
+    # Returns a list of whitelisted protocols.
+    whitelist = super(ListAlpha, self)._ProtocolWhitelist()
+    return whitelist
+
+  def _Format(self, args):
+    columns = super(ListAlpha, self)._GetValidColumns(args)
+    if args.protocol is not None:
+      protocol_value = self._ConvertProtocolArgToValue(args)
+      if (protocol_value ==
+          self.messages.HealthCheck.TypeValueValuesEnum.UDP.number):
+        columns.extend([
+            'udpHealthCheck.port:label=PORT',
+            'udpHealthCheck.request:label=REQUEST',
+            'udpHealthCheck.response:label=RESPONSE'
+        ])
+    return 'table[]({columns})'.format(columns=','.join(columns))
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('health checks')

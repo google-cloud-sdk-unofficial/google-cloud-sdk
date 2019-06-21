@@ -75,7 +75,7 @@ def AddSSHArgs(parser):
       Specifies the instance to SSH into.
 
       ``USER'' specifies the username with which to SSH. If omitted,
-      $USER from the environment is selected.
+      the user login name is used.
 
       ``INSTANCE'' specifies the name of the virtual machine instance to SSH
       into.
@@ -179,20 +179,22 @@ class Ssh(base.Command):
         ssh_utils.GetInternalInterface(instance),
         ssh_utils.GetExternalInterface(instance, no_raise=True))
 
+    internal_address = ssh_utils.GetInternalIPAddress(instance)
+
     if iap_tunnel_args:
-      # IAP Tunnel only uses ip_address for the purpose of --ssh-flag
+      # IAP Tunnel only uses instance_address for the purpose of --ssh-flag
       # substitution. In this case, dest_addr doesn't do much, it just matches
       # against entries in the user's ssh_config file. It's best to use
       # something unique to avoid false positive matches, thus we use
       # HostKeyAlias.
-      ip_address = ssh_utils.GetInternalIPAddress(instance)
+      instance_address = internal_address
       dest_addr = ssh_utils.HostKeyAlias(instance)
     elif args.internal_ip:
-      ip_address = ssh_utils.GetInternalIPAddress(instance)
-      dest_addr = ip_address
+      instance_address = internal_address
+      dest_addr = instance_address
     else:
-      ip_address = ssh_utils.GetExternalIPAddress(instance)
-      dest_addr = ip_address
+      instance_address = ssh_utils.GetExternalIPAddress(instance)
+      dest_addr = instance_address
     remote = ssh.Remote(dest_addr, user)
 
     identity_file = None
@@ -203,7 +205,8 @@ class Ssh(base.Command):
                                      args.strict_host_key_checking,
                                      host_keys_to_add=host_keys)
 
-    extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, ip_address)
+    extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, instance_address,
+                                                 internal_address)
     remainder = []
 
     if args.ssh_args:

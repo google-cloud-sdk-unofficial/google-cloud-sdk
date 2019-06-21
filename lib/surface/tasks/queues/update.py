@@ -73,6 +73,8 @@ class Update(base.UpdateCommand):
         api.messages,
         is_update=True,
         release_track=self.ReleaseTrack())
+    updated_fields = parsers.GetSpecifiedFieldsMask(
+        args, constants.PUSH_QUEUE, release_track=self.ReleaseTrack())
     log.warning(constants.QUEUE_MANAGEMENT_WARNING)
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       app_engine_routing_override = (
@@ -80,6 +82,7 @@ class Update(base.UpdateCommand):
           if queue_config.appEngineHttpTarget is not None else None)
       update_response = queues_client.Patch(
           queue_ref,
+          updated_fields,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_routing_override=app_engine_routing_override)
@@ -89,6 +92,7 @@ class Update(base.UpdateCommand):
           if queue_config.appEngineHttpQueue is not None else None)
       update_response = queues_client.Patch(
           queue_ref,
+          updated_fields,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_routing_override=app_engine_routing_override,
@@ -97,6 +101,7 @@ class Update(base.UpdateCommand):
       app_engine_routing_override = queue_config.appEngineRoutingOverride
       update_response = queues_client.Patch(
           queue_ref,
+          updated_fields,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
           app_engine_routing_override=app_engine_routing_override)
@@ -173,4 +178,3 @@ class AlphaUpdate(Update):
     flags.AddQueueResourceArg(parser, 'to update')
     flags.AddLocationFlag(parser)
     flags.AddUpdatePushQueueFlags(parser, release_track=base.ReleaseTrack.ALPHA)
-

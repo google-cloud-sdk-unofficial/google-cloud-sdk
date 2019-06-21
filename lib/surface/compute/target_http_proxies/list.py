@@ -84,12 +84,12 @@ class List(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(List):
-  pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
 
   _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  pass

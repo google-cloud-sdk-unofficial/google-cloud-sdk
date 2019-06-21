@@ -45,6 +45,8 @@ class List(commands.List):
 
   @classmethod
   def Args(cls, parser):
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
@@ -68,7 +70,7 @@ class List(commands.List):
 
   def Run(self, args):
     """List available services."""
-    if not flags.ValidateIsGKE(args) and not getattr(args, 'region', None):
+    if flags.IsManaged(args) and not getattr(args, 'region', None):
       client = global_methods.GetServerlessClientInstance()
       self.SetPartialApiEndpoint(client.url)
       locations_ref = args.CONCEPTS.region.Parse()

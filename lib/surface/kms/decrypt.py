@@ -133,7 +133,13 @@ class Decrypt(base.Command):
     resp = client.projects_locations_keyRings_cryptoKeys.Decrypt(req)
 
     try:
-      log.WriteToFileOrStdout(
-          args.plaintext_file, resp.plaintext, binary=True, overwrite=True)
+      if resp.plaintext is None:
+        with files.FileWriter(args.plaintext_file):
+          # to create an empty file
+          pass
+        log.Print('Decrypted file is empty')
+      else:
+        log.WriteToFileOrStdout(
+            args.plaintext_file, resp.plaintext, binary=True, overwrite=True)
     except files.Error as e:
       raise exceptions.BadFileException(e)

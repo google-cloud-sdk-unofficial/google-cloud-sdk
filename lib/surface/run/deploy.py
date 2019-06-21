@@ -67,6 +67,8 @@ class Deploy(base.Command):
         prefixes=False)
     flags.AddSourceRefFlags(parser)
     flags.AddRegionArg(parser)
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddCpuFlag(parser)
@@ -88,11 +90,6 @@ class Deploy(base.Command):
 
     conn_context = connection_context.GetConnectionContext(args)
     config_changes = flags.GetConfigurationChanges(args)
-
-    if conn_context.supports_one_platform:
-      flags.VerifyOnePlatformFlags(args)
-    else:
-      flags.VerifyGKEFlags(args)
 
     service_ref = flags.GetService(args)
 

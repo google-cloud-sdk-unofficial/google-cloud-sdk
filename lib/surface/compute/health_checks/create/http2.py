@@ -118,7 +118,7 @@ def _Run(args,
 class CreateBeta(base.CreateCommand):
   """Create a HTTP2 health check."""
 
-  _include_l7_internal_load_balancing = False
+  _include_l7_internal_load_balancing = True
   _supports_response = True
   detailed_help = _DetailedHelp()
 
@@ -141,5 +141,4 @@ class CreateBeta(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-
-  _include_l7_internal_load_balancing = True
+  pass

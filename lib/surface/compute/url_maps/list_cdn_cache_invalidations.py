@@ -119,12 +119,10 @@ class ListCacheInvalidations(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListCacheInvalidationsBeta(ListCacheInvalidations):
-  pass
+
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListCacheInvalidationsAlpha(ListCacheInvalidationsBeta):
-
-  _include_l7_internal_load_balancing = True
-
-  detailed_help = _DetailedHelp()
+  pass

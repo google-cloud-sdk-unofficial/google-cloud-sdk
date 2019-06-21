@@ -170,12 +170,12 @@ class RemoveHostRule(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RemoveHostRuleBeta(RemoveHostRule):
-  pass
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveHostRuleAlpha(RemoveHostRuleBeta):
 
   _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveHostRuleAlpha(RemoveHostRuleBeta):
+  pass

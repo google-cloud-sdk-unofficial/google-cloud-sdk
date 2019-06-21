@@ -103,6 +103,7 @@ class UpdateBeta(Update):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
   _include_beta_logging = True
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -111,5 +112,4 @@ class UpdateAlpha(UpdateBeta):
 
   _include_alpha_logging = True
   _include_beta_logging = False
-  _include_l7_internal_load_balancing = True
   _include_private_ipv6_access = True

@@ -20,8 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
-from googlecloudsdk.api_lib.compute.operations import poller
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -29,10 +27,15 @@ from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _Args(cls, parser):
+def _Args(cls, parser, support_network_tier, support_global_access):
   cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
   cls.FORWARDING_RULE_ARG.AddArgument(parser)
   labels_util.AddUpdateLabelsFlags(parser)
+  if support_network_tier:
+    flags.AddNetworkTier(
+        parser, supports_network_tier_flag=True, for_update=True)
+  if support_global_access:
+    flags.AddAllowGlobalAccess(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -59,10 +62,15 @@ class Update(base.UpdateCommand):
 
   FORWARDING_RULE_ARG = None
   _support_global_access = False
+  _support_network_tier = False
 
   @classmethod
   def Args(cls, parser):
-    _Args(cls, parser)
+    _Args(
+        cls,
+        parser,
+        support_network_tier=cls._support_network_tier,
+        support_global_access=cls._support_global_access)
 
   def _CreateGlobalSetLabelsRequest(self, messages, forwarding_rule_ref,
                                     forwarding_rule, replacement):
@@ -83,95 +91,6 @@ class Update(base.UpdateCommand):
             labelFingerprint=forwarding_rule.labelFingerprint,
             labels=replacement))
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client.apitools_client
-    messages = holder.client.messages
-
-    forwarding_rule_ref = self.FORWARDING_RULE_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
-
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if not labels_diff.MayHaveUpdates():
-      raise calliope_exceptions.RequiredArgumentException(
-          'LABELS', 'At least one of --update-labels or '
-          '--remove-labels must be specified.')
-
-    if forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
-      forwarding_rule = client.globalForwardingRules.Get(
-          messages.ComputeGlobalForwardingRulesGetRequest(
-              **forwarding_rule_ref.AsDict()))
-      labels_value = messages.GlobalSetLabelsRequest.LabelsValue
-    else:
-      forwarding_rule = client.forwardingRules.Get(
-          messages.ComputeForwardingRulesGetRequest(
-              **forwarding_rule_ref.AsDict()))
-      labels_value = messages.RegionSetLabelsRequest.LabelsValue
-
-    labels_update = labels_diff.Apply(labels_value, forwarding_rule.labels)
-
-    if not labels_update.needs_update:
-      return forwarding_rule
-
-    if forwarding_rule_ref.Collection() == 'compute.globalForwardingRules':
-      request = self._CreateGlobalSetLabelsRequest(
-          messages, forwarding_rule_ref, forwarding_rule, labels_update.labels)
-
-      operation = client.globalForwardingRules.SetLabels(request)
-      operation_ref = holder.resources.Parse(
-          operation.selfLink, collection='compute.globalOperations')
-
-      operation_poller = poller.Poller(client.globalForwardingRules)
-    else:
-      request = self._CreateRegionalSetLabelsRequest(
-          messages, forwarding_rule_ref, forwarding_rule, labels_update.labels)
-
-      operation = client.forwardingRules.SetLabels(request)
-      operation_ref = holder.resources.Parse(
-          operation.selfLink, collection='compute.regionOperations')
-
-      operation_poller = poller.Poller(client.forwardingRules)
-
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Updating labels of forwarding rule [{0}]'.format(
-                              forwarding_rule_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  r"""Update a Google Compute Engine forwarding rule.
-
-  *{command}* updates labels and network tier for a Google Compute Engine
-  forwarding rule.
-
-  Example to update labels:
-
-    $ {command} example-fr --region us-central1 \
-      --update-labels=k0=value1,k1=value2 --remove-labels=k3
-
-  will add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''.
-
-  Labels can be used to identify the forwarding rule and to filter them as in
-
-    $ {parent_command} list --filter='labels.k1:value2'
-
-  To list existing labels
-
-    $ {parent_command} describe example-fr --format='default(labels)'
-
-  """
-
-  _support_global_access = True
-
-  @classmethod
-  def Args(cls, parser):
-    _Args(cls, parser)
-    flags.AddNetworkTier(
-        parser, supports_network_tier_flag=True, for_update=True)
-    flags.AddAllowGlobalAccess(parser)
-
   def ConstructNetworkTier(self, messages, network_tier):
     if network_tier:
       network_tier = network_tier.upper()
@@ -184,16 +103,24 @@ class UpdateAlpha(Update):
     else:
       return
 
+  def _HasNextTierChange(self, args):
+    return self._support_network_tier and args.network_tier is not None
+
+  def _HasGlobalAccessChange(self, args):
+    return self._support_global_access and args.IsSpecified(
+        'allow_global_access')
+
   def Modify(self, messages, args, existing):
     """Returns a modified forwarding rule message and included fields."""
     has_change = False
     forwarding_rule = messages.ForwardingRule(name=existing.name)
-    if args.network_tier is not None:
+
+    if self._HasNextTierChange(args):
       forwarding_rule.networkTier = self.ConstructNetworkTier(
           messages, args.network_tier)
       has_change = True
 
-    if self._support_global_access and args.IsSpecified('allow_global_access'):
+    if self._HasGlobalAccessChange(args):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
       has_change = True
 
@@ -214,10 +141,14 @@ class UpdateAlpha(Update):
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    global_access_specified = self._support_global_access and args.IsSpecified(
-        'allow_global_access')
-    if not labels_diff.MayHaveUpdates() and args.network_tier is None and (
-        not global_access_specified):
+
+    has_change = any([
+        labels_diff.MayHaveUpdates(),
+        self._HasNextTierChange(args),
+        self._HasGlobalAccessChange(args)
+    ])
+
+    if not has_change:
       raise calliope_exceptions.ToolException(
           'At least one property must be specified.')
 
@@ -270,3 +201,39 @@ class UpdateAlpha(Update):
         requests.append((client.forwardingRules, 'SetLabels', request))
 
     return holder.client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  r"""Update a Google Compute Engine forwarding rule.
+
+  *{command}* updates labels and network tier for a Google Compute Engine
+  forwarding rule.
+
+  Example to update labels:
+
+    $ {command} example-fr --region us-central1 \
+      --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+  will add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''.
+
+  Labels can be used to identify the forwarding rule and to filter them as in
+
+    $ {parent_command} list --filter='labels.k1:value2'
+
+  To list existing labels
+
+    $ {parent_command} describe example-fr --format='default(labels)'
+
+  """
+
+  _support_global_access = True
+  _support_network_tier = True
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(
+        cls,
+        parser,
+        support_network_tier=cls._support_network_tier,
+        support_global_access=cls._support_global_access)

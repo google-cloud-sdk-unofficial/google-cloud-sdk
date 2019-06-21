@@ -52,7 +52,8 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing):
+def _Args(parser, include_l7_internal_load_balancing,
+          traffic_director_security):
   """Add the target http proxies comamnd line flags to the parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   parser.add_argument(
@@ -61,29 +62,38 @@ def _Args(parser, include_l7_internal_load_balancing):
   parser.display_info.AddCacheUpdater(
       flags.TargetHttpProxiesCompleterAlpha if
       include_l7_internal_load_balancing else flags.TargetHttpProxiesCompleter)
+  if traffic_director_security:
+    flags.AddProxyBind(parser, False)
 
 
-def _Run(args, holder, url_map_ref, target_http_proxy_ref):
+def _Run(args, holder, url_map_ref, target_http_proxy_ref,
+         traffic_director_security):
   """Issue a Target HTTP Proxy Insert request."""
   client = holder.client
+
+  if traffic_director_security and args.proxy_bind:
+    target_http_proxy = client.messages.TargetHttpProxy(
+        description=args.description,
+        name=target_http_proxy_ref.Name(),
+        urlMap=url_map_ref.SelfLink(),
+        proxyBind=args.proxy_bind)
+  else:
+    target_http_proxy = client.messages.TargetHttpProxy(
+        description=args.description,
+        name=target_http_proxy_ref.Name(),
+        urlMap=url_map_ref.SelfLink())
 
   if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
       target_http_proxy_ref):
     request = client.messages.ComputeRegionTargetHttpProxiesInsertRequest(
         project=target_http_proxy_ref.project,
         region=target_http_proxy_ref.region,
-        targetHttpProxy=client.messages.TargetHttpProxy(
-            description=args.description,
-            name=target_http_proxy_ref.Name(),
-            urlMap=url_map_ref.SelfLink()))
+        targetHttpProxy=target_http_proxy)
     collection = client.apitools_client.regionTargetHttpProxies
   else:
     request = client.messages.ComputeTargetHttpProxiesInsertRequest(
         project=target_http_proxy_ref.project,
-        targetHttpProxy=client.messages.TargetHttpProxy(
-            description=args.description,
-            name=target_http_proxy_ref.Name(),
-            urlMap=url_map_ref.SelfLink()))
+        targetHttpProxy=target_http_proxy)
     collection = client.apitools_client.targetHttpProxies
 
   return client.MakeRequests([(collection, 'Insert', request)])
@@ -94,6 +104,7 @@ class Create(base.CreateCommand):
   """Create a target HTTP proxy."""
 
   _include_l7_internal_load_balancing = False
+  _traffic_director_security = False
 
   URL_MAP_ARG = None
   TARGET_HTTP_PROXY_ARG = None
@@ -109,7 +120,8 @@ class Create(base.CreateCommand):
         include_l7_internal_load_balancing=cls
         ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser)
-    _Args(parser, cls._include_l7_internal_load_balancing)
+    _Args(parser, cls._include_l7_internal_load_balancing,
+          cls._traffic_director_security)
 
   def Run(self, args):
     """Issue a Target HTTP Proxy Insert request."""
@@ -118,15 +130,16 @@ class Create(base.CreateCommand):
         args, holder.resources)
     url_map_ref = target_http_proxies_utils.ResolveTargetHttpProxyUrlMap(
         args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources)
-    return _Run(args, holder, url_map_ref, target_http_proxy_ref)
+    return _Run(args, holder, url_map_ref, target_http_proxy_ref,
+                self._traffic_director_security)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  pass
+
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-
-  _include_l7_internal_load_balancing = True
+  _traffic_director_security = True

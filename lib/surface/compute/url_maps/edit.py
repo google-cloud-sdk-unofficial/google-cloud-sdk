@@ -256,7 +256,8 @@ def _GetReferenceNormalizers(resource_registry, track):
     return NormalizeReference
 
   allowed_collections = ['compute.backendServices', 'compute.backendBuckets']
-  if track == 'alpha':
+  # TODO(b/134702371): condition on class feature variable instead of track.
+  if track == 'alpha' or track == 'beta':
     allowed_collections += ['compute.regionBackendServices']
   return [
       ('defaultService',
@@ -341,12 +342,12 @@ class Edit(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class EditBeta(Edit):
 
+  _include_l7_internal_load_balancing = True
+
   TRACK = 'beta'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EditAlpha(EditBeta):
-
-  _include_l7_internal_load_balancing = True
 
   TRACK = 'alpha'

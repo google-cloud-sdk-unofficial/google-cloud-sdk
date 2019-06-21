@@ -44,6 +44,8 @@ class Describe(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddRegionArg(parser)
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     domain_mapping_presentation = presentation_specs.ResourcePresentationSpec(
         '--domain',
         resource_args.GetDomainMappingResourceSpec(),

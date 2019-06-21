@@ -94,7 +94,7 @@ class SetTargetHelper(object):
     return [(client.apitools_client.forwardingRules, 'SetTarget', request)]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
@@ -122,8 +122,14 @@ class Set(base.UpdateCommand):
                            self._include_l7_internal_load_balancing).Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAlpha(Set):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   _include_l7_internal_load_balancing = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetAlpha(SetBeta):
+  """Modify a forwarding rule to direct network traffic to a new target."""
+  pass

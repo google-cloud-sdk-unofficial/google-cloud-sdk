@@ -49,6 +49,8 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddRegionArg(parser)
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     parser.add_argument(
         '--service', required=True,
         help='Create domain mapping for the given service.')

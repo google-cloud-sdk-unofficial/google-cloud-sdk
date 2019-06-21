@@ -20,6 +20,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import argparse
+import copy
+import itertools
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.help_search import search
@@ -128,9 +130,37 @@ For example, to search for commands that relate to the term `project` or
     results = search.RunSearch(
         args.command + (args.search_terms or []),
         self._cli_power_users_only)
-    self._resources_found = len(results)
-    self._resources_displayed = min(len(results), args.limit)
-    return results
+
+    def _filter(a, b, filtered_list):
+      """Recognize duplicates and list only the highest track GA>BETA>ALPHA.
+
+      Args:
+        a: line to compare
+        b: line to compare
+        filtered_list: filtered_list: copy of the list to filter
+
+      Returns: None
+
+      """
+
+      if a['results'] == b['results'] and a['release'] > b['release']:
+        try:
+          filtered_list.remove(b)
+        except ValueError:
+          pass
+      elif a['results'] == b['results'] and a['release'] < b['release']:
+        try:
+          filtered_list.remove(a)
+        except ValueError:
+          pass
+
+    filtered_results = copy.deepcopy(results)
+    for a, b in itertools.combinations(results, 2):
+      _filter(a, b, filtered_results)
+
+    self._resources_found = len(filtered_results)
+    self._resources_displayed = min(len(filtered_results), args.limit)
+    return filtered_results
 
   def Epilog(self, resources_were_displayed):
     if not self._resources_found:

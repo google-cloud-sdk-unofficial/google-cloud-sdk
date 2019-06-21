@@ -49,7 +49,9 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing=False):
+def _Args(parser,
+          include_l7_internal_load_balancing=False,
+          traffic_director_security=False):
   """Add the target https proxies comamnd line flags to the parser."""
 
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -62,16 +64,28 @@ def _Args(parser, include_l7_internal_load_balancing=False):
       include_l7_internal_load_balancing else flags.TargetHttpsProxiesCompleter)
   target_proxies_utils.AddQuicOverrideCreateArgs(parser)
 
+  if traffic_director_security:
+    flags.AddProxyBind(parser, False)
+
 
 def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,
-         ssl_policy_ref):
+         ssl_policy_ref, traffic_director_security):
   """Issues requests necessary to create Target HTTPS Proxies."""
   client = holder.client
-  target_https_proxy = client.messages.TargetHttpsProxy(
-      description=args.description,
-      name=target_https_proxy_ref.Name(),
-      urlMap=url_map_ref.SelfLink(),
-      sslCertificates=[ref.SelfLink() for ref in ssl_cert_refs])
+
+  if traffic_director_security and args.proxy_bind:
+    target_https_proxy = client.messages.TargetHttpsProxy(
+        description=args.description,
+        name=target_https_proxy_ref.Name(),
+        urlMap=url_map_ref.SelfLink(),
+        sslCertificates=[ref.SelfLink() for ref in ssl_cert_refs],
+        proxyBind=args.proxy_bind)
+  else:
+    target_https_proxy = client.messages.TargetHttpsProxy(
+        description=args.description,
+        name=target_https_proxy_ref.Name(),
+        urlMap=url_map_ref.SelfLink(),
+        sslCertificates=[ref.SelfLink() for ref in ssl_cert_refs])
 
   if args.IsSpecified('quic_override'):
     quic_enum = client.messages.TargetHttpsProxy.QuicOverrideValueValuesEnum
@@ -101,6 +115,7 @@ class Create(base.CreateCommand):
   """Create a target HTTPS proxy."""
 
   _include_l7_internal_load_balancing = False
+  _traffic_director_security = False
 
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
@@ -131,7 +146,8 @@ class Create(base.CreateCommand):
     _Args(
         parser,
         include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+        ._include_l7_internal_load_balancing,
+        traffic_director_security=cls._traffic_director_security)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -145,15 +161,15 @@ class Create(base.CreateCommand):
     ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
         args, holder.resources) if args.ssl_policy else None
     return _Run(args, holder, target_https_proxy_ref, url_map_ref,
-                ssl_cert_refs, ssl_policy_ref)
+                ssl_cert_refs, ssl_policy_ref, self._traffic_director_security)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  pass
+
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-
-  _include_l7_internal_load_balancing = True
+  _traffic_director_security = True

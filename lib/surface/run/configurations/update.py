@@ -53,6 +53,8 @@ class Update(base.Command):
         required=True,
         prefixes=False)
     flags.AddRegionArg(parser)
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)

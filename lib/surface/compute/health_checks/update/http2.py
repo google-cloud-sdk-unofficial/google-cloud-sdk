@@ -198,7 +198,7 @@ def _Run(args, holder, include_l7_internal_load_balancing):
 class UpdateBeta(base.UpdateCommand):
   """Update a HTTP2 health check."""
 
-  _include_l7_internal_load_balancing = False
+  _include_l7_internal_load_balancing = True
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -212,5 +212,4 @@ class UpdateBeta(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
-
-  _include_l7_internal_load_balancing = True
+  pass

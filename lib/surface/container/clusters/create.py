@@ -220,7 +220,6 @@ def ParseCreateOptionsBase(args):
                 '`--enable-basic-auth` or `--username` is not, our API will '
                 'treat that as `--no-enable-basic-auth`.')
 
-  flags.WarnForUnspecifiedIpAllocationPolicy(args)
   enable_autorepair = cmd_util.GetAutoRepair(args)
   flags.WarnForNodeModification(args, enable_autorepair)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
@@ -321,7 +320,7 @@ class Create(base.CreateCommand):
     flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
-    flags.AddResourceUsageExportFlags(parser, hidden=True)
+    flags.AddResourceUsageExportFlags(parser)
 
   def ParseCreateOptions(self, args):
     flags.WarnGAForFutureAutoUpgradeChange()

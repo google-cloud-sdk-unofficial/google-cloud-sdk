@@ -161,10 +161,10 @@ class RemovePathMatcher(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RemovePathMatcherBeta(RemovePathMatcher):
-  pass
+
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RemovePathMatcherAlpha(RemovePathMatcherBeta):
-
-  _include_l7_internal_load_balancing = True
+  pass

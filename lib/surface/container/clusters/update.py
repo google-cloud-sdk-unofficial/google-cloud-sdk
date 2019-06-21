@@ -201,7 +201,7 @@ class Update(base.UpdateCommand):
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddResourceUsageExportFlags(group, is_update=True, hidden=True)
+    flags.AddResourceUsageExportFlags(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)

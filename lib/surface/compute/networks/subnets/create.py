@@ -203,8 +203,6 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
         log_config.metadata = flags.GetLoggingMetadataArgAlpha(
             messages).GetEnumForChoice(args.metadata)
       subnetwork.logConfig = log_config
-    if getattr(args, 'role', None):
-      subnetwork.role = messages.Subnetwork.RoleValueValuesEnum(args.role)
   elif include_beta_logging:
     if (args.enable_flow_logs is not None or
         args.logging_aggregation_interval is not None or
@@ -231,6 +229,8 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
       subnetwork.privateIpGoogleAccess = None
       subnetwork.enableFlowLogs = None
       subnetwork.logConfig = None
+    if getattr(args, 'role', None):
+      subnetwork.role = messages.Subnetwork.RoleValueValuesEnum(args.role)
 
   if include_private_ipv6_access:
     if args.enable_private_ipv6_access is not None:
@@ -308,6 +308,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
 
   _include_beta_logging = True
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -315,5 +316,4 @@ class CreateAlpha(CreateBeta):
 
   _include_alpha_logging = True
   _include_beta_logging = False
-  _include_l7_internal_load_balancing = True
   _include_private_ipv6_access = True

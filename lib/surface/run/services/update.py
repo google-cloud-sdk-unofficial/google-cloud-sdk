@@ -58,6 +58,8 @@ class Update(base.Command):
         required=True,
         prefixes=False)
     flags.AddRegionArg(parser)
+    flags.AddPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
     flags.AddCpuFlag(parser)
@@ -82,11 +84,6 @@ class Update(base.Command):
     """
     conn_context = connection_context.GetConnectionContext(args)
     service_ref = flags.GetService(args)
-
-    if conn_context.supports_one_platform:
-      flags.VerifyOnePlatformFlags(args)
-    else:
-      flags.VerifyGKEFlags(args)
 
     with serverless_operations.Connect(conn_context) as client:
       changes = flags.GetConfigurationChanges(args)

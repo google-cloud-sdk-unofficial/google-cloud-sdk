@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
+from googlecloudsdk.api_lib.util import exceptions as api_lib_util_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.config import completers
@@ -47,9 +48,10 @@ def _WarnIfSettingProjectWithNoAccess(scope, project):
     project_ref = command_lib_util.ParseProject(project)
     base.DisableUserProjectQuota()
     try:
-      projects_api.Get(project_ref)
+      projects_api.Get(project_ref, disable_api_enablement_check=True)
     except (apitools_exceptions.HttpError,
-            c_store.NoCredentialsForAccountException):
+            c_store.NoCredentialsForAccountException,
+            api_lib_util_exceptions.HttpException):
       log.warning(
           'You do not appear to have access to project [{}] or'
           ' it does not exist.'.format(project))

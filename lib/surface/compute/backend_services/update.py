@@ -56,23 +56,24 @@ def AddIapFlag(parser):
       """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class UpdateGA(base.UpdateCommand):
-  """Update a backend service.
-
-  *{command}* is used to update backend services.
-  """
+class UpdateHelper(object):
+  """Helper class that updates a backend service."""
 
   HEALTH_CHECK_ARG = None
   HTTP_HEALTH_CHECK_ARG = None
   HTTPS_HEALTH_CHECK_ARG = None
+  SECURITY_POLICY_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
+           support_logging):
+    """Add all arguments for updating a backend service."""
+
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
         parser, operation_type='update')
     flags.AddDescription(parser)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
+    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
+        support_regional_health_check=support_l7_internal_load_balancer)
     cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
     cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
     cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
@@ -87,66 +88,34 @@ class UpdateGA(base.UpdateCommand):
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
-    flags.AddEnableCdn(parser, default=None)
-    flags.AddSessionAffinity(parser)
-    flags.AddAffinityCookieTtl(parser)
+
     flags.AddConnectionDrainingTimeout(parser)
+    flags.AddEnableCdn(parser, default=None)
     flags.AddCacheKeyIncludeProtocol(parser, default=None)
     flags.AddCacheKeyIncludeHost(parser, default=None)
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
+    flags.AddSessionAffinity(parser)
+    flags.AddAffinityCookieTtl(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
+    if support_failover:
+      flags.AddConnectionDrainOnFailover(parser, default=None)
+      flags.AddDropTrafficIfUnhealthy(parser, default=None)
+      flags.AddFailoverRatio(parser)
+
+    if support_logging:
+      flags.AddEnableLogging(parser, default=None)
+      flags.AddLoggingSampleRate(parser)
+
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
 
-  def _GetSetSecurityPolicyRequest(self, client, backend_service_ref,
-                                   security_policy_ref):
-    backend_service = backend_service_client.BackendService(
-        backend_service_ref, compute_client=client)
-    return backend_service.MakeSetSecurityPolicyRequestTuple(
-        security_policy=security_policy_ref)
-
-  def GetGetRequest(self, client, backend_service_ref):
-    """Create Backend Services get request."""
-    if backend_service_ref.Collection() == 'compute.regionBackendServices':
-      return (
-          client.apitools_client.regionBackendServices,
-          'Get',
-          client.messages.ComputeRegionBackendServicesGetRequest(
-              project=backend_service_ref.project,
-              region=backend_service_ref.region,
-              backendService=backend_service_ref.Name()),
-      )
-    return (
-        client.apitools_client.backendServices,
-        'Get',
-        client.messages.ComputeBackendServicesGetRequest(
-            project=backend_service_ref.project,
-            backendService=backend_service_ref.Name()),
-    )
-
-  def GetSetRequest(self, client, backend_service_ref, replacement):
-    """Create Backend Services set request."""
-    if backend_service_ref.Collection() == 'compute.regionBackendServices':
-      return (
-          client.apitools_client.regionBackendServices,
-          'Patch',
-          client.messages.ComputeRegionBackendServicesPatchRequest(
-              project=backend_service_ref.project,
-              region=backend_service_ref.region,
-              backendService=backend_service_ref.Name(),
-              backendServiceResource=replacement),
-      )
-
-    return (
-        client.apitools_client.backendServices,
-        'Patch',
-        client.messages.ComputeBackendServicesPatchRequest(
-            project=backend_service_ref.project,
-            backendService=backend_service_ref.Name(),
-            backendServiceResource=replacement),
-    )
+  def __init__(self, support_l7_internal_load_balancer, support_failover,
+               support_logging):
+    self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
+    self._support_failover = support_failover
+    self._support_logging = support_logging
 
   def Modify(self, client, resources, args, existing):
     """Modify Backend Service."""
@@ -188,6 +157,10 @@ class UpdateGA(base.UpdateCommand):
     if args.affinity_cookie_ttl is not None:
       replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
 
+    if args.connection_draining_timeout is not None:
+      replacement.connectionDraining = client.messages.ConnectionDraining(
+          drainingTimeoutSec=args.connection_draining_timeout)
+
     backend_services_utils.ApplyCdnPolicyArgs(
         client,
         args,
@@ -201,40 +174,132 @@ class UpdateGA(base.UpdateCommand):
     if not replacement.customRequestHeaders:
       cleared_fields.append('customRequestHeaders')
 
+    backend_services_utils.ApplyFailoverPolicyArgs(
+        client.messages,
+        args,
+        replacement,
+        support_failover=self._support_failover)
+
+    backend_services_utils.ApplyLogConfigArgs(
+        client.messages,
+        args,
+        replacement,
+        support_logging=self._support_logging)
+
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
     """Validate arguments."""
     if not any([
-        args.affinity_cookie_ttl is not None,
-        args.connection_draining_timeout is not None,
-        args.no_custom_request_headers is not None,
-        args.custom_request_header is not None,
-        args.description is not None,
-        args.enable_cdn is not None,
-        args.cache_key_include_protocol is not None,
-        args.cache_key_include_host is not None,
-        args.cache_key_include_query_string is not None,
-        args.cache_key_query_string_whitelist is not None,
-        args.cache_key_query_string_blacklist is not None,
-        args.health_checks,
-        args.http_health_checks,
-        args.https_health_checks,
-        args.IsSpecified('iap'),
-        args.port_name,
-        args.protocol,
-        args.security_policy is not None,
-        args.session_affinity is not None,
+        args.IsSpecified('affinity_cookie_ttl'),
+        args.IsSpecified('connection_draining_timeout'),
+        args.IsSpecified('no_custom_request_headers'),
+        args.IsSpecified('custom_request_header'),
+        args.IsSpecified('description'),
+        args.IsSpecified('enable_cdn'),
+        args.IsSpecified('cache_key_include_protocol'),
+        args.IsSpecified('cache_key_include_host'),
+        args.IsSpecified('cache_key_include_query_string'),
+        args.IsSpecified('cache_key_query_string_whitelist'),
+        args.IsSpecified('cache_key_query_string_blacklist'),
         args.IsSpecified('signed_url_cache_max_age'),
-        args.timeout is not None,
+        args.IsSpecified('http_health_checks'),
+        args.IsSpecified('iap'),
+        args.IsSpecified('port_name'),
+        args.IsSpecified('protocol'),
+        args.IsSpecified('security_policy'),
+        args.IsSpecified('session_affinity'),
+        args.IsSpecified('timeout'),
+        args.IsSpecified('connection_drain_on_failover')
+        if self._support_failover else False,
+        args.IsSpecified('drop_traffic_if_unhealthy')
+        if self._support_failover else False,
+        args.IsSpecified('failover_ratio') if self._support_failover else False,
+        args.IsSpecified('enable_logging') if self._support_logging else False,
+        args.IsSpecified('logging_sample_rate')
+        if self._support_logging else False,
+        args.IsSpecified('health_checks'),
+        args.IsSpecified('https_health_checks'),
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
-  def Run(self, args):
+  def GetSetRequest(self, client, backend_service_ref, replacement):
+    """Returns a backend service patch request."""
+
+    if (backend_service_ref.Collection() == 'compute.backendServices') and (
+        self._support_failover and replacement.failoverPolicy):
+      raise exceptions.InvalidArgumentException(
+          '--global',
+          'cannot specify failover policies for global backend services.')
+    if (backend_service_ref.Collection() == 'compute.regionBackendServices'
+       ) and (self._support_logging and replacement.logConfig):
+      raise exceptions.InvalidArgumentException(
+          '--region',
+          'cannot specify logging options for regional backend services.')
+
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (
+          client.apitools_client.regionBackendServices,
+          'Patch',
+          client.messages.ComputeRegionBackendServicesPatchRequest(
+              project=backend_service_ref.project,
+              region=backend_service_ref.region,
+              backendService=backend_service_ref.Name(),
+              backendServiceResource=replacement),
+      )
+
+    return (
+        client.apitools_client.backendServices,
+        'Patch',
+        client.messages.ComputeBackendServicesPatchRequest(
+            project=backend_service_ref.project,
+            backendService=backend_service_ref.Name(),
+            backendServiceResource=replacement),
+    )
+
+  def _GetSetSecurityPolicyRequest(self, client, backend_service_ref,
+                                   security_policy_ref):
+    backend_service = backend_service_client.BackendService(
+        backend_service_ref, compute_client=client)
+    return backend_service.MakeSetSecurityPolicyRequestTuple(
+        security_policy=security_policy_ref)
+
+  def GetGetRequest(self, client, backend_service_ref):
+    """Create Backend Services get request."""
+    if backend_service_ref.Collection() == 'compute.regionBackendServices':
+      return (
+          client.apitools_client.regionBackendServices,
+          'Get',
+          client.messages.ComputeRegionBackendServicesGetRequest(
+              project=backend_service_ref.project,
+              region=backend_service_ref.region,
+              backendService=backend_service_ref.Name()),
+      )
+    return (
+        client.apitools_client.backendServices,
+        'Get',
+        client.messages.ComputeBackendServicesGetRequest(
+            project=backend_service_ref.project,
+            backendService=backend_service_ref.Name()),
+    )
+
+  def _ApplyIapArgs(self, client, iap_arg, existing, replacement):
+    """Applies IAP args."""
+    if iap_arg is not None:
+      existing_iap = existing.iap
+      replacement.iap = backend_services_utils.GetIAP(
+          iap_arg, client.messages, existing_iap_settings=existing_iap)
+      if replacement.iap.enabled and not (existing_iap and
+                                          existing_iap.enabled):
+        log.warning(backend_services_utils.IapBestPracticesNotice())
+      if (replacement.iap.enabled and replacement.protocol is
+          not client.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
+        log.warning(backend_services_utils.IapHttpWarning())
+
+  def Run(self, args, holder):
     """Issues requests necessary to update the Backend Services."""
     self.ValidateArgs(args)
 
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
     backend_service_ref = (
@@ -283,142 +348,33 @@ class UpdateGA(base.UpdateCommand):
 
     return backend_service_result + security_policy_result
 
-  def _ApplyIapArgs(self, client, iap_arg, existing, replacement):
-    if iap_arg is not None:
-      existing_iap = existing.iap
-      replacement.iap = backend_services_utils.GetIAP(
-          iap_arg, client.messages, existing_iap_settings=existing_iap)
-      if replacement.iap.enabled and not (existing_iap and
-                                          existing_iap.enabled):
-        log.warning(backend_services_utils.IapBestPracticesNotice())
-      if (replacement.iap.enabled and replacement.protocol is
-          not client.messages.BackendService.ProtocolValueValuesEnum.HTTPS):
-        log.warning(backend_services_utils.IapHttpWarning())
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateGA):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
   """Update a backend service.
 
   *{command}* is used to update backend services.
   """
 
-  HEALTH_CHECK_ARG = None
-  HTTP_HEALTH_CHECK_ARG = None
-  HTTPS_HEALTH_CHECK_ARG = None
-  SECURITY_POLICY_ARG = None
+  _support_l7_internal_load_balancer = False
+  _support_logging = False
+  _support_failover = False
 
   @classmethod
   def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
-        parser, operation_type='update')
-    flags.AddDescription(parser)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument(
-        support_regional_health_check=True)
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
-    cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
-    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
-        parser, cust_metavar='HTTP_HEALTH_CHECK')
-    cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
-    cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
-        parser, cust_metavar='HTTPS_HEALTH_CHECK')
-    cls.SECURITY_POLICY_ARG = (
-        security_policy_flags.SecurityPolicyArgumentForTargetResource(
-            resource='backend service'))
-    cls.SECURITY_POLICY_ARG.AddArgument(parser)
-    flags.AddTimeout(parser, default=None)
-    flags.AddPortName(parser)
-    flags.AddProtocol(
+    UpdateHelper.Args(
         parser,
-        default=None)
+        support_l7_internal_load_balancer=cls
+        ._support_l7_internal_load_balancer,
+        support_failover=cls._support_failover,
+        support_logging=cls._support_logging)
 
-    flags.AddConnectionDrainingTimeout(parser)
-    flags.AddEnableCdn(parser, default=None)
-    flags.AddCacheKeyIncludeProtocol(parser, default=None)
-    flags.AddCacheKeyIncludeHost(parser, default=None)
-    flags.AddCacheKeyIncludeQueryString(parser, default=None)
-    flags.AddCacheKeyQueryStringList(parser)
-    flags.AddSessionAffinity(parser)
-    flags.AddAffinityCookieTtl(parser)
-    signed_url_flags.AddSignedUrlCacheMaxAge(
-        parser, required=False, unspecified_help='')
-    flags.AddConnectionDrainOnFailover(parser, default=None)
-    flags.AddDropTrafficIfUnhealthy(parser, default=None)
-    flags.AddFailoverRatio(parser)
-    flags.AddEnableLogging(parser, default=None)
-    flags.AddLoggingSampleRate(parser)
-    AddIapFlag(parser)
-    flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
-
-  def Modify(self, client, resources, args, existing):
-    """Modify Backend Service."""
-    replacement, cleared_fields = super(UpdateAlpha, self).Modify(
-        client, resources, args, existing)
-
-    if args.connection_draining_timeout is not None:
-      replacement.connectionDraining = client.messages.ConnectionDraining(
-          drainingTimeoutSec=args.connection_draining_timeout)
-
-    backend_services_utils.ApplyCdnPolicyArgs(
-        client,
-        args,
-        replacement,
-        is_update=True,
-        apply_signed_url_cache_max_age=True)
-
-    backend_services_utils.ApplyFailoverPolicyArgs(
-        client.messages, args, replacement, support_failover=True)
-
-    backend_services_utils.ApplyLogConfigArgs(
-        client.messages, args, replacement, support_logging=True)
-
-    return replacement, cleared_fields
-
-  def ValidateArgs(self, args):
-    """Validate arguments."""
-    if not any([
-        args.affinity_cookie_ttl is not None,
-        args.connection_draining_timeout is not None,
-        args.no_custom_request_headers is not None,
-        args.custom_request_header is not None,
-        args.description is not None,
-        args.enable_cdn is not None,
-        args.cache_key_include_protocol is not None,
-        args.cache_key_include_host is not None,
-        args.cache_key_include_query_string is not None,
-        args.cache_key_query_string_whitelist is not None,
-        args.cache_key_query_string_blacklist is not None,
-        args.IsSpecified('signed_url_cache_max_age'),
-        args.http_health_checks,
-        args.IsSpecified('iap'),
-        args.port_name,
-        args.protocol,
-        args.security_policy is not None,
-        args.session_affinity is not None,
-        args.timeout is not None,
-        args.connection_drain_on_failover is not None,
-        args.drop_traffic_if_unhealthy is not None,
-        args.failover_ratio is not None,
-        args.enable_logging is not None,
-        args.logging_sample_rate is not None,
-        getattr(args, 'health_checks', None),
-        getattr(args, 'https_health_checks', None),
-    ]):
-      raise exceptions.ToolException('At least one property must be modified.')
-
-  def GetSetRequest(self, client, backend_service_ref, replacement):
-    if (backend_service_ref.Collection() == 'compute.backendServices') and (
-        replacement.failoverPolicy):
-      raise exceptions.InvalidArgumentException(
-          '--global',
-          'cannot specify failover policies for global backend services.')
-    if (backend_service_ref.Collection() == 'compute.regionBackendServices'
-       ) and replacement.logConfig is not None:
-      raise exceptions.InvalidArgumentException(
-          '--region',
-          'cannot specify logging options for regional backend services.')
-    return super(UpdateAlpha, self).GetSetRequest(client, backend_service_ref,
-                                                  replacement)
+  def Run(self, args):
+    """Issues requests necessary to update the Backend Services."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return UpdateHelper(self._support_l7_internal_load_balancer,
+                        self._support_failover,
+                        self._support_logging).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -428,118 +384,18 @@ class UpdateBeta(UpdateGA):
   *{command}* is used to update backend services.
   """
 
-  HEALTH_CHECK_ARG = None
-  HTTP_HEALTH_CHECK_ARG = None
-  HTTPS_HEALTH_CHECK_ARG = None
-  SECURITY_POLICY_ARG = None
+  _support_l7_internal_load_balancer = True
+  _support_logging = True
+  _support_failover = True
 
-  @classmethod
-  def Args(cls, parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
-        parser, operation_type='update')
-    flags.AddDescription(parser)
-    cls.HEALTH_CHECK_ARG = flags.HealthCheckArgument()
-    cls.HEALTH_CHECK_ARG.AddArgument(parser, cust_metavar='HEALTH_CHECK')
-    cls.HTTP_HEALTH_CHECK_ARG = flags.HttpHealthCheckArgument()
-    cls.HTTP_HEALTH_CHECK_ARG.AddArgument(
-        parser, cust_metavar='HTTP_HEALTH_CHECK')
-    cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
-    cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
-        parser, cust_metavar='HTTPS_HEALTH_CHECK')
-    cls.SECURITY_POLICY_ARG = (
-        security_policy_flags.SecurityPolicyArgumentForTargetResource(
-            resource='backend service'))
-    cls.SECURITY_POLICY_ARG.AddArgument(parser)
-    flags.AddTimeout(parser, default=None)
-    flags.AddPortName(parser)
-    flags.AddProtocol(
-        parser,
-        default=None)
 
-    flags.AddConnectionDrainingTimeout(parser)
-    flags.AddEnableCdn(parser, default=None)
-    flags.AddSessionAffinity(parser)
-    flags.AddAffinityCookieTtl(parser)
-    AddIapFlag(parser)
-    flags.AddCacheKeyIncludeProtocol(parser, default=None)
-    flags.AddCacheKeyIncludeHost(parser, default=None)
-    flags.AddCacheKeyIncludeQueryString(parser, default=None)
-    flags.AddCacheKeyQueryStringList(parser)
-    flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
-    flags.AddConnectionDrainOnFailover(parser, default=None)
-    flags.AddDropTrafficIfUnhealthy(parser, default=None)
-    flags.AddFailoverRatio(parser)
-    flags.AddEnableLogging(parser, default=None)
-    flags.AddLoggingSampleRate(parser)
-    signed_url_flags.AddSignedUrlCacheMaxAge(
-        parser, required=False, unspecified_help='')
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateGA):
+  """Update a backend service.
 
-  def Modify(self, client, resources, args, existing):
-    """Modify Backend Service."""
-    replacement, cleared_fields = super(UpdateBeta, self).Modify(
-        client, resources, args, existing)
+  *{command}* is used to update backend services.
+  """
 
-    if args.connection_draining_timeout is not None:
-      replacement.connectionDraining = client.messages.ConnectionDraining(
-          drainingTimeoutSec=args.connection_draining_timeout)
-
-    backend_services_utils.ApplyCdnPolicyArgs(
-        client,
-        args,
-        replacement,
-        is_update=True,
-        apply_signed_url_cache_max_age=True)
-
-    backend_services_utils.ApplyFailoverPolicyArgs(
-        client.messages, args, replacement, support_failover=True)
-
-    backend_services_utils.ApplyLogConfigArgs(
-        client.messages, args, replacement, support_logging=True)
-
-    return replacement, cleared_fields
-
-  def ValidateArgs(self, args):
-    """Validate arguments."""
-    if not any([
-        args.affinity_cookie_ttl is not None,
-        args.connection_draining_timeout is not None,
-        args.no_custom_request_headers is not None,
-        args.custom_request_header is not None,
-        args.description is not None,
-        args.enable_cdn is not None,
-        args.cache_key_include_protocol is not None,
-        args.cache_key_include_host is not None,
-        args.cache_key_include_query_string is not None,
-        args.cache_key_query_string_whitelist is not None,
-        args.cache_key_query_string_blacklist is not None,
-        args.health_checks,
-        args.http_health_checks,
-        args.https_health_checks,
-        args.IsSpecified('iap'),
-        args.port_name,
-        args.protocol,
-        args.security_policy is not None,
-        args.session_affinity is not None,
-        args.IsSpecified('signed_url_cache_max_age'),
-        args.timeout is not None,
-        args.connection_drain_on_failover is not None,
-        args.drop_traffic_if_unhealthy is not None,
-        args.failover_ratio is not None,
-        args.enable_logging is not None,
-        args.logging_sample_rate is not None,
-    ]):
-      raise exceptions.ToolException('At least one property must be modified.')
-
-  def GetSetRequest(self, client, backend_service_ref, replacement):
-    if (backend_service_ref.Collection() == 'compute.backendServices') and (
-        replacement.failoverPolicy):
-      raise exceptions.InvalidArgumentException(
-          '--global',
-          'cannot specify failover policies for global backend services.')
-    if (backend_service_ref.Collection() == 'compute.regionBackendServices'
-       ) and replacement.logConfig is not None:
-      raise exceptions.InvalidArgumentException(
-          '--region',
-          'cannot specify logging options for regional backend services.')
-    return super(UpdateBeta, self).GetSetRequest(client, backend_service_ref,
-                                                 replacement)
+  _support_l7_internal_load_balancer = True
+  _support_logging = True
+  _support_failover = True

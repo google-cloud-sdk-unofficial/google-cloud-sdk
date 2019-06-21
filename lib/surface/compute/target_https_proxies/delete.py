@@ -91,10 +91,10 @@ class Delete(base.DeleteCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(Delete):
-  pass
+
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(DeleteBeta):
-
-  _include_l7_internal_load_balancing = True
+  pass
