@@ -15,11 +15,16 @@
 """Contains gsutil base unit test case class."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import os
 import sys
 import tempfile
+
+import six
 
 import boto
 from gslib import project_id
@@ -35,6 +40,7 @@ from gslib.tests.testcase import base
 import gslib.tests.util as util
 from gslib.tests.util import unittest
 from gslib.tests.util import WorkingDirectory
+from gslib.utils.constants import UTF8
 
 
 class GsutilApiUnitTestClassMapFactory(object):
@@ -51,18 +57,12 @@ class GsutilApiUnitTestClassMapFactory(object):
         ApiSelector.XML: BotoTranslation,
         ApiSelector.JSON: BotoTranslation
     }
-    s3_class_map = {
-        ApiSelector.XML: BotoTranslation
-    }
-    class_map = {
-        'gs': gs_class_map,
-        's3': s3_class_map
-    }
+    s3_class_map = {ApiSelector.XML: BotoTranslation}
+    class_map = {'gs': gs_class_map, 's3': s3_class_map}
     return class_map
 
 
-@unittest.skipUnless(util.RUN_UNIT_TESTS,
-                     'Not running integration tests.')
+@unittest.skipUnless(util.RUN_UNIT_TESTS, 'Not running integration tests.')
 class GsUtilUnitTestCase(base.GsUtilTestCase):
   """Base class for gsutil unit tests."""
 
@@ -85,8 +85,9 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
     self.stdout_save = sys.stdout
     self.stderr_save = sys.stderr
     fd, self.stdout_file = tempfile.mkstemp()
-    sys.stdout = os.fdopen(fd, 'w+')
+    sys.stdout = os.fdopen(fd, 'wb+')
     fd, self.stderr_file = tempfile.mkstemp()
+    # do not set sys.stderr to be 'wb+' - it will blow up the logger
     sys.stderr = os.fdopen(fd, 'w+')
     self.accumulated_stdout = []
     self.accumulated_stderr = []
@@ -112,8 +113,22 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
 
     sys.stdout.seek(0)
     sys.stderr.seek(0)
-    stdout = sys.stdout.read()
-    stderr = sys.stderr.read()
+    if six.PY2:
+      stdout = sys.stdout.read()
+      stderr = sys.stderr.read()
+    else:
+      try:
+        stdout = sys.stdout.read()
+        stderr = sys.stderr.read()
+      except UnicodeDecodeError:
+        sys.stdout.seek(0)
+        sys.stderr.seek(0)
+        stdout = sys.stdout.buffer.read()
+        stderr = sys.stderr.buffer.read()
+    [six.ensure_text(string) for string in self.accumulated_stderr]
+    [six.ensure_text(string) for string in self.accumulated_stdout]
+    stdout = six.ensure_text(stdout)
+    stderr = six.ensure_text(stderr)
     stdout += ''.join(self.accumulated_stdout)
     stderr += ''.join(self.accumulated_stderr)
     sys.stdout.close()
@@ -123,22 +138,29 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
     os.unlink(self.stdout_file)
     os.unlink(self.stderr_file)
 
+    _id = six.ensure_text(self.id())
     if self.is_debugging and stdout:
-      sys.stderr.write('==== stdout %s ====\n' % self.id())
-      sys.stderr.write(stdout)
+      sys.stderr.write('==== stdout {} ====\n'.format(_id))
+      sys.stderr.write(six.ensure_text(stdout))
       sys.stderr.write('==== end stdout ====\n')
     if self.is_debugging and stderr:
-      sys.stderr.write('==== stderr %s ====\n' % self.id())
-      sys.stderr.write(stderr)
+      sys.stderr.write('==== stderr {} ====\n'.format(_id))
+      sys.stderr.write(six.ensure_text(stderr))
       sys.stderr.write('==== end stderr ====\n')
     if self.is_debugging and log_output:
-      sys.stderr.write('==== log output %s ====\n' % self.id())
-      sys.stderr.write(log_output)
+      sys.stderr.write('==== log output {} ====\n'.format(_id))
+      sys.stderr.write(six.ensure_text(log_output))
       sys.stderr.write('==== end log output ====\n')
 
-  def RunCommand(self, command_name, args=None, headers=None, debug=0,
-                 return_stdout=False, return_stderr=False,
-                 return_log_handler=False, cwd=None):
+  def RunCommand(self,
+                 command_name,
+                 args=None,
+                 headers=None,
+                 debug=0,
+                 return_stdout=False,
+                 return_stderr=False,
+                 return_log_handler=False,
+                 cwd=None):
     """Method for calling gslib.command_runner.CommandRunner.
 
     Passes parallel_operations=False for all tests, optionally saving/returning
@@ -164,12 +186,16 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
     Returns:
       One or a tuple of requested return values, depending on whether
       return_stdout, return_stderr, and/or return_log_handler were specified.
+      Return Types:
+        stdout - binary
+        stderr - str (binary in Py2, text in Py3)
+        log_handler - MockLoggingHandler
     """
     args = args or []
 
-    command_line = ' '.join([command_name] + args)
+    command_line = six.ensure_text(' '.join([command_name] + args))
     if self.is_debugging:
-      self.stderr_save.write('\nRunCommand of %s\n' % command_line)
+      self.stderr_save.write('\nRunCommand of {}\n'.format(command_line))
 
     # Save and truncate stdout and stderr for the lifetime of RunCommand. This
     # way, we can return just the stdout and stderr that was output during the
@@ -194,35 +220,50 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
 
     try:
       with WorkingDirectory(cwd):
-        self.command_runner.RunNamedCommand(
-            command_name, args=args, headers=headers, debug=debug,
-            parallel_operations=False, do_shutdown=False)
+        self.command_runner.RunNamedCommand(command_name,
+                                            args=args,
+                                            headers=headers,
+                                            debug=debug,
+                                            parallel_operations=False,
+                                            do_shutdown=False)
     finally:
       sys.stdout.seek(0)
-      stdout = sys.stdout.read()
       sys.stderr.seek(0)
-      stderr = sys.stderr.read()
+      if six.PY2:
+        stdout = sys.stdout.read()
+        stderr = sys.stderr.read()
+      else:
+        try:
+          stdout = sys.stdout.read()
+          stderr = sys.stderr.read()
+        except UnicodeDecodeError:
+          sys.stdout.seek(0)
+          sys.stderr.seek(0)
+          stdout = sys.stdout.buffer.read().decode(UTF8)
+          stderr = sys.stderr.buffer.read().decode(UTF8)
       logging.getLogger(command_name).removeHandler(mock_log_handler)
       mock_log_handler.close()
 
       log_output = '\n'.join(
           '%s:\n  ' % level + '\n  '.join(records)
-          for level, records in mock_log_handler.messages.iteritems()
+          for level, records in six.iteritems(mock_log_handler.messages)
           if records)
+
+      _id = six.ensure_text(self.id())
       if self.is_debugging and log_output:
-        self.stderr_save.write(
-            '==== logging RunCommand %s %s ====\n' % (self.id(), command_line))
-        self.stderr_save.write(log_output)
+        self.stderr_save.write('==== logging RunCommand {} {} ====\n'.format(
+            _id, command_line))
+        self.stderr_save.write(six.ensure_text(log_output))
         self.stderr_save.write('\n==== end logging ====\n')
       if self.is_debugging and stdout:
-        self.stderr_save.write(
-            '==== stdout RunCommand %s %s ====\n' % (self.id(), command_line))
-        self.stderr_save.write(stdout)
+        self.stderr_save.write('==== stdout RunCommand {} {} ====\n'.format(
+            _id, command_line))
+        self.stderr_save.write(six.ensure_text(stdout))
         self.stderr_save.write('==== end stdout ====\n')
       if self.is_debugging and stderr:
-        self.stderr_save.write(
-            '==== stderr RunCommand %s %s ====\n' % (self.id(), command_line))
-        self.stderr_save.write(stderr)
+        self.stderr_save.write('==== stderr RunCommand {} {} ====\n'.format(
+            _id, command_line))
+        self.stderr_save.write(six.ensure_text(stderr))
         self.stderr_save.write('==== end stderr ====\n')
 
       # Reset stdout and stderr files, so that we won't print them out again
@@ -246,8 +287,8 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
   @classmethod
   def MakeGsUtilApi(cls, debug=0):
     gsutil_api_map = {
-        ApiMapConstants.API_MAP: (
-            cls.mock_gsutil_api_class_map_factory.GetClassMap()),
+        ApiMapConstants.API_MAP:
+        (cls.mock_gsutil_api_class_map_factory.GetClassMap()),
         ApiMapConstants.SUPPORT_MAP: {
             'gs': [ApiSelector.XML, ApiSelector.JSON],
             's3': [ApiSelector.XML]
@@ -258,9 +299,11 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
         }
     }
 
-    return CloudApiDelegator(
-        cls.mock_bucket_storage_uri, gsutil_api_map, cls.logger,
-        DiscardMessagesQueue(), debug=debug)
+    return CloudApiDelegator(cls.mock_bucket_storage_uri,
+                             gsutil_api_map,
+                             cls.logger,
+                             DiscardMessagesQueue(),
+                             debug=debug)
 
   @classmethod
   def _test_wildcard_iterator(cls, uri_or_str, debug=0):
@@ -286,12 +329,11 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
     if hasattr(uri_or_str, 'uri'):
       uri_string = uri_or_str.uri
 
-    return wildcard_iterator.CreateWildcardIterator(
-        uri_string, cls.MakeGsUtilApi())
+    return wildcard_iterator.CreateWildcardIterator(uri_string,
+                                                    cls.MakeGsUtilApi())
 
   @staticmethod
-  def _test_storage_uri(uri_str, default_scheme='file', debug=0,
-                        validate=True):
+  def _test_storage_uri(uri_str, default_scheme='file', debug=0, validate=True):
     """Convenience method for instantiating a testing instance of StorageUri.
 
     This makes it unnecessary to specify
@@ -314,7 +356,10 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
     return boto.storage_uri(uri_str, default_scheme, debug, validate,
                             util.GSMockBucketStorageUri)
 
-  def CreateBucket(self, bucket_name=None, test_objects=0, storage_class=None,
+  def CreateBucket(self,
+                   bucket_name=None,
+                   test_objects=0,
+                   storage_class=None,
                    provider='gs'):
     """Creates a test bucket.
 
@@ -344,8 +389,9 @@ class GsUtilUnitTestCase(base.GsUtilTestCase):
     except TypeError:
       test_objects = [self.MakeTempName('obj') for _ in range(test_objects)]
     for i, name in enumerate(test_objects):
-      self.CreateObject(bucket_uri=bucket_uri, object_name=name,
-                        contents='test %d' % i)
+      self.CreateObject(bucket_uri=bucket_uri,
+                        object_name=name,
+                        contents='test {}'.format(i).encode(UTF8))
     return bucket_uri
 
   def CreateObject(self, bucket_uri=None, object_name=None, contents=None):

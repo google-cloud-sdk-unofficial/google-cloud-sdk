@@ -72,7 +72,6 @@ DETAILED_HELP = {
 def _CommonArgs(parser,
                 enable_regional=False,
                 enable_kms=False,
-                enable_snapshots=False,
                 deprecate_maintenance_policy=False,
                 supports_display_device=False,
                 supports_reservation=False,
@@ -82,7 +81,7 @@ def _CommonArgs(parser,
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
   instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms,
-                                    enable_snapshots=enable_snapshots,
+                                    enable_snapshots=True,
                                     resource_policy=enable_resource_policy,
                                     csek_key_file=csek_key_file)
   instances_flags.AddCanIpForwardArgs(parser)
@@ -104,7 +103,7 @@ def _CommonArgs(parser,
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddHostnameArg(parser)
-  instances_flags.AddImageArgs(parser, enable_snapshots=enable_snapshots)
+  instances_flags.AddImageArgs(parser, enable_snapshots=True)
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
@@ -144,7 +143,6 @@ class Create(base.CreateCommand):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_snapshots = False
   _support_display_device = False
   _support_reservation = False
   _support_disk_resource_policy = False
@@ -231,7 +229,7 @@ class Create(base.CreateCommand):
               getattr(args, 'create_disk', []),
               instance_ref,
               enable_kms=self._support_kms,
-              enable_snapshots=self._support_snapshots,
+              enable_snapshots=True,
               resource_policy=self._support_disk_resource_policy))
       local_nvdimms = []
       if self._support_nvdimm:
@@ -251,13 +249,10 @@ class Create(base.CreateCommand):
       )
 
       if create_boot_disk:
-        if self._support_snapshots:
-          boot_snapshot_uri = instance_utils.ResolveSnapshotURI(
-              user_project=instance_refs[0].project,
-              snapshot=args.source_snapshot,
-              resource_parser=resource_parser)
-        else:
-          boot_snapshot_uri = None
+        boot_snapshot_uri = instance_utils.ResolveSnapshotURI(
+            user_project=instance_refs[0].project,
+            snapshot=args.source_snapshot,
+            resource_parser=resource_parser)
 
         boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
             compute_client, resource_parser,
@@ -484,7 +479,7 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     instances_flags.ValidateDiskFlags(args, enable_kms=self._support_kms,
-                                      enable_snapshots=self._support_snapshots)
+                                      enable_snapshots=True)
     instances_flags.ValidateImageFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
@@ -552,7 +547,6 @@ class CreateBeta(Create):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_snapshots = True
   _support_display_device = True
   _support_reservation = True
   _support_disk_resource_policy = True
@@ -570,7 +564,6 @@ class CreateBeta(Create):
         parser,
         enable_regional=True,
         enable_kms=True,
-        enable_snapshots=True,
         supports_display_device=True,
         supports_reservation=cls._support_reservation,
         enable_resource_policy=cls._support_disk_resource_policy,
@@ -589,7 +582,6 @@ class CreateAlpha(CreateBeta):
   _support_kms = True
   _support_nvdimm = True
   _support_public_dns = True
-  _support_snapshots = True
   _support_display_device = True
   _support_reservation = True
   _support_disk_resource_policy = True
@@ -613,7 +605,6 @@ class CreateAlpha(CreateBeta):
         parser,
         enable_regional=True,
         enable_kms=True,
-        enable_snapshots=True,
         deprecate_maintenance_policy=True,
         supports_display_device=True,
         supports_reservation=cls._support_reservation,

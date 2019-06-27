@@ -15,6 +15,9 @@
 """Additional help about object metadata."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 from gslib.help_provider import HelpProvider
 
@@ -193,8 +196,13 @@ class CommandOptions(HelpProvider):
   help_spec = HelpProvider.HelpSpec(
       help_name='metadata',
       help_name_aliases=[
-          'cache-control', 'caching', 'content type', 'mime type', 'mime',
-          'type'],
+          'cache-control',
+          'caching',
+          'content type',
+          'mime type',
+          'mime',
+          'type',
+      ],
       help_type='additional_help',
       help_one_line_summary='Working With Object Metadata',
       help_text=_DETAILED_HELP_TEXT,

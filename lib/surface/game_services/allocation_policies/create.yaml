@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  is_hidden: true
+  hidden: true
 
   help_text:
     brief: Create an Allocation Policy.
@@ -100,3 +100,6 @@
           spec:
           - api_field: key
           - api_field: value
+
+  async:
+    collection: gameservices.projects.locations.operations

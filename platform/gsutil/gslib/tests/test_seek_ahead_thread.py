@@ -15,11 +15,15 @@
 """Unit tests for gsutil seek_ahead_thread."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
-import StringIO
 import threading
 
+import six
 from six.moves import queue as Queue
+from six.moves import range
 
 from gslib.name_expansion import SeekAheadNameExpansionIterator
 from gslib.seek_ahead_thread import SeekAheadResult
@@ -65,8 +69,8 @@ class TestSeekAheadThread(testcase.GsUtilUnitTestCase):
 
       def __iter__(self):
         while self.iterated_results < self.num_iterations:
-          if (not self.cancel_issued
-              and self.iterated_results >= self.num_iterations_before_cancel):
+          if (not self.cancel_issued and
+              self.iterated_results >= self.num_iterations_before_cancel):
             self.cancel_event.set()
             self.cancel_issued = True
           yield SeekAheadResult()
@@ -75,17 +79,13 @@ class TestSeekAheadThread(testcase.GsUtilUnitTestCase):
     # We expect to get up to the nearest NUM_OBJECTS_PER_LIST_PAGE results.
     noplp = constants.NUM_OBJECTS_PER_LIST_PAGE
     for num_iterations, num_iterations_before_cancel, expected_iterations in (
-        (noplp, 0, 0),
-        (noplp + 1, 1, noplp),
-        (noplp + 1, noplp, noplp),
-        (noplp * 2 + 1, noplp + 1, noplp * 2),
-        (2, 1, 2),
-        (noplp, 1, noplp),
+        (noplp, 0, 0), (noplp + 1, 1, noplp), (noplp + 1, noplp, noplp),
+        (noplp * 2 + 1, noplp + 1, noplp * 2), (2, 1, 2), (noplp, 1, noplp),
         (noplp * 2, noplp + 1, noplp * 2)):
 
       cancel_event = threading.Event()
       status_queue = Queue.Queue()
-      stream = StringIO.StringIO()
+      stream = six.StringIO()
       ui_controller = UIController()
       ui_thread = UIThread(status_queue, stream, ui_controller)
 
@@ -128,7 +128,7 @@ class TestSeekAheadThread(testcase.GsUtilUnitTestCase):
 
     cancel_event = threading.Event()
     status_queue = Queue.Queue()
-    stream = StringIO.StringIO()
+    stream = six.StringIO()
     ui_controller = UIController()
     ui_thread = UIThread(status_queue, stream, ui_controller)
     num_objects = 5
@@ -167,14 +167,14 @@ class TestSeekAheadThread(testcase.GsUtilUnitTestCase):
 
     cancel_event = threading.Event()
     status_queue = Queue.Queue()
-    stream = StringIO.StringIO()
+    stream = six.StringIO()
     ui_controller = UIController()
     ui_thread = UIThread(status_queue, stream, ui_controller)
 
     num_objects = 5
     object_size = 10
-    seek_ahead_iterator = SeekAheadResultIteratorWithSize(num_objects,
-                                                          object_size)
+    seek_ahead_iterator = SeekAheadResultIteratorWithSize(
+        num_objects, object_size)
     seek_ahead_thread = SeekAheadThread(seek_ahead_iterator, cancel_event,
                                         status_queue)
     seek_ahead_thread.join(self.thread_wait_time)
@@ -204,9 +204,10 @@ class TestSeekAheadThread(testcase.GsUtilUnitTestCase):
     total_size = 0
 
     # Create 5 files with sizes 0, 1, 2, 3, 4.
-    for i in xrange(num_files):
-      self.CreateTempFile(tmpdir=tmpdir, file_name='obj%s' % str(i),
-                          contents='a' * i)
+    for i in range(num_files):
+      self.CreateTempFile(tmpdir=tmpdir,
+                          file_name='obj%s' % str(i),
+                          contents=b'a' * i)
       total_size += i
 
     # Recursively "copy" tmpdir.
@@ -215,7 +216,7 @@ class TestSeekAheadThread(testcase.GsUtilUnitTestCase):
 
     cancel_event = threading.Event()
     status_queue = Queue.Queue()
-    stream = StringIO.StringIO()
+    stream = six.StringIO()
     ui_controller = UIController()
     ui_thread = UIThread(status_queue, stream, ui_controller)
 

@@ -16,8 +16,13 @@
 """Implementation of Unix-like cat command for cloud storage providers."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
+
+import six
 
 from gslib.command import Command
 from gslib.command_argument import CommandArgument
@@ -25,6 +30,9 @@ from gslib.cs_api_map import ApiSelector
 from gslib.exception import CommandException
 from gslib.utils import cat_helper
 from gslib.utils import constants
+
+if six.PY3:
+  long = int
 
 _SYNOPSIS = """
   gsutil cat [-h] url...
@@ -98,10 +106,7 @@ class CatCommand(Command):
       urls_start_arg=0,
       gs_api_support=[ApiSelector.XML, ApiSelector.JSON],
       gs_default_api=ApiSelector.JSON,
-      argparse_arguments=[
-          CommandArgument.MakeZeroOrMoreCloudURLsArgument()
-      ]
-  )
+      argparse_arguments=[CommandArgument.MakeZeroOrMoreCloudURLsArgument()])
   # Help specification. See help_provider.py for documentation.
   help_spec = Command.HelpSpec(
       help_name='cat',

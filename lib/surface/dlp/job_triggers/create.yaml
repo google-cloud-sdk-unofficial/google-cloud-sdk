@@ -66,7 +66,7 @@
         Duration specifying how often the triggered job will be run. A
         scheduled start time will be skipped if the previous execution has
         not ended when its scheduled time occurs. Value must be a time
-        duration greater than or equal to 60 minutes and can be no longer
+        duration greater than or equal to 1 day and can be no longer
         than 60 days.
 
         See `$ gcloud topic datetimes for information on duration formats.`

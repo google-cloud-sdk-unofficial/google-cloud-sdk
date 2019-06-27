@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  is_hidden: true
+  hidden: true
 
   help_text:
     brief: Update a Scaling Policy.
@@ -24,6 +24,21 @@
         Deployment for this Scaling Policy.
         Example:
         "projects/my-project/locations/global/gameServerDeployments/my-deployment".
+    - group:
+        mutex: true
+        params:
+        - arg_name: buffer-size
+          api_field: scalingPolicy.fleetAutoscalerSettings.bufferSizeAbsolute
+          help_text: |
+            Size of a buffer of ready game server instances in absolute number.
+        - arg_name: buffer-size-percent
+          api_field: scalingPolicy.fleetAutoscalerSettings.bufferSizePercentage
+          help_text: |
+            Size of a buffer of ready game server instances in percentage.
+        help_text: |
+          Size of the buffer of ready game server instances in either absolute number or percentage.
+          As game server instances get allocated or terminated, the fleet will be scaled up and down
+          so that this buffer is maintained.
     - arg_name: min-replicas
       api_field: scalingPolicy.fleetAutoscalerSettings.minReplicas
       help_text: |
@@ -82,3 +97,11 @@
           - api_field: cronJobDuration
           - api_field: startTime
           - api_field: endTime
+    labels:
+      api_field: scalingPolicy.labels
+
+  async:
+    collection: gameservices.projects.locations.operations
+
+  update:
+    read_modify_update: true

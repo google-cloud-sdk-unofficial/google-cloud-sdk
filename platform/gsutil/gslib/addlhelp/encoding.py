@@ -15,6 +15,9 @@
 """Additional help about CRC32C and installing crcmod."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 from gslib.help_provider import HelpProvider
 
@@ -156,8 +159,14 @@ class CommandOptions(HelpProvider):
   # Help specification. See help_provider.py for documentation.
   help_spec = HelpProvider.HelpSpec(
       help_name='encoding',
-      help_name_aliases=['encodings', 'utf8', 'utf-8', 'latin1', 'unicode',
-                         'interoperability'],
+      help_name_aliases=[
+          'encodings',
+          'utf8',
+          'utf-8',
+          'latin1',
+          'unicode',
+          'interoperability',
+      ],
       help_type='additional_help',
       help_one_line_summary='Filename encoding and interoperability problems',
       help_text=_DETAILED_HELP_TEXT,

@@ -23,8 +23,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
 from googlecloudsdk.api_lib.resource_manager import operations
-from googlecloudsdk.api_lib.services import enable_api as services_enable_api
-from googlecloudsdk.api_lib.services import services_util
+from googlecloudsdk.api_lib.services import enable_api
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
@@ -38,7 +37,6 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 ID_DESCRIPTION = ('Project IDs must start with a lowercase letter and can '
@@ -144,12 +142,7 @@ class Create(base.CreateCommand):
     # Enable cloudapis.googleapis.com
     if args.enable_cloud_apis:
       log.debug('Enabling cloudapis.googleapis.com')
-      services_client = apis.GetClientInstance('servicemanagement', 'v1')
-      enable_operation = services_enable_api.EnableServiceApiCall(
-          project_ref.Name(), 'cloudapis.googleapis.com')
-      enable_operation_ref = resources.REGISTRY.Parse(
-          enable_operation.name, collection='servicemanagement.operations')
-      services_util.WaitForOperation(enable_operation_ref, services_client)
+      enable_api.EnableService(project_ref.Name(), 'cloudapis.googleapis.com')
 
     if args.set_as_default:
       project_property = properties.FromString('core/project')

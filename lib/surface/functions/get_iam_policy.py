@@ -24,9 +24,19 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a Google Cloud Function."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES':
+          """\
+          To get the iam policy for `FUNCTION-1` run:
+
+            $ {command} FUNCTION-1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

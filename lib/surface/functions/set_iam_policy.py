@@ -25,9 +25,19 @@ from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetIamPolicy(base.Command):
   """Sets IAM policy for a Google Cloud Function."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES':
+          """\
+          To set the iam policy for `FUNCTION-1` to the policy defined in `POLICY-FILE-1` run:
+
+            $ {command} FUNCTION-1 POLICY-FILE-1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

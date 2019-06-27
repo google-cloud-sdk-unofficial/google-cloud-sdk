@@ -28,15 +28,8 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
-  """This feature is part of an invite-only release of the Cloud Pub/Sub API.
-
-  Updates an existing Cloud Pub/Sub topic.
-  This feature is part of an invitation-only release of the underlying
-  Cloud Pub/Sub API. The command will generate errors unless you have access to
-  this API. This restriction should be relaxed in the near future. Please
-  contact cloud-pubsub@google.com with any questions in the meantime.
-  """
+class UpdateAlpha(base.UpdateCommand):
+  """Updates an existing Cloud Pub/Sub topic."""
 
   @staticmethod
   def Args(parser):
@@ -92,6 +85,70 @@ class Update(base.UpdateCommand):
           'clear_labels', 'update_labels', 'remove_labels',
           'recompute_message_storage_policy',
           'message_storage_policy_allowed_regions'
+      ]
+      if not any(args.IsSpecified(arg) for arg in operations):
+        raise
+      log.status.Print('No update to perform.')
+    else:
+      log.UpdatedResource(topic_ref.RelativeName(), kind='topic')
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class UpdateBetaGA(base.UpdateCommand):
+  """Updates an existing Cloud Pub/Sub topic."""
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To update existing labels on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
+
+          To clear all labels on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --clear-labels
+
+          To remove an existing label on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --remove-labels=KEY1,KEY2
+          """
+  }
+
+  @staticmethod
+  def Args(parser):
+    """Registers flags for this command."""
+    resource_args.AddTopicResourceArg(parser, 'to update.')
+    labels_util.AddUpdateLabelsFlags(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      A serialized object (dict) describing the results of the operation.
+
+    Raises:
+      An HttpException if there was a problem calling the
+      API topics.Patch command.
+    """
+    client = topics.TopicsClient()
+    topic_ref = args.CONCEPTS.topic.Parse()
+
+    labels_update = labels_util.ProcessUpdateArgsLazy(
+        args, client.messages.Topic.LabelsValue,
+        orig_labels_thunk=lambda: client.Get(topic_ref).labels)
+
+    result = None
+    try:
+      result = client.Patch(
+          topic_ref,
+          labels_update.GetOrNone())
+    except topics.NoFieldsSpecifiedError:
+      operations = [
+          'clear_labels', 'update_labels', 'remove_labels'
       ]
       if not any(args.IsSpecified(arg) for arg in operations):
         raise

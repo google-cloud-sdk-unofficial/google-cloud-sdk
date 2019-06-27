@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Setup installation module for gsutil."""
 
 import os
@@ -22,6 +21,8 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command import build_py
 from setuptools.command import sdist
+
+long_desc_content_type = 'text/plain'
 
 long_desc = """
 gsutil is a Python application that lets you access Google Cloud Storage from
@@ -38,8 +39,8 @@ requires = [
     'argcomplete>=1.9.4',
     'crcmod>=1.7',
     'fasteners>=0.14.1',
-    'gcs-oauth2-boto-plugin>=2.2',
-    'google-apitools>=0.5.25',
+    'gcs-oauth2-boto-plugin>=2.4',
+    'google-apitools>=0.5.27',
     'httplib2>=0.11.3',
     'google-reauth>=0.1.0',
     # TODO: Sync submodule with tag referenced here once #339 is fixed in mock.
@@ -47,7 +48,6 @@ requires = [
     'monotonic>=1.4',
     'oauth2client==4.1.3',
     'pyOpenSSL>=0.13',
-    'python-gflags>=3.1.2',
     'retry_decorator>=1.0.0',
     'six>=1.12.0',
     # Not using 1.02 because of:
@@ -115,6 +115,7 @@ setup(
     description=('A command line tool for interacting with cloud storage '
                  'services.'),
     long_description=long_desc,
+    long_description_content_type=long_desc_content_type,
     zip_safe=True,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -126,12 +127,29 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        # TODO(PY3-release): Uncomment these.
+        #'Programming Language :: Python :: 3',
+        #'Programming Language :: Python :: 3.5',
+        #'Programming Language :: Python :: 3.6',
+        #'Programming Language :: Python :: 3.7',
         'Topic :: System :: Filesystems',
         'Topic :: Utilities',
     ],
-    python_requires='>=2.7, <3',
+
+    # TODO(PY3-release): Switch the current python_requires with this.
+    #python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4',
+    python_requires='>=2.7, <3',  # 2.7 only until 3.5+ is fully working.
+
     platforms='any',
-    packages=find_packages(exclude=['third_party']),
+    packages=find_packages(
+        exclude=[
+            # Packages under third_party are installed separately as
+            # dependencies (see the "requires" list above). Note that we do not
+            # exclude vendored dependencies (under gslib/vendored), as our
+            # vendored versions may differ slightly from the official versions.
+            'third_party',
+        ],
+    ),
     include_package_data=True,
     entry_points={
         'console_scripts': [
@@ -142,5 +160,5 @@ setup(
     cmdclass={
         'build_py': CustomBuildPy,
         'sdist': CustomSDist,
-    }
+    },
 )

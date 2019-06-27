@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  is_hidden: true
+  hidden: true
 
   help_text:
     brief:  Start Deployment rollout by providing a new game server template.
@@ -61,3 +61,6 @@
                 Game server spec which is sent to Agones. The game server spec is a string field and
                 follows the format of the spec field in Agones GameServer custom resource. Please
                 see https://agones.dev for more details. Required when template-id is specified.
+
+  async:
+    collection: gameservices.projects.locations.operations

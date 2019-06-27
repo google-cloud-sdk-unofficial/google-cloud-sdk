@@ -14,6 +14,11 @@
 # limitations under the License.
 """Tests for various combinations of configured credentials."""
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+
 from gslib.cred_types import CredTypes
 from gslib.discard_messages_queue import DiscardMessagesQueue
 from gslib.exception import CommandException
@@ -34,15 +39,15 @@ class TestCredsConfig(testcase.GsUtilUnitTestCase):
     self.logger.addHandler(self.log_handler)
 
   def testMultipleConfiguredCreds(self):
-    with SetBotoConfigForTest([
-        ('Credentials', 'gs_oauth2_refresh_token', 'foo'),
-        ('Credentials', 'gs_service_client_id', 'bar'),
-        ('Credentials', 'gs_service_key_file', 'baz')]):
+    with SetBotoConfigForTest([('Credentials', 'gs_oauth2_refresh_token',
+                                'foo'),
+                               ('Credentials', 'gs_service_client_id', 'bar'),
+                               ('Credentials', 'gs_service_key_file', 'baz')]):
 
       try:
         GcsJsonApi(None, self.logger, DiscardMessagesQueue())
         self.fail('Succeeded with multiple types of configured creds.')
-      except CommandException, e:
+      except CommandException as e:
         msg = str(e)
         self.assertIn('types of configured credentials', msg)
         self.assertIn(CredTypes.OAUTH2_USER_ACCOUNT, msg)
@@ -54,11 +59,12 @@ class TestCredsConfigIntegration(testcase.GsUtilIntegrationTestCase):
   @SkipForS3('Tests only uses gs credentials.')
   def testExactlyOneInvalid(self):
     bucket_uri = self.CreateBucket()
-    with SetBotoConfigForTest([
-        ('Credentials', 'gs_oauth2_refresh_token', 'foo'),
-        ('Credentials', 'gs_service_client_id', None),
-        ('Credentials', 'gs_service_key_file', None)],
-                              use_existing_config=False):
-      stderr = self.RunGsUtil(['ls', suri(bucket_uri)], expected_status=1,
+    with SetBotoConfigForTest(
+        [('Credentials', 'gs_oauth2_refresh_token', 'foo'),
+         ('Credentials', 'gs_service_client_id', None),
+         ('Credentials', 'gs_service_key_file', None)],
+        use_existing_config=False):
+      stderr = self.RunGsUtil(['ls', suri(bucket_uri)],
+                              expected_status=1,
                               return_stderr=True)
       self.assertIn('credentials are invalid', stderr)

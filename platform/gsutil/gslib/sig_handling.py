@@ -15,6 +15,9 @@
 """Signal handling functions."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import os
@@ -154,4 +157,6 @@ def MultithreadedMainSignalHandler(signal_num, cur_stack_frame):
 def ChildProcessSignalHandler(signal_num, cur_stack_frame):
   """Final signal handler for child processes."""
   KillProcess(os.getpid())
+
+
 # pylint: enable=unused-argument

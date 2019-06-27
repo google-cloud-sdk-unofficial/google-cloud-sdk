@@ -16,6 +16,9 @@
 """Implementation of Unix-like cp command for cloud storage providers."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import itertools
 import logging
@@ -60,6 +63,7 @@ from gslib.utils.posix_util import SerializeFileAttributesToObjectMetadata
 from gslib.utils.posix_util import ValidateFilePermissionAccess
 from gslib.utils.system_util import GetStreamFromFileUrl
 from gslib.utils.system_util import StdinIterator
+from gslib.utils.system_util import StdinIteratorCls
 from gslib.utils.text_util import NormalizeStorageClass
 from gslib.utils.text_util import RemoveCRLFFromString
 from gslib.utils.unit_util import CalculateThroughput
@@ -93,8 +97,8 @@ _DESCRIPTION_TEXT = """
     gsutil cp -r dir gs://my-bucket
 
   If you have a large number of files to transfer you might want to use the
-  gsutil -m option, to perform a parallel (multi-threaded/multi-processing)
-  copy:
+  top-level gsutil -m option (see "gsutil help options"), to perform a
+  parallel (multi-threaded/multi-processing) copy:
 
     gsutil -m cp -r dir gs://my-bucket
 
@@ -248,8 +252,8 @@ _COPY_IN_CLOUD_TEXT = """
 
     gsutil cp -A gs://bucket1/obj gs://bucket2
 
-  The gsutil -m flag is disallowed when using the cp -A flag, to ensure that
-  version ordering is preserved.
+  The top-level gsutil -m flag is disallowed when using the cp -A flag, to
+  ensure that version ordering is preserved.
 """
 
 _CHECKSUM_VALIDATION_TEXT = """
@@ -378,8 +382,8 @@ _STREAMING_TRANSFERS_TEXT = """
   validation, use a non-streaming transfer, which performs integrity checking
   automatically.
 
-  Note: Streaming transfers are not allowed when the gsutil -m option is in
-  force.
+  Note: Streaming transfers are not allowed when the top-level gsutil -m flag
+  is used.
 """
 
 _SLICED_OBJECT_DOWNLOADS_TEXT = """
@@ -487,24 +491,14 @@ _PARALLEL_COMPOSITE_UPLOADS_TEXT = """
       << Code that handles failures >>
     fi
 
-  One important caveat is that files uploaded using parallel composite uploads
-  are subject to a maximum number of components limit. For example, if you
-  upload a large file that gets split into %d components, and try to compose it
-  with another object with %d components, the operation will fail because it
-  exceeds the %d component limit. If you wish to compose an object later and the
-  component limit is a concern, it is recommended that you disable parallel
-  composite uploads for that transfer.
-
-  Also note that an object uploaded using parallel composite uploads will have a
+  Note that an object uploaded using parallel composite uploads will have a
   CRC32C hash, but it will not have an MD5 hash (and because of that, users who
   download the object must have crcmod installed, as noted earlier). For details
   see "gsutil help crc32c".
 
   Parallel composite uploads can be disabled by setting the
   "parallel_composite_upload_threshold" variable in the .boto config file to 0.
-""" % (PARALLEL_UPLOAD_TEMP_NAMESPACE, 10, MAX_COMPONENT_COUNT - 9,
-       MAX_COMPONENT_COUNT)
-
+""" % (PARALLEL_UPLOAD_TEMP_NAMESPACE)
 
 _CHANGING_TEMP_DIRECTORIES_TEXT = """
 <B>CHANGING TEMP DIRECTORIES</B>
@@ -611,7 +605,7 @@ _OPTIONS_TEXT = """
 
                    gsutil -o "GSUtil:parallel_process_count=8" \\
                      -o "GSUtil:parallel_thread_count=1" \\
-                     -m cp -r /local/source/dir gs://bucket/path
+                     -m cp -j html -r /local/source/dir gs://bucket/path
 
   -J             Applies gzip transport encoding to file uploads. This option
                  works like the -j option described above, but it applies to
@@ -770,26 +764,29 @@ _OPTIONS_TEXT = """
                  cloud than they would if left uncompressed.
 """
 
-_DETAILED_HELP_TEXT = '\n\n'.join([_SYNOPSIS_TEXT,
-                                   _DESCRIPTION_TEXT,
-                                   _NAME_CONSTRUCTION_TEXT,
-                                   _SUBDIRECTORIES_TEXT,
-                                   _COPY_IN_CLOUD_TEXT,
-                                   _CHECKSUM_VALIDATION_TEXT,
-                                   _RETRY_HANDLING_TEXT,
-                                   _RESUMABLE_TRANSFERS_TEXT,
-                                   _STREAMING_TRANSFERS_TEXT,
-                                   _SLICED_OBJECT_DOWNLOADS_TEXT,
-                                   _PARALLEL_COMPOSITE_UPLOADS_TEXT,
-                                   _CHANGING_TEMP_DIRECTORIES_TEXT,
-                                   _COPYING_SPECIAL_FILES_TEXT,
-                                   _OPTIONS_TEXT])
+_DETAILED_HELP_TEXT = '\n\n'.join([
+    _SYNOPSIS_TEXT,
+    _DESCRIPTION_TEXT,
+    _NAME_CONSTRUCTION_TEXT,
+    _SUBDIRECTORIES_TEXT,
+    _COPY_IN_CLOUD_TEXT,
+    _CHECKSUM_VALIDATION_TEXT,
+    _RETRY_HANDLING_TEXT,
+    _RESUMABLE_TRANSFERS_TEXT,
+    _STREAMING_TRANSFERS_TEXT,
+    _SLICED_OBJECT_DOWNLOADS_TEXT,
+    _PARALLEL_COMPOSITE_UPLOADS_TEXT,
+    _CHANGING_TEMP_DIRECTORIES_TEXT,
+    _COPYING_SPECIAL_FILES_TEXT,
+    _OPTIONS_TEXT,
+])
 
 CP_SUB_ARGS = 'a:AcDeIL:MNnpPrRs:tUvz:Zj:J'
 
 
 def _CopyFuncWrapper(cls, args, thread_state=None):
-  cls.CopyFunc(args, thread_state=thread_state,
+  cls.CopyFunc(args,
+               thread_state=thread_state,
                preserve_posix=cls.preserve_posix_attrs)
 
 
@@ -842,8 +839,8 @@ class CpCommand(Command):
       gs_default_api=ApiSelector.JSON,
       supported_private_args=['testcallbackfile='],
       argparse_arguments=[
-          CommandArgument.MakeZeroOrMoreCloudOrFileURLsArgument()
-      ]
+          CommandArgument.MakeZeroOrMoreCloudOrFileURLsArgument(),
+      ],
   )
   # Help specification. See help_provider.py for documentation.
   help_spec = Command.HelpSpec(
@@ -856,8 +853,7 @@ class CpCommand(Command):
   )
 
   # pylint: disable=too-many-statements
-  def CopyFunc(self, copy_object_info, thread_state=None,
-               preserve_posix=False):
+  def CopyFunc(self, copy_object_info, thread_state=None, preserve_posix=False):
     """Worker function for performing the actual copy (and rm, for mv)."""
     gsutil_api = GetCloudApiInstance(self, thread_state=thread_state)
 
@@ -918,16 +914,20 @@ class CpCommand(Command):
           raise CommandException('The mv command disallows naming source '
                                  'directories using wildcards')
 
-    if (copy_object_info.exp_dst_url.IsFileUrl()
-        and not os.path.exists(copy_object_info.exp_dst_url.object_name)
-        and have_multiple_srcs):
+    if (copy_object_info.exp_dst_url.IsFileUrl() and
+        not os.path.exists(copy_object_info.exp_dst_url.object_name) and
+        have_multiple_srcs):
       os.makedirs(copy_object_info.exp_dst_url.object_name)
 
     dst_url = copy_helper.ConstructDstUrl(
-        src_url, exp_src_url, src_url_names_container, have_multiple_srcs,
+        src_url,
+        exp_src_url,
+        src_url_names_container,
+        have_multiple_srcs,
         copy_object_info.exp_dst_url,
         copy_object_info.have_existing_dst_container,
-        self.recursion_requested, preserve_posix=preserve_posix)
+        self.recursion_requested,
+        preserve_posix=preserve_posix)
     dst_url = copy_helper.FixWindowsNaming(src_url, dst_url)
 
     copy_helper.CheckForDirFileConflict(exp_src_url, dst_url)
@@ -937,8 +937,8 @@ class CpCommand(Command):
 
     if dst_url.IsCloudUrl() and dst_url.HasGeneration():
       raise CommandException('%s: a version-specific URL\n(%s)\ncannot be '
-                             'the destination for gsutil cp - abort.'
-                             % (cmd_name, dst_url))
+                             'the destination for gsutil cp - abort.' %
+                             (cmd_name, dst_url))
 
     if not dst_url.IsCloudUrl() and copy_helper_opts.dest_storage_class:
       raise CommandException('Cannot specify storage class for a non-cloud '
@@ -955,11 +955,15 @@ class CpCommand(Command):
       mode, _, _, _, uid, gid, _, atime, mtime, _ = os.stat(
           exp_src_url.object_name)
       mode = ConvertModeToBase8(mode)
-      posix_attrs = POSIXAttributes(atime=atime, mtime=mtime, uid=uid, gid=gid,
+      posix_attrs = POSIXAttributes(atime=atime,
+                                    mtime=mtime,
+                                    uid=uid,
+                                    gid=gid,
                                     mode=mode)
       custom_metadata = apitools_messages.Object.MetadataValue(
           additionalProperties=[])
-      SerializeFileAttributesToObjectMetadata(posix_attrs, custom_metadata,
+      SerializeFileAttributesToObjectMetadata(posix_attrs,
+                                              custom_metadata,
                                               preserve_posix=preserve_posix)
       src_obj_metadata.metadata = custom_metadata
 
@@ -979,20 +983,25 @@ class CpCommand(Command):
     bytes_transferred = 0
     try:
       if copy_helper_opts.use_manifest:
-        self.manifest.Initialize(
-            exp_src_url.url_string, dst_url.url_string)
-      (_, bytes_transferred, result_url, md5) = (
-          copy_helper.PerformCopy(
-              self.logger, exp_src_url, dst_url, gsutil_api,
-              self, _CopyExceptionHandler, src_obj_metadata=src_obj_metadata,
-              allow_splitting=True, headers=self.headers,
-              manifest=self.manifest, gzip_encoded=self.gzip_encoded,
-              gzip_exts=self.gzip_exts, preserve_posix=preserve_posix))
+        self.manifest.Initialize(exp_src_url.url_string, dst_url.url_string)
+      _, bytes_transferred, result_url, md5 = copy_helper.PerformCopy(
+          self.logger,
+          exp_src_url,
+          dst_url,
+          gsutil_api,
+          self,
+          _CopyExceptionHandler,
+          src_obj_metadata=src_obj_metadata,
+          allow_splitting=True,
+          headers=self.headers,
+          manifest=self.manifest,
+          gzip_encoded=self.gzip_encoded,
+          gzip_exts=self.gzip_exts,
+          preserve_posix=preserve_posix)
       if copy_helper_opts.use_manifest:
         if md5:
           self.manifest.Set(exp_src_url.url_string, 'md5', md5)
-        self.manifest.SetResult(
-            exp_src_url.url_string, bytes_transferred, 'OK')
+        self.manifest.SetResult(exp_src_url.url_string, bytes_transferred, 'OK')
       if copy_helper_opts.print_ver:
         # Some cases don't return a version-specific URL (e.g., if destination
         # is a file).
@@ -1002,37 +1011,35 @@ class CpCommand(Command):
       self.logger.info(message)
       if copy_helper_opts.use_manifest:
         self.manifest.SetResult(exp_src_url.url_string, 0, 'skip', message)
-    except SkipUnsupportedObjectError, e:
+    except SkipUnsupportedObjectError as e:
       message = ('Skipping item %s with unsupported object type %s' %
                  (exp_src_url.url_string, e.unsupported_type))
       self.logger.info(message)
       if copy_helper_opts.use_manifest:
         self.manifest.SetResult(exp_src_url.url_string, 0, 'skip', message)
-    except copy_helper.FileConcurrencySkipError, e:
-      self.logger.warn('Skipping copy of source URL %s because destination URL '
-                       '%s is already being copied by another gsutil process '
-                       'or thread (did you specify the same source URL twice?) '
-                       % (src_url, dst_url))
-    except Exception, e:  # pylint: disable=broad-except
+    except copy_helper.FileConcurrencySkipError as e:
+      self.logger.warn(
+          'Skipping copy of source URL %s because destination URL '
+          '%s is already being copied by another gsutil process '
+          'or thread (did you specify the same source URL twice?) ' %
+          (src_url, dst_url))
+    except Exception as e:  # pylint: disable=broad-except
       if (copy_helper_opts.no_clobber and
           copy_helper.IsNoClobberServerException(e)):
         message = 'Rejected (noclobber): %s' % dst_url
         self.logger.info(message)
         if copy_helper_opts.use_manifest:
-          self.manifest.SetResult(
-              exp_src_url.url_string, 0, 'skip', message)
+          self.manifest.SetResult(exp_src_url.url_string, 0, 'skip', message)
       elif self.continue_on_error:
         message = 'Error copying %s: %s' % (src_url, str(e))
         self.op_failure_count += 1
         self.logger.error(message)
         if copy_helper_opts.use_manifest:
-          self.manifest.SetResult(
-              exp_src_url.url_string, 0, 'error',
-              RemoveCRLFFromString(message))
+          self.manifest.SetResult(exp_src_url.url_string, 0, 'error',
+                                  RemoveCRLFFromString(message))
       else:
         if copy_helper_opts.use_manifest:
-          self.manifest.SetResult(
-              exp_src_url.url_string, 0, 'error', str(e))
+          self.manifest.SetResult(exp_src_url.url_string, 0, 'error', str(e))
         raise
     else:
       if copy_helper_opts.perform_mv:
@@ -1078,15 +1085,21 @@ class CpCommand(Command):
       # destination directory. In another scenario, all the threads might find
       # that the destination directory does not exist and copy the source
       # directories to the destination directory.
-      (exp_dst_url, have_existing_dst_container) = (
-          copy_helper.ExpandUrlToSingleBlr(dst_url_str, self.gsutil_api,
-                                           self.project_id, logger=self.logger))
+      exp_dst_url, have_existing_dst_container = (
+          copy_helper.ExpandUrlToSingleBlr(dst_url_str,
+                                           self.gsutil_api,
+                                           self.project_id,
+                                           logger=self.logger))
       name_expansion_iterator_dst_tuple = NameExpansionIteratorDestinationTuple(
           NameExpansionIterator(
-              self.command_name, self.debug,
-              self.logger, self.gsutil_api, src_url_str,
+              self.command_name,
+              self.debug,
+              self.logger,
+              self.gsutil_api,
+              src_url_str,
               self.recursion_requested or copy_helper_opts.perform_mv,
-              project_id=self.project_id, all_versions=self.all_versions,
+              project_id=self.project_id,
+              all_versions=self.all_versions,
               ignore_symlinks=self.exclude_symlinks,
               continue_on_error=(self.continue_on_error or
                                  self.parallel_operations),
@@ -1096,8 +1109,7 @@ class CpCommand(Command):
                   copy_helper_opts.preserve_acl,
                   preserve_posix=self.preserve_posix_attrs,
                   delete_source=copy_helper_opts.perform_mv)),
-          DestinationInfo(exp_dst_url,
-                          have_existing_dst_container))
+          DestinationInfo(exp_dst_url, have_existing_dst_container))
 
       self.has_file_dst = self.has_file_dst or exp_dst_url.IsFileUrl()
       self.has_cloud_dst = self.has_cloud_dst or exp_dst_url.IsCloudUrl()
@@ -1114,21 +1126,21 @@ class CpCommand(Command):
     self.total_bytes_transferred = 0
 
     dst_url = StorageUrlFromString(self.args[-1])
-    if dst_url.IsFileUrl() and (dst_url.object_name == '-' or
-                                dst_url.IsFifo()):
+    if dst_url.IsFileUrl() and (dst_url.object_name == '-' or dst_url.IsFifo()):
       if self.preserve_posix_attrs:
         raise CommandException('Cannot preserve POSIX attributes with a '
                                'stream or a named pipe.')
       cat_out_fd = (GetStreamFromFileUrl(dst_url, mode='wb')
                     if dst_url.IsFifo() else None)
-      return cat_helper.CatHelper(self).CatUrlStrings(
-          self.args[:-1],
-          cat_out_fd=cat_out_fd)
+      return cat_helper.CatHelper(self).CatUrlStrings(self.args[:-1],
+                                                      cat_out_fd=cat_out_fd)
 
     if copy_helper_opts.read_args_from_stdin:
       if len(self.args) != 1:
         raise CommandException('Source URLs cannot be specified with -I option')
-      src_url_strs = [StdinIterator()]
+      # Use StdinIteratorCls instead of StdinIterator here to avoid Python 3
+      # generator pickling errors when multiprocessing a command.
+      src_url_strs = [StdinIteratorCls()]
     else:
       if len(self.args) < 2:
         raise CommandException('Wrong number of arguments for "cp" command.')
@@ -1144,19 +1156,23 @@ class CpCommand(Command):
     # Because cp may have multiple source URLs and multiple destinations, we
     # wrap the name expansion iterator in order to collect analytics.
     name_expansion_iterator = CopyObjectsIterator(
-        self._ConstructNameExpansionIteratorDstTupleIterator(src_url_strs,
-                                                             dst_url_strs),
-        copy_helper_opts.daisy_chain)
+        self._ConstructNameExpansionIteratorDstTupleIterator(
+            src_url_strs, dst_url_strs),
+        copy_helper_opts.daisy_chain,
+    )
 
     seek_ahead_iterator = None
     # Cannot seek ahead with stdin args, since we can only iterate them
     # once without buffering in memory.
     if not copy_helper_opts.read_args_from_stdin:
       seek_ahead_iterator = SeekAheadNameExpansionIterator(
-          self.command_name, self.debug, self.GetSeekAheadGsutilApi(),
+          self.command_name,
+          self.debug,
+          self.GetSeekAheadGsutilApi(),
           self.combined_src_urls,
           self.recursion_requested or copy_helper_opts.perform_mv,
-          all_versions=self.all_versions, project_id=self.project_id,
+          all_versions=self.all_versions,
+          project_id=self.project_id,
           ignore_symlinks=self.exclude_symlinks)
 
     # Use a lock to ensure accurate statistics in the face of
@@ -1176,12 +1192,14 @@ class CpCommand(Command):
     # Perform copy requests in parallel (-m) mode, if requested, using
     # configured number of parallel processes and threads. Otherwise,
     # perform requests with sequential function calls in current process.
-    self.Apply(_CopyFuncWrapper, name_expansion_iterator,
-               _CopyExceptionHandler, shared_attrs,
+    self.Apply(_CopyFuncWrapper,
+               name_expansion_iterator,
+               _CopyExceptionHandler,
+               shared_attrs,
                fail_on_error=(not self.continue_on_error),
                seek_ahead_iterator=seek_ahead_iterator)
-    self.logger.debug(
-        'total_bytes_transferred: %d', self.total_bytes_transferred)
+    self.logger.debug('total_bytes_transferred: %d',
+                      self.total_bytes_transferred)
 
     end_time = time.time()
     self.total_elapsed_time = end_time - start_time
@@ -1208,8 +1226,9 @@ class CpCommand(Command):
             MakeHumanReadable(self.total_bytes_per_second))
     if self.op_failure_count:
       plural_str = 's' if self.op_failure_count > 1 else ''
-      raise CommandException('%d file%s/object%s could not be transferred.' % (
-          self.op_failure_count, plural_str, plural_str))
+      raise CommandException('{count} file{pl}/object{pl} could '
+                             'not be transferred.'.format(
+                                 count=self.op_failure_count, pl=plural_str))
 
     return 0
 

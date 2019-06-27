@@ -42,7 +42,7 @@ def _Args(cls, parser, support_network_tier, support_global_access):
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine forwarding rule.
 
-  *{command}* updates labels for a Google Compute Engine
+  *{command}* updates labels and global access for a Google Compute Engine
   forwarding rule.  For example:
 
     $ {command} example-fr --region us-central1 \
@@ -61,7 +61,7 @@ class Update(base.UpdateCommand):
   """
 
   FORWARDING_RULE_ARG = None
-  _support_global_access = False
+  _support_global_access = True
   _support_network_tier = False
 
   @classmethod
@@ -207,8 +207,8 @@ class Update(base.UpdateCommand):
 class UpdateAlpha(Update):
   r"""Update a Google Compute Engine forwarding rule.
 
-  *{command}* updates labels and network tier for a Google Compute Engine
-  forwarding rule.
+  *{command}* updates labels, global access and network tier for a Google
+  Compute Engine forwarding rule.
 
   Example to update labels:
 

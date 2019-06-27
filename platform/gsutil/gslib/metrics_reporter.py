@@ -13,6 +13,11 @@
 # limitations under the License.
 """Script for reporting metrics."""
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+
 import logging
 import os
 import pickle
@@ -40,7 +45,7 @@ except:  # pylint: disable=bare-except
   try:
     import errno
     # Fall back to httplib (no proxy) if we can't import libraries normally.
-    import httplib
+    from six.moves import http_client
 
     def GetNewHttp():
       """Returns an httplib-based metrics reporter."""
@@ -51,15 +56,14 @@ except:  # pylint: disable=bare-except
           pass
 
         # pylint: disable=invalid-name
-        def request(self, endpoint, method=None, body=None,
-                    headers=None):
+        def request(self, endpoint, method=None, body=None, headers=None):
           # Strip 'https://'
-          https_con = httplib.HTTPSConnection(endpoint[8:].split('/')[0])
-          https_con.request(method, endpoint, body=body,
-                            headers=headers)
+          https_con = http_client.HTTPSConnection(endpoint[8:].split('/')[0])
+          https_con.request(method, endpoint, body=body, headers=headers)
           response = https_con.getresponse()
           # Return status like an httplib2 response.
           return ({'status': response.status},)
+
         # pylint: enable=invalid-name
 
       return HttplibReporter()
@@ -67,7 +71,7 @@ except:  # pylint: disable=bare-except
     def ConfigureCertsFile():
       pass
 
-    def CreateDirIfNeeded(dir_path, mode=0777):
+    def CreateDirIfNeeded(dir_path, mode=0o777):
       """See the same-named method in gslib.utils.system_util."""
       if not os.path.exists(dir_path):
         try:
@@ -97,9 +101,8 @@ def ReportMetrics(metrics_file_path, log_level, log_file_path=None):
     # Use a separate logger so that we don't add another handler to the default
     # module-level logger. This is intended to prevent multiple calls from tests
     # running in parallel from writing output to the same file.
-    new_name = '%s.%s' % (
-        logger.name,
-        ''.join(random.choice(string.ascii_lowercase) for _ in range(8)))
+    new_name = '%s.%s' % (logger.name, ''.join(
+        random.choice(string.ascii_lowercase) for _ in range(8)))
     logger = logging.getLogger(new_name)
 
   log_file_path = log_file_path or LOG_FILE_PATH

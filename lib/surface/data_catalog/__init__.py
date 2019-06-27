@@ -24,4 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DataCatalog(base.Group):
   """Manage Cloud Data Catalog resources."""
-  pass
+  category = base.DATA_ANALYTICS_CATEGORY

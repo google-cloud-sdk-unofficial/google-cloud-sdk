@@ -30,7 +30,6 @@ notice.
 
 from __future__ import absolute_import
 
-import cgi
 import datetime
 import errno
 from hashlib import sha1
@@ -735,8 +734,8 @@ class AccessToken(object):
 
     def GetValue(d, key):
       return (d.get(key, [None]))[0]
-    kv = cgi.parse_qs(query)
-    if not kv['token']:
+    kv = urllib.parse.parse_qs(query)
+    if 'token' not in kv or not kv['token']:
       return None
     expiry = None
     expiry_tuple = GetValue(kv, 'expiry')

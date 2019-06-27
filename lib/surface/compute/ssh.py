@@ -176,7 +176,6 @@ class Ssh(base.Command):
 
     iap_tunnel_args = iap_tunnel.SshTunnelArgs.FromArgs(
         args, self.ReleaseTrack(), instance_ref,
-        ssh_utils.GetInternalInterface(instance),
         ssh_utils.GetExternalInterface(instance, no_raise=True))
 
     internal_address = ssh_utils.GetInternalIPAddress(instance)

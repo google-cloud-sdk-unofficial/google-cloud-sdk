@@ -14,6 +14,11 @@
 # limitations under the License.
 """Threading code for estimating total work of long-running gsutil commands."""
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+
 import threading
 import time
 
@@ -117,6 +122,7 @@ class SeekAheadThread(threading.Thread):
     if self.cancel_event.isSet():
       return
 
-    _PutToQueueWithTimeout(self.status_queue,
-                          thread_message.SeekAheadMessage(
-                              num_objects, num_data_bytes, time.time()))
+    _PutToQueueWithTimeout(
+        self.status_queue,
+        thread_message.SeekAheadMessage(num_objects, num_data_bytes,
+                                        time.time()))

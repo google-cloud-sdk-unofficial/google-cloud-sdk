@@ -122,6 +122,14 @@ class Decrypt(base.Command):
 
     crypto_key_ref = flags.ParseCryptoKeyName(args)
 
+    # Check that the key id does not include /cryptoKeyVersion/ which may occur
+    # as encrypt command does allow version, so it is easy for user to make a
+    # mistake here.
+    if '/cryptoKeyVersions/' in crypto_key_ref.cryptoKeysId:
+      raise exceptions.InvalidArgumentException(
+          '--key', '{} includes cryptoKeyVersion which is not valid for '
+          'decrypt.'.format(crypto_key_ref.cryptoKeysId))
+
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
 

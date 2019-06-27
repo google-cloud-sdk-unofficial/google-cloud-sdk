@@ -31,7 +31,7 @@ REQUIRED_PACKAGES = [
     'httplib2>=0.8',
     'fasteners>=0.14',
     'oauth2client>=1.4.12',
-    'six>=1.9.0',
+    'six>=1.12.0',
     ]
 
 CLI_PACKAGES = [
@@ -49,7 +49,7 @@ CONSOLE_SCRIPTS = [
 
 py_version = platform.python_version()
 
-_APITOOLS_VERSION = '0.5.25'
+_APITOOLS_VERSION = '0.5.27'
 
 with open('README.rst') as fileobj:
     README = fileobj.read()

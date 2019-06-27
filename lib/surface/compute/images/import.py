@@ -509,19 +509,19 @@ class ImportBeta(Import):
       raise exceptions.InvalidArgumentException(
           'source-file', 'must be a path to an object in Google Cloud Storage')
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ImportAlpha(ImportBeta):
-  """Import an image into Google Compute Engine for Alpha releases."""
-
-  _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_ALPHA
-
   def _Stage(self, import_stager):
     return import_stager.StageForImporter()
 
   def _RunImageImport(self, args, import_stager, import_metadata, tags):
     return daisy_utils.RunImageImport(args, import_metadata, tags,
                                       _OUTPUT_FILTER)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ImportAlpha(ImportBeta):
+  """Import an image into Google Compute Engine for Alpha releases."""
+
+  _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_ALPHA
 
 
 Import.detailed_help = {

@@ -132,9 +132,10 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddTopicResourceArg(parser, 'to create.', plural=True)
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    return _Run(args)
+    return _Run(args, enable_labels=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

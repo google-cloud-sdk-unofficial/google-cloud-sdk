@@ -2,26 +2,33 @@
     brief: |
       Create a Cloud Filestore snapshot.
     description: |
-      Take a Cloud Filestore snapshot of an instance's file share.
+      Take a Cloud Filestore snapshot of an instance file share.
 
       This command can fail for the following reasons:
         * An instance with the same name already exists.
         * The active account does not have permission to create snapshots.
     examples: |
-      To create a snapshot with the name 'my-snapshot' from an instance called
-      'my-instance' in 'us-central1-c' and the source file share is called
-      'my-fs', run:
+      To create a snapshot with the name 'my-snapshot' in 'us-central1' from an instance called
+      'my-instance' in 'us-central1-c' and the source file share called 'my-fs', run:
 
         $ {command} my-snapshot --instance=my-instance --file-share=my-fs
-            --instance-zone=us-central1-c
+            --instance-zone=us-central1-c --region=us-central1
+
+      To create a local snapshot with the name 'my-local-snapshot' from an instance called
+      'my-instance' in 'us-central1-c' and the source file share called 'my-fs', run:
+
+        $ {command} my-local-snapshot --instance=my-instance --file-share=my-fs
+            --instance-zone=us-central1-c --local
+
 
   arguments:
-    resource:
-      spec: !REF googlecloudsdk.command_lib.filestore.resources:snapshot
+    params:
+    - arg_name: snapshot
+      is_positional: true
+      required: true
       help_text: |
         Arguments and flags that specify the Filestore snapshot you want to
         create.
-    params:
     - arg_name: instance
       required: true
       help_text: |
@@ -35,6 +42,20 @@
       required: true
       help_text: |
         File share name on the Filestore instance to snapshot.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - api_field: snapshot.local
+          arg_name: local
+          hidden: true
+          type: bool
+          help_text: |
+            Create a local snapshot in the zone specified by the 'instance-zone' flag.
+        - arg_name: region
+          help_text: |
+            Region (e.g. us-central1) for the regional snapshot.
+
     - api_field: snapshot.labels.additionalProperties
       arg_name: labels
       metavar: KEY=VALUE
@@ -54,5 +75,9 @@
   request:
     api_version: v1p1alpha1
     collection: file.projects.locations.snapshots
+    # Disable validating that a snapshots resource arg is specified (as we are using the
+    # file.projects.locations.snapshots collection). This collection is populated manually.
+    disable_resource_check: true
     modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.snapshots.util:FormatSnapshotCreateRequest
     - googlecloudsdk.command_lib.filestore.snapshots.util:AddInstanceNameToRequest

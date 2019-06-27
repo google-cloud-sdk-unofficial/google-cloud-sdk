@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  is_hidden: true
+  hidden: true
 
   help_text:
     brief: Update an Allocation Policy.
@@ -79,3 +79,11 @@
           - api_field: cronJobDuration
           - api_field: startTime
           - api_field: endTime
+    labels:
+      api_field: allocationPolicy.labels
+
+  async:
+    collection: gameservices.projects.locations.operations
+
+  update:
+    read_modify_update: true

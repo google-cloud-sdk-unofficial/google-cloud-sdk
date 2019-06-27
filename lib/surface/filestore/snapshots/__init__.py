@@ -28,11 +28,15 @@ class Snapshots(base.Group):
 
   ## EXAMPLES
 
-  To create an snapshot with the name 'my-snapshot', run:
+  To create a snapshot with the name 'my-snapshot', run:
 
     $ {command} create my-snapshot
 
-  To delete an snapshot with the name 'my-snapshot', run:
+  To create a local snapshot with the name 'my-snapshot', run:
+
+    $ {command} create my-snapshot --local
+
+  To delete a snapshot with the name 'my-snapshot', run:
 
     $ {command} delete my-snapshot
 

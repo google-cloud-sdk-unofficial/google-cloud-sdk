@@ -25,9 +25,20 @@ from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveIamPolicyBinding(base.Command):
   """Removes an IAM policy binding from a Google Cloud Function."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES':
+          """\
+          To remove the iam policy binding for `FUNCTION-1` from role
+          `ROLE-1` for member `MEMBER-1` run:
+
+            $ {command} FUNCTION-1 --member=MEMBER-1 --role=ROLE-1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

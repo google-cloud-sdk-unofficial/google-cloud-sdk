@@ -16,6 +16,8 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import sys
 import textwrap
@@ -45,6 +47,7 @@ from gslib.utils.encryption_helper import MAX_DECRYPTION_KEYS
 from gslib.utils.system_util import StdinIterator
 from gslib.utils.text_util import ConvertRecursiveToFlatWildcard
 from gslib.utils.text_util import NormalizeStorageClass
+from gslib.utils import text_util
 from gslib.utils.translation_helper import PreconditionsFromHeaders
 
 MAX_PROGRESS_INDICATOR_COLUMNS = 65
@@ -195,8 +198,8 @@ def GenerationCheckGenerator(url_strs):
   """Generator function that ensures generation-less (live) arguments."""
   for url_str in url_strs:
     if StorageUrlFromString(url_str).generation is not None:
-      raise CommandException(
-          '"rewrite" called on URL with generation (%s).' % url_str)
+      raise CommandException('"rewrite" called on URL with generation (%s).' %
+                             url_str)
     yield url_str
 
 
@@ -222,10 +225,7 @@ class RewriteCommand(Command):
       urls_start_arg=0,
       gs_api_support=[ApiSelector.JSON],
       gs_default_api=ApiSelector.JSON,
-      argparse_arguments=[
-          CommandArgument.MakeZeroOrMoreCloudURLsArgument()
-      ]
-  )
+      argparse_arguments=[CommandArgument.MakeZeroOrMoreCloudURLsArgument()])
   # Help specification. See help_provider.py for documentation.
   help_spec = Command.HelpSpec(
       help_name='rewrite',
@@ -301,8 +301,12 @@ class RewriteCommand(Command):
 
     # Expand the source argument(s).
     name_expansion_iterator = NameExpansionIterator(
-        self.command_name, self.debug, self.logger, self.gsutil_api,
-        url_strs_generator, self.recursion_requested,
+        self.command_name,
+        self.debug,
+        self.logger,
+        self.gsutil_api,
+        url_strs_generator,
+        self.recursion_requested,
         project_id=self.project_id,
         continue_on_error=self.continue_on_error or self.parallel_operations,
         bucket_listing_fields=['name', 'size'])
@@ -315,9 +319,13 @@ class RewriteCommand(Command):
       # that it is as true to the original iterator as possible.
       seek_ahead_url_strs = ConvertRecursiveToFlatWildcard(url_strs)
       seek_ahead_iterator = SeekAheadNameExpansionIterator(
-          self.command_name, self.debug, self.GetSeekAheadGsutilApi(),
-          seek_ahead_url_strs, self.recursion_requested,
-          all_versions=self.all_versions, project_id=self.project_id)
+          self.command_name,
+          self.debug,
+          self.GetSeekAheadGsutilApi(),
+          seek_ahead_url_strs,
+          self.recursion_requested,
+          all_versions=self.all_versions,
+          project_id=self.project_id)
 
     # Rather than have each worker repeatedly calculate the sha256 hash for each
     # decryption_key in the boto config, do this once now and cache the results.
@@ -337,16 +345,19 @@ class RewriteCommand(Command):
           self.boto_file_encryption_keywrapper)
 
     if self.boto_file_encryption_keywrapper is None:
-      msg = '\n'.join(textwrap.wrap(
-          'NOTE: No encryption_key was specified in the boto configuration '
-          'file, so gsutil will not provide an encryption key in its rewrite '
-          'API requests. This will decrypt the objects unless they are in '
-          'buckets with a default KMS key set, in which case the service '
-          'will automatically encrypt the rewritten objects with that key.'))
+      msg = '\n'.join(
+          textwrap.wrap(
+              'NOTE: No encryption_key was specified in the boto configuration '
+              'file, so gsutil will not provide an encryption key in its rewrite '
+              'API requests. This will decrypt the objects unless they are in '
+              'buckets with a default KMS key set, in which case the service '
+              'will automatically encrypt the rewritten objects with that key.')
+      )
       print('%s\n' % msg, file=sys.stderr)
 
     # Perform rewrite requests in parallel (-m) mode, if requested.
-    self.Apply(_RewriteFuncWrapper, name_expansion_iterator,
+    self.Apply(_RewriteFuncWrapper,
+               name_expansion_iterator,
                _RewriteExceptionHandler,
                fail_on_error=(not self.continue_on_error),
                shared_attrs=['op_failure_count'],
@@ -354,8 +365,8 @@ class RewriteCommand(Command):
 
     if self.op_failure_count:
       plural_str = 's' if self.op_failure_count else ''
-      raise CommandException('%d file%s/object%s could not be rewritten.' % (
-          self.op_failure_count, plural_str, plural_str))
+      raise CommandException('%d file%s/object%s could not be rewritten.' %
+                             (self.op_failure_count, plural_str, plural_str))
 
     return 0
 
@@ -368,8 +379,10 @@ class RewriteCommand(Command):
     # Get all fields so that we can ensure that the target metadata is
     # specified correctly.
     src_metadata = gsutil_api.GetObjectMetadata(
-        transform_url.bucket_name, transform_url.object_name,
-        generation=transform_url.generation, provider=transform_url.scheme)
+        transform_url.bucket_name,
+        transform_url.object_name,
+        generation=transform_url.generation,
+        provider=transform_url.scheme)
 
     if self.no_preserve_acl:
       # Leave ACL unchanged.
@@ -386,13 +399,15 @@ class RewriteCommand(Command):
     # encryption_key value (including decrypting if no key is present).
 
     # Store metadata about src encryption to make logic below easier to read.
-    src_encryption_kms_key = (
-        src_metadata.kmsKeyName if src_metadata.kmsKeyName else None)
+    src_encryption_kms_key = (src_metadata.kmsKeyName
+                              if src_metadata.kmsKeyName else None)
 
     src_encryption_sha256 = None
     if (src_metadata.customerEncryption and
         src_metadata.customerEncryption.keySha256):
       src_encryption_sha256 = src_metadata.customerEncryption.keySha256
+      # In python3, hashes are bytes, use ascii since it should be ascii
+      src_encryption_sha256 = src_encryption_sha256.encode('ascii')
 
     src_was_encrypted = (src_encryption_sha256 is not None or
                          src_encryption_kms_key is not None)
@@ -411,9 +426,8 @@ class RewriteCommand(Command):
 
     should_encrypt_dest = self.boto_file_encryption_keywrapper is not None
 
-    encryption_unchanged = (
-        src_encryption_sha256 == dest_encryption_sha256 and
-        src_encryption_kms_key == dest_encryption_kms_key)
+    encryption_unchanged = (src_encryption_sha256 == dest_encryption_sha256 and
+                            src_encryption_kms_key == dest_encryption_kms_key)
 
     # Prevent accidental key rotation.
     if (_TransformTypes.CRYPTO_KEY not in self.transform_types and
@@ -447,8 +461,7 @@ class RewriteCommand(Command):
     # default KMS key is changed between when we check it and when we rewrite
     # the object.
     if (_TransformTypes.CRYPTO_KEY in self.transform_types and
-        should_encrypt_dest and
-        encryption_unchanged):
+        should_encrypt_dest and encryption_unchanged):
       redundant_transforms.append('encryption key')
 
     if len(redundant_transforms) == len(self.transform_types):
@@ -509,27 +522,38 @@ class RewriteCommand(Command):
     # the UIThread.
     sys.stderr.write(
         _ConstructAnnounceText(operation_name, transform_url.url_string))
+    sys.stderr.flush()
 
     # Message indicating beginning of operation.
     gsutil_api.status_queue.put(
-        FileMessage(transform_url, None, time.time(), finished=False,
+        FileMessage(transform_url,
+                    None,
+                    time.time(),
+                    finished=False,
                     size=src_metadata.size,
                     message_type=FileMessage.FILE_REWRITE))
 
     progress_callback = FileProgressCallbackHandler(
-        gsutil_api.status_queue, src_url=transform_url,
+        gsutil_api.status_queue,
+        src_url=transform_url,
         operation_name=operation_name).call
 
-    gsutil_api.CopyObject(
-        src_metadata, dest_metadata, src_generation=transform_url.generation,
-        preconditions=self.preconditions, progress_callback=progress_callback,
-        decryption_tuple=decryption_keywrapper,
-        encryption_tuple=self.boto_file_encryption_keywrapper,
-        provider=transform_url.scheme, fields=[])
+    gsutil_api.CopyObject(src_metadata,
+                          dest_metadata,
+                          src_generation=transform_url.generation,
+                          preconditions=self.preconditions,
+                          progress_callback=progress_callback,
+                          decryption_tuple=decryption_keywrapper,
+                          encryption_tuple=self.boto_file_encryption_keywrapper,
+                          provider=transform_url.scheme,
+                          fields=[])
 
     # Message indicating end of operation.
     gsutil_api.status_queue.put(
-        FileMessage(transform_url, None, time.time(), finished=True,
+        FileMessage(transform_url,
+                    None,
+                    time.time(),
+                    finished=True,
                     size=src_metadata.size,
                     message_type=FileMessage.FILE_REWRITE))
 
@@ -556,11 +580,10 @@ def _ConstructAnnounceText(operation_name, url_string):
   justified_op_string = operation_name[:10].ljust(11)
   start_len = len(justified_op_string)
   end_len = len(': ')
-  if (start_len + len(url_string) + end_len >
-      MAX_PROGRESS_INDICATOR_COLUMNS):
+  if (start_len + len(url_string) + end_len > MAX_PROGRESS_INDICATOR_COLUMNS):
     ellipsis_len = len('...')
-    url_string = '...%s' % url_string[
-        -(MAX_PROGRESS_INDICATOR_COLUMNS - start_len - end_len - ellipsis_len):]
+    url_string = '...%s' % url_string[-(MAX_PROGRESS_INDICATOR_COLUMNS -
+                                        start_len - end_len - ellipsis_len):]
   base_announce_text = '%s%s:' % (justified_op_string, url_string)
   format_str = '{0:%ds}' % MAX_PROGRESS_INDICATOR_COLUMNS
-  return format_str.format(base_announce_text.encode(UTF8))
+  return format_str.format(base_announce_text)

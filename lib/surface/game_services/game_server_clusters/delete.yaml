@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  is_hidden: true
+  hidden: true
 
   help_text:
     brief: Delete a Game Server Cluster.
@@ -12,3 +12,6 @@
     resource:
       help_text: Cloud Game Services Game Server Cluster to describe.
       spec: !REF googlecloudsdk.command_lib.game_services.resources:game_server_cluster
+
+  async:
+    collection: gameservices.projects.locations.operations

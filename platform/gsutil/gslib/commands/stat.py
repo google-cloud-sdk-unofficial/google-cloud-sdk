@@ -15,6 +15,9 @@
 """Implementation of Unix-like stat command for cloud storage providers."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import sys
@@ -35,7 +38,6 @@ from gslib.utils.constants import NO_MAX
 from gslib.utils.ls_helper import ENCRYPTED_FIELDS
 from gslib.utils.ls_helper import PrintFullInfoAboutObject
 from gslib.utils.ls_helper import UNENCRYPTED_FULL_LISTING_FIELDS
-
 
 _SYNOPSIS = """
   gsutil stat url...
@@ -100,11 +102,14 @@ class StatCommand(Command):
       file_url_ok=False,
       provider_url_ok=False,
       urls_start_arg=0,
-      gs_api_support=[ApiSelector.XML, ApiSelector.JSON],
+      gs_api_support=[
+          ApiSelector.XML,
+          ApiSelector.JSON,
+      ],
       gs_default_api=ApiSelector.JSON,
       argparse_arguments=[
-          CommandArgument.MakeZeroOrMoreCloudURLsArgument()
-      ]
+          CommandArgument.MakeZeroOrMoreCloudURLsArgument(),
+      ],
   )
   # Help specification. See help_provider.py for documentation.
   help_spec = Command.HelpSpec(
@@ -132,13 +137,19 @@ class StatCommand(Command):
         else:
           try:
             single_obj = self.gsutil_api.GetObjectMetadata(
-                url.bucket_name, url.object_name, generation=url.generation,
-                provider=url.scheme, fields=stat_fields)
+                url.bucket_name,
+                url.object_name,
+                generation=url.generation,
+                provider=url.scheme,
+                fields=stat_fields)
           except EncryptionException:
             # Retry without requesting hashes.
             single_obj = self.gsutil_api.GetObjectMetadata(
-                url.bucket_name, url.object_name, generation=url.generation,
-                provider=url.scheme, fields=UNENCRYPTED_FULL_LISTING_FIELDS)
+                url.bucket_name,
+                url.object_name,
+                generation=url.generation,
+                provider=url.scheme,
+                fields=UNENCRYPTED_FULL_LISTING_FIELDS)
           blr_iter = [BucketListingObject(url, root_object=single_obj)]
         for blr in blr_iter:
           if blr.IsObject():

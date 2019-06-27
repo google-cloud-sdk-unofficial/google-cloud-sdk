@@ -68,9 +68,11 @@ _GET_DESCRIPTION = """
 """
 
 _DESCRIPTION = """
-  The ``bucketpolicyonly`` command is used to retrieve or configure the Bucket
-  Policy Only setting of Cloud Storage bucket(s). This command has two
-  sub-commands, ``get`` and ``set``.
+  The ``bucketpolicyonly`` command is used to retrieve or configure the
+  `Bucket Policy Only (Beta)
+  <https://cloud.google.com/storage/docs/bucket-policy-only>`_ setting of
+  Cloud Storage bucket(s). This command has two sub-commands, ``get`` and
+  ``set``.
 """ + _GET_DESCRIPTION + _SET_DESCRIPTION
 
 _DETAILED_HELP_TEXT = CreateHelpText(_SYNOPSIS, _DESCRIPTION)
@@ -129,15 +131,16 @@ class BucketPolicyOnlyCommand(Command):
     self._ValidateBucketListingRefAndReturnBucketName(blr)
     bucket_url = blr.storage_url
 
-    bucket_metadata = self.gsutil_api.GetBucket(
-        bucket_url.bucket_name,
-        fields=['iamConfiguration'],
-        provider=bucket_url.scheme)
+    bucket_metadata = self.gsutil_api.GetBucket(bucket_url.bucket_name,
+                                                fields=['iamConfiguration'],
+                                                provider=bucket_url.scheme)
     iam_config = bucket_metadata.iamConfiguration
     bucket_policy_only = iam_config.bucketPolicyOnly
 
-    fields = {'bucket': str(bucket_url).rstrip('/'),
-              'enabled': bucket_policy_only.enabled}
+    fields = {
+        'bucket': str(bucket_url).rstrip('/'),
+        'enabled': bucket_policy_only.enabled
+    }
 
     locked_time_line = ''
     if bucket_policy_only.lockedTime:
@@ -146,8 +149,7 @@ class BucketPolicyOnlyCommand(Command):
 
     if bucket_policy_only:
       print(('Bucket Policy Only setting for {bucket}:\n'
-             '  Enabled: {enabled}\n' +
-             locked_time_line).format(**fields))
+             '  Enabled: {enabled}\n' + locked_time_line).format(**fields))
 
   def _SetBucketPolicyOnly(self, blr, setting_arg):
     """Sets the Bucket Policy Only setting for a bucket on or off."""
@@ -158,18 +160,16 @@ class BucketPolicyOnlyCommand(Command):
     iam_config.bucketPolicyOnly = BucketPolicyOnlyValue()
     iam_config.bucketPolicyOnly.enabled = (setting_arg == 'on')
 
-    bucket_metadata = apitools_messages.Bucket(
-        iamConfiguration=iam_config)
+    bucket_metadata = apitools_messages.Bucket(iamConfiguration=iam_config)
 
     setting_verb = 'Enabling' if setting_arg == 'on' else 'Disabling'
-    print('%s Bucket Policy Only for %s...'
-          % (setting_verb, str(bucket_url).rstrip('/')))
+    print('%s Bucket Policy Only for %s...' %
+          (setting_verb, str(bucket_url).rstrip('/')))
 
-    self.gsutil_api.PatchBucket(
-        bucket_url.bucket_name,
-        bucket_metadata,
-        fields=['iamConfiguration'],
-        provider=bucket_url.scheme)
+    self.gsutil_api.PatchBucket(bucket_url.bucket_name,
+                                bucket_metadata,
+                                fields=['iamConfiguration'],
+                                provider=bucket_url.scheme)
     return 0
 
   def _BucketPolicyOnly(self):
@@ -211,9 +211,10 @@ class BucketPolicyOnlyCommand(Command):
   def RunCommand(self):
     """Command entry point for the bucketpolicyonly command."""
     if self.gsutil_api.GetApiSelector(provider='gs') != ApiSelector.JSON:
-      raise CommandException('\n'.join(textwrap.wrap(
-          'The "%s" command can only be used with the Cloud Storage JSON API.'
-          % self.command_name)))
+      raise CommandException('\n'.join(
+          textwrap.wrap(
+              'The "%s" command can only be used with the Cloud Storage JSON API.'
+              % self.command_name)))
 
     action_subcommand = self.args[0]
     self.ParseSubOpts(check_args=True)

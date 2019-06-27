@@ -104,9 +104,10 @@ class Create(base.CreateCommand):
         plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(parser, cls.ReleaseTrack())
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    return _Run(args)
+    return _Run(args, enable_labels=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)

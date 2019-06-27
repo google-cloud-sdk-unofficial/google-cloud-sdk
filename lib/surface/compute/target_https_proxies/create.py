@@ -125,24 +125,31 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
+    ssl_certificates_required = not cls._traffic_director_security
+
     cls.SSL_CERTIFICATES_ARG = (
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
             'target HTTPS proxy',
+            required=ssl_certificates_required,
             include_alpha=cls._include_l7_internal_load_balancing))
     cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
+
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(
         include_l7_internal_load_balancing=cls
         ._include_l7_internal_load_balancing)
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='create')
+
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
         proxy_type='HTTPS',
         include_l7_internal_load_balancing=cls
         ._include_l7_internal_load_balancing)
     cls.URL_MAP_ARG.AddArgument(parser)
+
     cls.SSL_POLICY_ARG = (
         ssl_policies_flags.GetSslPolicyArgumentForOtherResource(
             'HTTPS', required=False))
     cls.SSL_POLICY_ARG.AddArgument(parser)
+
     _Args(
         parser,
         include_l7_internal_load_balancing=cls

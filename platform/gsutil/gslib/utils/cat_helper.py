@@ -15,6 +15,9 @@
 """Helper for cat and cp streaming download."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import io
 import sys
@@ -28,15 +31,18 @@ from gslib.storage_url import StorageUrlFromString
 from gslib.utils.encryption_helper import CryptoKeyWrapperFromKey
 from gslib.utils.encryption_helper import FindMatchingCSEKInBotoConfig
 from gslib.utils.metadata_util import ObjectIsGzipEncoded
+from gslib.utils import text_util
 
-_CAT_BUCKET_LISTING_FIELDS = ['bucket',
-                              'contentEncoding',
-                              'crc32c',
-                              'customerEncryption',
-                              'generation',
-                              'md5Hash',
-                              'name',
-                              'size']
+_CAT_BUCKET_LISTING_FIELDS = [
+    'bucket',
+    'contentEncoding',
+    'crc32c',
+    'customerEncryption',
+    'generation',
+    'md5Hash',
+    'name',
+    'size',
+]
 
 
 class CatHelper(object):
@@ -65,10 +71,14 @@ class CatHelper(object):
       buf = src_fd.read(io.DEFAULT_BUFFER_SIZE)
       if not buf:
         break
-      dst_fd.write(buf)
+      text_util.write_to_fd(dst_fd, buf)
 
-  def CatUrlStrings(self, url_strings, show_header=False, start_byte=0,
-                    end_byte=None, cat_out_fd=None):
+  def CatUrlStrings(self,
+                    url_strings,
+                    show_header=False,
+                    start_byte=0,
+                    end_byte=None,
+                    cat_out_fd=None):
     """Prints each of the url strings to stdout.
 
     Args:
@@ -107,33 +117,35 @@ class CatHelper(object):
           for blr in self.command_obj.WildcardIterator(url_str).IterObjects(
               bucket_listing_fields=_CAT_BUCKET_LISTING_FIELDS):
             decryption_keywrapper = None
-            if (blr.root_object and
-                blr.root_object.customerEncryption and
+            if (blr.root_object and blr.root_object.customerEncryption and
                 blr.root_object.customerEncryption.keySha256):
               decryption_key = FindMatchingCSEKInBotoConfig(
                   blr.root_object.customerEncryption.keySha256, config)
               if not decryption_key:
                 raise EncryptionException(
                     'Missing decryption key with SHA256 hash %s. No decryption '
-                    'key matches object %s' % (
-                        blr.root_object.customerEncryption.keySha256,
-                        blr.url_string))
+                    'key matches object %s' %
+                    (blr.root_object.customerEncryption.keySha256,
+                     blr.url_string))
               decryption_keywrapper = CryptoKeyWrapperFromKey(decryption_key)
 
             did_some_work = True
             if show_header:
               if printed_one:
-                print
-              print '==> %s <==' % blr
+                print()
+              print('==> %s <==' % blr)
               printed_one = True
             cat_object = blr.root_object
             storage_url = StorageUrlFromString(blr.url_string)
             if storage_url.IsCloudUrl():
               compressed_encoding = ObjectIsGzipEncoded(cat_object)
               self.command_obj.gsutil_api.GetObjectMedia(
-                  cat_object.bucket, cat_object.name, cat_out_fd,
+                  cat_object.bucket,
+                  cat_object.name,
+                  cat_out_fd,
                   compressed_encoding=compressed_encoding,
-                  start_byte=start_byte, end_byte=end_byte,
+                  start_byte=start_byte,
+                  end_byte=end_byte,
                   object_size=cat_object.size,
                   generation=storage_url.generation,
                   decryption_tuple=decryption_keywrapper,

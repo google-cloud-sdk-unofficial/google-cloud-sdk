@@ -13,10 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Helper module for the IAM command."""
+
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 from collections import defaultdict
 from collections import namedtuple
+
+import six
 from apitools.base.protorpclite import protojson
 from gslib.exception import CommandException
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
@@ -31,7 +37,7 @@ TYPES = set([
 DISCOURAGED_TYPES = set([
     'projectOwner',
     'projectEditor',
-    'projectViewer'
+    'projectViewer',
 ])
 
 DISCOURAGED_TYPES_MSG = (
@@ -45,7 +51,7 @@ DISCOURAGED_TYPES_MSG = (
 
 PUBLIC_MEMBERS = set([
     'allUsers',
-    'allAuthenticatedUsers'
+    'allAuthenticatedUsers',
 ])
 
 # This is a convenience class to handle returned results from
@@ -82,12 +88,12 @@ def SerializeBindingsTuple(bindings_tuple):
 
 def DeserializeBindingsTuple(serialized_bindings_tuple):
   (is_grant, bindings) = serialized_bindings_tuple
-  return BindingsTuple(
-      is_grant=is_grant,
-      bindings=[
-          protojson.decode_message(
-              apitools_messages.Policy.BindingsValueListEntry, t)
-          for t in bindings])
+  return BindingsTuple(is_grant=is_grant,
+                       bindings=[
+                           protojson.decode_message(
+                               apitools_messages.Policy.BindingsValueListEntry,
+                               t) for t in bindings
+                       ])
 
 
 def BindingsToDict(bindings):
@@ -128,17 +134,21 @@ def DiffBindings(old, new):
   granted = BindingsToDict([])
   removed = BindingsToDict([])
 
-  for (role, members) in tmp_old.iteritems():
+  for (role, members) in six.iteritems(tmp_old):
     removed[role].update(members.difference(tmp_new[role]))
-  for (role, members) in tmp_new.iteritems():
+  for (role, members) in six.iteritems(tmp_new):
     granted[role].update(members.difference(tmp_old[role]))
 
   granted = [
-      apitools_messages.Policy.BindingsValueListEntry(
-          role=r, members=list(m)) for (r, m) in granted.iteritems() if m]
+      apitools_messages.Policy.BindingsValueListEntry(role=r, members=list(m))
+      for (r, m) in six.iteritems(granted)
+      if m
+  ]
   removed = [
-      apitools_messages.Policy.BindingsValueListEntry(
-          role=r, members=list(m)) for (r, m) in removed.iteritems() if m]
+      apitools_messages.Policy.BindingsValueListEntry(role=r, members=list(m))
+      for (r, m) in six.iteritems(removed)
+      if m
+  ]
 
   return (BindingsTuple(True, granted), BindingsTuple(False, removed))
 
@@ -163,7 +173,7 @@ def PatchBindings(base, diff):
 
   # Patch the diff into base
   if diff.is_grant:
-    for (role, members) in tmp_diff.iteritems():
+    for (role, members) in six.iteritems(tmp_diff):
       if not role:
         raise CommandException('Role must be specified for a grant request.')
       tmp_base[role].update(members)
@@ -175,8 +185,10 @@ def PatchBindings(base, diff):
 
   # Construct the BindingsValueListEntry list
   bindings = [
-      apitools_messages.Policy.BindingsValueListEntry(
-          role=r, members=list(m)) for (r, m) in tmp_base.iteritems() if m]
+      apitools_messages.Policy.BindingsValueListEntry(role=r, members=list(m))
+      for (r, m) in six.iteritems(tmp_base)
+      if m
+  ]
 
   return bindings
 
@@ -209,8 +221,8 @@ def BindingStringToTuple(is_grant, input_str):
       member = ':'.join(tokens)
       roles = DROP_ALL
     else:
-      raise CommandException(
-          'Incorrect public member type for binding %s' % input_str)
+      raise CommandException('Incorrect public member type for binding %s' %
+                             input_str)
   elif input_str.count(':') == 2:
     (member_type, member_id, roles) = input_str.split(':')
     if member_type in DISCOURAGED_TYPES:
@@ -227,8 +239,9 @@ def BindingStringToTuple(is_grant, input_str):
   roles = [ResolveRole(r) for r in roles.split(',')]
 
   bindings = [
-      apitools_messages.Policy.BindingsValueListEntry(
-          members=[member], role=r) for r in set(roles)]
+      apitools_messages.Policy.BindingsValueListEntry(members=[member], role=r)
+      for r in set(roles)
+  ]
   return BindingsTuple(is_grant=is_grant, bindings=bindings)
 
 

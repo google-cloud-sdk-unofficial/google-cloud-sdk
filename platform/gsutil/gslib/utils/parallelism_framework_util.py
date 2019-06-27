@@ -16,6 +16,8 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import collections
 import errno
@@ -33,7 +35,7 @@ try:
   # This module doesn't necessarily exist on Windows.
   import resource
   _HAS_RESOURCE_MODULE = True
-except ImportError, e:
+except ImportError as e:
   _HAS_RESOURCE_MODULE = False
 
 # Maximum time to wait (join) on the SeekAheadThread after the ProducerThread
@@ -264,15 +266,15 @@ def ShouldProhibitMultiprocessing():
   except IOError as e:
     if e.errno == errno.ENOENT:
       logging.debug('Unable to open /etc/os-release to determine whether OS '
-                    'supports multiprocessing: errno=%d, message=%s'
-                    % (e.errno, e.message))
+                    'supports multiprocessing: errno=%d, message=%s' %
+                    (e.errno, str(e)))
       return (False, 'Unknown')
     else:
       raise
   except Exception as exc:
     logging.debug('Something went wrong while trying to determine '
                   'multiprocessing capabilities.\nMessage: {0}'.format(
-      str(exc)))
+                      str(exc)))
     return (False, 'Unknown')
 
 
@@ -440,4 +442,6 @@ def PutToQueueWithTimeout(queue, msg, timeout=STATUS_QUEUE_OP_TIMEOUT):
       put_success = True
     except Queue.Full:
       pass
+
+
 # pylint: enable=invalid-name

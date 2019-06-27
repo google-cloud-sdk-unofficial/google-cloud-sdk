@@ -22,7 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Asset(base.Group):
-  """Manage Cloud SCC assets.
-
-  TODO(b/128331076): Add examples here.
-  """
+  """Manage Cloud SCC assets."""

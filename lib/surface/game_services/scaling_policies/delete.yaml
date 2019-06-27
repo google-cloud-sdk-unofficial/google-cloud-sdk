@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  is_hidden: true
+  hidden: true
 
   help_text:
     brief: Delete a Scaling Policy.
@@ -12,3 +12,6 @@
     resource:
       help_text: Cloud Game Services Scaling Policy to describe.
       spec: !REF googlecloudsdk.command_lib.game_services.resources:scaling_policy
+
+  async:
+    collection: gameservices.projects.locations.operations

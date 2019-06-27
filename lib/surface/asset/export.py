@@ -34,8 +34,8 @@ _DETAILED_HELP = {
         """\
       Export the cloud assets to Google Cloud Storage. Use gcloud asset operations
       describe to get the latest status of the operation. Note that to export a
-      project different from the project you want to bill, you can either
-      explicitly set the billing/quota_project property or authenticate with a service account.
+      project different from the project you want to bill, you can use
+      --billing-project or authenticate with a service account.
       See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/gcloud-asset
       for examples of using a service account.
       """,

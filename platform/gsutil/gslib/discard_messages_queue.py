@@ -14,6 +14,11 @@
 # limitations under the License.
 """Provides a message queue that discards all messages."""
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+
 
 class DiscardMessagesQueue(object):
   """Emulates a Cloud API status queue but drops all messages.
@@ -22,7 +27,9 @@ class DiscardMessagesQueue(object):
   thread display information about those ops (e.g. running a test or fetching
   the public gsutil tarball object's metadata to perform a version check).
   """
+
   # pylint: disable=invalid-name, unused-argument
   def put(self, message=None, timeout=None):
     pass
+
   # pylint: enable=invalid-name, unused-argument

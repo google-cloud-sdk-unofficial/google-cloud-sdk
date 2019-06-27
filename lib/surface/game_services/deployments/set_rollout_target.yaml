@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  is_hidden: true
+  hidden: true
 
   help_text:
     brief: Set rollout target for the ongoing Deployment rollout in the specified clusters.
@@ -89,3 +89,6 @@
           - arg_name: percent
             api_field: percent
             required: false
+
+  async:
+    collection: gameservices.projects.locations.operations

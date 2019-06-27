@@ -28,23 +28,9 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as 
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateInstancesAlpha(base.Command):
-  r"""Immediately update selected instances in a Google Compute Engine managed instance group.
-
-  When using a managed instance group, it's possible that your intended
-  specification for a VM is different from the current state of that VM. For
-  example, this can happen due to changes to the group's target instance
-  template. This command enables you to initiate the update process on the given
-  set of instances instantly, thus when your Managed Instance Group is stable
-  you can be sure that all the changes were applied.
-
-  *{command}* allows you to specify the least and the most disruptive actions
-  that can be performed while updating the instances. This way you can reduce
-  the risk of rolling out too many changes at once. Possible actions are:
-  `none`, `refresh`, `restart` and `replace`. The order of disruption to the
-  instance is: `none` < `refresh` < `restart` < `replace`.
-  """
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateInstancesBeta(base.Command):
+  r"""Immediately update selected instances in a Google Compute Engine managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -147,3 +133,48 @@ class UpdateInstancesAlpha(base.Command):
             region=igm_ref.region,
         ), field_name)
     return field_name, service, requests
+
+
+UpdateInstancesBeta.detailed_help = {
+    'brief':
+        'Immediately update selected instances in a Google Compute '
+        'Engine managed instance group.',
+    'DESCRIPTION':
+        """\
+          When using a managed instance group, it's possible that your intended
+          specification for a VM is different from the current state of that VM. For
+          example, this can happen due to changes to the group's target instance
+          template. This command enables you to initiate the update process on the given
+          set of instances instantly, thus when your Managed Instance Group is stable
+          you can be sure that all the changes were applied.
+
+          *{command}* allows you to specify the least and the most disruptive actions
+          that can be performed while updating the instances. This way you can reduce
+          the risk of rolling out too many changes at once. Possible actions are:
+          `none`, `refresh`, `restart` and `replace`. The order of disruption to the
+          instance is: `none` < `refresh` < `restart` < `replace`.
+        """,
+    'EXAMPLES':
+        """\
+        To update instances `instance-1`, `instance-2` in `my-group`,
+        with `minimal-action` none and `most-disruptive-allowed-action` equal to
+        `restart`, run:
+
+            $ {command} \\
+                  my-group --instances=instance-1,instance2 \\
+                  --minimal-action=none
+                  --most-disruptive-allowed-action=restart
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateInstancesAlpha(UpdateInstancesBeta):
+  r"""Immediately update selected instances in a Google Compute Engine managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    UpdateInstancesBeta.Args(parser)
+
+
+UpdateInstancesAlpha.detailed_help = UpdateInstancesBeta.detailed_help

@@ -15,17 +15,25 @@
 """Contains gsutil base integration test case class."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 from contextlib import contextmanager
-import cStringIO
+from six.moves import cStringIO
 import datetime
 import locale
 import logging
 import os
+import random
+import string
 import subprocess
 import sys
 import tempfile
 import time
+
+import six
+from six.moves import range
 
 import boto
 from boto import config
@@ -45,6 +53,7 @@ from gslib.project_id import GOOG_PROJ_ID_HDR
 from gslib.project_id import PopulateProjectId
 from gslib.tests.testcase import base
 import gslib.tests.util as util
+from gslib.tests.util import InvokedFromParFile
 from gslib.tests.util import ObjectToURI as suri
 from gslib.tests.util import RUN_S3_TESTS
 from gslib.tests.util import SetBotoConfigForTest
@@ -65,7 +74,6 @@ from gslib.utils.posix_util import MTIME_ATTR
 from gslib.utils.posix_util import UID_ATTR
 from gslib.utils.system_util import IS_WINDOWS
 from gslib.utils.retry_util import Retry
-
 
 LOGGER = logging.getLogger('integration-test')
 
@@ -125,8 +133,8 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     self.bucket_uris = []
 
     # Set up API version and project ID handler.
-    self.api_version = boto.config.get_value(
-        'GSUtil', 'default_api_version', '1')
+    self.api_version = boto.config.get_value('GSUtil', 'default_api_version',
+                                             '1')
 
     # Instantiate a JSON API for use by the current integration test.
     self.json_api = GcsJsonApi(BucketStorageUri, logging.getLogger(),
@@ -154,7 +162,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       bucket_uri = self.bucket_uris[-1]
       try:
         bucket_list = self._ListBucket(bucket_uri)
-      except StorageResponseError, e:
+      except StorageResponseError as e:
         # This can happen for tests of rm -r command, which for bucket-only
         # URIs delete the bucket at the end.
         if e.status == 404:
@@ -171,7 +179,11 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
                                                  version_id=k.version_id)
             else:
               k.delete()
-          except StorageResponseError, e:
+          except StorageResponseError as e:
+            # This could happen if objects that have already been deleted are
+            # still showing up in the listing due to eventual consistency. In
+            # that case, we continue on until we've tried to deleted every
+            # object in the listing before raising the error on which to retry.
             if e.status == 404:
               # This could happen if objects that have already been deleted are
               # still showing up in the listing due to eventual consistency. In
@@ -228,8 +240,9 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     if object_metadata.eventBasedHold:
       self.RunGsUtil(['retention', 'event', 'release', object_uri])
 
-    retention_policy = self.json_api.GetBucket(
-        bucket_uri.bucket_name, fields=['retentionPolicy']).retentionPolicy
+    retention_policy = self.json_api.GetBucket(bucket_uri.bucket_name,
+                                               fields=['retentionPolicy'
+                                                      ]).retentionPolicy
     retention_period = (retention_policy.retentionPeriod
                         if retention_policy is not None else 0)
     # throwing exceptions for Retention durations larger than 60 seconds.
@@ -257,14 +270,25 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     obj_metadata = apitools_messages.Object()
     obj_metadata.metadata = CreateCustomMetadata({attr_name: attr_value})
     if provider == 'gs':
-      self.json_api.PatchObjectMetadata(bucket_name, object_name, obj_metadata,
+      self.json_api.PatchObjectMetadata(bucket_name,
+                                        object_name,
+                                        obj_metadata,
                                         provider=provider)
     else:
-      self.xml_api.PatchObjectMetadata(bucket_name, object_name, obj_metadata,
+      self.xml_api.PatchObjectMetadata(bucket_name,
+                                       object_name,
+                                       obj_metadata,
                                        provider=provider)
 
-  def SetPOSIXMetadata(self, provider, bucket_name, object_name, atime=None,
-                       mtime=None, uid=None, gid=None, mode=None):
+  def SetPOSIXMetadata(self,
+                       provider,
+                       bucket_name,
+                       object_name,
+                       atime=None,
+                       mtime=None,
+                       uid=None,
+                       gid=None,
+                       mode=None):
     """Sets POSIX metadata for the object."""
     obj_metadata = apitools_messages.Object()
     obj_metadata.metadata = apitools_messages.Object.MetadataValue(
@@ -285,10 +309,14 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       CreateCustomMetadata(entries={GID_ATTR: gid},
                            custom_metadata=obj_metadata.metadata)
     if provider == 'gs':
-      self.json_api.PatchObjectMetadata(bucket_name, object_name, obj_metadata,
+      self.json_api.PatchObjectMetadata(bucket_name,
+                                        object_name,
+                                        obj_metadata,
                                         provider=provider)
     else:
-      self.xml_api.PatchObjectMetadata(bucket_name, object_name, obj_metadata,
+      self.xml_api.PatchObjectMetadata(bucket_name,
+                                       object_name,
+                                       obj_metadata,
                                        provider=provider)
 
   def ClearPOSIXMetadata(self, obj):
@@ -298,13 +326,15 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       obj: The object to clear POSIX metadata for.
     """
     provider_meta_string = 'goog' if obj.scheme == 'gs' else 'amz'
-    self.RunGsUtil(['setmeta',
-                    '-h', 'x-%s-meta-%s' % (provider_meta_string, ATIME_ATTR),
-                    '-h', 'x-%s-meta-%s' % (provider_meta_string, MTIME_ATTR),
-                    '-h', 'x-%s-meta-%s' % (provider_meta_string, UID_ATTR),
-                    '-h', 'x-%s-meta-%s' % (provider_meta_string, GID_ATTR),
-                    '-h', 'x-%s-meta-%s' % (provider_meta_string, MODE_ATTR),
-                    suri(obj)])
+    self.RunGsUtil([
+        'setmeta', '-h',
+        'x-%s-meta-%s' % (provider_meta_string, ATIME_ATTR), '-h',
+        'x-%s-meta-%s' % (provider_meta_string, MTIME_ATTR), '-h',
+        'x-%s-meta-%s' % (provider_meta_string, UID_ATTR), '-h',
+        'x-%s-meta-%s' % (provider_meta_string, GID_ATTR), '-h',
+        'x-%s-meta-%s' % (provider_meta_string, MODE_ATTR),
+        suri(obj)
+    ])
 
   def _ServiceAccountCredentialsPresent(self):
     # TODO: Currently, service accounts cannot be project owners (unless
@@ -341,6 +371,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     Returns:
       Listing split across lines.
     """
+
     def _CheckBucket():
       command = ['ls', '-a'] if versioned else ['ls']
       b_uri = [suri(bucket_uri) + '/**'] if num_objects else [suri(bucket_uri)]
@@ -368,9 +399,9 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     with SetBotoConfigForTest([('GSUtil', 'prefer_api', 'json')]):
       stdout = self.RunGsUtil(['stat', object_uri_str], return_stdout=True)
     self.assertIn(
-        Base64Sha256FromBase64EncryptionKey(encryption_key), stdout,
-        'Object %s did not use expected encryption key with hash %s. '
-        'Actual object: %s'%
+        Base64Sha256FromBase64EncryptionKey(encryption_key).decode('ascii'),
+        stdout, 'Object %s did not use expected encryption key with hash %s. '
+        'Actual object: %s' %
         (object_uri_str, Base64Sha256FromBase64EncryptionKey(encryption_key),
          stdout))
 
@@ -478,7 +509,9 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
                    provider=None,
                    prefer_json_api=False,
                    versioning_enabled=False,
-                   bucket_policy_only=False):
+                   bucket_policy_only=False,
+                   bucket_name_prefix='',
+                   bucket_name_suffix=''):
     """Creates a test bucket.
 
     The bucket and all of its contents will be deleted after the test.
@@ -496,6 +529,8 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
           True.
       bucket_policy_only: If True, set the bucket's iamConfiguration's
           bucketPolicyOnly attribute to True.
+      bucket_name_prefix: Unicode string to be prepended to bucket_name
+      bucket_name_suffix: Unicode string to be appended to bucket_name
 
     Returns:
       StorageUri for the created bucket.
@@ -509,11 +544,20 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     else:
       # We default to the "us-central1" location for regional buckets, but allow
       # overriding this value in the Boto config.
-      location = boto.config.get(
-          'GSUtil', 'test_cmd_regional_bucket_location', 'us-central1')
+      location = boto.config.get('GSUtil', 'test_cmd_regional_bucket_location',
+                                 'us-central1')
+
+    bucket_name_prefix = six.ensure_text(bucket_name_prefix)
+    bucket_name_suffix = six.ensure_text(bucket_name_suffix)
 
     if bucket_name:
+      bucket_name = ''.join(
+          [bucket_name_prefix, bucket_name, bucket_name_suffix])
       bucket_name = util.MakeBucketNameValid(bucket_name)
+    else:
+      bucket_name = self.MakeTempName('bucket',
+                                      prefix=bucket_name_prefix,
+                                      suffix=bucket_name_suffix)
 
     if prefer_json_api and provider == 'gs':
       json_bucket = self.CreateBucketJson(bucket_name=bucket_name,
@@ -523,20 +567,19 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
                                           versioning_enabled=versioning_enabled,
                                           retention_policy=retention_policy,
                                           bucket_policy_only=bucket_policy_only)
-      bucket_uri = boto.storage_uri(
-          'gs://%s' % json_bucket.name.encode(UTF8).lower(),
-          suppress_consec_slashes=False)
+      bucket_uri = boto.storage_uri('gs://%s' % json_bucket.name.lower(),
+                                    suppress_consec_slashes=False)
       return bucket_uri
-
-    bucket_name = bucket_name or self.MakeTempName('bucket')
 
     bucket_uri = boto.storage_uri('%s://%s' % (provider, bucket_name.lower()),
                                   suppress_consec_slashes=False)
 
     if provider == 'gs':
       # Apply API version and project ID headers if necessary.
-      headers = {'x-goog-api-version': self.api_version}
-      headers[GOOG_PROJ_ID_HDR] = PopulateProjectId()
+      headers = {
+          'x-goog-api-version': self.api_version,
+          GOOG_PROJ_ID_HDR: PopulateProjectId()
+      }
     else:
       headers = {}
 
@@ -549,7 +592,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
         bucket_uri.create_bucket(storage_class=storage_class,
                                  location=location or '',
                                  headers=headers)
-      except StorageResponseError, e:
+      except StorageResponseError as e:
         # If the service returns a transient error or a connection breaks,
         # it's possible the request succeeded. If that happens, the service
         # will return 409s for all future calls even though our intent
@@ -572,7 +615,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     for i in range(test_objects):
       self.CreateObject(bucket_uri=bucket_uri,
                         object_name=self.MakeTempName('obj'),
-                        contents='test %d' % i)
+                        contents='test {:d}'.format(i).encode('ascii'))
     return bucket_uri
 
   def CreateVersionedBucket(self, bucket_name=None, test_objects=0):
@@ -592,17 +635,25 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     # Note that we prefer the JSON API so that we don't require two separate
     # steps to create and then set versioning on the bucket (as versioning
     # propagation on an existing bucket is subject to eventual consistency).
-    bucket_uri = self.CreateBucket(
-        bucket_name=bucket_name,
-        test_objects=test_objects,
-        prefer_json_api=True,
-        versioning_enabled=True)
+    bucket_uri = self.CreateBucket(bucket_name=bucket_name,
+                                   test_objects=test_objects,
+                                   prefer_json_api=True,
+                                   versioning_enabled=True)
     return bucket_uri
 
-  def CreateObject(self, bucket_uri=None, object_name=None, contents=None,
-                   prefer_json_api=False, encryption_key=None, mode=None,
-                   mtime=None, uid=None, gid=None, storage_class=None,
-                   gs_idempotent_generation=0, kms_key_name=None):
+  def CreateObject(self,
+                   bucket_uri=None,
+                   object_name=None,
+                   contents=None,
+                   prefer_json_api=False,
+                   encryption_key=None,
+                   mode=None,
+                   mtime=None,
+                   uid=None,
+                   gid=None,
+                   storage_class=None,
+                   gs_idempotent_generation=0,
+                   kms_key_name=None):
     """Creates a test object.
 
     Args:
@@ -638,16 +689,23 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       A StorageUri for the created object.
     """
     bucket_uri = bucket_uri or self.CreateBucket()
-
-    if (contents and
-        bucket_uri.scheme == 'gs' and
+    # checking for valid types - None or unicode/binary text
+    if contents is not None:
+      if not isinstance(contents, (six.binary_type, six.text_type)):
+        raise TypeError('contents must be either none or bytes, not {}'.format(
+            type(contents)))
+      contents = six.ensure_binary(contents)
+    if (contents and bucket_uri.scheme == 'gs' and
         (prefer_json_api or encryption_key or kms_key_name)):
 
       object_name = object_name or self.MakeTempName('obj')
       json_object = self.CreateObjectJson(
-          contents=contents, bucket_name=bucket_uri.bucket_name,
-          object_name=object_name, encryption_key=encryption_key,
-          mtime=mtime, storage_class=storage_class,
+          contents=contents,
+          bucket_name=bucket_uri.bucket_name,
+          object_name=object_name,
+          encryption_key=encryption_key,
+          mtime=mtime,
+          storage_class=storage_class,
           gs_idempotent_generation=gs_idempotent_generation,
           kms_key_name=kms_key_name)
       object_uri = bucket_uri.clone_replace_name(object_name)
@@ -670,26 +728,36 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     if contents is not None:
       if bucket_uri.scheme == 'gs' and gs_idempotent_generation is not None:
         try:
-          key_uri.set_contents_from_string(
-              contents, headers={
-                  'x-goog-if-generation-match': str(gs_idempotent_generation)})
-        except StorageResponseError, e:
+          key_uri.set_contents_from_string(contents,
+                                           headers={
+                                               'x-goog-if-generation-match':
+                                               str(gs_idempotent_generation)
+                                           })
+        except StorageResponseError as e:
           if e.status == 412:
             pass
           else:
             raise
       else:
         key_uri.set_contents_from_string(contents)
-    custom_metadata_present = (mode is not None or mtime is not None
-                               or uid is not None or gid is not None)
+    custom_metadata_present = (mode is not None or mtime is not None or
+                               uid is not None or gid is not None)
     if custom_metadata_present:
-      self.SetPOSIXMetadata(bucket_uri.scheme, bucket_uri.bucket_name,
-                            object_name, atime=None, mtime=mtime,
-                            uid=uid, gid=gid, mode=mode)
+      self.SetPOSIXMetadata(bucket_uri.scheme,
+                            bucket_uri.bucket_name,
+                            object_name,
+                            atime=None,
+                            mtime=mtime,
+                            uid=uid,
+                            gid=gid,
+                            mode=mode)
     return key_uri
 
-  def CreateBucketJson(self, bucket_name=None, test_objects=0,
-                       storage_class=None, location=None,
+  def CreateBucketJson(self,
+                       bucket_name=None,
+                       test_objects=0,
+                       storage_class=None,
+                       location=None,
                        versioning_enabled=False,
                        retention_policy=None,
                        bucket_policy_only=False):
@@ -713,16 +781,16 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     Returns:
       Apitools Bucket for the created bucket.
     """
-    bucket_name = util.MakeBucketNameValid(
-        bucket_name or self.MakeTempName('bucket'))
+    bucket_name = util.MakeBucketNameValid(bucket_name or
+                                           self.MakeTempName('bucket'))
     bucket_metadata = apitools_messages.Bucket(name=bucket_name.lower())
     if storage_class:
       bucket_metadata.storageClass = storage_class
     if location:
       bucket_metadata.location = location
     if versioning_enabled:
-      bucket_metadata.versioning = (
-          apitools_messages.Bucket.VersioningValue(enabled=True))
+      bucket_metadata.versioning = (apitools_messages.Bucket.VersioningValue(
+          enabled=True))
     if retention_policy:
       bucket_metadata.retentionPolicy = retention_policy
     if bucket_policy_only:
@@ -732,8 +800,7 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       bucket_metadata.iamConfiguration = iam_config
 
     # TODO: Add retry and exponential backoff.
-    bucket = self.json_api.CreateBucket(bucket_name,
-                                        metadata=bucket_metadata)
+    bucket = self.json_api.CreateBucket(bucket_name, metadata=bucket_metadata)
     # Add bucket to list of buckets to be cleaned up.
     # TODO: Clean up JSON buckets using JSON API.
     self.bucket_uris.append(
@@ -742,12 +809,18 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     for i in range(test_objects):
       self.CreateObjectJson(bucket_name=bucket_name,
                             object_name=self.MakeTempName('obj'),
-                            contents='test %d' % i)
+                            contents='test {:d}'.format(i).encode('ascii'))
     return bucket
 
-  def CreateObjectJson(self, contents, bucket_name=None, object_name=None,
-                       encryption_key=None, mtime=None, storage_class=None,
-                       gs_idempotent_generation=None, kms_key_name=None):
+  def CreateObjectJson(self,
+                       contents,
+                       bucket_name=None,
+                       object_name=None,
+                       encryption_key=None,
+                       mtime=None,
+                       storage_class=None,
+                       gs_idempotent_generation=None,
+                       kms_key_name=None):
     """Creates a test object (GCS provider only) using the JSON API.
 
     Args:
@@ -792,20 +865,24 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
         kmsKeyName=kms_key_name)
     encryption_keywrapper = CryptoKeyWrapperFromKey(encryption_key)
     try:
-      return self.json_api.UploadObject(
-          cStringIO.StringIO(contents),
-          object_metadata, provider='gs',
-          encryption_tuple=encryption_keywrapper,
-          preconditions=preconditions)
+      return self.json_api.UploadObject(six.BytesIO(contents),
+                                        object_metadata,
+                                        provider='gs',
+                                        encryption_tuple=encryption_keywrapper,
+                                        preconditions=preconditions)
     except PreconditionException:
       if gs_idempotent_generation is None:
         raise
-      with SetBotoConfigForTest([('GSUtil', 'decryption_key1',
-                                  encryption_key)]):
+      with SetBotoConfigForTest([('GSUtil', 'decryption_key1', encryption_key)
+                                ]):
         return self.json_api.GetObjectMetadata(bucket_name, object_name)
 
-  def VerifyObjectCustomAttribute(self, bucket_name, object_name, attr_name,
-                                  expected_value, expected_present=True):
+  def VerifyObjectCustomAttribute(self,
+                                  bucket_name,
+                                  object_name,
+                                  attr_name,
+                                  expected_value,
+                                  expected_present=True):
     """Retrieves and verifies an object's custom metadata attribute.
 
     Args:
@@ -819,9 +896,10 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     Returns:
       None
     """
-    gsutil_api = (self.json_api if self.default_provider == 'gs'
-                  else self.xml_api)
-    metadata = gsutil_api.GetObjectMetadata(bucket_name, object_name,
+    gsutil_api = (self.json_api
+                  if self.default_provider == 'gs' else self.xml_api)
+    metadata = gsutil_api.GetObjectMetadata(bucket_name,
+                                            object_name,
                                             provider=self.default_provider,
                                             fields=['metadata/%s' % attr_name])
     attr_present, value = GetValueFromObjectCustomMetadata(
@@ -829,9 +907,14 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
     self.assertEqual(expected_present, attr_present)
     self.assertEqual(expected_value, value)
 
-  def RunGsUtil(self, cmd, return_status=False,
-                return_stdout=False, return_stderr=False,
-                expected_status=0, stdin=None, env_vars=None):
+  def RunGsUtil(self,
+                cmd,
+                return_status=False,
+                return_stdout=False,
+                return_stderr=False,
+                expected_status=0,
+                stdin=None,
+                env_vars=None):
     """Runs the gsutil command.
 
     Args:
@@ -853,35 +936,60 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       If only one return_* value was specified, that value is returned directly
       rather than being returned within a 1-tuple.
     """
-    cmd = ([gslib.GSUTIL_PATH] + ['--testexceptiontraces'] +
-           ['-o', 'GSUtil:default_project_id=' + PopulateProjectId()] +
-           cmd)
-    if IS_WINDOWS:
-      cmd = [sys.executable] + cmd
+    cmd = [
+        gslib.GSUTIL_PATH, '--testexceptiontraces', '-o',
+        'GSUtil:default_project_id=' + PopulateProjectId()
+    ] + cmd
+    if stdin is not None:
+      if six.PY3:
+        if not isinstance(stdin, bytes):
+          stdin = stdin.encode(UTF8)
+      else:
+        stdin = stdin.encode(UTF8)
+    # checking to see if test was invoked from a par file (bundled archive)
+    # if not, add python executable path to ensure correct version of python
+    # is used for testing
+    cmd = [str(sys.executable)] + cmd if not InvokedFromParFile() else cmd
     env = os.environ.copy()
     if env_vars:
       env.update(env_vars)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         stdin=subprocess.PIPE, env=env)
-    (stdout, stderr) = p.communicate(stdin)
+    # Ensuring correct text types
+    envstr = dict()
+    for k, v in six.iteritems(env):
+      envstr[six.ensure_str(k)] = six.ensure_str(v)
+    cmd = [six.ensure_str(part) for part in cmd]
+    # executing command
+    p = subprocess.Popen(cmd,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         stdin=subprocess.PIPE,
+                         env=envstr)
+    c_out = p.communicate(stdin)
+    try:
+      c_out = [six.ensure_text(output) for output in c_out]
+    except UnicodeDecodeError:
+      c_out = [
+          six.ensure_text(output, locale.getpreferredencoding(False))
+          for output in c_out
+      ]
+    stdout = c_out[0].replace(os.linesep, '\n')
+    stderr = c_out[1].replace(os.linesep, '\n')
     status = p.returncode
 
     if expected_status is not None:
+      cmd = map(six.ensure_text, cmd)
       self.assertEqual(
-          status, expected_status,
-          msg='Expected status %d, got %d.\nCommand:\n%s\n\nstderr:\n%s' % (
+          int(status),
+          int(expected_status),
+          msg='Expected status {}, got {}.\nCommand:\n{}\n\nstderr:\n{}'.format(
               expected_status, status, ' '.join(cmd), stderr))
 
     toreturn = []
     if return_status:
       toreturn.append(status)
     if return_stdout:
-      if IS_WINDOWS:
-        stdout = stdout.replace('\r\n', '\n')
       toreturn.append(stdout)
     if return_stderr:
-      if IS_WINDOWS:
-        stderr = stderr.replace('\r\n', '\n')
       toreturn.append(stderr)
 
     if len(toreturn) == 1:
@@ -897,20 +1005,49 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
       expected_results: The expected tab completion results for the given input.
     """
     cmd = [gslib.GSUTIL_PATH] + ['--testexceptiontraces'] + cmd
+    if InvokedFromParFile():
+      argcomplete_start_idx = 1
+    else:
+      argcomplete_start_idx = 2
+      # Prepend the interpreter path; ensures we use the same interpreter that
+      # was used to invoke the integration tests. In practice, this only differs
+      # when you're running the tests using a different interpreter than
+      # whatever `/usr/bin/env python` resolves to.
+      cmd = [str(sys.executable)] + cmd
     cmd_str = ' '.join(cmd)
 
     @Retry(AssertionError, tries=5, timeout_secs=1)
     def _RunTabCompletion():
       """Runs the tab completion operation with retries."""
+      # Set this to True if the argcomplete tests start failing and you want to
+      # see any output you can get. I've had to do this so many times that I'm
+      # just going to leave this in the code for convenience ¯\_(ツ)_/¯
+      #
+      # If set, this will print out extra info from the argcomplete subprocess.
+      # You'll probably want to find one test that's failing and run it
+      # individually, e.g.:
+      #   python3 ./gsutil test tabcomplete.TestTabComplete.test_single_object
+      # so that only one subprocess is run, thus routing the output to your
+      # local terminal rather than swallowing it.
+      _hacky_debugging = False
+
       results_string = None
       with tempfile.NamedTemporaryFile(
           delete=False) as tab_complete_result_file:
-        # argcomplete returns results via the '8' file descriptor so we
-        # redirect to a file so we can capture them.
-        cmd_str_with_result_redirect = '%s 8>%s' % (
-            cmd_str, tab_complete_result_file.name)
+        if _hacky_debugging:
+          # These redirectons are valuable for debugging purposes. 1 and 2 are,
+          # obviously, stdout and stderr of the subprocess. 9 is the fd for
+          # argparse debug stream.
+          cmd_str_with_result_redirect = (
+              '{cs} 1>{fn} 2>{fn} 8>{fn} 9>{fn}'.format(
+                  cs=cmd_str, fn=tab_complete_result_file.name))
+        else:
+          # argcomplete returns results via the '8' file descriptor, so we
+          # redirect to a file so we can capture the completion results.
+          cmd_str_with_result_redirect = '{cs} 8>{fn}'.format(
+              cs=cmd_str, fn=tab_complete_result_file.name)
         env = os.environ.copy()
-        env['_ARGCOMPLETE'] = '1'
+        env['_ARGCOMPLETE'] = str(argcomplete_start_idx)
         # Use a sane default for COMP_WORDBREAKS.
         env['_ARGCOMPLETE_COMP_WORDBREAKS'] = '''"'@><=;|&(:'''
         if 'COMP_WORDBREAKS' in env:
@@ -921,6 +1058,10 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
         results_string = tab_complete_result_file.read().decode(
             locale.getpreferredencoding())
       if results_string:
+        if _hacky_debugging:
+          print('---------------------------------------')
+          print(results_string)
+          print('---------------------------------------')
         results = results_string.split('\013')
       else:
         results = []
@@ -935,23 +1076,23 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
   def SetAnonymousBotoCreds(self):
     # Tell gsutil not to override the real error message with a warning about
     # anonymous access if no credentials are provided in the config file.
-    boto_config_for_test = [
-        ('Tests', 'bypass_anonymous_access_warning', 'True')]
+    boto_config_for_test = [('Tests', 'bypass_anonymous_access_warning', 'True')
+                           ]
 
     # Also, maintain any custom host/port/API configuration, since we'll need
     # to contact the same host when operating in a development environment.
-    for creds_config_key in (
-        'gs_host', 'gs_json_host', 'gs_post', 'gs_json_port'):
-      boto_config_for_test.append(
-          ('Credentials', creds_config_key,
-           boto.config.get('Credentials', creds_config_key, None)))
+    for creds_config_key in ('gs_host', 'gs_json_host', 'gs_json_host_header',
+                             'gs_post', 'gs_json_port'):
+      boto_config_for_test.append(('Credentials', creds_config_key,
+                                   boto.config.get('Credentials',
+                                                   creds_config_key, None)))
     boto_config_for_test.append(
         ('Boto', 'https_validate_certificates',
          boto.config.get('Boto', 'https_validate_certificates', None)))
     for api_config_key in ('json_api_version', 'prefer_api'):
-      boto_config_for_test.append(
-          ('GSUtil', api_config_key,
-           boto.config.get('GSUtil', api_config_key, None)))
+      boto_config_for_test.append(('GSUtil', api_config_key,
+                                   boto.config.get('GSUtil', api_config_key,
+                                                   None)))
 
     with SetBotoConfigForTest(boto_config_for_test, use_existing_config=False):
       # Make sure to reset Developer Shell credential port so that the child

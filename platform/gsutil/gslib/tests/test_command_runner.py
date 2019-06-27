@@ -15,13 +15,17 @@
 """Unit and integration tests for gsutil command_runner module."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import os
 import time
 
+import six
+from six.moves import input
 import boto
-import mock
 
 import gslib
 from gslib import command_runner
@@ -45,6 +49,10 @@ from gslib.utils import system_util
 from gslib.utils.constants import GSUTIL_PUB_TARBALL
 from gslib.utils.text_util import InsistAscii
 from gslib.utils.unit_util import SECONDS_PER_DAY
+
+from six import add_move, MovedModule
+add_move(MovedModule('mock', 'mock', 'unittest.mock'))
+from six.moves import mock
 
 SKIP_BECAUSE_RETRIES_ARE_SLOW = (
     'gs_host is set to non-default value; trying to fetch gsutil version '
@@ -91,20 +99,14 @@ class FakeCommandWithInvalidCompleter(Command):
   """Command with an invalid completer on an argument."""
 
   command_spec = Command.CreateCommandSpec(
-      'fake1',
-      argparse_arguments=[
-          CommandArgument('arg', completer='BAD')
-      ]
-  )
+      'fake1', argparse_arguments=[CommandArgument('arg', completer='BAD')])
 
-  help_spec = Command.HelpSpec(
-      help_name='fake1',
-      help_name_aliases=[],
-      help_type='command_help',
-      help_one_line_summary='fake command for tests',
-      help_text='fake command for tests',
-      subcommand_help_text={}
-  )
+  help_spec = Command.HelpSpec(help_name='fake1',
+                               help_name_aliases=[],
+                               help_type='command_help',
+                               help_one_line_summary='fake command for tests',
+                               help_text='fake command for tests',
+                               subcommand_help_text={})
 
   def __init__(self):
     pass
@@ -116,17 +118,15 @@ class FakeCommandWithNestedArguments(object):
   # Matches the number of CommandArguments in argparse_arguments below.
   num_args = 2
 
-  command_spec = Command.CreateCommandSpec(
-      'FakeCommandWithNestedArguments',
-      argparse_arguments={
-          subcommand_name: {
-              subcommand_subname: [
-                  CommandArgument('arg1'),
-                  CommandArgument('arg2'),
-              ]
-          }
-      }
-  )
+  command_spec = Command.CreateCommandSpec('FakeCommandWithNestedArguments',
+                                           argparse_arguments={
+                                               subcommand_name: {
+                                                   subcommand_subname: [
+                                                       CommandArgument('arg1'),
+                                                       CommandArgument('arg2'),
+                                                   ]
+                                               }
+                                           })
 
 
 class FakeCommandWithCompleters(Command):
@@ -141,16 +141,14 @@ class FakeCommandWithCompleters(Command):
           CommandArgument.MakeFreeTextArgument(),
           CommandArgument.MakeZeroOrMoreCloudBucketURLsArgument(),
           CommandArgument.MakeFileURLOrCannedACLArgument(),
-      ]
-  )
+      ])
 
-  help_spec = Command.HelpSpec(
-      help_name='fake2',
-      help_name_aliases=[],
-      help_type='command_help',
-      help_one_line_summary='fake command for tests',
-      help_text='fake command for tests',
-      subcommand_help_text={})
+  help_spec = Command.HelpSpec(help_name='fake2',
+                               help_name_aliases=[],
+                               help_type='command_help',
+                               help_one_line_summary='fake command for tests',
+                               help_text='fake command for tests',
+                               subcommand_help_text={})
 
   def __init__(self):
     pass
@@ -173,17 +171,17 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
     get_timestamp_file_patcher.start()
 
     # Mock out the gsutil version checker.
-    base_version = unicode(gslib.VERSION)
+    base_version = six.text_type(gslib.VERSION)
     while not base_version.isnumeric():
       if not base_version:
-        raise CommandException(
-            'Version number (%s) is not numeric.' % gslib.VERSION)
+        raise CommandException('Version number (%s) is not numeric.' %
+                               gslib.VERSION)
       base_version = base_version[:-1]
     self.old_look_up_gsutil_version = command_runner.LookUpGsutilVersion
     command_runner.LookUpGsutilVersion = lambda u, v: float(base_version) + 1
 
-    # Mock out raw_input to trigger yes prompt.
-    command_runner.raw_input = lambda p: 'y'
+    # Mock out input to trigger yes prompt.
+    command_runner.input = lambda p: 'y'
 
     # Mock out TTY check to pretend we're on a TTY even if we're not.
     self.running_interactively = True
@@ -197,16 +195,16 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
 
     # Create a fake pub tarball that will be used to check for gsutil version.
     self.pub_bucket_uri = self.CreateBucket('pub')
-    self.gsutil_tarball_uri = self.CreateObject(
-        bucket_uri=self.pub_bucket_uri, object_name='gsutil.tar.gz',
-        contents='foo')
+    self.gsutil_tarball_uri = self.CreateObject(bucket_uri=self.pub_bucket_uri,
+                                                object_name='gsutil.tar.gz',
+                                                contents='foo')
 
   def tearDown(self):
     """Tears down the command runner mock objects."""
     super(TestCommandRunnerUnitTests, self).tearDown()
 
     command_runner.LookUpGsutilVersion = self.old_look_up_gsutil_version
-    command_runner.raw_input = raw_input
+    command_runner.input = input
 
     gslib.GetGsutilVersionModifiedTime = self.previous_version_mod_time
 
@@ -223,8 +221,8 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
   @unittest.skipIf(util.HAS_NON_DEFAULT_GS_HOST, SKIP_BECAUSE_RETRIES_ARE_SLOW)
   def test_not_interactive(self):
     """Tests that update is not triggered if not running interactively."""
-    with SetBotoConfigForTest([
-        ('GSUtil', 'software_update_check_period', '1')]):
+    with SetBotoConfigForTest([('GSUtil', 'software_update_check_period', '1')
+                              ]):
       with open(self.timestamp_file_path, 'w') as f:
         f.write(str(int(time.time() - 2 * SECONDS_PER_DAY)))
       self.running_interactively = False
@@ -240,8 +238,7 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
     self.assertFalse(os.path.exists(self.timestamp_file_path))
     self.version_mod_time = time.time()
     self.assertEqual(
-        False,
-        self.command_runner.MaybeCheckForAndOfferSoftwareUpdate('ls', 0))
+        False, self.command_runner.MaybeCheckForAndOfferSoftwareUpdate('ls', 0))
 
   @unittest.skipIf(util.HAS_NON_DEFAULT_GS_HOST, SKIP_BECAUSE_RETRIES_ARE_SLOW)
   def test_no_tracker_file_version_old(self):
@@ -268,14 +265,13 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
     with open(self.timestamp_file_path, 'w') as f:
       f.write('NaN')
     self.assertEqual(
-        False,
-        self.command_runner.MaybeCheckForAndOfferSoftwareUpdate('ls', 0))
+        False, self.command_runner.MaybeCheckForAndOfferSoftwareUpdate('ls', 0))
 
   @unittest.skipIf(util.HAS_NON_DEFAULT_GS_HOST, SKIP_BECAUSE_RETRIES_ARE_SLOW)
   def test_update_should_trigger(self):
     """Tests update should be triggered if time is up."""
-    with SetBotoConfigForTest([
-        ('GSUtil', 'software_update_check_period', '1')]):
+    with SetBotoConfigForTest([('GSUtil', 'software_update_check_period', '1')
+                              ]):
       with open(self.timestamp_file_path, 'w') as f:
         f.write(str(int(time.time() - 2 * SECONDS_PER_DAY)))
       expected = not self._IsPackageOrCloudSDKInstall()
@@ -286,8 +282,8 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
   @unittest.skipIf(util.HAS_NON_DEFAULT_GS_HOST, SKIP_BECAUSE_RETRIES_ARE_SLOW)
   def test_not_time_for_update_yet(self):
     """Tests update not triggered if not time yet."""
-    with SetBotoConfigForTest([
-        ('GSUtil', 'software_update_check_period', '3')]):
+    with SetBotoConfigForTest([('GSUtil', 'software_update_check_period', '3')
+                              ]):
       with open(self.timestamp_file_path, 'w') as f:
         f.write(str(int(time.time() - 2 * SECONDS_PER_DAY)))
       self.assertEqual(
@@ -296,11 +292,11 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
 
   def test_user_says_no_to_update(self):
     """Tests no update triggered if user says no at the prompt."""
-    with SetBotoConfigForTest([
-        ('GSUtil', 'software_update_check_period', '1')]):
+    with SetBotoConfigForTest([('GSUtil', 'software_update_check_period', '1')
+                              ]):
       with open(self.timestamp_file_path, 'w') as f:
         f.write(str(int(time.time() - 2 * SECONDS_PER_DAY)))
-      command_runner.raw_input = lambda p: 'n'
+      command_runner.input = lambda p: 'n'
       self.assertEqual(
           False,
           self.command_runner.MaybeCheckForAndOfferSoftwareUpdate('ls', 0))
@@ -308,8 +304,8 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
   @unittest.skipIf(util.HAS_NON_DEFAULT_GS_HOST, SKIP_BECAUSE_RETRIES_ARE_SLOW)
   def test_update_check_skipped_with_quiet_mode(self):
     """Tests that update isn't triggered when loglevel is in quiet mode."""
-    with SetBotoConfigForTest([
-        ('GSUtil', 'software_update_check_period', '1')]):
+    with SetBotoConfigForTest([('GSUtil', 'software_update_check_period', '1')
+                              ]):
       with open(self.timestamp_file_path, 'w') as f:
         f.write(str(int(time.time() - 2 * SECONDS_PER_DAY)))
 
@@ -332,7 +328,7 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
 
     command_map = {
         FakeCommandWithInvalidCompleter.command_spec.command_name:
-            FakeCommandWithInvalidCompleter()
+        FakeCommandWithInvalidCompleter()
     }
 
     runner = CommandRunner(
@@ -344,14 +340,14 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
     try:
       runner.ConfigureCommandArgumentParsers(parser)
     except RuntimeError as e:
-      self.assertIn('Unknown completer', e.message)
+      self.assertIn('Unknown completer', str(e))
 
   @unittest.skipUnless(ARGCOMPLETE_AVAILABLE,
                        'Tab completion requires argcomplete')
   def test_command_argument_parser_setup_nested_argparse_arguments(self):
     command_map = {
         FakeCommandWithNestedArguments.command_spec.command_name:
-            FakeCommandWithNestedArguments(),
+        FakeCommandWithNestedArguments(),
     }
     runner = CommandRunner(
         bucket_storage_uri_class=self.mock_bucket_storage_uri,
@@ -386,7 +382,7 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
 
     command_map = {
         FakeCommandWithCompleters.command_spec.command_name:
-            FakeCommandWithCompleters()
+        FakeCommandWithCompleters()
     }
 
     runner = CommandRunner(
@@ -421,7 +417,7 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
     args = ['ls', '-p', 'abc:def', 'gs://bucket']
     HandleArgCoding(args)
     for a in args:
-      self.assertIs(type(a), unicode)
+      self.assertTrue(isinstance(a, six.text_type))
 
   def test_valid_header_coding(self):
     headers = {
@@ -431,7 +427,7 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
     HandleHeaderCoding(headers)
     # Custom metadata header values should be decoded to unicode; others should
     # not be decoded, but should contain only ASCII characters.
-    self.assertIs(type(headers['x-goog-meta-foo']), unicode)
+    self.assertTrue(isinstance(headers['x-goog-meta-foo'], six.text_type))
     InsistAscii(
         headers['content-type'],
         'Value of non-custom-metadata header contained non-ASCII characters')
@@ -442,8 +438,7 @@ class TestCommandRunnerUnitTests(testcase.unit_testcase.GsUtilUnitTestCase):
       HandleHeaderCoding(headers)
 
 
-class TestCommandRunnerIntegrationTests(
-    testcase.GsUtilIntegrationTestCase):
+class TestCommandRunnerIntegrationTests(testcase.GsUtilIntegrationTestCase):
   """Integration tests for gsutil update check in command_runner module."""
 
   def setUp(self):
@@ -459,13 +454,13 @@ class TestCommandRunnerIntegrationTests(
     self.addCleanup(get_timestamp_file_patcher.stop)
     get_timestamp_file_patcher.start()
 
-    # Mock out raw_input to trigger yes prompt.
-    command_runner.raw_input = lambda p: 'y'
+    # Mock out input to trigger yes prompt.
+    command_runner.input = lambda p: 'y'
 
   def tearDown(self):
     """Tears down the command runner mock objects."""
     super(TestCommandRunnerIntegrationTests, self).tearDown()
-    command_runner.raw_input = raw_input
+    command_runner.input = input
 
   @unittest.skipIf(util.HAS_NON_DEFAULT_GS_HOST, SKIP_BECAUSE_RETRIES_ARE_SLOW)
   def test_lookup_version_without_credentials(self):

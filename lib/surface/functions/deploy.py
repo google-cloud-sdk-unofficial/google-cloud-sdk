@@ -64,7 +64,6 @@ def _GetProject(args):
 def _Run(args,
          track=None,
          enable_runtime=True,
-         enable_max_instances=False,
          enable_vpc_connector=False,
          enable_traffic_control=False,
          enable_allow_unauthenticated=False):
@@ -117,6 +116,11 @@ def _Run(args,
   if args.service_account:
     function.serviceAccountEmail = args.service_account
     updated_fields.append('serviceAccountEmail')
+  if (args.IsSpecified('max_instances') or
+      args.IsSpecified('clear_max_instances')):
+    max_instances = 0 if args.clear_max_instances else args.max_instances
+    function.maxInstances = max_instances
+    updated_fields.append('maxInstances')
   if enable_runtime:
     if args.IsSpecified('runtime'):
       function.runtime = args.runtime
@@ -131,12 +135,6 @@ def _Run(args,
     elif is_new_function:
       raise exceptions.RequiredArgumentException(
           'runtime', 'Flag `--runtime` is required for new functions.')
-  if enable_max_instances:
-    if (args.IsSpecified('max_instances') or
-        args.IsSpecified('clear_max_instances')):
-      max_instances = 0 if args.clear_max_instances else args.max_instances
-      function.maxInstances = max_instances
-      updated_fields.append('maxInstances')
   if enable_vpc_connector:
     if args.vpc_connector or args.clear_vpc_connector:
       function.vpcConnector = ('' if args.clear_vpc_connector else
@@ -259,6 +257,7 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+    flags.AddMaxInstancesFlag(parser)
     flags.AddFunctionResourceArg(parser, 'to deploy')
     # Add args for function properties
     flags.AddFunctionMemoryFlag(parser)
@@ -299,7 +298,6 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddMaxInstancesFlag(parser)
     flags.AddVPCConnectorMutexGroup(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
 
@@ -307,7 +305,6 @@ class DeployBeta(base.Command):
     return _Run(
         args,
         track=self.ReleaseTrack(),
-        enable_max_instances=True,
         enable_vpc_connector=True,
         enable_allow_unauthenticated=True)
 
@@ -320,7 +317,6 @@ class DeployAlpha(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddMaxInstancesFlag(parser)
     flags.AddVPCConnectorMutexGroup(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddIngressSettingsFlag(parser)
@@ -330,7 +326,6 @@ class DeployAlpha(base.Command):
     return _Run(
         args,
         track=self.ReleaseTrack(),
-        enable_max_instances=True,
         enable_vpc_connector=True,
         enable_traffic_control=True,
         enable_allow_unauthenticated=True)

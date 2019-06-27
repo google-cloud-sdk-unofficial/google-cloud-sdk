@@ -80,6 +80,7 @@ class Deploy(base.Command):
     flags.AddCloudSQLFlags(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
     flags.AddServiceAccountFlag(parser)
+    flags.AddRevisionSuffixArg(parser)
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)

@@ -22,7 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Finding(base.Group):
-  """Manage Cloud SCC findings.
-
-  TODO(b/128331076): Add examples here.
-  """
+  """Manage Cloud SCC findings."""

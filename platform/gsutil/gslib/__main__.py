@@ -16,8 +16,10 @@
 """Main module for Google Cloud Storage command line tool."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 
-import ConfigParser
 import datetime
 import errno
 import getopt
@@ -29,6 +31,12 @@ import socket
 import sys
 import textwrap
 import traceback
+
+import six
+from six.moves import configparser
+from six.moves import range
+
+from gslib.utils.version_check import check_python_version_support
 
 # Load the gsutil version number and append it to boto.UserAgent so the value is
 # set before anything instantiates boto. This has to run after THIRD_PARTY_DIR
@@ -71,13 +79,13 @@ from gslib.exception import ControlCException
 import apitools.base.py.exceptions as apitools_exceptions
 from gslib.utils import boto_util
 from gslib.utils import constants
+from gslib.utils import system_util
+from gslib.utils import text_util
 from gslib.sig_handling import GetCaughtSignals
 from gslib.sig_handling import InitializeSignalHandling
 from gslib.sig_handling import RegisterSignalHandler
 
-
 CONFIG_KEYS_TO_REDACT = ['proxy', 'proxy_port', 'proxy_user', 'proxy_pass']
-
 
 # We don't use the oauth2 authentication plugin directly; importing it here
 # ensures that it's loaded and available by default when an operation requiring
@@ -131,8 +139,8 @@ def _CleanupSignalHandler(signal_num, cur_stack_frame):
     cur_stack_frame: Unused, but required in the method signature.
   """
   _Cleanup()
-  if (gslib.utils.parallelism_framework_util
-      .CheckMultiprocessingAvailableAndInit().is_available):
+  if (gslib.utils.parallelism_framework_util.
+      CheckMultiprocessingAvailableAndInit().is_available):
     gslib.command.TeardownMultiprocessingProcesses()
 
 
@@ -160,7 +168,7 @@ def _OutputAndExit(message, exception=None):
   else:
     err = '%s\n' % message
   try:
-    sys.stderr.write(err.encode(constants.UTF8))
+    text_util.print_to_fd(err, end='', file=sys.stderr)
   except UnicodeDecodeError:
     # Can happen when outputting invalid Unicode filenames.
     sys.stderr.write(err)
@@ -209,8 +217,8 @@ def main():
   from gcs_oauth2_boto_plugin import oauth2_client
   from apitools.base.py import credentials_lib
   # pylint: enable=unused-variable
-  if (gslib.utils.parallelism_framework_util
-      .CheckMultiprocessingAvailableAndInit().is_available):
+  if (gslib.utils.parallelism_framework_util.
+      CheckMultiprocessingAvailableAndInit().is_available):
     # These setup methods must be called, and, on Windows, they can only be
     # called from within an "if __name__ == '__main__':" block.
     gslib.command.InitializeMultiprocessingVariables()
@@ -237,10 +245,13 @@ def main():
   global debug_level
   global test_exception_traces
 
-  if not (2, 7) <= sys.version_info[:3] < (3,):
-    raise CommandException('gsutil requires python 2.7.')
+  supported, err = check_python_version_support()
+  if not supported:
+    raise CommandException(err)
+    sys.exit(1)
 
   boto_util.MonkeyPatchBoto()
+  system_util.MonkeyPatchHttp()
 
   # In gsutil 4.0 and beyond, we don't use the boto library for the JSON
   # API. However, we still store gsutil configuration data in the .boto
@@ -249,9 +260,10 @@ def main():
   # is useful to have all of the configuration for gsutil stored in one place.
   command_runner = CommandRunner()
   if not boto_util.BOTO_IS_SECURE:
-    raise CommandException('\n'.join(textwrap.wrap(
-        'Your boto configuration has is_secure = False. Gsutil cannot be '
-        'run this way, for security reasons.')))
+    raise CommandException('\n'.join(
+        textwrap.wrap(
+            'Your boto configuration has is_secure = False. Gsutil cannot be '
+            'run this way, for security reasons.')))
 
   headers = {}
   parallel_operations = False
@@ -279,11 +291,11 @@ def main():
 
   try:
     try:
-      opts, args = getopt.getopt(sys.argv[1:], 'dDvo:h:u:mq',
-                                 ['debug', 'detailedDebug', 'version', 'option',
-                                  'help', 'header', 'multithreaded', 'quiet',
-                                  'testexceptiontraces', 'trace-token=',
-                                  'perf-trace-token='])
+      opts, args = getopt.getopt(sys.argv[1:], 'dDvo:h:u:mq', [
+          'debug', 'detailedDebug', 'version', 'option', 'help', 'header',
+          'multithreaded', 'quiet', 'testexceptiontraces', 'trace-token=',
+          'perf-trace-token='
+      ])
     except getopt.GetoptError as e:
       _HandleCommandException(CommandException(e.msg))
     for o, a in opts:
@@ -336,8 +348,7 @@ def main():
 
     # Now that any Boto option overrides (via `-o` args) have been parsed,
     # perform initialization that depends on those options.
-    boto_util.configured_certs_file = (
-        boto_util.ConfigureCertsFile())
+    boto_util.configured_certs_file = (boto_util.ConfigureCertsFile())
 
     metrics.LogCommandParams(global_opts=opts)
     httplib2.debuglevel = debug_level
@@ -352,15 +363,15 @@ def main():
       for config_section in ('Boto', 'GSUtil'):
         try:
           config_items.extend(boto.config.items(config_section))
-        except ConfigParser.NoSectionError:
+        except configparser.NoSectionError:
           pass
-      for i in xrange(len(config_items)):
+      for i in range(len(config_items)):
         config_item_key = config_items[i][0]
         if config_item_key in CONFIG_KEYS_TO_REDACT:
           config_items[i] = (config_item_key, 'REDACTED')
       sys.stderr.write('Command being run: %s\n' % ' '.join(sys.argv))
-      sys.stderr.write(
-          'config_file_list: %s\n' % boto_util.GetFriendlyConfigFilePaths())
+      sys.stderr.write('config_file_list: %s\n' %
+                       boto_util.GetFriendlyConfigFilePaths())
       sys.stderr.write('config: %s\n' % str(config_items))
     else:  # Non-debug log level.
       root_logger_level = logging.WARNING if quiet else logging.INFO
@@ -397,14 +408,27 @@ def main():
 
     _CheckAndWarnForProxyDifferences()
 
-    if os.environ.get('_ARGCOMPLETE', '0') == '1':
+    # Both 1 and 2 are valid _ARGCOMPLETE values; this var tells argcomplete at
+    # what argv[] index the command to match starts. We want it to start at the
+    # value for the path to gsutil, so:
+    # $ gsutil <command>  # Should be the 1st argument, so '1'
+    # $ python gsutil <command>  # Should be the 2nd argument, so '2'
+    # Both are valid; most users invoke gsutil in the first style, but our
+    # integration and prerelease tests invoke it in the second style, as we need
+    # to specify the Python interpreter used to run gsutil.
+    if os.environ.get('_ARGCOMPLETE', '0') in ('1', '2'):
       return _PerformTabCompletion(command_runner)
 
     return _RunNamedCommandAndHandleExceptions(
-        command_runner, command_name, args=args[1:], headers=headers,
-        debug_level=debug_level, trace_token=trace_token,
+        command_runner,
+        command_name,
+        args=args[1:],
+        headers=headers,
+        debug_level=debug_level,
+        trace_token=trace_token,
         parallel_operations=parallel_operations,
-        perf_trace_token=perf_trace_token, user_project=user_project)
+        perf_trace_token=perf_trace_token,
+        user_project=user_project)
   finally:
     _Cleanup()
 
@@ -421,16 +445,16 @@ def _CheckAndWarnForProxyDifferences():
         if proxy_info.proxy_host != boto.config.get('Boto', 'proxy', None):
           differing_values.append(
               'Boto proxy host: "%s" differs from %s proxy host: "%s"' %
-              (boto.config.get('Boto', 'proxy', None), proxy_env_var,
-               proxy_info.proxy_host))
-        if (proxy_info.proxy_user !=
-            boto.config.get('Boto', 'proxy_user', None)):
+              (boto.config.get('Boto', 'proxy',
+                               None), proxy_env_var, proxy_info.proxy_host))
+        if (proxy_info.proxy_user != boto.config.get('Boto', 'proxy_user',
+                                                     None)):
           differing_values.append(
               'Boto proxy user: "%s" differs from %s proxy user: "%s"' %
-              (boto.config.get('Boto', 'proxy_user', None), proxy_env_var,
-               proxy_info.proxy_user))
-        if (proxy_info.proxy_pass !=
-            boto.config.get('Boto', 'proxy_pass', None)):
+              (boto.config.get('Boto', 'proxy_user',
+                               None), proxy_env_var, proxy_info.proxy_user))
+        if (proxy_info.proxy_pass != boto.config.get('Boto', 'proxy_pass',
+                                                     None)):
           differing_values.append(
               'Boto proxy password differs from %s proxy password' %
               proxy_env_var)
@@ -442,11 +466,12 @@ def _CheckAndWarnForProxyDifferences():
               'Boto proxy port: "%s" differs from %s proxy port: "%s"' %
               (boto_port, proxy_env_var, proxy_info.proxy_port))
         if differing_values:
-          sys.stderr.write('\n'.join(textwrap.wrap(
-              'WARNING: Proxy configuration is present in both the %s '
-              'environment variable and boto configuration, but '
-              'configuration differs. boto configuration proxy values will '
-              'be used. Differences detected:' % proxy_env_var)))
+          sys.stderr.write('\n'.join(
+              textwrap.wrap(
+                  'WARNING: Proxy configuration is present in both the %s '
+                  'environment variable and boto configuration, but '
+                  'configuration differs. boto configuration proxy values will '
+                  'be used. Differences detected:' % proxy_env_var)))
           sys.stderr.write('\n%s\n' % '\n'.join(differing_values))
         # Regardless of whether the proxy configuration values matched,
         # delete the environment variable so as not to confuse boto.
@@ -455,6 +480,7 @@ def _CheckAndWarnForProxyDifferences():
 
 def _HandleUnknownFailure(e):
   # Called if we fall through all known/handled exceptions.
+  raise
   _OutputAndExit(message='Failure: %s.' % e, exception=e)
 
 
@@ -478,10 +504,10 @@ def _HandleControlC(signal_num, cur_stack_frame):
   """
   if debug_level >= 2:
     stack_trace = ''.join(traceback.format_list(traceback.extract_stack()))
-    _OutputAndExit(
-        'DEBUG: Caught CTRL-C (signal %d) - Exception stack trace:\n'
-        '    %s' % (signal_num, re.sub('\\n', '\n    ', stack_trace)),
-        exception=ControlCException())
+    _OutputAndExit('DEBUG: Caught CTRL-C (signal %d) - Exception stack trace:\n'
+                   '    %s' %
+                   (signal_num, re.sub('\\n', '\n    ', stack_trace)),
+                   exception=ControlCException())
   else:
     _OutputAndExit('Caught CTRL-C (signal %d) - exiting' % signal_num,
                    exception=ControlCException())
@@ -509,7 +535,8 @@ def _ConstructAccountProblemHelp(reason):
       "happens if you attempt to create a bucket without first having "
       "enabled billing for the project you are using. Please ensure billing is "
       "enabled for your project by following the instructions at "
-      "`Google Cloud Platform Console<https://support.google.com/cloud/answer/6158867>`. ")
+      "`Google Cloud Platform Console<https://support.google.com/cloud/answer/6158867>`. "
+  )
   if default_project_id:
     acct_help += (
         "In the project overview, ensure that the Project Number listed for "
@@ -533,42 +560,48 @@ def _CheckAndHandleCredentialException(e, args):
   # Provide detail to users who have no boto config file (who might previously
   # have been using gsutil only for accessing publicly readable buckets and
   # objects).
-  if (not boto_util.HasConfiguredCredentials() and
-      not boto.config.get_value('Tests', 'bypass_anonymous_access_warning',
-                                False)):
+  if (not boto_util.HasConfiguredCredentials() and not boto.config.get_value(
+      'Tests', 'bypass_anonymous_access_warning', False)):
     # The check above allows tests to assert that we get a particular,
     # expected failure, rather than always encountering this error message
     # when there are no configured credentials. This allows tests to
     # simulate a second user without permissions, without actually requiring
     # two separate configured users.
     if system_util.InvokedViaCloudSdk():
-      message = '\n'.join(textwrap.wrap(
-          'You are attempting to access protected data with no configured '
-          'credentials. Please visit '
-          'https://cloud.google.com/console#/project and sign up for an '
-          'account, and then run the "gcloud auth login" command to '
-          'configure gsutil to use these credentials.'))
+      message = '\n'.join(
+          textwrap.wrap(
+              'You are attempting to access protected data with no configured '
+              'credentials. Please visit '
+              'https://cloud.google.com/console#/project and sign up for an '
+              'account, and then run the "gcloud auth login" command to '
+              'configure gsutil to use these credentials.'))
     else:
-      message = '\n'.join(textwrap.wrap(
-          'You are attempting to access protected data with no configured '
-          'credentials. Please visit '
-          'https://cloud.google.com/console#/project and sign up for an '
-          'account, and then run the "gsutil config" command to configure '
-          'gsutil to use these credentials.'))
+      message = '\n'.join(
+          textwrap.wrap(
+              'You are attempting to access protected data with no configured '
+              'credentials. Please visit '
+              'https://cloud.google.com/console#/project and sign up for an '
+              'account, and then run the "gsutil config" command to configure '
+              'gsutil to use these credentials.'))
     _OutputAndExit(message=message, exception=e)
   elif (e.reason and
         (e.reason == 'AccountProblem' or e.reason == 'Account disabled.' or
-         'account for the specified project has been disabled' in e.reason)
-        and ','.join(args).find('gs://') != -1):
-    _OutputAndExit(
-        '\n'.join(textwrap.wrap(_ConstructAccountProblemHelp(e.reason))),
-        exception=e)
+         'account for the specified project has been disabled' in e.reason) and
+        ','.join(args).find('gs://') != -1):
+    _OutputAndExit('\n'.join(
+        textwrap.wrap(_ConstructAccountProblemHelp(e.reason))),
+                   exception=e)
 
 
-def _RunNamedCommandAndHandleExceptions(
-    command_runner, command_name, args=None, headers=None, debug_level=0,
-    trace_token=None, parallel_operations=False, perf_trace_token=None,
-    user_project=None):
+def _RunNamedCommandAndHandleExceptions(command_runner,
+                                        command_name,
+                                        args=None,
+                                        headers=None,
+                                        debug_level=0,
+                                        trace_token=None,
+                                        parallel_operations=False,
+                                        perf_trace_token=None,
+                                        user_project=None):
   """Runs the command and handles common exceptions."""
   # Note that this method is run at the end of main() and thus has access to
   # all of the modules imported there.
@@ -582,8 +615,11 @@ def _RunNamedCommandAndHandleExceptions(
     if not system_util.IS_WINDOWS:
       RegisterSignalHandler(signal.SIGQUIT, _HandleSigQuit)
 
-    return command_runner.RunNamedCommand(command_name, args, headers,
-                                          debug_level, trace_token,
+    return command_runner.RunNamedCommand(command_name,
+                                          args,
+                                          headers,
+                                          debug_level,
+                                          trace_token,
                                           parallel_operations,
                                           perf_trace_token=perf_trace_token,
                                           collect_analytics=True,
@@ -607,11 +643,22 @@ def _RunNamedCommandAndHandleExceptions(
   except boto.auth_handler.NotReadyToAuthenticate:
     _OutputAndExit(message='NotReadyToAuthenticate', exception=e)
   except OSError as e:
-    _OutputAndExit(message='OSError: %s.' % e.strerror, exception=e)
+    # In Python 3, IOError (next except) is an alias for OSError
+    # Sooo... we need the same logic here
+    if (e.errno == errno.EPIPE or
+        (system_util.IS_WINDOWS and e.errno == errno.EINVAL) and
+        not system_util.IsRunningInteractively()):
+      # If we get a pipe error, this just means that the pipe to stdout or
+      # stderr is broken. This can happen if the user pipes gsutil to a command
+      # that doesn't use the entire output stream. Instead of raising an error,
+      # just swallow it up and exit cleanly.
+      sys.exit(0)
+    else:
+      _OutputAndExit(message='OSError: %s.' % e.strerror, exception=e)
   except IOError as e:
-    if (e.errno == errno.EPIPE
-        or (system_util.IS_WINDOWS and e.errno == errno.EINVAL)
-        and not system_util.IsRunningInteractively()):
+    if (e.errno == errno.EPIPE or
+        (system_util.IS_WINDOWS and e.errno == errno.EINVAL) and
+        not system_util.IsRunningInteractively()):
       # If we get a pipe error, this just means that the pipe to stdout or
       # stderr is broken. This can happen if the user pipes gsutil to a command
       # that doesn't use the entire output stream. Instead of raising an error,
@@ -641,9 +688,10 @@ def _RunNamedCommandAndHandleExceptions(
     _OutputAndExit(message=e, exception=e)
   except oauth2client.client.HttpAccessTokenRefreshError as e:
     if system_util.InvokedViaCloudSdk():
-      _OutputAndExit('Your credentials are invalid. '
-                     'Please run\n$ gcloud auth login',
-                     exception=e)
+      _OutputAndExit(
+          'Your credentials are invalid. '
+          'Please run\n$ gcloud auth login',
+          exception=e)
     else:
       _OutputAndExit(
           'Your credentials are invalid. For more help, see '
@@ -671,21 +719,24 @@ def _RunNamedCommandAndHandleExceptions(
           'object, and see if you get a more specific error code.',
           exception=e)
     elif e.args[0] == errno.ECONNRESET and ' '.join(args).contains('s3://'):
-      _OutputAndExit('\n'.join(textwrap.wrap(
-          'Got a "Connection reset by peer" error. One way this can happen is '
-          'when copying data to/from an S3 regional bucket. If you are using a '
-          'regional S3 bucket you could try re-running this command using the '
-          'regional S3 endpoint, for example '
-          's3://s3-<region>.amazonaws.com/your-bucket. For details about this '
-          'problem see https://github.com/boto/boto/issues/2207')),
+      _OutputAndExit('\n'.join(
+          textwrap.wrap(
+              'Got a "Connection reset by peer" error. One way this can happen is '
+              'when copying data to/from an S3 regional bucket. If you are using a '
+              'regional S3 bucket you could try re-running this command using the '
+              'regional S3 endpoint, for example '
+              's3://s3-<region>.amazonaws.com/your-bucket. For details about this '
+              'problem see https://github.com/boto/boto/issues/2207')),
                      exception=e)
     else:
       _HandleUnknownFailure(e)
   except oauth2client.client.FlowExchangeError as e:
-    _OutputAndExit('\n%s\n\n' % '\n'.join(textwrap.wrap(
-        'Failed to retrieve valid credentials (%s). Make sure you selected and '
-        'pasted the ENTIRE authorization code (including any numeric prefix '
-        "e.g. '4/')." % e)), exception=e)
+    _OutputAndExit('\n%s\n\n' % '\n'.join(
+        textwrap.wrap(
+            'Failed to retrieve valid credentials (%s). Make sure you selected and '
+            'pasted the ENTIRE authorization code (including any numeric prefix '
+            "e.g. '4/')." % e)),
+                   exception=e)
   except Exception as e:  # pylint: disable=broad-except
     config_paths = ', '.join(boto_util.GetFriendlyConfigFilePaths())
     # Check for two types of errors related to service accounts. These errors
@@ -717,15 +768,15 @@ def _PerformTabCompletion(command_runner):
     import argcomplete
     import argparse
   except ImportError as e:
-    _OutputAndExit(
-        'A library required for performing tab completion was'
-        ' not found.\nCause: %s' % e,
-        exception=e)
+    _OutputAndExit('A library required for performing tab completion was'
+                   ' not found.\nCause: %s' % e,
+                   exception=e)
   parser = argparse.ArgumentParser(add_help=False)
   command_runner.ConfigureCommandArgumentParsers(parser)
   argcomplete.autocomplete(parser, exit_method=sys.exit)
 
   return 0
+
 
 if __name__ == '__main__':
   sys.exit(main())

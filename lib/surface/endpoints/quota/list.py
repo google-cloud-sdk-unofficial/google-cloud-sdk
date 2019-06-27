@@ -81,5 +81,21 @@ class List(base.ListCommand):
     Returns:
       The list of quota metrics for the service and consumer.
     """
-    return scm.ListQuotaMetrics(args.service, args.consumer, args.page_size,
-                                args.limit)
+    metrics = scm.ListQuotaMetrics(args.service, args.consumer, args.page_size,
+                                   args.limit)
+    return [self.delete_resource_name(m) for m in metrics]
+
+  @staticmethod
+  def delete_resource_name(metric):
+    """Delete the name fields from metric message.
+
+    Args:
+      metric: The quota metric message.
+
+    Returns:
+      The updated metric message.
+    """
+    metric.reset('name')
+    for l in metric.consumerQuotaLimits:
+      l.reset('name')
+    return metric
