@@ -6,23 +6,28 @@
     description: |
       Set rollout target for the ongoing Deployment rollout in the specified clusters.
 
-      A Deployment rollout updates game servers with a new image. The new image should be uploaded
-      before its rollout can start. This can be done either by creating a new Deployment resource
-      with a game server template that has the new image, or by specifying a new game server
-      template with the new image for an existing Deployment resource through the start-rollout verb
-      (`gcloud game-services deployments start-rollout`). The new image is specified through the
-      spec field of game server template. It is a string field and follows the format of the spec
-      field in Agones GameServer custom resource. Please see https://agones.dev for more details.
+      A Deployment rollout updates game servers with a new image. The new image is specified through
+      the spec field of game server template. It is a string field and follows the format of the
+      spec field in Agones GameServer custom resource. Please see https://agones.dev for more
+      details.
+
+      The new game server template can be specified either through creating a new Deployment
+      resource or through the start-rollout verb on an existing Deployment resource
+      (`gcloud game-services deployments start-rollout`).
+
       Once the new game server template is specified, you can start the rollout by changing the
       percentage of game servers that run the new image through the set-rollout-target verb
       (`gcloud game-services deployments set-rollout-target`). The set-rollout-target verb specifies
       labels for clusters that should get the new image. It also specifies what percentage of game
-      servers in each of the specified clusters should run the new image. Finally, you can finish
-      the rollout using the commit verb (`gcloud game-services deployments commit`). This will set
-      the rollout percentage to 100 in all clusters whose labels were previously specified by
-      calling the set-rollout-target verb. If you need to revert a rollout, you can use the
-      revert-rollout verb (`gcloud game-services deployments set-rollout-target`) where you can
-      specify which clusters should rollback the new image.
+      servers in each of the specified clusters should run the new image.
+
+      Finally, you can finish the rollout using the commit verb
+      (`gcloud game-services deployments commit`). This will set the rollout percentage to 100 in
+      all clusters whose labels were previously specified by calling the set-rollout-target verb.
+
+      If you need to revert a rollout, you can use the revert-rollout verb
+      (`gcloud game-services deployments revert-rollout`) which deletes game servers running the new
+      image.
     examples: |
       To set a rollout target with one selector for one cluster label key/value pair:
 

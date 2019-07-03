@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Lint as: python2, python3
 # Copyright 2012 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,13 +84,18 @@ Formatters that require non-empty output to be valid should override
 For example JsonFormatter must emit '[]' to produce valid json.
 """
 
-__author__ = 'craigcitro@google.com (Craig Citro)'
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-import cStringIO
 import csv
 import itertools
 import json
 import sys
+
+import six
+from six.moves import map
+from six.moves import zip
 
 
 class FormatterException(Exception):
@@ -123,17 +129,25 @@ class TableFormatter(object):
     raise NotImplementedError('__len__ must be implemented by subclass')
 
   def __str__(self):
-    return unicode(self).encode(sys.getdefaultencoding(), 'backslashreplace')
+    return self._EncodedStr(sys.getdefaultencoding())
 
   def __unicode__(self):
     raise NotImplementedError('__unicode__ must be implemented by subclass')
+
+  def _EncodedStr(self, encoding):
+    if six.PY2:
+      return self.__unicode__().encode(encoding, 'backslashreplace')
+    else:
+      # Hack to avoid UnicodeEncodeErrors when printing the encoded string.
+      return self.__unicode__().encode(encoding,
+                                       'backslashreplace').decode(encoding)
 
   def Print(self, output=sys.stdout):
     if self or self._empty_output_meaningful:
       # TODO(user): Make encoding a customizable attribute on
       # the TableFormatter.
       encoding = sys.stdout.encoding or 'utf8'
-      print >> output, unicode(self).encode(encoding, 'backslashreplace')
+      print(self._EncodedStr(encoding), file=output)
 
   def AddRow(self, row):
     """Add a new row (an iterable) to this formatter."""
@@ -240,7 +254,7 @@ class PrettyFormatter(TableFormatter):
     if size > interval:
       raise FormatterException('Illegal state in table formatting')
     same_parity = (interval % 2) == (size % 2)
-    padding = (interval - size) / 2
+    padding = (interval - size) // 2
     if same_parity:
       return padding, padding
     elif left_justify:
@@ -344,9 +358,9 @@ class PrettyFormatter(TableFormatter):
 
     # pylint: disable=g-long-lambda
     curried_format = lambda entry, width, align: self.__class__.FormatCell(
-        unicode(entry), width, cell_height=row_height, align=align)
-    printed_rows = itertools.izip(*itertools.imap(
-        curried_format, entries, column_widths, column_alignments))
+        six.text_type(entry), width, cell_height=row_height, align=align)
+    printed_rows = zip(
+        *map(curried_format, entries, column_widths, column_alignments))
     return (self.vertical_char.join(itertools.chain([''], cells, ['']))
             for cells in printed_rows)
 
@@ -369,8 +383,7 @@ class PrettyFormatter(TableFormatter):
 
   def FormatRows(self):
     """Return an iterator over all the rows in this table."""
-    return itertools.chain(*itertools.imap(
-        self.FormatRow, self.rows, self.row_heights))
+    return itertools.chain(*map(self.FormatRow, self.rows, self.row_heights))
 
   def AddRow(self, row):
     """Add a row to this table.
@@ -383,11 +396,13 @@ class PrettyFormatter(TableFormatter):
     """
     if len(row) != len(self.column_names):
       raise FormatterException('Invalid row length: %s' % (len(row),))
-    split_rows = [unicode(entry).split('\n') for entry in row]
+    split_rows = [six.text_type(entry).split('\n') for entry in row]
     self.row_heights.append(max(len(lines) for lines in split_rows))
     column_widths = (max(len(line) for line in entry) for entry in split_rows)
-    self.column_widths = [max(width, current) for width, current
-                          in itertools.izip(column_widths, self.column_widths)]
+    self.column_widths = [
+        max(width, current)
+        for width, current in zip(column_widths, self.column_widths)
+    ]
     self.rows.append(row)
 
   def AddColumn(self, column_name, align='l', **kwds):
@@ -449,7 +464,7 @@ class CsvFormatter(TableFormatter):
 
   def __init__(self, **kwds):
     super(CsvFormatter, self).__init__(**kwds)
-    self._buffer = cStringIO.StringIO()
+    self._buffer = six.StringIO()
     self._header = []
     self._table = csv.writer(
         self._buffer, quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
@@ -457,8 +472,11 @@ class CsvFormatter(TableFormatter):
   def __nonzero__(self):
     return bool(self._buffer.tell())
 
+  def __bool__(self):
+    return bool(self._buffer.getvalue())
+
   def __len__(self):
-    return len(unicode(self).splitlines())
+    return len(six.text_type(self).splitlines())
 
   def __unicode__(self):
     if self or not self.skip_header_when_empty:
@@ -467,7 +485,9 @@ class CsvFormatter(TableFormatter):
       lines = []
     # Note that we need to explicitly decode here to work around
     # the fact that the CSV module does not work with unicode.
-    return '\n'.join(line.decode('utf8') for line in lines).rstrip()
+    if six.PY2:
+      lines = [line.decode('utf8') for line in lines]
+    return '\n'.join(lines).rstrip()
 
   @property
   def column_names(self):
@@ -480,8 +500,12 @@ class CsvFormatter(TableFormatter):
     self._header.append(column_name)
 
   def AddRow(self, row):
-    self._table.writerow([unicode(entry).encode('utf8', 'backslashreplace')
-                          for entry in row])
+    if six.PY2:
+      row = [
+          six.text_type(entry).encode('utf8', 'backslashreplace')
+          for entry in row
+      ]
+    self._table.writerow(row)
 
 
 class JsonFormatter(TableFormatter):
@@ -497,7 +521,8 @@ class JsonFormatter(TableFormatter):
     return len(self._table)
 
   def __unicode__(self):
-    return json.dumps(self._table, separators=(',', ':'), ensure_ascii=False)
+    return json.dumps(
+        self._table, separators=(',', ':'), sort_keys=True, ensure_ascii=False)
 
   @property
   def column_names(self):
@@ -519,7 +544,12 @@ class PrettyJsonFormatter(JsonFormatter):
   """Formats output in human-legible JSON."""
 
   def __unicode__(self):
-    return json.dumps(self._table, sort_keys=True, indent=2, ensure_ascii=False)
+    return json.dumps(
+        self._table,
+        separators=(', ', ': '),
+        sort_keys=True,
+        indent=2,
+        ensure_ascii=False)
 
 
 class NullFormatter(TableFormatter):

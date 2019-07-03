@@ -63,6 +63,15 @@ If the zone cannot be determined, you will be prompted for it.  Use the
 To specify the project, zone, and recurse all together, run:
 
   $ {command} --project "my-gcp-project" --zone "us-east1-b" --recurse ~/foo-folder/ gcp-instance-name:~/
+
+You can limit the allowed time to ssh. For example, to allow a key to be used
+through 2019:
+
+  $ {command} --recurse example-instance:~/narnia ~/wardrobe --ssh-key-expiration "2020-01-01T00:00:00:00Z"
+
+Or alternatively, allow access for the next two minutes:
+
+  $ {command} --recurse example-instance:~/narnia ~/wardrobe --ssh-key-expire-after 2m
 """,
 }
 
@@ -88,9 +97,29 @@ def _Args(parser):
       action='append',
       help='Extra flag to be sent to scp. This flag may be repeated.')
 
+  routing_group = parser.add_mutually_exclusive_group()
+  routing_group.add_argument(
+      '--internal-ip',
+      default=False,
+      action='store_true',
+      help="""\
+      Connect to instances using their internal IP addresses rather than their
+      external IP addresses. Use this to connect from one instance to another
+      on the same VPC network, over a VPN connection, or between two peered
+      VPC networks.
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class ScpGA(base.Command):
+      For this connection to work, you must configure your networks and
+      firewall to allow SSH connections to the internal IP address of
+      the instance to which you want to connect.
+
+      To learn how to use this flag, see
+      [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
+      """)
+
+  iap_tunnel.AddSshTunnelArgs(parser, routing_group)
+
+
+class Scp(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 
   category = base.TOOLS_CATEGORY
@@ -99,7 +128,14 @@ class ScpGA(base.Command):
   def Args(parser):
     _Args(parser)
 
-  def _Run(self, args, ip_type=ip.IpTypeEnum.EXTERNAL):
+  def Run(self, args):
+    """See scp_utils.BaseScpCommand.Run."""
+
+    if args.internal_ip:
+      ip_type = ip.IpTypeEnum.INTERNAL
+    else:
+      ip_type = ip.IpTypeEnum.EXTERNAL
+
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     scp_helper = scp_utils.BaseScpHelper()
@@ -119,53 +155,5 @@ class ScpGA(base.Command):
         release_track=self.ReleaseTrack(),
         ip_type=ip_type)
 
-  def Run(self, args):
-    """See scp_utils.BaseScpCommand.Run."""
-    return self._Run(args)
 
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class ScpBeta(ScpGA):
-  """Copy files to and from Google Compute Engine virtual machines via scp."""
-
-  @staticmethod
-  def Args(parser):
-    """Set up arguments for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser.
-    """
-    super(ScpBeta, ScpBeta).Args(parser)
-    mutex_scope = parser.add_mutually_exclusive_group()
-    mutex_scope.add_argument(
-        '--internal-ip',
-        default=False,
-        action='store_true',
-        help="""\
-        Connect to instances using their internal IP addresses rather than their
-        external IP addresses. Use this to connect from one instance to another
-        on the same VPC network, over a VPN connection, or between two peered
-        VPC networks.
-
-        For this connection to work, you must configure your networks and
-        firewall to allow SSH connections to the internal IP address of
-        the instance to which you want to connect.
-
-        To learn how to use this flag, see
-        [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
-        """)
-
-    iap_tunnel.AddSshTunnelArgs(parser, mutex_scope)
-
-  def Run(self, args):
-    """See scp_utils.BaseScpCommand.Run."""
-
-    if args.internal_ip:
-      ip_type = ip.IpTypeEnum.INTERNAL
-    else:
-      ip_type = ip.IpTypeEnum.EXTERNAL
-    return self._Run(args, ip_type)
-
-
-ScpBeta.detailed_help = _DETAILED_HELP
-ScpGA.detailed_help = _DETAILED_HELP
+Scp.detailed_help = _DETAILED_HELP

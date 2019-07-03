@@ -1,17 +1,22 @@
-release_tracks:
-- ALPHA
-- BETA
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Get the Guest Attributes for a compute instance.
   description: |
     Get the Guest Attributes for a compute instance.
+  examples: |
+    To get the guest attributes for instance 'my-instance' in zone 'ZONE' with
+    query path 'query/path', run:
+
+      $ {command} my-instance --query-path=query/path --zone=ZONE
 
 request:
   collection: compute.instances
   method: getGuestAttributes
-  api_version: beta
+  api_version: v1
   ALPHA:
     api_version: alpha
+  BETA:
+    api_version: beta
 
 arguments:
   resource:

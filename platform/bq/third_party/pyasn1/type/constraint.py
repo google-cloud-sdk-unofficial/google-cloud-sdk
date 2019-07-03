@@ -108,7 +108,7 @@ class SingleValueConstraint(AbstractConstraint):
 
     Parameters
     ----------
-    \*values: :class:`int`
+    *values: :class:`int`
         Full set of values permitted by this constraint object.
 
     Examples
@@ -150,7 +150,7 @@ class ContainedSubtypeConstraint(AbstractConstraint):
 
     Parameters
     ----------
-    \*values:
+    *values:
         Full set of values and constraint objects permitted
         by this constraint object.
 
@@ -311,7 +311,7 @@ class PermittedAlphabetConstraint(SingleValueConstraint):
 
     Parameters
     ----------
-    \*alphabet: :class:`str`
+    *alphabet: :class:`str`
         Full set of characters permitted by this constraint object.
 
     Examples
@@ -468,7 +468,7 @@ class ConstraintsIntersection(AbstractConstraintSet):
 
     Parameters
     ----------
-    \*constraints:
+    *constraints:
         Constraint or logic operator objects.
 
     Examples
@@ -512,7 +512,7 @@ class ConstraintsUnion(AbstractConstraintSet):
 
     Parameters
     ----------
-    \*constraints:
+    *constraints:
         Constraint or logic operator objects.
 
     Examples

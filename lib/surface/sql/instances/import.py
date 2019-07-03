@@ -73,13 +73,7 @@ class Import(base.Command):
         '--async',
         action='store_true',
         help='Do not wait for the operation to complete.')
-    parser.add_argument(
-        '--database',
-        '-d',
-        required=False,
-        help='The database (for example, guestbook) to which the import is'
-        ' made. If not set, it is assumed that the database is specified in'
-        ' the file to be imported.')
+    flags.AddDatabase(parser, flags.DEFAULT_DATABASE_IMPORT_HELP_TEXT)
 
   def Run(self, args):
     """Imports data into a Cloud SQL instance from Google Cloud Storage.

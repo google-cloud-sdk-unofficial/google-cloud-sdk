@@ -100,7 +100,7 @@ class Enable(base.SilentCommand):
                        'Use the following command to wait for its '
                        'completion:\n {0}'.format(cmd))
       return
-    op = serviceusage.WaitOperation(op.name)
+    op = services_util.WaitOperation(op.name, serviceusage.GetOperation)
     services_util.PrintOperation(op)
 
 

@@ -32,6 +32,7 @@ DOMAIN_MAPPINGS_HELP_DOCS_URL = ('https://cloud.google.com/run/docs/'
                                  'mapping-custom-domains/')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create domain mappings."""
 
@@ -47,10 +48,8 @@ class Create(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     parser.add_argument(
         '--service', required=True,
         help='Create domain mapping for the given service.')
@@ -67,6 +66,11 @@ class Create(base.Command):
         """table(
         type:label="RECORD TYPE",
         rrdata:label=CONTENTS)""")
+
+  @staticmethod
+  def Args(parser):
+    Create.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Create a domain mapping."""
@@ -95,3 +99,15 @@ class Create(base.Command):
 
     with serverless_operations.Connect(conn_context) as client:
       return client.CreateDomainMapping(domain_mapping_ref, args.service)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(Create):
+
+  @staticmethod
+  def Args(parser):
+    Create.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaCreate.__doc__ = Create.__doc__

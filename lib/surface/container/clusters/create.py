@@ -33,7 +33,6 @@ from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.command_lib.container import container_command_util as cmd_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.command_lib.container import messages
-from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -474,14 +473,7 @@ class CreateBeta(Create):
     flags.AddClusterVersionFlag(parser)
     flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
-    kms_flag_overrides = {
-        'kms-key': '--database-encryption-key',
-        'kms-keyring': '--database-encryption-key-keyring',
-        'kms-location': '--database-encryption-key-location',
-        'kms-project': '--database-encryption-key-project'
-    }
-    kms_resource_args.AddKmsKeyResourceArg(
-        parser, 'cluster', flag_overrides=kms_flag_overrides)
+    flags.AddDatabaseEncryptionFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -511,18 +503,7 @@ class CreateBeta(Create):
     ops.identity_namespace = args.identity_namespace
     ops.enable_shielded_nodes = args.enable_shielded_nodes
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
-    kms_ref = args.CONCEPTS.kms_key.Parse()
-    if kms_ref:
-      ops.database_encryption = kms_ref.RelativeName()
-    else:
-      # Check for partially specified database-encryption-key.
-      for keyword in [
-          'database-encryption-key', 'database-encryption-key-keyring',
-          'database-encryption-key-location', 'database-encryption-key-project'
-      ]:
-        if getattr(args, keyword.replace('-', '_'), None):
-          raise exceptions.InvalidArgumentException('--database-encryption-key',
-                                                    'not fully specified.')
+    ops.database_encryption = flags.GetDatabaseEncryptionOption(args)
     return ops
 
 
@@ -584,15 +565,7 @@ class CreateAlpha(Create):
     flags.AddClusterVersionFlag(cluster_version_group)
     flags.AddNodeVersionFlag(cluster_version_group)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
-
-    kms_flag_overrides = {
-        'kms-key': '--database-encryption-key',
-        'kms-keyring': '--database-encryption-key-keyring',
-        'kms-location': '--database-encryption-key-location',
-        'kms-project': '--database-encryption-key-project'
-    }
-    kms_resource_args.AddKmsKeyResourceArg(
-        parser, 'cluster', flag_overrides=kms_flag_overrides)
+    flags.AddDatabaseEncryptionFlag(parser)
     flags.AddSurgeUpgradeFlag(parser)
     flags.AddMaxUnavailableUpgradeFlag(parser)
     flags.AddLinuxSysctlFlags(parser)
@@ -641,18 +614,7 @@ class CreateAlpha(Create):
     ops.autoprovisioning_service_account = args.autoprovisioning_service_account
     ops.autoprovisioning_scopes = args.autoprovisioning_scopes
     ops.autoprovisioning_locations = args.autoprovisioning_locations
-    kms_ref = args.CONCEPTS.kms_key.Parse()
-    if kms_ref:
-      ops.database_encryption = kms_ref.RelativeName()
-    else:
-      # Check for partially specified database-encryption-key.
-      for keyword in [
-          'database-encryption-key', 'database-encryption-key-keyring',
-          'database-encryption-key-location', 'database-encryption-key-project'
-      ]:
-        if getattr(args, keyword.replace('-', '_'), None):
-          raise exceptions.InvalidArgumentException('--database-encryption-key',
-                                                    'not fully specified.')
+    ops.database_encryption = flags.GetDatabaseEncryptionOption(args)
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.linux_sysctls = args.linux_sysctls

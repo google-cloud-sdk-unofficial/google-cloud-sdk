@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Obtain details about revisions."""
 
@@ -42,10 +43,8 @@ class Describe(base.DescribeCommand):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     revision_presentation = presentation_specs.ResourcePresentationSpec(
         'REVISION',
         resource_args.GetRevisionResourceSpec(),
@@ -57,6 +56,11 @@ class Describe(base.DescribeCommand):
         revision_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
         'yaml(apiVersion, kind, metadata, spec, status)')
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Show details about a revision."""
@@ -70,3 +74,15 @@ class Describe(base.DescribeCommand):
       raise flags.ArgumentError(
           'Cannot find revision [{}]'.format(revision_ref.revisionsId))
     return wrapped_revision
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(Describe):
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaDescribe.__doc__ = Describe.__doc__

@@ -58,7 +58,7 @@ class Deploy(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(prompt=True),
@@ -67,8 +67,6 @@ class Deploy(base.Command):
         prefixes=False)
     flags.AddSourceRefFlags(parser)
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddCpuFlag(parser)
@@ -84,6 +82,11 @@ class Deploy(base.Command):
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
+
+  @staticmethod
+  def Args(parser):
+    Deploy.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -161,7 +164,9 @@ class AlphaDeploy(Deploy):
 
   @staticmethod
   def Args(parser):
-    Deploy.Args(parser)
+    Deploy.CommonArgs(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddKubeconfigFlags(parser)
+    flags.AddAlphaPlatformArg(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

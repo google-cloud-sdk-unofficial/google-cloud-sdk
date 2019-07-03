@@ -127,6 +127,8 @@ class ConnectToSerialPort(base.Command):
         resource_type='instance',
         operation_type='connect to')
 
+    ssh_utils.AddSSHKeyExpirationArgs(parser)
+
   def Run(self, args):
     """See ssh_utils.BaseSSHCommand.Run."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -181,9 +183,11 @@ class ConnectToSerialPort(base.Command):
         scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
     instance = ssh_helper.GetInstance(client, instance_ref)
     project = ssh_helper.GetProject(client, instance_ref.project)
+    expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
 
     remote.user, use_os_login = ssh.CheckForOsloginAndGetUser(
-        instance, project, remote.user, public_key, self.ReleaseTrack())
+        instance, project, remote.user, public_key, expiration_micros,
+        self.ReleaseTrack())
 
     # Determine the serial user, host tuple (remote)
     port = 'port={0}'.format(args.port)
@@ -206,7 +210,8 @@ class ConnectToSerialPort(base.Command):
       log.out.Print(' '.join(cmd.Build(ssh_helper.env)))
       return
     if not use_os_login:
-      ssh_helper.EnsureSSHKeyExists(client, remote.user, instance, project)
+      ssh_helper.EnsureSSHKeyExists(
+          client, remote.user, instance, project, expiration)
 
     # Don't wait for the instance to become SSHable. We are not connecting to
     # the instance itself through SSH, so the instance doesn't need to have

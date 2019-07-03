@@ -13,6 +13,7 @@
     collection: accesscontextmanager.accessPolicies.accessLevels
     modify_request_hooks:
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=accessLevel.name
+    - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
 
   async:
     collection: accesscontextmanager.operations

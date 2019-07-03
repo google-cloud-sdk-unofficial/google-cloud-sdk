@@ -37,10 +37,16 @@ def _DetailedHelp():
           the health check. For more information on load balancing, see
           [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
           """,
+      'EXAMPLES':
+          """\
+          To create a HTTP2 health check with default options, run:
+
+            $ {command} my-health-check-name
+          """,
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing=False):
+def _Args(parser, include_l7_internal_load_balancing):
   """Set up arguments to create an HTTP2 HealthCheck."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   flags.HealthCheckArgument(
@@ -56,10 +62,7 @@ def _Args(parser, include_l7_internal_load_balancing=False):
       include_l7_internal_load_balancing else completers.HealthChecksCompleter)
 
 
-def _Run(args,
-         holder,
-         supports_response=False,
-         include_l7_internal_load_balancing=False):
+def _Run(args, holder, include_l7_internal_load_balancing):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
@@ -75,10 +78,9 @@ def _Run(args,
       port=args.port,
       portName=args.port_name,
       requestPath=args.request_path,
-      proxyHeader=proxy_header)
+      proxyHeader=proxy_header,
+      response=args.response)
 
-  if supports_response:
-    http2_health_check.response = args.response
   health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
       args, http2_health_check)
 
@@ -114,29 +116,27 @@ def _Run(args,
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Create a HTTP2 health check."""
 
-  _include_l7_internal_load_balancing = True
-  _supports_response = True
+  _include_l7_internal_load_balancing = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(
-        parser,
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    _Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(
-        args,
-        holder,
-        include_l7_internal_load_balancing=self
-        ._include_l7_internal_load_balancing,
-        supports_response=self._supports_response)
+    return _Run(args, holder, self._include_l7_internal_load_balancing)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a HTTP2 health check."""
+
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

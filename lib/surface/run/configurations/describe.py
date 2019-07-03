@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.Command):
   """Obtain details about a given configuration."""
 
@@ -42,10 +43,8 @@ class Describe(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     configuration_presentation = presentation_specs.ResourcePresentationSpec(
         'CONFIGURATION',
         resource_args.GetConfigurationResourceSpec(),
@@ -56,6 +55,11 @@ class Describe(base.Command):
         resource_args.CLUSTER_PRESENTATION,
         configuration_presentation]).AddToParser(parser)
     parser.display_info.AddFormat('yaml')
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Obtain details about a given configuration."""
@@ -68,3 +72,15 @@ class Describe(base.Command):
           'Cannot find configuration [{}]'.format(
               configuration_ref.configurationsId))
     return conf
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(Describe):
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaDescribe.__doc__ = Describe.__doc__

@@ -73,7 +73,7 @@ class SetPassword(base.CreateCommand):
     sql_messages = client.sql_messages
 
     if args.prompt_for_password:
-      args.password = getpass.getpass('Instance Password: ')
+      args.password = getpass.getpass(str('Instance Password: '))
 
     instance_ref = client.resource_parser.Parse(
         args.instance,

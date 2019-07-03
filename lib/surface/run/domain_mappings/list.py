@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -28,6 +29,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(commands.List):
   """Lists domain mappings."""
 
@@ -43,10 +45,8 @@ class List(commands.List):
   }
 
   @classmethod
-  def Args(cls, parser):
+  def CommonArgs(cls, parser):
     flags.AddRegionArgWithDefault(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
@@ -64,6 +64,11 @@ class List(commands.List):
         region:label=REGION)""".format(ready_column=pretty_print.READY_COLUMN))
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
+
   def Run(self, args):
     """List available domain mappings."""
     conn_context = connection_context.GetConnectionContext(args)
@@ -71,3 +76,15 @@ class List(commands.List):
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
       return commands.SortByName(client.ListDomainMappings(namespace_ref))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaList(List):
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaList.__doc__ = List.__doc__

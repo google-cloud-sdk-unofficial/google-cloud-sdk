@@ -58,5 +58,5 @@ class WaitAlpha(base.Command):
     Returns:
       If successful, the response from the operations.Get API call.
     """
-    op = serviceusage.WaitOperation(args.operation)
+    op = services_util.WaitOperation(args.operation, serviceusage.GetOperation)
     services_util.PrintOperation(op)

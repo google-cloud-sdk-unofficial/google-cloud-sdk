@@ -26,6 +26,11 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
+_DEPRECATION_WARNING = """
+`create-snapshot-schedule` is deprecated.
+Use `compute resource-policies create snapshot-schedule` instead.
+"""
+
 
 def _CommonArgs(parser, api_version):
   """A helper function to build args based on different API version."""
@@ -45,6 +50,7 @@ Start time for the disk snapshot schedule. See $ gcloud topic datetimes for info
   parser.display_info.AddCacheUpdater(None)
 
 
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateSnapshotScheduleBeta(base.CreateCommand):
   """Create a Google Compute Engine Snapshot Schedule Resource Policy.
@@ -79,6 +85,7 @@ class CreateSnapshotScheduleBeta(base.CreateCommand):
     return client.MakeRequests([(service, 'Insert', create_request)])[0]
 
 
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
   """Create a Google Compute Engine Snapshot Schedule Resource Policy.

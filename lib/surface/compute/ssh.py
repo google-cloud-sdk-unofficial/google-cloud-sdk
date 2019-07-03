@@ -103,8 +103,8 @@ def AddContainerArg(parser):
           """)
 
 
-def AddInternalIPArg(parser):
-  parser.add_argument(
+def AddInternalIPArg(group):
+  group.add_argument(
       '--internal-ip',
       default=False,
       action='store_true',
@@ -123,7 +123,7 @@ def AddInternalIPArg(parser):
         """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
@@ -141,9 +141,12 @@ class Ssh(base.Command):
     AddCommandArg(parser)
     AddSSHArgs(parser)
     AddContainerArg(parser)
-    AddInternalIPArg(parser)
     flags.AddZoneFlag(
         parser, resource_type='instance', operation_type='connect to')
+
+    routing_group = parser.add_mutually_exclusive_group()
+    AddInternalIPArg(routing_group)
+    iap_tunnel.AddSshTunnelArgs(parser, routing_group)
 
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
@@ -167,12 +170,14 @@ class Ssh(base.Command):
                     'Continuing.')
     else:
       host_keys = {}
+    expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
     if args.plain:
       use_oslogin = False
     else:
       public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
       user, use_oslogin = ssh.CheckForOsloginAndGetUser(
-          instance, project, user, public_key, self.ReleaseTrack())
+          instance, project, user, public_key, expiration_micros,
+          self.ReleaseTrack())
 
     iap_tunnel_args = iap_tunnel.SshTunnelArgs.FromArgs(
         args, self.ReleaseTrack(), instance_ref,
@@ -237,7 +242,7 @@ class Ssh(base.Command):
       keys_newly_added = False
     else:
       keys_newly_added = ssh_helper.EnsureSSHKeyExists(
-          client, remote.user, instance, project)
+          client, remote.user, instance, project, expiration=expiration)
 
     if keys_newly_added:
       poller = ssh_utils.CreateSSHPoller(remote, identity_file, options,
@@ -262,28 +267,8 @@ class Ssh(base.Command):
       sys.exit(return_code)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SshBeta(Ssh):
-  """SSH into a virtual machine instance (Beta)."""
-
-  get_host_keys = False
-
-  @staticmethod
-  def Args(parser):
-    ssh_utils.BaseSSHCLIHelper.Args(parser)
-    AddCommandArg(parser)
-    AddSSHArgs(parser)
-    AddContainerArg(parser)
-    flags.AddZoneFlag(
-        parser, resource_type='instance', operation_type='connect to')
-
-    mutex_scope = parser.add_mutually_exclusive_group()
-    AddInternalIPArg(mutex_scope)
-    iap_tunnel.AddSshTunnelArgs(parser, mutex_scope)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SshAlpha(SshBeta):
+class SshAlpha(Ssh):
   """SSH into a virtual machine instance (Alpha)."""
 
   get_host_keys = True
@@ -329,6 +314,15 @@ def DetailedHelp():
         you can SSH into one of your containers with:
 
           $ {command} example-instance --zone us-central1-a --container CONTAINER
+
+        You can limit the allowed time to ssh. For example, to allow a key to be
+        used through 2019:
+
+          $ {command} example-instance --zone us-central1-a --ssh-key-expiration "2020-01-01T00:00:00:00Z"
+
+        Or alternatively, allow access for the next two minutes:
+
+          $ {command} example-instance --zone us-central1-a --ssh-key-expire-after 2m
         """,
   }
   return detailed_help

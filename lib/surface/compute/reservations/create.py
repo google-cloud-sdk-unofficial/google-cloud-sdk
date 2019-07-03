@@ -58,3 +58,15 @@ class Create(base.CreateCommand):
     reservation.description = args.description
     return messages.ComputeReservationsInsertRequest(
         reservation=reservation, project=project, zone=reservation_ref.zone)
+
+
+Create.detailed_help = {
+    'brief':
+        'Create a Compute Engine reservation.',
+    'EXAMPLES':
+        """
+        To create a Compute Engine reservation, run:
+
+            $ {command} my-reservation --zone=fake-zone --vm-count=1 --machine-type=n1-standard-1 --min-cpu-platform="Intel Haswell"
+        """
+}

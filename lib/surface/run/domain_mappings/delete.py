@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete domain mappings."""
 
@@ -43,10 +44,8 @@ class Delete(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     domain_mapping_presentation = presentation_specs.ResourcePresentationSpec(
         '--domain',
         resource_args.GetDomainMappingResourceSpec(),
@@ -57,6 +56,11 @@ class Delete(base.Command):
         resource_args.CLUSTER_PRESENTATION,
         domain_mapping_presentation]).AddToParser(parser)
 
+  @staticmethod
+  def Args(parser):
+    Delete.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
+
   def Run(self, args):
     """Delete domain mappings."""
     conn_context = connection_context.GetConnectionContext(args)
@@ -66,3 +70,15 @@ class Delete(base.Command):
       msg = """Mappings to [{domain}] now have been deleted.""".format(
           domain=domain_mapping_ref.domainmappingsId)
       pretty_print.Success(msg)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDelete(Delete):
+
+  @staticmethod
+  def Args(parser):
+    Delete.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaDelete.__doc__ = Delete.__doc__

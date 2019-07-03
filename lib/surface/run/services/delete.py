@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete a service."""
 
@@ -44,10 +45,8 @@ class Delete(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(),
@@ -57,6 +56,11 @@ class Delete(base.Command):
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
+
+  @staticmethod
+  def Args(parser):
+    Delete.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Delete a service."""
@@ -71,3 +75,15 @@ class Delete(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       client.DeleteService(service_ref)
     log.DeletedResource(service_ref.servicesId, 'service')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDelete(Delete):
+
+  @staticmethod
+  def Args(parser):
+    Delete.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaDelete.__doc__ = Delete.__doc__

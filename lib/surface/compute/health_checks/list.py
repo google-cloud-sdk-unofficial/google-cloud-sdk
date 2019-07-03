@@ -50,6 +50,7 @@ class List(base_classes.BaseLister):
     return [
         self.messages.HealthCheck.TypeValueValuesEnum.HTTP.number,
         self.messages.HealthCheck.TypeValueValuesEnum.HTTPS.number,
+        self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number,
         self.messages.HealthCheck.TypeValueValuesEnum.TCP.number,
         self.messages.HealthCheck.TypeValueValuesEnum.SSL.number
     ]
@@ -75,6 +76,12 @@ class List(base_classes.BaseLister):
                         'httpsHealthCheck.port:label=PORT',
                         'httpsHealthCheck.requestPath:label=REQUEST_PATH',
                         'httpsHealthCheck.proxyHeader:label=PROXY_HEADER'])
+      elif (protocol_value ==
+            self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number):
+        columns.extend(['http2HealthCheck.host:label=HOST',
+                        'http2HealthCheck.port:label=PORT',
+                        'http2HealthCheck.requestPath:label=REQUEST_PATH',
+                        'http2HealthCheck.proxyHeader:label=PROXY_HEADER'])
       elif (protocol_value ==
             self.messages.HealthCheck.TypeValueValuesEnum.TCP.number):
         columns.extend(['tcpHealthCheck.port:label=PORT',
@@ -155,20 +162,11 @@ class ListBeta(base_classes.MultiScopeLister, List):
   def _ProtocolWhitelist(self):
     # Returns a list of whitelisted protocols.
     whitelist = super(ListBeta, self)._ProtocolWhitelist()
-    whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number)
     return whitelist
 
   def _GetValidColumns(self, args):
     """Returns a list of valid columns."""
     columns = super(ListBeta, self)._GetValidColumns(args)
-    if args.protocol is not None:
-      protocol_value = self._ConvertProtocolArgToValue(args)
-      if (protocol_value ==
-          self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number):
-        columns.extend(['http2HealthCheck.host:label=HOST',
-                        'http2HealthCheck.port:label=PORT',
-                        'http2HealthCheck.requestPath:label=REQUEST_PATH',
-                        'http2HealthCheck.proxyHeader:label=PROXY_HEADER'])
     return columns
 
   def _Format(self, args):

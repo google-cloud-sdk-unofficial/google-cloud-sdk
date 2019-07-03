@@ -42,7 +42,7 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing=False):
+def _Args(parser, include_l7_internal_load_balancing):
   """Set up arguments to create an HTTPS HealthCheck."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   flags.HealthCheckArgument(
@@ -58,7 +58,7 @@ def _Args(parser, include_l7_internal_load_balancing=False):
                                       completers.HttpsHealthChecksCompleter)
 
 
-def _Run(args, holder, include_l7_internal_load_balancing=False):
+def _Run(args, holder, include_l7_internal_load_balancing):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
@@ -121,18 +121,11 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _Args(
-        parser,
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    _Args(parser, cls._include_l7_internal_load_balancing)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(
-        args,
-        holder,
-        include_l7_internal_load_balancing=self
-        ._include_l7_internal_load_balancing)
+    return _Run(args, holder, self._include_l7_internal_load_balancing)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

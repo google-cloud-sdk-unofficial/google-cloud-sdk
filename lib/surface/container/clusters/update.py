@@ -390,9 +390,8 @@ to completion."""
         op_ref = adapter.UpdateCluster(cluster_ref, options)
 
     if not args.async:
-      adapter.WaitForOperation(op_ref,
-                               'Updating {0}'.format(cluster_ref.clusterId),
-                               timeout_s=1800)
+      adapter.WaitForOperation(
+          op_ref, 'Updating {0}'.format(cluster_ref.clusterId), timeout_s=1800)
 
       log.UpdatedResource(cluster_ref)
       cluster_url = util.GenerateClusterUrl(cluster_ref)
@@ -446,6 +445,7 @@ class UpdateBeta(Update):
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddEnableShieldedNodesFlags(group)
+    flags.AddDatabaseEncryptionFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -472,6 +472,7 @@ class UpdateBeta(Update):
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
+    opts.database_encryption = flags.GetDatabaseEncryptionOption(args)
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.
@@ -524,6 +525,7 @@ class UpdateAlpha(Update):
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
+    flags.AddDatabaseEncryptionFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -553,6 +555,7 @@ class UpdateAlpha(Update):
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_peering_route_sharing = args.enable_peering_route_sharing
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
+    opts.database_encryption = flags.GetDatabaseEncryptionOption(args)
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.

@@ -20,12 +20,13 @@
     format: |
       table(
          name.basename():label=NAME,
+         name.scope("locations").segment(0):label=LOCATION,
          description:label=DESCRIPTION,
          createTime,
          updateTime,
-         perioriy,
+         priority,
          weight,
-         match-clusters,
-         schedule,
+         clusterSelectors.labels:label=MATCH_CLUSTERS,
+         schedules,
          labels
        )

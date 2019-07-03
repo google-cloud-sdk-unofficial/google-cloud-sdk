@@ -30,13 +30,22 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StartIapTunnel(base.Command):
-  """Starts an IAP TCP forwarding tunnel over WebSocket connection.
+  """Starts an IAP TCP forwarding tunnel.
 
   Starts a tunnel to the Cloud Identity-Aware Proxy through which another
   process can create a connection (eg. SSH, RDP) to a Google Compute Engine
   instance.
+
+  ## EXAMPLES
+
+  To open a tunnel to the instances's RDP port on an arbitrary local port, run:
+
+    $ {command} my-instance 3389
+
+  To open a tunnel to the instance's RDP port on a specific local port, run:
+
+    $ {command} my-instance 3389 --local-host-port=localhost:3333
   """
 
   @staticmethod
@@ -83,7 +92,7 @@ class StartIapTunnel(base.Command):
       iap_tunnel_helper.StartProxyServer()
 
   def _GetTargetArgs(self, args):
-    holder = base_classes.ComputeApiHolder(base.ReleaseTrack.GA)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
 

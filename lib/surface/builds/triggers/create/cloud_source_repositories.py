@@ -53,7 +53,7 @@ class CreateCSR(base.CreateCommand):
 
     # Allow trigger config to be specified on the command line or by file.
     trigger_config.add_argument(
-        '--trigger_config',
+        '--trigger-config',
         metavar='PATH',
         help="""\
 Path to a YAML or JSON file containing the trigger configuration.

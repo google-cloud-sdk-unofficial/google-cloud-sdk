@@ -94,7 +94,9 @@ _DETAILED_HELP = {
         """\
 *{command}* performs prediction locally with the given instances. It requires
 the TensorFlow SDK be installed locally. The output format mirrors
-`gcloud ai-platform predict` (online prediction)
+`gcloud ai-platform predict` (online prediction).
+
+You cannot use this command with custom prediction routines.
 """
 }
 

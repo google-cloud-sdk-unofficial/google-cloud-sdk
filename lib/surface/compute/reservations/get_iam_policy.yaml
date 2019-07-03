@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Get the IAM policy for a Google Compute Engine reservation.
   description: |
@@ -17,7 +17,9 @@ help_text:
 request:
   collection: compute.reservations
   use_relative_name: false
-  api_version: beta
+  api_version: v1
+  BETA:
+    api_version: beta
   ALPHA:
     api_version: alpha
 

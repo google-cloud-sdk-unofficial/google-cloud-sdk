@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.Command):
   """Obtain details about a given service."""
 
@@ -42,10 +43,8 @@ class Describe(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(),
@@ -58,6 +57,11 @@ class Describe(base.Command):
     parser.display_info.AddFormat(
         'yaml(apiVersion, kind, metadata, spec, status)')
 
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
+
   def Run(self, args):
     """Obtain details about a given service."""
     conn_context = connection_context.GetConnectionContext(args)
@@ -68,3 +72,15 @@ class Describe(base.Command):
       raise flags.ArgumentError(
           'Cannot find service [{}]'.format(service_ref.servicesId))
     return serv
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(Describe):
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaDescribe.__doc__ = Describe.__doc__

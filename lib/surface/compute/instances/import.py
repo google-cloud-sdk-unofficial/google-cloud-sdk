@@ -37,7 +37,7 @@ from googlecloudsdk.core import properties
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Import(base.CreateCommand):
   """Import an instance into Google Compute Engine from OVF."""
 
@@ -67,7 +67,7 @@ class Import(base.CreateCommand):
     parser.add_argument(
         '--os',
         required=True,
-        choices=sorted(os_choices.OS_CHOICES_INSTANCE_IMPORT_ALPHA),
+        choices=sorted(os_choices.OS_CHOICES_INSTANCE_IMPORT_BETA),
         help='Specifies the OS of the image being imported.')
 
     parser.add_argument(
@@ -177,5 +177,11 @@ Import.detailed_help = {
 
         Virtual machine instances, images and disks in Compute engine and files
         stored on Cloud Storage incur charges. See [](https://cloud.google.com/compute/docs/images/importing-virtual-disks#resource_cleanup).
+        """,
+    'EXAMPLES':
+        """\
+        To import an OVF package from Google Could Storage into a VM named `my-instance`, run:
+
+          $ {command} my-instance --source-uri=gs://my-bucket/my-dir
         """,
 }

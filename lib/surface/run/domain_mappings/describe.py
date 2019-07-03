@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.Command):
   """Describe domain mappings."""
 
@@ -42,10 +43,8 @@ class Describe(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     domain_mapping_presentation = presentation_specs.ResourcePresentationSpec(
         '--domain',
         resource_args.GetDomainMappingResourceSpec(),
@@ -56,6 +55,11 @@ class Describe(base.Command):
         resource_args.CLUSTER_PRESENTATION,
         domain_mapping_presentation]).AddToParser(parser)
     parser.display_info.AddFormat('yaml')
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Describe a domain mapping."""
@@ -68,3 +72,15 @@ class Describe(base.Command):
             'Cannot find domain mapping for domain name [{}]'.format(
                 domain_mapping_ref.domainmappingsId))
       return domain_mapping
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(Describe):
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaDescribe.__doc__ = Describe.__doc__

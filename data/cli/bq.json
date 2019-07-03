@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.43",
+  "CLI_VERSION": "2.0.44",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -178,7 +178,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Create a dataset, table, view, or transfer configuration with this\nname.\n\nSee 'bq help load' for more information on specifying the schema.\n",
-        "EXAMPLES": "bq mk new_dataset\nbq mk new_dataset.new_table\nbq --dataset_id=new_dataset mk table\nbq mk -t new_dataset.newtable name:integer,value:string\nbq mk --view='select 1 as num' new_dataset.newview\n(--view_udf_resource=path/to/file.js)\nbq mk --materialized_view='select sum(x) as sum_x from dataset.table'\nnew_dataset.newview\nbq mk -d --data_location=EU new_dataset\nbq mk --transfer_config --target_dataset=dataset --display_name=name\n-p='{\"param\":\"value\"}' --data_source=source\n--schedule_start_time={schedule_start_time}\n--schedule_end_time={schedule_end_time}\nbq mk --transfer_run --start_time={start_time} --end_time={end_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk ---reservation_grant -project_id=proj --location=us\n--reservation_id=project:us.dev --job_type=QUERY\nbq mk --connection --connection_type='CLOUD_SQL'\n--properties='{\"instanceId\" : \"instance\",\n\"database\" : \"db\", \"type\" : \"MYSQL\" }'\n--connection_credential='{\"username\":\"u\", \"password\":\"p\"}'\n--project_id=proj --location=us new_connection\n"
+        "EXAMPLES": "bq mk new_dataset\nbq mk new_dataset.new_table\nbq --dataset_id=new_dataset mk table\nbq mk -t new_dataset.newtable name:integer,value:string\nbq mk --view='select 1 as num' new_dataset.newview\n(--view_udf_resource=path/to/file.js)\nbq mk --materialized_view='select sum(x) as sum_x from dataset.table'\nnew_dataset.newview\nbq mk -d --data_location=EU new_dataset\nbq mk --transfer_config --target_dataset=dataset --display_name=name\n-p='{\"param\":\"value\"}' --data_source=source\n--schedule_start_time={schedule_start_time}\n--schedule_end_time={schedule_end_time}\nbq mk --transfer_run --start_time={start_time} --end_time={end_time}\nprojects/p/locations/l/transferConfigs/c\nbq mk --reservation_grant --project_id=proj --location=us\n--reservation_id=project:us.dev --job_type=QUERY\nbq mk --connection --connection_type='CLOUD_SQL'\n--properties='{\"instanceId\" : \"instance\",\n\"database\" : \"db\", \"type\" : \"MYSQL\" }'\n--connection_credential='{\"username\":\"u\", \"password\":\"p\"}'\n--project_id=proj --location=us new_connection\n"
       }
     },
     "mkdef": {

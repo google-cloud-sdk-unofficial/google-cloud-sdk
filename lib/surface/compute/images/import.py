@@ -479,7 +479,8 @@ class ImportFromGSFileStager(BaseImportFromFileStager):
     bucket_location = self.storage_client.GetBucketLocationForFile(
         self.source_file_gcs_uri)
     bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
-    self.storage_client.CreateBucketIfNotExists(bucket_name)
+    self.storage_client.CreateBucketIfNotExists(
+        bucket_name, location=bucket_location)
     return bucket_name
 
   def _CopySourceFileToScratchBucket(self):

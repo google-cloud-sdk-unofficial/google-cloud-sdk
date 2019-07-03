@@ -20,10 +20,11 @@
     format: |
       table(
          name.basename():label=NAME,
+         name.scope("locations").segment(0):label=LOCATION,
          description:label=DESCRIPTION,
          createTime,
          updateTime,
-         namespace,
-         gke-name,
+         connectionInfo.namespace:label=NAMPESPACE,
+         connectionInfo.gkeName:label=GKE_NAME,
          labels
        )

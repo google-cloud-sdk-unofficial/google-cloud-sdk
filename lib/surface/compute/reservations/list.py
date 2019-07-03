@@ -48,3 +48,13 @@ class List(base.ListCommand):
         client, client.apitools_client.reservations)
 
     return lister.Invoke(request_data, list_implementation)
+
+
+List.detailed_help = {
+    'brief': 'List Google Compute Engine reservations.',
+    'EXAMPLES': '''
+      To list all Compute Engine reservations, run:
+
+          $ {command}
+    '''
+}

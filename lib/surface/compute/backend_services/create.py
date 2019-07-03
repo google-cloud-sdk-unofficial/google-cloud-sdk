@@ -79,7 +79,7 @@ class CreateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging):
+           support_logging, support_multinic):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -122,11 +122,15 @@ class CreateHelper(object):
       flags.AddEnableLogging(parser, default=None)
       flags.AddLoggingSampleRate(parser)
 
+    if support_multinic:
+      flags.AddNetwork(parser)
+
   def __init__(self, support_l7_internal_load_balancer, support_failover,
-               support_logging):
+               support_logging, support_multinic):
     self._support_l7_internal_load_balancer = support_l7_internal_load_balancer
     self._support_failover = support_failover
     self._support_logging = support_logging
+    self._support_multinic = support_multinic
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -197,11 +201,11 @@ class CreateHelper(object):
         args.cache_key_query_string_whitelist is not None):
       raise exceptions.ToolException(
           'Custom cache key flags cannot be used for regional requests.')
-    if (self._support_logging and (args.IsSpecified('enable_logging') or
-                                   args.IsSpecified('logging_sample_rate'))):
+
+    if (self._support_multinic and args.IsSpecified('network') and
+        args.load_balancing_scheme != 'INTERNAL'):
       raise exceptions.InvalidArgumentException(
-          '--region',
-          'cannot specify logging options for regional backend services.')
+          '--network', 'can only specify network for INTERNAL backend service.')
 
     backend_service = self._CreateRegionBackendService(holder, args,
                                                        backend_services_ref)
@@ -223,6 +227,10 @@ class CreateHelper(object):
 
     if args.port_name is not None:
       backend_service.portName = args.port_name
+
+    if self._support_multinic and args.IsSpecified('network'):
+      backend_service.network = flags.NETWORK_ARG.ResolveAsResource(
+          args, holder.resources).SelfLink()
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
@@ -311,6 +319,7 @@ class CreateGA(base.CreateCommand):
   _support_l7_internal_load_balancer = False
   _support_failover = False
   _support_logging = False
+  _support_multinic = False
 
   @classmethod
   def Args(cls, parser):
@@ -319,7 +328,8 @@ class CreateGA(base.CreateCommand):
         support_l7_internal_load_balancer=cls
         ._support_l7_internal_load_balancer,
         support_failover=cls._support_failover,
-        support_logging=cls._support_logging)
+        support_logging=cls._support_logging,
+        support_multinic=cls._support_multinic)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -329,7 +339,8 @@ class CreateGA(base.CreateCommand):
         support_l7_internal_load_balancer=self
         ._support_l7_internal_load_balancer,
         support_failover=self._support_failover,
-        support_logging=self._support_logging).Run(args, holder)
+        support_logging=self._support_logging,
+        support_multinic=self._support_multinic).Run(args, holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -369,4 +380,4 @@ class CreateAlpha(CreateBeta):
   compute backend-services add-backend' or 'gcloud compute
   backend-services edit'.
   """
-  pass
+  _support_multinic = True

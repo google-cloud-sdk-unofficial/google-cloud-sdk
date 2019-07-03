@@ -66,14 +66,7 @@ class Export(base.Command):
         'will be stored. The URI is in the form gs://bucketName/fileName. '
         'If the file already exists, the operation fails. If the filename '
         'ends with .gz, the contents are compressed.')
-    parser.add_argument(
-        '--database',
-        '-d',
-        type=arg_parsers.ArgList(min_length=1),
-        metavar='DATABASE',
-        required=False,
-        help='Database (for example, guestbook) from which the export is made.'
-        ' If unspecified, all databases are exported.')
+    flags.AddDatabaseList(parser, flags.DEFAULT_DATABASE_LIST_EXPORT_HELP_TEXT)
     parser.add_argument(
         '--table',
         '-t',

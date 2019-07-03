@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Delete a Compute Engine reservation.
     description: Delete a Compute Engine reservation.
+    examples: |
+      To delete a given Compute Engine reservation, run:
+
+        $ {command} my-reservation --zone=ZONE
 
   arguments:
     resource:
@@ -11,7 +15,9 @@
 
   request:
     collection: compute.reservations
-    api_version: beta
+    api_version: v1
+    BETA:
+      api_version: beta
     ALPHA:
       api_version: alpha
 

@@ -37,6 +37,12 @@ def _DetailedHelp():
       arguments passed in will be updated on the health check. Other
       attributes will remain unaffected.
       """,
+      'EXAMPLES':
+          """\
+          To update health check interval to 10s, run:
+
+            $ {command} my-health-check-name --check-interval=10s
+      """,
   }
 
 
@@ -151,10 +157,8 @@ def _Modify(client, args, existing_check):
   return new_health_check
 
 
-def _Run(args, holder, include_l7_internal_load_balancing):
-  """Issues requests necessary to update the HTTP2 Health Checks."""
-  client = holder.client
-
+def _ValidateArgs(args):
+  """Validates given args and raises exception if any args are invalid."""
   health_checks_utils.CheckProtocolAgnosticArgs(args)
 
   args_unset = not (args.port or args.request_path or args.check_interval or
@@ -164,6 +168,13 @@ def _Run(args, holder, include_l7_internal_load_balancing):
   if (args.description is None and args.host is None and
       args.response is None and args.port_name is None and args_unset):
     raise exceptions.ToolException('At least one property must be modified.')
+
+
+def _Run(args, holder, include_l7_internal_load_balancing):
+  """Issues requests necessary to update the HTTP2 Health Checks."""
+  client = holder.client
+
+  _ValidateArgs(args)
 
   health_check_arg = flags.HealthCheckArgument(
       'HTTP2',
@@ -194,11 +205,11 @@ def _Run(args, holder, include_l7_internal_load_balancing):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
   """Update a HTTP2 health check."""
 
-  _include_l7_internal_load_balancing = True
+  _include_l7_internal_load_balancing = False
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -208,6 +219,13 @@ class UpdateBeta(base.UpdateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a HTTP2 health check."""
+
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

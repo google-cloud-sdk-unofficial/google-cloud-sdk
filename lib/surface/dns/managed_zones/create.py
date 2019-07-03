@@ -170,7 +170,7 @@ class CreateBeta(base.CreateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetForwardingTargetsArg().AddToParser(parser)
+    flags.GetForwardingTargetsGroupArg(parser)
     flags.GetDnsPeeringArgs().AddToParser(parser)
 
   def Run(self, args):

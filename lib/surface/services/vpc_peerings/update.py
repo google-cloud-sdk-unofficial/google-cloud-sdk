@@ -102,7 +102,7 @@ class Update(base.SilentCommand):
                        'Use the following command to wait for its '
                        'completion:\n {0}'.format(cmd))
       return
-    op = peering.WaitOperation(op.name)
+    op = services_util.WaitOperation(op.name, peering.GetOperation)
     services_util.PrintOperation(op)
 
 

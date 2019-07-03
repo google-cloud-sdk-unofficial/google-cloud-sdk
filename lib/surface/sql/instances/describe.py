@@ -91,6 +91,7 @@ class Get(base.DescribeCommand):
       instance = sql_client.instances.Get(
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project, instance=instance_ref.instance))
+      instance.state = instance_api_util.GetInstanceState(instance)
       # TODO(b/122660263): Remove when V1 instances are no longer supported.
       if instance_api_util.IsInstanceV1(instance):
         instance_command_util.ShowV1DeprecationWarning()

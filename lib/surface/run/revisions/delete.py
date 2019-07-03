@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete a revision."""
 
@@ -44,10 +45,8 @@ class Delete(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     revision_presentation = presentation_specs.ResourcePresentationSpec(
         'REVISION',
         resource_args.GetRevisionResourceSpec(),
@@ -57,6 +56,11 @@ class Delete(base.Command):
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         revision_presentation]).AddToParser(parser)
+
+  @staticmethod
+  def Args(parser):
+    Delete.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Delete a revision."""
@@ -72,3 +76,15 @@ class Delete(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       client.DeleteRevision(revision_ref)
     log.DeletedResource(revision_ref.revisionsId, 'revision')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDelete(Delete):
+
+  @staticmethod
+  def Args(parser):
+    Delete.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+
+AlphaDelete.__doc__ = Delete.__doc__

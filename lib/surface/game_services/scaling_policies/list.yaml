@@ -20,15 +20,17 @@
     format: |
       table(
          name.basename():label=NAME,
+         name.scope("locations").segment(0):label=LOCATION,
          description:label=DESCRIPTION,
          createTime,
          updateTime,
-         perioriy,
-         deployment,
-         buffer-size,
-         min-replicas,
-         max-replicas,
-         match-clusters,
-         schedule,
+         priority,
+         gameServerDeployment:label=DEPLOYMENT,
+         fleetAutoscalerSettings.bufferSizeAbsolute:label=BUFFER_SIZE,
+         fleetAutoscalerSettings.bufferSizePercentage:label=BUFFER_SIZE_PERCENT,
+         fleetAutoscalerSettings.minReplicas:label=MIN_REPLICAS,
+         fleetAutoscalerSettings.maxReplicas:label=MAX_REPLICAS,
+         clusterSelectors.labels:label=MATCH_CLUSTERS,
+         schedules,
          labels
        )

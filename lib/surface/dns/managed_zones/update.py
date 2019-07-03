@@ -35,6 +35,7 @@ def _CommonArgs(parser, messages):
   flags.GetManagedZonesDescriptionArg().AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
+  base.ASYNC_FLAG.AddToParser(parser)
 
 
 def _Update(zones_client,
@@ -60,6 +61,7 @@ def _Update(zones_client,
     kwargs['peering_config'] = peering_config
   return zones_client.Patch(
       zone_ref,
+      args.async,
       dnssec_config=dnssec_config,
       description=args.description,
       labels=labels_update.GetOrNone(),
@@ -131,7 +133,7 @@ class UpdateBeta(base.UpdateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
-    flags.GetForwardingTargetsArg().AddToParser(parser)
+    flags.GetForwardingTargetsGroupArg(parser)
     flags.GetDnsPeeringArgs().AddToParser(parser)
 
   def Run(self, args):

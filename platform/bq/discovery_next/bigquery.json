@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20190321",
+ "revision": "20190621",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -376,6 +376,9 @@
     "datasetReference": {
      "$ref": "DatasetReference",
      "description": "[Required] A reference that identifies the dataset."
+    },
+    "defaultEncryptionConfiguration": {
+     "$ref": "EncryptionConfiguration"
     },
     "defaultPartitionExpirationMs": {
      "type": "string",
@@ -760,7 +763,11 @@
     },
     "hivePartitioningMode": {
      "type": "string",
-     "description": "[Optional, Experimental] If hive partitioning is enabled, which mode to use. Two modes are supported: - AUTO: automatically infer partition key name(s) and type(s). - STRINGS: automatic infer partition key name(s). All types are strings. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error."
+     "description": "[Optional, Trusted Tester] If hive partitioning is enabled, which mode to use. Two modes are supported: - AUTO: automatically infer partition key name(s) and type(s). - STRINGS: automatic infer partition key name(s). All types are strings. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error. Note: this setting is in the process of being deprecated in favor of hivePartitioningOptions."
+    },
+    "hivePartitioningOptions": {
+     "$ref": "HivePartitioningOptions",
+     "description": "[Optional, Trusted Tester] Options to configure hive partitioning support."
     },
     "ignoreUnknownValues": {
      "type": "boolean",
@@ -879,6 +886,20 @@
      "type": "string",
      "description": "[Optional] The number of rows at the top of a sheet that BigQuery will skip when reading the data. The default value is 0. This property is useful if you have header rows that should be skipped. When autodetect is on, behavior is the following: * skipLeadingRows unspecified - Autodetect tries to detect headers in the first row. If they are not detected, the row is read as data. Otherwise data is read starting from the second row. * skipLeadingRows is 0 - Instructs autodetect that there are no headers and data should be read starting from the first row. * skipLeadingRows = N > 0 - Autodetect skips N-1 rows and tries to detect headers in row N. If headers are not detected, row N is just skipped. Otherwise row N is used to extract column names for the detected schema.",
      "format": "int64"
+    }
+   }
+  },
+  "HivePartitioningOptions": {
+   "id": "HivePartitioningOptions",
+   "type": "object",
+   "properties": {
+    "mode": {
+     "type": "string",
+     "description": "[Optional, Trusted Tester] When set, what mode of hive partitioning to use when reading data. Two modes are supported. (1) AUTO: automatically infer partition key name(s) and type(s). (2) STRINGS: automatically infer partition key name(s). All types are interpreted as strings. Not all storage formats support hive partitioning. Requesting hive partitioning on an unsupported format will lead to an error. Currently supported types include: AVRO, CSV, JSON, ORC and Parquet."
+    },
+    "sourceUriPrefix": {
+     "type": "string",
+     "description": "[Optional, Trusted Tester] When hive partition detection is requested, a common prefix for all source uris should be supplied. The prefix must end immediately before the partition key encoding begins. For example, consider files following this data layout. gs://bucket/path_to_table/dt=2019-01-01/country=BR/id=7/file.avro gs://bucket/path_to_table/dt=2018-12-31/country=CA/id=3/file.avro When hive partitioning is requested with either AUTO or STRINGS detection, the common prefix can be either of gs://bucket/path_to_table or gs://bucket/path_to_table/ (trailing slash does not matter)."
     }
    }
   },
@@ -1066,7 +1087,11 @@
     },
     "hivePartitioningMode": {
      "type": "string",
-     "description": "[Optional, Experimental] If hive partitioning is enabled, which mode to use. Two modes are supported: - AUTO: automatically infer partition key name(s) and type(s). - STRINGS: automatic infer partition key name(s). All types are strings. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error."
+     "description": "[Optional, Trusted Tester] If hive partitioning is enabled, which mode to use. Two modes are supported: - AUTO: automatically infer partition key name(s) and type(s). - STRINGS: automatic infer partition key name(s). All types are strings. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error."
+    },
+    "hivePartitioningOptions": {
+     "$ref": "HivePartitioningOptions",
+     "description": "[Optional, Trusted Tester] Options to configure hive partitioning support."
     },
     "ignoreUnknownValues": {
      "type": "boolean",
@@ -1451,6 +1476,10 @@
       }
      }
     },
+    "reservation_id": {
+     "type": "string",
+     "description": "[Output-only] Name of the primary reservation assigned to this job. Note that this could be different than reservations reported in the reservation usage field if parent reservations were used to execute this job."
+    },
     "startTime": {
      "type": "string",
      "description": "[Output-only] Start time of this job, in milliseconds since the epoch. This field will be present when the job transitions from the PENDING state to either RUNNING or DONE.",
@@ -1555,7 +1584,7 @@
     },
     "statementType": {
      "type": "string",
-     "description": "The type of query statement, if valid. Possible values (new values might be added in the future): \"SELECT\": SELECT query. \"INSERT\": INSERT query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"UPDATE\": UPDATE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"DELETE\": DELETE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"MERGE\": MERGE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT. \"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... . \"DROP_TABLE\": DROP TABLE query. \"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... . \"DROP_VIEW\": DROP VIEW query. \"CREATE_FUNCTION\": CREATE FUNCTION query. \"DROP_FUNCTION\" : DROP FUNCTION query. \"ALTER_TABLE\": ALTER TABLE query. \"ALTER_VIEW\": ALTER VIEW query."
+     "description": "The type of query statement, if valid. Possible values (new values might be added in the future): \"SELECT\": SELECT query. \"INSERT\": INSERT query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"UPDATE\": UPDATE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"DELETE\": DELETE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"MERGE\": MERGE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"ALTER_TABLE\": ALTER TABLE query. \"ALTER_VIEW\": ALTER VIEW query. \"CREATE_FUNCTION\": CREATE FUNCTION query. \"CREATE_MODEL\": CREATE [OR REPLACE] MODEL ... AS SELECT ... . \"CREATE_PROCEDURE\": CREATE PROCEDURE query. \"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT. \"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... . \"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... . \"DROP_FUNCTION\" : DROP FUNCTION query. \"DROP_PROCEDURE\": DROP PROCEDURE query. \"DROP_TABLE\": DROP TABLE query. \"DROP_VIEW\": DROP VIEW query."
     },
     "timeline": {
      "type": "array",
@@ -2608,22 +2637,22 @@
      "format": "int64"
     },
     "description": {
-     "description": "[Optional] A user-friendly description of this model.\n@mutable bigquery.models.patch",
+     "description": "[Optional] A user-friendly description of this model.",
      "type": "string"
     },
     "friendlyName": {
-     "description": "[Optional] A descriptive name for this model.\n@mutable bigquery.models.patch",
+     "description": "[Optional] A descriptive name for this model.",
      "type": "string"
     },
     "labels": {
-     "description": "[Optional] The labels associated with this model. You can use these to\norganize and group your models. Label keys and values can be no longer\nthan 63 characters, can only contain lowercase letters, numeric\ncharacters, underscores and dashes. International characters are allowed.\nLabel values are optional. Label keys must start with a letter and each\nlabel in the list must have a different key.\n@mutable bigquery.models.patch",
+     "description": "[Optional] The labels associated with this model. You can use these to\norganize and group your models. Label keys and values can be no longer\nthan 63 characters, can only contain lowercase letters, numeric\ncharacters, underscores and dashes. International characters are allowed.\nLabel values are optional. Label keys must start with a letter and each\nlabel in the list must have a different key.",
      "type": "object",
      "additionalProperties": {
       "type": "string"
      }
     },
     "expirationTime": {
-     "description": "[Optional] The time when this model expires, in milliseconds since the\nepoch. If not present, the model will persist indefinitely. Expired models\nwill be deleted and their storage reclaimed.  The defaultTableExpirationMs\nproperty of the encapsulating dataset can be used to set a default\nexpirationTime on newly created models.\n@mutable bigquery.models.patch",
+     "description": "[Optional] The time when this model expires, in milliseconds since the\nepoch. If not present, the model will persist indefinitely. Expired models\nwill be deleted and their storage reclaimed.  The defaultTableExpirationMs\nproperty of the encapsulating dataset can be used to set a default\nexpirationTime on newly created models.",
      "type": "string",
      "format": "int64"
     },
@@ -2636,15 +2665,17 @@
      "enumDescriptions": [
       "",
       "Linear regression model.",
-      "Logistic regression model.",
-      "[Beta] K-means clustering model."
+      "Logistic regression based classification model.",
+      "[Beta] K-means clustering model.",
+      "[Beta] An imported TensorFlow model."
      ],
      "type": "string",
      "enum": [
       "MODEL_TYPE_UNSPECIFIED",
       "LINEAR_REGRESSION",
       "LOGISTIC_REGRESSION",
-      "KMEANS"
+      "KMEANS",
+      "TENSORFLOW"
      ]
     },
     "trainingRuns": {
@@ -2662,7 +2693,7 @@
      }
     },
     "labelColumns": {
-     "description": "Output only. Label columns that were used to train this model.\nThe output of the model will have a \u201cpredicted_\u201d prefix to these columns.",
+     "description": "Output only. Label columns that were used to train this model.\nThe output of the model will have a \"predicted_\" prefix to these columns.",
      "type": "array",
      "items": {
       "$ref": "StandardSqlField"
@@ -2721,7 +2752,7 @@
    "type": "object",
    "properties": {
     "maxIterations": {
-     "description": "The maximum number of iterations in training.",
+     "description": "The maximum number of iterations in training. Used only for iterative\ntraining algorithms.",
      "type": "string",
      "format": "int64"
     },
@@ -2740,7 +2771,7 @@
      ]
     },
     "learnRate": {
-     "description": "Learning rate in training.",
+     "description": "Learning rate in training. Used only for iterative training algorithms.",
      "type": "number",
      "format": "double"
     },
@@ -2755,7 +2786,7 @@
      "format": "double"
     },
     "minRelativeProgress": {
-     "description": "When early_stop is true, stops training when accuracy improvement is\nless than 'min_relative_progress'.",
+     "description": "When early_stop is true, stops training when accuracy improvement is\nless than 'min_relative_progress'. Used only for iterative training\nalgorithms.",
      "type": "number",
      "format": "double"
     },
@@ -2764,7 +2795,7 @@
      "type": "boolean"
     },
     "earlyStop": {
-     "description": "Whether to stop early when the loss doesn't improve significantly\nany more (compared to min_relative_progress).",
+     "description": "Whether to stop early when the loss doesn't improve significantly\nany more (compared to min_relative_progress). Used only for iterative\ntraining algorithms.",
      "type": "boolean"
     },
     "inputLabelColumns": {
@@ -2804,7 +2835,7 @@
      "type": "string"
     },
     "learnRateStrategy": {
-     "description": "The strategy to determine learning rate.",
+     "description": "The strategy to determine learn rate for the current iteration.",
      "enumDescriptions": [
       "",
       "Use line search to determine learning rate.",
@@ -2818,12 +2849,12 @@
      ]
     },
     "initialLearnRate": {
-     "description": "Specifies the initial learning rate for line search to start at.",
+     "description": "Specifies the initial learning rate for the line search learn rate\nstrategy.",
      "type": "number",
      "format": "double"
     },
     "labelClassWeights": {
-     "description": "Weights associated with each label class, for rebalancing the\ntraining data.",
+     "description": "Weights associated with each label class, for rebalancing the\ntraining data. Only applicable for classification models.",
      "type": "object",
      "additionalProperties": {
       "type": "number",
@@ -2848,6 +2879,24 @@
      "description": "[Beta] Number of clusters for clustering models.",
      "type": "string",
      "format": "int64"
+    },
+    "modelUri": {
+     "description": "[Beta] Google Cloud Storage URI from which the model was imported. Only\napplicable for imported models.",
+     "type": "string"
+    },
+    "optimizationStrategy": {
+     "description": "Optimization strategy for training linear regression models.",
+     "enumDescriptions": [
+      "",
+      "Uses an iterative batch gradient descent algorithm.",
+      "Uses a normal equation to solve linear regression problem."
+     ],
+     "type": "string",
+     "enum": [
+      "OPTIMIZATION_STRATEGY_UNSPECIFIED",
+      "BATCH_GRADIENT_DESCENT",
+      "NORMAL_EQUATION"
+     ]
     }
    }
   },
@@ -2914,7 +2963,7 @@
   },
   "EvaluationMetrics": {
    "id": "EvaluationMetrics",
-   "description": "Evaluation metrics of a model. These are either computed on all\ntraining data or just the eval data based on whether eval data was used\nduring training.",
+   "description": "Evaluation metrics of a model. These are either computed on all training\ndata or just the eval data based on whether eval data was used during\ntraining. These are not present for imported models.",
    "type": "object",
    "properties": {
     "regressionMetrics": {
@@ -2922,11 +2971,11 @@
      "$ref": "RegressionMetrics"
     },
     "binaryClassificationMetrics": {
-     "description": "Populated for binary classification models.",
+     "description": "Populated for binary classification/classifier models.",
      "$ref": "BinaryClassificationMetrics"
     },
     "multiClassClassificationMetrics": {
-     "description": "Populated for multi-class classification models.",
+     "description": "Populated for multi-class classification/classifier models.",
      "$ref": "MultiClassClassificationMetrics"
     },
     "clusteringMetrics": {
@@ -2969,7 +3018,7 @@
   },
   "BinaryClassificationMetrics": {
    "id": "BinaryClassificationMetrics",
-   "description": "Evaluation metrics for binary classification models.",
+   "description": "Evaluation metrics for binary classification/classifier models.",
    "type": "object",
    "properties": {
     "aggregateClassificationMetrics": {
@@ -2982,12 +3031,20 @@
      "items": {
       "$ref": "BinaryConfusionMatrix"
      }
+    },
+    "positiveLabel": {
+     "description": "Label representing the positive class.",
+     "type": "string"
+    },
+    "negativeLabel": {
+     "description": "Label representing the negative class.",
+     "type": "string"
     }
    }
   },
   "AggregateClassificationMetrics": {
    "id": "AggregateClassificationMetrics",
-   "description": "Aggregate metrics for classification models. For multi-class models,\nthe metrics are either macro-averaged: metrics are calculated for each\nlabel and then an unweighted average is taken of those values or\nmicro-averaged: the metric is calculated globally by counting the total\nnumber of correctly predicted rows.",
+   "description": "Aggregate metrics for classification/classifier models. For multi-class\nmodels, the metrics are either macro-averaged or micro-averaged. When\nmacro-averaged, the metrics are calculated for each label and then an\nunweighted average is taken of those values. When micro-averaged, the\nmetric is calculated globally by counting the total number of correctly\npredicted rows.",
    "type": "object",
    "properties": {
     "precision": {
@@ -3058,12 +3115,22 @@
      "format": "int64"
     },
     "precision": {
-     "description": "Aggregate precision.",
+     "description": "The fraction of actual positive predictions that had positive actual\nlabels.",
      "type": "number",
      "format": "double"
     },
     "recall": {
-     "description": "Aggregate recall.",
+     "description": "The fraction of actual positive labels that were given a positive\nprediction.",
+     "type": "number",
+     "format": "double"
+    },
+    "f1Score": {
+     "description": "The equally weighted average of recall and precision.",
+     "type": "number",
+     "format": "double"
+    },
+    "accuracy": {
+     "description": "The fraction of predictions given the correct label.",
      "type": "number",
      "format": "double"
     }
@@ -3071,7 +3138,7 @@
   },
   "MultiClassClassificationMetrics": {
    "id": "MultiClassClassificationMetrics",
-   "description": "Evaluation metrics for multi-class classification models.",
+   "description": "Evaluation metrics for multi-class classification/classifier models.",
    "type": "object",
    "properties": {
     "aggregateClassificationMetrics": {
@@ -3248,6 +3315,154 @@
     },
     "nextPageToken": {
      "description": "A token to request the next page of results.",
+     "type": "string"
+    }
+   }
+  },
+  "Routine": {
+   "id": "Routine",
+   "description": "A user-defined function or a stored procedure.",
+   "type": "object",
+   "properties": {
+    "etag": {
+     "description": "Output only. A hash of this resource.",
+     "type": "string"
+    },
+    "routineReference": {
+     "description": "Required. Reference describing the ID of this routine.",
+     "$ref": "RoutineReference"
+    },
+    "routineType": {
+     "description": "Required.",
+     "enumDescriptions": [
+      "",
+      "Non-builtin permanent scalar function.",
+      "Stored procedure."
+     ],
+     "type": "string",
+     "enum": [
+      "ROUTINE_TYPE_UNSPECIFIED",
+      "SCALAR_FUNCTION",
+      "PROCEDURE"
+     ]
+    },
+    "creationTime": {
+     "description": "Output only. The time when this routine was created, in milliseconds since\nthe epoch.",
+     "type": "string",
+     "format": "int64"
+    },
+    "lastModifiedTime": {
+     "description": "Output only. The time when this routine was last modified, in milliseconds\nsince the epoch.",
+     "type": "string",
+     "format": "int64"
+    },
+    "language": {
+     "description": "Optional. Defaults to \"SQL\".",
+     "enumDescriptions": [
+      "",
+      "SQL language.",
+      "JavaScript language."
+     ],
+     "type": "string",
+     "enum": [
+      "LANGUAGE_UNSPECIFIED",
+      "SQL",
+      "JAVASCRIPT"
+     ]
+    },
+    "arguments": {
+     "description": "Optional.",
+     "type": "array",
+     "items": {
+      "$ref": "Argument"
+     }
+    },
+    "returnType": {
+     "description": "Optional if language = \"SQL\"; required otherwise.\nIf absent, the return type is inferred from definition_body at query time\nin each query that references this routine. If present, then the evaluated\nresult will be cast to the specified returned type at query time.\n\nFor example, for the functions created with the following statements\n  CREATE FUNCTION Add(x FLOAT64, y FLOAT64) RETURNS FLOAT64 AS (x + y);\n  CREATE FUNCTION Increment(x FLOAT64) AS (Add(x, 1));\n  CREATE FUNCTION Decrement(x FLOAT64) RETURNS FLOAT64 AS (Add(x, -1));\nThe return_type is {type_kind: \"FLOAT64\"} for Add and Decrement, and\nis absent for Increment (inferred as FLOAT64 at query time).\nSuppose the function Add is replaced by\n  CREATE OR REPLACE FUNCTION Add(x INT64, y INT64) AS (x + y);\nThen the inferred return type of Increment is automatically changed to\nINT64 at query time, while the return type of Decrement remains FLOAT64.",
+     "$ref": "StandardSqlDataType"
+    },
+    "importedLibraries": {
+     "description": "Optional. If language = \"JAVASCRIPT\", this field stores the path of the\nimported JAVASCRIPT libraries.",
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "definitionBody": {
+     "description": "Required. The body of the routine.\nFor functions, this is the expression in the AS clause.\nIf language=SQL, it is the substring inside (but excluding) the\nparentheses. For example, for the function created with the following\nstatement\n  create function JoinLines(x string, y string) as (concat(x, \"\\n\", y))\ndefinition_body = r'concat(x, \"\\n\", y)' (\\n is not replaced with\nlinebreak).\nIf language=JAVASCRIPT, it is the evaluated string in the AS clause.\nFor example, for the function created with the following statement\n  CREATE FUNCTION f() RETURNS STRING LANGUAGE js AS 'return \"\\n\";\\n'\ndefinition_body = 'return \"\\n\";\\n' (both \\n are replaced with\nlinebreaks).",
+     "type": "string"
+    }
+   }
+  },
+  "Argument": {
+   "id": "Argument",
+   "description": "Input/output argument of a function or a stored procedure.",
+   "type": "object",
+   "properties": {
+    "name": {
+     "description": "Optional. The name of this argument. Can be absent for function return\nargument.",
+     "type": "string"
+    },
+    "argumentKind": {
+     "description": "Optional. Defaults to FIXED_TYPE.",
+     "enumDescriptions": [
+      "",
+      "The argument is a variable with fully specified type, which can be a\nstruct or an array, but not a table.",
+      "The argument is any type, including struct or array, but not a table.\nTo be added: FIXED_TABLE, ANY_TABLE"
+     ],
+     "type": "string",
+     "enum": [
+      "ARGUMENT_KIND_UNSPECIFIED",
+      "FIXED_TYPE",
+      "ANY_TYPE"
+     ]
+    },
+    "mode": {
+     "description": "Optional. Specifies whether the argument is input or output.\nCan be set for procedures only.",
+     "enumDescriptions": [
+      "",
+      "The argument is input-only.",
+      "The argument is output-only.",
+      "The argument is both an input and an output."
+     ],
+     "type": "string",
+     "enum": [
+      "MODE_UNSPECIFIED",
+      "IN",
+      "OUT",
+      "INOUT"
+     ]
+    },
+    "dataType": {
+     "description": "Required unless argument_kind = ANY_TYPE.",
+     "$ref": "StandardSqlDataType"
+    }
+   }
+  },
+  "ListRoutinesResponse": {
+   "id": "ListRoutinesResponse",
+   "type": "object",
+   "properties": {
+    "routines": {
+     "description": "Routines in the requested dataset. Only the following fields are populated:\netag, project_id, dataset_id, routine_id, routine_type, creation_time,\nlast_modified_time, language.",
+     "type": "array",
+     "items": {
+      "$ref": "Routine"
+     }
+    },
+    "nextPageToken": {
+     "description": "A token to request the next page of results.",
+     "type": "string"
+    }
+   }
+  },
+  "LocationMetadata": {
+   "id": "LocationMetadata",
+   "description": "BigQuery-specific metadata about a location. This will be set on\ngoogle.cloud.location.Location.metadata in Cloud Location API\nresponses.",
+   "type": "object",
+   "properties": {
+    "legacyLocationId": {
+     "description": "The legacy BigQuery location ID, e.g. \u201cEU\u201d for the \u201ceurope\u201d location.\nThis is for any API consumers that need the legacy \u201cUS\u201d and \u201cEU\u201d locations.",
      "type": "string"
     }
    }
@@ -4228,7 +4443,7 @@
        "type": "string"
       },
       "maxResults": {
-       "description": "The maximum number of results per page.",
+       "description": "The maximum number of results to return in a single response page.\nLeverage the page tokens to iterate through the entire collection.",
        "location": "query",
        "type": "integer",
        "format": "uint32"
@@ -4336,6 +4551,226 @@
       "https://www.googleapis.com/auth/cloud-platform"
      ],
      "description": "Deletes the model specified by modelId from the dataset."
+    }
+   }
+  },
+  "routines": {
+   "methods": {
+    "get": {
+     "id": "bigquery.routines.get",
+     "path": "projects/{+projectId}/datasets/{+datasetId}/routines/{+routineId}",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}",
+     "httpMethod": "GET",
+     "parameters": {
+      "projectId": {
+       "description": "Project ID of the requested routine",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "datasetId": {
+       "description": "Dataset ID of the requested routine",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "routineId": {
+       "description": "Routine ID of the requested routine",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "fieldMask": {
+       "description": "If set, only the Routine fields in the field mask are returned in the\nresponse. If unset, all Routine fields are returned.",
+       "location": "query",
+       "type": "string",
+       "format": "google-fieldmask"
+      }
+     },
+     "parameterOrder": [
+      "projectId",
+      "datasetId",
+      "routineId"
+     ],
+     "response": {
+      "$ref": "Routine"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only"
+     ],
+     "description": "Gets the specified routine resource by routine ID."
+    },
+    "insert": {
+     "id": "bigquery.routines.insert",
+     "path": "projects/{+projectId}/datasets/{+datasetId}/routines",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/routines",
+     "httpMethod": "POST",
+     "parameters": {
+      "projectId": {
+       "description": "Project ID of the new routine",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "datasetId": {
+       "description": "Dataset ID of the new routine",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      }
+     },
+     "parameterOrder": [
+      "projectId",
+      "datasetId"
+     ],
+     "request": {
+      "$ref": "Routine"
+     },
+     "response": {
+      "$ref": "Routine"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/cloud-platform"
+     ],
+     "description": "Creates a new routine in the dataset."
+    },
+    "update": {
+     "id": "bigquery.routines.update",
+     "path": "projects/{+projectId}/datasets/{+datasetId}/routines/{+routineId}",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}",
+     "httpMethod": "PUT",
+     "parameters": {
+      "projectId": {
+       "description": "Project ID of the routine to update",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "datasetId": {
+       "description": "Dataset ID of the routine to update",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "routineId": {
+       "description": "Routine ID of the routine to update",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      }
+     },
+     "parameterOrder": [
+      "projectId",
+      "datasetId",
+      "routineId"
+     ],
+     "request": {
+      "$ref": "Routine"
+     },
+     "response": {
+      "$ref": "Routine"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/cloud-platform"
+     ],
+     "description": "Updates information in an existing routine. The update method replaces the\nentire Routine resource."
+    },
+    "delete": {
+     "id": "bigquery.routines.delete",
+     "path": "projects/{+projectId}/datasets/{+datasetId}/routines/{+routineId}",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}",
+     "httpMethod": "DELETE",
+     "parameters": {
+      "projectId": {
+       "description": "Project ID of the routine to delete",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "datasetId": {
+       "description": "Dataset ID of the routine to delete",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "routineId": {
+       "description": "Routine ID of the routine to delete",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      }
+     },
+     "parameterOrder": [
+      "projectId",
+      "datasetId",
+      "routineId"
+     ],
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/cloud-platform"
+     ],
+     "description": "Deletes the routine specified by routineId from the dataset."
+    },
+    "list": {
+     "id": "bigquery.routines.list",
+     "path": "projects/{+projectId}/datasets/{+datasetId}/routines",
+     "flatPath": "projects/{projectsId}/datasets/{datasetsId}/routines",
+     "httpMethod": "GET",
+     "parameters": {
+      "projectId": {
+       "description": "Project ID of the routines to list",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "datasetId": {
+       "description": "Dataset ID of the routines to list",
+       "location": "path",
+       "required": true,
+       "pattern": "^[^/]+$",
+       "type": "string"
+      },
+      "maxResults": {
+       "description": "The maximum number of results to return in a single response page.\nLeverage the page tokens to iterate through the entire collection.",
+       "location": "query",
+       "type": "integer",
+       "format": "uint32"
+      },
+      "pageToken": {
+       "description": "Page token, returned by a previous call, to request the next page of\nresults",
+       "location": "query",
+       "type": "string"
+      }
+     },
+     "parameterOrder": [
+      "projectId",
+      "datasetId"
+     ],
+     "response": {
+      "$ref": "ListRoutinesResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only"
+     ],
+     "description": "Lists all routines in the specified dataset. Requires the READER dataset\nrole."
     }
    }
   }

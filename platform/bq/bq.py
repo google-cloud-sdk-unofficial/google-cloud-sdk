@@ -27,8 +27,8 @@ import types
 
 # Add to path dependecies if present.
 _THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
-if os.path.isdir(_THIRD_PARTY_DIR):
-  sys.path.insert(0, _THIRD_PARTY_DIR)
+if os.path.isdir(_THIRD_PARTY_DIR) and _THIRD_PARTY_DIR not in sys.path:
+  sys.path.append(_THIRD_PARTY_DIR)
 
 # This strange import below ensures that the correct 'google' is imported.
 # We reload after sys.path is updated, so we know if will find our google
@@ -1532,14 +1532,14 @@ def _CreateExternalTableDefinition(source_format,
     if external_table_def['sourceFormat'] == 'CSV':
       if autodetect:
         external_table_def['autodetect'] = True
-        external_table_def['csvOptions'] = yaml.load("""
+        external_table_def['csvOptions'] = yaml.safe_load("""
             {
                 "quote": '"',
                 "encoding": "UTF-8"
             }
         """)
       else:
-        external_table_def['csvOptions'] = yaml.load("""
+        external_table_def['csvOptions'] = yaml.safe_load("""
             {
                 "allowJaggedRows": false,
                 "fieldDelimiter": ",",
@@ -1556,7 +1556,7 @@ def _CreateExternalTableDefinition(source_format,
       if autodetect is None or autodetect:
         external_table_def['autodetect'] = True
       else:
-        external_table_def['googleSheetsOptions'] = yaml.load("""
+        external_table_def['googleSheetsOptions'] = yaml.safe_load("""
             {
                 "skipLeadingRows": 0
             }
@@ -1858,6 +1858,24 @@ class _Query(BigqueryCmd):
         None,
         'Cloud KMS key for encryption of the destination table data.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'schedule',
+        None,
+        'Scheduled query schedule. If non-empty, this query requests could '
+        'create a scheduled query understand the customer project. See '
+        'https://cloud.google.com/appengine/docs/flexible/python/scheduling-jobs-with-cron-yaml#the_schedule_format '  # pylint: disable=line-too-long
+        'for the schedule format',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'display_name',
+        '',
+        'Display name for the created scheduled query configuration.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'target_dataset',
+        None,
+        'Target dataset used to create scheduled query.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, *args):
@@ -1931,6 +1949,66 @@ class _Query(BigqueryCmd):
       kwds['destination_encryption_configuration'] = {
           'kmsKeyName': self.destination_kms_key
       }
+
+    if self.schedule:
+      transfer_client = client.GetTransferV1ApiClient()
+      reference = 'projects/' + (client.GetProjectReference().projectId)
+      scheduled_queries_reference = (reference + '/dataSources/scheduled_query')
+      try:
+        transfer_client.projects().dataSources().get(
+            name=scheduled_queries_reference).execute()
+      except:
+        raise bigquery_client.BigqueryAccessDeniedError(
+            'Scheduled query is not enable on the project, please enable at '
+            'https://console.cloud.google.com/bigquery/scheduled-queries',
+            {'reason': 'notFound'}, [])
+      if self.use_legacy_sql is None or self.use_legacy_sql:
+        raise app.UsageError(
+            'Scheduled query could only be created with GoogleSQL query. '
+            'Please retry with GoogleSQL and set --use_legacy_sql flag to true.'
+        )
+      destination_table = ''
+      target_dataset = self.target_dataset
+      if self.destination_table:
+        target_dataset = client.GetTableReference(
+            self.destination_table).GetDatasetReference().datasetId
+        destination_table = client.GetTableReference(
+            self.destination_table).tableId
+      if not target_dataset:
+        raise app.UsageError(
+            'target_dataset is required to create a scheduled query, you could '
+            'set the target_dataset with --target_dataset flag or '
+            '--destination_table flag.')
+      credentials = transfer_client.projects().dataSources().checkValidCreds(
+          name=scheduled_queries_reference, body={}).execute()
+      authorization_code = ''
+      if not credentials:
+        authorization_code = RetrieveAuthorizationCode(reference,
+                                                       'scheduled_query',
+                                                       transfer_client)
+      schedule_args = bigquery_client.TransferScheduleArgs(
+          schedule=self.schedule)
+      write_disposition = ('WRITE_APPEND' if self.append_table else
+                           'WRITE_TRUNCATE' if self.replace else '')
+      partitioning_field = (
+          self.time_partitioning_field if self.time_partitioning_field else '')
+      params = {
+          'query': query,
+          'destination_table_name_template': destination_table,
+          'write_disposition': write_disposition,
+          'partitioning_field': partitioning_field,
+      }
+      transfer_name = client.CreateTransferConfig(
+          reference=reference,
+          data_source='scheduled_query',
+          target_dataset=target_dataset,
+          display_name=self.display_name,
+          params=json.dumps(params),
+          authorization_code=authorization_code,
+          schedule_args=schedule_args)
+      print('Transfer configuration \'%s\' successfully created.' %
+            transfer_name)
+      return
 
     if self.rpc:
       if self.allow_large_results:
@@ -2011,7 +2089,7 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
   if os.path.isfile(file_path_or_simple_spec):
     try:
       with open(file_path_or_simple_spec) as external_config_file:
-        return yaml.load(external_config_file)
+        return yaml.safe_load(external_config_file)
     except ValueError, e:
       raise app.UsageError(
           ('Error decoding JSON external table definition from '
@@ -2542,6 +2620,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
               reference, self.max_results, self.page_token)
         if 'reservationGrants' in response:
           results = response['reservationGrants']
+        else:
+          print 'No reservation grants found.'
         if 'nextPageToken' in response:
           _PrintPageToken(response)
       except BaseException as e:
@@ -2577,8 +2657,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         except BaseException as e:
           if 'was not found' not in e.message and (
               'is disabled' not in e.message):
-            raise bigquery_client.BigqueryError(
-                "Failed to list reservations '%s': %s" % (identifier, e))
+            print "Failed to list BI reservations '%s': %s" % (identifier, e)
 
         try:
           response = client.ListReservations(
@@ -2858,6 +2937,8 @@ class _Delete(BigqueryCmd):
            client.TableExists(reference)) or
           (isinstance(reference, ModelReference) and
            client.ModelExists(reference)) or
+          (isinstance(reference, RoutineReference) and
+           client.RoutineExists(reference)) or
           (isinstance(reference, TransferConfigReference) and
            client.TransferExists(reference))):
         if 'y' != _PromptYN('rm: remove %r? (y/N) ' % (reference,)):
@@ -3393,7 +3474,7 @@ class _Make(BigqueryCmd):
           --schedule_end_time={schedule_end_time}
       bq mk --transfer_run --start_time={start_time} --end_time={end_time}
           projects/p/locations/l/transferConfigs/c
-      bq mk ---reservation_grant -project_id=proj --location=us
+      bq mk --reservation_grant --project_id=proj --location=us
           --reservation_id=project:us.dev --job_type=QUERY
       bq mk --connection --connection_type='CLOUD_SQL'
         --properties='{"instanceId" : "instance",
@@ -4009,9 +4090,13 @@ class _Update(BigqueryCmd):
         # When updating, move the schema out of the external_data_config.
         # If schema is set explicitly on this update, prefer it over the
         # external_data_config schema.
-        if schema is None:
-          schema = external_data_config['schema']['fields']
-        del external_data_config['schema']
+        # Note: binary formats and text formats with autodetect enabled may not
+        # have a schema set.
+        if 'schema' in external_data_config:
+          if schema is None:
+            schema = external_data_config['schema']['fields']
+          # Regardless delete schema from the external data config.
+          del external_data_config['schema']
       view_query_arg = self.view or None
       materialized_view_query_arg = self.materialized_view or None
       view_udf_resources = None
@@ -4131,7 +4216,8 @@ def _UpdateDataset(
     default_partition_expiration_ms=None,
     labels_to_set=None,
     label_keys_to_remove=None,
-    etag=None):
+    etag=None,
+    default_kms_key=None):
   """Updates a dataset.
 
   Reads JSON file if specified and loads updated values, before calling bigquery
@@ -4149,6 +4235,8 @@ def _UpdateDataset(
       in this dataset.
     labels_to_set: an optional dict of labels to set on this dataset.
     label_keys_to_remove: an optional list of label keys to remove from this
+      dataset.
+    default_kms_key: an optional CMEK encryption key for all new tables in the
       dataset.
 
   Raises:
@@ -4178,7 +4266,8 @@ def _UpdateDataset(
       default_partition_expiration_ms=default_partition_expiration_ms,
       labels_to_set=labels_to_set,
       label_keys_to_remove=label_keys_to_remove,
-      etag=etag)
+      etag=etag,
+      default_kms_key=default_kms_key)
 
 
 class _Show(BigqueryCmd):
@@ -4322,7 +4411,8 @@ class _Show(BigqueryCmd):
       object_info = {'ServiceAccountID': email}
       reference = EncryptionServiceAccount(serviceAccount='serviceAccount')
     elif self.connection:
-      reference = client.GetConnectionReference(identifier)
+      reference = client.GetConnectionReference(
+          identifier, default_location=FLAGS.location)
       object_info = client.GetConnection(reference)
     else:
       reference = client.GetReference(identifier)

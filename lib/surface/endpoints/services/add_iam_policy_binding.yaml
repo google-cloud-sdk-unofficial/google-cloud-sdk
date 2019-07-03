@@ -4,6 +4,9 @@ help_text:
   description: |
     Add an IAM policy binding to a service.
 
+    Note: The 'roles/servicemanagement.serviceConsumer' role can only be added to a member which is
+    a user, group, or service account.
+
   examples: |
     To add an IAM policy binding for the role of 'roles/servicemanagement.serviceConsumer' for the user 'test-user@gmail.com'
     with service 'my-service', run:
@@ -16,13 +19,6 @@ help_text:
 
       $ {command} test-proj1@example.domain.com \
           --member='serviceAccount:test-proj1@example.domain.com' \
-          --role='roles/servicemanagement.serviceConsumer'
-
-    To add an IAM policy binding for the role of
-    'roles/servicemanagement.serviceConsumer' for all authenticated users on a
-    service with identifier 'my-service', run:
-
-      $ {command} my-service --member='allAuthenticatedUsers' \
           --role='roles/servicemanagement.serviceConsumer'
 
     See https://cloud.google.com/iam/docs/managing-policies for details of
@@ -44,6 +40,9 @@ ALPHA:
       Add an IAM policy binding to the IAM policy of a service. One binding consists of a member,
       a role, and an optional condition.
 
+      Note: The 'roles/servicemanagement.serviceConsumer' role can only be added to a member which is
+      a user, group, or service account.
+
     examples: |
       To add an IAM policy binding for the role of 'roles/servicemanagement.serviceConsumer'
       for the user 'test-user@gmail.com' with service 'my-service', run:
@@ -56,13 +55,6 @@ ALPHA:
 
         $ {command} test-proj1@example.domain.com \
             --member='serviceAccount:test-proj1@example.domain.com' \
-            --role='roles/servicemanagement.serviceConsumer'
-
-      To add an IAM policy binding for the role of
-      'roles/servicemanagement.serviceConsumer' for all authenticated users on a
-      service with identifier 'my-service', run:
-
-        $ {command} my-service --member='allAuthenticatedUsers' \
             --role='roles/servicemanagement.serviceConsumer'
 
       To add an IAM policy binding which expires at the end of the year 2018 for the role of

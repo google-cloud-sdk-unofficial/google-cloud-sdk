@@ -9,18 +9,33 @@
         * The active account does not have permission to access the given
           snapshot.
     examples: |
-      To display all data associated with a snapshot of the name 'my-snapshot' in the default
-      region, run:
+      To display all data associated with a snapshot of the name 'my-snapshot' in the
+      region us-central1:
 
-        $ {command} my-snapshot
+        $ {command} my-snapshot --region=us-central1
 
   arguments:
-    resource:
-      spec: !REF googlecloudsdk.command_lib.filestore.resources:snapshot
+    params:
+    - arg_name: snapshot
+      is_positional: true
       help_text: |
-        Arguments and flags that specify the Cloud Filestore snapshot you want
-        to describe.
+        Arguments and flags that specify the Filestore snapshot you want to
+        create.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: zone
+          hidden: true
+          help_text: |
+            Zone (e.g. us-central1-c) for the local snapshot.
+        - arg_name: region
+          help_text: |
+            Region (e.g. us-central1) for the snapshot.
 
   request:
     api_version: v1p1alpha1
     collection: file.projects.locations.snapshots
+    disable_resource_check: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.snapshots.util:FormatSnapshotAccessRequest

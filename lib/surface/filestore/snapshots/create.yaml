@@ -14,12 +14,6 @@
         $ {command} my-snapshot --instance=my-instance --file-share=my-fs
             --instance-zone=us-central1-c --region=us-central1
 
-      To create a local snapshot with the name 'my-local-snapshot' from an instance called
-      'my-instance' in 'us-central1-c' and the source file share called 'my-fs', run:
-
-        $ {command} my-local-snapshot --instance=my-instance --file-share=my-fs
-            --instance-zone=us-central1-c --local
-
 
   arguments:
     params:
@@ -74,6 +68,7 @@
 
   request:
     api_version: v1p1alpha1
+    display_resource_type: snapshot
     collection: file.projects.locations.snapshots
     # Disable validating that a snapshots resource arg is specified (as we are using the
     # file.projects.locations.snapshots collection). This collection is populated manually.

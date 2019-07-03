@@ -50,7 +50,7 @@ class Update(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(prompt=True),
@@ -58,8 +58,6 @@ class Update(base.Command):
         required=True,
         prefixes=False)
     flags.AddRegionArg(parser)
-    flags.AddPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
     flags.AddCpuFlag(parser)
@@ -74,6 +72,11 @@ class Update(base.Command):
     concept_parsers.ConceptParser([
         resource_args.CLUSTER_PRESENTATION,
         service_presentation]).AddToParser(parser)
+
+  @staticmethod
+  def Args(parser):
+    Update.CommonArgs(parser)
+    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Update configuration information about the service.
@@ -137,7 +140,10 @@ class AlphaUpdate(Update):
 
   @staticmethod
   def Args(parser):
-    Update.Args(parser)
+    Update.CommonArgs(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddAlphaPlatformArg(parser)
+    flags.AddKubeconfigFlags(parser)
+    flags.AddVpcConnectorArg(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

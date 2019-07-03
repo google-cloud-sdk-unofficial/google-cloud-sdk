@@ -39,8 +39,9 @@ args:
     metavar: IP_ADDRESS
     type:  googlecloudsdk.command_lib.dns.util:TargetNameServerType
     help_text: |
-        List of alternative name servers to forward to. Must be a comma
-        separated list of IPv4 addresses.
+      List of alternative name servers to forward to. Must be a comma separated list of IPv4
+      addresses. Non-RFC1918 addresses will forward to the target through the Internet.
+      RFC1918 addresses will forward through the VPC.
 
 request:
   collection: dns.policies

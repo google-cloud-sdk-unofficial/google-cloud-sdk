@@ -60,5 +60,5 @@ class Wait(base.Command):
     Returns:
       Nothing.
     """
-    op = peering.WaitOperation(args.name)
+    op = services_util.WaitOperation(args.name, peering.GetOperation)
     services_util.PrintOperation(op)

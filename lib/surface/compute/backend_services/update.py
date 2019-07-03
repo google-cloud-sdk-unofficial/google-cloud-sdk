@@ -231,11 +231,6 @@ class UpdateHelper(object):
       raise exceptions.InvalidArgumentException(
           '--global',
           'cannot specify failover policies for global backend services.')
-    if (backend_service_ref.Collection() == 'compute.regionBackendServices'
-       ) and (self._support_logging and replacement.logConfig):
-      raise exceptions.InvalidArgumentException(
-          '--region',
-          'cannot specify logging options for regional backend services.')
 
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
       return (

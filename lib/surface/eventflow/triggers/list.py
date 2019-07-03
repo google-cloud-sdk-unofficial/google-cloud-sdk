@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.eventflow import eventflow_operations
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -43,7 +44,7 @@ class List(commands.List):
   }
 
   @classmethod
-  def Args(cls, parser):
+  def CommonArgs(cls, parser):
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
@@ -62,6 +63,11 @@ class List(commands.List):
         subscriber:label=SUBSCRIBER)""".format(
             ready_column=pretty_print.READY_COLUMN))
     parser.display_info.AddUriFunc(cls._GetResourceUri)
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+    flags.AddAlphaPlatformArg(parser)
 
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(args)

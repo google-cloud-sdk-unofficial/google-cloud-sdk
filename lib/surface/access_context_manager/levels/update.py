@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.accesscontextmanager import levels as levels_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.accesscontextmanager import levels
+from googlecloudsdk.command_lib.accesscontextmanager import policies
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -43,6 +44,7 @@ class UpdateLevelsGA(base.UpdateCommand):
     client = levels_api.Client(version=self._API_VERSION)
 
     level_ref = args.CONCEPTS.level.Parse()
+    policies.ValidateAccessPolicyArg(level_ref, args)
 
     mapper = levels.GetCombineFunctionEnumMapper(version=self._API_VERSION)
     combine_function = mapper.GetEnumForChoice(args.combine_function)

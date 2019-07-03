@@ -26,7 +26,7 @@
 
       List all ACTIVE findings that took place on 2019-01-01T01:00:00 GMT time, under organization 123456:
 
-        $ {command} 123456 --filter "state=\"ACTIVE\" AND event_time > 1546304400"
+        $ {command} 123456 --filter "state=\"ACTIVE\" AND event_time > 1546304400000"
 
       List all findings that were ACTIVE as of 2019-01-01T01:00:00 GMT time, under organization 123456:
 

@@ -204,8 +204,14 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls.ReleaseTrack(), supports_force_create=True)
+    _Args(parser,
+          cls.ReleaseTrack(),
+          supports_force_create=True,
+          supports_storage_location=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
+
+  def Run(self, args):
+    return self._Run(args, supports_storage_location=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

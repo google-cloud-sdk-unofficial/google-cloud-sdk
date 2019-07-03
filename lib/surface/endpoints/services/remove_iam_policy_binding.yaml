@@ -4,18 +4,13 @@ help_text:
   description: |
     Remove an IAM policy binding from a service.
 
+    Note: The 'roles/servicemanagement.serviceConsumer' role can only exist on a member which is a
+    user, group, or service account.
   examples: |
     To remove an IAM policy binding for the role of 'roles/servicemanagement.serviceConsumer'
     for the user 'test-user@gmail.com' with service 'my-service', run:
 
       $ {command} my-service --member='user:test-user@gmail.com' --role='roles/servicemanagement.serviceConsumer'
-
-    To remove an IAM policy binding for the role of
-    'roles/servicemanagement.serviceConsumer' from all authenticated users on
-    service 'my-service', run:
-
-      $ {command} my-service --member='allAuthenticatedUsers' \
-          --role='roles/servicemanagement.serviceConsumer'
 
     See https://cloud.google.com/iam/docs/managing-policies for details of
     policy role and member types.
@@ -36,18 +31,14 @@ ALPHA:
       Remove an IAM policy binding from the IAM policy of a service. One binding consists of a member,
       a role, and an optional condition.
 
+      Note: The 'roles/servicemanagement.serviceConsumer' role can only exist on a member which is a
+      user, group, or service account.
+
     examples: |
       To remove an IAM policy binding for the role of 'roles/servicemanagement.serviceConsumer'
       for the user 'test-user@gmail.com' with service 'my-service', run:
 
         $ {command} my-service --member='user:test-user@gmail.com' --role='roles/servicemanagement.serviceConsumer'
-
-      To remove an IAM policy binding for the role of
-      'roles/servicemanagement.serviceConsumer' from all authenticated users on
-      service 'my-service', run:
-
-        $ {command} my-service --member='allAuthenticatedUsers' \
-            --role='roles/servicemanagement.serviceConsumer'
 
       To remove an IAM policy binding which expires at the end of the year 2018 for the role of
       'roles/servicemanagement.quotaAdmin' and the user 'test-user@gmail.com' with service 'my-service', run:

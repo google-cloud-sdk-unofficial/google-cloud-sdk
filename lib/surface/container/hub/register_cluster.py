@@ -125,7 +125,10 @@ class RegisterCluster(base.CreateCommand):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
 
     # This incidentally verifies that the kubeconfig and context args are valid.
-    uuid = hub_util.GetClusterUUID(args)
+    kube_client = hub_util.KubernetesClient(args)
+    uuid = hub_util.GetClusterUUID(kube_client)
+
+    self._VerifyClusterExclusivity(kube_client, project, args.context, uuid)
 
     # Read the service account files provided in the arguments early, in order
     # to catch invalid files before performing mutating operations.
@@ -151,11 +154,8 @@ class RegisterCluster(base.CreateCommand):
     # Attempt to create a membership.
     already_exists = False
     try:
+      hub_util.ApplyMembershipResources(kube_client, project)
       obj = hub_util.CreateMembership(project, uuid, args.CLUSTER_NAME)
-    except apitools_exceptions.HttpNotFoundError as e:
-      raise exceptions.Error(
-          'Could not access Memberships API. Is your project whitelisted for '
-          'API access? Underlying error: {}'.format(e))
     except apitools_exceptions.HttpConflictError as e:
       # If the error is not due to the object already existing, re-raise.
       error = core_api_exceptions.HttpErrorPayload(e)
@@ -171,13 +171,12 @@ class RegisterCluster(base.CreateCommand):
         # cluster, or if the user is upgrading and has passed a different
         # cluster name. Treat this as an error: even in the upgrade case,
         # this is useful to prevent the user from upgrading the wrong cluster.
-        prefix = self.ReleaseTrack().prefix
         raise exceptions.Error(
             'There is an existing membership, [{}], that conflicts with [{}]. '
             'Please delete it before continuing:\n\n'
             '  gcloud {}container memberships delete {}'.format(
                 obj.description, args.CLUSTER_NAME,
-                prefix + ' ' if prefix else '', name))
+                hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()), name))
 
       # The membership exists and has the same description.
       already_exists = True
@@ -203,5 +202,62 @@ class RegisterCluster(base.CreateCommand):
           args, service_account_key_data, docker_credential_data, upgrade=False)
     except:
       hub_util.DeleteMembership(name)
+      hub_util.DeleteMembershipResources(kube_client)
       raise
     return obj
+
+  def _VerifyClusterExclusivity(self, kube_client, project, context, uuid):
+    """Verifies that the cluster can be registered to the project.
+
+    The ensures cluster exclusivity constraints are not violated as well as
+    ensuring the user is authorized to register the cluster to the project.
+
+    Args:
+      kube_client: A KubernetesClient
+      project: A project ID the user is attempting to register the cluster with.
+      context: The kubernetes cluster context.
+      uuid: The UUID of the kubernetes cluster.
+
+    Raises:
+      exceptions.Error: If exclusivity constraints are violated or the user is
+        not authorized to register to the cluster.
+    """
+    authorized_projects = hub_util.UserAccessibleProjectIDSet()
+    registered_project = hub_util.GetMembershipCROwnerID(kube_client)
+
+    if registered_project:
+      if registered_project not in authorized_projects:
+        raise exceptions.Error(
+            'The cluster is already registered to [{}], which you are not '
+            'authorized to access.'.format(registered_project))
+      elif registered_project != project:
+        raise exceptions.Error(
+            'This cluster is already registered to [{}]. '
+            'Please unregister this cluster before continuing:\n\n'
+            '  gcloud {}container hub unregister-cluster --project {} --context {}'
+            .format(registered_project,
+                    hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
+                    registered_project, context))
+
+    if project not in authorized_projects:
+      raise exceptions.Error(
+          'The project you are attempting to register with [{}] either '
+          'doesn\'t exist or you are not authorized to access it.'.format(
+              project))
+
+    try:
+      registered_membership_project = hub_util.ProjectForClusterUUID(
+          uuid, [project, registered_project])
+    except apitools_exceptions.HttpNotFoundError as e:
+      raise exceptions.Error(
+          'Could not access Memberships API. Is your project whitelisted for '
+          'API access? Underlying error: {}'.format(e))
+
+    if registered_membership_project:
+      raise exceptions.Error(
+          'This cluster is already registered to [{}]. '
+          'Please unregister this cluster before continuing:\n\n'
+          '  gcloud {}container hub unregister-cluster --project {} --context {}'
+          .format(registered_membership_project,
+                  hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
+                  registered_membership_project, context))

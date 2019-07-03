@@ -6,6 +6,8 @@
 
   request:
     collection: accesscontextmanager.accessPolicies.accessLevels
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
     api_version: v1
     BETA:
       api_version: v1beta

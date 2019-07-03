@@ -32,7 +32,8 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(parser, support_global_access, support_l7_internal_load_balancing):
+def _Args(parser, support_global_access, support_l7_internal_load_balancing,
+          support_mirroring_collector):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
@@ -46,6 +47,9 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing):
 
   if support_global_access:
     flags.AddAllowGlobalAccess(parser)
+
+  if support_mirroring_collector:
+    flags.AddIsMirroringCollector(parser)
 
   parser.add_argument(
       '--service-label',
@@ -66,21 +70,25 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing):
 
 
 class CreateHelper(object):
-  """Helper class to create a fowarding rule."""
+  """Helper class to create a forwarding rule."""
 
   FORWARDING_RULE_ARG = None
 
   def __init__(self, holder, support_global_access,
-               support_l7_internal_load_balancing):
+               support_l7_internal_load_balancing,
+               support_mirroring_collector):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
+    self._support_mirroring_collector = support_mirroring_collector
 
   @classmethod
   def Args(cls, parser, support_global_access,
-           support_l7_internal_load_balancing):
+           support_l7_internal_load_balancing,
+           support_mirroring_collector):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
-                                    support_l7_internal_load_balancing)
+                                    support_l7_internal_load_balancing,
+                                    support_mirroring_collector)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -247,6 +255,9 @@ class CreateHelper(object):
     if self._support_global_access and args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
 
+    if hasattr(args, 'is_mirroring_collector'):
+      forwarding_rule.isMirroringCollector = args.is_mirroring_collector
+
     request = client.messages.ComputeForwardingRulesInsertRequest(
         forwardingRule=forwarding_rule,
         project=forwarding_rule_ref.project,
@@ -285,16 +296,19 @@ class Create(base.CreateCommand):
 
   _support_global_access = False
   _support_l7_internal_load_balancing = False
+  _support_mirroring_collector = False
 
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(parser, cls._support_global_access,
-                      cls._support_l7_internal_load_balancing)
+                      cls._support_l7_internal_load_balancing,
+                      cls._support_mirroring_collector)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(holder, self._support_global_access,
-                        self._support_l7_internal_load_balancing).Run(args)
+                        self._support_l7_internal_load_balancing,
+                        self._support_mirroring_collector).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -302,6 +316,7 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
+  _support_mirroring_collector = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -309,6 +324,7 @@ class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
+  _support_mirroring_collector = True
 
 
 Create.detailed_help = {

@@ -148,10 +148,8 @@ def _Modify(client, args, existing_check):
   return new_health_check
 
 
-def _Run(args, holder, include_l7_internal_load_balancing):
-  """Issues the requests necessary for updating the health check."""
-  client = holder.client
-
+def _ValidateArgs(args):
+  """Validates given args and raises exception if any args are invalid."""
   health_checks_utils.CheckProtocolAgnosticArgs(args)
 
   args_unset = not (args.port or args.check_interval or args.timeout or
@@ -160,6 +158,13 @@ def _Run(args, holder, include_l7_internal_load_balancing):
   if (args.description is None and args.request is None and
       args.response is None and args.port_name is None and args_unset):
     raise exceptions.ToolException('At least one property must be modified.')
+
+
+def _Run(args, holder, include_l7_internal_load_balancing):
+  """Issues the requests necessary for updating the health check."""
+  client = holder.client
+
+  _ValidateArgs(args)
 
   health_check_arg = flags.HealthCheckArgument(
       'TCP',

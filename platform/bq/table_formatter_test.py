@@ -17,12 +17,15 @@
 
 """Tests for table_formatter.py."""
 
-__author__ = 'craigcitro@google.com (Craig Citro)'
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-import StringIO
 
-from google.apputils import googletest
+import six
+
 import table_formatter
+from google.apputils import googletest
 
 
 class TableFormatterTest(googletest.TestCase):
@@ -30,8 +33,9 @@ class TableFormatterTest(googletest.TestCase):
   def setUp(self):
     super(TableFormatterTest, self).setUp()
     if type(self) != TableFormatterTest:
-      self.failUnless(hasattr(self, 'format_class'),
-                      'Subclasses must provide self.format_class')
+      self.assertTrue(
+          hasattr(self, 'format_class'),
+          'Subclasses must provide self.format_class')
       self.formatter = self.format_class()
       self.formatter.AddColumns(('foo', 'longer header'),
                                 kwdss=[{}, {'align': 'r'}])
@@ -39,8 +43,8 @@ class TableFormatterTest(googletest.TestCase):
       self.formatter.AddRow(['abc', 123])
 
   def testStr(self):
-    self.failIf(hasattr(self, 'format_class'),
-                'Subclasses must override testStr')
+    self.assertFalse(
+        hasattr(self, 'format_class'), 'Subclasses must override testStr')
 
   def testUnicodeRow(self):
     row = [11, 'chinese', u'你不能教老狗新把戏']
@@ -56,11 +60,12 @@ class TableFormatterTest(googletest.TestCase):
       formatter.AddColumns(('message',))
       formatter.AddRow(row[2:])
       formatter.Print()
-      self.assertTrue(all(ord(c) <= 127 for c in str(formatter)))
-      self.assertTrue(any(ord(c) > 127 for c in unicode(formatter)))
+      if six.PY2:
+        self.assertTrue(all(ord(c) <= 127 for c in str(formatter)))
+      self.assertTrue(any(ord(c) > 127 for c in six.text_type(formatter)))
 
   def wrap_print(self, formatter):
-    stringio = StringIO.StringIO()
+    stringio = six.StringIO()
     formatter.Print(stringio)
     printed = stringio.getvalue().rstrip('\n')
     stringio.close()
@@ -83,43 +88,38 @@ class PrettyFormatterTest(TableFormatterTest):
         '| a   |             3 |',
         '| abc |           123 |',
         '+-----+---------------+'))
-    self.assertEquals(table_repr, str(self.formatter))
+    self.assertEqual(table_repr, str(self.formatter))
 
   def testCenteredPadding(self):
-    self.assertEquals((1, 1), self.PF.CenteredPadding(8, 6))
-    self.assertEquals((2, 1), self.PF.CenteredPadding(8, 5, left_justify=False))
-    self.assertEquals((1, 2), self.PF.CenteredPadding(8, 5))
+    self.assertEqual((1, 1), self.PF.CenteredPadding(8, 6))
+    self.assertEqual((2, 1), self.PF.CenteredPadding(8, 5, left_justify=False))
+    self.assertEqual((1, 2), self.PF.CenteredPadding(8, 5))
     self.assertRaises(table_formatter.FormatterException,
                       self.PF.CenteredPadding, 1, 5)
 
   def testAbbreviate(self):
-    self.assertEquals('', self.PF.Abbreviate('abc', 0))
-    self.assertEquals('.', self.PF.Abbreviate('abc', 1))
-    self.assertEquals('ab...', self.PF.Abbreviate('abcdef', 5))
-    self.assertEquals('abcdef', self.PF.Abbreviate('abcdef', 6))
-    self.assertEquals('abcdef', self.PF.Abbreviate('abcdef', 7))
+    self.assertEqual('', self.PF.Abbreviate('abc', 0))
+    self.assertEqual('.', self.PF.Abbreviate('abc', 1))
+    self.assertEqual('ab...', self.PF.Abbreviate('abcdef', 5))
+    self.assertEqual('abcdef', self.PF.Abbreviate('abcdef', 6))
+    self.assertEqual('abcdef', self.PF.Abbreviate('abcdef', 7))
 
   def testFormatCell(self):
     entry = 'abc'
-    self.assertEquals(
-        [' abc '], list(self.PF.FormatCell(entry, 3)))
-    self.assertEquals(
-        [' abc   '], list(self.PF.FormatCell(entry, 5, align='l')))
-    self.assertEquals(
-        ['  abc  '], list(self.PF.FormatCell(entry, 5)))
-    self.assertEquals(
-        ['   abc '], list(self.PF.FormatCell(entry, 5, align='r')))
-    self.assertEquals(
-        ['  abc   '], list(self.PF.FormatCell(entry, 6)))
+    self.assertEqual([' abc '], list(self.PF.FormatCell(entry, 3)))
+    self.assertEqual([' abc   '], list(self.PF.FormatCell(entry, 5, align='l')))
+    self.assertEqual(['  abc  '], list(self.PF.FormatCell(entry, 5)))
+    self.assertEqual(['   abc '], list(self.PF.FormatCell(entry, 5, align='r')))
+    self.assertEqual(['  abc   '], list(self.PF.FormatCell(entry, 6)))
 
     lines = [
         '  abc   ',
         '        ',
         '        ',
         ]
-    self.assertEquals(lines, list(self.PF.FormatCell(entry, 6, cell_height=3)))
+    self.assertEqual(lines, list(self.PF.FormatCell(entry, 6, cell_height=3)))
     lines.append(lines[-1])
-    self.assertEquals(lines, list(self.PF.FormatCell(entry, 6, cell_height=4)))
+    self.assertEqual(lines, list(self.PF.FormatCell(entry, 6, cell_height=4)))
 
     lines = [
         '        ',
@@ -127,8 +127,11 @@ class PrettyFormatterTest(TableFormatterTest):
         ' ab     ',
         '        ',
         ]
-    self.assertEquals(lines, list(self.PF.FormatCell(
-        'abcdefghi\nab', 6, cell_height=4, align='l', valign='c')))
+    self.assertEqual(
+        lines,
+        list(
+            self.PF.FormatCell(
+                'abcdefghi\nab', 6, cell_height=4, align='l', valign='c')))
 
     lines = [
         ' abc... ',
@@ -136,8 +139,9 @@ class PrettyFormatterTest(TableFormatterTest):
         '        ',
         '        ',
         ]
-    self.assertEquals(lines, list(self.PF.FormatCell(
-        'abcdefghi\nab', 6, cell_height=4, align='l')))
+    self.assertEqual(
+        lines,
+        list(self.PF.FormatCell('abcdefghi\nab', 6, cell_height=4, align='l')))
 
     lines = [
         '        ',
@@ -145,8 +149,11 @@ class PrettyFormatterTest(TableFormatterTest):
         ' abc... ',
         ' ab     ',
         ]
-    self.assertEquals(lines, list(self.PF.FormatCell(
-        'abcdefghi\nab', 6, cell_height=4, align='l', valign='b')))
+    self.assertEqual(
+        lines,
+        list(
+            self.PF.FormatCell(
+                'abcdefghi\nab', 6, cell_height=4, align='l', valign='b')))
 
     self.assertRaises(table_formatter.FormatterException,
                       self.PF.FormatCell, 'ab\na', 5)
@@ -155,69 +162,62 @@ class PrettyFormatterTest(TableFormatterTest):
     formatter = table_formatter.PrettyFormatter()
     formatter.AddColumns(('one', 'two'))
     formatter.AddRow(['a', 'b'])
-    self.assertEquals(
-        ['| a   | b   |'],
-        list(formatter.FormatRow(formatter.rows[0], 1)))
+    self.assertEqual(['| a   | b   |'],
+                     list(formatter.FormatRow(formatter.rows[0], 1)))
     formatter.AddRow(['a', 'b\nc'])
-    self.assertEquals(
-        ['| a   | b   |',
-         '|     | c   |',
-        ],
-        list(formatter.FormatRow(formatter.rows[1], 2)))
+    self.assertEqual([
+        '| a   | b   |',
+        '|     | c   |',
+    ], list(formatter.FormatRow(formatter.rows[1], 2)))
     self.assertRaises(table_formatter.FormatterException,
                       formatter.FormatRow, formatter.rows[1], 1)
     formatter.AddRow(['a', '\nbbbbbb\nc'])
-    self.assertEquals(
-        ['| a   |        |',
-         '|     | bbbbbb |',
-         '|     | c      |',
-        ],
-        list(formatter.FormatRow(formatter.rows[2], 3)))
-    self.assertEquals(
-        ['| a   |      |',
-         '|     | b... |',
-         '|     | c    |',
-        ],
-        list(formatter.FormatRow(formatter.rows[2], 3, column_widths=[3, 4])))
+    self.assertEqual([
+        '| a   |        |',
+        '|     | bbbbbb |',
+        '|     | c      |',
+    ], list(formatter.FormatRow(formatter.rows[2], 3)))
+    self.assertEqual([
+        '| a   |      |',
+        '|     | b... |',
+        '|     | c    |',
+    ], list(formatter.FormatRow(formatter.rows[2], 3, column_widths=[3, 4])))
 
   def testHeaderLines(self):
     formatter = table_formatter.PrettyFormatter()
     formatter.AddColumns(('a', 'b'))
     formatter.AddRow(['really long string', ''])
-    self.assertEquals(
-        ['|         a          | b |'],
-        list(formatter.HeaderLines()))
+    self.assertEqual(['|         a          | b |'],
+                     list(formatter.HeaderLines()))
 
   def testFormatHeader(self):
     formatter = table_formatter.PrettyFormatter()
     formatter.AddColumns(('a', 'bcd\nefgh'))
     formatter.AddRow(['really long string', ''])
-    self.assertEquals(
-        ['+--------------------+------+',
-         '|         a          | bcd  |',
-         '|                    | efgh |',
-         '+--------------------+------+'],
-        list(formatter.FormatHeader()))
+    self.assertEqual([
+        '+--------------------+------+', '|         a          | bcd  |',
+        '|                    | efgh |', '+--------------------+------+'
+    ], list(formatter.FormatHeader()))
 
   def testAddRow(self):
     formatter = table_formatter.PrettyFormatter()
     formatter.AddColumns(('a', 'b'))
     formatter.AddRow(['foo', 'x'])
-    self.assertEquals(1, len(formatter))
-    self.assertEquals([3, 1], formatter.column_widths)
-    self.assertEquals([1], formatter.row_heights)
+    self.assertLen(formatter, 1)
+    self.assertEqual([3, 1], formatter.column_widths)
+    self.assertEqual([1], formatter.row_heights)
     formatter.AddRow(['foo\nbar', 'xxxxxxx'])
-    self.assertEquals(2, len(formatter))
-    self.assertEquals([3, 7], formatter.column_widths)
-    self.assertEquals([1, 2], formatter.row_heights)
+    self.assertLen(formatter, 2)
+    self.assertEqual([3, 7], formatter.column_widths)
+    self.assertEqual([1, 2], formatter.row_heights)
     # Check that we can add non-string entries.
     formatter.AddRow([3, {'a': 5}])
 
   def testAddColumn(self):
     formatter = table_formatter.PrettyFormatter()
     formatter.AddColumn('abc\ndef', align='r')
-    self.assertEquals([3], formatter.column_widths)
-    self.assertEquals(2, formatter.header_height)
+    self.assertEqual([3], formatter.column_widths)
+    self.assertEqual(2, formatter.header_height)
     self.assertRaises(table_formatter.FormatterException,
                       formatter.AddColumn, 'bad', align='d')
     formatter.AddRow([3])
@@ -259,17 +259,16 @@ class SparsePrettyFormatterTest(TableFormatterTest):
         ' ----- --------------- ',
         '  a                 3  ',
         '  abc             123  '))
-    self.assertEquals(table_repr, str(self.formatter))
+    self.assertEqual(table_repr, str(self.formatter))
 
   def testFormatHeader(self):
     formatter = table_formatter.SparsePrettyFormatter()
     formatter.AddColumns(('a', 'bcd\nefgh'))
     formatter.AddRow(['really long string', ''])
-    self.assertEquals(
-        ['          a            bcd   ',
-         '                       efgh  ',
-         ' -------------------- ------ '],
-        list(formatter.FormatHeader()))
+    self.assertEqual([
+        '          a            bcd   ', '                       efgh  ',
+        ' -------------------- ------ '
+    ], list(formatter.FormatHeader()))
 
   def testPrintEmptyTable(self):
     formatter = table_formatter.SparsePrettyFormatter(
@@ -311,7 +310,7 @@ class PrettyJsonFormatterTest(TableFormatterTest):
         '    "longer header": 123',
         '  }',
         ']'))
-    self.assertEquals(table_repr, str(self.formatter))
+    self.assertEqual(table_repr, str(self.formatter))
 
   def testEmptyStr(self):
     formatter = self.format_class()
@@ -327,9 +326,9 @@ class JsonFormatterTest(TableFormatterTest):
     super(JsonFormatterTest, self).setUp()
 
   def testStr(self):
-    table_repr = ('[{"longer header":3,"foo":"a"},'
-                  '{"longer header":123,"foo":"abc"}]')
-    self.assertEquals(table_repr, str(self.formatter))
+    table_repr = ('[{"foo":"a","longer header":3},'
+                  '{"foo":"abc","longer header":123}]')
+    self.assertEqual(table_repr, str(self.formatter))
 
   def testEmptyStr(self):
     formatter = self.format_class()
@@ -349,7 +348,7 @@ class CsvFormatterTest(TableFormatterTest):
         'foo,longer header',
         'a,3',
         'abc,123'))
-    self.assertEquals(table_repr, str(self.formatter))
+    self.assertEqual(table_repr, str(self.formatter))
 
 
 class NullFormatterTest(TableFormatterTest):
@@ -359,10 +358,10 @@ class NullFormatterTest(TableFormatterTest):
     super(NullFormatterTest, self).setUp()
 
   def testStr(self):
-    self.assertEquals('', str(self.formatter))
+    self.assertEqual('', str(self.formatter))
 
   def testUnicodeRow(self):
-    self.assertEquals('', unicode(self.formatter))
+    self.assertEqual('', six.text_type(self.formatter))
 
 
 if __name__ == '__main__':

@@ -8,17 +8,23 @@
     api_version: v1
     collection: accesscontextmanager.accessPolicies.servicePerimeters
     modify_request_hooks:
+    - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
     - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevelsGA
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=servicePerimeter.name
     ALPHA:
       api_version: v1beta
       modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
       - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddImplicitUnrestrictedServiceWildcard
       - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevelsBeta
+      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddIngressServiceRestrictionBeta
+      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddVpcServiceRestrictionBeta
+      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddBridgeServiceRestrictionBeta
       - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=servicePerimeter.name
     BETA:
       api_version: v1beta
       modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
       - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddImplicitUnrestrictedServiceWildcard
       - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevelsBeta
       - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=servicePerimeter.name
@@ -85,3 +91,58 @@
           it also belongs to a regular service perimeter). Both restricted and
           unrestricted service lists, as well as access level lists,
           must be empty.
+
+    - group:
+        release_tracks: [ALPHA]
+        params:
+        - api_field: servicePerimeter.status.vpcServiceRestriction.allowedServices
+          arg_name: vpc-allowed-services
+          metavar: VPC_SERVICE
+          required: false
+          help_text: |
+            Comma-separated list of APIs accessible from within the Service
+            Perimeter. Requires vpc-service-restriction be enabled.
+        - api_field: servicePerimeter.status.vpcServiceRestriction.enableRestriction
+          arg_name: enable-vpc-service-restriction
+          required: false
+          type: bool
+          help_text: |
+            Whether to restrict API calls within the perimeter to those in the
+            vpc-allowed-services list.
+
+    - group:
+        release_tracks: [ALPHA]
+        params:
+        - api_field: servicePerimeter.status.ingressServiceRestriction.allowedServices
+          arg_name: ingress-allowed-services
+          metavar: INGRESS_SERVICE
+          required: false
+          help_text: |
+            Comma-separated list of APIs allowed to make cross Service Perimeter
+            boundaries with an appropriate Access Level.
+            Requires ingress-service-restriction be enabled.
+        - api_field: servicePerimeter.status.ingressServiceRestriction.enableRestriction
+          arg_name: enable-ingress-service-restriction
+          required: false
+          type: bool
+          help_text: |
+            Whether to restrict the set of APIs which may cross the Service Perimeter
+            boundary to those in the ingress-allowed-services list.
+
+    - group:
+        release_tracks: [ALPHA]
+        params:
+        - api_field: servicePerimeter.status.bridgeServiceRestriction.allowedServices
+          arg_name: bridge-allowed-services
+          metavar: BRIDGE_SERVICE
+          required: false
+          help_text: |
+            Comma-separated list of APIs which can use this Bridge Service Perimeter for access.
+            Requires bridge-service-restriction be enabled.
+        - api_field: servicePerimeter.status.bridgeServiceRestriction.enableRestriction
+          arg_name: enable-bridge-service-restriction
+          required: false
+          type: bool
+          help_text: |
+            Whether to restrict API calls which can use the Bridge Service Perimeter
+            to those in the bridge-allowed-services list.

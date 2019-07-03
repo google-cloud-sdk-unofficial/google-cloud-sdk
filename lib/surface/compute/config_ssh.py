@@ -335,7 +335,7 @@ class ConfigSSH(base.Command):
         raise MultipleComputeSectionsError(ssh_config_file)
     else:
       ssh_helper.EnsureSSHKeyIsInProject(
-          client, ssh.GetDefaultSshUsername(warn_on_account_user=True))
+          client, ssh.GetDefaultSshUsername(warn_on_account_user=True), None)
       instances = list(self.GetInstances(client))
       if instances:
         compute_section = _BuildComputeSection(
