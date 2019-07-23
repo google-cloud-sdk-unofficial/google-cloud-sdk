@@ -45,6 +45,7 @@ from gslib.plurality_checkable_iterator import PluralityCheckableIterator
 from gslib.storage_url import StorageUrlFromString
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
 from gslib.utils.cloud_api_helper import GetCloudApiInstance
+from gslib.utils.constants import IAM_POLICY_VERSION
 from gslib.utils.constants import NO_MAX
 from gslib.utils.iam_helper import BindingStringToTuple
 from gslib.utils.iam_helper import BindingsTuple
@@ -265,9 +266,7 @@ class IamCommand(Command):
       gs_api_support=[ApiSelector.JSON],
       gs_default_api=ApiSelector.JSON,
       argparse_arguments={
-          'get': [
-              CommandArgument.MakeNCloudURLsArgument(1),
-          ],
+          'get': [CommandArgument.MakeNCloudURLsArgument(1),],
           'set': [
               CommandArgument.MakeNFileURLsArgument(1),
               CommandArgument.MakeZeroOrMoreCloudURLsArgument(),
@@ -613,7 +612,11 @@ class IamCommand(Command):
     if not force_etag:
       etag = policy.get('etag', '')
 
-    policy_json = json.dumps({'bindings': bindings, 'etag': etag})
+    policy_json = json.dumps({
+        'bindings': bindings,
+        'etag': etag,
+        'version': IAM_POLICY_VERSION
+    })
     try:
       policy = protojson.decode_message(apitools_messages.Policy, policy_json)
     except DecodeError:

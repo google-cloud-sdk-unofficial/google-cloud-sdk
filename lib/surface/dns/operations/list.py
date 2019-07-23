@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import itertools
 from googlecloudsdk.api_lib.dns import operations
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 
@@ -63,11 +64,11 @@ class ListBeta(base.ListCommand):
 
   To see the list of all operations for two managed-zones, run:
 
-    $ {command} --zones zone1,zone2
+    $ {command} --zones=zone1,zone2
 
   To see the last 5 operations for two managed-zones, run:
 
-    $ {command} --zones zone1,zone2 --sort-by ~start_time --limit 5
+    $ {command} --zones=zone1,zone2 --sort-by=~start_time --limit=5
   """
 
   @staticmethod
@@ -75,7 +76,8 @@ class ListBeta(base.ListCommand):
     _CommonArgs(parser)
 
   def Run(self, args):
-    operations_client = operations.Client.FromApiVersion('v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    operations_client = operations.Client.FromApiVersion(api_version)
     return _List(operations_client, args)
 
 
@@ -90,11 +92,11 @@ class List(base.ListCommand):
 
   To see the list of all operations for two managed-zones, run:
 
-    $ {command} --zones zone1,zone2
+    $ {command} --zones=zone1,zone2
 
   To see the last 5 operations for two managed-zones, run:
 
-    $ {command} --zones zone1,zone2 --sort-by ~start_time --limit 5
+    $ {command} --zones=zone1,zone2 --sort-by=~start_time --limit=5
   """
 
   @staticmethod
@@ -104,3 +106,22 @@ class List(base.ListCommand):
   def Run(self, args):
     operations_client = operations.Client.FromApiVersion('v1')
     return _List(operations_client, args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List Cloud DNS operations.
+
+  This command displays Cloud DNS operations for one or more Cloud DNS
+  managed-zones (see `$ gcloud dns managed-zones --help`).
+
+  ## EXAMPLES
+
+  To see the list of all operations for two managed-zones, run:
+
+    $ {command} --zones=zone1,zone2
+
+  To see the last 5 operations for two managed-zones, run:
+
+    $ {command} --zones=zone1,zone2 --sort-by=~start_time --limit=5
+  """

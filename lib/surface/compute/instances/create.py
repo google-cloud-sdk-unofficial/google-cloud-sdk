@@ -62,9 +62,9 @@ DETAILED_HELP = {
         """,
     'EXAMPLES': """\
         To create an instance with the latest ``Red Hat Enterprise Linux
-        7'' image available, run:
+        8'' image available, run:
 
-          $ {command} example-instance --image-family=rhel-7 --image-project=rhel-cloud --zone=us-central1-a
+          $ {command} example-instance --image-family=rhel-8 --image-project=rhel-cloud --zone=us-central1-a
         """,
 }
 
@@ -76,6 +76,7 @@ def _CommonArgs(parser,
                 supports_display_device=False,
                 supports_reservation=False,
                 enable_resource_policy=False,
+                supports_min_node_cpus=False,
                 csek_key_file=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -119,6 +120,9 @@ def _CommonArgs(parser,
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
+  if supports_min_node_cpus:
+    sole_tenancy_flags.AddMinNodeCpusArg(parser)
+
   labels_util.AddCreateLabelsFlags(parser)
 
   parser.add_argument(
@@ -148,6 +152,7 @@ class Create(base.CreateCommand):
   _support_disk_resource_policy = False
   _support_erase_vss = False
   _support_machine_image_key = False
+  _support_min_node_cpus = False
 
   @classmethod
   def Args(cls, parser):
@@ -362,7 +367,8 @@ class Create(base.CreateCommand):
     skip_defaults = skip_defaults or source_machine_image is not None
 
     scheduling = instance_utils.GetScheduling(
-        args, compute_client, skip_defaults, support_node_affinity=True)
+        args, compute_client, skip_defaults, support_node_affinity=True,
+        support_min_node_cpus=self._support_min_node_cpus)
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
@@ -554,6 +560,7 @@ class CreateBeta(Create):
   _support_disk_resource_policy = True
   _support_erase_vss = False
   _support_machine_image_key = False
+  _support_min_node_cpus = False
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -589,6 +596,7 @@ class CreateAlpha(CreateBeta):
   _support_disk_resource_policy = True
   _support_erase_vss = True
   _support_machine_image_key = True
+  _support_min_node_cpus = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -611,6 +619,7 @@ class CreateAlpha(CreateBeta):
         supports_display_device=True,
         supports_reservation=cls._support_reservation,
         enable_resource_policy=cls._support_disk_resource_policy,
+        supports_min_node_cpus=cls._support_min_node_cpus,
         csek_key_file=True)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())

@@ -38,19 +38,19 @@ class List(base.ListCommand):
 
   To see the list of all record-sets in my_zone, run:
 
-    $ {command} --zone my_zone
+    $ {command} --zone=my_zone
 
   To see the list of first 10 record-sets in my_zone, run:
 
-    $ {command} --zone my_zone --limit=10
+    $ {command} --zone=my_zone --limit=10
 
   To see the list of 'my.zone.com.' record-sets in my_zone, run:
 
-    $ {command} --zone my_zone --name="my.zone.com."
+    $ {command} --zone=my_zone --name="my.zone.com."
 
   To see the list of 'my.zone.com.' CNAME record-sets in my_zone, run:
 
-    $ {command} --zone my_zone --name="my.zone.com." --type="CNAME"
+    $ {command} --zone=my_zone --name="my.zone.com." --type="CNAME"
   """
 
   @staticmethod
@@ -80,6 +80,8 @@ class List(base.ListCommand):
     # this patter of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       api_version = 'v1beta2'
+    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      api_version = 'v1alpha2'
 
     dns_client = apis.GetClientInstance('dns', api_version)
 

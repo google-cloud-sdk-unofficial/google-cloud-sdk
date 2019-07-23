@@ -125,7 +125,7 @@ class Update(base.Command):
         pretty_print.Success(
             'Deploying asynchronously.')
       else:
-        url = client.GetServiceUrl(service_ref)
+        service = client.GetService(service_ref)
         active_revs = client.GetActiveRevisions(service_ref)
 
         msg = ('Service [{{bold}}{serv}{{reset}}] revision{plural} {rev_msg} '
@@ -138,7 +138,7 @@ class Update(base.Command):
             serv=service_ref.servicesId,
             plural='s' if len(active_revs) > 1 else '',
             rev_msg=rev_msg,
-            url=url)
+            url=service.domain)
 
         pretty_print.Success(msg)
 

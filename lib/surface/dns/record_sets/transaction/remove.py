@@ -39,13 +39,13 @@ class Remove(base.Command):
 
   To remove an A record, run:
 
-    $ {command} --zone MANAGED_ZONE --name my.domain. --ttl 1234 \
-        --type A "1.2.3.4"
+    $ {command} --zone=MANAGED_ZONE --name=my.domain. --ttl=1234 \
+        --type=A "1.2.3.4"
 
   To remove a TXT record with multiple data values, run:
 
-    $ {command} --zone MANAGED_ZONE --name my.domain. --ttl 2345 \
-        --type TXT "Hello world" "Bye world"
+    $ {command} --zone=MANAGED_ZONE --name=my.domain. --ttl=2345 \
+        --type=TXT "Hello world" "Bye world"
   """
 
   @staticmethod
@@ -70,6 +70,8 @@ class Remove(base.Command):
     # this patter of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       api_version = 'v1beta2'
+    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      api_version = 'v1alpha2'
 
     with trans_util.TransactionFile(args.transaction_file) as trans_file:
       change = trans_util.ChangeFromYamlFile(

@@ -32,12 +32,12 @@ class Transaction(base.Group):
 
   To start a transaction, run:
 
-    $ {command} start --zone MANAGED_ZONE
+    $ {command} start --zone=MANAGED_ZONE
 
   To append a record-set addition to the transaction, run:
 
     $ {command} add --name RECORD_SET_NAME --ttl TTL --type TYPE DATA \
-        --zone MANAGED_ZONE
+        --zone=MANAGED_ZONE
 
   To append a record-set removal to the transaction, run:
 
@@ -45,15 +45,15 @@ class Transaction(base.Group):
 
   To look at the details of the transaction, run:
 
-    $ {command} describe --zone MANAGED_ZONE
+    $ {command} describe --zone=MANAGED_ZONE
 
   To delete the transaction, run:
 
-    $ {command} abort --zone MANAGED_ZONE
+    $ {command} abort --zone=MANAGED_ZONE
 
   To execute the transaction, run:
 
-    $ {command} execute --zone MANAGED_ZONE
+    $ {command} execute --zone=MANAGED_ZONE
   """
 
   @staticmethod

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Mark a recommendation's state as SUCCEEDED. mark-succeeded can be applied to recommendations
@@ -12,6 +12,10 @@
   request:
     collection: recommender.projects.locations.recommenders.recommendations
     method: markSucceeded
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:
@@ -19,12 +23,18 @@
       spec: !REF googlecloudsdk.command_lib.recommender.resources:recommendation
     params:
     - arg_name: etag
-      api_field: googleCloudRecommenderV1alpha1MarkSucceededRequest.etag
+      ALPHA:
+        api_field: googleCloudRecommenderV1alpha1MarkSucceededRequest.etag
+      BETA:
+        api_field: googleCloudRecommenderV1beta1MarkRecommendationSucceededRequest.etag
       help_text: The fingerprint of the recommendation.
       required: true
     - arg_name: state-metadata
       metavar: KEY=VALUE
-      api_field: googleCloudRecommenderV1alpha1MarkSucceededRequest.stateMetadata.additionalProperties
+      ALPHA:
+        api_field: googleCloudRecommenderV1alpha1MarkSucceededRequest.stateMetadata.additionalProperties
+      BETA:
+        api_field: googleCloudRecommenderV1beta1MarkRecommendationSucceededRequest.stateMetadata.additionalProperties
       type:
         arg_dict:
           flatten: true

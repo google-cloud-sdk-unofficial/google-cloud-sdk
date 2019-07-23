@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class ListEndpoints(base.ListCommand):
   r"""List network endpoints in a network endpoint group.
 
@@ -48,25 +49,67 @@ class ListEndpoints(base.ListCommand):
     flags.MakeNetworkEndpointGroupsArg().AddArgument(parser)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, support_global_scope=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = client.messages
 
-    neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
-        args, holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    neg_ref = flags.MakeNetworkEndpointGroupsArg(
+        support_global_scope=support_global_scope).ResolveAsResource(
+            args,
+            holder.resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(args.filter)
-    request = messages.ComputeNetworkEndpointGroupsListNetworkEndpointsRequest(
-        networkEndpointGroup=neg_ref.Name(),
-        project=neg_ref.project,
-        zone=neg_ref.zone,
-        filter=filter_expr)
+
+    if hasattr(neg_ref, 'zone'):
+      request = messages.ComputeNetworkEndpointGroupsListNetworkEndpointsRequest(
+          networkEndpointGroup=neg_ref.Name(),
+          project=neg_ref.project,
+          zone=neg_ref.zone,
+          filter=filter_expr)
+      service = client.apitools_client.networkEndpointGroups
+    else:
+      request = messages.ComputeGlobalNetworkEndpointGroupsListNetworkEndpointsRequest(
+          networkEndpointGroup=neg_ref.Name(),
+          project=neg_ref.project,
+          filter=filter_expr)
+      service = client.apitools_client.globalNetworkEndpointGroups
 
     return list_pager.YieldFromList(
-        client.apitools_client.networkEndpointGroups,
+        service,
         request,
         method='ListNetworkEndpoints',
         field='items',
         limit=args.limit,
         batch_size=None)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaListEndpoints(ListEndpoints):
+  r"""List network endpoints in a network endpoint group.
+
+  ## EXAMPLES
+
+  To list network endpoints of a network endpoint group:
+
+    $ {command} my-neg --zone=us-central1-a
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("""\
+        table(
+          networkEndpoint.instance,
+          networkEndpoint.ipAddress,
+          networkEndpoint.port,
+          networkEndpoint.fqdn
+        )""")
+    base.URI_FLAG.RemoveFromParser(parser)
+    flags.MakeNetworkEndpointGroupsArg(
+        support_global_scope=True).AddArgument(parser)
+
+  def Run(self, args):
+    return self._Run(args, support_global_scope=True)

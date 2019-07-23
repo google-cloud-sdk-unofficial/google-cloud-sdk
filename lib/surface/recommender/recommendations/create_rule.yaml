@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Create a Rule from the recommendation.
@@ -10,6 +10,7 @@
   request:
     collection: recommender.projects.locations.recommenders.recommendations
     method: createRule
+    api_version: v1alpha1
 
   arguments:
     resource:

@@ -28,16 +28,14 @@ class Export(base.Command):
   """Export the Binary Authorization policy for the current project.
 
   This function's default output is a valid policy YAML file. If dumped to a
-  file and edited, the new policy can be provided to the $ {parent_command}
-  import command to cause these edits to be reflected in the project policy.
+  file and edited, the new policy can be provided to the `$ {parent_command}
+  import` command to cause these edits to be reflected in the project policy.
 
-  ## EXAMPLE
+  ## EXAMPLES
 
-  One way of updating the current project's policy is to run:
+  To export the current project's policy:
 
-      $ {parent_command} export > my_policy.yaml
-      $ edit my_policy.yaml
-      $ {parent_command} import --policy-file=my_policy.yaml
+      $ {command} > my_policy.yaml
   """
 
   def Run(self, args):

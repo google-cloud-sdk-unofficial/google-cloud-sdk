@@ -35,18 +35,18 @@ class Import(base.Command):
 
   This command accepts a description of the desired policy in the form of a
   YAML-formatted file. A representation of the current policy can be retrieved
-  using the $ {parent_command} describe command. One method of modifying the
-  policy is to run {parent_command} export, dump the contents to a file, modify
-  them to reflect the desired end-state, and provide this modifyied file to
-  {command}.
+  using the  $ {parent_command} export  command. One method of modifying the
+  policy is to run `$ {parent_command} export`, dump the contents to a file,
+  modify the policy file to reflect the desired new policy, and provide this
+  modified file to `$ {command}`.
 
-  ## EXAMPLE
+  ## EXAMPLES
 
-  One way of updating the current project's policy is to run:
+  To update the current project's policy:
 
       $ {parent_command} export > my_policy.yaml
       $ edit my_policy.yaml
-      $ {parent_command} import --policy-file=my_policy.yaml
+      $ {parent_command} import my_policy.yaml
   """
 
   @classmethod

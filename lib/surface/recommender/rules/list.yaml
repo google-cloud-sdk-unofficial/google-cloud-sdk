@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Lists rules for a Cloud project.
@@ -10,6 +10,7 @@
   request:
     collection: recommender.projects.rules
     method: list
+    api_version: v1alpha1
 
   arguments:
     resource:

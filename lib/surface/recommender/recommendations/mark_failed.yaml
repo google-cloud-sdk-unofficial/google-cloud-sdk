@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Mark a recommendation's state as FAILED. mark-failed can be applied to recommendations in
@@ -12,6 +12,10 @@
   request:
     collection: recommender.projects.locations.recommenders.recommendations
     method: markFailed
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:
@@ -19,12 +23,18 @@
       spec: !REF googlecloudsdk.command_lib.recommender.resources:recommendation
     params:
     - arg_name: etag
-      api_field: googleCloudRecommenderV1alpha1MarkFailedRequest.etag
+      ALPHA:
+        api_field: googleCloudRecommenderV1alpha1MarkFailedRequest.etag
+      BETA:
+        api_field: googleCloudRecommenderV1beta1MarkRecommendationFailedRequest.etag
       help_text: The fingerprint of the recommendation.
       required: true
     - arg_name: state-metadata
       metavar: KEY=VALUE
-      api_field: googleCloudRecommenderV1alpha1MarkFailedRequest.stateMetadata.additionalProperties
+      ALPHA:
+        api_field: googleCloudRecommenderV1alpha1MarkFailedRequest.stateMetadata.additionalProperties
+      BETA:
+        api_field: googleCloudRecommenderV1beta1MarkRecommendationFailedRequest.stateMetadata.additionalProperties
       type:
         arg_dict:
           flatten: true

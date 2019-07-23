@@ -25,7 +25,14 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete an Attestor."""
+  """Delete an Attestor.
+
+  ## EXAMPLES
+
+  To delete an existing Attestor `my_attestor`:
+
+    $ {command} my_attestor
+  """
 
   @classmethod
   def Args(cls, parser):

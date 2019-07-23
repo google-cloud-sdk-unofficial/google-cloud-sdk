@@ -25,7 +25,15 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 
 
 class Remove(base.Command):
-  """Remove a public key from an Attestor."""
+  r"""Remove a public key from an Attestor.
+
+  ## EXAMPLES
+
+  To remove a public key from the Attestor `my_attestor`:
+
+    $ {command} 0638AADD940361EA2D7F14C58C124F0E663DA097 \
+        --attestor=my_attestor
+  """
 
   @classmethod
   def Args(cls, parser):

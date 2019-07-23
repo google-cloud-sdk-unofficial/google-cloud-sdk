@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class Attestors(base.Group):
-  """Create and manage Google Binary Authorization Attestation Authorities."""
+  """Create and manage Google Binary Authorization Attestors."""

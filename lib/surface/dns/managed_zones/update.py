@@ -137,7 +137,8 @@ class UpdateBeta(base.UpdateCommand):
     flags.GetDnsPeeringArgs().AddToParser(parser)
 
   def Run(self, args):
-    zones_client = managed_zones.Client.FromApiVersion('v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    zones_client = managed_zones.Client.FromApiVersion(api_version)
     messages = zones_client.messages
 
     forwarding_config = None
@@ -158,7 +159,7 @@ class UpdateBeta(base.UpdateCommand):
       networks = args.networks if args.networks != [''] else []
 
       def GetNetworkSelfLink(network):
-        return util.GetRegistry('v1beta2').Parse(
+        return util.GetRegistry(api_version).Parse(
             network,
             collection='compute.networks',
             params={
@@ -179,3 +180,25 @@ class UpdateBeta(base.UpdateCommand):
         private_visibility_config=visibility_config,
         forwarding_config=forwarding_config,
         peering_config=peering_config)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update an existing Cloud DNS managed-zone.
+
+  Update an existing Cloud DNS managed-zone.
+
+  ## EXAMPLES
+
+  To change the description of a managed-zone, run:
+
+    $ {command} my_zone --description="Hello, world!"
+
+  """
+
+  @staticmethod
+  def Args(parser):
+    messages = apis.GetMessagesModule('dns', 'v1alpha2')
+    _CommonArgs(parser, messages)
+    flags.GetForwardingTargetsArg().AddToParser(parser)
+    flags.GetDnsPeeringArgs().AddToParser(parser)

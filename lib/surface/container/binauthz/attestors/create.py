@@ -27,7 +27,17 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 
 
 class Create(base.CreateCommand):
-  """Create an Attestor."""
+  r"""Create an Attestor.
+
+  ## EXAMPLES
+
+  To create an Attestor with an existing Note `projects/my_proj/notes/my_note`:
+
+    $ {command} \
+        my_new_attestor
+        --attestation-authority-note=my_note \
+        --attestation-authority-note-project=my_proj \
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -47,10 +57,10 @@ class Create(base.CreateCommand):
 
                 For the attestor to be able to access and use the Note,
                 the Note must exist and the active gcloud account (core/account)
-                must have the `containeranalysis.occurrences.viewer` permission
+                must have the `containeranalysis.notes.listOccurrences` permission
                 for the Note. This can be achieved by granting the
-                `containeranalysis.notes.viewer` role to the active account for
-                the Note resource in question.
+                `containeranalysis.notes.occurrences.viewer` role to the active
+                account for the Note resource in question.
 
                 """),
         ),

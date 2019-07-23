@@ -156,6 +156,17 @@ def _AddArgs(parser, include_alpha_logging, include_beta_logging,
     GetPrivateIpv6GoogleAccessTypeFlagMapper(messages).choice_arg.AddToParser(
         parser)
 
+    parser.add_argument(
+        '--private-ipv6-google-access-service-accounts',
+        default=None,
+        metavar='EMAIL',
+        type=arg_parsers.ArgList(min_length=1),
+        help="""\
+        The service accounts can be used to selectively turn on Private IPv6
+        Google Access only on the VMs primary service account matching the
+        value.
+        """)
+
   parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
 
 
@@ -169,7 +180,9 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
           'ENABLE_BIDIRECTIONAL_ACCESS_TO_GOOGLE':
               'enable-bidirectional-access',
           'ENABLE_OUTBOUND_VM_ACCESS_TO_GOOGLE':
-              'enable-outbound-vm-access'
+              'enable-outbound-vm-access',
+          'ENABLE_OUTBOUND_VM_ACCESS_TO_GOOGLE_FOR_SERVICE_ACCOUNTS':
+              'enable-outbound-vm-access-for-service-accounts'
       },
       help_str='The private IPv6 google access type for the VMs in this subnet.'
   )
@@ -239,6 +252,9 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
       subnetwork.privateIpv6GoogleAccess = (
           flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
               messages).GetEnumForChoice(args.private_ipv6_google_access_type))
+    if args.private_ipv6_google_access_service_accounts is not None:
+      subnetwork.privateIpv6GoogleAccessServiceAccounts = (
+          args.private_ipv6_google_access_service_accounts)
 
   return subnetwork
 

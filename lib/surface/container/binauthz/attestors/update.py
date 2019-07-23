@@ -25,7 +25,15 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 
 
 class Update(base.UpdateCommand):
-  """Update an existing Attestor."""
+  r"""Update an existing Attestor.
+
+  ## EXAMPLES
+
+  To update an existing Attestor `my_attestor`:
+
+    $ {command} my_attestor \
+        --description="my new attestor description"
+  """
 
   @classmethod
   def Args(cls, parser):

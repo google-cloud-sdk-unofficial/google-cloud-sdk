@@ -60,6 +60,8 @@ class List(base.ListCommand):
     # this patter of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       api_version = 'v1beta2'
+    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      api_version = 'v1alpha2'
 
     dns_client = apis.GetClientInstance('dns', api_version)
 

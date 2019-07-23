@@ -153,8 +153,7 @@ class Deploy(base.Command):
             'Service [{{bold}}{serv}{{reset}}] is deploying '
             'asynchronously.'.format(serv=service_ref.servicesId))
       else:
-        url = operations.GetServiceUrl(service_ref)
-        conf = operations.GetConfiguration(service_ref)
+        service = operations.GetService(service_ref)
         msg = (
             'Service [{{bold}}{serv}{{reset}}] '
             'revision [{{bold}}{rev}{{reset}}] '
@@ -162,8 +161,8 @@ class Deploy(base.Command):
             '{{bold}}{url}{{reset}}')
         msg = msg.format(
             serv=service_ref.servicesId,
-            rev=conf.status.latestReadyRevisionName,
-            url=url)
+            rev=service.status.latestReadyRevisionName,
+            url=service.domain)
         pretty_print.Success(msg)
 
 

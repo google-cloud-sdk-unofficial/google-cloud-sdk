@@ -76,9 +76,12 @@ class Update(base.UpdateCommand):
 
     enable_private_ipv6_access = None
     private_ipv6_google_access_type = None
+    private_ipv6_google_access_service_accounts = None
     if self._include_private_ipv6_access:
       enable_private_ipv6_access = args.enable_private_ipv6_access
       private_ipv6_google_access_type = args.private_ipv6_google_access_type
+      private_ipv6_google_access_service_accounts = (
+          args.private_ipv6_google_access_service_accounts)
 
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
@@ -95,7 +98,9 @@ class Update(base.UpdateCommand):
         set_role_active=set_role_active,
         drain_timeout_seconds=drain_timeout_seconds,
         enable_private_ipv6_access=enable_private_ipv6_access,
-        private_ipv6_google_access_type=private_ipv6_google_access_type)
+        private_ipv6_google_access_type=private_ipv6_google_access_type,
+        private_ipv6_google_access_service_accounts=(
+            private_ipv6_google_access_service_accounts))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

@@ -26,9 +26,19 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
-  """Update a public key on an Attestor."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Update(base.UpdateCommand):
+  r"""Update a public key on an Attestor.
+
+  ## EXAMPLES
+
+  To update a PGP public key on an existing Attestor `my_attestor`:
+
+    $ {command} \
+        0638AADD940361EA2D7F14C58C124F0E663DA097 \
+        --attestor=my_attestor \
+        --pgp-public-key-file=my_key.pub
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -44,20 +54,29 @@ class UpdateBeta(base.UpdateCommand):
     parser.add_argument(
         'public_key_id',
         help='The ID of the public key to update.')
-    file_group = parser.add_mutually_exclusive_group()
-    file_group.add_argument(
-        '--public-key-file',
-        action=actions.DeprecationAction(
-            'public-key-file',
-            warn='This flag is deprecated. Use --pgp-public-key-file instead.'),
-        type=arg_parsers.FileContents(),
-        help='The path to a file containing the '
-        'updated ASCII-armored PGP public key.')
-    file_group.add_argument(
-        '--pgp-public-key-file',
-        type=arg_parsers.FileContents(),
-        help='The path to a file containing the '
-        'updated ASCII-armored PGP public key.')
+    # TODO(b/133451183): Remove deprecated flag.
+    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
+      parser.add_argument(
+          '--pgp-public-key-file',
+          type=arg_parsers.FileContents(),
+          help='The path to a file containing the '
+          'updated ASCII-armored PGP public key.')
+    else:
+      file_group = parser.add_mutually_exclusive_group()
+      file_group.add_argument(
+          '--public-key-file',
+          action=actions.DeprecationAction(
+              'public-key-file',
+              warn='This flag is deprecated. '
+              'Use --pgp-public-key-file instead.'),
+          type=arg_parsers.FileContents(),
+          help='The path to a file containing the '
+          'updated ASCII-armored PGP public key.')
+      file_group.add_argument(
+          '--pgp-public-key-file',
+          type=arg_parsers.FileContents(),
+          help='The path to a file containing the '
+          'updated ASCII-armored PGP public key.')
     parser.add_argument(
         '--comment', help='The comment describing the public key.')
 
@@ -68,10 +87,15 @@ class UpdateBeta(base.UpdateCommand):
     attestor_ref = args.CONCEPTS.attestor.Parse()
     # TODO(b/71700164): Validate the contents of the public key file.
 
+    # TODO(b/133451183): Remove deprecated flag.
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      pgp_pubkey = args.pgp_public_key_file
+    else:
+      pgp_pubkey = args.pgp_public_key_file or args.public_key_file
     return attestors_client.UpdateKey(
         attestor_ref,
         args.public_key_id,
-        pgp_pubkey_content=args.public_key_file or args.pgp_public_key_file,
+        pgp_pubkey_content=pgp_pubkey,
         comment=args.comment)
 
 

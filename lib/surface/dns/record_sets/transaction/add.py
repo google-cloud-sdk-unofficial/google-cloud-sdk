@@ -38,14 +38,14 @@ class Add(base.Command):
   To add an A record with an IP address of "1.2.3.4", domain name of
   "my.domain.", and a managed zone "MANAGED_ZONE", run:
 
-    $ {command} "1.2.3.4" --name my.domain. --ttl 1234 \
-        --type A --zone MANAGED_ZONE
+    $ {command} "1.2.3.4" --name=my.domain. --ttl=1234 \
+        --type=A --zone=MANAGED_ZONE
 
   To add a TXT record with multiple data values while specifying time to
   live as 14400 seconds, run:
 
-    $ {command} "Hello world" "Bye world" --name my.domain.
-        --ttl 14400 --type TXT --zone MANAGED_ZONE
+    $ {command} "Hello world" "Bye world" --name=my.domain.
+        --ttl=14400 --type=TXT --zone=MANAGED_ZONE
   """
 
   @staticmethod
@@ -72,6 +72,8 @@ class Add(base.Command):
     # this patter of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       api_version = 'v1beta2'
+    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      api_version = 'v1alpha2'
 
     with trans_util.TransactionFile(args.transaction_file) as trans_file:
       change = trans_util.ChangeFromYamlFile(

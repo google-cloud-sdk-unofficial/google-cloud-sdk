@@ -51,16 +51,16 @@ class Import(base.Command):
 
   To import record-sets from a yaml record-sets file, run:
 
-    $ {command} YAML_RECORDS_FILE --zone MANAGED_ZONE
+    $ {command} YAML_RECORDS_FILE --zone=MANAGED_ZONE
 
   To import record-sets from a zone file, run:
 
-    $ {command} ZONE_FILE --zone-file-format --zone MANAGED_ZONE
+    $ {command} ZONE_FILE --zone-file-format --zone=MANAGED_ZONE
 
   To replace all the record-sets in your zone with records from a yaml
   file, run:
 
-    $ {command} YAML_RECORDS_FILE --delete-all-existing --zone MANAGED_ZONE
+    $ {command} YAML_RECORDS_FILE --delete-all-existing --zone=MANAGED_ZONE
   """
 
   @staticmethod
@@ -94,6 +94,8 @@ class Import(base.Command):
     # this patter of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       api_version = 'v1beta2'
+    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      api_version = 'v1alpha2'
 
     if not os.path.exists(args.records_file):
       raise import_util.RecordsFileNotFound(

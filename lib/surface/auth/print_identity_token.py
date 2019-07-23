@@ -51,11 +51,11 @@ def _Run(args):
   """Run the print_identity_token command."""
   cred = c_store.Load(args.account)
   is_service_account = auth_util.CheckAccountType(cred)
-  if not is_service_account:
-    raise auth_exceptions.WrongAccountTypeError(
-        '`--audiences` can only be specified for service account.')
 
   if args.audiences:
+    if not is_service_account:
+      raise auth_exceptions.WrongAccountTypeError(
+          '`--audiences` can only be specified for service accounts.')
     target_audiences = ' '.join(args.audiences)
     config.CLOUDSDK_CLIENT_ID = target_audiences
 

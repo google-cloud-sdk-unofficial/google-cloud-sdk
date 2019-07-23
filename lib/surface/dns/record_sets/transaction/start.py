@@ -45,7 +45,7 @@ class Start(base.Command):
 
   To start a transaction, run:
 
-    $ {command} --zone MANAGED_ZONE
+    $ {command} --zone=MANAGED_ZONE
   """
 
   @staticmethod
@@ -58,6 +58,8 @@ class Start(base.Command):
     # this patter of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       api_version = 'v1beta2'
+    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      api_version = 'v1alpha2'
 
     if os.path.isfile(args.transaction_file):
       raise transaction_util.TransactionFileAlreadyExists(

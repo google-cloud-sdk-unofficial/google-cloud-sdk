@@ -56,3 +56,10 @@ class ListBeta(ListBase, base.ListCommand):
 
   def GetApiVersion(self):
     return 'v1beta2'
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBase, base.ListCommand):
+
+  def GetApiVersion(self):
+    return 'v1alpha2'

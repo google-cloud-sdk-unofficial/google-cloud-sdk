@@ -88,9 +88,10 @@ class DeleteBeta(base.DeleteCommand):
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    dns = apis.GetClientInstance('dns', api_version)
 
-    zone_ref = util.GetRegistry('v1beta2').Parse(
+    zone_ref = util.GetRegistry(api_version).Parse(
         args.dns_zone,
         params={
             'project': properties.VALUES.core.project.GetOrFail,
@@ -103,3 +104,24 @@ class DeleteBeta(base.DeleteCommand):
             project=zone_ref.project))
     log.DeletedResource(zone_ref)
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
+  """Delete an empty Cloud DNS managed-zone.
+
+  This command deletes an empty Cloud DNS managed-zone. An empty managed-zone
+  has only SOA and NS record-sets.
+
+  ## EXAMPLES
+
+  To delete an empty managed-zone, run:
+
+    $ {command} my_zone
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.GetDnsZoneArg(
+        'The name of the empty managed-zone to be deleted.').AddToParser(parser)
+    parser.display_info.AddCacheUpdater(None)

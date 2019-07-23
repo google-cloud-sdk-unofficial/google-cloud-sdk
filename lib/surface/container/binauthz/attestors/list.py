@@ -25,17 +25,30 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List Attestors associated with the current project."""
+  """List Attestors associated with the current project.
+
+  ## EXAMPLES
+
+  To list attestors:
+
+     $ {command}
+
+  To list attestors in a verbose format (including
+  information about public keys associated with each attestor:
+
+     $ {command} --format=yaml
+  """
 
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat("""
         table[box](
             name.scope().segment(3):sort=1,
-            userOwnedDrydockNote.noteReference:label=NOTE,
-            userOwnedDrydockNote.publicKeys.len():label=NUM_PUBLIC_KEYS
+            {note_field}.noteReference:label=NOTE,
+            {note_field}.publicKeys.len():label=NUM_PUBLIC_KEYS
         )
-    """)
+    """.format(note_field='userOwnedGrafeasNote' if cls.ReleaseTrack() ==
+               base.ReleaseTrack.GA else 'userOwnedDrydockNote'))
 
   def Run(self, args):
     api_version = apis.GetApiVersion(self.ReleaseTrack())

@@ -7,15 +7,15 @@
       To create a new policy with minimal arguments, run:
 
         $ {command} mypolicy \
-        --description 'My new policy test policy 5' \
+        --description='My new policy test policy 5' \
         --networks=''
 
       To create a new policy with all optional arguments, run:
 
         $ {command} mypolicy \
-        --description 'My new policy test policy 5' \
-        --networks network1,network2 \
-        --alternative-name-servers 192.168.1.1,192.168.1.2
+        --description='My new policy test policy 5' \
+        --networks=network1,network2 \
+        --alternative-name-servers=192.168.1.1,192.168.1.2
         --enable-inbound-forwarding
 
   request:

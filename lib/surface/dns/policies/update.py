@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
@@ -26,7 +27,7 @@ from googlecloudsdk.command_lib.dns import util as command_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update an existing Cloud DNS policy.
 
@@ -42,8 +43,9 @@ class Update(base.UpdateCommand):
 
   def _FetchPolicy(self, policy_ref):
     """Get policy to be Updated."""
-    client = apis.GetClientInstance('dns', 'v1beta2')
-    m = apis.GetMessagesModule('dns', 'v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    client = apis.GetClientInstance('dns', api_version)
+    m = apis.GetMessagesModule('dns', api_version)
     get_request = m.DnsPoliciesGetRequest(
         policy=policy_ref.Name(), project=policy_ref.project)
     return client.policies.Get(get_request)
@@ -59,8 +61,9 @@ class Update(base.UpdateCommand):
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
-    client = apis.GetClientInstance('dns', 'v1beta2')
-    messages = apis.GetMessagesModule('dns', 'v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    client = apis.GetClientInstance('dns', api_version)
+    messages = apis.GetMessagesModule('dns', api_version)
 
     # Get Policy
     policy_ref = args.CONCEPTS.policy.Parse()

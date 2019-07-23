@@ -212,7 +212,9 @@ class _BaseRun(object):
     additional_apks = getattr(args, 'additional_apks', None) or []
     for additional_apk in additional_apks:
       bucket_ops.UploadFileToGcs(additional_apk)
-    for other_files in getattr(args, 'other-files', None) or {}:
+    # TODO(b/137674653): add a unit test that would have caught the typo fixed
+    #  by CL/249286171.
+    for other_files in getattr(args, 'other_files', None) or {}:
       bucket_ops.UploadFileToGcs(other_files)
     bucket_ops.LogGcsResultsUrl()
 

@@ -261,6 +261,9 @@ _DETAILED_HELP_TEXT = ("""
       test_cmd_regional_bucket_location
       test_notification_url
       use_magicfile
+      test_hmac_service_account
+      test_hmac_alt_service_account
+      test_hmac_list_service_account
 
     [OAuth2]
       client_id
@@ -574,6 +577,13 @@ CONFIG_INPUTLESS_GSUTIL_SECTION_CONTENT = """
 # robust because it analyzes file contents in addition to extensions.
 #use_magicfile = False
 
+# Service account emails for testing the hmac command. If these fields are not
+# populated with distinct service accounts the tests for the hmac command will
+# not be run.  Primarily useful for tool developers.
+#test_hmac_service_account =
+#test_hmac_alt_service_account =
+#test_hmac_list_service_account =
+
 # 'content_language' specifies the ISO 639-1 language code of the content, to be
 # passed in the Content-Language header. By default no Content-Language is sent.
 # See the ISO 639-1 column of
@@ -645,38 +655,28 @@ content_language = en
 #test_notification_url = https://yourdomain.url/notification-endpoint
 
 """ % {
-    'hash_fast_else_fail':
-    CHECK_HASH_IF_FAST_ELSE_FAIL,
-    'hash_fast_else_skip':
-    CHECK_HASH_IF_FAST_ELSE_SKIP,
-    'hash_always':
-    CHECK_HASH_ALWAYS,
-    'hash_never':
-    CHECK_HASH_NEVER,
-    'resumable_threshold':
-    constants.RESUMABLE_THRESHOLD_B,
-    'parallel_process_count':
-    DEFAULT_PARALLEL_PROCESS_COUNT,
-    'parallel_thread_count':
-    DEFAULT_PARALLEL_THREAD_COUNT,
+    'hash_fast_else_fail': CHECK_HASH_IF_FAST_ELSE_FAIL,
+    'hash_fast_else_skip': CHECK_HASH_IF_FAST_ELSE_SKIP,
+    'hash_always': CHECK_HASH_ALWAYS,
+    'hash_never': CHECK_HASH_NEVER,
+    'resumable_threshold': constants.RESUMABLE_THRESHOLD_B,
+    'parallel_process_count': DEFAULT_PARALLEL_PROCESS_COUNT,
+    'parallel_thread_count': DEFAULT_PARALLEL_THREAD_COUNT,
     'parallel_composite_upload_threshold':
-    (DEFAULT_PARALLEL_COMPOSITE_UPLOAD_THRESHOLD),
+        (DEFAULT_PARALLEL_COMPOSITE_UPLOAD_THRESHOLD),
     'parallel_composite_upload_component_size':
-    (DEFAULT_PARALLEL_COMPOSITE_UPLOAD_COMPONENT_SIZE),
+        (DEFAULT_PARALLEL_COMPOSITE_UPLOAD_COMPONENT_SIZE),
     'sliced_object_download_threshold':
-    (DEFAULT_PARALLEL_COMPOSITE_UPLOAD_THRESHOLD),
+        (DEFAULT_PARALLEL_COMPOSITE_UPLOAD_THRESHOLD),
     'sliced_object_download_component_size':
-    (DEFAULT_PARALLEL_COMPOSITE_UPLOAD_COMPONENT_SIZE),
+        (DEFAULT_PARALLEL_COMPOSITE_UPLOAD_COMPONENT_SIZE),
     'sliced_object_download_max_components':
-    (DEFAULT_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS),
-    'max_component_count':
-    MAX_COMPONENT_COUNT,
-    'task_estimation_threshold':
-    DEFAULT_TASK_ESTIMATION_THRESHOLD,
+        (DEFAULT_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS),
+    'max_component_count': MAX_COMPONENT_COUNT,
+    'task_estimation_threshold': DEFAULT_TASK_ESTIMATION_THRESHOLD,
     'max_upload_compression_buffer_size':
-    (DEFAULT_MAX_UPLOAD_COMPRESSION_BUFFER_SIZE),
-    'gzip_compression_level':
-    DEFAULT_GZIP_COMPRESSION_LEVEL,
+        (DEFAULT_MAX_UPLOAD_COMPRESSION_BUFFER_SIZE),
+    'gzip_compression_level': DEFAULT_GZIP_COMPRESSION_LEVEL,
 }
 
 CONFIG_OAUTH2_CONFIG_CONTENT = """

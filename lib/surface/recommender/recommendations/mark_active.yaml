@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       Mark a recommendation's state as ACTIVE. Can only be performed on a recommendation
@@ -12,6 +12,7 @@
   request:
     collection: recommender.projects.locations.recommenders.recommendations
     method: markActive
+    api_version: v1alpha1
 
   arguments:
     resource:

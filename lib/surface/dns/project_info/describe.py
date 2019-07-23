@@ -55,7 +55,7 @@ class Describe(base.DescribeCommand):
             project=project_ref.project))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DescribeBeta(base.DescribeCommand):
   """View Cloud DNS related information for a project.
 
@@ -76,8 +76,9 @@ class DescribeBeta(base.DescribeCommand):
         help='The identifier for the project you want DNS related info for.')
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1beta2')
-    project_ref = util.GetRegistry('v1beta2').Parse(
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    dns = apis.GetClientInstance('dns', api_version)
+    project_ref = util.GetRegistry(api_version).Parse(
         args.dns_project, collection='dns.projects')
 
     return dns.projects.Get(

@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dns import managed_zones
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 
@@ -67,6 +68,21 @@ class DescribeBeta(base.DescribeCommand):
         'The name of the managed-zone to be described.').AddToParser(parser)
 
   def Run(self, args):
-    zones_client = managed_zones.Client.FromApiVersion('v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    zones_client = managed_zones.Client.FromApiVersion(api_version)
     zone_ref = args.CONCEPTS.zone.Parse()
     return zones_client.Get(zone_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+  """View the details of a Cloud DNS managed-zone.
+
+  This command displays the details of the specified managed-zone.
+
+  ## EXAMPLES
+
+  To display the details of your managed-zone, run:
+
+    $ {command} my_zone
+  """

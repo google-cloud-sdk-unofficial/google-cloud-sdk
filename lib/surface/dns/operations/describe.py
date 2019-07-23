@@ -53,7 +53,7 @@ class DescribeBeta(base.DescribeCommand):
 
   To describe a managed-zone operation:
 
-    $ {command} 1234 --zone my_zone
+    $ {command} 1234 --zone=my_zone
   """
 
   @staticmethod
@@ -61,7 +61,8 @@ class DescribeBeta(base.DescribeCommand):
     _CommonArgs(parser)
 
   def Run(self, args):
-    operations_client = operations.Client.FromApiVersion('v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    operations_client = operations.Client.FromApiVersion(api_version)
     return _Describe(operations_client, args)
 
 
@@ -75,7 +76,7 @@ class Describe(base.DescribeCommand):
 
   To describe a managed-zone operation:
 
-    $ {command} 1234 --zone my_zone
+    $ {command} 1234 --zone=my_zone
   """
 
   @staticmethod
@@ -85,3 +86,17 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     operations_client = operations.Client.FromApiVersion('v1')
     return _Describe(operations_client, args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+  """Describe an operation.
+
+  This command displays the details of a single managed-zone operation.
+
+  ## EXAMPLES
+
+  To describe a managed-zone operation:
+
+    $ {command} 1234 --zone=my_zone
+  """

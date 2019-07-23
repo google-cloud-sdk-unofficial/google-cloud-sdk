@@ -31,11 +31,11 @@ class RecordSets(base.Group):
 
   To import record-sets from a BIND zone file, run:
 
-    $ {command} import --zone MANAGED_ZONE --zone-file-format ZONE_FILE
+    $ {command} import --zone=MANAGED_ZONE --zone-file-format ZONE_FILE
 
   To export record-sets in yaml format, run:
 
-    $ {command} export --zone MANAGED_ZONE
+    $ {command} export --zone=MANAGED_ZONE
 
   To see how to make scriptable changes to your record-sets through
   transactions, run:
@@ -44,14 +44,14 @@ class RecordSets(base.Group):
 
   To list all changes, run:
 
-    $ {command} changes list --zone MANAGED_ZONE
+    $ {command} changes list --zone=MANAGED_ZONE
 
   To see change details, run:
 
-    $ {command} changes describe CHANGE_ID --zone MANAGED_ZONE
+    $ {command} changes describe CHANGE_ID --zone=MANAGED_ZONE
 
   To see the list of all record-sets, run:
 
-    $ {command} list --zone MANAGED_ZONE
+    $ {command} list --zone=MANAGED_ZONE
   """
   pass

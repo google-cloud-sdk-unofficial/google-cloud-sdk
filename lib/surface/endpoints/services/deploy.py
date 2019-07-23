@@ -393,8 +393,6 @@ class _BaseDeploy(object):
       services_util.ProcessOperationResult(rollout_operation, args.async)
 
       if was_service_created:
-        self.AttemptToEnableService(
-            services_util.GetEndpointsServiceName(), args.async)
         self.AttemptToEnableService(self.service_name, args.async)
 
     return push_config_result

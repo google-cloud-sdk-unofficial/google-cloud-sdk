@@ -37,6 +37,16 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To route to/from Google Compute Engine virtual machine instances, run:
+
+          $ {command}
+        """,
+}
+
+
 class Routes(base_classes.BaseCommand):
   """Routes to/from Google Compute Engine virtual machine instances.
 
@@ -49,6 +59,8 @@ class Routes(base_classes.BaseCommand):
   If that is the case, use the --regexp flag to filter down the amount
   of VMs considered in the filtering.
   """
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

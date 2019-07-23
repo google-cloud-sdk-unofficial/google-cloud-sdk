@@ -90,7 +90,14 @@ class Gcloud(base.Group):
         omitted, then the current project is assumed; the current project can be
         listed using `gcloud config list --format='text(core.project)'` and
         can be set using `gcloud config set project PROJECTID`.
-        """)
+
+        `--project` and its fallback `{core_project}` property play two roles in
+        the invocation. It specifies the project of the resource to operate on.
+        It also specifies the project for API enablement check, quota,
+        and billing. To specify a different project for quota and billing,
+        use `--billing-project` or `{billing_project}` property.
+        """.format(core_project=properties.VALUES.core.project,
+                   billing_project=properties.VALUES.billing.quota_project))
     # Must have a None default so properties are not always overridden when the
     # arg is not provided.
     parser.add_argument(

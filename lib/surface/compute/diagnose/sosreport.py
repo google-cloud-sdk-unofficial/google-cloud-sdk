@@ -30,20 +30,29 @@ from googlecloudsdk.core import log
 SOSREPORT_INSTALL_PATH = "/tmp/git-sosreport"
 REPORTS_PATH = "/tmp/gcloud-sosreport"
 
+DETAILED_HELP = {
+    "EXAMPLES":
+        """\
+        To obtain relevant debug information from a VM, run:
+
+          $ {command}
+        """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SosReport(base.Command):
   """Sosreport run from a Google Compute Engine VM.
 
   This command is designed to obtain relevant debug information from a VM in a
-  stardard way for expediting support cases.
+  standard way for expediting support cases.
 
   The actual information scraping is done by the Sosreport tool
   (https://github.com/sosreport/sos). This command is a wrapper that handles
   installation, running and (optionally) copying the result.
 
   The location of the tool download and report generation are defaulted to the
-  /tmp directory, but can be modified through flags. You can use the
+  /tmp directory, but can be modified through flags. The user can use the
   --download-dir flag to specify a location where the command can download the
   resulting from the VM.
 
@@ -54,9 +63,11 @@ class SosReport(base.Command):
   had to be back-ported to Python 2.7 (notably concurrent). If the default
   installation of Python is 2.7, it is possible that the Sosreport run fails.
   To fix this either install the dependencies for Python 2.7 or use
---python-path to specify the path to another Python installation that works,
+  python-path to specify the path to another Python installation that works,
   normally it being a Python 3.x binary.
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

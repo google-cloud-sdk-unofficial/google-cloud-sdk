@@ -142,7 +142,7 @@ class PublicKeys(base.Group):
             --public-key-file=public_key1_updated.pgp
       ```
 
-  To remove this new key to the attestor:
+  To remove this new key from the attestor:
 
       ```sh
       $ {command} remove \

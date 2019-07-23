@@ -52,7 +52,8 @@ def _CommonArgs(
     support_local_ssd_size=False,
     support_kms=False,
     support_reservation=False,
-    support_resource_policy=False
+    support_resource_policy=False,
+    support_min_node_cpus=False
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -82,6 +83,9 @@ def _CommonArgs(
   instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
+
+  if support_min_node_cpus:
+    sole_tenancy_flags.AddMinNodeCpusArg(parser)
 
   flags.AddRegionFlag(
       parser,
@@ -241,7 +245,8 @@ def _RunCreate(compute_api,
                args,
                support_source_instance,
                support_kms=False,
-               support_reservation=False):
+               support_reservation=False,
+               support_min_node_cpus=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -254,6 +259,8 @@ def _RunCreate(compute_api,
       support_kms: Indicate whether KMS is integrated or not.
       support_reservation: Indicate whether Reservation affinity is integrated
         or not.
+      support_min_node_cpus: Indicate whether the --min-node-cpus flag for
+        sole tenancy overcommit is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -307,12 +314,17 @@ def _RunCreate(compute_api,
   node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
       args, client.messages)
 
+  min_node_cpus = None
+  if support_min_node_cpus and args.IsSpecified('min_node_cpus'):
+    min_node_cpus = args.min_node_cpus
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
       preemptible=args.preemptible,
       restart_on_failure=args.restart_on_failure,
-      node_affinities=node_affinities)
+      node_affinities=node_affinities,
+      min_node_cpus=min_node_cpus)
 
   if args.no_service_account:
     service_account = None
@@ -555,6 +567,7 @@ class CreateAlpha(Create):
   _support_kms = True
   _support_reservation = True
   _support_resource_policy = True
+  _support_min_node_cpus = True
 
   @classmethod
   def Args(cls, parser):
@@ -565,7 +578,8 @@ class CreateAlpha(Create):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_reservation=cls._support_reservation,
-        support_resource_policy=cls._support_resource_policy)
+        support_resource_policy=cls._support_resource_policy,
+        support_min_node_cpus=cls._support_min_node_cpus)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
@@ -584,4 +598,5 @@ class CreateAlpha(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_reservation=self._support_reservation)
+        support_reservation=self._support_reservation,
+        support_min_node_cpus=self._support_min_node_cpus)

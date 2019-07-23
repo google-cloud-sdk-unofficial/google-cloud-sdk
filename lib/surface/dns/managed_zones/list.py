@@ -94,7 +94,8 @@ class ListBeta(base.ListCommand):
     parser.display_info.AddUriFunc(_GetUriFunction('v1beta2'))
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    dns_client = apis.GetClientInstance('dns', api_version)
 
     project_id = properties.VALUES.core.project.GetOrFail()
 
@@ -103,3 +104,27 @@ class ListBeta(base.ListCommand):
         dns_client.MESSAGES_MODULE.DnsManagedZonesListRequest(
             project=project_id),
         limit=args.limit, field='managedZones')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """View the list of all your managed-zones.
+
+  This command displays the list of your managed-zones.
+
+  ## EXAMPLES
+
+  To see the list of all managed-zones, run:
+
+    $ {command}
+
+  To see the list of first 10 managed-zones, run:
+
+    $ {command} --limit=10
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('table(name, dnsName, description,'
+                                  ' visibility)')
+    parser.display_info.AddUriFunc(_GetUriFunction('v1alpha2'))

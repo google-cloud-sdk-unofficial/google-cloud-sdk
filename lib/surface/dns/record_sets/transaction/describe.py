@@ -33,7 +33,7 @@ class Describe(base.DescribeCommand):
 
   To look at the contents of the transaction, run:
 
-    $ {command} --zone MANAGED_ZONE
+    $ {command} --zone=MANAGED_ZONE
   """
 
   @staticmethod
@@ -46,6 +46,8 @@ class Describe(base.DescribeCommand):
     # this patter of checking ReleaseTrack. Break this into multiple classes.
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       api_version = 'v1beta2'
+    elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      api_version = 'v1alpha2'
 
     with transaction_util.TransactionFile(args.transaction_file) as trans_file:
       return transaction_util.ChangeFromYamlFile(

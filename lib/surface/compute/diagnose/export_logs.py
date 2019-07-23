@@ -45,6 +45,14 @@ It may take several minutes for this operation to complete.
 
 Logs will be made available shortly at:
 gs://{0}/{1}"""
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To export logs and upload them to a Cloud Storage Bucket, run:
+
+          $ {command} example-instance --zone=us-central1
+        """,
+}
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -54,6 +62,8 @@ class ExportLogs(base_classes.BaseCommand):
   Gathers logs from a running Compute Engine VM and exports them to a Google
   Cloud Storage Bucket. Outputs a path to the logs within the Bucket.
   """
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

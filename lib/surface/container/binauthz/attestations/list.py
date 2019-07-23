@@ -79,11 +79,12 @@ class List(base.ListCommand):
 
     attestor_ref = args.CONCEPTS.attestor.Parse()
     api_version = apis.GetApiVersion(self.ReleaseTrack())
-    attestor = attestors.Client(api_version).Get(attestor_ref)
+    client = attestors.Client(api_version)
+    attestor = client.Get(attestor_ref)
     # TODO(b/79709480): Add other types of attestors if/when supported.
     note_ref = resources.REGISTRY.ParseResourceId(
         'containeranalysis.projects.notes',
-        attestor.userOwnedDrydockNote.noteReference, {})
+        client.GetNoteAttr(attestor).noteReference, {})
 
     client = containeranalysis.Client()
     return client.YieldAttestations(

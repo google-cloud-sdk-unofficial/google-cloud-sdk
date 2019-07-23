@@ -25,7 +25,14 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe an Attestor."""
+  """Describe an Attestor.
+
+  ## EXAMPLES
+
+  To describe an existing Attestor `my_attestor`:
+
+    $ {command} my_attestor
+  """
 
   @classmethod
   def Args(cls, parser):

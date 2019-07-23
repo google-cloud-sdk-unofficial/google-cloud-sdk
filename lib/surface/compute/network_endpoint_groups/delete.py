@@ -21,13 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  r"""Deletes a Google Compute Engine network endpoint group.
+  r"""Delete a Google Compute Engine network endpoint group.
 
   ## EXAMPLES
 
@@ -38,27 +40,60 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.MakeNetworkEndpointGroupsArg().AddArgument(parser)
+    flags.MakeNetworkEndpointGroupsArg(
+        support_global_scope=False).AddArgument(parser)
 
   def Run(self, args):
+    self._Run(args)
+
+  def _Run(self, args, support_global_scope=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
-        args, holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+    neg_ref = flags.MakeNetworkEndpointGroupsArg(
+        support_global_scope=support_global_scope).ResolveAsResource(
+            args,
+            holder.resources,
+            default_scope=compute_scope.ScopeEnum.ZONE,
+            scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
     console_io.PromptContinue(
         'You are about to delete network endpoint group: [{}]'.format(
             neg_ref.Name()),
         throw_if_unattended=True, cancel_on_no=True)
 
     messages = holder.client.messages
-    request = messages.ComputeNetworkEndpointGroupsDeleteRequest(
-        networkEndpointGroup=neg_ref.Name(),
-        project=neg_ref.project,
-        zone=neg_ref.zone)
 
-    service = holder.client.apitools_client.networkEndpointGroups
+    if hasattr(neg_ref, 'zone'):
+      request = messages.ComputeNetworkEndpointGroupsDeleteRequest(
+          networkEndpointGroup=neg_ref.Name(),
+          project=neg_ref.project,
+          zone=neg_ref.zone)
+      service = holder.client.apitools_client.networkEndpointGroups
+    else:
+      request = messages.ComputeGlobalNetworkEndpointGroupsDeleteRequest(
+          networkEndpointGroup=neg_ref.Name(), project=neg_ref.project)
+      service = holder.client.apitools_client.globalNetworkEndpointGroups
+
     result = client.MakeRequests([(service, 'Delete', request)])
     log.DeletedResource(neg_ref.Name(), 'network endpoint group')
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  r"""Delete a Google Compute Engine network endpoint group.
+
+  ## EXAMPLES
+
+  To delete a network endpoint group:
+
+    $ {command} my-neg --zone=us-central1-a
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.MakeNetworkEndpointGroupsArg(
+        support_global_scope=True).AddArgument(parser)
+
+  def Run(self, args):
+    self._Run(args, support_global_scope=True)

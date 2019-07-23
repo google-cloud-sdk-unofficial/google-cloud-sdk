@@ -191,9 +191,10 @@ class CreateBeta(base.CreateCommand):
           have NO network binding.
           """))
 
-    dns = apis.GetClientInstance('dns', 'v1beta2')
-    messages = apis.GetMessagesModule('dns', 'v1beta2')
-    registry = util.GetRegistry('v1beta2')
+    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    dns = apis.GetClientInstance('dns', api_version)
+    messages = apis.GetMessagesModule('dns', api_version)
+    registry = util.GetRegistry(api_version)
 
     zone_ref = registry.Parse(
         args.dns_zone,
@@ -255,3 +256,31 @@ class CreateBeta(base.CreateCommand):
                                               project=zone_ref.project))
     log.CreatedResource(zone_ref)
     return [result]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  r"""Create a Cloud DNS managed-zone.
+
+  This command creates a Cloud DNS managed-zone.
+
+  ## EXAMPLES
+
+  To create a managed-zone, run:
+
+    $ {command} my_zone --dns-name=my.zone.com. --description="My zone!"
+
+  To create a managed-zone with DNSSEC, run:
+
+    $ {command} my_zone_2 --description="Signed Zone" \
+        --dns-name=myzone.example \
+        --dnssec-state=on
+  """
+
+  @staticmethod
+  def Args(parser):
+    messages = apis.GetMessagesModule('dns', 'v1alpha2')
+    _AddArgsCommon(parser, messages)
+    parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
+    flags.GetForwardingTargetsArg().AddToParser(parser)
+    flags.GetDnsPeeringArgs().AddToParser(parser)

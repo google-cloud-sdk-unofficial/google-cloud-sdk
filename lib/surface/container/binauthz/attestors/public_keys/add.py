@@ -31,9 +31,18 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import pkix
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddBeta(base.Command):
-  """Add a public key to an Attestor."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Add(base.Command):
+  r"""Add a public key to an Attestor.
+
+  ## EXAMPLES
+
+  To add a new PGP public key to an existing Attestor `my_attestor`:
+
+    $ {command} \
+        --attestor=my_attestor \
+        --pgp-public-key-file=my_key.pub
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -46,20 +55,30 @@ class AddBeta(base.Command):
                 'The attestor to which the public key should be added.'),
         ),
     )
-    pgp_group = parser.add_mutually_exclusive_group(required=True)
-    pgp_group.add_argument(
-        '--public-key-file',
-        action=actions.DeprecationAction(
-            'public-key-file',
-            warn='This flag is deprecated. Use --pgp-public-key-file instead.'),
-        type=arg_parsers.FileContents(),
-        help='The path to the file containing the '
-        'ASCII-armored PGP public key to add.')
-    pgp_group.add_argument(
-        '--pgp-public-key-file',
-        type=arg_parsers.FileContents(),
-        help='The path to the file containing the '
-        'ASCII-armored PGP public key to add.')
+    # TODO(b/133451183): Remove deprecated flag.
+    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
+      parser.add_argument(
+          '--pgp-public-key-file',
+          type=arg_parsers.FileContents(),
+          required=True,
+          help='The path to the file containing the '
+          'ASCII-armored PGP public key to add.')
+    else:
+      pgp_group = parser.add_mutually_exclusive_group(required=True)
+      pgp_group.add_argument(
+          '--public-key-file',
+          action=actions.DeprecationAction(
+              'public-key-file',
+              warn='This flag is deprecated. '
+              'Use --pgp-public-key-file instead.'),
+          type=arg_parsers.FileContents(),
+          help='The path to the file containing the '
+          'ASCII-armored PGP public key to add.')
+      pgp_group.add_argument(
+          '--pgp-public-key-file',
+          type=arg_parsers.FileContents(),
+          help='The path to the file containing the '
+          'ASCII-armored PGP public key to add.')
     parser.add_argument(
         '--comment', help='The comment describing the public key.')
 
@@ -72,7 +91,7 @@ class AddBeta(base.Command):
     # TODO(b/71700164): Validate the contents of the public key file.
     return attestors_client.AddPgpKey(
         attestor_ref,
-        pgp_pubkey_content=args.public_key_file or args.pgp_public_key_file,
+        pgp_pubkey_content=args.pgp_public_key_file or args.public_key_file,
         comment=args.comment)
 
 

@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.40",
+  "CLI_VERSION": "4.41",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -362,7 +362,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "CONFIGURATION-CONTROLLABLE FEATURES": "With the exception of setting up gsutil to work through a proxy, most users\nwon't need to edit values in the boto configuration file; values found in\nthe file tend to be of more specialized use than command line\noption-controllable features. For information on setting up gsutil to work\nthrough a proxy, see the comments preceding the proxy settings in your\n.boto file.\n\nThe following are the currently defined configuration settings, broken\ndown by section. Their use is documented in comments preceding each, in\nthe configuration file. If you see a setting you want to change that's not\nlisted in your current file, see the section below on Updating to the Latest\nConfiguration File.\n\nThe currently supported settings, are, by section:\n\n  [Credentials]\n    aws_access_key_id\n    aws_secret_access_key\n    gs_access_key_id\n    gs_host\n    gs_host_header\n    gs_json_host\n    gs_json_host_header\n    gs_json_port\n    gs_oauth2_refresh_token\n    gs_port\n    gs_secret_access_key\n    gs_service_client_id\n    gs_service_key_file\n    gs_service_key_file_password\n    s3_host\n    s3_host_header\n    s3_port\n\n  [Boto]\n    proxy\n    proxy_port\n    proxy_user\n    proxy_pass\n    proxy_rdns\n    http_socket_timeout\n    ca_certificates_file\n    https_validate_certificates\n    debug\n    max_retry_delay\n    num_retries\n\n  [GoogleCompute]\n    service_account\n\n  [GSUtil]\n    check_hashes\n    content_language\n    decryption_key1 ... 100\n    default_api_version\n    default_project_id\n    disable_analytics_prompt\n    encryption_key\n    json_api_version\n    max_upload_compression_buffer_size\n    parallel_composite_upload_component_size\n    parallel_composite_upload_threshold\n    sliced_object_download_component_size\n    sliced_object_download_max_components\n    sliced_object_download_threshold\n    parallel_process_count\n    parallel_thread_count\n    gzip_compression_level\n    prefer_api\n    resumable_threshold\n    resumable_tracker_dir (deprecated in 4.6, use state_dir)\n    rsync_buffer_lines\n    software_update_check_period\n    state_dir\n    tab_completion_time_logs\n    tab_completion_timeout\n    task_estimation_threshold\n    test_cmd_regional_bucket_location\n    test_notification_url\n    use_magicfile\n\n  [OAuth2]\n    client_id\n    client_secret\n    oauth2_refresh_retries\n    provider_authorization_uri\n    provider_label\n    provider_token_uri\n    token_cache",
+        "CONFIGURATION-CONTROLLABLE FEATURES": "With the exception of setting up gsutil to work through a proxy, most users\nwon't need to edit values in the boto configuration file; values found in\nthe file tend to be of more specialized use than command line\noption-controllable features. For information on setting up gsutil to work\nthrough a proxy, see the comments preceding the proxy settings in your\n.boto file.\n\nThe following are the currently defined configuration settings, broken\ndown by section. Their use is documented in comments preceding each, in\nthe configuration file. If you see a setting you want to change that's not\nlisted in your current file, see the section below on Updating to the Latest\nConfiguration File.\n\nThe currently supported settings, are, by section:\n\n  [Credentials]\n    aws_access_key_id\n    aws_secret_access_key\n    gs_access_key_id\n    gs_host\n    gs_host_header\n    gs_json_host\n    gs_json_host_header\n    gs_json_port\n    gs_oauth2_refresh_token\n    gs_port\n    gs_secret_access_key\n    gs_service_client_id\n    gs_service_key_file\n    gs_service_key_file_password\n    s3_host\n    s3_host_header\n    s3_port\n\n  [Boto]\n    proxy\n    proxy_port\n    proxy_user\n    proxy_pass\n    proxy_rdns\n    http_socket_timeout\n    ca_certificates_file\n    https_validate_certificates\n    debug\n    max_retry_delay\n    num_retries\n\n  [GoogleCompute]\n    service_account\n\n  [GSUtil]\n    check_hashes\n    content_language\n    decryption_key1 ... 100\n    default_api_version\n    default_project_id\n    disable_analytics_prompt\n    encryption_key\n    json_api_version\n    max_upload_compression_buffer_size\n    parallel_composite_upload_component_size\n    parallel_composite_upload_threshold\n    sliced_object_download_component_size\n    sliced_object_download_max_components\n    sliced_object_download_threshold\n    parallel_process_count\n    parallel_thread_count\n    gzip_compression_level\n    prefer_api\n    resumable_threshold\n    resumable_tracker_dir (deprecated in 4.6, use state_dir)\n    rsync_buffer_lines\n    software_update_check_period\n    state_dir\n    tab_completion_time_logs\n    tab_completion_timeout\n    task_estimation_threshold\n    test_cmd_regional_bucket_location\n    test_notification_url\n    use_magicfile\n    test_hmac_service_account\n    test_hmac_alt_service_account\n    test_hmac_list_service_account\n\n  [OAuth2]\n    client_id\n    client_secret\n    oauth2_refresh_retries\n    provider_authorization_uri\n    provider_label\n    provider_token_uri\n    token_cache",
         "CREDENTIALS": "By default ``gsutil config`` obtains OAuth2 credentials and writes them to the\n[Credentials] section of the configuration file. Unless otherwise specified,\nit requests a token allowing full control of resources in several services,\ne.g. Cloud Storage, Cloud KMS (used for the 'kms' command), and Cloud Pub/Sub\n(used for the 'notification' command). To request a token with more limited\nscopes, you can specify additional options (see the OPTIONS section below for\nthe full list). Some examples include:\n\nCreate a token with read-only access for storage resources:\n\n  gsutil config -r\n\nCreate a token with read-write access for storage resources:\n\n  gsutil config -w\n\nCreate a token with full-control access for storage resources:\n\n  gsutil config -f\n\nIn addition, ``-s <scope>`` can be specified multiple times to request\nadditional scopes, where ``<scope>`` is specified using the full URL of the\ndesired scope as listed on\nhttps://developers.google.com/identity/protocols/googlescopes.\n\nIf you want to use credentials based on access key and secret (the older\nauthentication method before OAuth2 was supported) instead of OAuth2,\nsee help about the ``-a`` option in the OPTIONS section.\n\nIf you wish to use gsutil with other providers (or to copy data back and\nforth between multiple providers) you can edit their credentials into the\n[Credentials] section after creating the initial configuration file. See the\nlist of settings below for supported settings.",
         "DESCRIPTION": "The ``gsutil config`` command applies to users who have installed gsutil as a\nstandalone tool. If you installed gsutil via the Cloud SDK, ``gsutil config``\nwill fail unless you are specifically using the ``-a`` flag or have configured\ngcloud to not pass its managed credentials to gsutil (via the command ``gcloud\nconfig set pass_credentials_to_gsutil false``). For all other use cases, Cloud\nSDK users should use the ``gcloud auth`` group of commands instead, which will\nconfigure OAuth2 credentials that gcloud implicitly passes to gsutil at\nruntime.\n\nThe ``gsutil config`` command obtains access credentials for Google Cloud\nStorage and writes a boto/gsutil configuration file containing the obtained\ncredentials along with a number of other configuration-controllable values.\n\nUnless specified otherwise (see OPTIONS), the configuration file is written\nto ~/.boto (i.e., the file .boto under the user's home directory). If the\ndefault file already exists, an attempt is made to rename the existing file\nto ~/.boto.bak; if that attempt fails the command will exit. A different\ndestination file can be specified with the ``-o`` option (see OPTIONS).\n\nBecause the boto configuration file contains your credentials you should\nkeep its file permissions set so no one but you has read access. (The file\nis created read-only when you run ``gsutil config``.)",
         "FILE SELECTION PROCEDURE": "By default, gsutil will look for the configuration file in /etc/boto.cfg and\n~/.boto. You can override this choice by setting the BOTO_CONFIG environment\nvariable. This is also useful if you have several different identities or\ncloud storage environments: By setting up the credentials and any additional\nconfiguration in separate files for each, you can switch environments by\nchanging environment variables.\n\nYou can also set up a path of configuration files, by setting the BOTO_PATH\nenvironment variable to contain a \":\" delimited path (or \";\" for Windows).\nFor example setting the BOTO_PATH environment variable to:\n\n  /etc/projects/my_group_project.boto.cfg:/home/mylogin/.boto\n\nwill cause gsutil to load each configuration file found in the path in\norder. This is useful if you want to set up some shared configuration\nstate among many users: The shared state can go in the central shared file\n( /etc/projects/my_group_project.boto.cfg) and each user's individual\ncredentials can be placed in the configuration file in each of their home\ndirectories. For security reasons, users should never share credentials\nvia a shared configuration file.",
@@ -1548,6 +1548,119 @@
       "positionals": [],
       "release": "GA",
       "sections": {}
+    },
+    "hmac": {
+      "capsule": "CRUD operations on service account HMAC keys.",
+      "commands": {
+        "create": {
+          "capsule": "CRUD operations on service account HMAC keys.",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "hmac",
+            "create"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``hmac create`` command creates an HMAC key for the specified service\naccount. The secret key material is only available upon creation, so be sure\nto store the returned secret along with the access_id.\n\n  gsutil hmac create test.service.account@test_project.iam.gserviceaccount.com"
+          }
+        },
+        "delete": {
+          "capsule": "CRUD operations on service account HMAC keys.",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "hmac",
+            "delete"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``hmac delete`` command permanently deletes the specified HMAC key.\nNote that keys must be updated to be in the INACTIVE state before they can be\ndeleted.\n\n  gsutil hmac delete GOOG56JBMFZX6PMPTQ62VD2"
+          }
+        },
+        "get": {
+          "capsule": "CRUD operations on service account HMAC keys.",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "hmac",
+            "get"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``hmac get`` command retrieves the specified HMAC key's metadata.\nNote that there is no option to retrieve a key's secret material after it has\nbeen created.\n\n  gsutil hmac get GOOG56JBMFZX6PMPTQ62VD2"
+          }
+        },
+        "list": {
+          "capsule": "CRUD operations on service account HMAC keys.",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "hmac",
+            "list"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``hmac list`` command lists HMAC key metadata for keys in the default\nproject if no flags are specified."
+          }
+        },
+        "update": {
+          "capsule": "CRUD operations on service account HMAC keys.",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "hmac",
+            "update"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``hmac update`` command sets the state of the specified key.\nValid state arguments are ACTIVE and INACTIVE. To set a key to state DELETED\nuse the \"hmac delete\" command on an INACTIVE key. If an etag is set in the\ncommand, it will only succeed if the provided etag matches the etag of the\nstored key.\n\n  gsutil hmac update -s INACTIVE -e M42da= GOOG56JBMFZX6PMPTQ62VD2"
+          }
+        }
+      },
+      "flags": {},
+      "groups": {},
+      "is_group": true,
+      "is_hidden": false,
+      "path": [
+        "gsutil",
+        "hmac"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "CREATE": "The ``hmac create`` command creates an HMAC key for the specified service\naccount. The secret key material is only available upon creation, so be sure\nto store the returned secret along with the access_id.\n\n  gsutil hmac create test.service.account@test_project.iam.gserviceaccount.com",
+        "DELETE": "The ``hmac delete`` command permanently deletes the specified HMAC key.\nNote that keys must be updated to be in the INACTIVE state before they can be\ndeleted.\n\n  gsutil hmac delete GOOG56JBMFZX6PMPTQ62VD2",
+        "DESCRIPTION": "The hmac command is used to interact with service account HMAC keys.\n\nThe hmac command has five sub-commands:",
+        "GET": "The ``hmac get`` command retrieves the specified HMAC key's metadata.\nNote that there is no option to retrieve a key's secret material after it has\nbeen created.\n\n  gsutil hmac get GOOG56JBMFZX6PMPTQ62VD2",
+        "LIST": "The ``hmac list`` command lists HMAC key metadata for keys in the default\nproject if no flags are specified.",
+        "UPDATE": "The ``hmac update`` command sets the state of the specified key.\nValid state arguments are ACTIVE and INACTIVE. To set a key to state DELETED\nuse the \"hmac delete\" command on an INACTIVE key. If an etag is set in the\ncommand, it will only succeed if the provided etag matches the etag of the\nstored key.\n\n  gsutil hmac update -s INACTIVE -e M42da= GOOG56JBMFZX6PMPTQ62VD2"
+      }
     },
     "iam": {
       "capsule": "Get, set, or change bucket and/or object IAM permissions.",

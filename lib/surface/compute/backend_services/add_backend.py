@@ -96,16 +96,18 @@ class AddBackend(base.UpdateCommand):
           resources,
           scope_lister=compute_flags.GetDefaultScopeLister(client))
     if args.network_endpoint_group:
-      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
-          args,
-          resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(client))
+      return (flags.GLOBAL_NETWORK_ENDPOINT_GROUP_ARG
+              if self._IsGlobalNegScopeEnabled() else
+              flags.NETWORK_ENDPOINT_GROUP_ARG).ResolveAsResource(
+                  args,
+                  resources,
+                  scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
     """Create a backend message.
 
     Args:
-      messages: The avalible API proto messages.
+      messages: The available API proto messages.
       group_uri: String. The backend instance group uri.
       balancing_mode: Backend.BalancingModeValueValuesEnum. The backend load
         balancing mode.
@@ -159,8 +161,16 @@ class AddBackend(base.UpdateCommand):
     backend = self._CreateBackendMessage(client.messages, group_uri,
                                          balancing_mode, args)
 
+    # global network endpoint groups aren't compatible with health checking.
+    if (self._IsGlobalNegScopeEnabled() and
+        group_ref.Collection() == 'compute.globalNetworkEndpointGroups'):
+      replacement.healthChecks = []
+
     replacement.backends.append(backend)
     return replacement
+
+  def _IsGlobalNegScopeEnabled(self):
+    return False
 
   def Run(self, args):
     """Issues requests necessary to add backend to the Backend Service."""
@@ -257,11 +267,12 @@ class AddBackendAlpha(AddBackendBeta):
   @staticmethod
   def Args(parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'add to')
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(
+        parser, 'add to', support_global_neg=True)
     backend_flags.AddDescription(parser)
     backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser)
-    backend_flags.AddCapacityScalar(parser)
+    backend_flags.AddCapacityLimits(parser, support_global_neg=True)
+    backend_flags.AddCapacityScalar(parser, support_global_neg=True)
     backend_flags.AddFailover(parser, default=None)
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
@@ -281,3 +292,6 @@ class AddBackendAlpha(AddBackendBeta):
         maxConnectionsPerInstance=args.max_connections_per_instance,
         maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
         failover=args.failover)
+
+  def _IsGlobalNegScopeEnabled(self):
+    return True

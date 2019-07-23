@@ -59,3 +59,10 @@ class DescribeBeta(DescribeBase, base.DescribeCommand):
 
   def GetApiVersion(self):
     return 'v1beta2'
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBase, base.DescribeCommand):
+
+  def GetApiVersion(self):
+    return 'v1alpha2'
