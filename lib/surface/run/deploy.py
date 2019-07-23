@@ -59,6 +59,18 @@ class Deploy(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddRegionArg(managed_group)
+    flags.AddAllowUnauthenticatedFlag(managed_group)
+    flags.AddRevisionSuffixArg(managed_group)
+    flags.AddServiceAccountFlag(managed_group)
+    flags.AddCloudSQLFlags(managed_group)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
+    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
+                                  ]).AddToParser(gke_group)
+    # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(prompt=True),
@@ -66,26 +78,22 @@ class Deploy(base.Command):
         required=True,
         prefixes=False)
     flags.AddSourceRefFlags(parser)
-    flags.AddRegionArg(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
-    flags.AddCpuFlag(parser)
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
-    flags.AddEndpointVisibilityEnum(parser)
-    flags.AddCloudSQLFlags(parser)
-    flags.AddAllowUnauthenticatedFlag(parser)
-    flags.AddServiceAccountFlag(parser)
-    flags.AddRevisionSuffixArg(parser)
-    concept_parsers.ConceptParser([
-        resource_args.CLUSTER_PRESENTATION,
-        service_presentation]).AddToParser(parser)
+    concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(gke_group)
+    flags.AddCpuFlag(gke_group)
+    # Flags not specific to any platform
     flags.AddPlatformArg(parser)
 
   def Run(self, args):
@@ -161,12 +169,23 @@ class Deploy(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaDeploy(Deploy):
+  """Deploy a container to Cloud Run."""
 
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+    labels_util.AddCreateLabelsFlags(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    flags.AddKubeconfigFlags(parser)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags specific to connecting to a cluster
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(cluster_group)
+    flags.AddCpuFlag(cluster_group)
+    # Flags not specific to any platform
     flags.AddAlphaPlatformArg(parser)
+    flags.AddSecretsFlags(parser)
+    flags.AddConfigMapsFlags(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

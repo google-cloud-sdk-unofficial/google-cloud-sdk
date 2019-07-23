@@ -99,7 +99,7 @@ def AddBaseArgs(parser):
   """Adds base args and flags to the parser."""
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   flags.AddActivationPolicy(parser)
-  flags.AddAssignIp(parser, show_negated_in_help=True)
+  flags.AddAssignIp(parser)
   parser.add_argument(
       '--async',
       action='store_true',

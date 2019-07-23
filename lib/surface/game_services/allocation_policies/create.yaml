@@ -7,6 +7,8 @@
 
   request:
     collection: gameservices.projects.locations.allocationPolicies
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.game_services.allocation_policies.utils:MatchClusters
 
   arguments:
     resource:
@@ -31,22 +33,6 @@
         policies with priority 1, where policy A has weight 100 and policy B
         has weight 300, policy A will be selected 25% of the time, and policy
         B will be selected 75% of the time.
-    - arg_name: match-clusters
-      api_field: allocationPolicy.clusterSelectors.labels.additionalProperties
-      metavar: KEY=VALUE
-      help_text: |
-        Labels to select clusters to which this Allocation Policy applies. This flag can be repeated.
-        Example:
-          $ {command} example-policy --match-clusters=label_a=value1,label_b=value2 \
-                                     --match-clusters=label_c=value3,label_d=value4
-        With the above command, this policy is applicable to clusters that have
-        either label_a=value1 and label_b=value2, or label_c=value3,label_d=value4.
-      type:
-        arg_dict:
-          flatten: true
-          spec:
-          - api_field: key
-          - api_field: value
     - arg_name: schedule
       api_field: allocationPolicy.schedules
       help_text: |
@@ -71,8 +57,8 @@
         duration formats.
 
         Example:
-        $ {command} example-policy --schedule=cron-spec="10 0 1-7 5,12 *",cron-job-duration=4H10M,start-time=2019-10-01T10:00,end-time=2020-10-01T10:00 \
-                                   --schedule=start-time=2021-09-25
+
+          $ {command} example-policy --schedule=start-time=2019-01-01T00:00:01Z,end-time=2030-01-01T00:00:01Z,cron-job-duration=3600s,cron-spec="10 0 1-7 5 *" --schedule=start-time=2050-01-01T00:00:01Z
       type:
         arg_dict:
           flatten: false
@@ -89,17 +75,9 @@
           - arg_name: end-time
             api_field: endTime
             required: false
-    - arg_name: labels
-      api_field: allocationPolicy.labels.additionalProperties
-      metavar: KEY=VALUE
-      help_text: |
-        A list of label KEY=VALUE pairs to add.
-      type:
-        arg_dict:
-          flatten: true
-          spec:
-          - api_field: key
-          - api_field: value
+    labels:
+      api_field: allocationPolicy.labels
+    additional_arguments_hook: googlecloudsdk.command_lib.game_services.allocation_policies.utils:AdditionalAllocationPolicyCreateArguments
 
   async:
     collection: gameservices.projects.locations.operations

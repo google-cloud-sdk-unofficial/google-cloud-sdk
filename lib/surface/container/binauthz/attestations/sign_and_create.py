@@ -38,7 +38,7 @@ class SignAndCreate(base.CreateCommand):
   r"""Sign and create a Binary Authorization Attestation using a Cloud KMS key.
 
   This command signs and creates a Binary Authorization attestation for your
-  project. The attestation is created for the specified artifact (e.g. a grc.io
+  project. The attestation is created for the specified artifact (e.g. a gcr.io
   container URL), associate with the specified attestor, and stored under the
   specified project.
 

@@ -46,7 +46,14 @@ class Delete(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
-    flags.AddRegionArg(parser)
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddRegionArg(managed_group)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
+    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
+                                  ]).AddToParser(gke_group)
+    # Flags not specific to any platform
     revision_presentation = presentation_specs.ResourcePresentationSpec(
         'REVISION',
         resource_args.GetRevisionResourceSpec(),
@@ -54,12 +61,12 @@ class Delete(base.Command):
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser([
-        resource_args.CLUSTER_PRESENTATION,
         revision_presentation]).AddToParser(parser)
 
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
+    # Flags not specific to any platform
     flags.AddPlatformArg(parser)
 
   def Run(self, args):
@@ -80,11 +87,15 @@ class Delete(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaDelete(Delete):
+  """Delete a revision."""
 
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags not specific to any platform
     flags.AddAlphaPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
 
 AlphaDelete.__doc__ = Delete.__doc__

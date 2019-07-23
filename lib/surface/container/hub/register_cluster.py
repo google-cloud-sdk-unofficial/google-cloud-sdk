@@ -148,14 +148,16 @@ class RegisterCluster(base.CreateCommand):
         raise exceptions.Error('Could not process {}: {}'.format(
             DOCKER_CREDENTIAL_FILE_FLAG, e))
 
+    gke_cluster_self_link = hub_util.GKEClusterSelfLink(args)
+
     # The full resource name of the membership for this registration flow.
     name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
-
     # Attempt to create a membership.
     already_exists = False
     try:
       hub_util.ApplyMembershipResources(kube_client, project)
-      obj = hub_util.CreateMembership(project, uuid, args.CLUSTER_NAME)
+      obj = hub_util.CreateMembership(project, uuid, args.CLUSTER_NAME,
+                                      gke_cluster_self_link)
     except apitools_exceptions.HttpConflictError as e:
       # If the error is not due to the object already existing, re-raise.
       error = core_api_exceptions.HttpErrorPayload(e)
@@ -164,6 +166,12 @@ class RegisterCluster(base.CreateCommand):
 
       # The membership already exists. Check to see if it has the same
       # description (i.e., user-visible cluster name).
+      #
+      # This intentionally does not verify that the gke_cluster_self_link is
+      # equivalent: this check is meant to prevent the user from updating the
+      # Connect agent in a cluster that is different from the one that they
+      # expect, and is not required for the proper functioning of the agent or
+      # the Hub.
       obj = hub_util.GetMembership(name)
       if obj.description != args.CLUSTER_NAME:
         # A membership exists, but does not have the same description. This is
@@ -253,7 +261,7 @@ class RegisterCluster(base.CreateCommand):
           'Could not access Memberships API. Is your project whitelisted for '
           'API access? Underlying error: {}'.format(e))
 
-    if registered_membership_project:
+    if registered_membership_project and registered_membership_project != project:
       raise exceptions.Error(
           'This cluster is already registered to [{}]. '
           'Please unregister this cluster before continuing:\n\n'

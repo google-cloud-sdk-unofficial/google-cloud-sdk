@@ -47,15 +47,8 @@ def _TransformNumInstances(resource):
   return num_instances
 
 
-def _MakeGetUriFunc(api_version):
-  """Return a transformation function from a patch job resource to an URI.
-
-  Args:
-    api_version: API version of OsConfig service.
-
-  Returns:
-    Function from patch job to its URI.
-  """
+def _MakeGetUriFunc():
+  """Return a transformation function from a patch job resource to an URI."""
 
   def UriFunc(resource):
     ref = resources.REGISTRY.Parse(
@@ -64,8 +57,7 @@ def _MakeGetUriFunc(api_version):
             'projects': properties.VALUES.core.project.GetOrFail,
             'patchJobs': resource.name
         },
-        collection='osconfig.projects.patchJobs',
-        api_version=api_version)
+        collection='osconfig.projects.patchJobs')
     return ref.SelfLink()
 
   return UriFunc
@@ -99,19 +91,16 @@ class List(base.ListCommand):
         'description': _TransformPatchJobDescription,
         'num_instances': _TransformNumInstances
     })
-    # TODO(b/133780270): Migrate to v1alpha2.
-    parser.display_info.AddUriFunc(_MakeGetUriFunc('v1alpha1'))
+    parser.display_info.AddUriFunc(_MakeGetUriFunc())
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
 
     release_track = self.ReleaseTrack()
-    # TODO(b/133780270): Migrate to v1alpha2.
-    api_version = 'v1alpha1'
     client = osconfig_utils.GetClientInstance(
-        release_track, api_version_override=api_version)
+        release_track)
     messages = osconfig_utils.GetClientMessages(
-        release_track, api_version_override=api_version)
+        release_track)
 
     request = messages.OsconfigProjectsPatchJobsListRequest(
         pageSize=args.page_size,

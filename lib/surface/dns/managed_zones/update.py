@@ -133,7 +133,7 @@ class UpdateBeta(base.UpdateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
-    flags.GetForwardingTargetsGroupArg(parser)
+    flags.GetForwardingTargetsArg().AddToParser(parser)
     flags.GetDnsPeeringArgs().AddToParser(parser)
 
   def Run(self, args):

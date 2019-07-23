@@ -44,7 +44,7 @@ def AddBaseArgs(parser):
   base.ASYNC_FLAG.AddToParser(parser)
   parser.display_info.AddFormat(flags.GetInstanceListFormat())
   flags.AddActivationPolicy(parser)
-  flags.AddAssignIp(parser, show_negated_in_help=False)
+  flags.AddAssignIp(parser)
   flags.AddAuthorizedGAEApps(parser)
   flags.AddAuthorizedNetworks(parser)
   flags.AddAvailabilityType(parser)

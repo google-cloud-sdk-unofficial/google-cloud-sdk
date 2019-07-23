@@ -500,9 +500,8 @@ reasonable default value is used.''')
             raise exceptions.GenomicsError('Invalid --disk-size.')
 
         for disk in virtual_machine.disks:
-          size = disk_sizes[disk.name]
-          if size:
-            disk.sizeGb = size
+          if disk.name in disk_sizes:
+            disk.sizeGb = disk_sizes[disk.name]
 
       request = genomics_messages.RunPipelineRequest(
           pipeline=pipeline,

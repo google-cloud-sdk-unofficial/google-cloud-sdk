@@ -42,7 +42,7 @@ class UnregisterCluster(base.DeleteCommand):
   Unregister a cluster referenced from a specific kubeconfig file:
 
       $ {command} \
-          --kubeconfig-file=/home/user/custom_kubeconfig \
+          --kubeconfig=/home/user/custom_kubeconfig \
           --context=my-cluster-context
   """
 

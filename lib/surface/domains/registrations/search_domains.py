@@ -27,8 +27,7 @@ _FORMAT = """\
 table(
     domainName:label=DOMAIN,
     available:label=AVAILABILITY,
-    registrationPrice.price():label=REGISTRATION_PRICE,
-    renewalPrice.price():label=RENEWAL_PRICE,
+    yearlyPrice.price():label=YEARLY_PRICE,
     notices.list():label=NOTICES
 )
 """

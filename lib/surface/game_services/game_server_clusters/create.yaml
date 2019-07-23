@@ -26,17 +26,8 @@
       required: true
       help_text: |
         Namespace for Kubernetes API server endpoint.
-    - api_field: gameServerCluster.labels.additionalProperties
-      arg_name: labels
-      metavar: KEY=VALUE
-      help_text: |
-        A list of label KEY=VALUE pairs to add.
-      type:
-        arg_dict:
-          flatten: true
-          spec:
-          - api_field: key
-          - api_field: value
+    labels:
+      api_field: gameServerCluster.labels
 
   async:
     collection: gameservices.projects.locations.operations

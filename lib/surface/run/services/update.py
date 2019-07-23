@@ -51,31 +51,39 @@ class Update(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddRegionArg(managed_group)
+    flags.AddAllowUnauthenticatedFlag(managed_group)
+    flags.AddRevisionSuffixArg(managed_group)
+    flags.AddServiceAccountFlag(managed_group)
+    flags.AddCloudSQLFlags(managed_group)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
+    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
+                                  ]).AddToParser(gke_group)
+    # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(prompt=True),
         'Service to update the configuration of.',
         required=True,
         prefixes=False)
-    flags.AddRegionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
-    flags.AddCpuFlag(parser)
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
-    flags.AddCloudSQLFlags(parser)
-    flags.AddEndpointVisibilityEnum(parser)
-    flags.AddAllowUnauthenticatedFlag(parser)
-    flags.AddServiceAccountFlag(parser)
-    flags.AddRevisionSuffixArg(parser)
-    concept_parsers.ConceptParser([
-        resource_args.CLUSTER_PRESENTATION,
-        service_presentation]).AddToParser(parser)
+    concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(gke_group)
+    flags.AddCpuFlag(gke_group)
+    # Flags not specific to any platform
     flags.AddPlatformArg(parser)
 
   def Run(self, args):
@@ -137,13 +145,26 @@ class Update(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
+  """Update Cloud Run environment variables and other configuration settings.
+  """
 
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddVpcConnectorArg(managed_group)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags specific to connecting to a cluster
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(cluster_group)
+    flags.AddCpuFlag(cluster_group)
+    # Flags not specific to any platform
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddAlphaPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
-    flags.AddVpcConnectorArg(parser)
+    flags.AddSecretsFlags(parser)
+    flags.AddConfigMapsFlags(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

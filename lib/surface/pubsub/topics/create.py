@@ -149,10 +149,21 @@ class CreateBeta(Create):
                  _GetTopicPresentationSpec()])
     labels_util.AddCreateLabelsFlags(parser)
 
+    parser.add_argument(
+        '--message-storage-policy-allowed-regions',
+        metavar='REGION',
+        type=arg_parsers.ArgList(),
+        help='A list of one or more Cloud regions where messages are allowed to'
+        ' be stored at rest.')
+
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     return _Run(
-        args, enable_labels=True, enable_kms=True, legacy_output=legacy_output)
+        args,
+        enable_labels=True,
+        enable_kms=True,
+        enable_geofencing=True,
+        legacy_output=legacy_output)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

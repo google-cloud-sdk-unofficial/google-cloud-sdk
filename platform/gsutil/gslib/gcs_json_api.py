@@ -24,6 +24,7 @@ import functools
 from six.moves import http_client
 import json
 import logging
+import os
 import socket
 import ssl
 import time
@@ -83,6 +84,8 @@ from gslib.utils.boto_util import JsonResumableChunkSizeDefined
 from gslib.utils.cloud_api_helper import ListToGetFields
 from gslib.utils.cloud_api_helper import ValidateDstObjectMetadata
 from gslib.utils.constants import NUM_OBJECTS_PER_LIST_PAGE
+from gslib.utils.constants import REQUEST_REASON_ENV_VAR
+from gslib.utils.constants import REQUEST_REASON_HEADER_KEY
 from gslib.utils.constants import UTF8
 from gslib.utils.encryption_helper import Base64Sha256FromBase64EncryptionKey
 from gslib.utils.encryption_helper import CryptoKeyType
@@ -259,6 +262,10 @@ class GcsJsonApi(CloudApi):
       additional_http_headers['Host'] = gs_json_host_header
 
     self._AddPerfTraceTokenToHeaders(additional_http_headers)
+
+    request_reason = os.environ.get(REQUEST_REASON_ENV_VAR)
+    if request_reason:
+      additional_http_headers[REQUEST_REASON_HEADER_KEY] = request_reason
 
     log_request = (debug >= 3)
     log_response = (debug >= 3)
@@ -1183,12 +1190,6 @@ class GcsJsonApi(CloudApi):
                                      end_byte=end_byte,
                                      serialization_data=serialization_data,
                                      decryption_tuple=decryption_tuple)
-      # If you are fighting a redacted exception spew in multiprocess/multithread
-      # calls, add your exception to HTTP_TRANSFER_EXCEPTIONS and put
-      # something like this immediately after the following except statement:
-      # import sys, traceback; sys.stderr.write('\n{}\n'.format(
-      #     traceback.format_exc())); sys.stderr.flush()
-      # This may hang, but you should get a stack trace spew after Ctrl-C.
       except HTTP_TRANSFER_EXCEPTIONS as e:
         self._ValidateHttpAccessTokenRefreshError(e)
         start_byte = download_stream.tell()
@@ -1199,6 +1200,24 @@ class GcsJsonApi(CloudApi):
           retries = 0
         retries += 1
         if retries > self.num_retries:
+          ##### DEBUG
+          # If you are fighting a redacted exception spew in
+          # multiprocess/multithread calls, add your exception to
+          # HTTP_TRANSFER_EXCEPTIONS and uncomment the following block.  This
+          # may hang, but you should get a stack trace spew after Ctrl-C.
+          #####
+          # import re, sys, traceback
+          # from gslib.utils import text_util
+          # message = 'some exception happened'
+          # stack_trace = traceback.format_exc()
+          # err = ('DEBUG: Exception stack trace:\n    %s\n%s\n' % (
+          #     re.sub('\\n', '\n    ', stack_trace),
+          #     message,
+          # ))
+          # dest_fd = sys.stderr
+          # text_util.print_to_fd(err, end='', file=dest_fd)
+          # dest_fd.flush()
+          ##### END DEBUG
           raise ResumableDownloadException(
               'Transfer failed after %d retries. Final exception: %s' %
               (self.num_retries, GetPrintableExceptionString(e)))

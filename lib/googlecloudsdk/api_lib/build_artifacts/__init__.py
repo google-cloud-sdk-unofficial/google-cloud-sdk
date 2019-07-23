@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google LLC. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""The annotation stores command group for the Cloud Healthcare API CLI."""
+"""API utilities for `gcloud build-artifacts` commands."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AnnotationStores(base.Group):
-  """Manage Cloud Healthcare API annotation stores."""
+API_VERSION_FOR_TRACK = {base.ReleaseTrack.ALPHA: 'v1alpha2'}
+
+
+def Messages(api_version):
+  return apis.GetMessagesModule('buildartifacts', api_version)

@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20190621",
+ "revision": "20190709",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -15,9 +15,9 @@
  },
  "documentationLink": "https://cloud.google.com/bigquery/",
  "protocol": "rest",
- "baseUrl": "https://www.googleapis.com/bigquery/v2/",
+ "baseUrl": "https://bigquery.googleapis.com/bigquery/v2/",
  "basePath": "/bigquery/v2/",
- "rootUrl": "https://www.googleapis.com/",
+ "rootUrl": "https://bigquery.googleapis.com/",
  "servicePath": "bigquery/v2/",
  "batchPath": "batch/bigquery/v2",
  "parameters": {
@@ -1551,6 +1551,13 @@
      "description": "[Output-only] Describes execution plan for the query.",
      "items": {
       "$ref": "ExplainQueryStage"
+     }
+    },
+    "referencedRoutines": {
+     "type": "array",
+     "description": "[Output-only] Referenced routines (persistent user-defined functions and stored procedures) for the job.",
+     "items": {
+      "$ref": "RoutineReference"
      }
     },
     "referencedTables": {
@@ -3378,7 +3385,7 @@
      }
     },
     "returnType": {
-     "description": "Optional if language = \"SQL\"; required otherwise.\nIf absent, the return type is inferred from definition_body at query time\nin each query that references this routine. If present, then the evaluated\nresult will be cast to the specified returned type at query time.\n\nFor example, for the functions created with the following statements\n  CREATE FUNCTION Add(x FLOAT64, y FLOAT64) RETURNS FLOAT64 AS (x + y);\n  CREATE FUNCTION Increment(x FLOAT64) AS (Add(x, 1));\n  CREATE FUNCTION Decrement(x FLOAT64) RETURNS FLOAT64 AS (Add(x, -1));\nThe return_type is {type_kind: \"FLOAT64\"} for Add and Decrement, and\nis absent for Increment (inferred as FLOAT64 at query time).\nSuppose the function Add is replaced by\n  CREATE OR REPLACE FUNCTION Add(x INT64, y INT64) AS (x + y);\nThen the inferred return type of Increment is automatically changed to\nINT64 at query time, while the return type of Decrement remains FLOAT64.",
+     "description": "Optional if language = \"SQL\"; required otherwise.\n\nIf absent, the return type is inferred from definition_body at query time\nin each query that references this routine. If present, then the evaluated\nresult will be cast to the specified returned type at query time.\n\nFor example, for the functions created with the following statements:\n\n* `CREATE FUNCTION Add(x FLOAT64, y FLOAT64) RETURNS FLOAT64 AS (x + y);`\n\n* `CREATE FUNCTION Increment(x FLOAT64) AS (Add(x, 1));`\n\n* `CREATE FUNCTION Decrement(x FLOAT64) RETURNS FLOAT64 AS (Add(x, -1));`\n\nThe return_type is `{type_kind: \"FLOAT64\"}` for `Add` and `Decrement`, and\nis absent for `Increment` (inferred as FLOAT64 at query time).\n\nSuppose the function `Add` is replaced by\n  `CREATE OR REPLACE FUNCTION Add(x INT64, y INT64) AS (x + y);`\n\nThen the inferred return type of `Increment` is automatically changed to\nINT64 at query time, while the return type of `Decrement` remains FLOAT64.",
      "$ref": "StandardSqlDataType"
     },
     "importedLibraries": {
@@ -3389,7 +3396,7 @@
      }
     },
     "definitionBody": {
-     "description": "Required. The body of the routine.\nFor functions, this is the expression in the AS clause.\nIf language=SQL, it is the substring inside (but excluding) the\nparentheses. For example, for the function created with the following\nstatement\n  create function JoinLines(x string, y string) as (concat(x, \"\\n\", y))\ndefinition_body = r'concat(x, \"\\n\", y)' (\\n is not replaced with\nlinebreak).\nIf language=JAVASCRIPT, it is the evaluated string in the AS clause.\nFor example, for the function created with the following statement\n  CREATE FUNCTION f() RETURNS STRING LANGUAGE js AS 'return \"\\n\";\\n'\ndefinition_body = 'return \"\\n\";\\n' (both \\n are replaced with\nlinebreaks).",
+     "description": "Required. The body of the routine.\n\nFor functions, this is the expression in the AS clause.\n\nIf language=SQL, it is the substring inside (but excluding) the\nparentheses. For example, for the function created with the following\nstatement:\n\n`CREATE FUNCTION JoinLines(x string, y string) as (concat(x, \"\\n\", y))`\n\nThe definition_body is `concat(x, \"\\n\", y)` (\\n is not replaced with\nlinebreak).\n\nIf language=JAVASCRIPT, it is the evaluated string in the AS clause.\nFor example, for the function created with the following statement:\n\n`CREATE FUNCTION f() RETURNS STRING LANGUAGE js AS 'return \"\\n\";\\n'`\n\nThe definition_body is\n\n`return \"\\n\";\\n`\n\nNote that both \\n are replaced with linebreaks.",
      "type": "string"
     }
    }

@@ -49,7 +49,14 @@ class Create(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
-    flags.AddRegionArg(parser)
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddRegionArg(managed_group)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
+    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
+                                  ]).AddToParser(gke_group)
+    # Flags not specific to any platform
     parser.add_argument(
         '--service', required=True,
         help='Create domain mapping for the given service.')
@@ -60,7 +67,6 @@ class Create(base.Command):
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser([
-        resource_args.CLUSTER_PRESENTATION,
         domain_mapping_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
         """table(
@@ -70,6 +76,7 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
+    # Flags not specific to any platform
     flags.AddPlatformArg(parser)
 
   def Run(self, args):
@@ -103,11 +110,15 @@ class Create(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaCreate(Create):
+  """Create domain mappings."""
 
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags not specific to any platform
     flags.AddAlphaPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
 
 AlphaCreate.__doc__ = Create.__doc__

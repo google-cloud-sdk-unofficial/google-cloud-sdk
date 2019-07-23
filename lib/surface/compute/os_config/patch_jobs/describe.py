@@ -45,12 +45,10 @@ class Describe(base.DescribeCommand):
     patch_job_ref = args.CONCEPTS.patch_job.Parse()
 
     release_track = self.ReleaseTrack()
-    # TODO(b/133780270): Migrate to v1alpha2.
-    api_version = 'v1alpha1'
     client = osconfig_utils.GetClientInstance(
-        release_track, api_version_override=api_version)
+        release_track)
     messages = osconfig_utils.GetClientMessages(
-        release_track, api_version_override=api_version)
+        release_track)
 
     request = messages.OsconfigProjectsPatchJobsGetRequest(
         name=osconfig_utils.GetPatchJobUriPath(project, patch_job_ref.Name()))

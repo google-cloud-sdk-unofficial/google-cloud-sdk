@@ -8,9 +8,9 @@
       should include the game server spec that will be sent to Agones during rollout.
 
       A Deployment rollout updates game servers with a new image. The new image is specified through
-      the spec field of game server template. It is a string field and follows the format of the
-      spec field in Agones GameServer custom resource. Please see https://agones.dev for more
-      details.
+      the spec-file field of game server template. It is a path to a JSON or YAML file that contains
+      game server spec that follows the format of the spec field in Agones GameServer custom
+      resource. Please see https://agones.dev/site/docs/reference/gameserver/ for more details.
 
       The new game server template can be specified either through creating a new Deployment
       resource or through the start-rollout verb on an existing Deployment resource
@@ -44,8 +44,9 @@
         help_text: |
           Game server template for a new rollout. In order to start a new rollout, you should first
           add a game server template that includes the game server spec that will be sent to Agones
-          during rollout. The game server spec is a string field and follows the format of the spec
-          field in Agones GameServer custom resource. Please see https://agones.dev for more
+          during rollout. The spec file is a path to a JSON or YAML file that contains game server
+          spec. The game server spec follows the format of the spec field in Agones GameServer
+          custom resource. Please see https://agones.dev/site/docs/reference/gameserver/ for more
           details.
         params:
         - arg_name: description
@@ -58,14 +59,9 @@
               api_field: startRolloutRequest.newGameServerTemplate.templateId
               required: true
               help_text: |
-                ID of the game server template. Required when spec is specified.
-            - arg_name: spec
+                ID of the game server template. Required when spec-file is specified.
+            - _REF_: googlecloudsdk.command_lib.game_services.flags:spec_file
               api_field: startRolloutRequest.newGameServerTemplate.spec
-              required: true
-              help_text: |
-                Game server spec which is sent to Agones. The game server spec is a string field and
-                follows the format of the spec field in Agones GameServer custom resource. Please
-                see https://agones.dev for more details. Required when template-id is specified.
 
   async:
     collection: gameservices.projects.locations.operations

@@ -25,7 +25,7 @@ import time
 import traceback
 import types
 
-# Add to path dependecies if present.
+# Add to path dependencies if present.
 _THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
 if os.path.isdir(_THIRD_PARTY_DIR) and _THIRD_PARTY_DIR not in sys.path:
   sys.path.append(_THIRD_PARTY_DIR)
@@ -615,7 +615,7 @@ def _NormalizeFieldDelimiter(field_delimiter):
   return _DELIMITER_MAP.get(key, field_delimiter)
 
 
-def _ValidateHivePartitioningOption(hive_partitioning_mode):
+def _ValidateHivePartitioningOptions(hive_partitioning_mode):
   """Validates the string provided is one the API accepts.
 
   Should not receive None as an input, since that will fail the comparison.
@@ -623,10 +623,10 @@ def _ValidateHivePartitioningOption(hive_partitioning_mode):
     hive_partitioning_mode: String representing which hive partitioning mode is
       requested.  Only 'AUTO' and 'STRINGS' are supported.
   """
-  if hive_partitioning_mode != 'AUTO' and hive_partitioning_mode != 'STRINGS':
+  if hive_partitioning_mode not in ['AUTO', 'STRINGS', 'CUSTOM']:
     raise app.UsageError(
-        'Only the following hive partitioning modes are supported: "AUTO" and '
-        '"STRINGS"')
+        'Only the following hive partitioning modes are supported: "AUTO", '
+        '"STRINGS" and "CUSTOM"')
 
 
 
@@ -1371,6 +1371,12 @@ class _Load(BigqueryCmd):
         'automatic type inference.  STRINGS indicates to treat all hive '
         'partition keys as STRING typed.  No other values are accepted',
         flag_values=fv)
+    flags.DEFINE_string(
+        'hive_partitioning_source_uri_prefix',
+        None, '(experimental) Prefix after which hive partition '
+        'encoding begins.  For URIs like gs://bucket/path/key1=value/file, '
+        'the value should be gs://bucket/path.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, destination_table, source, schema=None):
@@ -1464,8 +1470,13 @@ class _Load(BigqueryCmd):
     if self.use_avro_logical_types is not None:
       opts['use_avro_logical_types'] = self.use_avro_logical_types
     if self.hive_partitioning_mode is not None:
-      _ValidateHivePartitioningOption(self.hive_partitioning_mode)
-      opts['hive_partitioning_mode'] = self.hive_partitioning_mode
+      _ValidateHivePartitioningOptions(self.hive_partitioning_mode)
+      hive_partitioning_options = {}
+      hive_partitioning_options['mode'] = self.hive_partitioning_mode
+      if self.hive_partitioning_source_uri_prefix is not None:
+        hive_partitioning_options[
+            'sourceUriPrefix'] = self.hive_partitioning_source_uri_prefix
+      opts['hive_partitioning_options'] = hive_partitioning_options
     job = client.Load(table_reference, source, schema=schema, **opts)
     if FLAGS.sync:
       _PrintJobMessages(client.FormatJobInfo(job))
@@ -1473,12 +1484,14 @@ class _Load(BigqueryCmd):
       self.PrintJobStartInfo(job)
 
 
-def _CreateExternalTableDefinition(source_format,
-                                   source_uris,
-                                   schema,
-                                   autodetect,
-                                   ignore_unknown_values=False,
-                                   hive_partitioning_mode=None):
+def _CreateExternalTableDefinition(
+    source_format,
+    source_uris,
+    schema,
+    autodetect,
+    ignore_unknown_values=False,
+    hive_partitioning_mode=None,
+    hive_partitioning_source_uri_prefix=None):
   """Create an external table definition with the given URIs and the schema.
 
   Arguments:
@@ -1496,20 +1509,23 @@ def _CreateExternalTableDefinition(source_format,
         - For CSV it means autodetect is OFF
         - For JSON it means that autodetect is ON.
       For JSON, defaulting to autodetection is safer because the only option
-      autodetected is compression. If a schema is passed,
-      then the user-supplied schema is used.
+      autodetected is compression. If a schema is passed, then the user-supplied
+      schema is used.
     ignore_unknown_values:  Indicates if BigQuery should allow extra values that
-       are not represented in the table schema. If true, the extra values are
-       ignored. If false, records with extra columns are treated as bad records,
-       and if there are too many bad records, an invalid error is returned in
-       the job result. The default value is false.
-       The sourceFormat property determines what BigQuery treats as an
-       extra value:
+      are not represented in the table schema. If true, the extra values are
+      ignored. If false, records with extra columns are treated as bad records,
+      and if there are too many bad records, an invalid error is returned in the
+      job result. The default value is false.
+      The sourceFormat property determines what BigQuery treats as an
+      extra value:
          - CSV: Trailing columns
          - JSON: Named values that don't match any column names.
     hive_partitioning_mode: Enables hive partitioning.  AUTO indicates to
-       perform automatic type inference.  STRINGS indicates to treat all hive
-       partition keys as STRING typed.  No other values are accepted.
+      perform automatic type inference.  STRINGS indicates to treat all hive
+      partition keys as STRING typed.  No other values are accepted.
+    hive_partitioning_source_uri_prefix: Shared prefix for all files until hive
+      partitioning encoding begins.
+
   Returns:
     A python dictionary that contains a external table definition for the given
     format with the most common options set.
@@ -1564,8 +1580,13 @@ def _CreateExternalTableDefinition(source_format,
     if ignore_unknown_values:
       external_table_def['ignoreUnknownValues'] = True
     if hive_partitioning_mode is not None:
-      _ValidateHivePartitioningOption(hive_partitioning_mode)
-      external_table_def['hivePartitioningMode'] = hive_partitioning_mode
+      _ValidateHivePartitioningOptions(hive_partitioning_mode)
+      hive_partitioning_options = {}
+      hive_partitioning_options['mode'] = hive_partitioning_mode
+      if hive_partitioning_source_uri_prefix is not None:
+        hive_partitioning_options[
+            'sourceUriPrefix'] = hive_partitioning_source_uri_prefix
+      external_table_def['hivePartitioningOptions'] = hive_partitioning_options
     if schema:
       fields = BigqueryClient.ReadSchema(schema)
       external_table_def['schema'] = {'fields': fields}
@@ -1574,7 +1595,7 @@ def _CreateExternalTableDefinition(source_format,
     return external_table_def
   except ValueError, e:
     raise app.UsageError(
-        ('Error occured while creating table definition: %s') % e)
+        ('Error occurred while creating table definition: %s') % e)
 
 
 class _MakeExternalTableDefinition(BigqueryCmd):
@@ -1599,6 +1620,12 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         '(experimental) Enables hive partitioning.  AUTO indicates to perform '
         'automatic type inference.  STRINGS indicates to treat all hive '
         'partition keys as STRING typed.  No other values are accepted',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'hive_partitioning_source_uri_prefix',
+        None, '(experimental) Prefix after which hive partition '
+        'encoding begins.  For URIs like gs://bucket/path/key1=value/file, '
+        'the value should be gs://bucket/path.',
         flag_values=fv)
     flags.DEFINE_enum(
         'source_format',
@@ -1658,12 +1685,14 @@ class _MakeExternalTableDefinition(BigqueryCmd):
     """
     json.dump(
         _CreateExternalTableDefinition(
-            self.source_format,
-            source_uris,
-            schema,
-            self.autodetect,
-            self.ignore_unknown_values,
-            self.hive_partitioning_mode),
+            source_format=self.source_format,
+            source_uris=source_uris,
+            schema=schema,
+            autodetect=self.autodetect,
+            ignore_unknown_values=self.ignore_unknown_values,
+            hive_partitioning_mode=self.hive_partitioning_mode,
+            hive_partitioning_source_uri_prefix=self
+            .hive_partitioning_source_uri_prefix),
         sys.stdout,
         sort_keys=True,
         indent=2)
@@ -2442,8 +2471,7 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     flags.DEFINE_boolean(
         'print_last_token',
         False,
-        'If true and format in [json, prettyjson], also print the next page '
-        'token for the jobs list.',
+        'If true, also print the next page token for the jobs list.',
         flag_values=fv)
     flags.DEFINE_string(
         'filter',
@@ -2569,7 +2597,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
             all_users=self.a,
             min_creation_time=self.min_creation_time,
             max_creation_time=self.max_creation_time,
-            page_token=page_token)
+            page_token=page_token
+            )
         assert object_type is not None
         _PrintObjectsArrayWithToken(results, object_type)
         return
@@ -3221,19 +3250,25 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'start_time',
-        None,
-        'Start time of the range of transfer runs. '
+        None, 'Start time of the range of transfer runs. '
         'The format for the time stamp is RFC3339 UTC "Zulu". '
-        'Read more: '
+        'Example: 2019-01-20T06:50:0Z. Read more: '
         'https://developers.google.com/protocol-buffers/docs/'
         'reference/google.protobuf#google.protobuf.Timestamp ',
         flag_values=fv)
     flags.DEFINE_string(
         'end_time',
-        None,
-        'End time of the range of transfer runs. '
+        None, 'Exclusive end time of the range of transfer runs. '
         'The format for the time stamp is RFC3339 UTC "Zulu". '
-        'Read more: '
+        'Example: 2019-01-20T06:50:0Z. Read more: '
+        'https://developers.google.com/protocol-buffers/docs/'
+        'reference/google.protobuf#google.protobuf.Timestamp ',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'run_time',
+        None, 'Specific time for a transfer run. '
+        'The format for the time stamp is RFC3339 UTC "Zulu". '
+        'Example: 2019-01-20T06:50:0Z. Read more: '
         'https://developers.google.com/protocol-buffers/docs/'
         'reference/google.protobuf#google.protobuf.Timestamp ',
         flag_values=fv)
@@ -3450,6 +3485,12 @@ class _Make(BigqueryCmd):
         None,
         'Connection credential in JSON format',
         flag_values=fv)
+    flags.DEFINE_string(
+        'default_kms_key',
+        None,
+        'Defines default KMS key name for all newly objects created in the '
+        'dataset. Table/Model creation request can override this default.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -3473,6 +3514,8 @@ class _Make(BigqueryCmd):
           --schedule_start_time={schedule_start_time}
           --schedule_end_time={schedule_end_time}
       bq mk --transfer_run --start_time={start_time} --end_time={end_time}
+          projects/p/locations/l/transferConfigs/c
+      bq mk --transfer_run --run_time={run_time}
           projects/p/locations/l/transferConfigs/c
       bq mk --reservation_grant --project_id=proj --location=us
           --reservation_id=project:us.dev --job_type=QUERY
@@ -3563,13 +3606,21 @@ class _Make(BigqueryCmd):
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier)
-      if not self.start_time or not self.end_time:
+      incompatible_options = (self.start_time or self.end_time) \
+                              and self.run_time
+      incomplete_options = (not self.start_time or not self.end_time) \
+                            and not self.run_time
+      if incompatible_options or incomplete_options:
         raise app.UsageError(
-            'Need to specify both --start_time and --end_time.')
-      start_time = self.start_time
-      end_time = self.end_time
-      results = map(client.FormatTransferRunInfo,
-                    client.ScheduleTransferRun(reference, start_time, end_time))
+            'Need to specify either both --start_time and --end_time '
+            'or only --run_time.')
+      results = map(
+          client.FormatTransferRunInfo,
+          client.StartManualTransferRuns(
+              reference=reference,
+              start_time=self.start_time,
+              end_time=self.end_time,
+              run_time=self.run_time))
       BigqueryClient.ConfigureFormatter(
           formatter,
           TransferRunReference,
@@ -3634,6 +3685,7 @@ class _Make(BigqueryCmd):
           default_table_expiration_ms=default_table_exp_ms,
           default_partition_expiration_ms=default_partition_exp_ms,
           data_location=location,
+          default_kms_key=self.default_kms_key,
           labels=labels)
       print "Dataset '%s' successfully created." % (reference,)
     elif isinstance(reference, TableReference):
@@ -3922,6 +3974,13 @@ class _Update(BigqueryCmd):
         'partitioned based on the loading time.',
         flag_values=fv)
     flags.DEFINE_string(
+        'clustering_fields',
+        None,
+        'Comma separated field names. Can only be specified for time based '
+        'partitioned tables. Data will be first partitioned and subsequently "'
+        'clustered on these fields.',
+        flag_values=fv)
+    flags.DEFINE_string(
         'etag', None, 'Only update if etag matches.', flag_values=fv)
     flags.DEFINE_string(
         'destination_kms_key',
@@ -3933,6 +3992,23 @@ class _Update(BigqueryCmd):
         None,
         'Whether to require partition filter for queries over this table. '
         'Only apply to partitioned table.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'connection',
+        None,
+        'Update connection.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'connection_type',
+        None,
+        ['CLOUD_SQL'],
+        'Connection type. Valid values:'
+        '\n CLOUD_SQL',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'properties',
+        None,
+        'Connection properties in JSON format',
         flag_values=fv)
     flags.DEFINE_string(
         'connection_credential',
@@ -3946,6 +4022,12 @@ class _Update(BigqueryCmd):
         '"field,start,end,interval". The table will be partitioned based on the'
         ' value of the field. Field must be a top-level, non-repeated INT64 '
         'field. Start, end, and interval are INT64 values defining the ranges.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'default_kms_key',
+        None,
+        'Defines default KMS key name for all newly objects created in the '
+        'dataset. Table/Model creation request can override this default.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4011,6 +4093,14 @@ class _Update(BigqueryCmd):
       formatted_identifier = _FormatDataTransferIdentifiers(client, identifier)
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier)
+    elif self.connection:
+      reference = client.GetConnectionReference(
+          identifier=identifier, default_location=FLAGS.location)
+      client.UpdateConnection(reference, self.connection_type,
+                              self.properties)
+      if self.connection_credential:
+        client.UpdateConnectionCredential(reference, self.connection_type,
+                                          self.connection_credential)
     elif self.connection_credential:
       reference = client.GetConnectionReference(identifier=identifier,
                                                 default_location=FLAGS.location)
@@ -4060,6 +4150,7 @@ class _Update(BigqueryCmd):
           default_partition_expiration_ms=default_partition_exp_ms,
           labels_to_set=labels_to_set,
           label_keys_to_remove=label_keys_to_remove,
+          default_kms_key=self.default_kms_key,
           etag=self.etag)
       print "Dataset '%s' successfully updated." % (reference,)
     elif isinstance(reference, TableReference):
@@ -4106,6 +4197,7 @@ class _Update(BigqueryCmd):
           self.time_partitioning_type, self.time_partitioning_expiration,
           self.time_partitioning_field, None, self.require_partition_filter)
       range_partitioning = _ParseRangePartitioning(self.range_partitioning)
+      clustering = _ParseClustering(self.clustering_fields)
 
       encryption_configuration = None
       if self.destination_kms_key:
@@ -4125,6 +4217,7 @@ class _Update(BigqueryCmd):
           label_keys_to_remove=label_keys_to_remove,
           time_partitioning=time_partitioning,
           range_partitioning=range_partitioning,
+          clustering=clustering,
           require_partition_filter=self.require_partition_filter,
           etag=self.etag,
           encryption_configuration=encryption_configuration)
@@ -4557,7 +4650,9 @@ def _PrintObjectsArrayWithToken(object_infos, objects_type):
   if FLAGS.format in ['prettyjson', 'json']:
     _PrintFormattedJsonObject(object_infos)
   elif FLAGS.format in [None, 'sparse', 'pretty']:
-    _PrintObjectsArray(object_infos['list'], objects_type)
+    _PrintObjectsArray(object_infos['results'], objects_type)
+    if 'token' in object_infos:
+      print '\nNext token: ' + object_infos['token']
 
 
 

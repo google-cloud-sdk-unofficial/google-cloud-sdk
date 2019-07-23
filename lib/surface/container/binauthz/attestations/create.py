@@ -38,7 +38,7 @@ class CreateBeta(base.CreateCommand):
   r"""Create a Binary Authorization attestation.
 
   This command creates a Binary Authorization attestation for your project. The
-  attestation is created for the specified artifact (e.g. a grc.io container
+  attestation is created for the specified artifact (e.g. a gcr.io container
   URL), associate with the specified attestor, and stored under the specified
   project.
 
@@ -160,7 +160,7 @@ class CreateAlpha(base.CreateCommand):
   r"""Create a Binary Authorization attestation.
 
   This command creates a Binary Authorization attestation for your project. The
-  attestation is created for the specified artifact (e.g. a grc.io container
+  attestation is created for the specified artifact (e.g. a gcr.io container
   URL), associate with the specified attestor, and stored under the specified
   project.
 

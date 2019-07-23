@@ -24,6 +24,7 @@ import os
 import six
 
 import crcmod
+from gslib.commands import rsync
 from gslib.project_id import PopulateProjectId
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.integration_testcase import SkipForGS
@@ -66,8 +67,25 @@ if six.PY3:
   long = int
 
 NO_CHANGES = 'Building synchronization state...\nStarting synchronization...\n'
-if not UsingCrcmodExtension(crcmod):
+if not UsingCrcmodExtension():
   NO_CHANGES = SLOW_CRCMOD_RSYNC_WARNING + '\n' + NO_CHANGES
+
+
+class TestRsyncUnit(testcase.GsUtilUnitTestCase):
+  """Unit tests for methods in the commands.rsync module."""
+
+  def testUrlEncodeAndDecode(self):
+    # Test special URL chars as well as unicode:
+    decoded_url = 'gs://bkt/space fslash/plus+tilde~unicodeeè'
+    encoded_url = (
+        'gs%3A%2F%2Fbkt%2Fspace+fslash%2Fplus%2Btilde~unicodee%C3%A8')
+
+    # Encode accepts unicode, returns language-appropriate string type.
+    self.assertEqual(rsync._EncodeUrl(six.ensure_text(decoded_url)),
+                     six.ensure_str(encoded_url))
+    # Decode accepts language-appropriate string type, returns unicode.
+    self.assertEqual(rsync._DecodeUrl(six.ensure_str(encoded_url)),
+                     six.ensure_text(decoded_url))
 
 
 # TODO: Add inspection to the retry wrappers in this test suite where the state
@@ -203,8 +221,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
     _Check1()
 
   @unittest.skipIf(IS_WINDOWS, 'POSIX attributes not available on Windows.')
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_bucket_to_bucket_preserve_posix(self):
     """Tests that rsync -P works with bucket to bucket."""
     # Note that unlike bucket to dir tests POSIX attributes cannot be verified
@@ -770,8 +787,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
   # Test sequential upload as well as parallel composite upload case.
   @SequentialAndParallelTransfer
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_dir_to_bucket_mtime(self):
     """Tests dir to bucket with mtime.
 
@@ -933,8 +949,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
   # Test sequential upload as well as parallel composite upload case.
   @SequentialAndParallelTransfer
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_dir_to_bucket_seek_ahead(self):
     """Tests that rsync seek-ahead iterator works correctly."""
     # Unfortunately, we have to retry the entire operation in the case of
@@ -1000,8 +1015,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
   # Test sequential upload as well as parallel composite upload case.
   @SequentialAndParallelTransfer
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_dir_to_bucket_minus_d(self):
     """Tests that flat and recursive rsync dir to bucket works correctly."""
     # Create dir and bucket with 1 overlapping object, 1 extra object at root
@@ -1137,8 +1151,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
     _Check6()
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_dir_to_dir_mtime(self):
     """Tests that flat and recursive rsync dir to dir works correctly."""
     # Create 2 dirs with 1 overlapping file, 1 extra file at root
@@ -1278,8 +1291,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
     _Check3()
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_dir_to_dir_minus_d(self):
     """Tests that flat and recursive rsync dir to dir works correctly."""
     # Create 2 dirs with 1 overlapping file, 1 extra file at root
@@ -1455,8 +1467,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
     _Check()
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_bucket_to_dir_compressed_encoding(self):
     temp_file = self.CreateTempFile(contents=b'foo', file_name='bar')
     bucket_uri = self.CreateBucket()
@@ -1470,8 +1481,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
     self.assertIn('bar has a compressed content-encoding', stderr)
 
   @SequentialAndParallelTransfer
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_bucket_to_dir_mtime(self):
     """Tests bucket to dir with mtime at the source."""
     # Create bucket and dir with overlapping content and other combinations of
@@ -1846,8 +1856,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
   @SequentialAndParallelTransfer
   @unittest.skipIf(IS_WINDOWS, 'POSIX attributes not available on Windows.')
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_bucket_to_dir_preserve_posix_no_errors(self):
     """Tests that rsync -P works properly with default file attributes."""
     bucket_uri = self.CreateBucket()
@@ -1987,8 +1996,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
                                      uid=USER_ID,
                                      mode=0o444)
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_bucket_to_dir_minus_d(self):
     """Tests that flat and recursive rsync bucket to dir works correctly."""
     # Create bucket and dir with 1 overlapping object, 1 extra object at root
@@ -2123,8 +2131,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
     _Check6()
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_bucket_to_dir_minus_d_with_fname_case_change(self):
     """Tests that name case changes work correctly.
 
@@ -2164,8 +2171,7 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
 
     _Check1()
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_bucket_to_dir_minus_d_with_leftover_dir_placeholder(self):
     """Tests that we correctly handle leftover dir placeholders.
 
@@ -2542,13 +2548,18 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
     self.CreateTempFile(tmpdir=tmpdir, file_name='.obj2', contents=b'.obj2')
     bucket_url_str = '%s://%s' % (self.default_provider,
                                   self.nonexistent_bucket_name)
-    stderr = self.RunGsUtil(['rsync', '-d', bucket_url_str, tmpdir],
-                            expected_status=1,
-                            return_stderr=True)
-    self.assertIn('Caught non-retryable exception', stderr)
-    listing = TailSet(tmpdir, self.FlatListDir(tmpdir))
-    # Dir should have un-altered content.
-    self.assertEquals(listing, set(['/obj1', '/.obj2']))
+    # TODO(b/135780661): Remove retry after bug resolved
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _Check():
+      stderr = self.RunGsUtil(['rsync', '-d', bucket_url_str, tmpdir],
+                              expected_status=1,
+                              return_stderr=True)
+      self.assertIn('Caught non-retryable exception', stderr)
+      listing = TailSet(tmpdir, self.FlatListDir(tmpdir))
+      # Dir should have un-altered content.
+      self.assertEquals(listing, set(['/obj1', '/.obj2']))
+
+    _Check()
 
   def test_rsync_to_nonexistent_bucket(self):
     """Tests that rsync from a non-existent bucket subdir fails gracefully."""
@@ -2557,13 +2568,16 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
     self.CreateTempFile(tmpdir=tmpdir, file_name='.obj2', contents=b'.obj2')
     bucket_url_str = '%s://%s' % (self.default_provider,
                                   self.nonexistent_bucket_name)
-    stderr = self.RunGsUtil(['rsync', '-d', bucket_url_str, tmpdir],
-                            expected_status=1,
-                            return_stderr=True)
-    self.assertIn('Caught non-retryable exception', stderr)
-    listing = TailSet(tmpdir, self.FlatListDir(tmpdir))
-    # Dir should have un-altered content.
-    self.assertEquals(listing, set(['/obj1', '/.obj2']))
+    # TODO(b/135780661): Remove retry after bug resolved
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _Check():
+      stderr = self.RunGsUtil(['rsync', '-d', bucket_url_str, tmpdir],
+                              expected_status=1,
+                              return_stderr=True)
+      self.assertIn('Caught non-retryable exception', stderr)
+      listing = TailSet(tmpdir, self.FlatListDir(tmpdir))
+      # Dir should have un-altered content.
+      self.assertEquals(listing, set(['/obj1', '/.obj2']))
 
   def test_bucket_to_bucket_minus_d_with_overwrite_and_punc_chars(self):
     """Tests that punc chars in filenames don't confuse sort order."""
@@ -2834,6 +2848,24 @@ class TestRsync(testcase.GsUtilIntegrationTestCase):
                               str(ORIG_MTIME + 1))
 
     _Check()
+
+  def test_rsync_files_with_whitespace(self):
+    """Test to ensure filenames with whitespace can be rsynced"""
+    filename = 'foo bar baz.txt'
+    local_uris = []
+    bucket_uri = self.CreateBucket()
+    tmpdir = self.CreateTempDir()
+    contents = 'File from rsync test: test_rsync_files_with_whitespace'
+    local_file = self.CreateTempFile(tmpdir, contents, filename)
+
+    expected_list_results = frozenset(['/foo bar baz.txt'])
+
+    # Tests rsync works as expected.
+    self.RunGsUtil(['rsync', '-r', tmpdir, suri(bucket_uri)])
+    listing1 = TailSet(tmpdir, self.FlatListDir(tmpdir))
+    listing2 = TailSet(suri(bucket_uri), self.FlatListBucket(bucket_uri))
+    self.assertEquals(set(listing1), expected_list_results)
+    self.assertEquals(set(listing2), expected_list_results)
 
   @SkipForS3('No compressed transport encoding support for S3.')
   @SkipForXML('No compressed transport encoding support for the XML API.')

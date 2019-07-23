@@ -337,7 +337,7 @@ def GetDownloadHashAlgs(logger, consider_md5=False, consider_crc32c=False):
     # If the cloud provider supplies a CRC, we'll compute a checksum to
     # validate if we're using a native crcmod installation and MD5 isn't
     # offered as an alternative.
-    if UsingCrcmodExtension(crcmod):
+    if UsingCrcmodExtension():
       hash_algs['crc32c'] = lambda: crcmod.predefined.Crc('crc-32c')
     elif not hash_algs:
       if check_hashes_config == CHECK_HASH_IF_FAST_ELSE_FAIL:
@@ -400,6 +400,11 @@ class HashingFileUploadWrapper(object):
     self._digesters_previous_mark = 0
     self._digesters_current_mark = 0
     self._hash_algs = hash_algs
+
+  @property
+  def mode(self):
+    """Returns the mode of the underlying file descriptor, or None."""
+    return getattr(self._orig_fp, 'mode', None)
 
   def read(self, size=-1):  # pylint: disable=invalid-name
     """"Reads from the wrapped file pointer and calculates hash digests.

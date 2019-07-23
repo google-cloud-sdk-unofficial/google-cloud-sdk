@@ -243,7 +243,7 @@ class FileSystemTokenCache(TokenCache):
     serialized = value.Serialize()
     if isinstance(serialized, six.text_type):
       serialized = serialized.encode('utf-8')
-    f.write(serialized)
+    f.write(six.ensure_binary(serialized))
     f.close()
 
   def GetToken(self, key):
@@ -673,6 +673,7 @@ class OAuth2GCEClient(OAuth2Client):
       http = httplib2.Http()
       response, content = http.request(META_TOKEN_URI, method='GET',
                                        body=None, headers=META_HEADERS)
+      content = six.ensure_text(content)
     except Exception as e:
       raise GsAccessTokenRefreshError(e)
 

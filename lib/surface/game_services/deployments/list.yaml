@@ -7,6 +7,8 @@
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.game_services.hooks:AddDefaultLocationToListRequest
 
   response:
     id_field: name
@@ -24,11 +26,5 @@
          description:label=DESCRIPTION,
          createTime,
          updateTime,
-         newGameServerTemplate.description,
-         newGameServerTemplate.templateId,
-         newGameServerTemplate.spec,
-         stableGameServerTemplate.description,
-         stableGameServerTemplate.templateId,
-         stableGameServerTemplate.spec,
          labels
        )

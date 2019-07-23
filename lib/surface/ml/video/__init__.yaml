@@ -4,11 +4,9 @@ request:
   api_version: v1
 
 async:
-  collection: videointelligence.operations
+  collection: videointelligence.projects.locations.operations
   extract_resource_result: false
   result_attribute: response
-  operation_get_method_params:
-    name: operationsId
 
 args:
 - arg_name: input_path

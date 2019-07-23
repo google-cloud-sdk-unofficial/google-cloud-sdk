@@ -45,16 +45,23 @@ class List(commands.List):
 
   @classmethod
   def CommonArgs(cls, parser):
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    concept_parsers.ConceptParser([
+        resource_args.CLOUD_RUN_LOCATION_PRESENTATION
+    ]).AddToParser(managed_group)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
         'Namespace list triggers in.',
         required=True,
         prefixes=False)
-    concept_parsers.ConceptParser([
-        resource_args.CLOUD_RUN_LOCATION_PRESENTATION,
-        resource_args.CLUSTER_PRESENTATION,
-        namespace_presentation]).AddToParser(parser)
+    concept_parsers.ConceptParser(
+        [resource_args.CLUSTER_PRESENTATION,
+         namespace_presentation]).AddToParser(gke_group)
+    # Flags not specific to any platform
     parser.display_info.AddFormat("""table(
         {ready_column},
         firstof(id,metadata.name):label=TRIGGER,
@@ -67,6 +74,10 @@ class List(commands.List):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags not specific to any platform
     flags.AddAlphaPlatformArg(parser)
 
   def Run(self, args):
@@ -80,4 +91,3 @@ class List(commands.List):
     with eventflow_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
       return client.ListTriggers(namespace_ref)
-

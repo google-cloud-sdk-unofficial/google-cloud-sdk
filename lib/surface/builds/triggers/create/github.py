@@ -58,6 +58,7 @@ class CreateGitHub(base.CreateCommand):
     # Trigger configuration
     flag_config = trigger_config.add_argument_group(
         help='Flag based trigger configuration')
+    flag_config.add_argument('--description', help='Build trigger description.')
     flag_config.add_argument(
         '--repo-owner', help='Owner of the GitHub Repository.', required=True)
 
@@ -92,6 +93,7 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
     project = properties.VALUES.core.project.Get(required=True)
     messages = cloudbuild_util.GetMessagesModule()
     trigger = messages.BuildTrigger()
+    trigger.description = args.description
     # GitHub config
     gh = messages.GitHubEventsConfig(owner=args.repo_owner, name=args.repo_name)
 
@@ -150,9 +152,11 @@ RE2 and described at https://github.com/google/re2/wiki/Syntax.
 
     trigger = messages.BuildTrigger()
     if args.trigger_config:
-      trigger = cloudbuild_util.LoadMessageFromPath(args.trigger_config,
-                                                    messages.BuildTrigger,
-                                                    'build trigger config')
+      trigger = cloudbuild_util.LoadMessageFromPath(
+          path=args.trigger_config,
+          msg_type=messages.BuildTrigger,
+          msg_friendly_name='build trigger config',
+          skip_camel_case=['substitutions'])
     else:
       trigger = self.ParseTriggerFromFlags(args)
 

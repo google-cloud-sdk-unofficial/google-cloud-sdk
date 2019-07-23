@@ -59,7 +59,12 @@ def LogResponse(survey_instance):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Survey(base.Command):
-  """Invoke a customer satisfaction survey for Cloud SDK."""
+  """Invoke a customer satisfaction survey for Cloud SDK.
+
+  To permanently disable the survey prompt, run:
+
+     $ gcloud config set survey/disable_prompts=True
+  """
 
   @staticmethod
   def Args(parser):

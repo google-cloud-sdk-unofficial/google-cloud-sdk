@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+# Lint as: python2, python3
 """Flags for calling BigQuery."""
 
 import os
 
 
 import gflags as flags
+
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(

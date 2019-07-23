@@ -24,7 +24,8 @@
     - arg_name: source-snapshot-region
       required: false
       help_text: |
-        Region of the Filestore snapshot to restore from.
+        Region of the Filestore snapshot to restore from. If unspecified, it
+        is assumed that the Filestore snapshot is local.
 
   request:
     api_version: v1p1alpha1

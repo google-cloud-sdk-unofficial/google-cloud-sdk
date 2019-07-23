@@ -96,10 +96,8 @@ class Create(base.CreateCommand):
       hsts_notice_accepted = True
 
     console_io.PromptContinue(
-        'Yearly registration price: {}\n'
-        'Yearly renewal price: {}\n'.format(
-            util.TransformMoneyType(availability.registrationPrice),
-            util.TransformMoneyType(availability.renewalPrice)),
+        'Yearly price: {}\n'.format(
+            util.TransformMoneyType(availability.yearlyPrice)),
         throw_if_unattended=True,
         cancel_on_no=True)
 
@@ -109,8 +107,7 @@ class Create(base.CreateCommand):
         name_servers=name_servers,
         registrant_contact=registrant_contact,
         whois_privacy=whois_privacy,
-        registration_price=availability.registrationPrice,
-        renewal_price=availability.renewalPrice,
+        yearly_price=availability.yearlyPrice,
         hsts_notice_accepted=hsts_notice_accepted,
         labels=labels,
         validate_only=args.validate_only)

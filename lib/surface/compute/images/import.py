@@ -361,8 +361,7 @@ class ImportFromImageStager(BaseImportStager):
     daisy_vars.append('source_image={}'.format(source_name))
 
   def _BuildImportArgs(self, import_args):
-    source_image_name = self._GetSourceImage()
-    daisy_utils.AppendArg(import_args, 'source_image', source_image_name)
+    daisy_utils.AppendArg(import_args, 'source_image', self.args.source_image)
     _AppendTranslateWorkflowArg(self.args, import_args)
     super(ImportFromImageStager, self)._BuildImportArgs(import_args)
 

@@ -7,6 +7,8 @@
 
   request:
     collection: gameservices.projects.locations.realms
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.game_services.hooks:AddDefaultLocationToListRequest
 
   response:
     id_field: name

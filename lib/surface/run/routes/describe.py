@@ -44,7 +44,14 @@ class Describe(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
-    flags.AddRegionArg(parser)
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddRegionArg(managed_group)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
+    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
+                                  ]).AddToParser(gke_group)
+    # Flags not specific to any platform
     route_presentation = presentation_specs.ResourcePresentationSpec(
         'ROUTE',
         resource_args.GetRouteResourceSpec(),
@@ -52,13 +59,13 @@ class Describe(base.Command):
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser([
-        resource_args.CLUSTER_PRESENTATION,
         route_presentation]).AddToParser(parser)
     parser.display_info.AddFormat('yaml')
 
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
+    # Flags not specific to any platform
     flags.AddPlatformArg(parser)
 
   def Run(self, args):
@@ -76,11 +83,15 @@ class Describe(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaDescribe(Describe):
+  """Obtain details about a given route."""
 
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags not specific to any platform
     flags.AddAlphaPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
 
 AlphaDescribe.__doc__ = Describe.__doc__

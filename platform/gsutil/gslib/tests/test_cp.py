@@ -625,10 +625,15 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     fpath = self.CreateTempFile(contents=b'foo')
     invalid_bucket_uri = ('%s://%s' %
                           (self.default_provider, self.nonexistent_bucket_name))
-    stderr = self.RunGsUtil(['cp', fpath, invalid_bucket_uri],
-                            expected_status=1,
-                            return_stderr=True)
-    self.assertIn('does not exist', stderr)
+    # TODO(b/135780661): Remove retry after bug resolved
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _Check():
+      stderr = self.RunGsUtil(['cp', fpath, invalid_bucket_uri],
+                              expected_status=1,
+                              return_stderr=True)
+      self.assertIn('does not exist', stderr)
+
+    _Check()
 
   def test_copy_in_cloud_noclobber(self):
     bucket1_uri = self.CreateBucket()
@@ -1026,6 +1031,22 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
     self.assertRegex(stdout, r'Metadata:\s*1:\s*abcd')
 
   @SequentialAndParallelTransfer
+  def test_request_reason_header(self):
+    """Test that x-goog-request-header can be set using the environment variable."""
+    os.environ['CLOUDSDK_CORE_REQUEST_REASON'] = 'b/this_is_env_reason'
+    bucket_uri = self.CreateBucket()
+    dst_uri = suri(bucket_uri, 'foo')
+    fpath = self._get_test_file('test.gif')
+    # Ensure x-goog-request-header is set in cp command
+    stderr = self.RunGsUtil(['-D', 'cp', fpath, dst_uri], return_stderr=True)
+    self.assertRegex(stderr,
+                     r'\'x-goog-request-reason\': \'b/this_is_env_reason\'')
+    # Ensure x-goog-request-header is set in ls command
+    stderr = self.RunGsUtil(['-D', 'ls', '-L', dst_uri], return_stderr=True)
+    self.assertRegex(stderr,
+                     r'\'x-goog-request-reason\': \'b/this_is_env_reason\'')
+
+  @SequentialAndParallelTransfer
   def test_versioning(self):
     """Tests copy with versioning."""
     bucket_uri = self.CreateVersionedBucket()
@@ -1072,14 +1093,19 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
   def test_versioning_no_parallelism(self):
     """Tests that copy all-versions errors when parallelism is enabled."""
-    stderr = self.RunGsUtil([
-        '-m', 'cp', '-A',
-        suri(self.nonexistent_bucket_name, 'foo'),
-        suri(self.nonexistent_bucket_name, 'bar')
-    ],
-                            expected_status=1,
-                            return_stderr=True)
-    self.assertIn('-m option is not supported with the cp -A flag', stderr)
+    # TODO(b/135780661): Remove retry after bug resolved
+    @Retry(AssertionError, tries=3, timeout_secs=1)
+    def _Check():
+      stderr = self.RunGsUtil([
+          '-m', 'cp', '-A',
+          suri(self.nonexistent_bucket_name, 'foo'),
+          suri(self.nonexistent_bucket_name, 'bar')
+      ],
+                              expected_status=1,
+                              return_stderr=True)
+      self.assertIn('-m option is not supported with the cp -A flag', stderr)
+
+    _Check()
 
   @SkipForS3('S3 lists versioned objects in reverse timestamp order.')
   def test_recursive_copying_versioned_bucket(self):
@@ -3062,7 +3088,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
   # TODO: Enable this test for sequential downloads when their tracker files are
   # modified to contain the source object generation.
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
+  @unittest.skipUnless(UsingCrcmodExtension(),
                        'Sliced download requires fast crcmod.')
   @SkipForS3('No sliced download support for S3.')
   def test_cp_resumable_download_generation_differs(self):
@@ -3337,7 +3363,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
                           DEFAULT_SLICED_OBJECT_DOWNLOAD_THRESHOLD))
       sliced_download = (len(contents) > sliced_download_threshold and
                          sliced_download_threshold > 0 and
-                         UsingCrcmodExtension(crcmod))
+                         UsingCrcmodExtension())
       if sliced_download:
         trackerfile_type = TrackerFileType.SLICED_DOWNLOAD
       else:
@@ -3480,7 +3506,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       with open(fpath, 'rb') as f:
         self.assertEqual(f.read(), b'abc' * ONE_KIB, 'File contents differ')
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
+  @unittest.skipUnless(UsingCrcmodExtension(),
                        'Sliced download requires fast crcmod.')
   @SkipForS3('No sliced download support for S3.')
   def test_cp_unresumable_sliced_download(self):
@@ -3528,7 +3554,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
         self.assertEqual(f.read(), b'abcd' * self.halt_size,
                          'File contents differ')
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
+  @unittest.skipUnless(UsingCrcmodExtension(),
                        'Sliced download requires fast crcmod.')
   @SkipForS3('No sliced download support for S3.')
   def test_cp_sliced_download_resume(self):
@@ -3577,7 +3603,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
         self.assertEqual(f.read(), b'abc' * self.halt_size,
                          'File contents differ')
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
+  @unittest.skipUnless(UsingCrcmodExtension(),
                        'Sliced download requires fast crcmod.')
   @SkipForS3('No sliced download support for S3.')
   def test_cp_sliced_download_partial_resume(self):
@@ -3627,7 +3653,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
         self.assertEqual(f.read(), b'abc' * self.halt_size,
                          'File contents differ')
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
+  @unittest.skipUnless(UsingCrcmodExtension(),
                        'Sliced download requires fast crcmod.')
   @SkipForS3('No sliced download support for S3.')
   def test_cp_sliced_download_resume_content_differs(self):
@@ -3686,7 +3712,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       # Final file should not exist.
       self.assertFalse(os.path.isfile(fpath))
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
+  @unittest.skipUnless(UsingCrcmodExtension(),
                        'Sliced download requires fast crcmod.')
   @SkipForS3('No sliced download support for S3.')
   def test_cp_sliced_download_component_size_changed(self):
@@ -3736,7 +3762,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       self.assertIn('Restarting download from scratch', stderr)
       self.assertNotIn('Resuming download', stderr)
 
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
+  @unittest.skipUnless(UsingCrcmodExtension(),
                        'Sliced download requires fast crcmod.')
   @SkipForS3('No sliced download support for S3.')
   def test_cp_sliced_download_disabled_cross_process(self):
@@ -3807,7 +3833,10 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
 
   def start_over_error_test_helper(self, http_error_num):
     bucket_uri = self.CreateBucket()
-    fpath = self.CreateTempFile(contents=b'a' * 2 * ONE_KIB)
+    # The object contents need to be fairly large to avoid the race condition
+    # where the contents finish uploading before we artifically halt the copy.
+    rand_chars = get_random_ascii_chars(size=(ONE_MIB * 4))
+    fpath = self.CreateTempFile(contents=rand_chars)
     boto_config_for_test = ('GSUtil', 'resumable_threshold', str(ONE_KIB))
     if self.test_api == ApiSelector.JSON:
       test_callback_file = self.CreateTempFile(
@@ -4100,8 +4129,7 @@ class TestCp(testcase.GsUtilIntegrationTestCase):
       DeleteTrackerFile(tracker_file_name)
 
   @unittest.skipIf(IS_WINDOWS, 'POSIX attributes not available on Windows.')
-  @unittest.skipUnless(UsingCrcmodExtension(crcmod),
-                       'Test requires fast crcmod.')
+  @unittest.skipUnless(UsingCrcmodExtension(), 'Test requires fast crcmod.')
   def test_cp_preserve_posix_bucket_to_dir_no_errors(self):
     """Tests use of the -P flag with cp from a bucket to a local dir.
 

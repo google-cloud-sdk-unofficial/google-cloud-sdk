@@ -498,7 +498,6 @@ class Create(base.CreateCommand):
 
     requests = self._CreateRequests(
         args, instance_refs, compute_client, resource_parser, holder)
-
     if not args.async:
       # TODO(b/63664449): Replace this with poller + progress tracker.
       try:
@@ -526,6 +525,9 @@ class Create(base.CreateCommand):
       raise core_exceptions.MultiError(errors_to_collect)
 
     operation_refs = [holder.resources.Parse(r.selfLink) for r in responses]
+
+    log.status.Print('NOTE: The users will be charged for public IPs when VMs '
+                     'are created.')
 
     for instance_ref, operation_ref in zip(instance_refs, operation_refs):
       log.status.Print('Instance creation in progress for [{}]: {}'

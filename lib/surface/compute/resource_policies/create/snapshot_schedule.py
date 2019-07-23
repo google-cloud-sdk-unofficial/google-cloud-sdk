@@ -45,14 +45,9 @@ Start time for the disk snapshot schedule. See $ gcloud topic datetimes for info
   parser.display_info.AddCacheUpdater(None)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateSnapshotScheduleBeta(base.CreateCommand):
-  """Create a Google Compute Engine Snapshot Schedule Resource Policy.
-
-  *{command} creates a Resource Policy which can be attached to disks and
-  specifies a schedule for taking disk snapshots and how long these snapshots
-  should be retained.
-  """
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateSnapshotSchedule(base.CreateCommand):
+  """Create a Google Compute Engine Snapshot Schedule Resource Policy."""
 
   @staticmethod
   def Args(parser):
@@ -79,21 +74,25 @@ class CreateSnapshotScheduleBeta(base.CreateCommand):
     return client.MakeRequests([(service, 'Insert', create_request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
-  """Create a Google Compute Engine Snapshot Schedule Resource Policy.
-
-  *{command} creates a Resource Policy which can be attached to disks and
-  specifies a schedule for taking disk snapshots and how long these snapshots
-  should be retained.
-  """
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateSnapshotScheduleBeta(CreateSnapshotSchedule):
+  """Create a Google Compute Engine Snapshot Schedule Resource Policy."""
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, api_version=compute_api.COMPUTE_ALPHA_API_VERSION)
 
 
-CreateSnapshotScheduleBeta.detailed_help = {
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
+  """Create a Google Compute Engine Snapshot Schedule Resource Policy."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, api_version=compute_api.COMPUTE_ALPHA_API_VERSION)
+
+
+CreateSnapshotSchedule.detailed_help = {
     'DESCRIPTION':
         """\
 Create a Google Compute Engine Snapshot Schedule Resource Policy.

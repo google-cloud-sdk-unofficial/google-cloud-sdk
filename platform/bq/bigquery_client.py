@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Lint as: python2, python3
+# pylint: disable=g-unknown-interpreter
 # Copyright 2012 Google Inc. All Rights Reserved.
 
 """Bigquery Client library for Python."""
@@ -37,8 +39,11 @@ import six.moves.http_client
 
 # pylint: disable=unused-import
 import bq_flags
+
 # To configure apiclient logging.
 import gflags as flags
+
+
 
 # A unique non-None default, for use in kwargs that need to
 # distinguish default from None.
@@ -50,6 +55,7 @@ _MAX_RESULTS = 100000
 
 
 _GCS_SCHEME_PREFIX = 'gs://'
+
 
 
 
@@ -575,19 +581,17 @@ class BigqueryError(Exception):
     if new_errors:
       message += '\nFailure details:\n'
     wrap_error_message = True
+    new_error_messages = [
+        ': '.join(filter(
+            None, [err.get('location'), err.get('message')]))
+        for err in new_errors
+    ]
     if wrap_error_message:
       message += '\n'.join(
-          textwrap.fill(
-              ': '.join(filter(None, [
-                  err.get('location', None), err.get('message', '')])),
-              initial_indent=' - ',
-              subsequent_indent='   ')
-          for err in new_errors)
+          textwrap.fill(msg, initial_indent=' - ', subsequent_indent='   ')
+          for msg in new_error_messages)
     else:
-      error_message = '\n'.join(
-          ': '.join(filter(None, [
-              err.get('location', None), err.get('message', '')]))
-          for err in new_errors)
+      error_message = '\n'.join(new_error_messages)
       if error_message:
         message += '- ' + error_message
 
@@ -787,6 +791,9 @@ class BigqueryHttp(http_request.HttpRequest):
 class JobIdGenerator(six.with_metaclass(abc.ABCMeta, object)):
   """Base class for job id generators."""
 
+  def __init__(self):
+    pass
+
   @abc.abstractmethod
   def Generate(self, job_configuration):
     """Generates a job_id to use for job_configuration."""
@@ -842,6 +849,7 @@ class JobIdGeneratorIncrementing(JobIdGenerator):
   """Generates job ids that increment each time we're asked."""
 
   def __init__(self, inner):
+    super(JobIdGeneratorIncrementing, self).__init__()
     self._inner = inner
     self._retry = 0
 
@@ -1980,8 +1988,6 @@ class BigqueryClient(object):
     if connection_type == 'CLOUD_SQL':
       connection['cloudSql'] = json.loads(properties)
 
-    request = {}
-    request['connection'] = connection
     client = self.GetConnectionV1ApiClient()
 
     if '/' in reference.connectionId:
@@ -1989,15 +1995,35 @@ class BigqueryClient(object):
       pos = path.rfind('/')
       parent = path[:pos]
       connection_id = path[pos + 1:]
-      request['connectionId'] = connection_id
-      return client.projects().locations().connections().createConnection(
-          parent=parent, body=request).execute()
+      return client.projects().locations().connections().create(
+          parent=parent, connectionId=connection_id, body=connection).execute()
     else:
       parent = 'projects/%s/locations/%s' % (reference.projectId,
                                              reference.location)
-      request['connectionId'] = reference.connectionId
       return client.projects().locations().connections().create(
-          parent=parent, body=request).execute()
+          parent=parent, connectionId=reference.connectionId,
+          body=connection).execute()
+
+  def UpdateConnection(self, reference, connection_type, properties):
+    """Update connection with the given connection reference.
+
+    Arguments:
+      reference: Connection to update
+      connection_type: Type of connection, allowed values: ['CLOUD_SQL']
+      properties: Connection properties
+
+    Returns:
+      Connection object that was created.
+    """
+
+    connection = {}
+    if connection_type == 'CLOUD_SQL':
+      connection['cloudSql'] = json.loads(properties)
+
+    client = self.GetConnectionV1ApiClient()
+
+    return client.projects().locations().connections().patch(
+        name=reference.path(), body=connection).execute()
 
   def DeleteConnection(self, reference):
     """Delete a connection with the given connection reference.
@@ -2036,18 +2062,16 @@ class BigqueryClient(object):
       credential_json: Connection type specific credential in JSON format.
     """
 
-    request = {}
     credential = {}
 
     if connection_type == 'CLOUD_SQL':
       credential['cloud_sql'] = json.loads(credential_json)
-    request['credential'] = credential
 
     name = reference.path() + '/credential'
 
     client = self.GetConnectionV1ApiClient()
     client.projects().locations().connections().updateCredential(
-        name=name, body=request).execute()
+        name=name, body=credential).execute()
 
   def ReadSchemaAndRows(self, table_dict, start_row=None, max_rows=None,
                         selected_fields=None):
@@ -3303,25 +3327,36 @@ class BigqueryClient(object):
   #################################
   ##       Transfer run
   #################################
-  def ScheduleTransferRun(self, reference, start_time, end_time):
-    """Schedule a new transfer run.
+  def StartManualTransferRuns(self, reference, start_time, end_time, run_time):
+    """Starts manual transfer runs.
 
     Args:
       reference: Transfer configuration name for the run.
-      start_time: Start time of the range of transfer run.
-      end_time: End time of the range of transfer run.
+      start_time: Start time of the range of transfer runs.
+      end_time: End time of the range of transfer runs.
+      run_time: Specific time for a transfer run.
 
     Returns:
-      The transfer run description.
+      The list of started transfer runs.
     """
     _Typecheck(reference, ApiClientHelper.TransferConfigReference,
-               method='ScheduleTransferRun')
+               method='StartManualTransferRuns')
     transfer_client = self.GetTransferV1ApiClient()
     parent = str(reference)
-    body = {'startTime': start_time, 'endTime': end_time}
-    response = transfer_client.projects().locations().transferConfigs(
-    ).scheduleRuns(
-        parent=parent, body=body).execute()
+
+    if run_time:
+      body = {'requestedRunTime': run_time}
+    else:
+      body = {
+          'requestedTimeRange': {
+              'startTime': start_time,
+              'endTime': end_time
+          }
+      }
+
+    configs_request = transfer_client.projects().locations().transferConfigs()
+    response = configs_request.startManualRuns(parent=parent, body=body).execute()
+
     return response.get('runs')
 
   #################################
@@ -3830,6 +3865,7 @@ class BigqueryClient(object):
       label_keys_to_remove=None,
       time_partitioning=None,
       range_partitioning=None,
+      clustering=None,
       require_partition_filter=None,
       etag=None,
       encryption_configuration=None):
@@ -3857,6 +3893,8 @@ class BigqueryClient(object):
         and configures the partitioning.
       range_partitioning: if set, enables range partitioning on the table and
         configures the partitioning.
+      clustering: if set, enables clustering on the table and configures the
+        clustering spec.
       require_partition_filter: if set, partition filter is required for
         queires over this table.
       etag: if set, checks that etag in the existing table matches.
@@ -3909,6 +3947,8 @@ class BigqueryClient(object):
       table['timePartitioning'] = time_partitioning
     if range_partitioning is not None:
       table['rangePartitioning'] = range_partitioning
+    if clustering is not None:
+      table['clustering'] = clustering
     if require_partition_filter is not None:
       table['requirePartitionFilter'] = require_partition_filter
 
@@ -4954,7 +4994,7 @@ class BigqueryClient(object):
       destination_encryption_configuration=None,
       use_avro_logical_types=None,
       range_partitioning=None,
-      hive_partitioning_mode=None,
+      hive_partitioning_options=None,
       **kwds):
     """Load the given data into BigQuery.
 
@@ -5006,10 +5046,13 @@ class BigqueryClient(object):
           TIMESTAMP), instead of only using their raw types (ie. INTEGER).
       range_partitioning: Optional. Provides range partitioning specification
           for the destination table.
-      hive_partitioning_mode: (experimental) Enables hive partitioning.  AUTO
-          indicates to perform automatic type inference.  STRINGS indicates to
-          treat all hive partition keys as STRING typed.  No other values are
-          accepted.
+      hive_partitioning_options: (experimental) Options for configuring hive
+          partitioning.  'mode' determines the partitioning mode. It accepts
+          three strings: AUTO (automatic type inference), STRINGS (treat all
+          partition key types as strings) and CUSTOM (customer provided schema).
+          No other values are accepted.
+          'sourceUriPrefix' is the shared prefix after which partition encoding
+          is expected to begin across all uris.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -5027,8 +5070,6 @@ class BigqueryClient(object):
       load_config['schema'] = {'fields': BigqueryClient.ReadSchema(schema)}
     if use_avro_logical_types is not None:
       load_config['useAvroLogicalTypes'] = use_avro_logical_types
-    if hive_partitioning_mode is not None:
-      load_config['hivePartitioningMode'] = hive_partitioning_mode
     if destination_encryption_configuration:
       load_config['destinationEncryptionConfiguration'] = (
           destination_encryption_configuration)
@@ -5051,7 +5092,8 @@ class BigqueryClient(object):
         time_partitioning=time_partitioning,
         clustering=clustering,
         autodetect=autodetect,
-        range_partitioning=range_partitioning)
+        range_partitioning=range_partitioning,
+        hive_partitioning_options=hive_partitioning_options)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
 

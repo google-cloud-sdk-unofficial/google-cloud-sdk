@@ -396,8 +396,18 @@ def MonkeyPatchBoto():
         gcs_oauth2_boto_plugin.oauth2_plugin.OAuth2ServiceAccountAuth,
         gcs_oauth2_boto_plugin.oauth2_plugin.OAuth2Auth)
     new_result = (
-        [r for r in handler_subclasses if r not in xml_oauth2_handlers] +
-        [r for r in handler_subclasses if r in xml_oauth2_handlers])
+        # We need to sort each of these to avoid inconsistent handler selection
+        # when multiple credential types are configured in Python 3.5. See
+        # https://issuetracker.google.com/issues/135709541 for specific logs.
+        sorted(
+            [r for r in handler_subclasses if r not in xml_oauth2_handlers],
+            # Types aren't sortable, so we use their names:
+            key=(lambda handler_t: handler_t.__name__),
+        ) +  # Now append XML handlers to the end (highest precedence)
+        sorted(
+            [r for r in handler_subclasses if r in xml_oauth2_handlers],
+            key=(lambda handler_t: handler_t.__name__),
+        ))
     return new_result
 
   boto.plugin.get_plugin = _PatchedGetPluginMethod
@@ -488,10 +498,24 @@ def ResumableThreshold():
   return config.getint('GSUtil', 'resumable_threshold', 8 * ONE_MIB)
 
 
-def UsingCrcmodExtension(crcmod):
-  return (boto.config.get('GSUtil', 'test_assume_fast_crcmod', None) or
-          (getattr(crcmod, 'crcmod', None) and
-           getattr(crcmod.crcmod, '_usingExtension', None)))
+def UsingCrcmodExtension():
+  boto_opt = boto.config.get('GSUtil', 'test_assume_fast_crcmod', None)
+  if boto_opt is not None:
+    return boto_opt
+  # Python 3 makes this attribute tough to access due to the way the top-level
+  # crcmod package imports and (identically) names its crcmod module. The only
+  # way to get it is "from crcmod.crcmod import _usingExtension". This is the
+  # alternative form of that statement, but doesn't pollute this module's
+  # namespace with a "_usingExtension" attribute. This also works in both Python
+  # 2.7 and 3.5+.
+  nested_crcmod = __import__(
+      'crcmod.crcmod',
+      globals(),
+      locals(),
+      ['_usingExtension'],
+      0,
+  )
+  return getattr(nested_crcmod, '_usingExtension', False)
 
 
 # TODO(boto-2.49.0): Remove when we pull in the next version of Boto.

@@ -64,6 +64,7 @@ For more details, see: https://cloud.google.com/cloud-build/docs/api/reference/r
     # Trigger configuration
     flag_config = trigger_config.add_argument_group(
         help='Flag based trigger configuration')
+    flag_config.add_argument('--description', help='Build trigger description.')
     repo_spec = presentation_specs.ResourcePresentationSpec(
         '--repo',  # This defines how the "anchor" or leaf argument is named.
         repo_resource.GetRepoResourceSpec(),
@@ -93,18 +94,22 @@ For more details, see: https://cloud.google.com/cloud-build/docs/api/reference/r
 
     trigger = messages.BuildTrigger()
     if args.trigger_config:
-      trigger = cloudbuild_util.LoadMessageFromPath(args.trigger_config,
-                                                    messages.BuildTrigger,
-                                                    'build trigger config')
+      trigger = cloudbuild_util.LoadMessageFromPath(
+          path=args.trigger_config,
+          msg_type=messages.BuildTrigger,
+          msg_friendly_name='build trigger config',
+          skip_camel_case=['substitutions'])
     else:
       repo_ref = args.CONCEPTS.repo.Parse()
       repo = repo_ref.reposId
       trigger = messages.BuildTrigger(
+          description=args.description,
           triggerTemplate=messages.RepoSource(
               repoName=repo,
               branchName=args.branch_pattern,
               tagName=args.tag_pattern,
-          ),)
+          ),
+      )
 
       # Build Config
       if args.build_config:

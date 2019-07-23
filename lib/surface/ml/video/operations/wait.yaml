@@ -8,7 +8,7 @@
       analysis.
 
   request:
-    collection: videointelligence.operations
+    collection: videointelligence.projects.locations.operations
     api_version: v1
 
   arguments:
@@ -17,9 +17,7 @@
       spec: !REF googlecloudsdk.command_lib.ml.video.resources:operation
 
   async:
-    collection: videointelligence.operations
-    operation_get_method_params:
-      name: operationsId
+    collection: videointelligence.projects.locations.operations
     result_attribute: response
 
   output:

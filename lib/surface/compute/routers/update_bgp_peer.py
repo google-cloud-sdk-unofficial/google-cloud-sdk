@@ -233,6 +233,9 @@ def _UpdateBgpPeerBfdMessage(messages, peer, args):
   if args.bfd_session_initialization_mode is not None:
     attrs['mode'] = messages.RouterBgpPeerBfd.ModeValueValuesEnum(
         args.bfd_session_initialization_mode)
+    attrs['sessionInitializationMode'] = (
+        messages.RouterBgpPeerBfd.SessionInitializationModeValueValuesEnum(
+            args.bfd_session_initialization_mode))
   if args.bfd_packet_mode is not None:
     attrs['packetMode'] = (
         messages.RouterBgpPeerBfd.PacketModeValueValuesEnum(

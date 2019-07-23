@@ -49,16 +49,21 @@ class List(commands.List):
 
   @classmethod
   def CommonArgs(cls, parser):
-    flags.AddRegionArgWithDefault(parser)
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddRegionArgWithDefault(managed_group)
+    # Flags specific to CRoGKE
+    gke_group = flags.GetGkeArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
         'Namespace list configurations in.',
         required=True,
         prefixes=False)
-    concept_parsers.ConceptParser([
-        resource_args.CLUSTER_PRESENTATION,
-        namespace_presentation]).AddToParser(parser)
+    concept_parsers.ConceptParser(
+        [resource_args.CLUSTER_PRESENTATION,
+         namespace_presentation]).AddToParser(gke_group)
+    # Flags not specific to any platform
     parser.display_info.AddFormat(
         'table('
         '{ready_column},'
@@ -72,6 +77,7 @@ class List(commands.List):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    # Flags not specific to any platform
     flags.AddPlatformArg(parser)
 
   def Run(self, args):
@@ -85,11 +91,18 @@ class List(commands.List):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaList(List):
+  """List available Configurations.
+
+  Every Configuration is paired with a Service of the same name.
+  """
 
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags not specific to any platform
     flags.AddAlphaPlatformArg(parser)
-    flags.AddKubeconfigFlags(parser)
 
 AlphaList.__doc__ = List.__doc__

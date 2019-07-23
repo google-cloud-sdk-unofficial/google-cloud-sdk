@@ -27,9 +27,29 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateAlphaBeta(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To update existing labels on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
+
+          To clear all labels on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --clear-labels
+
+          To remove an existing label on a Cloud Pub/Sub topic, run:
+
+              $ {command} mytopic --remove-labels=KEY1,KEY2
+
+          To update a Cloud Pub/Sub topic's message storage policy, run:
+
+              $ {command} mytopic message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
+          """
+  }
 
   @staticmethod
   def Args(parser):
@@ -94,8 +114,8 @@ class UpdateAlpha(base.UpdateCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class UpdateBetaGA(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
 
   detailed_help = {

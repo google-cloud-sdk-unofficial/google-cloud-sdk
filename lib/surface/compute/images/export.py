@@ -132,7 +132,8 @@ class Export(base.CreateCommand):
     bucket_location = storage_client.GetBucketLocationForFile(
         args.destination_uri)
     bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
-    storage_client.CreateBucketIfNotExists(bucket_name)
+    storage_client.CreateBucketIfNotExists(bucket_name,
+                                           location=bucket_location)
     return bucket_name
 
   @staticmethod

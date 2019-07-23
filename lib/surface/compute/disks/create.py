@@ -166,6 +166,8 @@ Valid values are 4096(default) and 16384.
   if vss_erase_enabled:
     flags.AddEraseVssSignature(parser, resource='a source snapshot')
 
+  resource_flags.AddResourcePoliciesArgs(parser, 'added to', 'disk')
+
 
 def _AddReplicaZonesArg(parser):
   parser.add_argument(
@@ -260,7 +262,7 @@ class Create(base.Command):
         project_to_source_image[disk_ref.project].uri = None
     return project_to_source_image
 
-  def WarnAboutScopeDeprecationsAndMaintainance(self, disk_refs, client):
+  def WarnAboutScopeDeprecationsAndMaintenance(self, disk_refs, client):
     # Check if the zone is deprecated or has maintenance coming.
     zone_resource_fetcher = zone_utils.ZoneResourceFetcher(client)
     zone_resource_fetcher.WarnForZonalCreation(
@@ -333,7 +335,7 @@ class Create(base.Command):
     disk_refs = self.ValidateAndParseDiskRefs(args, compute_holder)
     from_image = self.GetFromImage(args)
     size_gb = self.GetDiskSizeGb(args, from_image)
-    self.WarnAboutScopeDeprecationsAndMaintainance(disk_refs, client)
+    self.WarnAboutScopeDeprecationsAndMaintenance(disk_refs, client)
     project_to_source_image = self.GetProjectToSourceImageDict(
         args, disk_refs, compute_holder, from_image)
     snapshot_uri = self.GetSnapshotUri(args, compute_holder)
@@ -353,7 +355,6 @@ class Create(base.Command):
               csek_keys, compute_holder.resources,
               [source_image_uri, snapshot_uri], client.apitools_client))
 
-    resource_policies = getattr(args, 'resource_policies', None)
     # end of alpha/beta features.
 
     guest_os_feature_messages = _ParseGuestOsFeaturesToMessages(
@@ -384,6 +385,14 @@ class Create(base.Command):
         kwargs['diskEncryptionKey'] = kms_utils.MaybeGetKmsKey(
             args, client.messages, kwargs.get('diskEncryptionKey', None))
 
+      # end of alpha/beta features.
+
+      if supports_physical_block and args.IsSpecified('physical_block_size'):
+        physical_block_size_bytes = int(args.physical_block_size)
+      else:
+        physical_block_size_bytes = None
+
+      resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
         if disk_ref.Collection() == 'compute.regionDisks':
           disk_region = disk_ref.region
@@ -398,13 +407,6 @@ class Create(base.Command):
               region=disk_region)
           parsed_resource_policies.append(resource_policy_ref.SelfLink())
         kwargs['resourcePolicies'] = parsed_resource_policies
-
-      # end of alpha/beta features.
-
-      if supports_physical_block and args.IsSpecified('physical_block_size'):
-        physical_block_size_bytes = int(args.physical_block_size)
-      else:
-        physical_block_size_bytes = None
 
       disk = client.messages.Disk(
           name=disk_ref.Name(),
@@ -479,7 +481,6 @@ class CreateBeta(Create):
         include_physical_block_size_support=True)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
     _AddReplicaZonesArg(parser)
-    resource_flags.AddResourcePoliciesArgs(parser, 'added to', 'disk')
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
 
@@ -502,7 +503,6 @@ class CreateAlpha(Create):
         vss_erase_enabled=True)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     _AddReplicaZonesArg(parser)
-    resource_flags.AddResourcePoliciesArgs(parser, 'added to', 'disk')
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
     parser.add_argument(

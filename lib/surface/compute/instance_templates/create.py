@@ -52,12 +52,14 @@ def _CommonArgs(
     support_local_ssd_size=False,
     support_kms=False,
     support_reservation=False,
+    support_resource_policy=False
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_kms=support_kms)
-  instances_flags.AddCreateDiskArgs(parser, enable_kms=support_kms)
+  instances_flags.AddCreateDiskArgs(parser, enable_kms=support_kms,
+                                    resource_policy=support_resource_policy)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -502,6 +504,7 @@ class CreateBeta(Create):
   _support_source_instance = True
   _support_kms = True
   _support_reservation = True
+  _support_resource_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -511,7 +514,8 @@ class CreateBeta(Create):
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_reservation=cls._support_reservation
+        support_reservation=cls._support_reservation,
+        support_resource_policy=cls._support_resource_policy
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -550,6 +554,7 @@ class CreateAlpha(Create):
   _support_source_instance = True
   _support_kms = True
   _support_reservation = True
+  _support_resource_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -559,7 +564,8 @@ class CreateAlpha(Create):
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_reservation=cls._support_reservation)
+        support_reservation=cls._support_reservation,
+        support_resource_policy=cls._support_resource_policy)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
 
