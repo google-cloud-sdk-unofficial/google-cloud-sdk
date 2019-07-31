@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+# python2 python3
 #
 # Copyright 2010 Google Inc. All Rights Reserved.
 
@@ -6,8 +6,7 @@
 
 This module is a stub that runs the builtin Dulwich test suite.
 """
-
-__author__ = 'dborowitz@google.com (Dave Borowitz)'
+from __future__ import print_function
 
 import sys
 import types
@@ -16,7 +15,12 @@ import unittest
 
 from dulwich import tests
 from dulwich.tests import utils
-import unittest2
+
+if sys.version_info.major <= 2:
+  import unittest2
+else:
+  unittest2 = unittest
+  from importlib import reload
 
 # Hold on to the original unittest.TestCase. It is overwritten as a side effect
 # of importing googletest, which breaks the default test runner.
@@ -63,9 +67,10 @@ utils.ext_functest_builder = NonSkippingExtFunctestBuilder
 
 
 if __name__ == '__main__':
-  print >>sys.stderr, 'ENCODING: ' + sys.getfilesystemencoding()
+  print('ENCODING: ' + sys.getfilesystemencoding(), file=sys.stderr)
   reload(sys)
   sys.getfilesystemencoding = lambda: 'ascii'
-  print >>sys.stderr, 'ENCODING: ' + sys.getfilesystemencoding()
+  print('ENCODING: ' + sys.getfilesystemencoding(), file=sys.stderr)
+  googletest.ThisTestIsUsefulWithoutCallingMain()
   result = unittest2.TextTestRunner().run(tests.test_suite())
   sys.exit(not result.wasSuccessful())

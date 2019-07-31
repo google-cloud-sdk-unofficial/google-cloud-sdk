@@ -94,12 +94,14 @@ def _CommonRun(args, support_beta_features=False):
   worker_machine_type = None
   network = None
   subnetwork = None
+  dataflow_kms_key = None
 
   if support_beta_features:
     num_workers = args.num_workers
     worker_machine_type = args.worker_machine_type
     network = args.network
     subnetwork = args.subnetwork
+    dataflow_kms_key = args.dataflow_kms_key
 
   job = apis.Templates.Create(
       project_id=properties.VALUES.core.project.Get(required=True),
@@ -114,7 +116,8 @@ def _CommonRun(args, support_beta_features=False):
       num_workers=num_workers,
       worker_machine_type=worker_machine_type,
       network=network,
-      subnetwork=subnetwork)
+      subnetwork=subnetwork,
+      dataflow_kms_key=dataflow_kms_key)
 
   return job
 
@@ -156,6 +159,10 @@ class RunBeta(Run):
         '--network',
         help='The Compute Engine network for launching instances to '
         'run your pipeline.')
+
+    parser.add_argument(
+        '--dataflow-kms-key',
+        help='The Cloud KMS key to protect the job resources.')
 
   def Run(self, args):
     return _CommonRun(args, True)

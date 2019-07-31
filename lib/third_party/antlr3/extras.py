@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 """ @package antlr3.dottreegenerator
 @brief ANTLR3 runtime package, tree module
 
@@ -41,7 +42,8 @@ This module contains all support classes for AST construction and tree parsers.
 from treewizard import TreeWizard
 
 try:
-    from antlr3.dottreegen import toDOT
-except ImportError, exc:
-    def toDOT(*args, **kwargs):
-        raise exc
+  from antlr3.dottreegen import toDOT
+except ImportError as exc:
+
+  def toDOT(*args, **kwargs):
+    raise exc

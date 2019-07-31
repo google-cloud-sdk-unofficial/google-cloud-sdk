@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -28,8 +29,8 @@ def _group_matching(tlist, cls):
             continue
 
         if token.is_group and not isinstance(token, cls):
-            # Check inside previously grouped (ie. parenthesis) if group
-            # of differnt type is inside (ie, case). though ideally  should
+            # Check inside previously grouped (i.e. parenthesis) if group
+            # of different type is inside (i.e., case). though ideally  should
             # should check for all open/close tokens at once to avoid recursion
             _group_matching(token, cls)
             continue
@@ -134,7 +135,7 @@ def group_assignment(tlist):
         return token.match(T.Assignment, ':=')
 
     def valid(token):
-        return token is not None
+        return token is not None and token.ttype not in (T.Keyword)
 
     def post(tlist, pidx, tidx, nidx):
         m_semicolon = T.Punctuation, ';'
@@ -224,8 +225,8 @@ def group_identifier_list(tlist):
     m_role = T.Keyword, ('null', 'role')
     sqlcls = (sql.Function, sql.Case, sql.Identifier, sql.Comparison,
               sql.IdentifierList, sql.Operation)
-    ttypes = (T_NUMERICAL + T_STRING + T_NAME +
-              (T.Keyword, T.Comment, T.Wildcard))
+    ttypes = (T_NUMERICAL + T_STRING + T_NAME
+              + (T.Keyword, T.Comment, T.Wildcard))
 
     def match(token):
         return token.match(T.Punctuation, ',')
@@ -274,7 +275,7 @@ def group_where(tlist):
 @recurse()
 def group_aliased(tlist):
     I_ALIAS = (sql.Parenthesis, sql.Function, sql.Case, sql.Identifier,
-               sql.Operation)
+               sql.Operation, sql.Comparison)
 
     tidx, token = tlist.token_next_by(i=I_ALIAS, t=T.Number)
     while token:
@@ -326,6 +327,18 @@ def align_comments(tlist):
         tidx, token = tlist.token_next_by(i=sql.Comment, idx=tidx)
 
 
+def group_values(tlist):
+    tidx, token = tlist.token_next_by(m=(T.Keyword, 'VALUES'))
+    start_idx = tidx
+    end_idx = -1
+    while token:
+        if isinstance(token, sql.Parenthesis):
+            end_idx = tidx
+        tidx, token = tlist.token_next(tidx)
+    if end_idx != -1:
+        tlist.group_tokens(sql.Values, start_idx, end_idx, extend=True)
+
+
 def group(stmt):
     for func in [
         group_comments,
@@ -346,13 +359,14 @@ def group(stmt):
         group_order,
         group_typecasts,
         group_operator,
+        group_comparison,
         group_as,
         group_aliased,
         group_assignment,
-        group_comparison,
 
         align_comments,
         group_identifier_list,
+        group_values,
     ]:
         func(stmt)
     return stmt
@@ -365,7 +379,7 @@ def _group(tlist, cls, match,
            extend=True,
            recurse=True
            ):
-    """Groups together tokens that are joined by a middle token. ie. x < y"""
+    """Groups together tokens that are joined by a middle token. i.e. x < y"""
 
     tidx_offset = 0
     pidx, prev_ = None, None

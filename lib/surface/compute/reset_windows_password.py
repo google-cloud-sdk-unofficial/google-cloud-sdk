@@ -290,7 +290,8 @@ class ResetWindowsPassword(base.UpdateCommand):
         if not encrypted_password_dict.get('encryptedPassword'):
           continue
 
-        if search_modulus == modulus:
+        if (core_encoding.Decode(search_modulus) == core_encoding.Decode(
+            modulus)):
           encrypted_password_data = encrypted_password_dict
           break
       if not agent_ready:

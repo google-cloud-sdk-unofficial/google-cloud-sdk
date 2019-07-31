@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -56,6 +57,14 @@ def validate_options(options):
         options['truncate_strings'] = truncate_strings
         options['truncate_char'] = options.get('truncate_char', '[...]')
 
+    indent_columns = options.get('indent_columns', False)
+    if indent_columns not in [True, False]:
+        raise SQLParseError('Invalid value for indent_columns: '
+                            '{0!r}'.format(indent_columns))
+    elif indent_columns:
+        options['reindent'] = True  # enforce reindent
+    options['indent_columns'] = indent_columns
+
     reindent = options.get('reindent', False)
     if reindent not in [True, False]:
         raise SQLParseError('Invalid value for reindent: '
@@ -69,6 +78,12 @@ def validate_options(options):
                             '{0!r}'.format(reindent))
     elif reindent_aligned:
         options['strip_whitespace'] = True
+
+    indent_after_first = options.get('indent_after_first', False)
+    if indent_after_first not in [True, False]:
+        raise SQLParseError('Invalid value for indent_after_first: '
+                            '{0!r}'.format(indent_after_first))
+    options['indent_after_first'] = indent_after_first
 
     indent_tabs = options.get('indent_tabs', False)
     if indent_tabs not in [True, False]:
@@ -151,10 +166,13 @@ def build_filter_stack(stack, options):
     if options.get('reindent'):
         stack.enable_grouping()
         stack.stmtprocess.append(
-            filters.ReindentFilter(char=options['indent_char'],
-                                   width=options['indent_width'],
-                                   wrap_after=options['wrap_after'],
-                                   comma_first=options['comma_first']))
+            filters.ReindentFilter(
+                char=options['indent_char'],
+                width=options['indent_width'],
+                indent_after_first=options['indent_after_first'],
+                indent_columns=options['indent_columns'],
+                wrap_after=options['wrap_after'],
+                comma_first=options['comma_first']))
 
     if options.get('reindent_aligned', False):
         stack.enable_grouping()

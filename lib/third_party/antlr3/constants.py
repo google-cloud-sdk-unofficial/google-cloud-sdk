@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 """ANTLR3 runtime package"""
 
 # begin[licence]
@@ -52,6 +53,5 @@ DOWN = 2
 UP = 3
 
 MIN_TOKEN_TYPE = UP+1
-	
-INVALID_TOKEN_TYPE = 0
 
+INVALID_TOKEN_TYPE = 0

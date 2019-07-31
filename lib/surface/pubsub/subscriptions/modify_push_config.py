@@ -51,7 +51,7 @@ class ModifyPushConfig(base.Command):
   @classmethod
   def Args(cls, parser):
     resource_args.AddSubscriptionResourceArg(parser, 'to modify.')
-    flags.AddPushConfigFlags(parser, cls.ReleaseTrack(), required=True)
+    flags.AddPushConfigFlags(parser, required=True)
 
   def Run(self, args):
     return _Run(args)

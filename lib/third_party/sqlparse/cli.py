@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -102,6 +103,20 @@ def create_parser():
         help='indentation width (defaults to 2 spaces)')
 
     group.add_argument(
+        '--indent_after_first',
+        dest='indent_after_first',
+        action='store_true',
+        default=False,
+        help='indent after first line of statement (e.g. SELECT)')
+
+    group.add_argument(
+        '--indent_columns',
+        dest='indent_columns',
+        action='store_true',
+        default=False,
+        help='indent all columns by indent_width instead of keyword length')
+
+    group.add_argument(
         '-a', '--reindent_aligned',
         action='store_true',
         default=False,
@@ -150,18 +165,24 @@ def main(args=None):
         if PY2:
             data = getreader(args.encoding)(sys.stdin).read()
         else:
-            data = TextIOWrapper(
-                sys.stdin.buffer, encoding=args.encoding).read()
+            wrapper = TextIOWrapper(sys.stdin.buffer, encoding=args.encoding)
+            try:
+                data = wrapper.read()
+            finally:
+                wrapper.detach()
     else:
         try:
-            data = ''.join(open(args.filename, 'r', args.encoding).readlines())
+            with open(args.filename, 'r', args.encoding) as f:
+                data = ''.join(f.readlines())
         except IOError as e:
             return _error(
                 u'Failed to read {0}: {1}'.format(args.filename, e))
 
+    close_stream = False
     if args.outfile:
         try:
             stream = open(args.outfile, 'w', args.encoding)
+            close_stream = True
         except IOError as e:
             return _error(u'Failed to open {0}: {1}'.format(args.outfile, e))
     else:
@@ -176,4 +197,6 @@ def main(args=None):
     s = sqlparse.format(data, **formatter_opts)
     stream.write(s)
     stream.flush()
+    if close_stream:
+        stream.close()
     return 0

@@ -419,8 +419,8 @@ def _ParseConnectionIdentifier(identifier):
   Args:
     identifier: String specifying the connection identifier in the format
     "connection_id",
-    "project_id:connection_id",
-    "project_id:location.connection_id"
+    "location.connection_id",
+    "project_id.location.connection_id"
 
   Returns:
     A tuple of four elements: containing project_id, location, connection_id
@@ -430,21 +430,18 @@ def _ParseConnectionIdentifier(identifier):
     BigqueryError: if the identifier could not be parsed.
   """
 
-  pattern = re.compile(
-      r"""
-  ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
-  ((?P<location>[\w\-]+)\.)?
-  (?P<connection_id>[\w\-\/]*)$
-  """, re.X)
+  if not identifier:
+    raise BigqueryError('Empty connection identifier')
 
-  match = re.search(pattern, identifier)
-  if not match:
+  tokens = identifier.split('.')
+  num_tokens = len(tokens)
+  if num_tokens > 4:
     raise BigqueryError(
         'Could not parse connection identifier: %s' % identifier)
+  connection_id = tokens[num_tokens-1]
+  location = tokens[num_tokens-2] if num_tokens > 1 else None
+  project_id = '.'.join(tokens[:num_tokens-2]) if num_tokens > 2 else None
 
-  project_id = match.groupdict().get('project_id', None)
-  location = match.groupdict().get('location', None)
-  connection_id = match.groupdict().get('connection_id', None)
   return (project_id, location, connection_id)
 
 
@@ -1105,33 +1102,6 @@ class BigqueryClient(object):
                     models_discovery_document)
       raise
 
-  def BuildConnectionV1ApiClient(self):
-    """Builds and returns BigQuery Connection client from discovery document."""
-    http = self.credentials.authorize(self.GetHttp())
-    bigquery_model = BigqueryModel(
-        trace=self.trace)
-    bigquery_http = BigqueryHttp.Factory(
-        bigquery_model,
-    )
-    connection_discovery_document = None
-    try:
-      connection_discovery_document = pkgutil.get_data(
-          'bigquery_client',
-          'discovery_next/bigqueryconnection-discovery.json')
-    except IOError:
-      logging.error('Failed to build bigqueryconnection discovery document')
-      raise
-    try:
-      return discovery.build_from_document(
-          connection_discovery_document,
-          http=http,
-          model=bigquery_model,
-          requestBuilder=bigquery_http)
-    except Exception:
-      logging.error('Error building from bigqueryconnection document: %s',
-                    connection_discovery_document)
-      raise
-
 
   @property
   def apiclient(self):
@@ -1183,7 +1153,7 @@ class BigqueryClient(object):
     if path is None:
       path = 'https://bigqueryreservation.googleapis.com'
     if not self._op_reservation_client:
-      discovery_url = (path + '/$discovery/rest?version=v1alpha1')
+      discovery_url = (path + '/$discovery/rest?version=v1alpha2')
       self._op_reservation_client = self.BuildApiClient(
       discovery_url=discovery_url)
     return self._op_reservation_client
@@ -1200,10 +1170,16 @@ class BigqueryClient(object):
       discovery_url=discovery_url)
     return self._op_bi_reservation_client
 
-  def GetConnectionV1ApiClient(self):
-    """Return the apiclient attached to self."""
+  def GetConnectionV1ApiClient(self, connection_service_address=None):
+    """Return the apiclient that supports connections operations."""
+    path = connection_service_address
+
+    if path is None:
+      path = 'https://bigqueryconnection.googleapis.com'
     if not self._op_connection_service_client:
-      self._op_connection_service_client = self.BuildConnectionV1ApiClient()
+      discovery_url = (path + '/$discovery/rest?version=v1beta1')
+      self._op_connection_service_client = self.BuildApiClient(
+      discovery_url=discovery_url)
     return self._op_connection_service_client
 
   #################################
@@ -1498,12 +1474,20 @@ class BigqueryClient(object):
     """Determine a ReservationReference from an identifier and location."""
     project_id, location, reservation_id = _ParseReservationIdentifier(
         identifier)
+    if project_id and self.project_id and project_id != self.project_id:
+      raise BigqueryError(
+          'Specified project should be the same as the project of the '
+          'reservation.')
     project_id = project_id or self.project_id
     if not project_id:
       raise BigqueryError('Project id not specified.')
     location = location or default_location
     if not location:
       raise BigqueryError('Location not specified.')
+    if default_location and location != default_location:
+      raise BigqueryError(
+          'Specified location should be the same as the location of the '
+          'reservation.')
     reservation_id = reservation_id or default_reservation_id
     if not reservation_id:
       raise BigqueryError('Reservation name not specified.')
@@ -1565,8 +1549,6 @@ class BigqueryClient(object):
       (project_id, location,
        reservation_grant_id) = _ParseReservationGrantPath(path)
     project_id = project_id or self.project_id
-    if not project_id:
-      raise BigqueryError('Project id not specified.')
     location = location or default_location
     if not location:
       raise BigqueryError('Location not specified.')
@@ -1884,16 +1866,21 @@ class BigqueryClient(object):
     client.projects().locations().reservations().slotPools().delete(
         name=reference.path()).execute()
 
-  def CreateReservationGrant(self, reference, reservation_id, job_type):
-    """Creates a reservation grant for given project, location, job_type.
+  def PrepareReservationGrantForCreation(self, reference, reservation_id,
+                                         job_type, grantee_type, grantee_id):
+    """Prepare ReservationGrant and parent for CreateReservationGrant.
 
     Arguments:
-      reference: Reference to the project and location to create the grant.
+      reference: Reference to the project reservation is granted. Location must
+        be the same location as the reservation.
       reservation_id: Reference to reservation for the grant.
       job_type: Type of jobs for this grant.
+      grantee_type: Type of grantees for the reservation grant.
+      grantee_id: Project/folder/organization ID, to which the reservation is
+        granted.
 
     Returns:
-      ReservationGrant object that was created.
+      ReservationGrant and parent that will be used for creation.
 
     Raises:
       BigqueryError: if grant cannot be created.
@@ -1907,9 +1894,39 @@ class BigqueryClient(object):
     if not job_type:
       raise BigqueryError('job_type not specified.')
     reservation_grant['job_type'] = job_type
+    if not grantee_type:
+      raise BigqueryError('grantee_type not specified.')
+    # grantee_type is singular, that's why we need additional 's' inside
+    # format string for grantee below.
+    reservation_grant['grantee'] = '%ss/%s' % (grantee_type.lower(), grantee_id)
+    parent = 'projects/%s/locations/%s' % (reservation_reference.projectId,
+                                           reservation_reference.location)
+    return (reservation_grant, parent)
+
+  def CreateReservationGrant(self, reference, reservation_id, job_type,
+                             grantee_type, grantee_id):
+    """Creates a reservation grant for a given project/folder/organization.
+
+    Arguments:
+      reference: Reference to the project reservation is granted. Location must
+        be the same location as the reservation.
+      reservation_id: Reference to reservation for the grant.
+      job_type: Type of jobs for this grant.
+      grantee_type: Type of grantees for the reservation grant.
+      grantee_id: Project/folder/organization ID, to which the reservation is
+        granted.
+
+    Returns:
+      ReservationGrant object that was created.
+
+    Raises:
+      BigqueryError: if grant cannot be created.
+    """
+    (reservation_grant,
+     parent) = self.PrepareReservationGrantForCreation(reference,
+                                                       reservation_id, job_type,
+                                                       grantee_type, grantee_id)
     client = self.GetReservationApiClient()
-    parent = 'projects/%s/locations/%s' % (reference.projectId,
-                                           reference.location)
     return client.projects().locations().reservationGrants().create(
         parent=parent, body=reservation_grant).execute()
 
@@ -1934,30 +1951,11 @@ class BigqueryClient(object):
     Returns:
       list of ReservationGrant objects.
     """
-    parent = 'projects/%s/locations/%s' % (
-        reference.projectId,
-        reference.location
-        )
+    parent = 'projects/%s/locations/%s' % (reference.projectId,
+                                           reference.location)
     client = self.GetReservationApiClient()
     return client.projects().locations().reservationGrants().list(
         parent=parent, pageSize=page_size, pageToken=page_token).execute()
-
-  def ListReservationGrantsForReservation(
-      self, reference, page_size, page_token):
-    """Lists reservations grants for given reservation.
-
-    Arguments:
-      reference: Reference to the reservation.
-      page_size: Number of results to show.
-      page_token: Token to retrieve the next page of results.
-
-    Returns:
-      list of ReservationGrant objects.
-    """
-    client = self.GetReservationApiClient()
-    return client.projects().locations().reservations().listReservationGrants(
-        name=reference.path(), pageSize=page_size,
-        pageToken=page_token).execute()
 
   def GetConnection(self, reference):
     """Gets connection with the given connection reference.
@@ -1972,13 +1970,16 @@ class BigqueryClient(object):
     return client.projects().locations().connections().get(
         name=reference.path()).execute()
 
-  def CreateConnection(self, reference, connection_type, properties):
+  def CreateConnection(self, project_id, location,
+                       connection_type, properties, connection_id=None):
     """Create a connection with the given connection reference.
 
     Arguments:
-      reference: Connection to create.
+      project_id: Project ID.
+      location: Location of connection.
       connection_type: Type of connection, allowed values: ['CLOUD_SQL']
-      properties: Connection properties
+      properties: Connection properties in JSON format.
+      connection_id: Optional connection ID.
 
     Returns:
       Connection object that was created.
@@ -1989,20 +1990,9 @@ class BigqueryClient(object):
       connection['cloudSql'] = json.loads(properties)
 
     client = self.GetConnectionV1ApiClient()
-
-    if '/' in reference.connectionId:
-      path = reference.path()
-      pos = path.rfind('/')
-      parent = path[:pos]
-      connection_id = path[pos + 1:]
-      return client.projects().locations().connections().create(
-          parent=parent, connectionId=connection_id, body=connection).execute()
-    else:
-      parent = 'projects/%s/locations/%s' % (reference.projectId,
-                                             reference.location)
-      return client.projects().locations().connections().create(
-          parent=parent, connectionId=reference.connectionId,
-          body=connection).execute()
+    parent = 'projects/%s/locations/%s' % (project_id, location)
+    return client.projects().locations().connections().create(
+        parent=parent, connectionId=connection_id, body=connection).execute()
 
   def UpdateConnection(self, reference, connection_type, properties):
     """Update connection with the given connection reference.
@@ -2017,13 +2007,22 @@ class BigqueryClient(object):
     """
 
     connection = {}
+    update_mask = []
     if connection_type == 'CLOUD_SQL':
-      connection['cloudSql'] = json.loads(properties)
+      cloudsql_properties = json.loads(properties)
+      connection['cloudSql'] = cloudsql_properties
+      if cloudsql_properties.get('instanceId'):
+        update_mask.append('cloudSql.instanceId')
+      if cloudsql_properties.get('database'):
+        update_mask.append('cloudSql.database')
+      if cloudsql_properties.get('type'):
+        update_mask.append('cloudSql.type')
 
     client = self.GetConnectionV1ApiClient()
 
     return client.projects().locations().connections().patch(
-        name=reference.path(), body=connection).execute()
+        name=reference.path(), updateMask=','.join(update_mask),
+        body=connection).execute()
 
   def DeleteConnection(self, reference):
     """Delete a connection with the given connection reference.
@@ -2035,19 +2034,19 @@ class BigqueryClient(object):
     client.projects().locations().connections().delete(
         name=reference.path()).execute()
 
-  def ListConnections(self, reference, max_results, page_token):
+  def ListConnections(self, project_id, location, max_results, page_token):
     """List connections in the project and location for the given reference.
 
     Arguments:
-      reference: Connection reference containing project and location.
+      project_id: Project ID.
+      location: Location.
       max_results: Number of results to show.
       page_token: Token to retrieve the next page of results.
 
     Returns:
       List of connnection objects
     """
-    parent = 'projects/%s/locations/%s' % (reference.projectId,
-                                           reference.location)
+    parent = 'projects/%s/locations/%s' % (project_id, location)
     client = self.GetConnectionV1ApiClient()
     return client.projects().locations().connections().list(
         parent=parent, maxResults=max_results, pageToken=page_token).execute()
@@ -2246,7 +2245,7 @@ class BigqueryClient(object):
       formatter.AddColumns(('name', 'slotCount', 'plan', 'state',
                             'commitmentEndTime'))
     elif reference_type == ApiClientHelper.ReservationGrantReference:
-      formatter.AddColumns(('name', 'reservation', 'jobType'))
+      formatter.AddColumns(('name', 'reservation', 'jobType', 'grantee'))
     elif reference_type == ApiClientHelper.ConnectionReference:
       formatter.AddColumns(('name', 'friendlyName', 'description',
                             'Last modified', 'type', 'properties'))
@@ -3082,10 +3081,8 @@ class BigqueryClient(object):
     results = result.get('jobs', [])
     if max_results is not None:
       while 'nextPageToken' in result and len(results) < max_results:
-        request = self._PrepareListRequest(
-            reference, max_results - len(results), result['nextPageToken'])
-        _ApplyParameters(request, projection='full',
-                         state_filter=state_filter, all_users=all_users)
+        request['maxResults'] = max_results - len(results)
+        request['pageToken'] = result['nextPageToken']
         result = self.apiclient.jobs().list(**request).execute()
         results.extend(result.get('jobs', []))
     if 'nextPageToken' in result:
@@ -3256,12 +3253,8 @@ class BigqueryClient(object):
     results = result.get('datasets', [])
     if max_results is not None:
       while 'nextPageToken' in result and len(results) < max_results:
-        request = self._PrepareListRequest(reference,
-                                           max_results - len(results),
-                                           result['nextPageToken'],
-                                           filter_expression)
-        if list_all is not None:
-          request['all'] = list_all
+        request['maxResults'] = max_results - len(results)
+        request['pageToken'] = result['nextPageToken']
         result = self.apiclient.datasets().list(**request).execute()
         results.extend(result.get('datasets', []))
     return results
@@ -3280,8 +3273,8 @@ class BigqueryClient(object):
     results = result.get('tables', [])
     if max_results is not None:
       while 'nextPageToken' in result and len(results) < max_results:
-        request = self._PrepareListRequest(
-            reference, max_results - len(results), result['nextPageToken'])
+        request['maxResults'] = max_results - len(results)
+        request['pageToken'] = result['nextPageToken']
         result = self.apiclient.tables().list(**request).execute()
         results.extend(result.get('tables', []))
     return results
@@ -3706,6 +3699,9 @@ class BigqueryClient(object):
       update_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload(
           options_to_copy=current_config.get('scheduleOptions'))
       update_mask.append('transfer_config.scheduleOptions,')
+
+    if authorization_code:
+      update_mask.append('authorization_code,')
 
     transfer_client.projects().locations().transferConfigs().patch(
         body=update_items,
@@ -4648,7 +4644,7 @@ class BigqueryClient(object):
       except BigqueryBackendError as e:
         # Temporary server errors while waiting on a job are okay.
         logging.warning('Transient error during job status check: %s', e)
-      except BigqueryServiceError, e:
+      except BigqueryServiceError as e:
         # Among this catch-all class, some kinds are permanent
         # errors, so we don't want to retry indefinitely, but if
         # the error is transient we'd like "wait" to get past it.
@@ -5136,7 +5132,8 @@ class BigqueryClient(object):
         extract_config, destination_uris=uris,
         destination_format=destination_format,
         print_header=print_header, field_delimiter=field_delimiter,
-        compression=compression)
+        compression=compression
+    )
     return self.ExecuteJob(configuration={'extract': extract_config}, **kwds)
 
 
@@ -5502,8 +5499,13 @@ class ApiClientHelper(object):
       return self._path_str % dict(self)
 
   class ReservationGrantReference(Reference):
-    _required_fields = frozenset((
-        'projectId', 'location', 'reservationGrantId'))
+    """Helper class to provide a reference to reservation grant."""
+    _required_fields = frozenset(('location', 'reservationGrantId'))
+    """projectId is not needed for create command, because it may be included
+
+    in ReservationReference.
+    """
+    _optional_fields = frozenset(('projectId',))
     _format_str = '%(projectId)s:%(location)s.%(reservationGrantId)s'
     _path_str = ('projects/%(projectId)s/locations/%(location)s/'
                  'reservationGrants/%(reservationGrantId)s')
@@ -5528,7 +5530,7 @@ class ApiClientHelper(object):
 
   class ConnectionReference(Reference):
     _required_fields = frozenset(('projectId', 'location', 'connectionId'))
-    _format_str = '%(projectId)s:%(location)s.%(connectionId)s'
+    _format_str = '%(projectId)s.%(location)s.%(connectionId)s'
     _path_str = 'projects/%(projectId)s/locations/%(location)s/connections/%(connectionId)s'
     typename = 'connection'
 

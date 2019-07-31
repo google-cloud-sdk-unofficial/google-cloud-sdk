@@ -797,7 +797,10 @@ class Scanner(object):
                 if self.flow_context[-1] == '[':
                     if self.reader.peek(1) not in _THE_END_SPACE_TAB:
                         return False
-                # if self.reader.peek(1) in '\'"{[]}':
+                elif self.tokens and isinstance(self.tokens[-1], ValueToken):
+                    # mapping flow context scanning a value token
+                    if self.reader.peek(1) not in _THE_END_SPACE_TAB:
+                        return False
                 return True
         # VALUE(block context): ':' (' '|'\n')
         return self.reader.peek(1) in _THE_END_SPACE_TAB
@@ -1062,7 +1065,7 @@ class Scanner(object):
             ch = srp(length)
         if not length:
             raise ScannerError(
-                'while scanning an %s' % name,
+                'while scanning an %s' % (name,),
                 start_mark,
                 'expected alphabetic or numeric character, but found %r' % utf8(ch),
                 self.reader.get_mark(),
@@ -1074,7 +1077,7 @@ class Scanner(object):
         # assert ch1 == ch
         if ch not in '\0 \t\r\n\x85\u2028\u2029?:,[]{}%@`':
             raise ScannerError(
-                'while scanning an %s' % name,
+                'while scanning an %s' % (name,),
                 start_mark,
                 'expected alphabetic or numeric character, but found %r' % utf8(ch),
                 self.reader.get_mark(),
@@ -1635,7 +1638,7 @@ class Scanner(object):
         ch = srp()
         if ch != '!':
             raise ScannerError(
-                'while scanning a %s' % name,
+                'while scanning a %s' % (name,),
                 start_mark,
                 "expected '!', but found %r" % utf8(ch),
                 self.reader.get_mark(),
@@ -1649,7 +1652,7 @@ class Scanner(object):
             if ch != '!':
                 self.reader.forward(length)
                 raise ScannerError(
-                    'while scanning a %s' % name,
+                    'while scanning a %s' % (name,),
                     start_mark,
                     "expected '!', but found %r" % utf8(ch),
                     self.reader.get_mark(),
@@ -1687,7 +1690,7 @@ class Scanner(object):
             length = 0
         if not chunks:
             raise ScannerError(
-                'while parsing a %s' % name,
+                'while parsing a %s' % (name,),
                 start_mark,
                 'expected URI, but found %r' % utf8(ch),
                 self.reader.get_mark(),
@@ -1706,7 +1709,7 @@ class Scanner(object):
             for k in range(2):
                 if srp(k) not in '0123456789ABCDEFabcdef':
                     raise ScannerError(
-                        'while scanning a %s' % name,
+                        'while scanning a %s' % (name,),
                         start_mark,
                         'expected URI escape sequence of 2 hexdecimal numbers,'
                         ' but found %r' % utf8(srp(k)),
@@ -1723,7 +1726,7 @@ class Scanner(object):
             else:
                 value = unicode(b"".join(code_bytes), 'utf-8')
         except UnicodeDecodeError as exc:
-            raise ScannerError('while scanning a %s' % name, start_mark, str(exc), mark)
+            raise ScannerError('while scanning a %s' % (name,), start_mark, str(exc), mark)
         return value
 
     def scan_line_break(self):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -20,7 +21,7 @@ class Token(object):
     """Base class for all other classes in this module.
 
     It represents a single token and has two instance attributes:
-    ``value`` is the unchange value of the token and ``ttype`` is
+    ``value`` is the unchanged value of the token and ``ttype`` is
     the type of the token.
     """
 
@@ -73,7 +74,7 @@ class Token(object):
         *values* is a list of possible values for this token. The values
         are OR'ed together so if only one of the values matches ``True``
         is returned. Except for keyword tokens the comparison is
-        case-sensitive. For convenience it's ok to pass in a single string.
+        case-sensitive. For convenience it's OK to pass in a single string.
         If *regex* is ``True`` (default is ``False``) the given values are
         treated as regular expressions.
         """
@@ -158,19 +159,23 @@ class TokenList(Token):
     def _get_repr_name(self):
         return type(self).__name__
 
-    def _pprint_tree(self, max_depth=None, depth=0, f=None):
+    def _pprint_tree(self, max_depth=None, depth=0, f=None, _pre=''):
         """Pretty-print the object tree."""
-        indent = u' | ' * depth
+        token_count = len(self.tokens)
         for idx, token in enumerate(self.tokens):
             cls = token._get_repr_name()
             value = token._get_repr_value()
 
+            last = idx == (token_count - 1)
+            pre = u'`- ' if last else u'|- '
+
             q = u'"' if value.startswith("'") and value.endswith("'") else u"'"
-            print(u"{indent}{idx:2d} {cls} {q}{value}{q}"
+            print(u"{_pre}{pre}{idx} {cls} {q}{value}{q}"
                   .format(**locals()), file=f)
 
             if token.is_group and (max_depth is None or depth < max_depth):
-                token._pprint_tree(max_depth, depth + 1, f)
+                parent_pre = u'   ' if last else u'|  '
+                token._pprint_tree(max_depth, depth + 1, f, _pre + parent_pre)
 
     def get_token_at_offset(self, offset):
         """Returns the token that is on position offset."""
@@ -234,8 +239,9 @@ class TokenList(Token):
         ignored too.
         """
         # this on is inconsistent, using Comment instead of T.Comment...
-        funcs = lambda tk: not ((skip_ws and tk.is_whitespace) or
-                                (skip_cm and imt(tk, t=T.Comment, i=Comment)))
+        funcs = lambda tk: not ((skip_ws and tk.is_whitespace)
+                                or (skip_cm and imt(tk,
+                                                    t=T.Comment, i=Comment)))
         return self._token_matching(funcs)[1]
 
     def token_next_by(self, i=None, m=None, t=None, idx=-1, end=None):
@@ -271,8 +277,9 @@ class TokenList(Token):
         if idx is None:
             return None, None
         idx += 1  # alot of code usage current pre-compensates for this
-        funcs = lambda tk: not ((skip_ws and tk.is_whitespace) or
-                                (skip_cm and imt(tk, t=T.Comment, i=Comment)))
+        funcs = lambda tk: not ((skip_ws and tk.is_whitespace)
+                                or (skip_cm and imt(tk,
+                                                    t=T.Comment, i=Comment)))
         return self._token_matching(funcs, idx, reverse=_reverse)
 
     def token_index(self, token, start=0):
@@ -358,18 +365,19 @@ class TokenList(Token):
         """Returns the real name (object name) of this identifier."""
         # a.b
         dot_idx, _ = self.token_next_by(m=(T.Punctuation, '.'))
-        return self._get_first_name(dot_idx)
+        return self._get_first_name(dot_idx, real_name=True)
 
     def get_parent_name(self):
         """Return name of the parent object if any.
 
-        A parent object is identified by the first occuring dot.
+        A parent object is identified by the first occurring dot.
         """
         dot_idx, _ = self.token_next_by(m=(T.Punctuation, '.'))
         _, prev_ = self.token_prev(dot_idx)
         return remove_quotes(prev_.value) if prev_ is not None else None
 
-    def _get_first_name(self, idx=None, reverse=False, keywords=False):
+    def _get_first_name(self, idx=None, reverse=False, keywords=False,
+                        real_name=False):
         """Returns the name of the first token with a name"""
 
         tokens = self.tokens[idx:] if idx else self.tokens
@@ -383,7 +391,7 @@ class TokenList(Token):
             if token.ttype in types:
                 return remove_quotes(token.value)
             elif isinstance(token, (Identifier, Function)):
-                return token.get_name()
+                return token.get_real_name() if real_name else token.get_name()
 
 
 class Statement(TokenList):
@@ -417,7 +425,8 @@ class Statement(TokenList):
             if isinstance(token, (Identifier, IdentifierList)):
                 _, dml_keyword = self.token_next(tidx, skip_ws=True)
 
-                if dml_keyword.ttype == T.Keyword.DML:
+                if dml_keyword is not None \
+                        and dml_keyword.ttype == T.Keyword.DML:
                     return dml_keyword.normalized
 
         # Hmm, probably invalid syntax, so return unknown.
@@ -526,8 +535,15 @@ class Comment(TokenList):
 class Where(TokenList):
     """A WHERE clause."""
     M_OPEN = T.Keyword, 'WHERE'
-    M_CLOSE = T.Keyword, ('ORDER', 'GROUP', 'LIMIT', 'UNION', 'EXCEPT',
-                          'HAVING', 'RETURNING', 'INTO')
+    M_CLOSE = T.Keyword, (
+        'ORDER BY', 'GROUP BY', 'LIMIT', 'UNION', 'UNION ALL', 'EXCEPT',
+        'HAVING', 'RETURNING', 'INTO')
+
+
+class Having(TokenList):
+    """A HAVING clause."""
+    M_OPEN = T.Keyword, 'HAVING'
+    M_CLOSE = T.Keyword, ('ORDER BY', 'LIMIT')
 
 
 class Case(TokenList):
@@ -605,3 +621,11 @@ class Begin(TokenList):
 
 class Operation(TokenList):
     """Grouping of operations"""
+
+
+class Values(TokenList):
+    """Grouping of values"""
+
+
+class Command(TokenList):
+    """Grouping of CLI commands."""

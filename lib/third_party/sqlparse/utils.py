@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -95,9 +96,9 @@ def imt(token, i=None, m=None, t=None):
         return False
     elif clss and isinstance(token, clss):
         return True
-    elif mpatterns and any((token.match(*pattern) for pattern in mpatterns)):
+    elif mpatterns and any(token.match(*pattern) for pattern in mpatterns):
         return True
-    elif types and any([token.ttype in ttype for ttype in types]):
+    elif types and any(token.ttype in ttype for ttype in types):
         return True
     else:
         return False

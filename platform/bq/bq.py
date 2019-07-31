@@ -2634,19 +2634,13 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         _PrintPageToken(response)
     elif self.reservation_grant:
       try:
-        if self.reservation:
-          object_type = ReservationGrantReference
-          reference = client.GetReservationReference(
-              identifier, FLAGS.location, ' ')
-          response = client.ListReservationGrantsForReservation(
-              reference, self.max_results, self.page_token)
-        else:
-          object_type = ReservationGrantReference
-          reference = client.GetReservationGrantReference(
-              identifier=identifier, default_location=FLAGS.location,
-              default_reservation_grant_id=' ')
-          response = client.ListReservationGrants(
-              reference, self.max_results, self.page_token)
+        object_type = ReservationGrantReference
+        reference = client.GetReservationGrantReference(
+            identifier=identifier,
+            default_location=FLAGS.location,
+            default_reservation_grant_id=' ')
+        response = client.ListReservationGrants(reference, self.max_results,
+                                                self.page_token)
         if 'reservationGrants' in response:
           results = response['reservationGrants']
         else:
@@ -2765,11 +2759,9 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       results = list_transfer_log_result[0]
     elif self.connection:
       object_type = ConnectionReference
-      reference = client.GetConnectionReference(identifier=identifier,
-                                                default_location=FLAGS.location,
-                                                default_connection_id=' ')
       list_connections_results = client.ListConnections(
-          reference,
+          FLAGS.project_id,
+          FLAGS.location,
           max_results=self.max_results,
           page_token=self.page_token)
       if 'connections' in list_connections_results:
@@ -3463,6 +3455,21 @@ class _Make(BigqueryCmd):
         'Reservation ID used to create reservation grant for. '
         'Used in conjuction with --reservation_grant.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'grantee_type',
+        None, ['PROJECT', 'FOLDER', 'ORGANIZATION'],
+        'Type of grantees for the reservation grant. Options include:'
+        '\n PROJECTS'
+        '\n FOLDERS'
+        '\n ORGANIZATIONS'
+        'Used in conjuction with --reservation_grant.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'grantee_id',
+        None,
+        'Project/folder/organization ID, to which the reservation is granted. '
+        'Used in conjuction with --reservation_grant.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'connection',
         None,
@@ -3517,8 +3524,12 @@ class _Make(BigqueryCmd):
           projects/p/locations/l/transferConfigs/c
       bq mk --transfer_run --run_time={run_time}
           projects/p/locations/l/transferConfigs/c
-      bq mk --reservation_grant --project_id=proj --location=us
+      bq mk --reservation_grant --location=us
           --reservation_id=project:us.dev --job_type=QUERY
+          --grantee_type=PROJECTS grantee_id=myproject
+      bq mk --reservation_grant --location=us
+          --reservation_id=project:us.dev --job_type=QUERY
+          --grantee_type=FOLDERS grantee_id=123
       bq mk --connection --connection_type='CLOUD_SQL'
         --properties='{"instanceId" : "instance",
         "database" : "db", "type" : "MYSQL" }'
@@ -3557,8 +3568,13 @@ class _Make(BigqueryCmd):
         reference = client.GetReservationGrantReference(
             identifier=identifier, default_location=FLAGS.location,
             default_reservation_grant_id=' ')
-        object_info = client.CreateReservationGrant(
-            reference, self.reservation_id, self.job_type)
+        object_info = client.CreateReservationGrant(reference,
+                                                    self.reservation_id,
+                                                    self.job_type,
+                                                    self.grantee_type,
+                                                    self.grantee_id)
+        reference = client.GetReservationGrantReference(
+            path=object_info['name'])
         _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -3630,21 +3646,22 @@ class _Make(BigqueryCmd):
         formatter.AddDict(result)
       formatter.Print()
     elif self.connection:
-      reference = client.GetConnectionReference(identifier=identifier,
-                                                default_location=FLAGS.location)
       if not self.connection_type:
         raise app.UsageError('Need to specify --connection_type.')
       if not self.properties:
         raise app.UsageError('Need to specify --properties')
-      created_connection = client.CreateConnection(
-          reference,
-          self.connection_type,
-          self.properties)
-      if self.connection_credential:
+      created_connection = client.CreateConnection(FLAGS.project_id,
+                                                   FLAGS.location,
+                                                   self.connection_type,
+                                                   self.properties,
+                                                   identifier)
+      if created_connection:
         path = created_connection['name']
         reference = client.GetConnectionReference(path=path)
-        client.UpdateConnectionCredential(reference, self.connection_type,
-                                          self.connection_credential)
+        if self.connection_credential:
+          client.UpdateConnectionCredential(reference, self.connection_type,
+                                            self.connection_credential)
+        print 'Connection %s successfully created' % reference
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
     else:

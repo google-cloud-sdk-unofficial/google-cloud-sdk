@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 """Compatibility stuff"""
 
 # begin[licence]
@@ -31,18 +32,17 @@
 # end[licence]
 
 try:
-    set = set
-    frozenset = frozenset
+  set = set
+  frozenset = frozenset
 except NameError:
-    from sets import Set as set, ImmutableSet as frozenset
+  from sets import Set as set, ImmutableSet as frozenset
 
 
 try:
-    reversed = reversed
+  reversed = reversed
 except NameError:
-    def reversed(l):
-        l = l[:]
-        l.reverse()
-        return l
 
-
+  def reversed(l):
+    l = l[:]
+    l.reverse()
+    return l

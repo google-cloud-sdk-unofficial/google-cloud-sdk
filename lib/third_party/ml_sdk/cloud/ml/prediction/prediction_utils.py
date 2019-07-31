@@ -28,13 +28,13 @@ import six
 
 from tensorflow.python.framework import dtypes
 
-
 # --------------------------
 # prediction.common
 # --------------------------
 ENGINE = "Prediction-Engine"
 ENGINE_RUN_TIME = "Prediction-Engine-Run-Time"
 FRAMEWORK = "Framework"
+MODEL_SUBDIRECTORY = "model"
 SCIKIT_LEARN_FRAMEWORK_NAME = "scikit_learn"
 SK_XGB_FRAMEWORK_NAME = "sk_xgb"
 XGBOOST_FRAMEWORK_NAME = "xgboost"
@@ -56,7 +56,6 @@ SCIKIT_LEARN_MODEL_FILE_NAMES = (
     DEFAULT_MODEL_FILE_NAME_PICKLE,
 )
 XGBOOST_SPECIFIC_MODEL_FILE_NAMES = ("model.bst",)
-
 
 # Additional TF keyword arguments
 INPUTS_KEY = "inputs"
@@ -84,7 +83,7 @@ METADATA_KEY = "metadata"
 METADATA_FILE_NAME = "metadata.json"
 EXPLANATION_CONFIG_KEY = "explanation_config"
 ABLATION_ATTRIBUTION_KEY = "ablation_attribution"
-SHAP_ATTRIBUTION_KEY = "shap_attribution"
+TREE_SHAP_ATTRIBUTION_KEY = "tree_shap_attribution"
 SAABAS_ATTRIBUTION_KEY = "saabas_attribution"
 NUM_FEATURE_INTERACTIONS = "num_feature_interactions"
 
@@ -213,8 +212,7 @@ class Stats(dict):
 
 
 class BaseModel(Model):
-  """The base definition of an internal Model interface.
-  """
+  """The base definition of an internal Model interface."""
 
   def __init__(self, client):
     """Constructs a BaseModel.
@@ -322,6 +320,7 @@ def should_base64_decode(framework, model, signature_name):
     framework: ML framework of prediction app
     model: model object
     signature_name: str of name of signature
+
   Returns:
     bool
 
@@ -604,7 +603,7 @@ def get_explanation_config(framework):
     from explainers.xgboost.factory import XGBoostAblationConfig
     from explainers.xgboost.factory import XGBoostSaabasConfig
     from explainers.xgboost.factory import XGBoostSHAPConfig
-    if SHAP_ATTRIBUTION_KEY in config_request:
+    if TREE_SHAP_ATTRIBUTION_KEY in config_request:
       config = XGBoostSHAPConfig()
     elif SAABAS_ATTRIBUTION_KEY in config_request:
       config = XGBoostSaabasConfig()
@@ -618,10 +617,10 @@ def get_explanation_config(framework):
           config_request, framework))
   elif framework == TENSORFLOW_FRAMEWORK_NAME:
     # pylint: disable=g-import-not-at-top
-    from  explainers.tf import factory
+    from explainers.tf import configs
     if ABLATION_ATTRIBUTION_KEY in config_request:
-      config = factory.TFAblationConfig(
-          factory.ModelType.CUSTOM, factory.InputType.FEED_DICT)
+      config = configs.TFAblationConfig(
+          configs.ModelType.CUSTOM, configs.InputType.FEED_DICT)
     else:
       raise TypeError("{} is not a supported explanation config for {}.".format(
           config_request, framework))
@@ -631,36 +630,52 @@ def get_explanation_config(framework):
   return config
 
 
-def load_metadata(model_path):
+def load_metadata(base_path):
   """Loads metadata.json file from the same GCS bucket where the model locates.
 
   This method will only be called for TF explainers when the explainability
   feature is enabled.
 
   Args:
-      model_path: path to the directory containing the TF model.
-        This path can be either a local path or a GCS path.
+      base_path: path to the directory containing the TF model.
+      This path can be either a local path or a GCS path.
 
   Returns:
-    The metadata with the model at model_path loaded.
+    The metadata with the model at base_path loaded.
 
   Raises:
     PredictionError: If there is a problem while loading the file.
   """
-  if model_path.startswith("gs://"):
-    copy_model_to_local(model_path, LOCAL_MODEL_PATH)
-    model_path = LOCAL_MODEL_PATH
-  metadata_file = os.path.join(model_path, METADATA_FILE_NAME)
+  if base_path.startswith("gs://"):
+    # Example structure: <base_path>/model/<random string>/metadata.json
+    metadata_file_path = os.path.join(base_path, MODEL_SUBDIRECTORY, "*",
+                                      METADATA_FILE_NAME)
+    logging.debug("Starting to copy %s to %s", metadata_file_path,
+                  LOCAL_MODEL_PATH)
+    if not os.path.exists(LOCAL_MODEL_PATH):
+      os.makedirs(LOCAL_MODEL_PATH)
+    try:
+      subprocess.check_call(
+          ["gsutil", "cp", metadata_file_path, LOCAL_MODEL_PATH],
+          stdin=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+      logging.error(str(e))
+      raise
+    base_path = LOCAL_MODEL_PATH
 
-  if not os.path.exists(metadata_file):
-    return None
+  metadata_file_path = os.path.join(base_path, METADATA_FILE_NAME)
+  if not os.path.exists(metadata_file_path):
+    error_msg = "Missing {}, but required for explainability.".format(
+        metadata_file_path)
+    logging.critical(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_METADATA, error_msg)
 
   metadata = None
   try:
     # pylint: disable=g-import-not-at-top
-    from  explainers.tf import model_metadata
+    from explainers.common import model_metadata
     # pylint: enable=g-import-not-at-top
-    metadata = model_metadata.ModelMetadata.from_file(metadata_file)
+    metadata = model_metadata.ModelMetadata.from_file(metadata_file_path)
   except IOError as e:
     error_msg = "Failed to read metadata.json: {}.".format(str(e))
     logging.critical(error_msg)

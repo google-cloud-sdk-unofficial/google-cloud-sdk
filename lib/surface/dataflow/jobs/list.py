@@ -122,7 +122,12 @@ class List(base.ListCommand):
     """
     if args.filter:
       filter_expr = resource_filter.Compile(args.filter)
-      filter_pred = lambda x: filter_expr.Evaluate(x) and _JobFilter(args)(x)
+
+      def EvalFilter(x):
+        return (filter_expr.Evaluate(job_display.DisplayInfo(x)) and
+                _JobFilter(args)(x))
+
+      filter_pred = EvalFilter
     else:
       filter_pred = _JobFilter(args)
 

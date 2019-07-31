@@ -98,7 +98,11 @@ def _CommonArgs(parser,
       extra_scopes_help='However, if neither `--scopes` nor `--no-scopes` are '
                         'specified and the project has no default service '
                         'account, then the instance will be created with no '
-                        'scopes.')
+                        'scopes. Note that the level of access that a service '
+                        'account has is determined by a combination of access '
+                        'scopes and IAM roles so you must configure both '
+                        'access scopes and IAM roles for the service account '
+                        'to work properly.')
   instances_flags.AddTagsArgs(parser)
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)

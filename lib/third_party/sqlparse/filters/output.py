@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -33,7 +34,7 @@ class OutputFilter(object):
 
 class OutputPythonFilter(OutputFilter):
     def _process(self, stream, varname, has_nl):
-        # SQL query asignation to varname
+        # SQL query assignation to varname
         if self.count > 1:
             yield sql.Token(T.Whitespace, '\n')
         yield sql.Token(T.Name, varname)
@@ -79,7 +80,7 @@ class OutputPHPFilter(OutputFilter):
     varname_prefix = '$'
 
     def _process(self, stream, varname, has_nl):
-        # SQL query asignation to varname (quote header)
+        # SQL query assignation to varname (quote header)
         if self.count > 1:
             yield sql.Token(T.Whitespace, '\n')
         yield sql.Token(T.Name, varname)

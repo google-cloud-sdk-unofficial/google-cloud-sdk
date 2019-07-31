@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -26,7 +27,6 @@ if PY3:
     def unicode_compatible(cls):
         return cls
 
-    bytes_type = bytes
     text_type = str
     string_types = (str,)
     from io import StringIO
@@ -39,9 +39,7 @@ elif PY2:
         cls.__str__ = lambda x: x.__unicode__().encode('utf-8')
         return cls
 
-    bytes_type = str
     text_type = unicode
     string_types = (str, unicode,)
     from StringIO import StringIO
     file_types = (file, StringIO, TextIOBase)
-    from StringIO import StringIO

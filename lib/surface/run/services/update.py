@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
-from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
@@ -95,9 +94,8 @@ class Update(base.Command):
       args: Args!
     """
     changes = flags.GetConfigurationChanges(args)
-    endpoint_visibility = flags.GetEndpointVisibility(args)
     allow_unauth = flags.GetAllowUnauthenticated(args)
-    if not changes and endpoint_visibility is None and allow_unauth is None:
+    if not changes and allow_unauth is None:
       raise exceptions.NoConfigurationChangeError(
           'No configuration change requested. '
           'Did you mean to include the flags `--update-env-vars`, '
@@ -119,7 +117,6 @@ class Update(base.Command):
             changes,
             tracker,
             asyn=args.async,
-            private_endpoint=endpoint_visibility,
             allow_unauthenticated=allow_unauth)
       if args.async:
         pretty_print.Success(
@@ -162,9 +159,10 @@ class AlphaUpdate(Update):
     flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddCpuFlag(cluster_group)
     # Flags not specific to any platform
-    labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddLabelsFlags(parser, add_create=False)
     flags.AddAlphaPlatformArg(parser)
     flags.AddSecretsFlags(parser)
     flags.AddConfigMapsFlags(parser)
+    flags.AddScalingFlags(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

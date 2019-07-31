@@ -14,25 +14,25 @@ import copy
 
 from ruamel.yaml.compat import ordereddict, PY2, string_types, MutableSliceableSequence
 from ruamel.yaml.scalarstring import ScalarString
+from ruamel.yaml.anchor import Anchor
 
 if PY2:
-    from collections import MutableSet, Sized, Set, MutableMapping, Mapping
+    from collections import MutableSet, Sized, Set, Mapping
 else:
-    from collections.abc import MutableSet, Sized, Set, MutableMapping, Mapping
+    from collections.abc import MutableSet, Sized, Set, Mapping
 
 if False:  # MYPY
     from typing import Any, Dict, Optional, List, Union, Optional, Iterator  # NOQA
 
 # fmt: off
-__all__ = ["CommentedSeq", "CommentedKeySeq",
-           "CommentedMap", "CommentedOrderedMap",
-           "CommentedSet", 'comment_attrib', 'merge_attrib']
+__all__ = ['CommentedSeq', 'CommentedKeySeq',
+           'CommentedMap', 'CommentedOrderedMap',
+           'CommentedSet', 'comment_attrib', 'merge_attrib']
 # fmt: on
 
 comment_attrib = '_yaml_comment'
 format_attrib = '_yaml_format'
 line_col_attrib = '_yaml_line_col'
-anchor_attrib = '_yaml_anchor'
 merge_attrib = '_yaml_merge'
 tag_attrib = '_yaml_tag'
 
@@ -161,16 +161,6 @@ class LineCol(object):
         if self.data is None:
             self.data = {}  # type: Dict[Any, Any]
         self.data[key] = data
-
-
-class Anchor(object):
-    __slots__ = 'value', 'always_dump'
-    attrib = anchor_attrib
-
-    def __init__(self):
-        # type: () -> None
-        self.value = None
-        self.always_dump = False
 
 
 class Tag(object):
@@ -385,7 +375,7 @@ class CommentedBase(object):
         raise NotImplementedError
 
 
-class CommentedSeq(MutableSliceableSequence, list, CommentedBase):
+class CommentedSeq(MutableSliceableSequence, list, CommentedBase):  # type: ignore
     __slots__ = (Comment.attrib, '_lst')
 
     def __init__(self, *args, **kw):
@@ -518,7 +508,7 @@ class CommentedSeq(MutableSliceableSequence, list, CommentedBase):
         return list.__repr__(self)
 
 
-class CommentedKeySeq(tuple, CommentedBase):
+class CommentedKeySeq(tuple, CommentedBase):  # type: ignore
     """This primarily exists to be able to roundtrip keys that are sequences"""
 
     def _yaml_add_comment(self, comment, key=NoComment):
@@ -580,7 +570,7 @@ class CommentedMapView(Sized):
         return count
 
 
-class CommentedMapKeysView(CommentedMapView, Set):
+class CommentedMapKeysView(CommentedMapView, Set):  # type: ignore
     __slots__ = ()
 
     @classmethod
@@ -599,7 +589,7 @@ class CommentedMapKeysView(CommentedMapView, Set):
             yield x
 
 
-class CommentedMapItemsView(CommentedMapView, Set):
+class CommentedMapItemsView(CommentedMapView, Set):  # type: ignore
     __slots__ = ()
 
     @classmethod
@@ -639,14 +629,14 @@ class CommentedMapValuesView(CommentedMapView):
             yield self._mapping[key]
 
 
-class CommentedMap(MutableMapping, ordereddict, CommentedBase):
+class CommentedMap(ordereddict, CommentedBase):
     __slots__ = (Comment.attrib, '_ok', '_ref')
 
     def __init__(self, *args, **kw):
         # type: (Any, Any) -> None
         self._ok = set()  # type: MutableSet[Any]  #  own keys
         self._ref = []  # type: List[CommentedMap]
-        ordereddict.__init__(self, *args, **kw)  # type: ignore
+        ordereddict.__init__(self, *args, **kw)
 
     def _yaml_add_comment(self, comment, key=NoComment, value=NoComment):
         # type: (Any, Optional[Any], Optional[Any]) -> None
@@ -709,11 +699,16 @@ class CommentedMap(MutableMapping, ordereddict, CommentedBase):
         # type: (Any) -> None
         try:
             ordereddict.update(self, vals)
-            self._ok.update(vals.keys())  # type: ignore
         except TypeError:
             # probably a dict that is used
             for x in vals:
                 self[x] = vals[x]
+        try:
+            self._ok.update(vals.keys())  # type: ignore
+        except AttributeError:
+            # assume a list/tuple of two element lists/tuples
+            for x in vals:
+                self._ok.add(x[0])
 
     def insert(self, pos, key, value, comment=None):
         # type: (Any, Any, Any, Optional[Any]) -> None
@@ -833,7 +828,7 @@ class CommentedMap(MutableMapping, ordereddict, CommentedBase):
 
     def __len__(self):
         # type: () -> int
-        return ordereddict.__len__(self)  # type: ignore
+        return ordereddict.__len__(self)
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -918,9 +913,10 @@ class CommentedMap(MutableMapping, ordereddict, CommentedBase):
 
     def copy(self):
         # type: () -> Any
-        x = {}  # update doesn't work
+        x = type(self)()  # update doesn't work
         for k, v in self._items():
             x[k] = v
+        self.copy_attributes(x)
         return x
 
     def add_referent(self, cm):
@@ -954,7 +950,7 @@ class CommentedMap(MutableMapping, ordereddict, CommentedBase):
         memo[id(self)] = res
         for k in self:
             res[k] = copy.deepcopy(self[k])
-            self.copy_attributes(res, deep=True)
+        self.copy_attributes(res, deep=True)
         return res
 
 
@@ -965,7 +961,7 @@ def raise_immutable(cls, *args, **kwargs):
     raise TypeError('{} objects are immutable'.format(cls.__name__))
 
 
-class CommentedKeyMap(CommentedBase, Mapping):
+class CommentedKeyMap(CommentedBase, Mapping):  # type: ignore
     __slots__ = Comment.attrib, '_od'
     """This primarily exists to be able to roundtrip keys that are mappings"""
 
@@ -1062,7 +1058,7 @@ class CommentedOrderedMap(CommentedMap):
     __slots__ = (Comment.attrib,)
 
 
-class CommentedSet(MutableSet, CommentedBase):  # NOQA
+class CommentedSet(MutableSet, CommentedBase):  # type: ignore  # NOQA
     __slots__ = Comment.attrib, 'odict'
 
     def __init__(self, values=None):

@@ -51,7 +51,9 @@ class CreateGitHub(base.CreateCommand):
     trigger_config = parser.add_mutually_exclusive_group(required=True)
     trigger_config.add_argument(
         '--trigger-config',
-        help='Path to Build Trigger config file. See https://cloud.google.com/cloud-build/docs/api/reference/rest/v1/projects.triggers#BuildTrigger',
+        help=('Path to a YAML/JSON file for Build Trigger config. '
+              'See https://cloud.google.com/cloud-build/docs/api/reference'
+              '/rest/v1/projects.triggers#BuildTrigger'),
         metavar='PATH',
     )
 

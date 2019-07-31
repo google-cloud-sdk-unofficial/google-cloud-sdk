@@ -65,6 +65,8 @@ if PY3:
 
 
 else:
+    if False:
+        unicode = str
 
     def utf8(s):
         # type: (unicode) -> str
@@ -117,7 +119,8 @@ else:
 
 if False:  # MYPY
     # StreamType = Union[BinaryIO, IO[str], IO[unicode],  StringIO]
-    StreamType = Union[BinaryIO, IO[str], StringIO]
+    # StreamType = Union[BinaryIO, IO[str], StringIO]  # type: ignore
+    StreamType = Any
 
     StreamTextType = Union[Text, StreamType]
     VersionType = Union[List[int], str, Tuple[int, int]]
@@ -230,11 +233,11 @@ def check_namespace_char(ch):
     # type: (Any) -> bool
     if u'\x21' <= ch <= u'\x7E':  # ! to ~
         return True
-    if u'\xA0' <= ch <= u'\xD7FF':
+    if u'\xA0' <= ch <= u'\uD7FF':
         return True
-    if (u'\xE000' <= ch <= u'\xFFFD') and ch != u'\xFEFF':  # excl. byte order mark
+    if (u'\uE000' <= ch <= u'\uFFFD') and ch != u'\uFEFF':  # excl. byte order mark
         return True
-    if u'\x10000' <= ch <= u'\x10FFFF':
+    if u'\U00010000' <= ch <= u'\U0010FFFF':
         return True
     return False
 
@@ -257,7 +260,7 @@ def version_tnf(t1, t2=None):
     return False
 
 
-class MutableSliceableSequence(MutableSequence):
+class MutableSliceableSequence(MutableSequence):  # type: ignore
     __slots__ = ()
 
     def __getitem__(self, index):

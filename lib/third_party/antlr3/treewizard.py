@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 """ @package antlr3.tree
 @brief ANTLR3 runtime package, treewizard module
 
@@ -36,21 +37,26 @@ See <http://www.antlr.org/wiki/display/~admin/2007/07/02/Exploring+Concept+of+Tr
 #
 # end[licence]
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 from antlr3.constants import INVALID_TOKEN_TYPE
 from antlr3.tokens import CommonToken
 from antlr3.tree import CommonTree, CommonTreeAdaptor
+import six
+from six.moves import range
 
 
 def computeTokenTypes(tokenNames):
-    """
+  """
     Compute a dict that is an inverted index of
     tokenNames (which maps int token types to names).
     """
 
-    if tokenNames is None:
-        return {}
+  if tokenNames is None:
+    return {}
 
-    return dict((name, type) for type, name in enumerate(tokenNames))
+  return dict((name, type) for type, name in enumerate(tokenNames))
 
 
 ## token types for pattern parser
@@ -64,244 +70,239 @@ COLON = 6
 DOT = 7
 
 class TreePatternLexer(object):
-    def __init__(self, pattern):
-        ## The tree pattern to lex like "(A B C)"
-        self.pattern = pattern
 
-	## Index into input string
-        self.p = -1
+  def __init__(self, pattern):
+    ## The tree pattern to lex like "(A B C)"
+    self.pattern = pattern
 
-	## Current char
-        self.c = None
+    ## Index into input string
+    self.p = -1
 
-	## How long is the pattern in char?
-        self.n = len(pattern)
+    ## Current char
+    self.c = None
 
-	## Set when token type is ID or ARG
-        self.sval = None
+    ## How long is the pattern in char?
+    self.n = len(pattern)
 
-        self.error = False
+    ## Set when token type is ID or ARG
+    self.sval = None
+
+    self.error = False
+
+    self.consume()
+
+  __idStartChar = frozenset(
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_')
+  __idChar = __idStartChar | frozenset('0123456789')
+
+  def nextToken(self):
+    self.sval = ''
+    while self.c != EOF:
+      if self.c in (' ', '\n', '\r', '\t'):
+        self.consume()
+        continue
+
+      if self.c in self.__idStartChar:
+        self.sval += self.c
+        self.consume()
+        while self.c in self.__idChar:
+          self.sval += self.c
+          self.consume()
+
+        return ID
+
+      if self.c == '(':
+        self.consume()
+        return BEGIN
+
+      if self.c == ')':
+        self.consume()
+        return END
+
+      if self.c == '%':
+        self.consume()
+        return PERCENT
+
+      if self.c == ':':
+        self.consume()
+        return COLON
+
+      if self.c == '.':
+        self.consume()
+        return DOT
+
+      if self.c == '[':  # grab [x] as a string, returning x
+        self.consume()
+        while self.c != ']':
+          if self.c == '\\':
+            self.consume()
+            if self.c != ']':
+              self.sval += '\\'
+
+            self.sval += self.c
+
+          else:
+            self.sval += self.c
+
+          self.consume()
 
         self.consume()
+        return ARG
 
+      self.consume()
+      self.error = True
+      return EOF
 
-    __idStartChar = frozenset(
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
-        )
-    __idChar = __idStartChar | frozenset('0123456789')
-    
-    def nextToken(self):
-        self.sval = ""
-        while self.c != EOF:
-            if self.c in (' ', '\n', '\r', '\t'):
-                self.consume()
-                continue
+    return EOF
 
-            if self.c in self.__idStartChar:
-                self.sval += self.c
-                self.consume()
-                while self.c in self.__idChar:
-                    self.sval += self.c
-                    self.consume()
+  def consume(self):
+    self.p += 1
+    if self.p >= self.n:
+      self.c = EOF
 
-                return ID
-
-            if self.c == '(':
-                self.consume()
-                return BEGIN
-
-            if self.c == ')':
-                self.consume()
-                return END
-
-            if self.c == '%':
-                self.consume()
-                return PERCENT
-
-            if self.c == ':':
-                self.consume()
-                return COLON
-
-            if self.c == '.':
-                self.consume()
-                return DOT
-
-            if self.c == '[': # grab [x] as a string, returning x
-                self.consume()
-                while self.c != ']':
-                    if self.c == '\\':
-                        self.consume()
-                        if self.c != ']':
-                            self.sval += '\\'
-
-                        self.sval += self.c
-
-                    else:
-                        self.sval += self.c
-
-                    self.consume()
-
-                self.consume()
-                return ARG
-
-            self.consume()
-            self.error = True
-            return EOF
-
-        return EOF
-
-
-    def consume(self):
-        self.p += 1
-        if self.p >= self.n:
-            self.c = EOF
-
-        else:
-            self.c = self.pattern[self.p]
+    else:
+      self.c = self.pattern[self.p]
 
 
 class TreePatternParser(object):
-    def __init__(self, tokenizer, wizard, adaptor):
-        self.tokenizer = tokenizer
-        self.wizard = wizard
-        self.adaptor = adaptor
-        self.ttype = tokenizer.nextToken() # kickstart
 
+  def __init__(self, tokenizer, wizard, adaptor):
+    self.tokenizer = tokenizer
+    self.wizard = wizard
+    self.adaptor = adaptor
+    self.ttype = tokenizer.nextToken()  # kickstart
 
-    def pattern(self):
-        if self.ttype == BEGIN:
-            return self.parseTree()
+  def pattern(self):
+    if self.ttype == BEGIN:
+      return self.parseTree()
 
-        elif self.ttype == ID:
-            node = self.parseNode()
-            if self.ttype == EOF:
-                return node
+    elif self.ttype == ID:
+      node = self.parseNode()
+      if self.ttype == EOF:
+        return node
 
-            return None # extra junk on end
+      return None  # extra junk on end
 
+    return None
+
+  def parseTree(self):
+    if self.ttype != BEGIN:
+      return None
+
+    self.ttype = self.tokenizer.nextToken()
+    root = self.parseNode()
+    if root is None:
+      return None
+
+    while self.ttype in (BEGIN, ID, PERCENT, DOT):
+      if self.ttype == BEGIN:
+        subtree = self.parseTree()
+        self.adaptor.addChild(root, subtree)
+
+      else:
+        child = self.parseNode()
+        if child is None:
+          return None
+
+        self.adaptor.addChild(root, child)
+
+    if self.ttype != END:
+      return None
+
+    self.ttype = self.tokenizer.nextToken()
+    return root
+
+  def parseNode(self):
+    # "%label:" prefix
+    label = None
+
+    if self.ttype == PERCENT:
+      self.ttype = self.tokenizer.nextToken()
+      if self.ttype != ID:
         return None
 
+      label = self.tokenizer.sval
+      self.ttype = self.tokenizer.nextToken()
+      if self.ttype != COLON:
+        return None
 
-    def parseTree(self):
-        if self.ttype != BEGIN:
-            return None
+      self.ttype = self.tokenizer.nextToken()  # move to ID following colon
 
-        self.ttype = self.tokenizer.nextToken()
-        root = self.parseNode()
-        if root is None:
-            return None
+    # Wildcard?
+    if self.ttype == DOT:
+      self.ttype = self.tokenizer.nextToken()
+      wildcardPayload = CommonToken(0, '.')
+      node = WildcardTreePattern(wildcardPayload)
+      if label is not None:
+        node.label = label
+      return node
 
-        while self.ttype in (BEGIN, ID, PERCENT, DOT):
-            if self.ttype == BEGIN:
-                subtree = self.parseTree()
-                self.adaptor.addChild(root, subtree)
+    # "ID" or "ID[arg]"
+    if self.ttype != ID:
+      return None
 
-            else:
-                child = self.parseNode()
-                if child is None:
-                    return None
+    tokenName = self.tokenizer.sval
+    self.ttype = self.tokenizer.nextToken()
 
-                self.adaptor.addChild(root, child)
+    if tokenName == 'nil':
+      return self.adaptor.nil()
 
-        if self.ttype != END:
-            return None
+    text = tokenName
+    # check for arg
+    arg = None
+    if self.ttype == ARG:
+      arg = self.tokenizer.sval
+      text = arg
+      self.ttype = self.tokenizer.nextToken()
 
-        self.ttype = self.tokenizer.nextToken()
-        return root
+    # create node
+    treeNodeType = self.wizard.getTokenType(tokenName)
+    if treeNodeType == INVALID_TOKEN_TYPE:
+      return None
 
+    node = self.adaptor.createFromType(treeNodeType, text)
+    if label is not None and isinstance(node, TreePattern):
+      node.label = label
 
-    def parseNode(self):
-        # "%label:" prefix
-        label = None
-        
-        if self.ttype == PERCENT:
-            self.ttype = self.tokenizer.nextToken()
-            if self.ttype != ID:
-                return None
+    if arg is not None and isinstance(node, TreePattern):
+      node.hasTextArg = True
 
-            label = self.tokenizer.sval
-            self.ttype = self.tokenizer.nextToken()
-            if self.ttype != COLON:
-                return None
-            
-            self.ttype = self.tokenizer.nextToken() # move to ID following colon
-
-        # Wildcard?
-        if self.ttype == DOT:
-            self.ttype = self.tokenizer.nextToken()
-            wildcardPayload = CommonToken(0, ".")
-            node = WildcardTreePattern(wildcardPayload)
-            if label is not None:
-                node.label = label
-            return node
-
-        # "ID" or "ID[arg]"
-        if self.ttype != ID:
-            return None
-
-        tokenName = self.tokenizer.sval
-        self.ttype = self.tokenizer.nextToken()
-        
-        if tokenName == "nil":
-            return self.adaptor.nil()
-
-        text = tokenName
-        # check for arg
-        arg = None
-        if self.ttype == ARG:
-            arg = self.tokenizer.sval
-            text = arg
-            self.ttype = self.tokenizer.nextToken()
-
-        # create node
-        treeNodeType = self.wizard.getTokenType(tokenName)
-        if treeNodeType == INVALID_TOKEN_TYPE:
-            return None
-
-        node = self.adaptor.createFromType(treeNodeType, text)
-        if label is not None and isinstance(node, TreePattern):
-            node.label = label
-
-        if arg is not None and isinstance(node, TreePattern):
-            node.hasTextArg = True
-
-        return node
+    return node
 
 
 class TreePattern(CommonTree):
-    """
+  """
     When using %label:TOKENNAME in a tree for parse(), we must
     track the label.
     """
 
-    def __init__(self, payload):
-        CommonTree.__init__(self, payload)
+  def __init__(self, payload):
+    CommonTree.__init__(self, payload)
 
-        self.label = None
-        self.hasTextArg = None
-        
+    self.label = None
+    self.hasTextArg = None
 
-    def toString(self):
-        if self.label is not None:
-            return '%' + self.label + ':' + CommonTree.toString(self)
-        
-        else:
-            return CommonTree.toString(self)
+  def toString(self):
+    if self.label is not None:
+      return '%' + self.label + ':' + CommonTree.toString(self)
+
+    else:
+      return CommonTree.toString(self)
 
 
 class WildcardTreePattern(TreePattern):
-    pass
+  pass
 
 
 class TreePatternTreeAdaptor(CommonTreeAdaptor):
-    """This adaptor creates TreePattern objects for use during scan()"""
+  """This adaptor creates TreePattern objects for use during scan()"""
 
-    def createWithPayload(self, payload):
-        return TreePattern(payload)
+  def createWithPayload(self, payload):
+    return TreePattern(payload)
 
 
 class TreeWizard(object):
-    """
+  """
     Build and navigate trees with this object.  Must know about the names
     of tokens so you have to pass in a map or array of token names (from which
     this class can build the map).  I.e., Token DECL means nothing unless the
@@ -319,137 +320,129 @@ class TreeWizard(object):
     match subtrees against it.
     """
 
-    def __init__(self, adaptor=None, tokenNames=None, typeMap=None):
-        self.adaptor = adaptor
-        if typeMap is None:
-            self.tokenNameToTypeMap = computeTokenTypes(tokenNames)
+  def __init__(self, adaptor=None, tokenNames=None, typeMap=None):
+    self.adaptor = adaptor
+    if typeMap is None:
+      self.tokenNameToTypeMap = computeTokenTypes(tokenNames)
 
-        else:
-            if tokenNames is not None:
-                raise ValueError("Can't have both tokenNames and typeMap")
+    else:
+      if tokenNames is not None:
+        raise ValueError("Can't have both tokenNames and typeMap")
 
-            self.tokenNameToTypeMap = typeMap
+      self.tokenNameToTypeMap = typeMap
 
+  def getTokenType(self, tokenName):
+    """Using the map of token names to token types, return the type."""
 
-    def getTokenType(self, tokenName):
-        """Using the map of token names to token types, return the type."""
+    try:
+      return self.tokenNameToTypeMap[tokenName]
+    except KeyError:
+      return INVALID_TOKEN_TYPE
 
-        try:
-            return self.tokenNameToTypeMap[tokenName]
-        except KeyError:
-            return INVALID_TOKEN_TYPE
-
-
-    def create(self, pattern):
-        """
+  def create(self, pattern):
+    """
         Create a tree or node from the indicated tree pattern that closely
         follows ANTLR tree grammar tree element syntax:
-        
+
         (root child1 ... child2).
-        
+
         You can also just pass in a node: ID
-         
+
         Any node can have a text argument: ID[foo]
         (notice there are no quotes around foo--it's clear it's a string).
-        
+
         nil is a special name meaning "give me a nil node".  Useful for
         making lists: (nil A B C) is a list of A B C.
         """
-        
-        tokenizer = TreePatternLexer(pattern)
-        parser = TreePatternParser(tokenizer, self, self.adaptor)
-        return parser.pattern()
 
+    tokenizer = TreePatternLexer(pattern)
+    parser = TreePatternParser(tokenizer, self, self.adaptor)
+    return parser.pattern()
 
-    def index(self, tree):
-        """Walk the entire tree and make a node name to nodes mapping.
-        
+  def index(self, tree):
+    """Walk the entire tree and make a node name to nodes mapping.
+
         For now, use recursion but later nonrecursive version may be
         more efficient.  Returns a dict int -> list where the list is
         of your AST node type.  The int is the token type of the node.
         """
 
-        m = {}
-        self._index(tree, m)
-        return m
+    m = {}
+    self._index(tree, m)
+    return m
 
+  def _index(self, t, m):
+    """Do the work for index"""
 
-    def _index(self, t, m):
-        """Do the work for index"""
+    if t is None:
+      return
 
-        if t is None:
-            return
+    ttype = self.adaptor.getType(t)
+    elements = m.get(ttype)
+    if elements is None:
+      m[ttype] = elements = []
 
-        ttype = self.adaptor.getType(t)
-        elements = m.get(ttype)
-        if elements is None:
-            m[ttype] = elements = []
+    elements.append(t)
+    for i in range(self.adaptor.getChildCount(t)):
+      child = self.adaptor.getChild(t, i)
+      self._index(child, m)
 
-        elements.append(t)
-        for i in range(self.adaptor.getChildCount(t)):
-            child = self.adaptor.getChild(t, i)
-            self._index(child, m)
-
-
-    def find(self, tree, what):
-        """Return a list of matching token.
+  def find(self, tree, what):
+    """Return a list of matching token.
 
         what may either be an integer specifzing the token type to find or
         a string with a pattern that must be matched.
-        
+
         """
-        
-        if isinstance(what, (int, long)):
-            return self._findTokenType(tree, what)
 
-        elif isinstance(what, basestring):
-            return self._findPattern(tree, what)
+    if isinstance(what, six.integer_types):
+      return self._findTokenType(tree, what)
 
-        else:
-            raise TypeError("'what' must be string or integer")
+    elif isinstance(what, six.string_types):
+      return self._findPattern(tree, what)
 
+    else:
+      raise TypeError("'what' must be string or integer")
 
-    def _findTokenType(self, t, ttype):
-        """Return a List of tree nodes with token type ttype"""
+  def _findTokenType(self, t, ttype):
+    """Return a List of tree nodes with token type ttype"""
 
-        nodes = []
+    nodes = []
 
-        def visitor(tree, parent, childIndex, labels):
-            nodes.append(tree)
+    def visitor(tree, parent, childIndex, labels):
+      nodes.append(tree)
 
-        self.visit(t, ttype, visitor)
+    self.visit(t, ttype, visitor)
 
-        return nodes
+    return nodes
 
+  def _findPattern(self, t, pattern):
+    """Return a List of subtrees matching pattern."""
 
-    def _findPattern(self, t, pattern):
-        """Return a List of subtrees matching pattern."""
-        
-        subtrees = []
-        
-        # Create a TreePattern from the pattern
-        tokenizer = TreePatternLexer(pattern)
-        parser = TreePatternParser(tokenizer, self, TreePatternTreeAdaptor())
-        tpattern = parser.pattern()
-        
-        # don't allow invalid patterns
-        if (tpattern is None or tpattern.isNil()
-            or isinstance(tpattern, WildcardTreePattern)):
-            return None
+    subtrees = []
 
-        rootTokenType = tpattern.getType()
+    # Create a TreePattern from the pattern
+    tokenizer = TreePatternLexer(pattern)
+    parser = TreePatternParser(tokenizer, self, TreePatternTreeAdaptor())
+    tpattern = parser.pattern()
 
-        def visitor(tree, parent, childIndex, label):
-            if self._parse(tree, tpattern, None):
-                subtrees.append(tree)
-                
-        self.visit(t, rootTokenType, visitor)
+    # don't allow invalid patterns
+    if (tpattern is None or tpattern.isNil() or
+        isinstance(tpattern, WildcardTreePattern)):
+      return None
 
-        return subtrees
+    rootTokenType = tpattern.getType()
 
+    def visitor(tree, parent, childIndex, label):
+      if self._parse(tree, tpattern, None):
+        subtrees.append(tree)
 
-    def visit(self, tree, what, visitor):
-        """Visit every node in tree matching what, invoking the visitor.
+    self.visit(t, rootTokenType, visitor)
+
+    return subtrees
+
+  def visit(self, tree, what, visitor):
+    """Visit every node in tree matching what, invoking the visitor.
 
         If what is a string, it is parsed as a pattern and only matching
         subtrees will be visited.
@@ -464,57 +457,54 @@ class TreeWizard(object):
         label.
         """
 
-        if isinstance(what, (int, long)):
-            self._visitType(tree, None, 0, what, visitor)
+    if isinstance(what, six.integer_types):
+      self._visitType(tree, None, 0, what, visitor)
 
-        elif isinstance(what, basestring):
-            self._visitPattern(tree, what, visitor)
+    elif isinstance(what, six.string_types):
+      self._visitPattern(tree, what, visitor)
 
-        else:
-            raise TypeError("'what' must be string or integer")
-        
-              
-    def _visitType(self, t, parent, childIndex, ttype, visitor):
-        """Do the recursive work for visit"""
-        
-        if t is None:
-            return
+    else:
+      raise TypeError("'what' must be string or integer")
 
-        if self.adaptor.getType(t) == ttype:
-            visitor(t, parent, childIndex, None)
+  def _visitType(self, t, parent, childIndex, ttype, visitor):
+    """Do the recursive work for visit"""
 
-        for i in range(self.adaptor.getChildCount(t)):
-            child = self.adaptor.getChild(t, i)
-            self._visitType(child, t, i, ttype, visitor)
+    if t is None:
+      return
 
+    if self.adaptor.getType(t) == ttype:
+      visitor(t, parent, childIndex, None)
 
-    def _visitPattern(self, tree, pattern, visitor):
-        """
+    for i in range(self.adaptor.getChildCount(t)):
+      child = self.adaptor.getChild(t, i)
+      self._visitType(child, t, i, ttype, visitor)
+
+  def _visitPattern(self, tree, pattern, visitor):
+    """
         For all subtrees that match the pattern, execute the visit action.
         """
 
-        # Create a TreePattern from the pattern
-        tokenizer = TreePatternLexer(pattern)
-        parser = TreePatternParser(tokenizer, self, TreePatternTreeAdaptor())
-        tpattern = parser.pattern()
-        
-        # don't allow invalid patterns
-        if (tpattern is None or tpattern.isNil()
-            or isinstance(tpattern, WildcardTreePattern)):
-            return
+    # Create a TreePattern from the pattern
+    tokenizer = TreePatternLexer(pattern)
+    parser = TreePatternParser(tokenizer, self, TreePatternTreeAdaptor())
+    tpattern = parser.pattern()
 
-        rootTokenType = tpattern.getType()
+    # don't allow invalid patterns
+    if (tpattern is None or tpattern.isNil() or
+        isinstance(tpattern, WildcardTreePattern)):
+      return
 
-        def rootvisitor(tree, parent, childIndex, labels):
-            labels = {}
-            if self._parse(tree, tpattern, labels):
-                visitor(tree, parent, childIndex, labels)
-                
-        self.visit(tree, rootTokenType, rootvisitor)
-        
+    rootTokenType = tpattern.getType()
 
-    def parse(self, t, pattern, labels=None):
-        """
+    def rootvisitor(tree, parent, childIndex, labels):
+      labels = {}
+      if self._parse(tree, tpattern, labels):
+        visitor(tree, parent, childIndex, labels)
+
+    self.visit(tree, rootTokenType, rootvisitor)
+
+  def parse(self, t, pattern, labels=None):
+    """
         Given a pattern like (ASSIGN %lhs:ID %rhs:.) with optional labels
         on the various nodes and '.' (dot) as the node/subtree wildcard,
         return true if the pattern matches and fill the labels Map with
@@ -525,88 +515,85 @@ class TreeWizard(object):
         for that node in t.
         """
 
-        tokenizer = TreePatternLexer(pattern)
-        parser = TreePatternParser(tokenizer, self, TreePatternTreeAdaptor())
-        tpattern = parser.pattern()
+    tokenizer = TreePatternLexer(pattern)
+    parser = TreePatternParser(tokenizer, self, TreePatternTreeAdaptor())
+    tpattern = parser.pattern()
 
-        return self._parse(t, tpattern, labels)
+    return self._parse(t, tpattern, labels)
 
-
-    def _parse(self, t1, t2, labels):
-        """
+  def _parse(self, t1, t2, labels):
+    """
         Do the work for parse. Check to see if the t2 pattern fits the
         structure and token types in t1.  Check text if the pattern has
         text arguments on nodes.  Fill labels map with pointers to nodes
         in tree matched against nodes in pattern with labels.
-	"""
-        
-        # make sure both are non-null
-        if t1 is None or t2 is None:
-            return False
-
-        # check roots (wildcard matches anything)
-        if not isinstance(t2, WildcardTreePattern):
-            if self.adaptor.getType(t1) != t2.getType():
-                return False
-
-            if t2.hasTextArg and self.adaptor.getText(t1) != t2.getText():
-                return False
-
-        if t2.label is not None and labels is not None:
-            # map label in pattern to node in t1
-            labels[t2.label] = t1
-
-        # check children
-        n1 = self.adaptor.getChildCount(t1)
-        n2 = t2.getChildCount()
-        if n1 != n2:
-            return False
-
-        for i in range(n1):
-            child1 = self.adaptor.getChild(t1, i)
-            child2 = t2.getChild(i)
-            if not self._parse(child1, child2, labels):
-                return False
-
-        return True
-
-
-    def equals(self, t1, t2, adaptor=None):
         """
+
+    # make sure both are non-null
+    if t1 is None or t2 is None:
+      return False
+
+    # check roots (wildcard matches anything)
+    if not isinstance(t2, WildcardTreePattern):
+      if self.adaptor.getType(t1) != t2.getType():
+        return False
+
+      if t2.hasTextArg and self.adaptor.getText(t1) != t2.getText():
+        return False
+
+    if t2.label is not None and labels is not None:
+      # map label in pattern to node in t1
+      labels[t2.label] = t1
+
+    # check children
+    n1 = self.adaptor.getChildCount(t1)
+    n2 = t2.getChildCount()
+    if n1 != n2:
+      return False
+
+    for i in range(n1):
+      child1 = self.adaptor.getChild(t1, i)
+      child2 = t2.getChild(i)
+      if not self._parse(child1, child2, labels):
+        return False
+
+    return True
+
+  def equals(self, t1, t2, adaptor=None):
+    """
         Compare t1 and t2; return true if token types/text, structure match
         exactly.
         The trees are examined in their entirety so that (A B) does not match
-        (A B C) nor (A (B C)). 
+        (A B C) nor (A (B C)).
         """
 
-        if adaptor is None:
-            adaptor = self.adaptor
+    if adaptor is None:
+      adaptor = self.adaptor
 
-        return self._equals(t1, t2, adaptor)
+    return self._equals(t1, t2, adaptor)
 
+  def _equals(self, t1, t2, adaptor):
+    # make sure both are non-null
+    if t1 is None or t2 is None:
+      return False
 
-    def _equals(self, t1, t2, adaptor):
-        # make sure both are non-null
-        if t1 is None or t2 is None:
-            return False
+    # check roots
+    if adaptor.getType(t1) != adaptor.getType(t2):
+      return False
 
-        # check roots
-        if adaptor.getType(t1) != adaptor.getType(t2):
-            return False
+    if adaptor.getText(t1) != adaptor.getText(t2):
+      return False
 
-        if adaptor.getText(t1) != adaptor.getText(t2):
-            return False
-        
-        # check children
-        n1 = adaptor.getChildCount(t1)
-        n2 = adaptor.getChildCount(t2)
-        if n1 != n2:
-            return False
+    # check children
+    n1 = adaptor.getChildCount(t1)
+    n2 = adaptor.getChildCount(t2)
+    if n1 != n2:
+      return False
 
-        for i in range(n1):
-            child1 = adaptor.getChild(t1, i)
-            child2 = adaptor.getChild(t2, i)
-            if not self._equals(child1, child2, adaptor):
-                return False
+    for i in range(n1):
+      child1 = adaptor.getChild(t1, i)
+      child2 = adaptor.getChild(t2, i)
+      if not self._equals(child1, child2, adaptor):
+        return False
 
-        return True
+    return True

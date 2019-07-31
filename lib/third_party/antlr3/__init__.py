@@ -1,3 +1,4 @@
+# Lint as: python2, python3
 """ @package antlr3
 @brief ANTLR3 runtime package
 
@@ -141,31 +142,31 @@ bug in your grammar, it can only be detected at runtime.
 __version__ = '3.1.1'
 
 def version_str_to_tuple(version_str):
-    import re
-    import sys
+  import re
+  import sys
 
-    if version_str == 'HEAD':
-        return (sys.maxsize, sys.maxsize, sys.maxsize, sys.maxsize)
+  if version_str == 'HEAD':
+    return (sys.maxsize, sys.maxsize, sys.maxsize, sys.maxsize)
 
-    m = re.match(r'(\d+)\.(\d+)(\.(\d+))?(b(\d+))?', version_str)
-    if m is None:
-        raise ValueError("Bad version string %r" % version_str)
+  m = re.match(r'(\d+)\.(\d+)(\.(\d+))?(b(\d+))?', version_str)
+  if m is None:
+    raise ValueError('Bad version string %r' % version_str)
 
-    major = int(m.group(1))
-    minor = int(m.group(2))
-    patch = int(m.group(4) or 0)
-    beta = int(m.group(6) or sys.maxsize)
+  major = int(m.group(1))
+  minor = int(m.group(2))
+  patch = int(m.group(4) or 0)
+  beta = int(m.group(6) or sys.maxsize)
 
-    return (major, minor, patch, beta)
+  return (major, minor, patch, beta)
 
 
 runtime_version_str = __version__
 runtime_version = version_str_to_tuple(runtime_version_str)
 
+from .exceptions import *
 
 from .constants import *
 from .dfa import *
-from .exceptions import *
 from .recognizers import *
 from .streams import *
 from .tokens import *

@@ -70,6 +70,7 @@ class Create(base.Command):
         domain_mapping_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
         """table(
+        name:label=NAME,
         type:label="RECORD TYPE",
         rrdata:label=CONTENTS)""")
 
@@ -105,7 +106,10 @@ class Create(base.Command):
                 help=DOMAIN_MAPPINGS_HELP_DOCS_URL, domains=domains_text))
 
     with serverless_operations.Connect(conn_context) as client:
-      return client.CreateDomainMapping(domain_mapping_ref, args.service)
+      mapping = client.CreateDomainMapping(domain_mapping_ref, args.service)
+      for record in mapping.records:
+        record.name = record.name or mapping.route_name
+      return mapping.records
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -156,8 +156,8 @@ class Emitter(object):
         self.column = 0
         self.whitespace = True
         self.indention = True
-        self.compact_seq_seq = True   # dash after dash
-        self.compact_seq_map = True   # key after dash
+        self.compact_seq_seq = True  # dash after dash
+        self.compact_seq_map = True  # key after dash
         # self.compact_ms = False   # dash after key, only when excplicit key with ?
         self.no_newline = None  # type: Optional[bool]  # set if directly after `- `
 
@@ -321,11 +321,11 @@ class Emitter(object):
             self.write_stream_start()
             self.state = self.expect_first_document_start
         else:
-            raise EmitterError('expected StreamStartEvent, but got %s' % self.event)
+            raise EmitterError('expected StreamStartEvent, but got %s' % (self.event,))
 
     def expect_nothing(self):
         # type: () -> None
-        raise EmitterError('expected nothing, but got %s' % self.event)
+        raise EmitterError('expected nothing, but got %s' % (self.event,))
 
     # Document handlers.
 
@@ -372,7 +372,7 @@ class Emitter(object):
             self.write_stream_end()
             self.state = self.expect_nothing
         else:
-            raise EmitterError('expected DocumentStartEvent, but got %s' % self.event)
+            raise EmitterError('expected DocumentStartEvent, but got %s' % (self.event,))
 
     def expect_document_end(self):
         # type: () -> None
@@ -384,7 +384,7 @@ class Emitter(object):
             self.flush_stream()
             self.state = self.expect_document_start
         else:
-            raise EmitterError('expected DocumentEndEvent, but got %s' % self.event)
+            raise EmitterError('expected DocumentEndEvent, but got %s' % (self.event,))
 
     def expect_document_root(self):
         # type: () -> None
@@ -402,12 +402,18 @@ class Emitter(object):
         if isinstance(self.event, AliasEvent):
             self.expect_alias()
         elif isinstance(self.event, (ScalarEvent, CollectionStartEvent)):
-            self.process_anchor(u'&')
+            if (
+                self.process_anchor(u'&')
+                and isinstance(self.event, ScalarEvent)
+                and self.sequence_context
+            ):
+                self.sequence_context = False
             self.process_tag()
             if isinstance(self.event, ScalarEvent):
+                # nprint('@', self.indention, self.no_newline, self.column)
                 self.expect_scalar()
             elif isinstance(self.event, SequenceStartEvent):
-                # nprintf('@', self.indention, self.no_newline, self.column)
+                # nprint('@', self.indention, self.no_newline, self.column)
                 i2, n2 = self.indention, self.no_newline  # NOQA
                 if self.event.comment:
                     if self.event.flow_style is False and self.event.comment:
@@ -442,7 +448,7 @@ class Emitter(object):
                 else:
                     self.expect_block_mapping()
         else:
-            raise EmitterError('expected NodeEvent, but got %s' % self.event)
+            raise EmitterError('expected NodeEvent, but got %s' % (self.event,))
 
     def expect_alias(self):
         # type: () -> None
@@ -540,6 +546,8 @@ class Emitter(object):
             if self.event.comment and self.event.comment[0]:
                 # eol comment on empty mapping
                 self.write_post_comment(self.event)
+            elif self.flow_level == 0:
+                self.write_line_break()
             self.state = self.states.pop()
         else:
             if self.canonical or self.column > self.best_width:
@@ -568,6 +576,8 @@ class Emitter(object):
             if self.event.comment and self.event.comment[0]:
                 # eol comment on flow mapping, never reached on empty mappings
                 self.write_post_comment(self.event)
+            else:
+                self.no_newline = False
             self.state = self.states.pop()
         else:
             self.write_indicator(u',', False)
@@ -663,10 +673,15 @@ class Emitter(object):
                 if not isinstance(
                     self.event, (SequenceStartEvent, MappingStartEvent)
                 ):  # sequence keys
-                    if self.event.style == '?':
-                        self.write_indicator(u'?', True, indention=True)
+                    try:
+                        if self.event.style == '?':
+                            self.write_indicator(u'?', True, indention=True)
+                    except AttributeError:  # aliases have no style
+                        pass
                 self.states.append(self.expect_block_mapping_simple_value)
                 self.expect_node(mapping=True, simple_key=True)
+                if isinstance(self.event, AliasEvent):
+                    self.stream.write(u' ')
             else:
                 self.write_indicator(u'?', True, indention=True)
                 self.states.append(self.expect_block_mapping_value)
@@ -757,15 +772,16 @@ class Emitter(object):
     # Anchor, Tag, and Scalar processors.
 
     def process_anchor(self, indicator):
-        # type: (Any) -> None
+        # type: (Any) -> bool
         if self.event.anchor is None:
             self.prepared_anchor = None
-            return
+            return False
         if self.prepared_anchor is None:
             self.prepared_anchor = self.prepare_anchor(self.event.anchor)
         if self.prepared_anchor:
             self.write_indicator(indicator + self.prepared_anchor, True)
         self.prepared_anchor = None
+        return True
 
     def process_tag(self):
         # type: () -> None
@@ -845,6 +861,7 @@ class Emitter(object):
         # if self.analysis.multiline and split    \
         #         and (not self.style or self.style in '\'\"'):
         #     self.write_indent()
+        # nprint('xx', self.sequence_context, self.flow_level)
         if self.sequence_context and not self.flow_level:
             self.write_indent()
         if self.style == '"':
@@ -1023,6 +1040,8 @@ class Emitter(object):
                     block_indicators = True
                 if ch in u'?:':  # ToDo
                     if self.serializer.use_version == (1, 1):
+                        flow_indicators = True
+                    elif len(scalar) == 1:  # single character
                         flow_indicators = True
                     if followed_by_whitespace:
                         block_indicators = True
@@ -1461,9 +1480,12 @@ class Emitter(object):
                         data = data.encode(self.encoding)
                     self.stream.write(data)
                     if ch == u'\a':
-                        self.write_line_break()
-                        self.write_indent()
-                        end += 2  # \a and the space that is inserted on the fold
+                        if end < (len(text) - 1) and not text[end + 2].isspace():
+                            self.write_line_break()
+                            self.write_indent()
+                            end += 2  # \a and the space that is inserted on the fold
+                        else:
+                            raise EmitterError('unexcpected fold indicator \\a before space')
                     if ch is None:
                         self.write_line_break()
                     start = end

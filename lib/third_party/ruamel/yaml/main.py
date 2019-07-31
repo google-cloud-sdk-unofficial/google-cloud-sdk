@@ -148,6 +148,7 @@ class YAML(object):
         self.sequence_dash_offset = 0
         self.compact_seq_seq = None
         self.compact_seq_map = None
+        self.sort_base_mapping_type_on_output = None  # default: sort
 
         self.top_level_colon_align = None
         self.prefix_colon = None
@@ -289,15 +290,14 @@ class YAML(object):
         # type: () -> Any
         attr = '_' + sys._getframe().f_code.co_name
         if not hasattr(self, attr):
-            setattr(
-                self,
-                attr,
-                self.Representer(
-                    default_style=self.default_style,
-                    default_flow_style=self.default_flow_style,
-                    dumper=self,
-                ),
+            repres = self.Representer(
+                default_style=self.default_style,
+                default_flow_style=self.default_flow_style,
+                dumper=self,
             )
+            if self.sort_base_mapping_type_on_output is not None:
+                repres.sort_base_mapping_type_on_output = self.sort_base_mapping_type_on_output
+            setattr(self, attr, repres)
         return getattr(self, attr)
 
     # separate output resolver?
@@ -324,7 +324,7 @@ class YAML(object):
         """
         if not hasattr(stream, 'read') and hasattr(stream, 'open'):
             # pathlib.Path() instance
-            with stream.open('r') as fp:  # type: ignore
+            with stream.open('rb') as fp:  # type: ignore
                 return self.load(fp)
         constructor, parser = self.get_constructor_parser(stream)
         try:
@@ -462,7 +462,7 @@ class YAML(object):
         """
         if not hasattr(stream, 'write') and hasattr(stream, 'open'):
             # pathlib.Path() instance
-            with stream.open('w') as fp:  # type: ignore
+            with stream.open('w') as fp:
                 return self.dump_all(documents, fp, _kw, transform=transform)
         if _kw is not enforce:
             raise TypeError(
@@ -501,7 +501,7 @@ class YAML(object):
             delattr(self, '_serializer')
             delattr(self, '_emitter')
         if transform:
-            val = stream.getvalue()  # type: ignore
+            val = stream.getvalue()
             if self.encoding:
                 val = val.decode(self.encoding)
             if fstream is None:
@@ -723,7 +723,7 @@ class YAML(object):
 
 class YAMLContextManager(object):
     def __init__(self, yaml, transform=None):
-        # type: (Any, Optional[Callable]) -> None
+        # type: (Any, Any) -> None  # used to be: (Any, Optional[Callable]) -> None
         self._yaml = yaml
         self._output_inited = False
         self._output_path = None

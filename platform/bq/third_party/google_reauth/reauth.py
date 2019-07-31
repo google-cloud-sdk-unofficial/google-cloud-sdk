@@ -33,14 +33,19 @@ Those steps are:
 3. Refreshing the access token using the returned rapt token.
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import json
 import sys
 
-from six.moves import http_client
 from google_reauth import challenges
 from google_reauth import errors
 from google_reauth import _helpers
 from google_reauth import _reauth_client
+from six.moves import http_client
+from six.moves import range
 
 
 _REAUTH_SCOPE = 'https://www.googleapis.com/auth/accounts.reauth'
@@ -81,7 +86,7 @@ def _run_next_challenge(msg, http_request, access_token):
                 'Unsupported challenge type {0}. Supported types: {0}'
                 .format(
                     challenge['challengeType'],
-                    ','.join(challenges.AVAILABLE_CHALLENGES.keys())))
+                    ','.join(list(challenges.AVAILABLE_CHALLENGES.keys()))))
         if not c.is_locally_eligible:
             raise errors.ReauthFailError(
                 'Challenge {0} is not locally eligible'

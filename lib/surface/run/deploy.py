@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
-from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
@@ -110,7 +109,6 @@ class Deploy(base.Command):
       changes = [image_change]
       if config_changes:
         changes.extend(config_changes)
-      endpoint_visibility = flags.GetEndpointVisibility(args)
       exists = operations.GetService(service_ref)
       allow_unauth = None
       if conn_context.supports_one_platform:
@@ -146,7 +144,6 @@ class Deploy(base.Command):
             changes,
             tracker,
             asyn=args.async,
-            private_endpoint=endpoint_visibility,
             allow_unauthenticated=allow_unauth)
       if args.async:
         pretty_print.Success(
@@ -173,8 +170,7 @@ class AlphaDeploy(Deploy):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-    labels_util.AddCreateLabelsFlags(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddLabelsFlags(parser)
     # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
     kubernetes_group = flags.GetKubernetesArgGroup(parser)
     flags.AddKubeconfigFlags(kubernetes_group)
@@ -186,5 +182,6 @@ class AlphaDeploy(Deploy):
     flags.AddAlphaPlatformArg(parser)
     flags.AddSecretsFlags(parser)
     flags.AddConfigMapsFlags(parser)
+    flags.AddScalingFlags(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

@@ -24,9 +24,10 @@ from ruamel.yaml.comments import (CommentedMap, CommentedOrderedMap, CommentedSe
                                   CommentedKeyMap)
 from ruamel.yaml.scalarstring import (SingleQuotedScalarString, DoubleQuotedScalarString,
                                       LiteralScalarString, FoldedScalarString,
-                                      ScalarString,)
+                                      PlainScalarString, ScalarString,)
 from ruamel.yaml.scalarint import ScalarInt, BinaryInt, OctalInt, HexInt, HexCapsInt
 from ruamel.yaml.scalarfloat import ScalarFloat
+from ruamel.yaml.scalarbool import ScalarBoolean
 from ruamel.yaml.timestamp import TimeStamp
 from ruamel.yaml.util import RegExp
 
@@ -62,6 +63,8 @@ class BaseConstructor(object):
         if self.loader is not None and getattr(self.loader, '_constructor', None) is None:
             self.loader._constructor = self
         self.loader = loader
+        self.yaml_base_dict_type = dict
+        self.yaml_base_list_type = list
         self.constructed_objects = {}  # type: Dict[Any, Any]
         self.recursive_objects = {}  # type: Dict[Any, Any]
         self.state_generators = []  # type: List[Any]
@@ -155,11 +158,11 @@ class BaseConstructor(object):
                 elif None in self.yaml_constructors:
                     constructor = self.yaml_constructors[None]
                 elif isinstance(node, ScalarNode):
-                    constructor = self.__class__.construct_scalar  # type: ignore
+                    constructor = self.__class__.construct_scalar
                 elif isinstance(node, SequenceNode):
-                    constructor = self.__class__.construct_sequence  # type: ignore
+                    constructor = self.__class__.construct_sequence
                 elif isinstance(node, MappingNode):
-                    constructor = self.__class__.construct_mapping  # type: ignore
+                    constructor = self.__class__.construct_mapping
         if tag_suffix is None:
             data = constructor(self, node)
         else:
@@ -206,13 +209,13 @@ class BaseConstructor(object):
             raise ConstructorError(
                 None, None, 'expected a mapping node, but found %s' % node.id, node.start_mark
             )
-        total_mapping = {}
+        total_mapping = self.yaml_base_dict_type()
         if getattr(node, 'merge', None) is not None:
             todo = [(node.merge, False), (node.value, False)]
         else:
             todo = [(node.value, True)]
         for values, check in todo:
-            mapping = {}  # type: Dict[Any, Any]
+            mapping = self.yaml_base_dict_type()  # type: Dict[Any, Any]
             for key_node, value_node in values:
                 # keys can be list -> deep
                 key = self.construct_object(key_node, deep=True)
@@ -241,13 +244,16 @@ class BaseConstructor(object):
 
                 value = self.construct_object(value_node, deep=deep)
                 if check:
-                    self.check_mapping_key(node, key_node, mapping, key, value)
-                mapping[key] = value
+                    if self.check_mapping_key(node, key_node, mapping, key, value):
+                        mapping[key] = value
+                else:
+                    mapping[key] = value
             total_mapping.update(mapping)
         return total_mapping
 
     def check_mapping_key(self, node, key_node, mapping, key, value):
-        # type: (Any, Any, Any, Any, Any) -> None
+        # type: (Any, Any, Any, Any, Any) -> bool
+        """return True if key is unique"""
         if key in mapping:
             if not self.allow_duplicate_keys:
                 mk = mapping.get(key)
@@ -277,6 +283,8 @@ class BaseConstructor(object):
                     warnings.warn(DuplicateKeyFutureWarning(*args))
                 else:
                     raise DuplicateKeyError(*args)
+            return False
+        return True
 
     def check_set_key(self, node, key_node, setting, key):
         # type: (Any, Any, Any, Any, Any) -> None
@@ -353,6 +361,29 @@ class SafeConstructor(BaseConstructor):
         while index < len(node.value):
             key_node, value_node = node.value[index]
             if key_node.tag == u'tag:yaml.org,2002:merge':
+                if merge:  # double << key
+                    if self.allow_duplicate_keys:
+                        del node.value[index]
+                        index += 1
+                        continue
+                    args = [
+                        'while constructing a mapping',
+                        node.start_mark,
+                        'found duplicate key "{}"'.format(key_node.value),
+                        key_node.start_mark,
+                        """
+                        To suppress this check see:
+                           http://yaml.readthedocs.io/en/latest/api.html#duplicate-keys
+                        """,
+                        """\
+                        Duplicate keys will become an error in future releases, and are errors
+                        by default when using the new API.
+                        """,
+                    ]
+                    if self.allow_duplicate_keys is None:
+                        warnings.warn(DuplicateKeyFutureWarning(*args))
+                    else:
+                        raise DuplicateKeyError(*args)
                 del node.value[index]
                 if isinstance(value_node, MappingNode):
                     self.flatten_mapping(value_node)
@@ -407,6 +438,8 @@ class SafeConstructor(BaseConstructor):
     bool_values = {
         u'yes': True,
         u'no': False,
+        u'y': True,
+        u'n': False,
         u'true': True,
         u'false': False,
         u'on': True,
@@ -572,6 +605,14 @@ class SafeConstructor(BaseConstructor):
             delta = datetime.timedelta(hours=tz_hour, minutes=tz_minute)
             if values['tz_sign'] == '-':
                 delta = -delta
+        # should do something else instead (or hook this up to the preceding if statement
+        # in reverse
+        #  if delta is None:
+        #      return datetime.datetime(year, month, day, hour, minute, second, fraction)
+        #  return datetime.datetime(year, month, day, hour, minute, second, fraction,
+        #                           datetime.timezone.utc)
+        # the above is not good enough though, should provide tzinfo. In Python3 that is easily
+        # doable drop that kind of support for Python2 as it has not native tzinfo
         data = datetime.datetime(year, month, day, hour, minute, second, fraction)
         if delta:
             data -= delta
@@ -661,13 +702,13 @@ class SafeConstructor(BaseConstructor):
 
     def construct_yaml_seq(self, node):
         # type: (Any) -> Any
-        data = []  # type: List[Any]
+        data = self.yaml_base_list_type()  # type: List[Any]
         yield data
         data.extend(self.construct_sequence(node))
 
     def construct_yaml_map(self, node):
         # type: (Any) -> Any
-        data = {}  # type: Dict[Any, Any]
+        data = self.yaml_base_dict_type()  # type: Dict[Any, Any]
         yield data
         value = self.construct_mapping(node)
         data.update(value)
@@ -820,7 +861,7 @@ class Constructor(SafeConstructor):
                     __import__(module_name)
                     # object_name = '.'.join(object_name)
                     break
-                except ImportError as exc:
+                except ImportError:
                     continue
         else:
             module_name = builtins_module
@@ -1033,7 +1074,7 @@ class RoundTripConstructor(SafeConstructor):
             )
 
         if node.style == '|' and isinstance(node.value, text_type):
-            lss = LiteralScalarString(node.value)
+            lss = LiteralScalarString(node.value, anchor=node.anchor)
             if node.comment and node.comment[1]:
                 lss.comment = node.comment[1][0]  # type: ignore
             return lss
@@ -1045,7 +1086,7 @@ class RoundTripConstructor(SafeConstructor):
                 if idx < 0:
                     break
                 fold_positions.append(idx - len(fold_positions))
-            fss = FoldedScalarString(node.value.replace('\a', ''))
+            fss = FoldedScalarString(node.value.replace('\a', ''), anchor=node.anchor)
             if node.comment and node.comment[1]:
                 fss.comment = node.comment[1][0]  # type: ignore
             if fold_positions:
@@ -1053,9 +1094,11 @@ class RoundTripConstructor(SafeConstructor):
             return fss
         elif bool(self._preserve_quotes) and isinstance(node.value, text_type):
             if node.style == "'":
-                return SingleQuotedScalarString(node.value)
+                return SingleQuotedScalarString(node.value, anchor=node.anchor)
             if node.style == '"':
-                return DoubleQuotedScalarString(node.value)
+                return DoubleQuotedScalarString(node.value, anchor=node.anchor)
+        if node.anchor:
+            return PlainScalarString(node.value, anchor=node.anchor)
         return node.value
 
     def construct_yaml_int(self, node):
@@ -1083,8 +1126,11 @@ class RoundTripConstructor(SafeConstructor):
             if underscore is not None:
                 underscore[1] = value_su[2] == '_'
                 underscore[2] = len(value_su[2:]) > 1 and value_su[-1] == '_'
-            return BinaryInt(  # type: ignore
-                sign * int(value_s[2:], 2), width=width, underscore=underscore
+            return BinaryInt(
+                sign * int(value_s[2:], 2),
+                width=width,
+                underscore=underscore,
+                anchor=node.anchor,
             )
         elif value_s.startswith('0x'):
             # default to lower-case if no a-fA-F in string
@@ -1100,15 +1146,23 @@ class RoundTripConstructor(SafeConstructor):
             if underscore is not None:
                 underscore[1] = value_su[2] == '_'
                 underscore[2] = len(value_su[2:]) > 1 and value_su[-1] == '_'
-            return hex_fun(sign * int(value_s[2:], 16), width=width, underscore=underscore)
+            return hex_fun(
+                sign * int(value_s[2:], 16),
+                width=width,
+                underscore=underscore,
+                anchor=node.anchor,
+            )
         elif value_s.startswith('0o'):
             if self.resolver.processing_version > (1, 1) and value_s[2] == '0':
                 width = len(value_s[2:])
             if underscore is not None:
                 underscore[1] = value_su[2] == '_'
                 underscore[2] = len(value_su[2:]) > 1 and value_su[-1] == '_'
-            return OctalInt(  # type: ignore
-                sign * int(value_s[2:], 8), width=width, underscore=underscore
+            return OctalInt(
+                sign * int(value_s[2:], 8),
+                width=width,
+                underscore=underscore,
+                anchor=node.anchor,
             )
         elif self.resolver.processing_version != (1, 2) and value_s[0] == '0':
             return sign * int(value_s, 8)
@@ -1126,15 +1180,15 @@ class RoundTripConstructor(SafeConstructor):
             if underscore is not None:
                 # cannot have a leading underscore
                 underscore[2] = len(value_su) > 1 and value_su[-1] == '_'
-            return ScalarInt(  # type: ignore
-                sign * int(value_s), width=len(value_s), underscore=underscore
-            )
+            return ScalarInt(sign * int(value_s), width=len(value_s), underscore=underscore)
         elif underscore:
             # cannot have a leading underscore
             underscore[2] = len(value_su) > 1 and value_su[-1] == '_'
-            return ScalarInt(  # type: ignore
-                sign * int(value_s), width=None, underscore=underscore
+            return ScalarInt(
+                sign * int(value_s), width=None, underscore=underscore, anchor=node.anchor
             )
+        elif node.anchor:
+            return ScalarInt(sign * int(value_s), width=None, anchor=node.anchor)
         else:
             return sign * int(value_s)
 
@@ -1192,7 +1246,7 @@ class RoundTripConstructor(SafeConstructor):
             e_width = len(exponent)
             e_sign = exponent[0] in '+-'
             # nprint('sf', width, prec, m_sign, exp, e_width, e_sign)
-            return ScalarFloat(  # type: ignore
+            return ScalarFloat(
                 sign * float(value_s),
                 width=width,
                 prec=prec,
@@ -1201,12 +1255,18 @@ class RoundTripConstructor(SafeConstructor):
                 exp=exp,
                 e_width=e_width,
                 e_sign=e_sign,
+                anchor=node.anchor,
             )
         width = len(value_so)
         prec = value_so.index('.')  # you can use index, this would not be float without dot
         lead0 = leading_zeros(value_so)
-        return ScalarFloat(  # type: ignore
-            sign * float(value_s), width=width, prec=prec, m_sign=m_sign, m_lead0=lead0
+        return ScalarFloat(
+            sign * float(value_s),
+            width=width,
+            prec=prec,
+            m_sign=m_sign,
+            m_lead0=lead0,
+            anchor=node.anchor,
         )
 
     def construct_yaml_str(self, node):
@@ -1270,11 +1330,34 @@ class RoundTripConstructor(SafeConstructor):
             return value
 
         # merge = []
-        merge_map_list = []
+        merge_map_list = []  # type: List[Any]
         index = 0
         while index < len(node.value):
             key_node, value_node = node.value[index]
             if key_node.tag == u'tag:yaml.org,2002:merge':
+                if merge_map_list:  # double << key
+                    if self.allow_duplicate_keys:
+                        del node.value[index]
+                        index += 1
+                        continue
+                    args = [
+                        'while constructing a mapping',
+                        node.start_mark,
+                        'found duplicate key "{}"'.format(key_node.value),
+                        key_node.start_mark,
+                        """
+                        To suppress this check see:
+                           http://yaml.readthedocs.io/en/latest/api.html#duplicate-keys
+                        """,
+                        """\
+                        Duplicate keys will become an error in future releases, and are errors
+                        by default when using the new API.
+                        """,
+                    ]
+                    if self.allow_duplicate_keys is None:
+                        warnings.warn(DuplicateKeyFutureWarning(*args))
+                    else:
+                        raise DuplicateKeyError(*args)
                 del node.value[index]
                 if isinstance(value_node, MappingNode):
                     merge_map_list.append((index, constructed(value_node)))
@@ -1373,31 +1456,31 @@ class RoundTripConstructor(SafeConstructor):
                         key_node.start_mark,
                     )
             value = self.construct_object(value_node, deep=deep)
-            self.check_mapping_key(node, key_node, maptyp, key, value)
+            if self.check_mapping_key(node, key_node, maptyp, key, value):
 
-            if key_node.comment and len(key_node.comment) > 4 and key_node.comment[4]:
-                if last_value is None:
-                    key_node.comment[0] = key_node.comment.pop(4)
-                    maptyp._yaml_add_comment(key_node.comment, value=last_key)
-                else:
-                    key_node.comment[2] = key_node.comment.pop(4)
+                if key_node.comment and len(key_node.comment) > 4 and key_node.comment[4]:
+                    if last_value is None:
+                        key_node.comment[0] = key_node.comment.pop(4)
+                        maptyp._yaml_add_comment(key_node.comment, value=last_key)
+                    else:
+                        key_node.comment[2] = key_node.comment.pop(4)
+                        maptyp._yaml_add_comment(key_node.comment, key=key)
+                    key_node.comment = None
+                if key_node.comment:
                     maptyp._yaml_add_comment(key_node.comment, key=key)
-                key_node.comment = None
-            if key_node.comment:
-                maptyp._yaml_add_comment(key_node.comment, key=key)
-            if value_node.comment:
-                maptyp._yaml_add_comment(value_node.comment, value=key)
-            maptyp._yaml_set_kv_line_col(
-                key,
-                [
-                    key_node.start_mark.line,
-                    key_node.start_mark.column,
-                    value_node.start_mark.line,
-                    value_node.start_mark.column,
-                ],
-            )
-            maptyp[key] = value
-            last_key, last_value = key, value  # could use indexing
+                if value_node.comment:
+                    maptyp._yaml_add_comment(value_node.comment, value=key)
+                maptyp._yaml_set_kv_line_col(
+                    key,
+                    [
+                        key_node.start_mark.line,
+                        key_node.start_mark.column,
+                        value_node.start_mark.line,
+                        value_node.start_mark.column,
+                    ],
+                )
+                maptyp[key] = value
+                last_key, last_value = key, value  # could use indexing
         # do this last, or <<: before a key will prevent insertion in instances
         # of collections.OrderedDict (as they have no __contains__
         if merge_map:
@@ -1456,25 +1539,28 @@ class RoundTripConstructor(SafeConstructor):
         # type: (Any) -> Any
         data = CommentedSeq()
         data._yaml_set_line_col(node.start_mark.line, node.start_mark.column)
-        if node.flow_style is True:
-            data.fa.set_flow_style()
-        elif node.flow_style is False:
-            data.fa.set_block_style()
         if node.comment:
             data._yaml_add_comment(node.comment)
         yield data
         data.extend(self.construct_rt_sequence(node, data))
+        self.set_collection_style(data, node)
 
     def construct_yaml_map(self, node):
         # type: (Any) -> Any
         data = CommentedMap()
         data._yaml_set_line_col(node.start_mark.line, node.start_mark.column)
+        yield data
+        self.construct_mapping(node, data, deep=True)
+        self.set_collection_style(data, node)
+
+    def set_collection_style(self, data, node):
+        # type: (Any, Any) -> None
+        if len(data) == 0:
+            return
         if node.flow_style is True:
             data.fa.set_flow_style()
         elif node.flow_style is False:
             data.fa.set_block_style()
-        yield data
-        self.construct_mapping(node, data)
 
     def construct_yaml_object(self, node, cls):
         # type: (Any, Any) -> Any
@@ -1554,6 +1640,8 @@ class RoundTripConstructor(SafeConstructor):
                     data.fa.set_block_style()
                 data.yaml_set_tag(node.tag)
                 yield data
+                if node.anchor:
+                    data.yaml_set_anchor(node.anchor)
                 self.construct_mapping(node, data)
                 return
             elif isinstance(node, ScalarNode):
@@ -1562,6 +1650,8 @@ class RoundTripConstructor(SafeConstructor):
                 data2.style = node.style
                 data2.yaml_set_tag(node.tag)
                 yield data2
+                if node.anchor:
+                    data2.yaml_set_anchor(node.anchor, always_dump=True)
                 return
             elif isinstance(node, SequenceNode):
                 data3 = CommentedSeq()
@@ -1572,6 +1662,8 @@ class RoundTripConstructor(SafeConstructor):
                     data3.fa.set_block_style()
                 data3.yaml_set_tag(node.tag)
                 yield data3
+                if node.anchor:
+                    data3.yaml_set_anchor(node.anchor)
                 data3.extend(self.construct_sequence(node))
                 return
         except:  # NOQA
@@ -1643,6 +1735,13 @@ class RoundTripConstructor(SafeConstructor):
         if values['t']:
             data._yaml['t'] = True
         return data
+
+    def construct_yaml_bool(self, node):
+        # type: (Any) -> Any
+        b = SafeConstructor.construct_yaml_bool(self, node)
+        if node.anchor:
+            return ScalarBoolean(b, anchor=node.anchor)
+        return b
 
 
 RoundTripConstructor.add_constructor(

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -14,11 +15,12 @@ class AlignedIndentFilter(object):
     join_words = (r'((LEFT\s+|RIGHT\s+|FULL\s+)?'
                   r'(INNER\s+|OUTER\s+|STRAIGHT\s+)?|'
                   r'(CROSS\s+|NATURAL\s+)?)?JOIN\b')
+    by_words = r'(GROUP|ORDER)\s+BY\b'
     split_words = ('FROM',
-                   join_words, 'ON',
+                   join_words, 'ON', by_words,
                    'WHERE', 'AND', 'OR',
-                   'GROUP', 'HAVING', 'LIMIT',
-                   'ORDER', 'UNION', 'VALUES',
+                   'HAVING', 'LIMIT',
+                   'UNION', 'VALUES',
                    'SET', 'BETWEEN', 'EXCEPT')
 
     def __init__(self, char=' ', n='\n'):
@@ -31,14 +33,15 @@ class AlignedIndentFilter(object):
     def nl(self, offset=1):
         # offset = 1 represent a single space after SELECT
         offset = -len(offset) if not isinstance(offset, int) else offset
-        # add two for the space and parens
+        # add two for the space and parenthesis
         indent = self.indent * (2 + self._max_kwd_len)
 
         return sql.Token(T.Whitespace, self.n + self.char * (
             self._max_kwd_len + offset + indent + self.offset))
 
     def _process_statement(self, tlist):
-        if tlist.tokens[0].is_whitespace and self.indent == 0:
+        if len(tlist.tokens) > 0 and tlist.tokens[0].is_whitespace \
+                and self.indent == 0:
             tlist.tokens.pop(0)
 
         # process the main query body
@@ -50,7 +53,7 @@ class AlignedIndentFilter(object):
         if token is not None:
             with indent(self):
                 tlist.insert_after(tlist[0], self.nl('SELECT'))
-                # process the inside of the parantheses
+                # process the inside of the parenthesis
                 self._process_default(tlist)
 
             # de-indent last parenthesis
@@ -99,8 +102,12 @@ class AlignedIndentFilter(object):
     def _split_kwds(self, tlist):
         tidx, token = self._next_token(tlist)
         while token:
-            # joins are special case. only consider the first word as aligner
-            if token.match(T.Keyword, self.join_words, regex=True):
+            # joins, group/order by are special case. only consider the first
+            # word as aligner
+            if (
+                token.match(T.Keyword, self.join_words, regex=True) or
+                token.match(T.Keyword, self.by_words, regex=True)
+            ):
                 token_indent = token.value.split()[0]
             else:
                 token_indent = text_type(token)
@@ -115,7 +122,9 @@ class AlignedIndentFilter(object):
             idx = tlist.token_index(sgroup)
             pidx, prev_ = tlist.token_prev(idx)
             # HACK: make "group/order by" work. Longer than max_len.
-            offset_ = 3 if (prev_ and prev_.match(T.Keyword, 'BY')) else 0
+            offset_ = 3 if (
+                prev_ and prev_.match(T.Keyword, self.by_words, regex=True)
+            ) else 0
             with offset(self, offset_):
                 self._process(sgroup)
 

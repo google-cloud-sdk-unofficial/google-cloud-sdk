@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -12,21 +13,22 @@ from sqlparse import tokens
 
 def is_keyword(value):
     val = value.upper()
-    return (KEYWORDS_COMMON.get(val) or
-            KEYWORDS_ORACLE.get(val) or
-            KEYWORDS.get(val, tokens.Name)), value
+    return (KEYWORDS_COMMON.get(val)
+            or KEYWORDS_ORACLE.get(val)
+            or KEYWORDS_PLPGSQL.get(val)
+            or KEYWORDS.get(val, tokens.Name)), value
 
 
 SQL_REGEX = {
     'root': [
-        (r'(--|# )\+.*?(\r\n|\r|\n|$)', tokens.Comment.Single.Hint),
+        (r'(--|//|# )\+.*?(\r\n|\r|\n|$)', tokens.Comment.Single.Hint),
         (r'/\*\+[\s\S]*?\*/', tokens.Comment.Multiline.Hint),
 
-        (r'(--|# ).*?(\r\n|\r|\n|$)', tokens.Comment.Single),
+        (r'(--|//|# ).*?(\r\n|\r|\n|$)', tokens.Comment.Single),
         (r'/\*[\s\S]*?\*/', tokens.Comment.Multiline),
 
         (r'(\r\n|\r|\n)', tokens.Newline),
-        (r'\s+', tokens.Whitespace),
+        (r'\s+?', tokens.Whitespace),
 
         (r':=', tokens.Assignment),
         (r'::', tokens.Punctuation),
@@ -35,35 +37,37 @@ SQL_REGEX = {
 
         (r"`(``|[^`])*`", tokens.Name),
         (r"´(´´|[^´])*´", tokens.Name),
-        (r'(\$(?:[_A-Z]\w*)?\$)[\s\S]*?\1', tokens.Literal),
+        (r'(\$(?:[_A-ZÀ-Ü]\w*)?\$)[\s\S]*?\1', tokens.Literal),
 
         (r'\?', tokens.Name.Placeholder),
         (r'%(\(\w+\))?s', tokens.Name.Placeholder),
         (r'(?<!\w)[$:?]\w+', tokens.Name.Placeholder),
 
+        (r'\\\w+', tokens.Command),
+
         # FIXME(andi): VALUES shouldn't be listed here
         # see https://github.com/andialbrecht/sqlparse/pull/64
         # IN is special, it may be followed by a parenthesis, but
-        # is never a functino, see issue183
-        (r'(CASE|IN|VALUES|USING)\b', tokens.Keyword),
+        # is never a function, see issue183
+        (r'(CASE|IN|VALUES|USING|FROM)\b', tokens.Keyword),
 
-        (r'(@|##|#)[A-Z]\w+', tokens.Name),
+        (r'(@|##|#)[A-ZÀ-Ü]\w+', tokens.Name),
 
         # see issue #39
         # Spaces around period `schema . name` are valid identifier
         # TODO: Spaces before period not implemented
-        (r'[A-Z]\w*(?=\s*\.)', tokens.Name),  # 'Name'   .
-        (r'(?<=\.)[A-Z]\w*', tokens.Name),  # .'Name'
-        (r'[A-Z]\w*(?=\()', tokens.Name),  # side effect: change kw to func
-
-        # TODO: `1.` and `.1` are valid numbers
+        (r'[A-ZÀ-Ü]\w*(?=\s*\.)', tokens.Name),  # 'Name'   .
+        # FIXME(atronah): never match,
+        # because `re.match` doesn't work with look-behind regexp feature
+        (r'(?<=\.)[A-ZÀ-Ü]\w*', tokens.Name),  # .'Name'
+        (r'[A-ZÀ-Ü]\w*(?=\()', tokens.Name),  # side effect: change kw to func
         (r'-?0x[\dA-F]+', tokens.Number.Hexadecimal),
         (r'-?\d*(\.\d+)?E-?\d+', tokens.Number.Float),
-        (r'-?\d*\.\d+', tokens.Number.Float),
-        (r'-?\d+', tokens.Number.Integer),
-
+        (r'-?(\d+(\.\d*)|\.\d+)', tokens.Number.Float),
+        (r'-?\d+(?![_A-ZÀ-Ü])', tokens.Number.Integer),
         (r"'(''|\\\\|\\'|[^'])*'", tokens.String.Single),
         # not a real string literal in ANSI SQL:
+        (r'"(""|\\\\|\\"|[^"])*"', tokens.String.Symbol),
         (r'(""|".*?[^\\]")', tokens.String.Symbol),
         # sqlite names can be escaped with [square brackets]. left bracket
         # cannot be preceded by word character or a right bracket --
@@ -76,8 +80,10 @@ SQL_REGEX = {
         (r'UNION\s+ALL\b', tokens.Keyword),
         (r'CREATE(\s+OR\s+REPLACE)?\b', tokens.Keyword.DDL),
         (r'DOUBLE\s+PRECISION\b', tokens.Name.Builtin),
+        (r'GROUP\s+BY\b', tokens.Keyword),
+        (r'ORDER\s+BY\b', tokens.Keyword),
 
-        (r'[_A-Z][_$#\w]*', is_keyword),
+        (r'[0-9_A-ZÀ-Ü][_$#\w]*', is_keyword),
 
         (r'[;:()\[\],\.]', tokens.Punctuation),
         (r'[<>=~!]+', tokens.Operator.Comparison),
@@ -114,6 +120,7 @@ KEYWORDS = {
     'ATOMIC': tokens.Keyword,
     'AUDIT': tokens.Keyword,
     'AUTHORIZATION': tokens.Keyword,
+    'AUTO_INCREMENT': tokens.Keyword,
     'AVG': tokens.Keyword,
 
     'BACKWARD': tokens.Keyword,
@@ -142,6 +149,7 @@ KEYWORDS = {
     'CHARACTER_SET_NAME': tokens.Keyword,
     'CHARACTER_SET_SCHEMA': tokens.Keyword,
     'CHAR_LENGTH': tokens.Keyword,
+    'CHARSET': tokens.Keyword,
     'CHECK': tokens.Keyword,
     'CHECKED': tokens.Keyword,
     'CHECKPOINT': tokens.Keyword,
@@ -238,6 +246,7 @@ KEYWORDS = {
     'ENCODING': tokens.Keyword,
     'ENCRYPTED': tokens.Keyword,
     'END-EXEC': tokens.Keyword,
+    'ENGINE': tokens.Keyword,
     'EQUALS': tokens.Keyword,
     'ESCAPE': tokens.Keyword,
     'EVERY': tokens.Keyword,
@@ -249,6 +258,7 @@ KEYWORDS = {
     'EXECUTE': tokens.Keyword,
     'EXISTING': tokens.Keyword,
     'EXISTS': tokens.Keyword,
+    'EXPLAIN': tokens.Keyword,
     'EXTERNAL': tokens.Keyword,
     'EXTRACT': tokens.Keyword,
 
@@ -283,6 +293,7 @@ KEYWORDS = {
     'HAVING': tokens.Keyword,
     'HIERARCHY': tokens.Keyword,
     'HOLD': tokens.Keyword,
+    'HOUR': tokens.Keyword,
     'HOST': tokens.Keyword,
 
     'IDENTIFIED': tokens.Keyword,
@@ -408,6 +419,8 @@ KEYWORDS = {
     'OVERLAY': tokens.Keyword,
     'OVERRIDING': tokens.Keyword,
     'OWNER': tokens.Keyword,
+
+    'QUARTER': tokens.Keyword,
 
     'PAD': tokens.Keyword,
     'PARAMETER': tokens.Keyword,
@@ -598,6 +611,7 @@ KEYWORDS = {
     'VIEW': tokens.Keyword,
     'VOLATILE': tokens.Keyword,
 
+    'WEEK': tokens.Keyword,
     'WHENEVER': tokens.Keyword,
     'WITH': tokens.Keyword.CTE,
     'WITHOUT': tokens.Keyword,
@@ -636,7 +650,7 @@ KEYWORDS = {
     'SERIAL8': tokens.Name.Builtin,
     'SIGNED': tokens.Name.Builtin,
     'SMALLINT': tokens.Name.Builtin,
-    'SYSDATE': tokens.Name.Builtin,
+    'SYSDATE': tokens.Name,
     'TEXT': tokens.Name.Builtin,
     'TINYINT': tokens.Name.Builtin,
     'UNSIGNED': tokens.Name.Builtin,
@@ -650,6 +664,7 @@ KEYWORDS_COMMON = {
     'INSERT': tokens.Keyword.DML,
     'DELETE': tokens.Keyword.DML,
     'UPDATE': tokens.Keyword.DML,
+    'UPSERT': tokens.Keyword.DML,
     'REPLACE': tokens.Keyword.DML,
     'MERGE': tokens.Keyword.DML,
     'DROP': tokens.Keyword.DDL,
@@ -795,4 +810,47 @@ KEYWORDS_ORACLE = {
     'TRIGGERS': tokens.Keyword,
 
     'UNLIMITED': tokens.Keyword,
+    'UNLOCK': tokens.Keyword,
+}
+
+# PostgreSQL Syntax
+KEYWORDS_PLPGSQL = {
+    'PARTITION': tokens.Keyword,
+    'OVER': tokens.Keyword,
+    'PERFORM': tokens.Keyword,
+    'NOTICE': tokens.Keyword,
+    'PLPGSQL': tokens.Keyword,
+    'INHERIT': tokens.Keyword,
+    'INDEXES': tokens.Keyword,
+
+    'BYTEA': tokens.Keyword,
+    'BIGSERIAL': tokens.Keyword,
+    'BIT VARYING': tokens.Keyword,
+    'BOX': tokens.Keyword,
+    'CHARACTER': tokens.Keyword,
+    'CHARACTER VARYING': tokens.Keyword,
+    'CIDR': tokens.Keyword,
+    'CIRCLE': tokens.Keyword,
+    'DOUBLE PRECISION': tokens.Keyword,
+    'INET': tokens.Keyword,
+    'JSON': tokens.Keyword,
+    'JSONB': tokens.Keyword,
+    'LINE': tokens.Keyword,
+    'LSEG': tokens.Keyword,
+    'MACADDR': tokens.Keyword,
+    'MONEY': tokens.Keyword,
+    'PATH': tokens.Keyword,
+    'PG_LSN': tokens.Keyword,
+    'POINT': tokens.Keyword,
+    'POLYGON': tokens.Keyword,
+    'SMALLSERIAL': tokens.Keyword,
+    'TSQUERY': tokens.Keyword,
+    'TSVECTOR': tokens.Keyword,
+    'TXID_SNAPSHOT': tokens.Keyword,
+    'UUID': tokens.Keyword,
+    'XML': tokens.Keyword,
+
+    'FOR': tokens.Keyword,
+    'IN': tokens.Keyword,
+    'LOOP': tokens.Keyword,
 }

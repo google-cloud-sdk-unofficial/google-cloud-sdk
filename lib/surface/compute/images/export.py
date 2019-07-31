@@ -26,8 +26,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.core import properties
 
-_DEFAULT_WORKFLOW = '../workflows/export/image_export.wf.json'
-_EXTERNAL_WORKFLOW = '../workflows/export/image_export_ext.wf.json'
 _OUTPUT_FILTER = ['[Daisy', '[image-export', '  image', 'ERROR']
 
 
@@ -93,63 +91,6 @@ class Export(base.CreateCommand):
 
   def Run(self, args):
     tags = ['gce-daisy-image-export']
-    return self._RunImageExport(args, tags)
-
-  def _RunImageExport(self, args, tags):
-    source_image = self._GetSourceImage(args.image, args.image_family,
-                                        args.image_project)
-
-    variables = """source_image={0},destination={1}""".format(
-        source_image, args.destination_uri)
-
-    if args.export_format:
-      workflow = _EXTERNAL_WORKFLOW
-      variables += """,format={0}""".format(args.export_format.lower())
-    else:
-      workflow = _DEFAULT_WORKFLOW
-
-    variables = self._ProcessNetworkArgs(args, variables)
-
-    return daisy_utils.RunDaisyBuild(
-        args, workflow, variables, tags=tags,
-        user_zone=properties.VALUES.compute.zone.Get(),
-        output_filter=_OUTPUT_FILTER, daisy_bucket=self._GetDaisyBucket(args))
-
-  def _GetSourceImage(self, image, image_family, image_project):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    resources = holder.resources
-    project = properties.VALUES.core.project.GetOrFail()
-    image_expander = image_utils.ImageExpander(client, resources)
-    image = image_expander.ExpandImageFlag(
-        user_project=project, image=image, image_family=image_family,
-        image_project=image_project, return_image_resource=False)
-    image_ref = resources.Parse(image[0], collection='compute.images')
-    return image_ref.RelativeName()
-
-  def _GetDaisyBucket(self, args):
-    storage_client = storage_api.StorageClient()
-    bucket_location = storage_client.GetBucketLocationForFile(
-        args.destination_uri)
-    bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
-    storage_client.CreateBucketIfNotExists(bucket_name,
-                                           location=bucket_location)
-    return bucket_name
-
-  @staticmethod
-  def _ProcessNetworkArgs(args, variables):
-    network_vars = daisy_utils.ExtractNetworkAndSubnetDaisyVariables(
-        args, daisy_utils.ImageOperation.EXPORT)
-    if network_vars:
-      variables += ',' + ','.join(network_vars)
-    return variables
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ExportBeta(Export):
-  """Export a Google Compute Engine image for Beta release track."""
-
-  def _RunImageExport(self, args, tags):
     export_args = []
     daisy_utils.AppendNetworkAndSubnetArgs(args, export_args)
 
@@ -169,6 +110,33 @@ class ExportBeta(Export):
       daisy_utils.AppendArg(export_args, 'format', args.export_format.lower())
 
     return daisy_utils.RunImageExport(args, export_args, tags, _OUTPUT_FILTER)
+
+  def _GetSourceImage(self, image, image_family, image_project):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    resources = holder.resources
+    project = properties.VALUES.core.project.GetOrFail()
+    image_expander = image_utils.ImageExpander(client, resources)
+    image = image_expander.ExpandImageFlag(
+        user_project=project, image=image, image_family=image_family,
+        image_project=image_project, return_image_resource=False)
+    image_ref = resources.Parse(image[0], collection='compute.images')
+    return image_ref.RelativeName()
+
+  @staticmethod
+  def _GetDaisyBucket(args):
+    storage_client = storage_api.StorageClient()
+    bucket_location = storage_client.GetBucketLocationForFile(
+        args.destination_uri)
+    bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
+    storage_client.CreateBucketIfNotExists(bucket_name,
+                                           location=bucket_location)
+    return bucket_name
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ExportBeta(Export):
+  """Export a Google Compute Engine image for Beta release track."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

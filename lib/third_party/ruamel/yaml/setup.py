@@ -45,6 +45,11 @@ if sys.version_info < (3, 4):
         pass
 
 
+if sys.version_info >= (3, 8):
+
+    from ast import Str, Num, Bytes, NameConstant  # NOQA
+
+
 if sys.version_info < (3,):
     open_kw = dict()
 else:
@@ -419,16 +424,17 @@ class NameSpacePackager(object):
     def split(self):
         """split the full package name in list of compontents traditionally
         done by setuptools.find_packages. This routine skips any directories
-        with __init__.py that start with "_" or ".", or contain a
+        with __init__.py, for which the name starts with "_" or ".", or contain a
         setup.py/tox.ini (indicating a subpackage)
         """
+        skip = []
         if self._split is None:
             fpn = self.full_package_name.split('.')
             self._split = []
             while fpn:
                 self._split.insert(0, '.'.join(fpn))
                 fpn = fpn[:-1]
-            for d in os.listdir('.'):
+            for d in sorted(os.listdir('.')):
                 if not os.path.isdir(d) or d == self._split[0] or d[0] in '._':
                     continue
                 # prevent sub-packages in namespace from being included
@@ -436,12 +442,17 @@ class NameSpacePackager(object):
                 if os.path.exists(x):
                     pd = _package_data(x)
                     if pd.get('nested', False):
+                        skip.append(d)
                         continue
                     self._split.append(self.full_package_name + '.' + d)
             if sys.version_info < (3,):
                 self._split = [
                     (y.encode('utf-8') if isinstance(y, unicode) else y) for y in self._split
                 ]
+        if skip:
+            # this interferes with output checking
+            # print('skipping sub-packages:', ', '.join(skip))
+            pass
         return self._split
 
     @property
@@ -830,7 +841,7 @@ class NameSpacePackager(object):
                 sources=[self.pn(x) for x in target['src']],
                 libraries=[self.pn(x) for x in target.get('lib')],
             )
-            # debug('test in target', 'test' in target, target)
+            # debug('test1 in target', 'test' in target, target)
             if 'test' not in target:  # no test, just hope it works
                 self._ext_modules.append(ext)
                 continue
@@ -871,8 +882,8 @@ class NameSpacePackager(object):
                     print('compile error:', file_name)
                     continue
                 except LinkError:
-                    debug('libyaml link error', file_name)
-                    print('libyaml link error', file_name)
+                    debug('link error', file_name)
+                    print('link error', file_name)
                     continue
                 self._ext_modules.append(ext)
             except Exception as e:  # NOQA
@@ -893,10 +904,10 @@ class NameSpacePackager(object):
         https://bitbucket.org/pypa/wheel/issues/47
         """
         if 'bdist_wheel' not in sys.argv:
-            return
+            return False
         file_name = 'setup.cfg'
         if os.path.exists(file_name):  # add it if not in there?
-            return
+            return False
         with open(file_name, 'w') as fp:
             if os.path.exists('LICENSE'):
                 fp.write('[metadata]\nlicense-file = LICENSE\n')
@@ -964,6 +975,8 @@ def main():
         for k in sorted(kw):
             v = kw[k]
             print('  "{0}": "{1}",'.format(k, v))
+    # if '--record' in sys.argv:
+    #     return
     if dump_kw in sys.argv:
         sys.argv.remove(dump_kw)
     try:
@@ -971,7 +984,26 @@ def main():
             kw['long_description'] = fp.read()
     except Exception:
         pass
+
     if nsp.wheel(kw, setup):
+        if nsp.nested and 'bdist_wheel' in sys.argv:
+            try:
+                d = sys.argv[sys.argv.index('-d') + 1]
+            except ValueError:
+                dist_base = os.environ.get('PYDISTBASE')
+                if dist_base:
+                    d = os.path.join(dist_base, nsp.full_package_name)
+                else:
+                    d = 'dist'
+            for x in os.listdir(d):
+                dashed_vs = '-' + version_str + '-'
+                if x.endswith('.whl') and dashed_vs in x:
+                    # remove .pth file from the wheel
+                    full_name = os.path.join(d, x)
+                    print('patching .pth from', full_name)
+                    with InMemoryZipFile(full_name) as imz:
+                        imz.delete_from_zip_file(nsp.full_package_name + '.*.pth')
+                    break
         return
     for x in ['-c', 'egg_info', '--egg-base', 'pip-egg-info']:
         if x not in sys.argv:
@@ -1002,6 +1034,7 @@ def main():
             if x.endswith('.whl'):
                 # remove .pth file from the wheel
                 full_name = os.path.join(d, x)
+                print('patching .pth from', full_name)
                 with InMemoryZipFile(full_name) as imz:
                     imz.delete_from_zip_file(nsp.full_package_name + '.*.pth')
                 break

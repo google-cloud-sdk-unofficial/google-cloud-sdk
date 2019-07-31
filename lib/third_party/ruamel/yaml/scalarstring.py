@@ -3,6 +3,7 @@
 from __future__ import print_function, absolute_import, division, unicode_literals
 
 from ruamel.yaml.compat import text_type
+from ruamel.yaml.anchor import Anchor
 
 if False:  # MYPY
     from typing import Text, Any, Dict, List  # NOQA
@@ -13,6 +14,7 @@ __all__ = [
     'FoldedScalarString',
     'SingleQuotedScalarString',
     'DoubleQuotedScalarString',
+    'PlainScalarString',
     # PreservedScalarString is the old name, as it was the first to be preserved on rt,
     # use LiteralScalarString instead
     'PreservedScalarString',
@@ -20,15 +22,39 @@ __all__ = [
 
 
 class ScalarString(text_type):
-    __slots__ = ()
+    __slots__ = Anchor.attrib
 
     def __new__(cls, *args, **kw):
         # type: (Any, Any) -> Any
-        return text_type.__new__(cls, *args, **kw)  # type: ignore
+        anchor = kw.pop('anchor', None)  # type: ignore
+        ret_val = text_type.__new__(cls, *args, **kw)  # type: ignore
+        if anchor is not None:
+            ret_val.yaml_set_anchor(anchor, always_dump=True)
+        return ret_val
 
     def replace(self, old, new, maxreplace=-1):
         # type: (Any, Any, int) -> Any
         return type(self)((text_type.replace(self, old, new, maxreplace)))
+
+    @property
+    def anchor(self):
+        # type: () -> Any
+        if not hasattr(self, Anchor.attrib):
+            setattr(self, Anchor.attrib, Anchor())
+        return getattr(self, Anchor.attrib)
+
+    def yaml_anchor(self, any=False):
+        # type: (bool) -> Any
+        if not hasattr(self, Anchor.attrib):
+            return None
+        if any or self.anchor.always_dump:
+            return self.anchor
+        return None
+
+    def yaml_set_anchor(self, value, always_dump=False):
+        # type: (Any, bool) -> None
+        self.anchor.value = value
+        self.anchor.always_dump = always_dump
 
 
 class LiteralScalarString(ScalarString):
@@ -36,9 +62,9 @@ class LiteralScalarString(ScalarString):
 
     style = '|'
 
-    def __new__(cls, value):
-        # type: (Text) -> Any
-        return ScalarString.__new__(cls, value)
+    def __new__(cls, value, anchor=None):
+        # type: (Text, Any) -> Any
+        return ScalarString.__new__(cls, value, anchor=anchor)
 
 
 PreservedScalarString = LiteralScalarString
@@ -49,9 +75,9 @@ class FoldedScalarString(ScalarString):
 
     style = '>'
 
-    def __new__(cls, value):
-        # type: (Text) -> Any
-        return ScalarString.__new__(cls, value)
+    def __new__(cls, value, anchor=None):
+        # type: (Text, Any) -> Any
+        return ScalarString.__new__(cls, value, anchor=anchor)
 
 
 class SingleQuotedScalarString(ScalarString):
@@ -59,9 +85,9 @@ class SingleQuotedScalarString(ScalarString):
 
     style = "'"
 
-    def __new__(cls, value):
-        # type: (Text) -> Any
-        return ScalarString.__new__(cls, value)
+    def __new__(cls, value, anchor=None):
+        # type: (Text, Any) -> Any
+        return ScalarString.__new__(cls, value, anchor=anchor)
 
 
 class DoubleQuotedScalarString(ScalarString):
@@ -69,9 +95,19 @@ class DoubleQuotedScalarString(ScalarString):
 
     style = '"'
 
-    def __new__(cls, value):
-        # type: (Text) -> Any
-        return ScalarString.__new__(cls, value)
+    def __new__(cls, value, anchor=None):
+        # type: (Text, Any) -> Any
+        return ScalarString.__new__(cls, value, anchor=anchor)
+
+
+class PlainScalarString(ScalarString):
+    __slots__ = ()
+
+    style = ''
+
+    def __new__(cls, value, anchor=None):
+        # type: (Text, Any) -> Any
+        return ScalarString.__new__(cls, value, anchor=anchor)
 
 
 def preserve_literal(s):

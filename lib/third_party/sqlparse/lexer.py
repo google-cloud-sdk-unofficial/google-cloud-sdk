@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -14,7 +15,7 @@
 
 from sqlparse import tokens
 from sqlparse.keywords import SQL_REGEX
-from sqlparse.compat import bytes_type, text_type, file_types
+from sqlparse.compat import text_type, file_types
 from sqlparse.utils import consume
 
 
@@ -35,14 +36,14 @@ class Lexer(object):
 
         Split ``text`` into (tokentype, text) pairs.
 
-        ``stack`` is the inital stack (default: ``['root']``)
+        ``stack`` is the initial stack (default: ``['root']``)
         """
         if isinstance(text, file_types):
             text = text.read()
 
         if isinstance(text, text_type):
             pass
-        elif isinstance(text, bytes_type):
+        elif isinstance(text, bytes):
             if encoding:
                 text = text.decode(encoding)
             else:

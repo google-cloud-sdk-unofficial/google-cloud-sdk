@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -12,16 +13,19 @@ from sqlparse.utils import offset, indent
 
 class ReindentFilter(object):
     def __init__(self, width=2, char=' ', wrap_after=0, n='\n',
-                 comma_first=False):
+                 comma_first=False, indent_after_first=False,
+                 indent_columns=False):
         self.n = n
         self.width = width
         self.char = char
-        self.indent = 0
+        self.indent = 1 if indent_after_first else 0
         self.offset = 0
         self.wrap_after = wrap_after
         self.comma_first = comma_first
+        self.indent_columns = indent_columns
         self._curr_stmt = None
         self._last_stmt = None
+        self._last_func = None
 
     def _flatten_up_to_token(self, token):
         """Yields all tokens up to token but excluding current."""
@@ -50,7 +54,7 @@ class ReindentFilter(object):
 
     def _next_token(self, tlist, idx=-1):
         split_words = ('FROM', 'STRAIGHT_JOIN$', 'JOIN$', 'AND', 'OR',
-                       'GROUP', 'ORDER', 'UNION', 'VALUES',
+                       'GROUP BY', 'ORDER BY', 'UNION', 'VALUES',
                        'SET', 'BETWEEN', 'EXCEPT', 'HAVING', 'LIMIT')
         m_split = T.Keyword, split_words, True
         tidx, token = tlist.token_next_by(m=m_split, idx=idx)
@@ -116,11 +120,20 @@ class ReindentFilter(object):
             with offset(self, self._get_offset(first) + 1):
                 self._process_default(tlist, not is_dml_dll)
 
+    def _process_function(self, tlist):
+        self._last_func = tlist[0]
+        self._process_default(tlist)
+
     def _process_identifierlist(self, tlist):
         identifiers = list(tlist.get_identifiers())
-        first = next(identifiers.pop(0).flatten())
-        num_offset = 1 if self.char == '\t' else self._get_offset(first)
-        if not tlist.within(sql.Function):
+        if self.indent_columns:
+            first = next(identifiers[0].flatten())
+            num_offset = 1 if self.char == '\t' else self.width
+        else:
+            first = next(identifiers.pop(0).flatten())
+            num_offset = 1 if self.char == '\t' else self._get_offset(first)
+
+        if not tlist.within(sql.Function) and not tlist.within(sql.Values):
             with offset(self, num_offset):
                 position = 0
                 for token in identifiers:
@@ -144,6 +157,34 @@ class ReindentFilter(object):
                                 tlist.insert_after(
                                     token, sql.Token(T.Whitespace, ' '))
                         position = 0
+        else:
+            # ensure whitespace
+            for token in tlist:
+                _, next_ws = tlist.token_next(
+                    tlist.token_index(token), skip_ws=False)
+                if token.value == ',' and not next_ws.is_whitespace:
+                    tlist.insert_after(
+                        token, sql.Token(T.Whitespace, ' '))
+
+            end_at = self.offset + sum(len(i.value) + 1 for i in identifiers)
+            adjusted_offset = 0
+            if (self.wrap_after > 0
+                    and end_at > (self.wrap_after - self.offset)
+                    and self._last_func):
+                adjusted_offset = -len(self._last_func.value) - 1
+
+            with offset(self, adjusted_offset), indent(self):
+                if adjusted_offset < 0:
+                    tlist.insert_before(identifiers[0], self.nl())
+                position = 0
+                for token in identifiers:
+                    # Add 1 for the "," separator
+                    position += len(token.value) + 1
+                    if (self.wrap_after > 0
+                            and position > (self.wrap_after - self.offset)):
+                        adjust = 0
+                        tlist.insert_before(token, self.nl(offset=adjust))
+                        position = 0
         self._process_default(tlist)
 
     def _process_case(self, tlist):
@@ -164,6 +205,23 @@ class ReindentFilter(object):
             end_idx, end = tlist.token_next_by(m=sql.Case.M_CLOSE)
             if end_idx is not None:
                 tlist.insert_before(end_idx, self.nl())
+
+    def _process_values(self, tlist):
+        tlist.insert_before(0, self.nl())
+        tidx, token = tlist.token_next_by(i=sql.Parenthesis)
+        first_token = token
+        while token:
+            ptidx, ptoken = tlist.token_next_by(m=(T.Punctuation, ','),
+                                                idx=tidx)
+            if ptoken:
+                if self.comma_first:
+                    adjust = -2
+                    offset = self._get_offset(first_token) + adjust
+                    tlist.insert_before(ptoken, self.nl(offset))
+                else:
+                    tlist.insert_after(ptoken,
+                                       self.nl(self._get_offset(token)))
+            tidx, token = tlist.token_next_by(i=sql.Parenthesis, idx=tidx)
 
     def _process_default(self, tlist, stmts=True):
         self._split_statements(tlist) if stmts else None

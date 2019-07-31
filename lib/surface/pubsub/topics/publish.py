@@ -34,10 +34,11 @@ def _Run(args, message_body, legacy_output=False):
   client = topics.TopicsClient()
 
   attributes = util.ParseAttributes(args.attribute, messages=client.messages)
+  ordering_key = getattr(args, 'ordering_key', None)
   topic_ref = args.CONCEPTS.topic.Parse()
 
-  result = client.Publish(
-      topic_ref, http_encoding.Encode(message_body), attributes)
+  result = client.Publish(topic_ref, http_encoding.Encode(message_body),
+                          attributes, ordering_key)
 
   if legacy_output:
     # We only allow to publish one message at a time, so do not return a
@@ -66,8 +67,8 @@ class Publish(base.Command):
       """
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resource_args.AddTopicResourceArg(parser, 'to publish messages to.')
     flags.AddPublishMessageFlags(parser)
 
@@ -75,12 +76,12 @@ class Publish(base.Command):
     return _Run(args, args.message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PublishBeta(Publish):
   """Publishes a message to the specified topic."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resource_args.AddTopicResourceArg(parser, 'to publish messages to.')
     flags.AddPublishMessageFlags(parser, add_deprecated=True)
 
@@ -88,3 +89,16 @@ class PublishBeta(Publish):
     message_body = flags.ParseMessageBody(args)
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     return _Run(args, message_body, legacy_output=legacy_output)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class PublishAlpha(PublishBeta):
+  """Publishes a message to the specified topic."""
+
+  @classmethod
+  def Args(cls, parser):
+    resource_args.AddTopicResourceArg(parser, 'to publish messages to.')
+    flags.AddPublishMessageFlags(
+        parser,
+        add_deprecated=True,
+        support_message_ordering=True)

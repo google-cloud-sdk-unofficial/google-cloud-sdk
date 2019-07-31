@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a Google Compute Engine node group."""
 
@@ -52,6 +53,12 @@ class Create(base.CreateCommand):
         name=node_group_ref.Name(),
         description=args.description,
         nodeTemplate=node_template_ref.SelfLink())
+
+    if hasattr(args, 'maintenance_policy'):
+      mapper = flags.GetMaintenancePolicyEnumMapper(messages)
+      maintenance_policy = mapper.GetEnumForChoice(args.maintenance_policy)
+      node_group.maintenancePolicy = maintenance_policy
+
     request = messages.ComputeNodeGroupsInsertRequest(
         nodeGroup=node_group,
         initialNodeCount=args.target_size,
@@ -60,3 +67,20 @@ class Create(base.CreateCommand):
 
     service = holder.client.apitools_client.nodeGroups
     return client.MakeRequests([(service, 'Insert', request)])[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Creates a Google Compute Engine node group."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Creates a Google Compute Engine node group."""
+
+  @staticmethod
+  def Args(parser):
+    flags.MakeNodeGroupArg().AddArgument(parser)
+    flags.AddCreateArgsToParser(parser)
+    flags.AddMaintenancePolicyArgToParser(parser)
+

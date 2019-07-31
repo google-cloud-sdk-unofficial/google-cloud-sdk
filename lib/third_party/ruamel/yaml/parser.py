@@ -71,7 +71,7 @@ from __future__ import absolute_import
 # flow_mapping_entry: { ALIAS ANCHOR TAG SCALAR FLOW-SEQUENCE-START
 #                                                    FLOW-MAPPING-START KEY }
 
-# need to have full path, as pkg_resources tries to load parser.py in __init__.py
+# need to have full path with import, as pkg_resources tries to load parser.py in __init__.py
 # only to not do anything with the package afterwards
 # and for Jython too
 
@@ -435,7 +435,7 @@ class Parser(object):
             self.state = self.parse_flow_sequence_first_entry
         elif self.scanner.check_token(FlowMappingStartToken):
             pt = self.scanner.peek_token()
-            end_mark = self.scanner.peek_token().end_mark
+            end_mark = pt.end_mark
             event = MappingStartEvent(
                 anchor,
                 tag,
@@ -569,6 +569,9 @@ class Parser(object):
             else:
                 self.state = self.parse_block_mapping_value
                 return self.process_empty_scalar(token.end_mark)
+        if self.resolver.processing_version > (1, 1) and self.scanner.check_token(ValueToken):
+            self.state = self.parse_block_mapping_value
+            return self.process_empty_scalar(self.scanner.peek_token().start_mark)
         if not self.scanner.check_token(BlockEndToken):
             token = self.scanner.peek_token()
             raise ParserError(
@@ -728,6 +731,11 @@ class Parser(object):
                 else:
                     self.state = self.parse_flow_mapping_value
                     return self.process_empty_scalar(token.end_mark)
+            elif self.resolver.processing_version > (1, 1) and self.scanner.check_token(
+                ValueToken
+            ):
+                self.state = self.parse_flow_mapping_value
+                return self.process_empty_scalar(self.scanner.peek_token().end_mark)
             elif not self.scanner.check_token(FlowMappingEndToken):
                 self.states.append(self.parse_flow_mapping_empty_value)
                 return self.parse_flow_node()

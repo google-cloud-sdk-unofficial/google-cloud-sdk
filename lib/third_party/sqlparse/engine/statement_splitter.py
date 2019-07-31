@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Andi Albrecht, albrecht.andi@gmail.com
+# Copyright (C) 2009-2018 the sqlparse authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of python-sqlparse and is released under
 # the BSD License: https://opensource.org/licenses/BSD-3-Clause
@@ -29,7 +30,7 @@ class StatementSplitter(object):
         # ANSI
         # if normal token return
         # wouldn't parenthesis increase/decrease a level?
-        # no, inside a paranthesis can't start new statement
+        # no, inside a parenthesis can't start new statement
         if ttype not in T.Keyword:
             return 0
 
@@ -56,16 +57,16 @@ class StatementSplitter(object):
                 return 1
             return 0
 
-        # Should this respect a preceeding BEGIN?
+        # Should this respect a preceding BEGIN?
         # In CASE ... WHEN ... END this results in a split level -1.
-        # Would having multiple CASE WHEN END and a Assigment Operator
+        # Would having multiple CASE WHEN END and a Assignment Operator
         # cause the statement to cut off prematurely?
         if unified == 'END':
             self._begin_depth = max(0, self._begin_depth - 1)
             return -1
 
-        if (unified in ('IF', 'FOR', 'WHILE') and
-                self._is_create and self._begin_depth > 0):
+        if (unified in ('IF', 'FOR', 'WHILE')
+                and self._is_create and self._begin_depth > 0):
             return 1
 
         if unified in ('END IF', 'END FOR', 'END WHILE'):
