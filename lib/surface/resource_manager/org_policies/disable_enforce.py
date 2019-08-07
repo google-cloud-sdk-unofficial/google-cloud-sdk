@@ -42,10 +42,9 @@ class DisableEnforce(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddIdArgToParser(parser)
-    flags.AddResourceFlagsToParser(parser)
+    flags.AddCustomResourceFlagsToParser(parser)
 
   def Run(self, args):
-    flags.CheckResourceFlags(args)
     service = org_policies_base.OrgPoliciesService(args)
     messages = org_policies.OrgPoliciesMessages()
 

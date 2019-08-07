@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.asset import client_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.asset import flags
+from googlecloudsdk.command_lib.util.args import common_args
 
 
 class GetHistory(base.Command):
@@ -46,7 +47,11 @@ class GetHistory(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddOrganizationArgs(parser)
+    parent_group = parser.add_mutually_exclusive_group(required=True)
+    flags.AddOrganizationArgs(parent_group)
+    common_args.ProjectArgument(
+        help_text_to_prepend='The project which is the root asset.'
+    ).AddToParser(parent_group)
     flags.AddAssetNamesArgs(parser)
     flags.AddContentTypeArgs(parser, required=True)
     flags.AddStartTimeArgs(parser)

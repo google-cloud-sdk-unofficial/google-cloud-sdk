@@ -158,11 +158,13 @@ class AlphaUpdate(Update):
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddCpuFlag(cluster_group)
+    flags.AddSecretsFlags(cluster_group)
+    flags.AddConfigMapsFlags(cluster_group)
     # Flags not specific to any platform
     flags.AddLabelsFlags(parser, add_create=False)
     flags.AddAlphaPlatformArg(parser)
-    flags.AddSecretsFlags(parser)
-    flags.AddConfigMapsFlags(parser)
     flags.AddScalingFlags(parser)
+    flags.AddCommandFlag(parser)
+    flags.AddArgsFlag(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

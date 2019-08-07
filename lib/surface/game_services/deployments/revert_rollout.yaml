@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
 
   help_text:
     brief:  Start rollback of the ongoing Deployment rollout in the specified clusters.

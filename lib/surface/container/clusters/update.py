@@ -446,6 +446,7 @@ class UpdateBeta(Update):
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
+    flags.AddDisableDatabaseEncryptionFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -472,7 +473,8 @@ class UpdateBeta(Update):
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
-    opts.database_encryption = flags.GetDatabaseEncryptionOption(args)
+    opts.database_encryption_key = flags.GetDatabaseEncryptionOption(args)
+    opts.disable_database_encryption = args.disable_database_encryption
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.
@@ -526,6 +528,7 @@ class UpdateAlpha(Update):
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddDatabaseEncryptionFlag(group)
+    flags.AddDisableDatabaseEncryptionFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -555,7 +558,8 @@ class UpdateAlpha(Update):
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_peering_route_sharing = args.enable_peering_route_sharing
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
-    opts.database_encryption = flags.GetDatabaseEncryptionOption(args)
+    opts.database_encryption_key = flags.GetDatabaseEncryptionOption(args)
+    opts.disable_database_encryption = args.disable_database_encryption
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.

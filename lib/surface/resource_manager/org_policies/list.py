@@ -44,7 +44,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddResourceFlagsToParser(parser)
+    flags.AddCustomResourceFlagsToParser(parser)
     base.Argument(
         '--show-unset',
         action='store_true',
@@ -64,7 +64,6 @@ class List(base.ListCommand):
         """)
 
   def Run(self, args):
-    flags.CheckResourceFlags(args)
     service = org_policies_base.OrgPoliciesService(args)
 
     response = service.ListOrgPolicies(self.ListOrgPoliciesRequest(args))

@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute.os_config import osconfig_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute.os_config import resource_args
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -29,11 +29,11 @@ class Update(base.Command):
 
   ## EXAMPLES
 
-    To update the description of guest policy 'policy1' in the project
-    'project1', run:
+    To update the description of guest policy 'policy1' in the current project,
+    run:
 
           $ {command} policy1 \
-          --description='new description' --project=project1
+          --description='new description'
 
     To update the guest policy 'policy1' in the project 'project1', run:
 
@@ -49,7 +49,10 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddGuestPolicyResourceArg(parser, 'to update.')
+    parser.add_argument(
+        'POLICY_ID', type=str, help='ID of the guest policy to update.')
+    osconfig_utils.AddFolderAndOrgArgs(parser, 'guest policy', 'to update')
+
     update_group = parser.add_group(help='The update component.', required=True)
     update_group.add_argument(
         '--file',
@@ -79,10 +82,6 @@ class Update(base.Command):
         etag.""")
 
   def Run(self, args):
-    guest_policy_ref = args.CONCEPTS.guest_policy.Parse()
-    guest_policy_type = guest_policy_ref.type_
-    guest_policy_name = guest_policy_ref.result.RelativeName()
-
     release_track = self.ReleaseTrack()
     client = osconfig_utils.GetClientInstance(release_track)
     messages = osconfig_utils.GetClientMessages(release_track)
@@ -103,24 +102,27 @@ class Update(base.Command):
       update_fields.append('etag')
     update_mask = ','.join(sorted(list(set(update_fields))))
 
-    if args.organization or guest_policy_type == type(
-        guest_policy_type).organization_guest_policy:
+    if args.organization:
       request = messages.OsconfigOrganizationsGuestPoliciesPatchRequest(
           guestPolicy=guest_policy,
-          name=guest_policy_name,
+          name=osconfig_utils.GetGuestPolicyUriPath('organizations',
+                                                    args.organization,
+                                                    args.POLICY_ID),
           updateMask=update_mask)
       service = client.organizations_guestPolicies
-    elif args.folder or guest_policy_type == type(
-        guest_policy_type).folder_guest_policy:
+    elif args.folder:
       request = messages.OsconfigFoldersGuestPoliciesPatchRequest(
           guestPolicy=guest_policy,
-          name=guest_policy_name,
+          name=osconfig_utils.GetGuestPolicyUriPath('folders', args.folder,
+                                                    args.POLICY_ID),
           updateMask=update_mask)
       service = client.folders_guestPolicies
     else:
+      project = properties.VALUES.core.project.GetOrFail()
       request = messages.OsconfigProjectsGuestPoliciesPatchRequest(
           guestPolicy=guest_policy,
-          name=guest_policy_name,
+          name=osconfig_utils.GetGuestPolicyUriPath('projects', project,
+                                                    args.POLICY_ID),
           updateMask=update_mask)
       service = client.projects_guestPolicies
 

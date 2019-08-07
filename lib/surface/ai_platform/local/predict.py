@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import local_utils
 from googlecloudsdk.command_lib.ml_engine import predict_utilities
+from googlecloudsdk.core import log
 
 
 def _AddLocalPredictArgs(parser):
@@ -70,7 +71,10 @@ class Predict(base.Command):
   def Run(self, args):
     framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
     framework_flag = framework.name.lower() if framework else 'tensorflow'
-
+    if args.signature_name is None:
+      log.status.Print('If the signature defined in the model is '
+                       'not serving_default then you must specify it via '
+                       '--signature-name flag, otherwise the command may fail.')
     results = local_utils.RunPredict(
         args.model_dir,
         json_instances=args.json_instances,

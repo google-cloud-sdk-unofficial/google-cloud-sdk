@@ -46,7 +46,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.AddIdArgToParser(parser)
-    flags.AddResourceFlagsToParser(parser)
+    flags.AddCustomResourceFlagsToParser(parser)
     base.Argument(
         '--effective',
         action='store_true',
@@ -55,7 +55,6 @@ class Describe(base.DescribeCommand):
         help='Show the effective policy.').AddToParser(parser)
 
   def Run(self, args):
-    flags.CheckResourceFlags(args)
     service = org_policies_base.OrgPoliciesService(args)
 
     if not args.effective:

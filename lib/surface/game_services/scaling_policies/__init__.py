@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ScalingPolicies(base.Group):
   """Deploy and manage Cloud Game Services Scaling Policies."""

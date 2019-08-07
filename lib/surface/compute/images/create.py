@@ -61,7 +61,14 @@ def _Args(parser, release_track, supports_force_create=False,
     flags.MakeForceCreateArg().AddToParser(parser)
 
   if supports_storage_location:
-    compute_flags.AddStorageLocationFlag(parser, 'image')
+    parser.add_argument(
+        '--storage-location',
+        metavar='LOCATION',
+        help="""\
+      Google Cloud Storage location, either regional or multi-regional, where
+      image content is to be stored. If absent, the multi-region location
+      closest to the source is chosen automatically.
+      """)
 
   if supports_shielded_instance_initial_state:
     compute_flags.AddShieldedInstanceInitialStateKeyArg(parser)

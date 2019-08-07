@@ -343,10 +343,6 @@ class CreateAlpha(CreateBeta):
       return client.messages.StatefulPolicy(
           preservedState=CreateAlpha._MakePreservedStateWithDisks(
               client, args.stateful_disk))
-    # Create empty stateful policy in case --stateful-names flag is specified to
-    # make MIG stateful nevertheless.
-    if args.stateful_names:
-      return client.messages.StatefulPolicy()
     return None
 
   def _CreateInstanceGroupManager(

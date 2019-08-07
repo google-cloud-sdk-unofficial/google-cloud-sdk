@@ -44,7 +44,7 @@ class Deny(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddIdArgToParser(parser)
-    flags.AddResourceFlagsToParser(parser)
+    flags.AddCustomResourceFlagsToParser(parser)
     base.Argument(
         'denied_value',
         metavar='DENIED_VALUE',
@@ -54,7 +54,6 @@ class Deny(base.Command):
 
   # TODO(b/73831954):consider refactoring
   def Run(self, args):
-    flags.CheckResourceFlags(args)
     messages = org_policies.OrgPoliciesMessages()
     service = org_policies_base.OrgPoliciesService(args)
 

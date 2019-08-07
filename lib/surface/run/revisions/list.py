@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -65,8 +66,11 @@ class List(commands.List):
     parser.display_info.AddFormat(
         'table('
         '{ready_column},'
-        'name:label=REVISION,service_name:label=SERVICE,author,'
-        'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label=CREATED)'.format(
+        'name:label=REVISION,'
+        'active.yesno(yes="yes", no=""),'
+        'service_name:label=SERVICE,'
+        'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label=DEPLOYED,'
+        'author:label="DEPLOYED BY")'.format(
             ready_column=pretty_print.READY_COLUMN))
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
@@ -83,6 +87,11 @@ class List(commands.List):
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
+      if not flags.IsManaged(args):
+        location_msg = ' in [{}]'.format(conn_context.cluster_location)
+        log.status.Print('For cluster [{cluster}]{zone}:'.format(
+            cluster=conn_context.cluster_name,
+            zone=location_msg if conn_context.cluster_location else ''))
       return client.ListRevisions(namespace_ref, service_name)
 
 

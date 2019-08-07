@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
 
   help_text:
     brief: Set rollout target for the ongoing Deployment rollout in the specified clusters.

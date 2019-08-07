@@ -77,14 +77,16 @@ def _CommonArgs(parser,
                 supports_reservation=False,
                 enable_resource_policy=False,
                 supports_min_node_cpus=False,
-                csek_key_file=False):
+                snapshot_csek=False,
+                image_csek=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
   instances_flags.AddCreateDiskArgs(parser, enable_kms=enable_kms,
                                     enable_snapshots=True,
                                     resource_policy=enable_resource_policy,
-                                    csek_key_file=csek_key_file)
+                                    source_snapshot_csek=snapshot_csek,
+                                    image_csek=image_csek)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddAcceleratorArgs(parser)
@@ -157,6 +159,8 @@ class Create(base.CreateCommand):
   _support_erase_vss = False
   _support_machine_image_key = False
   _support_min_node_cpus = False
+  _support_source_snapshot_csek = False
+  _support_image_csek = False
 
   @classmethod
   def Args(cls, parser):
@@ -239,7 +243,9 @@ class Create(base.CreateCommand):
               instance_ref,
               enable_kms=self._support_kms,
               enable_snapshots=True,
-              resource_policy=self._support_disk_resource_policy))
+              resource_policy=self._support_disk_resource_policy,
+              enable_source_snapshot_csek=self._support_source_snapshot_csek,
+              enable_image_csek=self._support_image_csek))
       local_nvdimms = []
       if self._support_nvdimm:
         local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
@@ -349,7 +355,7 @@ class Create(base.CreateCommand):
           instance_refs=instance_refs)
     else:
       instances_flags.ValidatePublicPtrFlags(args)
-      if self._support_public_dns is True:
+      if self._support_public_dns:
         instances_flags.ValidatePublicDnsFlags(args)
 
       return self._GetNetworkInterfaces(
@@ -488,8 +494,10 @@ class Create(base.CreateCommand):
     return requests
 
   def Run(self, args):
-    instances_flags.ValidateDiskFlags(args, enable_kms=self._support_kms,
-                                      enable_snapshots=True)
+    instances_flags.ValidateDiskFlags(
+        args, enable_kms=self._support_kms, enable_snapshots=True,
+        enable_source_snapshot_csek=self._support_source_snapshot_csek,
+        enable_image_csek=self._support_image_csek)
     instances_flags.ValidateImageFlags(args)
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidateNicFlags(args)
@@ -565,6 +573,8 @@ class CreateBeta(Create):
   _support_erase_vss = False
   _support_machine_image_key = False
   _support_min_node_cpus = False
+  _support_source_snapshot_csek = False
+  _support_image_csek = False
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -601,6 +611,8 @@ class CreateAlpha(CreateBeta):
   _support_erase_vss = True
   _support_machine_image_key = True
   _support_min_node_cpus = True
+  _support_source_snapshot_csek = True
+  _support_image_csek = True
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -624,7 +636,8 @@ class CreateAlpha(CreateBeta):
         supports_reservation=cls._support_reservation,
         enable_resource_policy=cls._support_disk_resource_policy,
         supports_min_node_cpus=cls._support_min_node_cpus,
-        csek_key_file=True)
+        snapshot_csek=True,
+        image_csek=True)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
 
   help_text:
     brief:  Start Deployment rollout by providing a new game server template.

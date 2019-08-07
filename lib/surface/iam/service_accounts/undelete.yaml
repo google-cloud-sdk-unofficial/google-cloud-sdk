@@ -1,8 +1,13 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Undelete a service account for a project.
     description: Undelete a service account for a project.
+    examples: |
+      The following command undeletes a service account with unique id
+      `103271949540120710052`:
+
+        $ {command} 103271949540120710052
 
   arguments:
     params:

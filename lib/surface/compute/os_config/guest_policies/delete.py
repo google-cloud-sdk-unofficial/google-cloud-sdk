@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute.os_config import osconfig_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute.os_config import resource_args
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -30,9 +30,9 @@ class Delete(base.DeleteCommand):
 
   ## EXAMPLES
 
-    To delete the guest policy named 'policy1' in the project 'project1', run:
+    To delete the guest policy named 'policy1' in the current project, run:
 
-          $ {command} policy1 --project=project1
+          $ {command} policy1
 
     To delete the guest policy named 'policy1' in the organization '12345', run:
 
@@ -42,27 +42,32 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddGuestPolicyResourceArg(parser, 'to delete.')
+    parser.add_argument(
+        'POLICY_ID', type=str, help='ID of the guest policy to delete.')
+    osconfig_utils.AddFolderAndOrgArgs(parser, 'guest policy', 'to delete')
 
   def Run(self, args):
-    guest_policy_ref = args.CONCEPTS.guest_policy.Parse()
-
     release_track = self.ReleaseTrack()
     client = osconfig_utils.GetClientInstance(release_track)
     messages = osconfig_utils.GetClientMessages(release_track)
 
-    guest_policy_type = guest_policy_ref.type_
-    guest_policy_name = guest_policy_ref.result.RelativeName()
-
-    if guest_policy_type == type(guest_policy_type).organization_guest_policy:
+    guest_policy_name = ''
+    if args.organization:
+      guest_policy_name = osconfig_utils.GetGuestPolicyUriPath(
+          'organizations', args.organization, args.POLICY_ID)
       request = messages.OsconfigOrganizationsGuestPoliciesDeleteRequest(
           name=guest_policy_name)
       service = client.organizations_guestPolicies
-    elif guest_policy_type == type(guest_policy_type).folder_guest_policy:
+    elif args.folder:
+      guest_policy_name = osconfig_utils.GetGuestPolicyUriPath(
+          'folders', args.folder, args.POLICY_ID)
       request = messages.OsconfigFoldersGuestPoliciesDeleteRequest(
           name=guest_policy_name)
       service = client.folders_guestPolicies
     else:
+      project = properties.VALUES.core.project.GetOrFail()
+      guest_policy_name = osconfig_utils.GetGuestPolicyUriPath(
+          'projects', project, args.POLICY_ID)
       request = messages.OsconfigProjectsGuestPoliciesDeleteRequest(
           name=guest_policy_name)
       service = client.projects_guestPolicies

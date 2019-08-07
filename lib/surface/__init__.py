@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.resource_manager import completers as resource_manager_completers
+from googlecloudsdk.command_lib.util.args import common_args
 from googlecloudsdk.core import properties
 
 
@@ -61,7 +61,7 @@ class Gcloud(base.Group):
              'this permission or you may create a custom role.',
         action=actions.StoreProperty(
             properties.VALUES.auth.impersonate_service_account))
-
+    common_args.ProjectArgument().AddToParser(parser)
     parser.add_argument(
         '--billing-project',
         metavar='BILLING_PROJECT',
@@ -76,28 +76,6 @@ class Gcloud(base.Group):
              '`billing/quota_project`.',
         action=actions.StoreProperty(
             properties.VALUES.billing.quota_project))
-
-    parser.add_argument(
-        '--project',
-        metavar='PROJECT_ID',
-        dest='project',
-        category=base.COMMONLY_USED_FLAGS,
-        suggestion_aliases=['--application'],
-        completer=resource_manager_completers.ProjectCompleter,
-        action=actions.StoreProperty(properties.VALUES.core.project),
-        help="""\
-        The Google Cloud Platform project name to use for this invocation. If
-        omitted, then the current project is assumed; the current project can be
-        listed using `gcloud config list --format='text(core.project)'` and
-        can be set using `gcloud config set project PROJECTID`.
-
-        `--project` and its fallback `{core_project}` property play two roles in
-        the invocation. It specifies the project of the resource to operate on.
-        It also specifies the project for API enablement check, quota,
-        and billing. To specify a different project for quota and billing,
-        use `--billing-project` or `{billing_project}` property.
-        """.format(core_project=properties.VALUES.core.project,
-                   billing_project=properties.VALUES.billing.quota_project))
     # Must have a None default so properties are not always overridden when the
     # arg is not provided.
     parser.add_argument(

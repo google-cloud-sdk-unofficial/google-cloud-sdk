@@ -233,7 +233,11 @@ def RunBaseCreateCommand(args, release_track):
               operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Creating Cloud SQL instance')
+        sql_client,
+        operation_ref,
+        'Creating Cloud SQL instance',
+        # TODO(b/138403566): Remove the override once we improve creation times.
+        max_wait_seconds=480)
 
     log.CreatedResource(instance_ref)
 

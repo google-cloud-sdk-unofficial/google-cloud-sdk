@@ -123,7 +123,7 @@ def AddInternalIPArg(group):
         """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
@@ -267,11 +267,16 @@ class Ssh(base.Command):
       sys.exit(return_code)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SshAlpha(Ssh):
-  """SSH into a virtual machine instance (Alpha)."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SshBeta(Ssh):
+  """SSH into a virtual machine instance (Beta)."""
 
   get_host_keys = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SshAlpha(SshBeta):
+  """SSH into a virtual machine instance (Alpha)."""
 
 
 def DetailedHelp():

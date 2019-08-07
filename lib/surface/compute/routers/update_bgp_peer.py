@@ -220,9 +220,7 @@ def _UpdateBgpPeerBfdMessage(messages, peer, args):
   if not (args.IsSpecified('bfd_min_receive_interval') or
           args.IsSpecified('bfd_min_transmit_interval') or
           args.IsSpecified('bfd_session_initialization_mode') or
-          args.IsSpecified('bfd_multiplier') or
-          args.IsSpecified('bfd_packet_mode') or
-          args.IsSpecified('bfd_slow_timer_interval')):
+          args.IsSpecified('bfd_multiplier')):
     return None
   bfd = None
   if peer.bfd is not None:
@@ -236,14 +234,9 @@ def _UpdateBgpPeerBfdMessage(messages, peer, args):
     attrs['sessionInitializationMode'] = (
         messages.RouterBgpPeerBfd.SessionInitializationModeValueValuesEnum(
             args.bfd_session_initialization_mode))
-  if args.bfd_packet_mode is not None:
-    attrs['packetMode'] = (
-        messages.RouterBgpPeerBfd.PacketModeValueValuesEnum(
-            args.bfd_packet_mode))
   attrs['minReceiveInterval'] = args.bfd_min_receive_interval
   attrs['minTransmitInterval'] = args.bfd_min_transmit_interval
   attrs['multiplier'] = args.bfd_multiplier
-  attrs['slowTimerInterval'] = args.bfd_slow_timer_interval
   for attr, value in attrs.items():
     if value is not None:
       setattr(bfd, attr, value)

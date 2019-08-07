@@ -76,7 +76,7 @@ class Deploy(base.Command):
         'Service to deploy to.',
         required=True,
         prefixes=False)
-    flags.AddSourceRefFlags(parser)
+    flags.AddImageArg(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
@@ -112,11 +112,11 @@ class Deploy(base.Command):
       exists = operations.GetService(service_ref)
       allow_unauth = None
       if conn_context.supports_one_platform:
-        allow_unauth = flags.GetAllowUnauthenticated(args,
-                                                     operations,
-                                                     service_ref,
-                                                     not exists)
-        # Don't try to remove a policy binding from a service that doesn't exist
+        allow_unauth = flags.GetAllowUnauthenticated(
+            args, service_ref, not exists)
+       # allow_unauth == False means remove the policy from the servic and
+       # allow_unauth == None means to leave the auth alone. This avoids
+       # attempting to remove a policy binding from a service that doesn't exist
         if not exists and not allow_unauth:
           allow_unauth = None
 
@@ -178,10 +178,12 @@ class AlphaDeploy(Deploy):
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddCpuFlag(cluster_group)
+    flags.AddSecretsFlags(cluster_group)
+    flags.AddConfigMapsFlags(cluster_group)
     # Flags not specific to any platform
     flags.AddAlphaPlatformArg(parser)
-    flags.AddSecretsFlags(parser)
-    flags.AddConfigMapsFlags(parser)
     flags.AddScalingFlags(parser)
+    flags.AddCommandFlag(parser)
+    flags.AddArgsFlag(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

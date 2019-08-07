@@ -279,13 +279,11 @@ class UpdateAlpha(UpdateBeta):
     return client.MakeRequests([(service, 'Update', request)])
 
   def _StatefulArgsSet(self, args):
-    return (args.IsSpecified('stateful_names') or
-            args.IsSpecified('update_stateful_disk') or
+    return (args.IsSpecified('update_stateful_disk') or
             args.IsSpecified('remove_stateful_disks'))
 
   def _StatefulnessIntroduced(self, args):
-    return (args.IsSpecified('stateful_names') or
-            args.IsSpecified('update_stateful_disk'))
+    return args.IsSpecified('update_stateful_disk')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -332,10 +330,7 @@ class UpdateAlpha(UpdateBeta):
 
     if not device_names:
       # TODO(b/70314588): Use Patch instead of manual Update.
-      if args.IsSpecified(
-          'stateful_names') and not args.GetValue('stateful_names'):
-        igm_resource.reset('statefulPolicy')
-      elif igm_resource.statefulPolicy or args.GetValue('stateful_names'):
+      if igm_resource.statefulPolicy:
         igm_resource.statefulPolicy = self._UpdateStatefulPolicy(
             client, igm_resource.statefulPolicy, args.update_stateful_disk,
             args.remove_stateful_disks)
