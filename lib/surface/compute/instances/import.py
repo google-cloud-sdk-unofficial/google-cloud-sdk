@@ -54,6 +54,7 @@ class Import(base.CreateCommand):
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     labels_util.AddCreateLabelsFlags(parser)
     daisy_utils.AddCommonDaisyArgs(parser, add_log_location=False)
+    daisy_utils.AddExtraCommonDaisyArgs(parser)
 
     instances_flags.INSTANCES_ARG_FOR_IMPORT.AddArgument(
         parser, operation_type='import')
@@ -127,7 +128,7 @@ class Import(base.CreateCommand):
           custom_cpu=args.custom_cpu,
           custom_memory=args.custom_memory,
           ext=getattr(args, 'custom_extensions', None),
-          vm_gen=getattr(args, 'custom_vm_gen', None))
+          vm_type=getattr(args, 'custom_vm_type', None))
 
     try:
       source_uri = daisy_utils.MakeGcsObjectOrPathUri(args.source_uri)

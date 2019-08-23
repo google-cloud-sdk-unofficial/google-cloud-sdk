@@ -49,7 +49,7 @@ class Undelete(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetOrgFlag('undelete').AddToParser(parser)
+    flags.AddParentFlags(parser, 'undelete')
     flags.GetCustomRoleFlag('undelete').AddToParser(parser)
 
   def Run(self, args):

@@ -51,8 +51,9 @@ class Lookup(base.Command):
         holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(holder.client))
 
-  def _GetGuestInventoryGuestAttributes(self, holder, instance_ref):
+  def _GetGuestInventoryGuestAttributes(self, instance_ref):
     try:
+      holder = base_classes.ComputeApiHolder(base.ReleaseTrack.GA)
       client = holder.client
       messages = client.messages
       request = messages.ComputeInstancesGetGuestAttributesRequest(
@@ -122,8 +123,7 @@ class Lookup(base.Command):
     holder = base_classes.ComputeApiHolder(release_track)
     instance_ref = self._GetInstanceRef(holder, args)
 
-    guest_attributes = self._GetGuestInventoryGuestAttributes(
-        holder, instance_ref)
+    guest_attributes = self._GetGuestInventoryGuestAttributes(instance_ref)
     os_info = self._GetOsInfo(guest_attributes)
     os_architecture = os_info.get(self._OS_ARCHITECTURE_KEY)
     os_shortname = os_info.get(self._OS_SHORTNAME_KEY)

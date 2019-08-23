@@ -75,7 +75,7 @@ class Update(base.Command):
         '--file',
         help='The Yaml file you want to use to update a role. '
         'Can not be specified with other flags except role-id.')
-    flags.GetOrgFlag('update').AddToParser(parser)
+    flags.AddParentFlags(parser, 'update')
     flags.GetCustomRoleFlag('update').AddToParser(parser)
 
   def Run(self, args):

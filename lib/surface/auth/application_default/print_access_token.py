@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 from oauth2client import client
+import six
 
 
 class PrintAccessToken(base.Command):
@@ -67,7 +68,7 @@ class PrintAccessToken(base.Command):
       creds = client.GoogleCredentials.get_application_default()
     except client.ApplicationDefaultCredentialsError as e:
       log.debug(e, exc_info=True)
-      raise c_exc.ToolException(str(e))
+      raise c_exc.ToolException(six.text_type(e))
 
     if creds.create_scoped_required():
       creds_type = creds.serialization_data['type']

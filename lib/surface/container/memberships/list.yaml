@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List memberships.
     description: List memberships in Google Kubernetes Hub.
+    examples: |
+      List memberships in a project:
+
+        $ {command}
 
   request:
     collection: gkehub.projects.locations.global.memberships

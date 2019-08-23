@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.security_policies import flags
 from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 from googlecloudsdk.core.util import files
+import six
 
 
 class Create(base.CreateCommand):
@@ -82,7 +83,7 @@ class Create(base.CreateCommand):
         return security_policies_utils.SecurityPolicyFromFile(
             import_file, messages, 'yaml')
     except Exception as exp:
-      exp_msg = getattr(exp, 'message', str(exp))
+      exp_msg = getattr(exp, 'message', six.text_type(exp))
       msg = ('Unable to read security policy config from specified file '
              '[{0}] because [{1}]'.format(args.file_name, exp_msg))
       raise exceptions.BadFileException(msg)

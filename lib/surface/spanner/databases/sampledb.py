@@ -139,7 +139,7 @@ class Sample(base.CreateCommand):
 
     instructions = (
         'To start querying, issue:\n\n"gcloud spanner databases '
-        '--execute-sql {0} --instance={1} --sql=SQL"\n\nwhere SQL is the '
+        'execute-sql {0} --instance={1} --sql=SQL"\n\nwhere SQL is the '
         'query you would like to use. Alternatively, you may follow this '
         'quickstart guide for queries using the GCP console.\n\n'
         'https://cloud.google.com/spanner/docs/quickstart-console#run_a_query'

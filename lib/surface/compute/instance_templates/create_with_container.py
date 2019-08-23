@@ -175,7 +175,7 @@ class CreateWithContainer(base.CreateCommand):
         custom_cpu=args.custom_cpu,
         custom_memory=args.custom_memory,
         ext=getattr(args, 'custom_extensions', None),
-        vm_gen=getattr(args, 'custom_vm_gen', None))
+        vm_type=getattr(args, 'custom_vm_type', None))
 
   def _GetDisks(self, args, client, holder, instance_template_ref, image_uri,
                 match_container_mount_disks=False):

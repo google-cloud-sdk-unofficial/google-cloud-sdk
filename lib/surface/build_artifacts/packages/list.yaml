@@ -24,7 +24,7 @@
 
   response:
     modify_response_hooks:
-    - googlecloudsdk.command_lib.build_artifacts.util:URLDecodePackageName
+    - googlecloudsdk.command_lib.build_artifacts.util:SlashUnescapePackageName
     - googlecloudsdk.command_lib.build_artifacts.util:AppendParentInfoToListPackagesResponse
 
   output:

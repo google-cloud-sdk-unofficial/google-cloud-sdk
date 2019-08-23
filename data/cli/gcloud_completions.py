@@ -1819,15 +1819,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "describe": {
                   "commands": {},
                   "flags": {}
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--sort-by": "value"
-                  }
                 }
               },
               "flags": {}
@@ -1856,10 +1847,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   }
                 },
                 "maven": {
-                  "commands": {},
-                  "flags": {}
-                },
-                "maven-pom": {
                   "commands": {},
                   "flags": {
                     "--repository": "dynamic"
@@ -3053,6 +3040,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--require-csek-key-create": "bool",
                     "--resource-policies": "value",
                     "--size": "value",
+                    "--source-disk": "dynamic",
+                    "--source-disk-zone": "dynamic",
                     "--source-snapshot": "dynamic",
                     "--type": "dynamic",
                     "--zone": "dynamic"
@@ -4584,7 +4573,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--description": "value",
                     "--disk": "value",
                     "--image": "value",
@@ -4664,7 +4653,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--description": "value",
                     "--disk": "value",
                     "--image": "value",
@@ -4841,7 +4830,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--deletion-protection": "bool",
                     "--description": "value",
                     "--disk": "value",
@@ -4937,7 +4926,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--description": "value",
                     "--disk": "value",
                     "--image": "value",
@@ -5063,7 +5052,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--deletion-protection": "bool",
                     "--description": "value",
                     "--guest-environment": "bool",
@@ -5249,7 +5238,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--machine-type": "dynamic",
                     "--zone": "dynamic"
                   }
@@ -5742,6 +5731,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "regional"
                     ],
                     "--description": "value",
+                    "--mtu": "value",
                     "--range": "value",
                     "--subnet-mode": [
                       "auto",
@@ -6028,6 +6018,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "global",
                       "regional"
                     ],
+                    "--mtu": "value",
                     "--switch-to-custom-subnet-mode": "bool"
                   }
                 }
@@ -6647,14 +6638,26 @@ STATIC_COMPLETION_CLI_TREE = {
                       }
                     },
                     "vm-maintenance": {
-                      "commands": {},
-                      "flags": {
-                        "--concurrency-limit-percent": "value",
-                        "--daily-window": "bool",
-                        "--description": "value",
-                        "--region": "dynamic",
-                        "--start-time": "value"
-                      }
+                      "commands": {
+                        "concurrency-limit": {
+                          "commands": {},
+                          "flags": {
+                            "--description": "value",
+                            "--max-percent": "value",
+                            "--region": "dynamic"
+                          }
+                        },
+                        "maintenance-window": {
+                          "commands": {},
+                          "flags": {
+                            "--daily-window": "bool",
+                            "--description": "value",
+                            "--region": "dynamic",
+                            "--start-time": "value"
+                          }
+                        }
+                      },
+                      "flags": {}
                     }
                   },
                   "flags": {}
@@ -12483,6 +12486,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--clear-labels": "bool",
+                    "--clear-match-clusters": "bool",
                     "--location": "value",
                     "--match-clusters": "value",
                     "--priority": "value",
@@ -12770,6 +12774,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--buffer-size": "value",
                     "--buffer-size-percent": "value",
                     "--clear-labels": "bool",
+                    "--clear-match-clusters": "bool",
                     "--location": "value",
                     "--match-clusters": "value",
                     "--max-replicas": "value",
@@ -18335,12 +18340,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "list": {
                   "commands": {},
                   "flags": {
-                    "--database-version": [
-                      "MYSQL_5_5",
-                      "MYSQL_5_6",
-                      "MYSQL_5_7",
-                      "POSTGRES_9_6"
-                    ],
+                    "--database-version": "value",
                     "--filter": "value",
                     "--limit": "value",
                     "--page-size": "value",
@@ -23462,7 +23462,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--description": "value",
                     "--disk": "value",
                     "--image": "value",
@@ -23536,7 +23536,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--description": "value",
                     "--disk": "value",
                     "--image": "value",
@@ -23694,7 +23694,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--deletion-protection": "bool",
                     "--description": "value",
                     "--disk": "value",
@@ -23778,7 +23778,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--description": "value",
                     "--disk": "value",
                     "--image": "value",
@@ -23898,7 +23898,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--deletion-protection": "bool",
                     "--description": "value",
                     "--guest-environment": "bool",
@@ -24059,7 +24059,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-cpu": "value",
                     "--custom-extensions": "bool",
                     "--custom-memory": "value",
-                    "--custom-vm-gen": "value",
+                    "--custom-vm-type": "value",
                     "--machine-type": "dynamic",
                     "--zone": "dynamic"
                   }
@@ -27085,6 +27085,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--service-account": "value",
                     "--services-ipv4-cidr": "value",
                     "--services-secondary-range-name": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
                     "--subnetwork": "value",
                     "--tags": "value",
                     "--tpu-ipv4-cidr": "value",
@@ -27280,6 +27282,51 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "memberships": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--description": "value",
+                    "--gke-cluster-self-link": "value",
+                    "--labels": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--clear-labels": "bool",
+                    "--description": "value",
+                    "--gke-cluster-self-link": "value",
+                    "--remove-labels": "value",
+                    "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "node-pools": {
               "commands": {
                 "create": {
@@ -27313,6 +27360,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--sandbox": "value",
                     "--scopes": "value",
                     "--service-account": "value",
+                    "--shielded-integrity-monitoring": "bool",
+                    "--shielded-secure-boot": "bool",
                     "--tags": "value",
                     "--workload-metadata-from-node": [
                       "EXPOSED",
@@ -34539,12 +34588,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "list": {
                   "commands": {},
                   "flags": {
-                    "--database-version": [
-                      "MYSQL_5_5",
-                      "MYSQL_5_6",
-                      "MYSQL_5_7",
-                      "POSTGRES_9_6"
-                    ],
+                    "--database-version": "value",
                     "--filter": "value",
                     "--limit": "value",
                     "--page-size": "value",
@@ -37438,7 +37482,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--custom-cpu": "value",
                 "--custom-extensions": "bool",
                 "--custom-memory": "value",
-                "--custom-vm-gen": "value",
+                "--custom-vm-type": "value",
                 "--description": "value",
                 "--disk": "value",
                 "--image": "value",
@@ -37506,7 +37550,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--custom-cpu": "value",
                 "--custom-extensions": "bool",
                 "--custom-memory": "value",
-                "--custom-vm-gen": "value",
+                "--custom-vm-type": "value",
                 "--description": "value",
                 "--disk": "value",
                 "--image": "value",
@@ -37663,7 +37707,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--custom-cpu": "value",
                 "--custom-extensions": "bool",
                 "--custom-memory": "value",
-                "--custom-vm-gen": "value",
+                "--custom-vm-type": "value",
                 "--deletion-protection": "bool",
                 "--description": "value",
                 "--disk": "value",
@@ -37740,7 +37784,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--custom-cpu": "value",
                 "--custom-extensions": "bool",
                 "--custom-memory": "value",
-                "--custom-vm-gen": "value",
+                "--custom-vm-type": "value",
                 "--description": "value",
                 "--disk": "value",
                 "--image": "value",
@@ -37943,7 +37987,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--custom-cpu": "value",
                 "--custom-extensions": "bool",
                 "--custom-memory": "value",
-                "--custom-vm-gen": "value",
+                "--custom-vm-type": "value",
                 "--machine-type": "dynamic",
                 "--zone": "dynamic"
               }
@@ -40968,6 +41012,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--bucket": "value",
+                "--expiration-time": "value",
                 "--gce-pd-kms-key": "dynamic",
                 "--gce-pd-kms-key-keyring": "dynamic",
                 "--gce-pd-kms-key-location": "dynamic",
@@ -40986,6 +41031,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--master-boot-disk-size": "value",
                 "--master-boot-disk-type": "value",
                 "--master-machine-type": "value",
+                "--max-age": "value",
+                "--max-idle": "value",
                 "--metadata": "value",
                 "--network": "value",
                 "--no-address": "bool",
@@ -41061,7 +41108,12 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--async": "bool",
                 "--clear-labels": "bool",
+                "--expiration-time": "value",
                 "--graceful-decommission-timeout": "value",
+                "--max-age": "value",
+                "--max-idle": "value",
+                "--no-max-age": "bool",
+                "--no-max-idle": "bool",
                 "--num-preemptible-workers": "value",
                 "--num-workers": "value",
                 "--region": "value",

@@ -70,7 +70,7 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser, source_snapshot_arg):
+def _SourceArgs(parser, source_disk_enabled=False):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -99,13 +99,16 @@ def _SourceArgs(parser, source_snapshot_arg):
             'with. When a family is used instead of an image, the latest '
             'non-deprecated image associated with that family is used.')
   )
-  source_snapshot_arg.AddArgument(source_group)
+  disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
+  if source_disk_enabled:
+    source_disk = source_group.add_group('Source disk options')
+    disks_flags.SOURCE_DISK_ARG.AddArgument(source_disk)
 
 
 def _CommonArgs(parser,
-                source_snapshot_arg,
                 include_physical_block_size_support=False,
-                vss_erase_enabled=False):
+                vss_erase_enabled=False,
+                source_disk_enabled=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -149,7 +152,7 @@ def _CommonArgs(parser,
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser, source_snapshot_arg)
+  _SourceArgs(parser, source_disk_enabled)
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -198,10 +201,12 @@ def _ParseGuestOsFeaturesToMessages(args, client_messages):
 class Create(base.Command):
   """Create Google Compute Engine persistent disks."""
 
+  source_disk_enabled = False
+
   @staticmethod
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
-    _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    _CommonArgs(parser)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.GA)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
@@ -279,6 +284,13 @@ class Create(base.Command):
       return snapshot_ref.SelfLink()
     return None
 
+  def GetSourceDiskUri(self, args, compute_holder):
+    disk_ref = disks_flags.SOURCE_DISK_ARG.ResolveAsResource(
+        args, compute_holder.resources)
+    if disk_ref:
+      return disk_ref.SelfLink()
+    return None
+
   def GetLabels(self, args, client):
     labels = None
     args_labels = getattr(args, 'labels', None)
@@ -331,6 +343,9 @@ class Create(base.Command):
     self.show_unformated_message = not (args.IsSpecified('image') or
                                         args.IsSpecified('image_family') or
                                         args.IsSpecified('source_snapshot'))
+    if self.source_disk_enabled:
+      self.show_unformated_message = self.show_unformated_message and not (
+          args.IsSpecified('source_disk'))
 
     disk_refs = self.ValidateAndParseDiskRefs(args, compute_holder)
     from_image = self.GetFromImage(args)
@@ -416,6 +431,9 @@ class Create(base.Command):
           type=type_uri,
           physicalBlockSizeBytes=physical_block_size_bytes,
           **kwargs)
+      if self.source_disk_enabled:
+        source_disk_ref = self.GetSourceDiskUri(args, compute_holder)
+        disk.sourceDisk = source_disk_ref
       if (support_shared_disk and disk_ref.Collection() == 'compute.regionDisks'
           and args.IsSpecified('multi_writer')):
         raise exceptions.InvalidArgumentException('--multi-writer', (
@@ -471,13 +489,14 @@ class Create(base.Command):
 class CreateBeta(Create):
   """Create Google Compute Engine persistent disks."""
 
+  source_disk_enabled = False
+
   @staticmethod
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
 
     _CommonArgs(
         parser,
-        disks_flags.SOURCE_SNAPSHOT_ARG,
         include_physical_block_size_support=True)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
     _AddReplicaZonesArg(parser)
@@ -492,15 +511,17 @@ class CreateBeta(Create):
 class CreateAlpha(Create):
   """Create Google Compute Engine persistent disks."""
 
+  source_disk_enabled = True
+
   @staticmethod
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
 
     _CommonArgs(
         parser,
-        disks_flags.SOURCE_SNAPSHOT_ARG,
         include_physical_block_size_support=True,
-        vss_erase_enabled=True)
+        vss_erase_enabled=True,
+        source_disk_enabled=True)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(

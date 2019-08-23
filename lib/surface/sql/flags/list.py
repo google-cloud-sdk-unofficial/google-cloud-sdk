@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.sql import flags
 
 
 def _AddCommonFlags(parser):
@@ -34,8 +35,7 @@ def _AddCommonFlags(parser):
     """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List customizable flags for Google Cloud SQL instances."""
 
@@ -52,11 +52,7 @@ class List(base.ListCommand):
           allowed.
     """
     _AddCommonFlags(parser)
-    parser.add_argument(
-        '--database-version',
-        required=False,
-        choices=['MYSQL_5_5', 'MYSQL_5_6', 'MYSQL_5_7', 'POSTGRES_9_6'],
-        help='Only list flags that apply to the specified database version.')
+    flags.AddDatabaseVersion(parser)
 
   def Run(self, args):
     """List customizable flags for Google Cloud SQL instances.
@@ -77,3 +73,22 @@ class List(base.ListCommand):
     result = sql_client.flags.List(
         sql_messages.SqlFlagsListRequest(databaseVersion=args.database_version))
     return iter(result.items)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListAlphaBeta(List):
+  """List customizable flags for Google Cloud SQL instances."""
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Please add arguments in alphabetical order except for no- or a clear-
+    pair for that argument which can follow the argument itself.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    _AddCommonFlags(parser)
+    flags.AddDatabaseVersion(parser, restrict_choices=False)

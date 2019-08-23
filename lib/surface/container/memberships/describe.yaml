@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Describe a membership.
     description: Describe a membership in Google Kubernetes Hub.
+    examples: |
+      Describe a membership for a cluster:
+
+        $ {command} a-membership
 
   request:
     collection: gkehub.projects.locations.global.memberships

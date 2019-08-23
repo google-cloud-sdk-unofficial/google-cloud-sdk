@@ -32,6 +32,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import edit
+import six
 
 
 def _DetailedHelp():
@@ -126,7 +127,7 @@ def _EditResource(args, client, holder, original_object, url_map_ref, track):
       break
     except (ValueError, yaml.YAMLParseError, messages.ValidationError,
             exceptions.ToolException) as e:
-      message = getattr(e, 'message', str(e))
+      message = getattr(e, 'message', six.text_type(e))
 
       if isinstance(e, exceptions.ToolException):
         problem_type = 'applying'

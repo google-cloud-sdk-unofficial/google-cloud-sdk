@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Update a membership.
     description: Update an existing membership in Google Kubernetes Hub.
+    examples: |
+      Update a membership for a cluster:
+
+        $ {command} a-membership --description="Description of a-membership."
 
   request:
     collection: gkehub.projects.locations.global.memberships

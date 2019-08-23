@@ -51,63 +51,96 @@ _LIST_SYNOPSIS = """
 """
 
 _UPDATE_SYNOPSIS = """
-  gsutil hmac update -s [ACTIVE|INACTIVE] [-e etag] [-p project] access_id
+  gsutil hmac update -s <ACTIVE|INACTIVE> [-e etag] [-p project] access_id
 """
 
 _CREATE_DESCRIPTION = """
 <B>CREATE</B>
   The ``hmac create`` command creates an HMAC key for the specified service
-  account. The secret key material is only available upon creation, so be sure
-  to store the returned secret along with the access_id.
+  account:
 
     gsutil hmac create test.service.account@test_project.iam.gserviceaccount.com
+
+  The secret key material is only available upon creation, so be sure to store
+  the returned secret along with the access_id.
+
+<B>CREATE OPTIONS</B>
+  The "create" sub-command has the following option
+
+  -p <project_id>             Specify a project in which to create a key.
 """
 
 _DELETE_DESCRIPTION = """
 <B>DELETE</B>
-  The ``hmac delete`` command permanently deletes the specified HMAC key.
+  The ``hmac delete`` command permanently deletes the specified HMAC key:
+
+    gsutil hmac delete GOOG56JBMFZX6PMPTQ62VD2
+
   Note that keys must be updated to be in the INACTIVE state before they can be
   deleted.
 
-    gsutil hmac delete GOOG56JBMFZX6PMPTQ62VD2
+<B>DELETE OPTIONS</B>
+  The "delete" sub-command has the following option
+
+  -p <project_id>             Specify a project from which to delete a key.
 """
 
 _GET_DESCRIPTION = """
 <B>GET</B>
-  The ``hmac get`` command retrieves the specified HMAC key's metadata.
+  The ``hmac get`` command retrieves the specified HMAC key's metadata:
+
+    gsutil hmac get GOOG56JBMFZX6PMPTQ62VD2
+
   Note that there is no option to retrieve a key's secret material after it has
   been created.
 
-    gsutil hmac get GOOG56JBMFZX6PMPTQ62VD2
 <B>GET OPTIONS</B>
+  The "get" sub-command has the following option
+
+  -p <project_id>             Specify a project from which to get a key.
 """
 
 _LIST_DESCRIPTION = """
 <B>LIST</B>
-  The ``hmac list`` command lists HMAC key metadata for keys in the default
-  project if no flags are specified.
+  The ``hmac list`` command lists the HMAC key metadata for keys in the
+  specified project. If no project is specified in the command, the default
+  project is used.
 
 <B>LIST OPTIONS</B>
   The "list" sub-command has the following options
 
-      -a                          Show all keys, including recently deleted key.
+  -a                          Show all keys, including recently deleted
+                              keys.
 
-      -l                          Use long listing format. Shows each key's full
-                                  metadata.
+  -l                          Use long listing format. Shows each key's full
+                              metadata excluding the secret.
 
-      -p <project_id>             Specify a project from which to list keys.
+  -p <project_id>             Specify a project from which to list keys.
 
-      -u <service_account_email>  Filter keys for a single service account.
+  -u <service_account_email>  Filter keys for a single service account.
 """
 _UPDATE_DESCRIPTION = """
 <B>UPDATE</B>
-  The ``hmac update`` command sets the state of the specified key.
+  The ``hmac update`` command sets the state of the specified key:
+
+    gsutil hmac update -s INACTIVE -e M42da= GOOG56JBMFZX6PMPTQ62VD2
+
   Valid state arguments are ACTIVE and INACTIVE. To set a key to state DELETED
   use the "hmac delete" command on an INACTIVE key. If an etag is set in the
   command, it will only succeed if the provided etag matches the etag of the
   stored key.
 
-    gsutil hmac update -s INACTIVE -e M42da= GOOG56JBMFZX6PMPTQ62VD2
+<B>UPDATE OPTIONS</B>
+  The "update" sub-command has the following options
+
+  -s <ACTIVE|INACTIVE>        Sets the state of the specified key to either
+                              ACTIVE or INACTIVE.
+
+  -e <etag>                   If provided, the update will only be performed
+                              if the specified etag matches the etag of the
+                              stored key.
+
+  -p <project_id>             Specify a project in which to update a key.
 """
 
 _SYNOPSIS = (_CREATE_SYNOPSIS + _DELETE_SYNOPSIS.lstrip('\n') +
@@ -115,7 +148,8 @@ _SYNOPSIS = (_CREATE_SYNOPSIS + _DELETE_SYNOPSIS.lstrip('\n') +
              _UPDATE_SYNOPSIS.lstrip('\n') + '\n\n')
 
 _DESCRIPTION = """
-  The hmac command is used to interact with service account HMAC keys.
+  The hmac command is used to interact with service account `HMAC keys
+  <cloud.google.com/storage/docs/authentication/hmackeys>`_.
 
   The hmac command has five sub-commands:
 """ + '\n'.join([

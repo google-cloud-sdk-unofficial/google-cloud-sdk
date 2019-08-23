@@ -36,6 +36,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_lex
 from googlecloudsdk.core.resource import resource_property
+import six
 
 
 def AddBaseArgs(parser):
@@ -174,7 +175,7 @@ def RunBaseCreateCommand(args, release_track):
               instance=master_instance_ref.instance))
     except apitools_exceptions.HttpError as error:
       # TODO(b/64292220): Remove once API gives helpful error message.
-      log.debug('operation : %s', str(master_instance_ref))
+      log.debug('operation : %s', six.text_type(master_instance_ref))
       exc = exceptions.HttpException(error)
       if resource_property.Get(exc.payload.content,
                                resource_lex.ParseKey('error.errors[0].reason'),
@@ -246,7 +247,7 @@ def RunBaseCreateCommand(args, release_track):
             project=instance_ref.project, instance=instance_ref.instance))
     return new_resource
   except apitools_exceptions.HttpError as error:
-    log.debug('operation : %s', str(operation_ref))
+    log.debug('operation : %s', six.text_type(operation_ref))
     exc = exceptions.HttpException(error)
     if resource_property.Get(exc.payload.content,
                              resource_lex.ParseKey('error.errors[0].reason'),

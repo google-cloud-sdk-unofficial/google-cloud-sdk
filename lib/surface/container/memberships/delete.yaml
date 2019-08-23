@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Delete a membership.
     description: Delete a membership from Google Kubernetes Hub.
+    examples: |
+      Delete a membership for a cluster:
+
+        $ {command} a-membership
 
   request:
     collection: gkehub.projects.locations.global.memberships

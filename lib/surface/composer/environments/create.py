@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+import six
 
 
 PREREQUISITE_OPTION_ERROR_MSG = """\
@@ -228,7 +229,7 @@ class Create(base.Command):
       except command_util.OperationError as e:
         raise command_util.EnvironmentCreateError(
             'Error creating [{}]: {}'.format(self.env_ref.RelativeName(),
-                                             str(e)))
+                                             six.text_type(e)))
 
   def GetOperationMessage(self, args):
     """Constructs Create message."""

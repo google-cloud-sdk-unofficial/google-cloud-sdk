@@ -12,35 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Print a snippet to add a Maven repository to the pom.xml file."""
+"""The command group for cloud resource_policies creation."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.build_artifacts import flags
-from googlecloudsdk.command_lib.build_artifacts import settings_util
 
 
-class MavenPom(base.Command):
-  """Print a snippet to add a Maven repository to the pom.xml file."""
-
-  @staticmethod
-  def Args(parser):
-    flags.GetRepoFlag().AddToParser(parser)
-    parser.display_info.AddFormat('value(mvn_pom)')
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      A maven pom snippet.
-    """
-
-    return {'mvn_pom': settings_util.GetMavenPomSnippet(args)}
-
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class Create(base.Group):
+  """Create Google Compute Engine VM Maintenance Resource Policies."""

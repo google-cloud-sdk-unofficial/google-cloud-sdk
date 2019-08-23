@@ -112,7 +112,8 @@ class Create(base.CreateCommand):
 
     console_io.PromptContinue(
         'This will tag {} with:\n{}'.format(
-            src_name, '\n'.join(str(dest_name) for dest_name in dest_names)),
+            src_name,
+            '\n'.join(six.text_type(dest_name) for dest_name in dest_names)),
         default=True,
         cancel_on_no=True)
     creds = util.CredentialProvider()

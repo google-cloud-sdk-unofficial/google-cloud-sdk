@@ -109,6 +109,9 @@ class Export(base.CreateCommand):
     if args.export_format:
       daisy_utils.AppendArg(export_args, 'format', args.export_format.lower())
 
+    return self._RunImageExport(args, export_args, tags, _OUTPUT_FILTER)
+
+  def _RunImageExport(self, args, export_args, tags, output_filter):
     return daisy_utils.RunImageExport(args, export_args, tags, _OUTPUT_FILTER)
 
   def _GetSourceImage(self, image, image_family, image_project):
@@ -137,6 +140,15 @@ class Export(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ExportBeta(Export):
   """Export a Google Compute Engine image for Beta release track."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(ExportBeta, cls).Args(parser)
+    daisy_utils.AddExtraCommonDaisyArgs(parser)
+
+  def _RunImageExport(self, args, export_args, tags, output_filter):
+    return daisy_utils.RunImageExport(args, export_args, tags, _OUTPUT_FILTER,
+                                      args.docker_image_tag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

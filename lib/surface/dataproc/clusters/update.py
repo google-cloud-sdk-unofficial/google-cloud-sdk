@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
 
 
-def _CommonArgs(parser, beta=False):
+def _CommonArgs(parser):
   """Register flags common to all tracks."""
   base.ASYNC_FLAG.AddToParser(parser)
   # Allow the user to specify new labels as well as update/remove existing
@@ -65,7 +65,6 @@ def _CommonArgs(parser, beta=False):
   idle_delete_group.add_argument(
       '--max-idle',
       type=arg_parsers.Duration(),
-      hidden=not(beta),
       help="""\
       The duration before cluster is auto-deleted after last job finished,
       such as "2h" or "1d".
@@ -74,7 +73,6 @@ def _CommonArgs(parser, beta=False):
   idle_delete_group.add_argument(
       '--no-max-idle',
       action='store_true',
-      hidden=not(beta),
       help="""\
       Cancels the cluster auto-deletion by cluster idle duration (configured
        by --max-idle flag)
@@ -84,7 +82,6 @@ def _CommonArgs(parser, beta=False):
   auto_delete_group.add_argument(
       '--max-age',
       type=arg_parsers.Duration(),
-      hidden=not(beta),
       help="""\
       The lifespan of the cluster before it is auto-deleted, such as
       "2h" or "1d".
@@ -93,7 +90,6 @@ def _CommonArgs(parser, beta=False):
   auto_delete_group.add_argument(
       '--expiration-time',
       type=arg_parsers.Datetime.Parse,
-      hidden=not(beta),
       help="""\
       The time when cluster will be auto-deleted, such as
       "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
@@ -102,7 +98,6 @@ def _CommonArgs(parser, beta=False):
   auto_delete_group.add_argument(
       '--no-max-age',
       action='store_true',
-      hidden=not(beta),
       help="""\
       Cancels the cluster auto-deletion by maximum cluster age (configured by
        --max-age or --expiration-time flags)
@@ -305,7 +300,7 @@ class UpdateBeta(Update):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, beta=True)
+    _CommonArgs(parser)
 
     # Can only specify one of --autoscaling-policy or --disable-autoscaling
     autoscaling_group = parser.add_mutually_exclusive_group()

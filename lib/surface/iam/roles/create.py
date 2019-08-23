@@ -64,7 +64,7 @@ class Create(base.Command):
         '--file',
         help='The JSON or YAML file with the IAM Role to create. See '
              'https://cloud.google.com/iam/reference/rest/v1/projects.roles.')
-    flags.GetOrgFlag('create').AddToParser(parser)
+    flags.AddParentFlags(parser, 'create')
     flags.GetCustomRoleFlag('create').AddToParser(parser)
 
   def Run(self, args):

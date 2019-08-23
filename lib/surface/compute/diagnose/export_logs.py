@@ -187,7 +187,7 @@ class ExportLogs(base_classes.BaseCommand):
     """
     expiration = datetime.datetime.now() + datetime.timedelta(hours=hours)
     expiration_seconds = time.mktime(expiration.timetuple())
-    return str(int(expiration_seconds))
+    return six.text_type(int(expiration_seconds))
 
   def _GetLogBucket(self, project_id):
     """Locates or creates the GCS Bucket for logs associated with the project.

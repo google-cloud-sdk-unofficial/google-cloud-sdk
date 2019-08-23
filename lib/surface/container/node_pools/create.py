@@ -235,6 +235,7 @@ class CreateBeta(Create):
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
     flags.AddSandboxFlag(parser)
     flags.AddNodePoolLocationsFlag(parser, for_create=True)
+    flags.AddShieldedInstanceFlags(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -243,6 +244,8 @@ class CreateBeta(Create):
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.sandbox = args.sandbox
     ops.node_locations = args.node_locations
+    ops.shielded_secure_boot = args.shielded_secure_boot
+    ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
     return ops
 
 

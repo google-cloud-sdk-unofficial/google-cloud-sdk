@@ -21,7 +21,31 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+DETAILED_HELP = {
+    'brief': 'Manage Google Kubernetes Hub memberships.',
+    'DESCRIPTION': """Manage Google Kubernetes Hub memberships.""",
+    'EXAMPLES': """\
+    Create a membership:
+
+      $ gcloud container memberships create a-membership
+          --description="Description of a-membership."
+
+    Check the status of a membership:
+
+      $ gcloud container memberships describe a-membership
+
+    List the memberships in a project:
+
+      $ gcloud container memberships list
+
+    Delete a membership:
+
+      $ gcloud container memberships delete a-membership
+    """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Memberships(base.Group):
   """Manage Google Kubernetes Hub memberships."""
-  pass
+  detailed_help = DETAILED_HELP

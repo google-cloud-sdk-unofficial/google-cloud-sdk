@@ -75,8 +75,14 @@ class Update(base.UpdateCommand):
       return waiter.WaitFor(operation_poller, operation_ref,
                             'Switching network to custom-mode')
 
+    network_resource = messages.Network()
+    should_patch = False
+    if getattr(args, 'mtu', None) is not None:
+      network_resource.mtu = args.mtu
+      should_patch = True
+
     if args.bgp_routing_mode or getattr(args, 'multicast_mode', None):
-      network_resource = messages.Network()
+      should_patch = True
       if args.bgp_routing_mode:
         network_resource.routingConfig = messages.NetworkRoutingConfig()
         network_resource.routingConfig.routingMode = (
@@ -86,6 +92,8 @@ class Update(base.UpdateCommand):
         network_resource.multicastMode = (
             messages.Network.MulticastModeValueValuesEnum(
                 args.multicast_mode.upper()))
+
+    if should_patch:
       resource = service.Patch(
           messages.ComputeNetworksPatchRequest(
               project=network_ref.project,

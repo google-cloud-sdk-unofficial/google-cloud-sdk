@@ -35,6 +35,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
+import six
 
 
 DETAILED_HELP = {
@@ -120,7 +121,7 @@ class Routes(base_classes.BaseCommand):
                                 resource_registry)
       except exceptions.ToolException as e:
         log.error('Error routing to instance')
-        log.error(str(e))
+        log.error(six.text_type(e))
         continue
 
       if reverse_traceroute:
@@ -142,7 +143,7 @@ class Routes(base_classes.BaseCommand):
             log.out.Print(
                 'Please make sure traceroute is installed in PATH to move on.')
         except ssh.CommandError as e:
-          log.error(str(e))
+          log.error(six.text_type(e))
       log.out.Print('')  # Separator
 
   ###########################################################
@@ -244,10 +245,10 @@ class Routes(base_classes.BaseCommand):
             explicit_output_file=dev_null,
             dry_run=dry_run)
     except Exception as e:
-      log.out.write(str(e))
+      log.out.write(six.text_type(e))
       log.out.write('\n')  # Close the open print stmt
       log.out.flush()
-      raise ssh.CommandError(' '.join(cmd), str(e))
+      raise ssh.CommandError(' '.join(cmd), six.text_type(e))
 
     if return_code == 0:
       log.out.Print('Traceroute found in PATH')
@@ -292,7 +293,7 @@ class Routes(base_classes.BaseCommand):
     except Exception as e:  # pylint: disable=broad-exception
       log.out.write('\n')  # Close the open print stmt
       log.out.flush()
-      raise ssh.CommandError(' '.join(cmd), str(e))
+      raise ssh.CommandError(' '.join(cmd), six.text_type(e))
 
     who_am_i_str = temp.getvalue().decode('utf-8')
     result = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', who_am_i_str)

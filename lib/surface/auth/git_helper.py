@@ -48,6 +48,7 @@ from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
 from oauth2client import client
+import six
 
 
 _KEYVAL_RE = re.compile(r'(.+)=(.*)')
@@ -120,7 +121,7 @@ class GitHelper(base.Command):
         sys.stderr.write(textwrap.dedent("""\
             ERROR: {error}
             Run 'gcloud auth login' to log in.
-            """.format(error=str(e))))
+            """.format(error=six.text_type(e))))
         return
 
       self._CheckNetrc()

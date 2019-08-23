@@ -110,7 +110,7 @@ class BucketPolicyOnlyCommand(Command):
       help_name='bucketpolicyonly',
       help_name_aliases=[],
       help_type='command_help',
-      help_one_line_summary='Configure Bucket Policy Only',
+      help_one_line_summary='Configure Bucket Policy Only (Beta)',
       help_text=_DETAILED_HELP_TEXT,
       subcommand_help_text={
           'get': _get_help_text,

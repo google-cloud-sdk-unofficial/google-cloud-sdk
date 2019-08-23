@@ -14,7 +14,7 @@
 """Common utilities for running predictions."""
 import base64
 import collections
-from contextlib import contextmanager
+import contextlib
 import json
 import logging
 import os
@@ -86,6 +86,12 @@ ABLATION_ATTRIBUTION_KEY = "ablation_attribution"
 TREE_SHAP_ATTRIBUTION_KEY = "tree_shap_attribution"
 SAABAS_ATTRIBUTION_KEY = "saabas_attribution"
 NUM_FEATURE_INTERACTIONS = "num_feature_interactions"
+IG_ATTRIBUTION_KEY = "integrated_gradients_attribution"
+NUM_INTEGRAL_STEPS = "num_integral_steps"
+
+# Keys related to requests and responses to prediction server.
+PREDICTIONS_KEY = "predictions"
+INSTANCES_KEY = "instances"
 
 
 class PredictionError(Exception):
@@ -107,9 +113,6 @@ class PredictionError(Exception):
       message="Failed to run model explainer", code=6)
   # When adding new exception, please update the ERROR_MESSAGE_ list as well as
   # unittest.
-
-  def __init__(self, error_code, error_detail, *args):
-    super(PredictionError, self).__init__(error_code, error_detail, *args)
 
   @property
   def error_code(self):
@@ -204,7 +207,7 @@ class Stats(dict):
     print(stats["foo_time"])
   """
 
-  @contextmanager
+  @contextlib.contextmanager
   def time(self, name, timer_fn=None):
     with Timer(timer_fn) as timer:
       yield timer
@@ -581,53 +584,63 @@ def get_field_in_version_json(field_name):
   return version.get(field_name)
 
 
-def get_explanation_config(framework):
-  """Get explanation config if the feature is enabled.
+def get_xgboost_explanation_config(xgboost_factory_module):
+  """Returns an ExplanationConfig for XGBoost model.
 
   Args:
-    framework: The local path to the directory that contains the model file.
-
-  Raises:
-    TypeError: If the explanation config is not currently supported by the
-    framework.
+    xgboost_factory_module: The xgboost module within the explainers library.
 
   Returns:
-    One of the supported explanation config type.
+    The appropriate ExplanationConfig to use for explanations of XgBoost models.
+
+  Raises:
+    ValueError if the config is malformed.
   """
   config_request = get_field_in_version_json(EXPLANATION_CONFIG_KEY)
   if config_request is None:
     return None
+  if TREE_SHAP_ATTRIBUTION_KEY in config_request:
+    return xgboost_factory_module.XGBoostSHAPConfig()
+  elif SAABAS_ATTRIBUTION_KEY in config_request:
+    return xgboost_factory_module.XGBoostSaabasConfig()
+  elif ABLATION_ATTRIBUTION_KEY in config_request:
+    ablation_attribution = config_request.get(ABLATION_ATTRIBUTION_KEY)
+    num_feature_interactions = ablation_attribution.get(
+        NUM_FEATURE_INTERACTIONS, 1)
+    return xgboost_factory_module.XGBoostAblationConfig(
+        num_feature_interactions)
+  raise ValueError("{} is not a supported explanation config for {}.".format(
+      repr(config_request), XGBOOST_FRAMEWORK_NAME))
 
-  if framework == XGBOOST_FRAMEWORK_NAME:
-    # pylint: disable=g-import-not-at-top
-    from explainers.xgboost.factory import XGBoostAblationConfig
-    from explainers.xgboost.factory import XGBoostSaabasConfig
-    from explainers.xgboost.factory import XGBoostSHAPConfig
-    if TREE_SHAP_ATTRIBUTION_KEY in config_request:
-      config = XGBoostSHAPConfig()
-    elif SAABAS_ATTRIBUTION_KEY in config_request:
-      config = XGBoostSaabasConfig()
-    elif ABLATION_ATTRIBUTION_KEY in config_request:
-      ablation_attribution = config_request.get(ABLATION_ATTRIBUTION_KEY)
-      num_feature_interactions = ablation_attribution.get(
-          NUM_FEATURE_INTERACTIONS, 1)
-      config = XGBoostAblationConfig(num_feature_interactions)
-    else:
-      raise TypeError("{} is not a supported explanation config for {}.".format(
-          config_request, framework))
-  elif framework == TENSORFLOW_FRAMEWORK_NAME:
-    # pylint: disable=g-import-not-at-top
-    from explainers.tf import configs
-    if ABLATION_ATTRIBUTION_KEY in config_request:
-      config = configs.TFAblationConfig(
-          configs.ModelType.CUSTOM, configs.InputType.FEED_DICT)
-    else:
-      raise TypeError("{} is not a supported explanation config for {}.".format(
-          config_request, framework))
-  else:
-    raise TypeError(
-        "{} is not a supported type for model explanation.".format(framework))
-  return config
+
+def get_tensorflow_explanation_config(tf_configs_module):
+  """Returns an ExplanationConfig for TensorFlow model.
+
+  Args:
+    tf_configs_module: The tf.configs module within the explainers library.
+
+  Returns:
+    The appropriate ExplanationConfig to use for explanations of TF models.
+
+  Raises:
+    ValueError if the config is malformed.
+  """
+  config_request = get_field_in_version_json(EXPLANATION_CONFIG_KEY)
+  if config_request is None:
+    return None
+  if ABLATION_ATTRIBUTION_KEY in config_request:
+    return tf_configs_module.TFAblationConfig(
+        tf_configs_module.ModelType.CUSTOM,
+        tf_configs_module.InputType.FEED_DICT)
+  elif IG_ATTRIBUTION_KEY in config_request:
+    ig_attribution = config_request.get(IG_ATTRIBUTION_KEY)
+    integral_steps = ig_attribution.get(NUM_INTEGRAL_STEPS, 50)
+    return tf_configs_module.TFIGConfig(
+        tf_configs_module.ModelType.CUSTOM,  # model_type
+        tf_configs_module.InputType.FEED_DICT,  # input_type
+        integral_steps)  # integral_steps
+  raise ValueError("{} is not a supported explanation config for {}.".format(
+      config_request, TENSORFLOW_FRAMEWORK_NAME))
 
 
 def load_metadata(base_path):
@@ -681,3 +694,48 @@ def load_metadata(base_path):
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_METADATA, error_msg)
   return metadata
+
+
+def parse_predictions(response_json):
+  """Parses the predictions from the json response from prediction server.
+
+  Args:
+    response_json(Text): The JSON formatted response to parse.
+
+  Returns:
+    Predictions from the response json.
+
+  Raises:
+    ValueError if response_json is malformed.
+  """
+  if not isinstance(response_json, collections.Mapping):
+    raise ValueError(
+        "Invalid response received from prediction server: {}".format(
+            repr(response_json)))
+  if PREDICTIONS_KEY not in response_json:
+    raise ValueError(
+        "Required field '{}' missing in prediction server response: {}".format(
+            PREDICTIONS_KEY, repr(response_json)))
+  return response_json.pop(PREDICTIONS_KEY)
+
+
+def parse_instances(request_json):
+  """Parses instances from the json request sent to prediction server.
+
+  Args:
+    request_json(Text): The JSON formatted request to parse.
+
+  Returns:
+    Instances from the request json.
+
+  Raises:
+    ValueError if request_json is malformed.
+  """
+  if not isinstance(request_json, collections.Mapping):
+    raise ValueError("Invalid request sent to prediction server: {}".format(
+        repr(request_json)))
+  if INSTANCES_KEY not in request_json:
+    raise ValueError(
+        "Required field '{}' missing in prediction server request: {}".format(
+            INSTANCES_KEY, repr(request_json)))
+  return request_json.pop(INSTANCES_KEY)

@@ -68,7 +68,7 @@ class SetMachineType(base.SilentCommand):
         custom_cpu=args.custom_cpu,
         custom_memory=args.custom_memory,
         ext=getattr(args, 'custom_extensions', None),
-        vm_gen=getattr(args, 'custom_vm_gen', None))
+        vm_type=getattr(args, 'custom_vm_type', None))
 
     instance_utils.CheckCustomCpuRamRatio(client,
                                           instance_ref.project,

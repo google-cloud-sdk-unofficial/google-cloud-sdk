@@ -29,19 +29,15 @@ class PrintSettings(base.Group):
 
   ## EXAMPLES
 
-  To print a snippet to add to the Maven settings.xml file, run:
-
-      $ {command} maven
-
   To print a snippet to add a repository to the Gradle build.gradle file for
   repository my-repo in the current project, run:
 
-      $ {command} gradle-build --repository=my-repo
+      $ {command} gradle --repository=my-repo
 
   To print a snippet to add to the Maven pom.xml file for repository my-repo in
   the current project, run:
 
-      $ {command} maven-pom --repository=my-repo
+      $ {command} maven --repository=my-repo
 
   To print a snippet to add to the npm .npmrc file for repository my-repo in
   the current project, run:

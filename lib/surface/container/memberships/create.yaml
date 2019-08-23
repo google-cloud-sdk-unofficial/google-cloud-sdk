@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Create a new membership.
     description: Create a new membership in Google Kubernetes Hub.
+    examples: |
+      Create a membership for a cluster:
+
+        $ {command} a-membership --description="Description of a-membership."
 
   request:
     collection: gkehub.projects.locations.global.memberships

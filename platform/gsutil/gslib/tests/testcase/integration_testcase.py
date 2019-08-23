@@ -77,7 +77,8 @@ LOGGER = logging.getLogger('integration-test')
 # TODO: Replace tests which looks for test_api == ApiSelector.(XML|JSON) with
 # these decorators.
 def SkipForXML(reason):
-  if not USING_JSON_API:
+  """Skips the test if running S3 tests, or if prefer_api isn't set to json."""
+  if not USING_JSON_API or RUN_S3_TESTS:
     return unittest.skip(reason)
   else:
     return lambda func: func
@@ -975,13 +976,15 @@ class GsUtilIntegrationTestCase(base.GsUtilTestCase):
 
     # executing command - the setsid allows us to kill the process group below
     # if the execution times out.  With python 2.7, there's no other way to
-    # stop the execution (p.kill() doesn't work).
+    # stop the execution (p.kill() doesn't work).  Since setsid is not available
+    # on Windows, we just deal with the occasional timeouts on Windows.
+    preexec_fn = os.setsid if hasattr(os, 'setsid') else None
     p = subprocess.Popen(cmd,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
                          stdin=subprocess.PIPE,
                          env=envstr,
-                         preexec_fn=os.setsid)
+                         preexec_fn=preexec_fn)
     comm_kwargs = {'input': stdin}
 
     def Kill():

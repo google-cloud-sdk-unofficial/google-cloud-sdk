@@ -190,8 +190,10 @@ class Import(base.CreateCommand):
 
     tags = ['gce-daisy-image-import']
 
-    return daisy_utils.RunImageImport(args, import_metadata, tags,
-                                      _OUTPUT_FILTER)
+    return self._RunImageImport(args, import_metadata, tags, _OUTPUT_FILTER)
+
+  def _RunImageImport(self, args, import_args, tags, output_filter):
+    return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER)
 
   def _CreateImportStager(self, args):
     if args.source_image:
@@ -380,6 +382,15 @@ class ImportBeta(Import):
   """Import an image into Google Compute Engine for Beta releases."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
+
+  @classmethod
+  def Args(cls, parser):
+    super(ImportBeta, cls).Args(parser)
+    daisy_utils.AddExtraCommonDaisyArgs(parser)
+
+  def _RunImageImport(self, args, import_args, tags, output_filter):
+    return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,
+                                      args.docker_image_tag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

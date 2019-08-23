@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create resource policy command."""
+"""Create VM maintenance resource policy maintenance-window command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,28 +26,24 @@ from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateVmMaintenance(base.CreateCommand):
+class CreateVmMaintenanceMaintenanceWindow(base.CreateCommand):
   """Create a Google Compute Engine VM Maintenance Resource Policy.
 
-  *{command} creates a Resource Policy which can be attached to instances and
-  specifies what kind of maintenance operations may be performed and when
-  they can be performed.
+  *{command} creates a Google Compute Engine VM Maintenance Resource Policy
+  that, contains a window in which maintenance should start.
   """
 
   @staticmethod
   def Args(parser):
     flags.MakeResourcePolicyArg().AddArgument(parser)
     flags.AddCommonArgs(parser)
-    maintenance_parent = flags.AddMaintenanceParentGroup(parser)
     flags.AddCycleFrequencyArgs(
         parser,
         flag_suffix='window',
         start_time_help=('Start time of a four-hour window in which '
                          'maintenance should start in daily cadence.'),
         cadence_help='Maintenance activity window',
-        has_restricted_start_times=True,
-        parent_group=maintenance_parent)
-    flags.AddConcurrentControlGroupArgs(maintenance_parent)
+        has_restricted_start_times=True)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
@@ -60,7 +56,8 @@ class CreateVmMaintenance(base.CreateCommand):
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
     messages = holder.client.messages
-    resource_policy = util.MakeVmMaintenancePolicy(policy_ref, args, messages)
+    resource_policy = util.MakeVmMaintenanceMaintenanceWindow(policy_ref,
+                                                              args, messages)
     create_request = messages.ComputeResourcePoliciesInsertRequest(
         resourcePolicy=resource_policy,
         project=policy_ref.project,
@@ -70,15 +67,17 @@ class CreateVmMaintenance(base.CreateCommand):
     return client.MakeRequests([(service, 'Insert', create_request)])[0]
 
 
-CreateVmMaintenance.detailed_help = {
+CreateVmMaintenanceMaintenanceWindow.detailed_help = {
     'DESCRIPTION':
-        """\
-Create a Google Compute Engine VM Maintenance Resource Policy.
+    """\
+Create a Google Compute Engine VM Maintenance Resource Policy that,
+contains time window in which maintenance should start.
 """,
     'EXAMPLES':
-        """\
-The following command creates a Google Compute Engine VM Maintenance Resource Policy with a daily maintenance activity window that starts at 04:00Z.
+    """\
+  The following command creates a Google Compute Engine VM Maintenance Resource
+  Policy with a daily maintenance activity window that starts at 04:00Z.
 
-  $ {command} my-resource-policy --region=REGION --start-time=04:00Z --daily-window
+    $ {command} my-resource-policy --region=REGION --start-time=04:00Z --daily-window
 """
 }

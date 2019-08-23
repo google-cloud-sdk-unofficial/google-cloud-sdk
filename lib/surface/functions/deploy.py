@@ -222,9 +222,10 @@ def _Run(args,
         and not ensure_all_users_invoke
         and not deny_all_users_invoke):
       template = (
-          'Function created with default IAM policy. '
+          'Function created with limited-access IAM policy. '
           'To enable unauthorized access consider "%s"')
       log.warning(template % _CreateBindPolicyCommand(args.NAME, args.region))
+      deny_all_users_invoke = True
 
   elif updated_fields:
     op = api_util.PatchFunction(function, updated_fields)

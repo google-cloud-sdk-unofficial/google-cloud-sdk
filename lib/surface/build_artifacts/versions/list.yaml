@@ -22,7 +22,7 @@
     api_version: v1alpha2
     collection: buildartifacts.projects.repositories.packages.versions
     modify_request_hooks:
-    - googlecloudsdk.command_lib.build_artifacts.util:URLEscapePackageName
+    - googlecloudsdk.command_lib.build_artifacts.util:SlashEscapePackageName
 
   response:
     modify_response_hooks:

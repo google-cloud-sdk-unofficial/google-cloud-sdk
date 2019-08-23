@@ -64,8 +64,8 @@ class Update(base.UpdateCommand):
     messages = holder.client.messages
     per_instance_config = configs_getter.get_instance_config(
         igm_ref=igm_ref, instance_ref=instance_ref)
-
     remove_stateful_disks_set = set(remove_stateful_disks or [])
+    removed_stateful_disks_set = set()
     update_stateful_disks_dict = Update._UpdateStatefulDisksToDict(
         update_stateful_disks)
     new_stateful_disks = []
@@ -77,6 +77,7 @@ class Update(base.UpdateCommand):
       disk_name = current_stateful_disk.key
       # Disk to be removed
       if disk_name in remove_stateful_disks_set:
+        removed_stateful_disks_set.add(disk_name)
         continue
       # Disk to be updated
       if disk_name in update_stateful_disks_dict:
@@ -100,6 +101,13 @@ class Update(base.UpdateCommand):
               messages.PreservedStatePreservedDisk.AutoDeleteValueValuesEnum)
         del update_stateful_disks_dict[disk_name]
       new_stateful_disks.append(current_stateful_disk)
+    unremoved_stateful_disks = (
+        remove_stateful_disks_set.difference(removed_stateful_disks_set))
+    if unremoved_stateful_disks:
+      raise exceptions.InvalidArgumentException(
+          parameter_name='--remove-stateful-disk',
+          message=('The following are invalid stateful disks: `{0}`'
+                   .format(','.join(unremoved_stateful_disks))))
     for update_stateful_disk in update_stateful_disks_dict.values():
       new_stateful_disks.append(
           instance_configs_messages.MakePreservedStateDiskEntry(

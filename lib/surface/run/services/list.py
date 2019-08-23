@@ -103,6 +103,7 @@ class List(commands.List):
       self._SetFormat(args, show_region=True)
       client = global_methods.GetServerlessClientInstance()
       self.SetPartialApiEndpoint(client.url)
+      args.CONCEPTS.namespace.Parse()  # Error if no proj.
       locations_ref = args.CONCEPTS.region.Parse()
       return commands.SortByName(
           global_methods.ListServices(client, locations_ref.RelativeName()))

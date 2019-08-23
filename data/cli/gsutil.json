@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.41",
+  "CLI_VERSION": "4.42",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -9,7 +9,92 @@
         "ch": {
           "capsule": "Get, set, or change bucket and/or object ACLs",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-d": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Remove all roles associated with the matching entity.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-d",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-f": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Normally gsutil stops at the first error. The -f option causes\n to continue when it encounters errors. With this option the\nutil exit status will be 0 even if some ACLs couldn't be\nanged.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-f",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-g": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Add or modify a group entity's role.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-g",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Add or modify a project viewers/editors/owners role.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-r": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Performs acl ch request recursively, to all objects under the\necified URL.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-r",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-u": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Add or modify a user entity's role.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-u",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -48,7 +133,50 @@
         "set": {
           "capsule": "Get, set, or change bucket and/or object ACLs",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-a": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Performs \"acl set\" request on all object versions.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-a",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-f": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Normally gsutil stops at the first error. The -f option causes\n to continue when it encounters errors. If some of the ACLs\nuldn't be set, gsutil's exit status will be non-zero even if\nis flag is set. This option is implicitly set when running\nsutil -m acl...\".",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-f",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-r": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Performs \"acl set\" request recursively, to all objects under\ne specified URL.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-r",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -64,7 +192,106 @@
           }
         }
       },
-      "flags": {},
+      "flags": {
+        "-a": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Performs \"acl set\" request on all object versions.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-a",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-d": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Remove all roles associated with the matching entity.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-d",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-f": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Normally gsutil stops at the first error. The -f option causes\n to continue when it encounters errors. With this option the\nutil exit status will be 0 even if some ACLs couldn't be\nanged.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-f",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-g": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Add or modify a group entity's role.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-g",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-p": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Add or modify a project viewers/editors/owners role.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-p",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-r": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Performs acl ch request recursively, to all objects under the\necified URL.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-r",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-u": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Add or modify a user entity's role.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-u",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        }
+      },
       "groups": {},
       "is_group": true,
       "is_hidden": false,
@@ -85,10 +312,10 @@
       }
     },
     "bucketpolicyonly": {
-      "capsule": "Configure Bucket Policy Only",
+      "capsule": "Configure Bucket Policy Only (Beta)",
       "commands": {
         "get": {
-          "capsule": "Configure Bucket Policy Only",
+          "capsule": "Configure Bucket Policy Only (Beta)",
           "commands": {},
           "flags": {},
           "groups": {},
@@ -107,7 +334,7 @@
           }
         },
         "set": {
-          "capsule": "Configure Bucket Policy Only",
+          "capsule": "Configure Bucket Policy Only (Beta)",
           "commands": {},
           "flags": {},
           "groups": {},
@@ -695,7 +922,7 @@
       "release": "GA",
       "sections": {
         "COMPOSITE UPLOADS": "gsutil can automatically use\n`object composition <https://cloud.google.com/storage/docs/composite-objects>`_\nto perform uploads in parallel for large, local files being uploaded to Google\nCloud Storage. If enabled (see below), a large file will be split into\ncomponent pieces that are uploaded in parallel and then composed in the cloud\n(and the temporary components finally deleted). A file can be broken into as\nmany as 32 component pieces; until this piece limit is reached, the maximum\nsize of each component piece is determined by the variable\n\"parallel_composite_upload_component_size,\" specified in the [GSUtil] section\nof your .boto configuration file (for files that are otherwise too big,\ncomponents are as large as needed to fit into 32 pieces). No additional local\ndisk space is required for this operation.\n\nUsing parallel composite uploads presents a tradeoff between upload\nperformance and download configuration: If you enable parallel composite\nuploads your uploads will run faster, but someone will need to install a\ncompiled crcmod (see \"gsutil help crcmod\") on every machine where objects are\ndownloaded by gsutil or other Python applications. Note that for such uploads,\ncrcmod is required for downloading regardless of whether the parallel\ncomposite upload option is on or not. For some distributions this is easy\n(e.g., it comes pre-installed on macOS), but in other cases some users have\nfound it difficult. Because of this, at present parallel composite uploads are\ndisabled by default. Google is actively working with a number of the Linux\ndistributions to get crcmod included with the stock distribution. Once that is\ndone we will re-enable parallel composite uploads by default in gsutil.\n\nWarning: Parallel composite uploads should not be used with NEARLINE or\nCOLDLINE storage class buckets, because doing so incurs an early deletion\ncharge for each component object.\n\nTo try parallel composite uploads you can run the command:\n\n  gsutil -o GSUtil:parallel_composite_upload_threshold=150M cp bigfile gs://your-bucket\n\nwhere bigfile is larger than 150 MiB. When you do this, notice that the upload\nprogress indicator continuously updates for the file, until all parts of the\nupload complete. If after trying this you want to enable parallel composite\nuploads for all of your future uploads (notwithstanding the caveats mentioned\nearlier), you can uncomment and set the \"parallel_composite_upload_threshold\"\nconfig value in your .boto configuration file to this value.\n\nNote that the crcmod problem only impacts downloads via Python applications\n(such as gsutil). If all users who need to download the data using gsutil or\nother Python applications can install crcmod, or if no Python users will\nneed to download your objects, it makes sense to enable parallel composite\nuploads (see above). For example, if you use gsutil to upload video assets,\nand those assets will only ever be served via a Java application, it would\nmake sense to enable parallel composite uploads on your machine (there are\nefficient CRC32C implementations available in Java).\n\nIf a parallel composite upload fails prior to composition, re-running the\ngsutil command will take advantage of resumable uploads for the components\nthat failed, and the component objects will be deleted after the first\nsuccessful attempt. Any temporary objects that were uploaded successfully\nbefore gsutil failed will still exist until the upload is completed\nsuccessfully. The temporary objects will be named in the following fashion:\n\n  <random ID>/gsutil/tmp/parallel_composite_uploads/for_details_see/gsutil_help_cp/<hash>\n\nwhere <random ID> is a numerical value, and <hash> is an MD5 hash (not related\nto the hash of the contents of the file or object).\n\nTo avoid leaving temporary objects around, you should make sure to check the\nexit status from the gsutil command.  This can be done in a bash script, for\nexample, by doing:\n\n  if ! gsutil cp ./local-file gs://your-bucket/your-object; then\n    << Code that handles failures >>\n  fi\n\nOr, for copying a directory, use this instead:\n\n  if ! gsutil cp -c -L cp.log -r ./dir gs://bucket; then\n    << Code that handles failures >>\n  fi\n\nNote that an object uploaded using parallel composite uploads will have a\nCRC32C hash, but it will not have an MD5 hash (and because of that, users who\ndownload the object must have crcmod installed, as noted earlier). For details\nsee \"gsutil help crc32c\".\n\nParallel composite uploads can be disabled by setting the\n\"parallel_composite_upload_threshold\" variable in the .boto config file to 0.",
-        "DESCRIPTION": "The gsutil cp command allows you to copy data between your local file\nsystem and the cloud, copy data within the cloud, and copy data between\ncloud storage providers. For example, to copy all text files from the\nlocal directory to a bucket you could do:\n\n  gsutil cp *.txt gs://my-bucket\n\nSimilarly, you can download text files from a bucket by doing:\n\n  gsutil cp gs://my-bucket/*.txt .\n\nIf you want to copy an entire directory tree you need to use the -r option:\n\n  gsutil cp -r dir gs://my-bucket\n\nIf you have a large number of files to transfer you might want to use the\ntop-level gsutil -m option (see \"gsutil help options\"), to perform a\nparallel (multi-threaded/multi-processing) copy:\n\n  gsutil -m cp -r dir gs://my-bucket\n\nYou can pass a list of URLs (one per line) to copy on stdin instead of as\ncommand line arguments by using the -I option. This allows you to use gsutil\nin a pipeline to upload or download files / objects as generated by a program,\nsuch as:\n\n  some_program | gsutil -m cp -I gs://my-bucket\n\nor:\n\n  some_program | gsutil -m cp -I ./download_dir\n\nThe contents of stdin can name files, cloud URLs, and wildcards of files\nand cloud URLs.\n\nNote: Shells (like bash, zsh) sometimes attempt to expand wildcards in ways\nthat can be surprising. Also, attempting to copy files whose names contain\nwildcard characters can result in problems. For more details about these\nissues see the section \"POTENTIALLY SURPRISING BEHAVIOR WHEN USING WILDCARDS\"\nunder \"gsutil help wildcards\".",
+        "DESCRIPTION": "The gsutil cp command allows you to copy data between your local file\nsystem and the cloud, copy data within the cloud, and copy data between\ncloud storage providers. For example, to upload all text files from the\nlocal directory to a bucket you could do:\n\n  gsutil cp *.txt gs://my-bucket\n\nSimilarly, you can download text files from a bucket by doing:\n\n  gsutil cp gs://my-bucket/*.txt .\n\nIf you want to copy an entire directory tree you need to use the -r option.\nFor example, to upload the directory tree \"dir\":\n\n  gsutil cp -r dir gs://my-bucket\n\nIf you have a large number of files to transfer you might want to use the\ntop-level gsutil -m option (see \"gsutil help options\"), to perform a\nparallel (multi-threaded/multi-processing) copy:\n\n  gsutil -m cp -r dir gs://my-bucket\n\nYou can pass a list of URLs (one per line) to copy on stdin instead of as\ncommand line arguments by using the -I option. This allows you to use gsutil\nin a pipeline to upload or download files / objects as generated by a program,\nsuch as:\n\n  some_program | gsutil -m cp -I gs://my-bucket\n\nor:\n\n  some_program | gsutil -m cp -I ./download_dir\n\nThe contents of stdin can name files, cloud URLs, and wildcards of files\nand cloud URLs.\n\nNote: Shells (like bash, zsh) sometimes attempt to expand wildcards in ways\nthat can be surprising. Also, attempting to copy files whose names contain\nwildcard characters can result in problems. For more details about these\nissues see the section \"POTENTIALLY SURPRISING BEHAVIOR WHEN USING WILDCARDS\"\nunder \"gsutil help wildcards\".",
         "HANDLING": "The cp command will retry when failures occur, but if enough failures happen\nduring a particular copy or delete operation the cp command will skip that\nobject and move on. At the end of the copy run if any failures were not\nsuccessfully retried, the cp command will report the count of failures, and\nexit with non-zero status.\n\nNote that there are cases where retrying will never succeed, such as if you\ndon't have write permission to the destination bucket or if the destination\npath for some objects is longer than the maximum allowed length.\n\nFor more details about gsutil's retry handling, please see\n\"gsutil help retries\".",
         "IN THE CLOUD AND METADATA PRESERVATION": "If both the source and destination URL are cloud URLs from the same\nprovider, gsutil copies data \"in the cloud\" (i.e., without downloading\nto and uploading from the machine where you run gsutil). In addition to\nthe performance and cost advantages of doing this, copying in the cloud\npreserves metadata (like Content-Type and Cache-Control). In contrast,\nwhen you download data from the cloud it ends up in a file, which has\nno associated metadata. Thus, unless you have some way to hold on to\nor re-create that metadata, downloading to a file will not retain the\nmetadata.\n\nCopies spanning locations and/or storage classes cause data to be rewritten\nin the cloud, which may take some time (but still will be faster than\ndownloading and re-uploading). Such operations can be resumed with the same\ncommand if they are interrupted, so long as the command parameters are\nidentical.\n\nNote that by default, the gsutil cp command does not copy the object\nACL to the new object, and instead will use the default bucket ACL (see\n\"gsutil help defacl\"). You can override this behavior with the -p\noption (see OPTIONS below).\n\nOne additional note about copying in the cloud: If the destination bucket has\nversioning enabled, by default gsutil cp will copy only live versions of the\nsource object(s). For example:\n\n  gsutil cp gs://bucket1/obj gs://bucket2\n\nwill cause only the single live version of gs://bucket1/obj to be copied to\ngs://bucket2, even if there are archived versions of gs://bucket1/obj. To also\ncopy archived versions, use the -A flag:\n\n  gsutil cp -A gs://bucket1/obj gs://bucket2\n\nThe top-level gsutil -m flag is disallowed when using the cp -A flag, to\nensure that version ordering is preserved.",
         "NAMES ARE CONSTRUCTED": "The gsutil cp command strives to name objects in a way consistent with how\nLinux cp works, which causes names to be constructed in varying ways depending\non whether you're performing a recursive directory copy or copying\nindividually named objects; and whether you're copying to an existing or\nnon-existent directory.\n\nWhen performing recursive directory copies, object names are constructed that\nmirror the source directory structure starting at the point of recursive\nprocessing. For example, if dir1/dir2 contains the file a/b/c then the\ncommand:\n\n  gsutil cp -r dir1/dir2 gs://my-bucket\n\nwill create the object gs://my-bucket/dir2/a/b/c.\n\nIn contrast, copying individually named files will result in objects named by\nthe final path component of the source files. For example, again assuming\ndir1/dir2 contains a/b/c, the command:\n\n  gsutil cp dir1/dir2/** gs://my-bucket\n\nwill create the object gs://my-bucket/c.\n\nThe same rules apply for downloads: recursive copies of buckets and\nbucket subdirectories produce a mirrored filename structure, while copying\nindividually (or wildcard) named objects produce flatly named files.\n\nNote that in the above example the '**' wildcard matches all names\nanywhere under dir. The wildcard '*' will match names just one level deep. For\nmore details see \"gsutil help wildcards\".\n\nThere's an additional wrinkle when working with subdirectories: the resulting\nnames depend on whether the destination subdirectory exists. For example,\nif gs://my-bucket/subdir exists as a subdirectory, the command:\n\n  gsutil cp -r dir1/dir2 gs://my-bucket/subdir\n\nwill create the object gs://my-bucket/subdir/dir2/a/b/c. In contrast, if\ngs://my-bucket/subdir does not exist, this same gsutil cp command will create\nthe object gs://my-bucket/subdir/a/b/c.\n\nNote: If you use the\n`Google Cloud Platform Console <https://console.cloud.google.com>`_\nto create folders, it does so by creating a \"placeholder\" object that ends\nwith a \"/\" character. gsutil skips these objects when downloading from the\ncloud to the local file system, because attempting to create a file that\nends with a \"/\" is not allowed on Linux and macOS. Because of this, it is\nrecommended that you not create objects that end with \"/\" (unless you don't\nneed to be able to download such objects using gsutil).",
@@ -713,7 +940,78 @@
         "ch": {
           "capsule": "Get, set, or change default ACL on buckets",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-d": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Remove all roles associated with the matching entity.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-d",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-f": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Normally gsutil stops at the first error. The -f option causes\n to continue when it encounters errors. With this option the\nutil exit status will be 0 even if some ACLs couldn't be\nanged.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-f",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-g": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Add or modify a group entity's role.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-g",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Add or modify a project viewers/editors/owners role.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-u": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Add or modify a user entity's role.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-u",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -766,7 +1064,78 @@
           }
         }
       },
-      "flags": {},
+      "flags": {
+        "-d": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Remove all roles associated with the matching entity.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-d",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-f": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Normally gsutil stops at the first error. The -f option causes\n to continue when it encounters errors. With this option the\nutil exit status will be 0 even if some ACLs couldn't be\nanged.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-f",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-g": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Add or modify a group entity's role.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-g",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-p": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Add or modify a project viewers/editors/owners role.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-p",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-u": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Add or modify a user entity's role.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-u",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        }
+      },
       "groups": {},
       "is_group": true,
       "is_hidden": false,
@@ -1201,7 +1570,7 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "CACHE-CONTROL": "Another commonly set piece of metadata is Cache-Control, which allows\nyou to control whether and for how long browser and Internet caches are\nallowed to cache your objects. Cache-Control only applies to objects with\na public-read ACL. Non-public data are not cacheable.\n\nHere's an example of uploading a set of objects to allow caching:\n\n  gsutil -h \"Cache-Control:public,max-age=3600\" cp -a public-read \\\n         -r html gs://bucket/html\n\nThis command would upload all files in the html directory (and subdirectories)\nand make them publicly readable and cacheable, with cache expiration of\none hour.\n\nNote that if you allow caching, at download time you may see older versions\nof objects after uploading a newer replacement object. Note also that because\nobjects can be cached at various places on the Internet there is no way to\nforce a cached object to expire globally (unlike the way you can force your\nbrowser to refresh its cache). If you want to prevent caching of publicly\nreadable objects you should set a Cache-Control:private header on the object.\nYou can do this with a command such as:\n\n  gsutil -h Cache-Control:private cp -a public-read file.png gs://your-bucket\n\nAnother use of Cache-Control is through the \"no-transform\" value,\nwhich instructs Google Cloud Storage to not apply any content transformations\nbased on specifics of a download request, such as removing gzip\ncontent-encoding for incompatible clients.  Note that this parameter is only\nrespected by the XML API. The Google Cloud Storage JSON API respects only the\nno-cache and max-age Cache-Control parameters.\n\nFor details about how to set the Cache-Control header see\n\"gsutil help setmeta\".",
+            "CACHE-CONTROL": "Another commonly set piece of metadata is Cache-Control, which allows\nyou to control whether and for how long browser and Internet caches are\nallowed to cache your objects. Cache-Control only applies to objects with\na public-read ACL. Non-public data are not cacheable.\n\nHere's an example of uploading a set of objects to allow caching:\n\n  gsutil -h \"Cache-Control:public,max-age=3600\" cp -a public-read \\\n         -r html gs://bucket/html\n\nThis command would upload all files in the html directory (and subdirectories)\nand make them publicly readable and cacheable, with cache expiration of\none hour.\n\nNote that if you allow caching, at download time you may see older versions\nof objects after uploading a newer replacement object. Note also that because\nobjects can be cached at various places on the Internet there is no way to\nforce a cached object to expire globally (unlike the way you can force your\nbrowser to refresh its cache). If you want to prevent serving cached versions\nof publicly readable objects, set \"Cache-Control:no-cache, max-age=0\" on the\nobject. You can do this with a command such as:\n\n  gsutil -h \"Cache-Control:no-cache,max-age=0\" \\\n         cp -a public-read file.png gs://your-bucket\n\nAnother use of Cache-Control is through the \"no-transform\" value,\nwhich instructs Google Cloud Storage to not apply any content transformations\nbased on specifics of a download request, such as removing gzip\ncontent-encoding for incompatible clients.  Note that this parameter is only\nrespected by the XML API. The Google Cloud Storage JSON API respects only the\npublic, private, no-cache, and max-age Cache-Control parameters.\n\nFor details about how to set the Cache-Control metadata see\n\"gsutil help setmeta\".",
             "CONTENT-DISPOSITION": "You can set Content-Disposition on your objects, to specify presentation\ninformation about the data being transmitted. Here's an example:\n\n  gsutil -h 'Content-Disposition:attachment; filename=filename.ext' \\\n         cp -r attachments gs://bucket/attachments\n\nSetting the Content-Disposition allows you to control presentation style\nof the content, for example determining whether an attachment should be\nautomatically displayed vs should require some form of action from the user to\nopen it.  See https://tools.ietf.org/html/rfc6266\nfor more details about the meaning of Content-Disposition.",
             "CONTENT-ENCODING": "You can specify a Content-Encoding to indicate that an object is compressed\n(for example, with gzip compression) while maintaining its Content-Type.\nYou will need to ensure that the files have been compressed using the\nspecified Content-Encoding before using gsutil to upload them. Consider the\nfollowing example for Linux:\n\n  echo \"Highly compressible text\" | gzip > foo.txt\n  gsutil -h \"Content-Encoding:gzip\" \\\n         -h \"Content-Type:text/plain\" \\\n         cp foo.txt gs://bucket/compressed\n\nNote that this is different from uploading a gzipped object foo.txt.gz with\nContent-Type: application/x-gzip because most browsers are able to\ndynamically decompress and process objects served with Content-Encoding: gzip\nbased on the underlying Content-Type.\n\nFor compressible content, using Content-Encoding: gzip saves network and\nstorage costs, and improves content serving performance. However, for content\nthat is already inherently compressed (archives and many media formats, for\ninstance) applying another level of compression via Content-Encoding is\ntypically detrimental to both object size and performance and should be\navoided.\n\nNote also that gsutil provides an easy way to cause content to be compressed\nand stored with Content-Encoding: gzip: see the -z and -Z options in\n\"gsutil help cp\".",
             "CONTENT-TYPE": "The most commonly set metadata is Content-Type (also known as MIME type),\nwhich allows browsers to render the object properly. gsutil sets the\nContent-Type automatically at upload time, based on each filename extension.\nFor example, uploading files with names ending in .txt will set Content-Type\nto text/plain. If you're running gsutil on Linux or macOS and would prefer to\nhave content type set based on naming plus content examination, see the\nuse_magicfile configuration variable in the .boto configuration file (See\nalso \"gsutil help config\"). In general, using use_magicfile is more robust\nand configurable, but is not available on Windows.\n\nIf you specify Content-Type with -h when uploading content (like the\nexample gsutil command given in the previous section), it overrides the\nContent-Type that would have been set based on filename extension or content.\nThis can be useful if the Content-Type detection algorithm doesn't work as\ndesired for some of your files.",
@@ -1555,7 +1924,22 @@
         "create": {
           "capsule": "CRUD operations on service account HMAC keys.",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<project_id> Specify a project in which to create a key.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -1567,13 +1951,28 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The ``hmac create`` command creates an HMAC key for the specified service\naccount. The secret key material is only available upon creation, so be sure\nto store the returned secret along with the access_id.\n\n  gsutil hmac create test.service.account@test_project.iam.gserviceaccount.com"
+            "DESCRIPTION": "The ``hmac create`` command creates an HMAC key for the specified service\naccount:\n\n  gsutil hmac create test.service.account@test_project.iam.gserviceaccount.com\n\nThe secret key material is only available upon creation, so be sure to store\nthe returned secret along with the access_id."
           }
         },
         "delete": {
           "capsule": "CRUD operations on service account HMAC keys.",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<project_id> Specify a project from which to delete a key.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -1585,13 +1984,28 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The ``hmac delete`` command permanently deletes the specified HMAC key.\nNote that keys must be updated to be in the INACTIVE state before they can be\ndeleted.\n\n  gsutil hmac delete GOOG56JBMFZX6PMPTQ62VD2"
+            "DESCRIPTION": "The ``hmac delete`` command permanently deletes the specified HMAC key:\n\n  gsutil hmac delete GOOG56JBMFZX6PMPTQ62VD2\n\nNote that keys must be updated to be in the INACTIVE state before they can be\ndeleted."
           }
         },
         "get": {
           "capsule": "CRUD operations on service account HMAC keys.",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<project_id> Specify a project from which to get a key.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -1603,13 +2017,70 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The ``hmac get`` command retrieves the specified HMAC key's metadata.\nNote that there is no option to retrieve a key's secret material after it has\nbeen created.\n\n  gsutil hmac get GOOG56JBMFZX6PMPTQ62VD2"
+            "DESCRIPTION": "The ``hmac get`` command retrieves the specified HMAC key's metadata:\n\n  gsutil hmac get GOOG56JBMFZX6PMPTQ62VD2\n\nNote that there is no option to retrieve a key's secret material after it has\nbeen created."
           }
         },
         "list": {
           "capsule": "CRUD operations on service account HMAC keys.",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-a": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Show all keys, including recently deleted\n keys.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-a",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-l": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Use long listing format. Shows each key's full\n metadata excluding the secret.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-l",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<project_id> Specify a project from which to list keys.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-u": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<service_account_email> Filter keys for a single service account.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-u",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -1621,13 +2092,56 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The ``hmac list`` command lists HMAC key metadata for keys in the default\nproject if no flags are specified."
+            "DESCRIPTION": "The ``hmac list`` command lists the HMAC key metadata for keys in the\nspecified project. If no project is specified in the command, the default\nproject is used."
           }
         },
         "update": {
           "capsule": "CRUD operations on service account HMAC keys.",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-e": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<etag> If provided, the update will only be performed\n if the specified etag matches the etag of the\n stored key.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-e",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-p": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<project_id> Specify a project in which to update a key.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-p",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-s": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<ACTIVE|INACTIVE> Sets the state of the specified key to either\n ACTIVE or INACTIVE.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-s",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -1639,11 +2153,96 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The ``hmac update`` command sets the state of the specified key.\nValid state arguments are ACTIVE and INACTIVE. To set a key to state DELETED\nuse the \"hmac delete\" command on an INACTIVE key. If an etag is set in the\ncommand, it will only succeed if the provided etag matches the etag of the\nstored key.\n\n  gsutil hmac update -s INACTIVE -e M42da= GOOG56JBMFZX6PMPTQ62VD2"
+            "DESCRIPTION": "The ``hmac update`` command sets the state of the specified key:\n\n  gsutil hmac update -s INACTIVE -e M42da= GOOG56JBMFZX6PMPTQ62VD2\n\nValid state arguments are ACTIVE and INACTIVE. To set a key to state DELETED\nuse the \"hmac delete\" command on an INACTIVE key. If an etag is set in the\ncommand, it will only succeed if the provided etag matches the etag of the\nstored key."
           }
         }
       },
-      "flags": {},
+      "flags": {
+        "-a": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Show all keys, including recently deleted\n keys.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-a",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-e": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "<etag> If provided, the update will only be performed\n if the specified etag matches the etag of the\n stored key.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-e",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-l": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Use long listing format. Shows each key's full\n metadata excluding the secret.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-l",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-p": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "<project_id> Specify a project in which to update a key.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-p",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-s": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "<ACTIVE|INACTIVE> Sets the state of the specified key to either\n ACTIVE or INACTIVE.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-s",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-u": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "<service_account_email> Filter keys for a single service account.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-u",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        }
+      },
       "groups": {},
       "is_group": true,
       "is_hidden": false,
@@ -1654,12 +2253,12 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "CREATE": "The ``hmac create`` command creates an HMAC key for the specified service\naccount. The secret key material is only available upon creation, so be sure\nto store the returned secret along with the access_id.\n\n  gsutil hmac create test.service.account@test_project.iam.gserviceaccount.com",
-        "DELETE": "The ``hmac delete`` command permanently deletes the specified HMAC key.\nNote that keys must be updated to be in the INACTIVE state before they can be\ndeleted.\n\n  gsutil hmac delete GOOG56JBMFZX6PMPTQ62VD2",
-        "DESCRIPTION": "The hmac command is used to interact with service account HMAC keys.\n\nThe hmac command has five sub-commands:",
-        "GET": "The ``hmac get`` command retrieves the specified HMAC key's metadata.\nNote that there is no option to retrieve a key's secret material after it has\nbeen created.\n\n  gsutil hmac get GOOG56JBMFZX6PMPTQ62VD2",
-        "LIST": "The ``hmac list`` command lists HMAC key metadata for keys in the default\nproject if no flags are specified.",
-        "UPDATE": "The ``hmac update`` command sets the state of the specified key.\nValid state arguments are ACTIVE and INACTIVE. To set a key to state DELETED\nuse the \"hmac delete\" command on an INACTIVE key. If an etag is set in the\ncommand, it will only succeed if the provided etag matches the etag of the\nstored key.\n\n  gsutil hmac update -s INACTIVE -e M42da= GOOG56JBMFZX6PMPTQ62VD2"
+        "CREATE": "The ``hmac create`` command creates an HMAC key for the specified service\naccount:\n\n  gsutil hmac create test.service.account@test_project.iam.gserviceaccount.com\n\nThe secret key material is only available upon creation, so be sure to store\nthe returned secret along with the access_id.",
+        "DELETE": "The ``hmac delete`` command permanently deletes the specified HMAC key:\n\n  gsutil hmac delete GOOG56JBMFZX6PMPTQ62VD2\n\nNote that keys must be updated to be in the INACTIVE state before they can be\ndeleted.",
+        "DESCRIPTION": "The hmac command is used to interact with service account `HMAC keys\n<cloud.google.com/storage/docs/authentication/hmackeys>`_.\n\nThe hmac command has five sub-commands:",
+        "GET": "The ``hmac get`` command retrieves the specified HMAC key's metadata:\n\n  gsutil hmac get GOOG56JBMFZX6PMPTQ62VD2\n\nNote that there is no option to retrieve a key's secret material after it has\nbeen created.",
+        "LIST": "The ``hmac list`` command lists the HMAC key metadata for keys in the\nspecified project. If no project is specified in the command, the default\nproject is used.",
+        "UPDATE": "The ``hmac update`` command sets the state of the specified key:\n\n  gsutil hmac update -s INACTIVE -e M42da= GOOG56JBMFZX6PMPTQ62VD2\n\nValid state arguments are ACTIVE and INACTIVE. To set a key to state DELETED\nuse the \"hmac delete\" command on an INACTIVE key. If an etag is set in the\ncommand, it will only succeed if the provided etag matches the etag of the\nstored key."
       }
     },
     "iam": {
@@ -1668,7 +2267,36 @@
         "ch": {
           "capsule": "Get, set, or change bucket and/or object IAM permissions.",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-f": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Default gsutil error handling is fail-fast. This flag\nanges the request to fail-silent mode. This is implicitly\nt when invoking the gsutil -m option.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-f",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-r": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Performs ``iam ch`` recursively to all objects under the\necified bucket.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-r",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -1705,7 +2333,64 @@
         "set": {
           "capsule": "Get, set, or change bucket and/or object IAM permissions.",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-a": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Performs ``iam set`` request on all object versions.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-a",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-e": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "<etag> Performs the precondition check on each object with the\necified etag before setting the policy.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-e",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-f": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Default gsutil error handling is fail-fast. This flag\nanges the request to fail-silent mode. This is implicitly\nt when invoking the gsutil -m option.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-f",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-r": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Performs ``iam set`` recursively to all objects under the\necified bucket.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-r",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -1721,7 +2406,64 @@
           }
         }
       },
-      "flags": {},
+      "flags": {
+        "-a": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Performs ``iam set`` request on all object versions.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-a",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-e": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "<etag> Performs the precondition check on each object with the\necified etag before setting the policy.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-e",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-f": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Default gsutil error handling is fail-fast. This flag\nanges the request to fail-silent mode. This is implicitly\nt when invoking the gsutil -m option.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-f",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-r": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Performs ``iam ch`` recursively to all objects under the\necified bucket.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-r",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        }
+      },
       "groups": {},
       "is_group": true,
       "is_hidden": false,
@@ -1824,7 +2566,36 @@
         "ch": {
           "capsule": "Get, set, or change the label configuration of a bucket.",
           "commands": {},
-          "flags": {},
+          "flags": {
+            "-d": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Remove the label with the specified key.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-d",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-l": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Add or update a label with the specified key and value.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-l",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            }
+          },
           "groups": {},
           "is_group": false,
           "is_hidden": false,
@@ -1877,7 +2648,36 @@
           }
         }
       },
-      "flags": {},
+      "flags": {
+        "-d": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Remove the label with the specified key.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-d",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        },
+        "-l": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "Add or update a label with the specified key and value.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-l",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
+        }
+      },
       "groups": {},
       "is_group": true,
       "is_hidden": false,

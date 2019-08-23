@@ -51,7 +51,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetOrgFlag('describe').AddToParser(parser)
+    flags.AddParentFlags(parser, 'describe', required=False)
     flags.GetRoleFlag('describe').AddToParser(parser)
 
   def Run(self, args):

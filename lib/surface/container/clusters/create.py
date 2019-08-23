@@ -475,6 +475,7 @@ class CreateBeta(Create):
     flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddDatabaseEncryptionFlag(parser)
+    flags.AddShieldedInstanceFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -505,6 +506,8 @@ class CreateBeta(Create):
     ops.enable_shielded_nodes = args.enable_shielded_nodes
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     ops.database_encryption = flags.GetDatabaseEncryptionOption(args)
+    ops.shielded_secure_boot = args.shielded_secure_boot
+    ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
     return ops
 
 

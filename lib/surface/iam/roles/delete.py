@@ -48,7 +48,7 @@ class Delete(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetOrgFlag('delete').AddToParser(parser)
+    flags.AddParentFlags(parser, 'delete')
     flags.GetCustomRoleFlag('delete').AddToParser(parser)
 
   def Run(self, args):

@@ -12,36 +12,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Print credential settings to add to the settings.xml file."""
+"""Print a snippet to add a Maven repository to the pom.xml file."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.build_artifacts import flags
 from googlecloudsdk.command_lib.build_artifacts import settings_util
 
 
 class Maven(base.Command):
-  """Print credential settings to add to the settings.xml file.
-
-  Print credential settings to add to the settings.xml file for connecting to a
-  Maven repository.
-  """
+  """Print a snippet to add a Maven repository to the pom.xml file."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('value(maven)')
+    flags.GetRepoFlag().AddToParser(parser)
+    parser.display_info.AddFormat('value(mvn)')
 
-  def Run(self, unused_args):
+  def Run(self, args):
     """This is what gets called when the user runs this command.
 
     Args:
-      unused_args: an argparse namespace. All the arguments that were provided
-        to this command invocation.
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
 
     Returns:
-      A maven settings snippet.
+      A maven pom snippet.
     """
 
-    return {'maven': settings_util.GetMavenSettingsSnippet()}
+    return {'mvn': settings_util.GetMavenSnippet(args)}
+

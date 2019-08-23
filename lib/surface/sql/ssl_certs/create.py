@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+import six
 
 
 class _BaseAddCert(object):
@@ -70,7 +71,7 @@ class _BaseAddCert(object):
       files.WriteFileContents(args.cert_file, 'placeholder\n', private=True)
     except (files.Error, OSError) as e:
       raise exceptions.ArgumentError('unable to write [{path}]: {error}'.format(
-          path=args.cert_file, error=str(e)))
+          path=args.cert_file, error=six.text_type(e)))
 
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client

@@ -26,10 +26,6 @@ class Operations(base.Group):
 
   ## EXAMPLES
 
-  To list all Cloud Build Artifacts operations under current project, run:
-
-    $ {command} list
-
   To describe a Cloud Build Artifacts operation given a valid operation id,
   run:
 

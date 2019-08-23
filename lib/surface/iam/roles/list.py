@@ -54,7 +54,7 @@ class List(base.ListCommand):
         '--show-deleted',
         action='store_true',
         help='Show deleted roles by specifying this flag.')
-    flags.GetOrgFlag('list').AddToParser(parser)
+    flags.AddParentFlags(parser, 'list', required=False)
     base.ASYNC_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)

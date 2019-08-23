@@ -69,13 +69,13 @@ class XgboostClient(PredictionClient):
 
   def explain(self, inputs, **unused_kwargs):
     # pylint: disable=g-import-not-at-top
-    from explainers.xgboost.factory import XGBoostExplainerFactory
-    factory = XGBoostExplainerFactory()
-    explanation_config = prediction_utils.get_explanation_config(
-        prediction_utils.XGBOOST_FRAMEWORK_NAME)
+    from explainers.xgboost import factory as xgb_factory
+    # pylint: enable=g-import-not-at-top
+    explanation_config = prediction_utils.get_xgboost_explanation_config(
+        xgb_factory)
     if explanation_config is None:
       return None
-
+    factory = xgb_factory.XGBoostExplainerFactory()
     xgb_explainer = factory.get_explainer(self._booster, explanation_config)
     try:
       return xgb_explainer.explain(np.array(inputs))
