@@ -60,6 +60,7 @@ class Create(base.CreateCommand):
     dest_ip_ranges = []
     dest_ports = []
     target_resources = []
+    enable_logging = False
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -68,6 +69,8 @@ class Create(base.CreateCommand):
       dest_ports = args.dest_ports
     if args.IsSpecified('target_resources'):
       target_resources = args.target_resources
+    if args.IsSpecified('enable_logging'):
+      enable_logging = True
 
     dest_port_list = rule_utils.ParseDestPorts(dest_ports,
                                                holder.client.messages)
@@ -85,6 +88,7 @@ class Create(base.CreateCommand):
         traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
       else:
         traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
+
     security_policy_rule = holder.client.messages.SecurityPolicyRule(
         priority=rule_utils.ConvertPriorityToInt(ref.Name()),
         action=args.action,
@@ -92,7 +96,7 @@ class Create(base.CreateCommand):
         direction=traffic_direct,
         targetResources=target_resources,
         description=args.description,
-        enableLogging=args.enable_logging)
+        enableLogging=enable_logging)
 
     return security_policy_rule_client.Create(
         security_policy=args.security_policy,

@@ -35,7 +35,7 @@ from googlecloudsdk.core.console import progress_tracker
 class Sample(base.CreateCommand):
   """Create a sample Cloud Spanner database."""
 
-  _GCS_BUCKET = 'gs://spanner_sample_datasets/hacker_news'
+  _GCS_BUCKET = 'gs://spanner_sampledb_datasets/hacker_news'
   _TABLES = ('comments', 'stories')
   _TABLE_CSV_FILES = (
       'hn_comments.csv',
@@ -76,7 +76,7 @@ class Sample(base.CreateCommand):
                                                       table_file)
         self._LoadData(table_data, table)
 
-    self._PrintInstructions(args.database, args.instance)
+    self._PrintInstructions(args.database, self._instance.Name())
     return
 
   def _CreateDatabase(self, database, schema):
@@ -138,13 +138,12 @@ class Sample(base.CreateCommand):
     """
 
     instructions = (
-        'To start querying, issue:\n\n"gcloud spanner databases '
-        'execute-sql {0} --instance={1} --sql=SQL"\n\nwhere SQL is the '
-        'query you would like to use. Alternatively, you may follow this '
-        'quickstart guide for queries using the GCP console.\n\n'
+        'To start querying, issue:\n"gcloud spanner databases '
+        'execute-sql {0} --instance={1} --sql=SQLQUERY"\n\n'
+        'Alternatively, you may follow this quickstart guide:\n'
         'https://cloud.google.com/spanner/docs/quickstart-console#run_a_query'
         '\n\nIf you would like to delete the '
-        'database, issue:\n\n"gcloud spanner databases delete {0} '
+        'database, issue:\n"gcloud spanner databases delete {0} '
         '--instance={1}"\n').format(database, instance)
 
     log.status.Print(instructions)

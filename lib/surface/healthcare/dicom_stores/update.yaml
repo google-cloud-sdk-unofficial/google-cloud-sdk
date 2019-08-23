@@ -1,6 +1,12 @@
 - help_text:
     brief:  Update a Cloud Healthcare API DICOM store.
     description: Update a Cloud Healthcare API DICOM store.
+    examples: |
+      To update the Cloud Pub/Sub topic on a dicom store 'test-dicom-store', run:
+
+        $ {command} test-dicom-store --pubsub-topic=test-pubsub-topic
+
+      See https://cloud.google.com/pubsub/docs/admin for information on creating Cloud Pub/Sub topics.
 
   request:
     collection: healthcare.projects.locations.datasets.dicomStores

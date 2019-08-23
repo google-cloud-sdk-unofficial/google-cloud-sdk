@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_projector
+import six
 
 
 def _AddTopLevelArguments(parser):
@@ -94,6 +95,27 @@ def _AddAptGroupArguments(parser):
         """)
 
 
+def _AddWinGroupArguments(parser):
+  """Add Windows setting flags."""
+  win_group = parser.add_group(help='Settings for machines running Windows:')
+  win_group.add_argument(
+      '--windows-classifications',
+      metavar='WINDOWS_CLASSIFICATIONS',
+      type=arg_parsers.ArgList(choices=[
+          'critical', 'security', 'definition', 'driver', 'feature-pack',
+          'service-pack', 'tool', 'update-rollup', 'update'
+      ]),
+      help="""List of classifications to use to restrict the Windows update.
+      Only patches of the given classifications will be applied. If omitted,
+      a default Windows update will be performed. For more information on
+      classifications, see: https://support.microsoft.com/en-us/help/824684""")
+  win_group.add_argument(
+      '--windows-excludes',
+      metavar='WINDOWS_EXCLUDES',
+      type=arg_parsers.ArgList(),
+      help="""Optional list of KBs to exclude from the update operation.""")
+
+
 def _AddYumGroupArguments(parser):
   """Add Yum setting flags."""
   yum_group = parser.add_group(help='Settings for machines running Yum:')
@@ -116,25 +138,33 @@ def _AddYumGroupArguments(parser):
         of packages using the Yum `--exclude` flag.""")
 
 
-def _AddWinGroupArguments(parser):
-  """Add Windows setting flags."""
-  win_group = parser.add_group(help='Settings for machines running Windows:')
-  win_group.add_argument(
-      '--windows-classifications',
-      metavar='WINDOWS_CLASSIFICATIONS',
-      type=arg_parsers.ArgList(choices=[
-          'critical', 'security', 'definition', 'driver', 'feature-pack',
-          'service-pack', 'tool', 'update-rollup', 'update'
-      ]),
-      help="""List of classifications to use to restrict the Windows update.
-      Only patches of the given classifications will be applied. If omitted,
-      a default Windows update will be performed. For more information on
-      classifications, see: https://support.microsoft.com/en-us/help/824684""")
-  win_group.add_argument(
-      '--windows-excludes',
-      metavar='WINDOWS_EXCLUDES',
+def _AddZypperGroupArguments(parser):
+  """Add Zypper setting flags."""
+  zypper_group = parser.add_group(help='Settings for machines running Zypper:')
+  zypper_group.add_argument(
+      '--zypper-categories',
+      metavar='ZYPPER_CATEGORIES',
       type=arg_parsers.ArgList(),
-      help="""Optional list of KBs to exclude from the update operation.""")
+      help="""If specified, machines running Zypper will install only patches
+      with these categories. Common categories include security, recommended,
+      and feature.""")
+  zypper_group.add_argument(
+      '--zypper-severities',
+      metavar='ZYPPER_SEVERITIES',
+      type=arg_parsers.ArgList(),
+      help="""If specified, machines running Zypper will install only patches
+      with these severities. Common severities include critical, important,
+      moderate, and low.""")
+  zypper_group.add_argument(
+      '--zypper-with-optional',
+      action='store_true',
+      help="""If specified, machines running Zypper will add the
+      `--with-optional` flag to `zypper patch`.""")
+  zypper_group.add_argument(
+      '--zypper-with-update',
+      action='store_true',
+      help="""If specified, machines running Zypper will add the `--with-update`
+      flag to `zypper patch`.""")
 
 
 def _GetWindowsUpdateSettings(args, messages):
@@ -159,6 +189,21 @@ def _GetYumSettings(args, messages):
         security=args.yum_security)
   else:
     return None
+
+
+def _GetZypperSettings(args, messages):
+  """Create ZypperSettings from input arguments."""
+  for arg in [
+      args.zypper_categories, args.zypper_severities, args.zypper_with_optional,
+      args.zypper_with_update
+  ]:
+    if arg:
+      return messages.ZypperSettings(
+          categories=args.zypper_categories if args.zypper_categories else [],
+          severities=args.zypper_severities if args.zypper_severities else [],
+          withOptional=args.zypper_with_optional,
+          withUpdate=args.zypper_with_update)
+  return None
 
 
 def _GetProgressTracker(patch_job_name):
@@ -253,6 +298,7 @@ class Execute(base.Command):
     _AddAptGroupArguments(parser)
     _AddYumGroupArguments(parser)
     _AddWinGroupArguments(parser)
+    _AddZypperGroupArguments(parser)
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
@@ -263,7 +309,7 @@ class Execute(base.Command):
     messages = osconfig_utils.GetClientMessages(
         release_track)
 
-    duration = str(args.duration) + 's' if args.duration else None
+    duration = six.text_type(args.duration) + 's' if args.duration else None
     filter_arg = 'id=*' if not args.instance_filter else args.instance_filter
     apt_settings = messages.AptSettings(
         type=messages.AptSettings.TypeValueValuesEnum.DIST
@@ -278,7 +324,8 @@ class Execute(base.Command):
         rebootConfig=reboot_config,
         retryStrategy=retry_strategy,
         windowsUpdate=_GetWindowsUpdateSettings(args, messages),
-        yum=_GetYumSettings(args, messages))
+        yum=_GetYumSettings(args, messages),
+        zypper=_GetZypperSettings(args, messages))
 
     request = messages.OsconfigProjectsPatchJobsExecuteRequest(
         executePatchJobRequest=messages.ExecutePatchJobRequest(

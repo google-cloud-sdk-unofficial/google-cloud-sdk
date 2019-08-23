@@ -21,7 +21,39 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+DETAILED_HELP = {
+    'brief': 'Registers a cluster with Google Cloud Platform.',
+    'description': """\
+    This command registers a cluster referenced from a
+    kubeconfig file with Google Cloud Platform. It also installs the Connect
+    agent into this cluster, or updates the Connect agent in a
+    previously-registered cluster.""",
+    'EXAMPLES': """\
+    Register a cluster referenced from the default kubeconfig file, installing the
+    Connect agent:
+
+        $ {command} register-cluster my-cluster \
+            --context=my-cluster-context \
+            --service-account-key-file=/tmp/keyfile.json
+
+    Upgrade the Connect agent in a cluster:
+
+        $ {command} register-cluster my-cluster \
+            --context=my-cluster-context \
+            --service-account-key-file=/tmp/keyfile.json
+
+    Register a cluster and output a manifest that can be used to install the
+    Connect agent:
+
+        $ {command} register-cluster my-cluster \
+            --context=my-cluster-context \
+            --manifest-output-file=/tmp/manifest.yaml \
+            --service-account-key-file=/tmp/keyfile.json
+    """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Hub(base.Group):
   """Manage clusters registered with Google Cloud Platform."""
-  pass
+  detailed_help = DETAILED_HELP

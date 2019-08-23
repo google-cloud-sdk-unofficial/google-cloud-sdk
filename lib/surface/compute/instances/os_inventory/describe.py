@@ -29,6 +29,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.instances.os_inventory import exceptions
 from googlecloudsdk.core.resource import resource_projector
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -131,7 +132,7 @@ class Describe(base.DescribeCommand):
       return response.queryValue.items
     except calliope_exceptions.ToolException as e:
       if ('The resource \'guestInventory/\' of type \'Guest Attribute\' was not'
-          ' found.') in str(e):
+          ' found.') in six.text_type(e):
         problems = [{
             '',
             'OS inventory data was not found. Make sure the OS Config agent '

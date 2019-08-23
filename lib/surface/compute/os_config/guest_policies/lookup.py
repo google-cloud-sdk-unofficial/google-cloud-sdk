@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_projector
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -65,7 +66,7 @@ class Lookup(base.Command):
       return response.queryValue.items
     except Exception as e:
       if ('The resource \'guestInventory/\' of type \'Guest Attribute\' was not'
-          ' found.') in str(e):
+          ' found.') in six.text_type(e):
         return []
       raise e
 

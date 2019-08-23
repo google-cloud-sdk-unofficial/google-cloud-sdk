@@ -49,15 +49,15 @@ class ListSubscriptions(base.ListCommand):
           To filter results by subscription name
           (ie. only show subscription 'mysubs'), run:
 
-            $ {command} --topic mytopic --filter=subscriptionId:mysubs
+            $ {command} mytopic --filter=subscriptionId:mysubs
 
           To combine multiple filters (with AND or OR), run:
 
-            $ {command} --topic mytopic --filter="subscriptionId:mysubs1 AND subscriptionId:mysubs2"
+            $ {command} mytopic --filter="subscriptionId:mysubs1 AND subscriptionId:mysubs2"
 
           To filter subscriptions that match an expression:
 
-            $ {command} --topic mytopic --filter="subscriptionId:subs_*"
+            $ {command} mytopic --filter="subscriptionId:subs_*"
           """,
   }
 

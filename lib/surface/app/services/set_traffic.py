@@ -124,7 +124,7 @@ for more information.""")
             api_client.SetTrafficSplit, service.id, allocations,
             args.split_by.upper(), args.migrate)
       except operations_util.MiscOperationError as err:
-        errors[service.id] = str(err)
+        errors[service.id] = six.text_type(err)
     if errors:
       printable_errors = {}
       for service, error_msg in errors.items():

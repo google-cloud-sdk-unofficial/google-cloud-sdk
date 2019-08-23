@@ -1,6 +1,10 @@
 - help_text:
     brief:  List Cloud Healthcare API HL7v2 stores.
     description: List Cloud Healthcare API HL7v2 stores.
+    examples: |
+      To list the HL7v2 stores in 'test-dataset', run:
+
+        $ {command} --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.hl7V2Stores

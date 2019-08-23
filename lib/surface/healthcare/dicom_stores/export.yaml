@@ -1,6 +1,14 @@
 - help_text:
     brief:  Export a Cloud Healthcare API API DICOM store.
     description: Export a Cloud Healthcare API API DICOM store.
+    examples: |
+      To export the dicom-store 'test-dicom-store' to BigQuery, overwriting any existing table, run:
+
+        $ {command} test-dicom-store --bq-table=test-bq-table --overwrite-table
+
+      To export the dicom-store 'test-dicom-store' to Google Cloud Storage, to the existing bucket 'testGcsBucket' in the folder 'someFolder', with the mime-type 'application/dicom',  run:
+
+        $ {command} test-dicom-store --gcs-uri-prefix=gs://testGcsBucket/someFolder --mime-type=application/dicom
 
   request:
     collection: healthcare.projects.locations.datasets.dicomStores

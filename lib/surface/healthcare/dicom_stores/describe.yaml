@@ -1,6 +1,10 @@
 - help_text:
     brief:  Describe a Cloud Healthcare API DICOM store.
     description: Describe a Cloud Healthcare API DICOM store.
+    examples: |
+      To describe the dicom-store 'test-dicom-store', run:
+
+        $ {command} test-dicom-store --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.dicomStores

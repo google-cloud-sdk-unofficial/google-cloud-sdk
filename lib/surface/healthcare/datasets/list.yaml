@@ -1,6 +1,14 @@
 - help_text:
     brief: List Cloud Healthcare API datasets.
     description: List Cloud Healthcare API datasets.
+    examples: |
+      To list the datasets in us-central1, run:
+
+        $ {command}
+
+      To list the datasets in europe-west2, run:
+
+        $ {command} --location=europe-west2
 
   request:
     collection: healthcare.projects.locations.datasets

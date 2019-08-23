@@ -1,6 +1,10 @@
 - help_text:
     brief:  Update a Cloud Healthcare API dataset.
     description: Update a Cloud Healthcare API dataset.
+    examples: |
+      To update the dataset 'test-dataset', run:
+
+        $ {command} test-dataset --time-zone=PDT
 
   request:
     collection: healthcare.projects.locations.datasets

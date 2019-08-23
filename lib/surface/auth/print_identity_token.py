@@ -49,17 +49,19 @@ def _AddAudienceArg(parser):
 
 def _Run(args):
   """Run the print_identity_token command."""
-  cred = c_store.Load(args.account)
-  is_service_account = auth_util.CheckAccountType(cred)
-
+  do_impersonation = args.IsSpecified('impersonate_service_account')
+  cred = c_store.Load(
+      args.account, allow_account_impersonation=do_impersonation)
+  is_impersonated_account = auth_util.IsImpersonationCredential(cred)
   if args.audiences:
-    if not is_service_account:
+    if not auth_util.ValidIdTokenCredential(cred):
       raise auth_exceptions.WrongAccountTypeError(
-          '`--audiences` can only be specified for service accounts.')
+          'Invalid account Type for `--audiences`. '
+          'Requires valid service account.')
     target_audiences = ' '.join(args.audiences)
     config.CLOUDSDK_CLIENT_ID = target_audiences
 
-  c_store.Refresh(cred)
+  c_store.Refresh(cred, is_impersonated_credential=is_impersonated_account)
 
   credential = config_helper.Credential(cred)
   if not credential.id_token:
@@ -71,10 +73,12 @@ def _Run(args):
 class IdentityToken(base.Command):
   """Print an identity token for the specified account."""
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
         {description}
         """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
         To print identity tokens:
 
           $ {command}
@@ -84,6 +88,12 @@ class IdentityToken(base.Command):
 
           $ {command} foo@example.com
               --audiences="https://service-hash-uc.a.run.app"
+
+        To print identity token for an impersonated account 'bar@example.com'
+        whose audience is 'https://service-hash-uc.a.run.app':
+
+          $ {command} --impersonate-service-account="bar@example.com"
+          --audiences="https://service-hash-uc.a.run.app"
         """,
   }
 

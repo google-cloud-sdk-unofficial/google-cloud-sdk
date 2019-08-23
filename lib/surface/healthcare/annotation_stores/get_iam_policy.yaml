@@ -1,6 +1,10 @@
 - help_text:
     brief: Retrieve the IAM policy for a Cloud Healthcare API annotation store.
     description: Retrieve the IAM policy for a Cloud Healthcare API annotation store.
+    examples: |
+      To print the IAM policy for the annotation store 'test-annotation-store', run:
+
+        $ {command} test-annotation-store --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.annotationStores

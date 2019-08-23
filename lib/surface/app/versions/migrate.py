@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
+import six
 import six.moves
 
 
@@ -104,7 +105,7 @@ class Migrate(base.Command):
             client.SetTrafficSplit, service, allocations, shard_by='ip',
             migrate=True)
       except (operations_util.MiscOperationError) as err:
-        errors[service] = str(err)
+        errors[service] = six.text_type(err)
 
     if errors:
       error_string = ('Issues migrating all traffic of '

@@ -2,6 +2,14 @@
     brief: Add an IAM policy binding to a Cloud Healthcare API dataset.
     description: |
       Add an IAM policy binding to a Cloud Healthcare API dataset.
+    examples: |
+      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
+      on the dataset 'test-dataset', run:
+
+        $ {command} test-dataset --member='user:test-user@gmail.com' --role='roles/editor'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
 
   request:
     collection: healthcare.projects.locations.datasets

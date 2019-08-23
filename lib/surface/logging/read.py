@@ -55,7 +55,7 @@ class Read(base.Command):
               'See $ gcloud topic datetimes for information on '
               'duration formats.'),
         default='1d')
-    util.AddNonProjectArgs(parser, 'Read log entries')
+    util.AddParentArgs(parser, 'Read log entries')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

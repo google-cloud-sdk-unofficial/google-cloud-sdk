@@ -131,11 +131,13 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddTopicResourceArg(parser, 'to create.', plural=True)
+    resource_args.AddResourceArgs(
+        parser, [_GetKmsKeyPresentationSpec(),
+                 _GetTopicPresentationSpec()])
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    return _Run(args, enable_labels=True)
+    return _Run(args, enable_labels=True, enable_kms=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

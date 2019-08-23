@@ -59,6 +59,7 @@ class Update(base.UpdateCommand):
     dest_ip_ranges = []
     dest_ports = []
     target_resources = []
+    enable_logging = False
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -67,6 +68,8 @@ class Update(base.UpdateCommand):
       dest_ports = args.dest_ports
     if args.IsSpecified('target_resources'):
       target_resources = args.target_resources
+    if args.IsSpecified('enable_logging'):
+      enable_logging = True
 
     dest_port_list = rule_utils.ParseDestPorts(dest_ports,
                                                holder.client.messages)
@@ -92,7 +95,7 @@ class Update(base.UpdateCommand):
         direction=traffic_direct,
         targetResources=target_resources,
         description=args.description,
-        enableLogging=args.enable_logging)
+        enableLogging=enable_logging)
 
     return security_policy_rule_client.Update(
         priority=priority,

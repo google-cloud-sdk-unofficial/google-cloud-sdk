@@ -42,6 +42,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import times
+import six
 
 _ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
 
@@ -259,7 +260,7 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
       except ValueError:
         build_timeout_duration = times.ParseDuration(build_timeout)
         build_timeout_secs = int(build_timeout_duration.total_seconds)
-      timeout_str = str(build_timeout_secs) + 's'
+      timeout_str = six.text_type(build_timeout_secs) + 's'
     else:
       timeout_str = None
 

@@ -62,6 +62,12 @@ class RegisterCluster(base.CreateCommand):
           --context=my-cluster-context \
           --manifest-output-file=/tmp/manifest.yaml \
           --service-account-key-file=/tmp/keyfile.json
+  Register a cluster with a specific version of GKE Connect:
+
+      $ {command} my-cluster \
+          --context=my-cluster-context \
+          --service-account-key-file=/tmp/keyfile.json \
+          --version=gkeconnect_20190802_02_00
   """
 
   @classmethod
@@ -95,6 +101,14 @@ class RegisterCluster(base.CreateCommand):
             The proxy address in the format of http[s]://{hostname}.
             The proxy must support the HTTP CONNECT method in order for this
             connection to succeed.
+          """),
+    )
+    parser.add_argument(
+        '--version',
+        type=str,
+        help=textwrap.dedent("""\
+        The version of the connect agent to install/upgrade if not using the
+        latest connect version.
           """),
     )
     parser.add_argument(
@@ -199,15 +213,27 @@ class RegisterCluster(base.CreateCommand):
     # install a new agent if necessary.
     if already_exists:
       obj = hub_util.GetMembership(name)
-      hub_util.DeployConnectAgent(
-          args, service_account_key_data, docker_credential_data, upgrade=True)
+      # TODO(b/137108762): Use the V1beta1 API after we make it formally public.
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        hub_util.DeployConnectAgentAlpha(
+            args, service_account_key_data, docker_credential_data,
+            upgrade=True)
+      else:
+        hub_util.DeployConnectAgent(args, service_account_key_data,
+                                    upgrade=True)
       return obj
 
     # No membership exists. Attempt to create a new one, and install a new
     # agent.
     try:
-      hub_util.DeployConnectAgent(
-          args, service_account_key_data, docker_credential_data, upgrade=False)
+      # TODO(b/137108762): Use the V1beta1 API after we make it formally public.
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        hub_util.DeployConnectAgentAlpha(
+            args, service_account_key_data, docker_credential_data,
+            upgrade=False)
+      else:
+        hub_util.DeployConnectAgent(
+            args, service_account_key_data, upgrade=False)
     except:
       hub_util.DeleteMembership(name)
       hub_util.DeleteMembershipResources(kube_client)

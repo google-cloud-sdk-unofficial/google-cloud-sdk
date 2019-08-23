@@ -1,6 +1,10 @@
 - help_text:
     brief:  Delete a Cloud Healthcare API annotation store.
     description: Delete a Cloud Healthcare API annotation store.
+    examples: |
+      To delete the annotation-store 'test-annotation-store', run:
+
+        $ {command} test-annotation-store --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.annotationStores

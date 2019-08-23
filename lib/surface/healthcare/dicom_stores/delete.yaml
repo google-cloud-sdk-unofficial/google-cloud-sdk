@@ -1,6 +1,10 @@
 - help_text:
     brief:  Delete a Cloud Healthcare API DICOM store.
     description: Delete a Cloud Healthcare API DICOM store.
+    examples: |
+      To delete the dicom-store 'test-dicom-store', run:
+
+        $ {command} test-dicom-store --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.dicomStores

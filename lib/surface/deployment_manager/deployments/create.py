@@ -243,7 +243,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
       self, error, args, operation, project, deployment_ref):
     if args.automatic_rollback:
       delete_operation = self._PerformRollback(deployment_ref.deployment,
-                                               str(error))
+                                               six.text_type(error))
       create_operation = dm_api_util.GetOperation(self.client, self.messages,
                                                   operation, project)
 

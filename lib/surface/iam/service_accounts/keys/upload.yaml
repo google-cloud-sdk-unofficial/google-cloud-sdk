@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Upload a public key for an IAM service account.
     description: Upload a public key for an IAM service account.
+    examples: |
+      The following command uploads a public key certificate to a service account:
+        {command} test_data/public_key.cert
+          --iam-account test-account@fake-project.iam.gserviceaccount.com
 
   arguments:
     resource:

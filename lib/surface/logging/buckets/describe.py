@@ -30,7 +30,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('BUCKET_ID', help='The id of the bucket to describe.')
-    util.AddNonProjectArgs(parser, 'Describe a bucket')
+    util.AddParentArgs(parser, 'Describe a bucket')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
 
   def Run(self, args):

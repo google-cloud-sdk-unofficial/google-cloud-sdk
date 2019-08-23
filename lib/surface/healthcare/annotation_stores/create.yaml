@@ -2,6 +2,10 @@
     brief:  Create a Cloud Healthcare API annotation store.
     description: |
       Create a Cloud Healthcare API annotation store.
+    examples: |
+      To create an annotation store called 'test-annotation-store', run:
+
+        $ {command} test-annotation-store --dataset=test-dataset
   request:
     collection: healthcare.projects.locations.datasets.annotationStores
     api_version: v1alpha2

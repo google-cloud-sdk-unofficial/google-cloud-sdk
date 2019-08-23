@@ -1,6 +1,10 @@
 - help_text:
     brief:  Describe a Cloud Healthcare API annotation store.
     description: Describe a Cloud Healthcare API annotation store.
+    examples: |
+      To describe the annotation-store 'test-annotation-store', run:
+
+        $ {command} test-annotation-store --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.annotationStores

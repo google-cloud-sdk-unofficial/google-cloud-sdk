@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import policies
 from googlecloudsdk.api_lib.container.binauthz import util
+from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import arg_parsers
-from googlecloudsdk.command_lib.container.binauthz import encoding
 from googlecloudsdk.command_lib.container.binauthz import parsing
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -81,6 +81,7 @@ class Import(base.Command):
 
     # Decode the dict into a Policy message, allowing DecodeErrors to bubble up
     # to the user if they are raised.
-    policy = encoding.DictToMessageWithErrorCheck(policy_obj, messages.Policy)
+    policy = messages_util.DictToMessageWithErrorCheck(
+        policy_obj, messages.Policy)
 
     return policies.Client(api_version).Set(util.GetPolicyRef(), policy)

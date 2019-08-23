@@ -58,7 +58,7 @@ class Update(base.UpdateCommand):
         '--log-filter', required=False,
         help=('A new filter expression for the sink. '
               'If omitted, the sink\'s existing filter (if any) is unchanged.'))
-    util.AddNonProjectArgs(parser, 'Update a sink')
+    util.AddParentArgs(parser, 'Update a sink')
 
   def GetSink(self, parent, sink_ref):
     """Returns a sink specified by the arguments."""
@@ -78,7 +78,7 @@ class Update(base.UpdateCommand):
             uniqueWriterIdentity=True,
             updateMask=','.join(update_mask)))
 
-  def _Run(self, args, support_dlp=False):
+  def _Run(self, args, is_alpha=False):
     sink_ref = util.GetSinkReference(args.sink_name, args)
 
     sink_data = {'name': sink_ref.sinksId}
@@ -92,9 +92,10 @@ class Update(base.UpdateCommand):
 
     parameter_names = ['[destination]', '--log-filter']
     dlp_options = {}
-    if support_dlp:
+    if is_alpha:
       parameter_names.extend(
-          ['--dlp-inspect-template', '--dlp-deidentify-template'])
+          ['--dlp-inspect-template', '--dlp-deidentify-template',
+           '--use-partitioned-tables'])
       if args.IsSpecified('dlp_inspect_template'):
         dlp_options['inspectTemplateName'] = args.dlp_inspect_template
         update_mask.append('dlp_options.inspect_template_name')
@@ -103,6 +104,12 @@ class Update(base.UpdateCommand):
         update_mask.append('dlp_options.deidentify_template_name')
       if dlp_options:
         sink_data['dlpOptions'] = dlp_options
+
+      if args.IsSpecified('use_partitioned_tables'):
+        bigquery_options = {}
+        bigquery_options['usePartitionedTables'] = args.use_partitioned_tables
+        sink_data['bigqueryOptions'] = bigquery_options
+        update_mask.append('bigquery_options.use_partitioned_tables')
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
@@ -171,5 +178,16 @@ class UpdateAlpha(Update):
               '"projects/my-project/deidentifyTemplates/my-template" or '
               '"organizations/my-org/deidentifyTemplates/my-template".'))
 
+    bigquery_group = parser.add_argument_group(
+        help='Settings for sink exporting data to BigQuery.')
+    bigquery_group.add_argument(
+        '--use-partitioned-tables', required=False, action='store_true',
+        help=('If specified, use BigQuery\'s partitioned tables. By default, '
+              'Logging creates dated tables based on the log entries\' '
+              'timestamps, e.g. \'syslog_20170523\'. Partitioned tables remove '
+              'the suffix and special query syntax '
+              '(https://cloud.google.com/bigquery/docs/'
+              'querying-partitioned-tables) must be used.'))
+
   def Run(self, args):
-    return self._Run(args, support_dlp=True)
+    return self._Run(args, is_alpha=True)

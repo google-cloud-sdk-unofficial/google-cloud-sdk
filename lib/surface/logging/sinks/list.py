@@ -31,7 +31,7 @@ class List(base.ListCommand):
     """Register flags for this command."""
     base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
-    util.AddNonProjectArgs(parser, 'List sinks')
+    util.AddParentArgs(parser, 'List sinks')
     parser.display_info.AddFormat('table(name, destination, filter)')
     parser.display_info.AddCacheUpdater(None)
 

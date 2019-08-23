@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
+import six
 
 
 class VersionsStopError(exceptions.Error):
@@ -97,6 +98,6 @@ class Stop(base.Command):
           operations_util.CallAndCollectOpErrors(
               api_client.StopVersion, version.service, version.id, block=True)
       except operations_util.MiscOperationError as err:
-        errors.append(str(err))
+        errors.append(six.text_type(err))
     if errors:
       raise VersionsStopError('\n\n'.join(errors))

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
+import six
 
 
 def _CommonArgs(parser):
@@ -178,7 +179,7 @@ class Update(base.UpdateCommand):
     lifecycle_config = dataproc.messages.LifecycleConfig()
     changed_config = False
     if args.max_age is not None:
-      lifecycle_config.autoDeleteTtl = str(args.max_age) + 's'
+      lifecycle_config.autoDeleteTtl = six.text_type(args.max_age) + 's'
       changed_fields.append('config.lifecycle_config.auto_delete_ttl')
       changed_config = True
     if args.expiration_time is not None:
@@ -187,7 +188,7 @@ class Update(base.UpdateCommand):
       changed_fields.append('config.lifecycle_config.auto_delete_time')
       changed_config = True
     if args.max_idle is not None:
-      lifecycle_config.idleDeleteTtl = str(args.max_idle) + 's'
+      lifecycle_config.idleDeleteTtl = six.text_type(args.max_idle) + 's'
       changed_fields.append('config.lifecycle_config.idle_delete_ttl')
       changed_config = True
     if args.no_max_age:
@@ -243,7 +244,7 @@ class Update(base.UpdateCommand):
 
     if args.graceful_decommission_timeout is not None:
       request.gracefulDecommissionTimeout = (
-          str(args.graceful_decommission_timeout) + 's')
+          six.text_type(args.graceful_decommission_timeout) + 's')
 
     operation = dataproc.client.projects_regions_clusters.Patch(request)
 

@@ -39,6 +39,12 @@ class Create(base.Command):
     """
     snapshot_utils.ArgsForSnapshotJobRef(parser)
     snapshot_utils.ArgsForSnapshotTtl(parser)
+    parser.add_argument(
+        '--snapshot-sources',
+        type=bool,
+        default=False,
+        help='If true, snapshots will also be created for the Cloud Pub/Sub ' +
+        'sources of the Cloud Dataflow job.')
 
   def Run(self, args):
     """Runs the command.
@@ -54,4 +60,5 @@ class Create(base.Command):
         job_ref.jobId,
         project_id=job_ref.projectId,
         region_id=job_ref.location,
-        ttl=snapshot_utils.ExtractSnapshotTtlDuration(args))
+        ttl=snapshot_utils.ExtractSnapshotTtlDuration(args),
+        snapshot_sources=args.snapshot_sources)

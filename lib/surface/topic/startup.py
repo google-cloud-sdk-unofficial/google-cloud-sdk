@@ -46,7 +46,6 @@ class Startup(base.TopicCommand):
   including:
 
       * `dev_appserver`
-      * `gsutil`
       * `bq`
       * `datalab`
 
@@ -61,6 +60,10 @@ class Startup(base.TopicCommand):
     # Use a python you have installed in a special location
     $ export CLOUDSDK_PYTHON=/usr/local/my-custom-python-install/python
 
+  Gsutil now supports Python 3.5+ in addition to Python 2.7.x. To use a
+  different interpreter (e.g. Python 3) for gsutil than for the other Python
+  tools, you can set the desired interpreter by setting the
+  CLOUDSDK_GSUTIL_PYTHON environment variable.
 
   # Configuring the Python Interpreter
 

@@ -26,10 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 # googlecloudsdk/command_lib/survey/contents folder contains survey definitions
-_SURVEY_ID = 'TwoQuestionGeneralSurvey'
-_CUSTOMIZED_OPEN_ENDED_QUESTION = (
-    'What could we do to improve your '
-    'rating? [Please DO NOT enter personal info]')
+_SURVEY_ID = 'GeneralSurvey'
 
 
 def _GetAnswerToQuestion(question):
@@ -63,7 +60,7 @@ class Survey(base.Command):
 
   To permanently disable the survey prompt, run:
 
-     $ gcloud config set survey/disable_prompts=True
+     $ gcloud config set survey/disable_prompts True
   """
 
   @staticmethod
@@ -71,21 +68,13 @@ class Survey(base.Command):
     pass
 
   def Run(self, args):
-    survey_instance = survey.Survey(_SURVEY_ID)
+    survey_instance = survey.GeneralSurvey()
     survey_instance.PrintWelcomeMsg()
+    num_of_questions = len(list(survey_instance))
     # Index questions from 1 instead of 0 (default) to be user-friendly.
     for index, question in enumerate(survey_instance, 1):
-      progress_msg = '\nQuestion {} of {}:\n'.format(index,
-                                                     len(survey_instance))
+      progress_msg = '\nQuestion {} of {}:\n'.format(index, num_of_questions)
       log.err.Print(progress_msg)
-      # If users gave low rating to the first question, change the question to
-      # ask for the open-ended question.
-      if index == 2:
-        multichoice_question = list(survey_instance)[0]
-        if (multichoice_question.IsAnswered() and
-            multichoice_question.answer in ['3', '4', '5']):
-          question.question = _CUSTOMIZED_OPEN_ENDED_QUESTION
-
       question.PrintQuestion()
       log.err.write('\n')
       survey_instance.PrintInstruction()

@@ -175,14 +175,16 @@ class Import(base.CreateCommand):
 
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
-  def Run(self, args):
+  def Run(self, args, support_storage_location=False):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     # Fail early if the requested image name is invalid or already exists.
     _CheckImageName(args.image_name)
     _CheckForExistingImage(args.image_name, compute_holder)
 
-    import_metadata = self._CreateImportStager(args).Stage()
+    stager = self._CreateImportStager(args)
+    stager.support_storage_location = support_storage_location
+    import_metadata = stager.Stage()
 
     # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
     # warning message with a ProgressTracker spinner.
@@ -224,8 +226,8 @@ class BaseImportStager(object):
   def __init__(self, storage_client, args):
     self.storage_client = storage_client
     self.args = args
-
     self.daisy_bucket = self.GetAndCreateDaisyBucket()
+    self.support_storage_location = False
 
   def Stage(self):
     """Prepares for import args.
@@ -239,6 +241,9 @@ class BaseImportStager(object):
 
     daisy_utils.AppendArg(import_args, 'zone',
                           properties.VALUES.compute.zone.Get())
+    if self.support_storage_location and self.args.storage_location:
+      daisy_utils.AppendArg(import_args, 'storage_location',
+                            self.args.storage_location)
     daisy_utils.AppendArg(import_args, 'scratch_bucket_gcs_path',
                           'gs://{0}/'.format(self.daisy_bucket))
     daisy_utils.AppendArg(import_args, 'timeout',
@@ -383,10 +388,21 @@ class ImportBeta(Import):
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
 
+  def Run(self, args):
+    super(ImportBeta, self).Run(args, support_storage_location=True)
+
   @classmethod
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
+
+    parser.add_argument(
+        '--storage-location',
+        help="""\
+      Google Cloud Storage location, either regional or multi-regional, where
+      image content is to be stored. If absent, the multi-region location
+      closest to the source is chosen automatically.
+      """)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,

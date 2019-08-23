@@ -2,6 +2,10 @@
     brief:  Update a Cloud Healthcare API annotation store.
     description: |
       Update a Cloud Healthcare API annotation store.
+    examples: |
+      To update the annotation store 'test-annotation-store', run:
+
+        $ {command} test-annotation-store
   request:
     collection: healthcare.projects.locations.datasets.annotationStores
     api_version: v1alpha2

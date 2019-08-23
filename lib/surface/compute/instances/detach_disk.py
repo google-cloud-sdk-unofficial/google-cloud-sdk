@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for detaching a disk from an instance."""
 
 from __future__ import absolute_import
@@ -30,8 +29,8 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class DetachDisk(base.UpdateCommand):
   """Detach disks from Compute Engine virtual machine instances.
 
@@ -95,8 +94,11 @@ class DetachDisk(base.UpdateCommand):
 
     if args.disk:
       disk_ref = self.ParseDiskRef(resources, args, instance_ref)
-      replacement.disks = [disk for disk in existing.disks
-                           if disk.source != disk_ref.SelfLink()]
+
+      replacement.disks = [
+          disk for disk in existing.disks if resources.ParseURL(
+              disk.source).RelativeName() != disk_ref.RelativeName()
+      ]
 
       if len(existing.disks) == len(replacement.disks):
         raise exceptions.ToolException(

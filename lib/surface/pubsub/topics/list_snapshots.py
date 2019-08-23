@@ -37,15 +37,15 @@ class ListSnapshots(base.ListCommand):
           To filter results by snapshot name
           (ie. only show snapshot 'mysnaps'), run:
 
-            $ {command} --topic mytopic --filter=snapshotId:mysnaps
+            $ {command} mytopic --filter=snapshotId:mysnaps
 
           To combine multiple filters (with AND or OR), run:
 
-            $ {command} --topic mytopic --filter="snapshotId:mysnaps1 AND snapshotId:mysnaps2"
+            $ {command} mytopic --filter="snapshotId:mysnaps1 AND snapshotId:mysnaps2"
 
           To filter snapshots that match an expression:
 
-            $ {command} --topic mytopic --filter="snapshotId:snaps_*"
+            $ {command} mytopic --filter="snapshotId:snaps_*"
           """,
   }
 

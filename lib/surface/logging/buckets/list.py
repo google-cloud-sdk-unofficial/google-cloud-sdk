@@ -29,7 +29,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    util.AddNonProjectArgs(parser, 'List buckets')
+    util.AddParentArgs(parser, 'List buckets')
     util.AddBucketLocationArg(
         parser, False,
         'Location from which to list buckets. By default, buckets in all '

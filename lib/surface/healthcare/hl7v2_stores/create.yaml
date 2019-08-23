@@ -2,6 +2,16 @@
     brief:  Create a Cloud Healthcare API HL7v2 store.
     description: |
       Create a Cloud Healthcare API HL7v2 store.
+    examples: |
+      To create a HL7v2 store called 'test-hl7v2-store', run:
+
+        $ {command} test-hl7v2-store --dataset=test-dataset
+
+      To create a HL7v2 store with the Cloud Pub/Sub topic 'test-pubsub-topic', run:
+
+        $ {command} test-hl7v2-store --dataset=test-dataset --pubsub-topic=test-pubsub-topic
+
+      See https://cloud.google.com/pubsub/docs/admin for information on creating Cloud Pub/Sub topics.
 
   request:
     collection: healthcare.projects.locations.datasets.hl7V2Stores
