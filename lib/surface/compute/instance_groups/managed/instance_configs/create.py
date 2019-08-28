@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_getter
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
+import six
 
 
 # TODO(b/70321546): rewrite help
@@ -126,7 +127,9 @@ class Create(base.CreateCommand):
     if args.force_instance_update:
       apply_operation_ref = (
           instance_configs_messages.CallApplyUpdatesToInstances)(
-              holder=holder, igm_ref=igm_ref, instances=[str(instance_ref)])
+              holder=holder,
+              igm_ref=igm_ref,
+              instances=[six.text_type(instance_ref)])
       return waiter.WaitFor(operation_poller, apply_operation_ref,
                             'Applying updates to instances.')
 

@@ -46,7 +46,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     flags.AddIdArgToParser(parser)
-    flags.AddCustomResourceFlagsToParser(parser)
+    flags.AddParentResourceFlagsToParser(parser)
     base.Argument(
         '--effective',
         action='store_true',

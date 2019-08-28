@@ -87,7 +87,7 @@ class Untag(base.DeleteCommand):
       for tag in tags:
         try:
           # Resolve tags to digests. Throws InvalidImageNameError on 404.
-          digests[tag] = util.GetDigestFromName(str(tag))
+          digests[tag] = util.GetDigestFromName(six.text_type(tag))
         except util.InvalidImageNameError:
           # We already validated the image string in _ParseArgs, this is a 404
           raise util.InvalidImageNameError(
@@ -114,7 +114,7 @@ class Untag(base.DeleteCommand):
       result = []
       for tag in tags:
         self._DeleteDockerTag(tag, digests, http_obj)
-        result.append({'name': str(tag)})
+        result.append({'name': six.text_type(tag)})
       return result
 
   def _ParseArgs(self, image_names):

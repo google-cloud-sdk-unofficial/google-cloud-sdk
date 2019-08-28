@@ -91,7 +91,7 @@ class ExpandIpRange(base.SilentCommand):
     # ipaddress only allows unicode input
     network = ipaddress.IPv4Network(six.text_type(unmasked_new_ip_range),
                                     strict=False)
-    return str(network)
+    return six.text_type(network)
 
   def _PromptToConfirm(
       self, subnetwork_name, original_ip_cidr_range, new_ip_cidr_range):

@@ -3,6 +3,13 @@
       Create a new Cloud Healthcare API dataset containing de-identified data from the source dataset.
     description: |
       Create a new Cloud Healthcare API dataset containing de-identified data from the source dataset.
+    examples: |
+      To generate a de-identified version of the dataset 'test-dataset', run the command below. To skip the FHIR stores, omit the --default-fhir-config flag, and to skip DICOM stores, omit the --dicom-filter-tags flag.
+
+      $ {command} test-dataset
+        --destination-dataset=projects/{projectId}/locations{locationId}/datasets/test-deid-dataset
+        --default-fhir-config
+        --dicom-filter-tags=MediaStorageSOPClassUID,SeriesInstanceUID,StudyInstanceUID
   request:
     collection: healthcare.projects.locations.datasets
     api_version: v1alpha2

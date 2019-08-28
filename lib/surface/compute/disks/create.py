@@ -233,10 +233,16 @@ class Create(base.Command):
   def GetFromImage(self, args):
     return args.image or args.image_family
 
+  def GetFromSourceDisk(self, args):
+    if not self.source_disk_enabled:
+      return False
+    return args.source_disk
+
   def GetDiskSizeGb(self, args, from_image):
     size_gb = utils.BytesToGb(args.size)
 
-    if not size_gb and not args.source_snapshot and not from_image:
+    if (not size_gb and not args.source_snapshot and not from_image
+        and not self.GetFromSourceDisk(args)):
       if args.type and 'pd-ssd' in args.type:
         size_gb = constants.DEFAULT_SSD_DISK_SIZE_GB
       else:

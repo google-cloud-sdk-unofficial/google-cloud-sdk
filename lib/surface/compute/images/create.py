@@ -141,7 +141,7 @@ class Create(base.CreateCommand):
           csek_keys, source_image_ref, client.apitools_client)
 
     if args.source_uri:
-      source_uri = str(resources.REGISTRY.Parse(args.source_uri))
+      source_uri = six.text_type(resources.REGISTRY.Parse(args.source_uri))
       image.rawDisk = messages.Image.RawDiskValue(source=source_uri)
     elif args.source_disk:
       source_disk_ref = flags.SOURCE_DISK_ARG.ResolveAsResource(

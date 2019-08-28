@@ -194,7 +194,7 @@ class CreateHelper(object):
         target_ref.Collection() == 'compute.targetInstances' and
         args.load_balancing_scheme == 'INTERNAL'):
       forwarding_rule.portRange = (
-          str(args.port_range) if args.port_range else None)
+          six.text_type(args.port_range) if args.port_range else None)
       if target_ref.Collection() == 'compute.regionBackendServices':
         forwarding_rule.backendService = target_ref.SelfLink()
       else:
@@ -203,7 +203,9 @@ class CreateHelper(object):
         forwarding_rule.allPorts = True
       if range_list:
         forwarding_rule.portRange = None
-        forwarding_rule.ports = [str(p) for p in _GetPortList(range_list)]
+        forwarding_rule.ports = [
+            six.text_type(p) for p in _GetPortList(range_list)
+        ]
       if args.subnet is not None:
         if not args.subnet_region:
           args.subnet_region = forwarding_rule_ref.region
@@ -216,7 +218,9 @@ class CreateHelper(object):
     elif ((target_ref.Collection() == 'compute.regionTargetHttpProxies' or
            target_ref.Collection() == 'compute.regionTargetHttpsProxies') and
           args.load_balancing_scheme == 'INTERNAL'):
-      forwarding_rule.ports = [str(p) for p in _GetPortList(range_list)]
+      forwarding_rule.ports = [
+          six.text_type(p) for p in _GetPortList(range_list)
+      ]
       if args.subnet is not None:
         if not args.subnet_region:
           args.subnet_region = forwarding_rule_ref.region
@@ -384,7 +388,7 @@ def _ResolvePortRange(port_range, port_range_list):
                 ' flag.', port_range)
   elif port_range_list:
     port_range = _GetPortRange(port_range_list)
-  return str(port_range) if port_range else None
+  return six.text_type(port_range) if port_range else None
 
 
 def _GetPortList(range_list):

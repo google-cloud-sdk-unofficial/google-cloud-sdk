@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+import six
 
 
 class SetUsageBucket(base.SilentCommand):
@@ -84,7 +85,7 @@ class SetUsageBucket(base.SilentCommand):
 
     bucket_uri = None
     if args.bucket:
-      bucket_uri = str(resources.REGISTRY.Parse(args.bucket))
+      bucket_uri = six.text_type(resources.REGISTRY.Parse(args.bucket))
 
     request = client.messages.ComputeProjectsSetUsageExportBucketRequest(
         project=properties.VALUES.core.project.GetOrFail(),

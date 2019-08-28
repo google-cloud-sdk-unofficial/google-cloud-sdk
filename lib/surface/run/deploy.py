@@ -151,15 +151,24 @@ class Deploy(base.Command):
             'asynchronously.'.format(serv=service_ref.servicesId))
       else:
         service = operations.GetService(service_ref)
+        latest_ready = service.status.latestReadyRevisionName
+        latest_percent_traffic = sum(
+            target.percent for target in service.status.traffic
+            if target.latestRevision or (
+                latest_ready and target.revisionName == latest_ready))
         msg = (
             'Service [{{bold}}{serv}{{reset}}] '
             'revision [{{bold}}{rev}{{reset}}] '
-            'has been deployed and is serving traffic at '
-            '{{bold}}{url}{{reset}}')
+            'has been deployed')
+        if latest_percent_traffic:
+          msg += (
+              ' and is serving {{bold}}{latest_percent_traffic}{{reset}} '
+              'percent of traffic at {{bold}}{url}{{reset}}')
         msg = msg.format(
             serv=service_ref.servicesId,
-            rev=service.status.latestReadyRevisionName,
-            url=service.domain)
+            rev=latest_ready,
+            url=service.domain,
+            latest_percent_traffic=latest_percent_traffic)
         pretty_print.Success(msg)
 
 

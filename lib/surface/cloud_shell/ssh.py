@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.cloud_shell import util
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -78,7 +79,7 @@ class SshAlpha(base.Command):
     connection_info = util.PrepareEnvironment(args)
     command = ssh.SSHCommand(
         remote=ssh.Remote(host=connection_info.host, user=connection_info.user),
-        port=str(connection_info.port),
+        port=six.text_type(connection_info.port),
         identity_file=connection_info.key,
         remote_command=(['DEVSHELL_PROJECT_ID=' + project]
                         if project else []) + command_list,

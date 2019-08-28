@@ -42,7 +42,7 @@ class EnableEnforce(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddIdArgToParser(parser)
-    flags.AddCustomResourceFlagsToParser(parser)
+    flags.AddParentResourceFlagsToParser(parser)
 
   def Run(self, args):
     service = org_policies_base.OrgPoliciesService(args)

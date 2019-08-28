@@ -1035,6 +1035,7 @@ class BigqueryClient(object):
                 api='bigquery', apiVersion=self.api_version)
           logging.info('Requesting discovery document from %s', discovery_url)
           response_metadata, discovery_document = http.request(discovery_url)
+          discovery_document = discovery_document.decode('utf-8')
           if int(response_metadata.get('status')) >= 400:
             msg = 'Got %s response from discovery url: %s' % (
                 response_metadata.get('status'), discovery_url)
@@ -2595,10 +2596,6 @@ class BigqueryClient(object):
     return_type = routine_info.get('returnType')
     if 'arguments' in routine_info:
       argument_list = routine_info['arguments']
-      if (routine_info['routineType'] == 'SCALAR_FUNCTION' and argument_list and
-          argument_list[-1].get('mode') == 'OUT'):
-        return_type = argument_list[-1]['dataType']
-        argument_list = argument_list[:-1]
       signature = '({})'.format(', '.join(
           BigqueryClient.FormatRoutineArgumentInfo(argument)
           for argument in argument_list))
@@ -2672,15 +2669,17 @@ class BigqueryClient(object):
     if 'timePartitioning' in result:
       if 'type' in result['timePartitioning']:
         result['Time Partitioning'] = result['timePartitioning']['type']
-        extra_info = []
-        if 'field' in result['timePartitioning']:
-          partitioning_field = result['timePartitioning']['field']
-          extra_info.append('field: %s' % partitioning_field)
-        if 'expirationMs' in result['timePartitioning']:
-          expiration_ms = int(result['timePartitioning']['expirationMs'])
-          extra_info.append('expirationMs: %d' % (expiration_ms,))
-        if extra_info:
-          result['Time Partitioning'] += (' (%s)' % (', '.join(extra_info),))
+      else:
+        result['Time Partitioning'] = 'DAY'
+      extra_info = []
+      if 'field' in result['timePartitioning']:
+        partitioning_field = result['timePartitioning']['field']
+        extra_info.append('field: %s' % partitioning_field)
+      if 'expirationMs' in result['timePartitioning']:
+        expiration_ms = int(result['timePartitioning']['expirationMs'])
+        extra_info.append('expirationMs: %d' % (expiration_ms,))
+      if extra_info:
+        result['Time Partitioning'] += (' (%s)' % (', '.join(extra_info),))
     if 'clustering' in result:
       if 'fields' in result['clustering']:
         result['Clustered Fields'] = ', '.join(result['clustering']['fields'])
@@ -3316,6 +3315,7 @@ class BigqueryClient(object):
         datasetId=reference.datasetId,
         maxResults=max_results,
         pageToken=page_token).execute()
+
 
   #################################
   ##       Transfer run

@@ -48,6 +48,124 @@ args_v1p1beta1:
     If alternative languages are listed, recognition result will contain
     recognition in the most likely language detected including the main
     language-code.
+- arg_name: enable-automatic-punctuation
+  api_field: config.enableAutomaticPunctuation
+  help_text: |
+    Adds punctuation to recognition result hypotheses.
+- group:
+    help_text: Audio channel settings.
+    params:
+    - arg_name: separate-channel-recognition
+      api_field: config.enableSeparateRecognitionPerChannel
+      required: true
+      help_text: |
+        Recognition result will contain a `channel_tag` field to state which channel that
+        result belongs to. If this is not true, only the first channel will be recognized.
+    - arg_name: audio-channel-count
+      api_field: config.audioChannelCount
+      required: true
+      type: int
+      help_text: |
+        The number of channels in the input audio data.  Set this for
+        separate-channel-recognition. Valid values are:
+        1)LINEAR16 and FLAC are `1`-`8`
+        2)OGG_OPUS are `1`-`254`
+        3) MULAW, AMR, AMR_WB and SPEEX_WITH_HEADER_BYTE is only `1`.
+- group:
+    help_text: Description of audio data to be recognized.
+    params:
+    - arg_name: interaction-type
+      api_field: config.metadata.interactionType
+      help_text: |
+        Determining the interaction type in the conversation.
+      choices:
+      - arg_value: discussion
+        enum_value: DISCUSSION
+        help_text: Multiple people in a conversation or discussion.
+      - arg_value: phone-call
+        enum_value: PHONE_CALL
+        help_text: A phone-call or video-conference in which two or more people, who are not in the same room, are actively participating.
+      - arg_value: voicemail
+        enum_value: VOICEMAIL
+        help_text: A recorded message intended for another person to listen to.
+      - arg_value: professionally-produced
+        enum_value: PROFESSIONALLY_PRODUCED
+        help_text: Professionally produced audio (eg. TV Show, Podcast).
+      - arg_value: voice-search
+        enum_value: VOICE_SEARCH
+        help_text: Transcribe spoken questions and queries into text.
+      - arg_value: voice-command
+        enum_value: VOICE_COMMAND
+        help_text: Transcribe voice commands, such as for controlling a device.
+      - arg_value: dictation
+        enum_value: DICTATION
+        help_text: Transcribe speech to text to create a written document, such as a text-message, email or report.
+
+    - arg_name: naics-code
+      api_field: config.metadata.industryNaicsCodeOfAudio
+      type: int
+      help_text: |
+        The industry vertical to which this speech recognition request most closely applies.
+    - arg_name: microphone-distance
+      api_field: config.metadata.microphoneDistance
+      help_text: |
+        The distance at which the audio device is placed to record the conversation.
+      choices:
+      - arg_value: nearfield
+        enum_value: NEARFIELD
+        help_text: The speaker is within 1 meter of the microphone.
+      - arg_value: midfield
+        enum_value: MIDFIELD
+        help_text: The speaker is within 3 meters of the microphone.
+      - arg_value: farfield
+        enum_value: FARFIELD
+        help_text: The speaker is more than 3 meters away from the microphone.
+    - arg_name: original-media-type
+      api_field: config.metadata.originalMediaType
+      help_text: |
+        The media type of the original audio conversation.
+      choices:
+      - arg_value: audio
+        enum_value: AUDIO
+        help_text: The speech data is an audio recording.
+      - arg_value: video
+        enum_value: VIDEO
+        help_text: The speech data originally recorded on a video.
+    - arg_name: recording-device-type
+      api_field: config.metadata.recordingDeviceType
+      help_text: |
+        The device type through which the original audio was recorded on.
+      choices:
+      - arg_value: smartphone
+        enum_value: SMARTPHONE
+        help_text: Speech was recorded on a smartphone.
+      - arg_value: pc
+        enum_value: PC
+        help_text: Speech was recorded using a personal computer or tablet.
+      - arg_value: phone-line
+        enum_value: PHONE_LINE
+        help_text: Speech was recorded over a phone line.
+      - arg_value: vehicle
+        enum_value: VEHICLE
+        help_text: Speech was recorded in a vehicle.
+      - arg_value: outdoor
+        enum_value: OTHER_OUTDOOR_DEVICE
+        help_text: Speech was recorded outdoors.
+      - arg_value: indoor
+        enum_value: OTHER_INDOOR_DEVICE
+        help_text: Speech was recorded indoors.
+    - arg_name: recording-device-name
+      api_field: config.metadata.recordingDeviceName
+      help_text: |
+        The device used to make the recording.  Examples: `Nexus 5X`, `Polycom SoundStation IP 6000`
+    - arg_name: original-mime-type
+      api_field:  config.metadata.originalMimeType
+      help_text: |
+        Mime type of the original audio file. Examples: `audio/m4a`,  `audio/mp3`.
+    - arg_name:  audio-topic
+      api_field: config.metadata.audioTopic
+      help_text: |
+        Description of the content, e.g. "Recordings of federal supreme court hearings from 2012".
 
 args:
 - group:

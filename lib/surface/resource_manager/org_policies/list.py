@@ -44,7 +44,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCustomResourceFlagsToParser(parser)
+    flags.AddParentResourceFlagsToParser(parser)
     base.Argument(
         '--show-unset',
         action='store_true',

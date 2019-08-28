@@ -115,7 +115,7 @@ class Delete(base.DeleteCommand):
 
       # Resolve tags to digests.
       for tag in explicit_tags:
-        digests.add(util.GetDigestFromName(str(tag)))
+        digests.add(util.GetDigestFromName(six.text_type(tag)))
 
       # Find all the tags that reference digests to be deleted.
       all_tags = set()
@@ -160,10 +160,10 @@ class Delete(base.DeleteCommand):
       result = []
       for tag in explicit_tags:  # tags must be deleted before digests
         self._DeleteDockerTagOrDigest(tag, http_obj)
-        result.append({'name': str(tag)})
+        result.append({'name': six.text_type(tag)})
       for digest in digests:
         self._DeleteDockerTagOrDigest(digest, http_obj)
-        result.append({'name': str(digest)})
+        result.append({'name': six.text_type(digest)})
       return result
 
   def _ProcessImageNames(self, image_names):

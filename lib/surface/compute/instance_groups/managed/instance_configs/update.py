@@ -226,7 +226,9 @@ class Update(base.UpdateCommand):
     if args.force_instance_update:
       apply_operation_ref = (
           instance_configs_messages.CallApplyUpdatesToInstances)(
-              holder=holder, igm_ref=igm_ref, instances=[str(instance_ref)])
+              holder=holder,
+              igm_ref=igm_ref,
+              instances=[six.text_type(instance_ref)])
       return waiter.WaitFor(operation_poller, apply_operation_ref,
                             'Applying updates to instances.')
 

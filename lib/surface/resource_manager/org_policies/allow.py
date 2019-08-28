@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.resource_manager import org_policies
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import org_policies_base
 from googlecloudsdk.command_lib.resource_manager import org_policies_flags as flags
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -44,7 +45,7 @@ class Allow(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddIdArgToParser(parser)
-    flags.AddCustomResourceFlagsToParser(parser)
+    flags.AddParentResourceFlagsToParser(parser)
     base.Argument(
         'allowed_value',
         metavar='ALLOWED_VALUE',
@@ -70,7 +71,7 @@ class Allow(base.Command):
 
     if policy.listPolicy and policy.listPolicy.allowedValues:
       for value in args.allowed_value:
-        policy.listPolicy.allowedValues.append(str(value))
+        policy.listPolicy.allowedValues.append(six.text_type(value))
     else:
       policy.listPolicy = messages.ListPolicy(allowedValues=args.allowed_value)
 

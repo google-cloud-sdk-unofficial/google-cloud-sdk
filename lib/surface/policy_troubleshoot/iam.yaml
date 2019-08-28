@@ -1,0 +1,46 @@
+- &alpha_command
+  release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Troubleshoot the IAM Policy.
+    description: |
+     Performs a check on whether a member is granted a
+     permission on a resource and how that grant/deny is determined according to
+     the resource's effective IAM policy interpretation.
+
+    examples: |
+      To troubleshoot a permission of a member on a resource, run:
+
+        $ {command} projects/project-id
+        --principal-email=my-iam-account@somedomain.com
+        --permission=iam.roles.list
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  request:
+    collection: policytroubleshooter.iam
+    api_version: v1beta
+    method: troubleshoot
+
+  arguments:
+    params:
+    - arg_name: resource
+      api_field: accessTuple.fullResourceName
+      required: true
+      is_positional: true
+      help_text: |
+        Full resource name that access is checked against.
+        See: https://cloud.google.com/apis/design/resource_names#full_resource_name.
+    - arg_name: principal-email
+      api_field: accessTuple.principal
+      required: true
+      help_text: |
+        Principal email address of the member to check against. The format
+        is the email addresses associated with its gaia account and it must be
+        either a user account or a service account, other principal types are
+        not supported.
+    - arg_name: permission
+      api_field: accessTuple.permission
+      required: true
+      help_text:  |
+        Cloud IAM permission to check, e.g. "resourcemanager.projects.get".

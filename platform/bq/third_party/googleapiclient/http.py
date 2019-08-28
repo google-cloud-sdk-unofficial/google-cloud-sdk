@@ -150,6 +150,7 @@ def _retry_request(http, num_retries, req_type, sleep, rand, uri, method, *args,
   """
   resp = None
   content = None
+  exception = None
   for retry_num in range(num_retries + 1):
     if retry_num > 0:
       # Sleep before retrying.
@@ -559,8 +560,12 @@ class MediaFileUpload(MediaIoBaseUpload):
       if mimetype is None:
         # Guess failed, use octet-stream.
         mimetype = 'application/octet-stream'
-    super(MediaFileUpload, self).__init__(fd, mimetype, chunksize=chunksize,
+    super(MediaFileUpload, self).__init__(fd, mimetype,
+                                          chunksize=chunksize,
                                           resumable=resumable)
+
+  def __del__(self):
+    self._fd.close()
 
   def to_json(self):
     """Creating a JSON representation of an instance of MediaFileUpload.
@@ -1721,8 +1726,8 @@ def set_user_agent(http, user_agent):
       headers['user-agent'] = user_agent + ' ' + headers['user-agent']
     else:
       headers['user-agent'] = user_agent
-    resp, content = request_orig(uri, method, body, headers,
-                        redirections, connection_type)
+    resp, content = request_orig(uri, method=method, body=body, headers=headers,
+                        redirections=redirections, connection_type=connection_type)
     return resp, content
 
   http.request = new_request
@@ -1762,8 +1767,8 @@ def tunnel_patch(http):
             'OAuth 1.0 request made with Credentials after tunnel_patch.')
       headers['x-http-method-override'] = "PATCH"
       method = 'POST'
-    resp, content = request_orig(uri, method, body, headers,
-                        redirections, connection_type)
+    resp, content = request_orig(uri, method=method, body=body, headers=headers,
+                        redirections=redirections, connection_type=connection_type)
     return resp, content
 
   http.request = new_request

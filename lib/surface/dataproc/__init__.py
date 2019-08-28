@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -65,3 +66,14 @@ class Dataproc(base.Group):
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()
+
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      if not properties.VALUES.dataproc.region.Get():
+        log.warning(
+            'Dataproc --region flag will become required in January 2020. '
+            'Please either specify this flag, or set default by running '
+            '\'gcloud config set dataproc/region <your-default-region>\'')
+        properties.VALUES.dataproc.region.Set('global')
+    else:
+      # Enfore flag or default value is required.
+      properties.VALUES.dataproc.region.GetOrFail()

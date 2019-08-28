@@ -53,7 +53,6 @@ class Update(base.Command):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddRegionArg(managed_group)
-    flags.AddAllowUnauthenticatedFlag(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
     flags.AddServiceAccountFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
@@ -94,19 +93,17 @@ class Update(base.Command):
       args: Args!
     """
     changes = flags.GetConfigurationChanges(args)
-    allow_unauth = flags.GetAllowUnauthenticated(args)
-    if not changes and allow_unauth is None:
+    if not changes:
       raise exceptions.NoConfigurationChangeError(
           'No configuration change requested. '
           'Did you mean to include the flags `--update-env-vars`, '
-          '`--memory`, `--concurrency`, `--timeout`, `--connectivity`, '
-          'or `--allow-unauthenticated`?')
+          '`--memory`, `--concurrency`, `--timeout`, `--connectivity`?')
 
     conn_context = connection_context.GetConnectionContext(args)
     service_ref = flags.GetService(args)
 
     with serverless_operations.Connect(conn_context) as client:
-      deployment_stages = stages.ServiceStages(allow_unauth is not None)
+      deployment_stages = stages.ServiceStages()
       with progress_tracker.StagedProgressTracker(
           'Deploying...',
           deployment_stages,
@@ -116,8 +113,7 @@ class Update(base.Command):
             service_ref,
             changes,
             tracker,
-            asyn=args.async,
-            allow_unauthenticated=allow_unauth)
+            asyn=args.async)
       if args.async:
         pretty_print.Success(
             'Deploying asynchronously.')

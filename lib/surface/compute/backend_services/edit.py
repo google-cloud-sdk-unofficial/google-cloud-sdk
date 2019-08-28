@@ -25,7 +25,6 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
@@ -34,9 +33,10 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import edit
+import six
 
 
-class InvalidResourceError(exceptions.ToolException):
+class InvalidResourceError(calliope_exceptions.ToolException):
   # Normally we'd want to subclass core.exceptions.Error, but base_classes.Edit
   # abuses ToolException to classify errors when displaying messages to users,
   # and we should continue to fit in that framework for now.
@@ -198,7 +198,7 @@ class Edit(base.Command):
       except (ValueError, yaml.YAMLParseError,
               messages.ValidationError,
               calliope_exceptions.ToolException) as e:
-        message = getattr(e, 'message', str(e))
+        message = getattr(e, 'message', six.text_type(e))
 
         if isinstance(e, calliope_exceptions.ToolException):
           problem_type = 'applying'

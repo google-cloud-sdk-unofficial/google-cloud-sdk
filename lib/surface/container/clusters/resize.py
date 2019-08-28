@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
@@ -41,11 +42,20 @@ class Resize(base.Command):
         to capture some information, but behaves like an ArgumentParser.
     """
     parser.add_argument('name', help='The name of this cluster.')
-    parser.add_argument(
-        '--num-nodes', '--size',
-        required=True,
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        '--size',
         type=int,
-        help=('Target number of nodes in the cluster.'))
+        dest='num_nodes',
+        action=actions.DeprecationAction('--size',
+                                         warn='The {flag_name} flag is now '
+                                         'deprecated. Please use `--num-nodes` '
+                                         'instead.'),
+        help='Target number of nodes in the cluster.')
+    group.add_argument(
+        '--num-nodes',
+        type=int,
+        help='Target number of nodes in the cluster.')
     parser.add_argument('--node-pool', help='The node pool to resize.')
     flags.AddAsyncFlag(parser)
 

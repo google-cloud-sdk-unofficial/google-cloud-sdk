@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloud_shell import util
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
+import six
 
 FILE_TYPE = arg_parsers.RegexpValidator(
     r'^(cloudshell|localhost):.*$', 'must start with cloudshell: or localhost:')
@@ -31,7 +32,7 @@ FILE_TYPE = arg_parsers.RegexpValidator(
 def ToFileReference(path, remote):
   if path.startswith('cloudshell:'):
     return ssh.FileReference.FromPath(
-        path.replace('cloudshell', str(remote), 1))
+        path.replace('cloudshell', six.text_type(remote), 1))
   elif path.startswith('localhost:'):
     return ssh.FileReference.FromPath(path.replace('localhost:', '', 1))
   else:

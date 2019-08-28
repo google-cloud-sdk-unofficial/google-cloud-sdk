@@ -41,7 +41,7 @@ class SetPolicy(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCustomResourceFlagsToParser(parser)
+    flags.AddParentResourceFlagsToParser(parser)
     base.Argument(
         'policy_file',
         help='JSON or YAML file with the Organization Policy.').AddToParser(

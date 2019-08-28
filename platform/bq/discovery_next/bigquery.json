@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20190719",
+ "revision": "20190815",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -2676,7 +2676,7 @@
       "",
       "Linear regression model.",
       "Logistic regression based classification model.",
-      "[Beta] K-means clustering model.",
+      "K-means clustering model.",
       "[Beta] An imported TensorFlow model."
      ],
      "type": "string",
@@ -2872,7 +2872,7 @@
      }
     },
     "distanceType": {
-     "description": "[Beta] Distance type for clustering models.",
+     "description": "Distance type for clustering models.",
      "enumDescriptions": [
       "",
       "Eculidean distance.",
@@ -2886,7 +2886,7 @@
      ]
     },
     "numClusters": {
-     "description": "[Beta] Number of clusters for clustering models.",
+     "description": "Number of clusters for clustering models.",
      "type": "string",
      "format": "int64"
     },
@@ -2907,6 +2907,24 @@
       "BATCH_GRADIENT_DESCENT",
       "NORMAL_EQUATION"
      ]
+    },
+    "kmeansInitializationMethod": {
+     "description": "The method used to initialize the centroids for kmeans algorithm.",
+     "enumDescriptions": [
+      "",
+      "Initializes the centroids randomly.",
+      "Initializes the centroids using data specified in\nkmeans_initialization_column."
+     ],
+     "type": "string",
+     "enum": [
+      "KMEANS_INITIALIZATION_METHOD_UNSPECIFIED",
+      "RANDOM",
+      "CUSTOM"
+     ]
+    },
+    "kmeansInitializationColumn": {
+     "description": "The column used to provide the initial centroids for kmeans algorithm\nwhen kmeans_initialization_method is CUSTOM.",
+     "type": "string"
     }
    }
   },
@@ -2941,7 +2959,7 @@
      "format": "double"
     },
     "clusterInfos": {
-     "description": "[Beta] Information about top clusters for clustering models.",
+     "description": "Information about top clusters for clustering models.",
      "type": "array",
      "items": {
       "$ref": "ClusterInfo"
@@ -2989,7 +3007,7 @@
      "$ref": "MultiClassClassificationMetrics"
     },
     "clusteringMetrics": {
-     "description": "[Beta] Populated for clustering models.",
+     "description": "Populated for clustering models.",
      "$ref": "ClusteringMetrics"
     }
    }
@@ -3231,6 +3249,87 @@
      "description": "Mean of squared distances between each sample to its cluster centroid.",
      "type": "number",
      "format": "double"
+    },
+    "clusters": {
+     "description": "[Beta] Information for all clusters.",
+     "type": "array",
+     "items": {
+      "$ref": "Cluster"
+     }
+    }
+   }
+  },
+  "Cluster": {
+   "id": "Cluster",
+   "description": "Message containing the information about one cluster.",
+   "type": "object",
+   "properties": {
+    "centroidId": {
+     "description": "Centroid id.",
+     "type": "string",
+     "format": "int64"
+    },
+    "featureValues": {
+     "description": "Values of highly variant features for this cluster.",
+     "type": "array",
+     "items": {
+      "$ref": "FeatureValue"
+     }
+    },
+    "count": {
+     "description": "Count of training data rows that were assigned to this cluster.",
+     "type": "string",
+     "format": "int64"
+    }
+   }
+  },
+  "FeatureValue": {
+   "id": "FeatureValue",
+   "description": "Representative value of a single feature within the cluster.",
+   "type": "object",
+   "properties": {
+    "featureColumn": {
+     "description": "The feature column name.",
+     "type": "string"
+    },
+    "numericalValue": {
+     "description": "The numerical feature value. This is the centroid value for this\nfeature.",
+     "type": "number",
+     "format": "double"
+    },
+    "categoricalValue": {
+     "description": "The categorical feature value.",
+     "$ref": "CategoricalValue"
+    }
+   }
+  },
+  "CategoricalValue": {
+   "id": "CategoricalValue",
+   "description": "Representative value of a categorical feature.",
+   "type": "object",
+   "properties": {
+    "categoryCounts": {
+     "description": "Counts of all categories for the categorical feature. If there are\nmore than ten categories, we return top ten (by count) and return\none more CategoryCount with category \"_OTHER_\" and count as\naggregate counts of remaining categories.",
+     "type": "array",
+     "items": {
+      "$ref": "CategoryCount"
+     }
+    }
+   }
+  },
+  "CategoryCount": {
+   "id": "CategoryCount",
+   "description": "Represents the count of a single category within the cluster.",
+   "type": "object",
+   "properties": {
+    "category": {
+     "description": "The name of category.",
+     "type": "string"
+    },
+    "count": {
+     "description": "The count of training samples matching the category within the\ncluster.",
+     "type": "string",
+     "format": "int64"
     }
    }
   },
@@ -3908,6 +4007,11 @@
        "description": "Page token, returned by a previous call, to request the next page of results",
        "location": "query"
       },
+      "parentJobId": {
+       "type": "string",
+       "description": "If set, retrieves only jobs whose parent is this job. Otherwise, retrieves only jobs which have no parent",
+       "location": "query"
+      },
       "projectId": {
        "type": "string",
        "description": "Project ID of the jobs to list",
@@ -4438,6 +4542,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -4484,6 +4589,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -4621,6 +4727,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],
@@ -4788,6 +4895,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/bigquery",
+      "https://www.googleapis.com/auth/bigquery.readonly",
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/cloud-platform.read-only"
      ],

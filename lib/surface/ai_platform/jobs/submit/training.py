@@ -62,15 +62,17 @@ def _AddSubmitTrainingArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Train(base.Command):
   """Submit an AI Platform training job."""
 
-  @staticmethod
-  def Args(parser):
+  _SUPPORT_TPU_TF_VERSION = False
+
+  @classmethod
+  def Args(cls, parser):
     _AddSubmitTrainingArgs(parser)
-    flags.AddCustomContainerFlags(parser)
+    flags.AddCustomContainerFlags(
+        parser, support_tpu_tf_version=cls._SUPPORT_TPU_TF_VERSION)
     parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):
@@ -80,9 +82,9 @@ class Train(base.Command):
     jobs_client = jobs.JobsClient()
     labels = jobs_util.ParseCreateLabels(jobs_client, args)
     custom_container_config = (
-        jobs_util.TrainingCustomInputServerConfig.FromArgs(args))
+        jobs_util.TrainingCustomInputServerConfig.FromArgs(
+            args, self._SUPPORT_TPU_TF_VERSION))
     custom_container_config.ValidateConfig()
-
     job = jobs_util.SubmitTraining(
         jobs_client, args.job,
         job_dir=args.job_dir,
@@ -102,6 +104,13 @@ class Train(base.Command):
     if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
       self.exit_code = 1
     return job
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class TrainAlphaBeta(Train):
+  """Submit an AI Platform training job."""
+
+  _SUPPORT_TPU_TF_VERSION = True
 
 
 _DETAILED_HELP = {

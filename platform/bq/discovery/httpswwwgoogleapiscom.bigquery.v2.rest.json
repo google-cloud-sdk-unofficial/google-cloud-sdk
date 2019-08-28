@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20190719",
+ "revision": "20190815",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -3053,6 +3053,11 @@
       "pageToken": {
        "type": "string",
        "description": "Page token, returned by a previous call, to request the next page of results",
+       "location": "query"
+      },
+      "parentJobId": {
+       "type": "string",
+       "description": "If set, retrieves only jobs whose parent is this job. Otherwise, retrieves only jobs which have no parent",
        "location": "query"
       },
       "projectId": {

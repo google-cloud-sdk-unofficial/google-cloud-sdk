@@ -923,6 +923,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--staging-bucket": "value",
                         "--stream-logs": "bool",
+                        "--tpu-tf-version": "value",
                         "--worker-accelerator": "value",
                         "--worker-count": "value",
                         "--worker-image-uri": "value",
@@ -1966,6 +1967,29 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {}
             },
+            "deploy": {
+              "commands": {
+                "gke": {
+                  "commands": {},
+                  "flags": {
+                    "--app-name": "value",
+                    "--app-version": "value",
+                    "--async": "bool",
+                    "--cluster": "value",
+                    "--config": "value",
+                    "--expose": "value",
+                    "--gcs-staging-dir": "value",
+                    "--image": "value",
+                    "--location": "value",
+                    "--namespace": "value",
+                    "--tag": "value",
+                    "--tag-default": "bool",
+                    "--timeout": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "describe": {
               "commands": {},
               "flags": {}
@@ -2058,6 +2082,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "describe": {
                   "commands": {},
                   "flags": {}
+                },
+                "export": {
+                  "commands": {},
+                  "flags": {
+                    "--destination": "value"
+                  }
                 },
                 "list": {
                   "commands": {},
@@ -2463,6 +2493,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--prefix-length": "value",
                     "--purpose": [
                       "GCE_ENDPOINT",
+                      "SHARED_LOADBALANCER_VIP",
                       "VPC_PEERING"
                     ],
                     "--region": "dynamic",
@@ -2833,6 +2864,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--type": [
                       "compute-optimized",
                       "general-purpose",
+                      "general-purpose-e2",
                       "general-purpose-n2",
                       "memory-optimized"
                     ],
@@ -3925,7 +3957,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "windows-2012r2-byol",
                       "windows-2016",
                       "windows-2016-byol",
-                      "windows-7-byol"
+                      "windows-2019",
+                      "windows-2019-byol",
+                      "windows-7-byol",
+                      "windows-8-1-x64-byol"
                     ],
                     "--source-file": "value",
                     "--source-image": "dynamic",
@@ -5096,7 +5131,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "windows-2012r2-byol",
                       "windows-2016",
                       "windows-2016-byol",
-                      "windows-7-byol"
+                      "windows-2019",
+                      "windows-2019-byol",
+                      "windows-7-byol",
+                      "windows-8-1-x64-byol"
                     ],
                     "--private-network-ip": "value",
                     "--restart-on-failure": "bool",
@@ -8766,6 +8804,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--allow-route-overlap": "bool",
                     "--async": "bool",
                     "--autoprovisioning-config-file": "value",
+                    "--autoprovisioning-locations": "value",
                     "--cluster-ipv4-cidr": "value",
                     "--cluster-secondary-range-name": "value",
                     "--cluster-version": "value",
@@ -8801,6 +8840,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-private-endpoint": "bool",
                     "--enable-private-nodes": "bool",
                     "--enable-resource-consumption-metering": "bool",
+                    "--enable-shielded-nodes": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-tpu": "bool",
                     "--enable-tpu-service-networking": "bool",
@@ -8921,6 +8961,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--additional-zones": "value",
                     "--async": "bool",
                     "--autoprovisioning-config-file": "value",
+                    "--autoprovisioning-locations": "value",
                     "--clear-resource-usage-bigquery-dataset": "bool",
                     "--complete-credential-rotation": "bool",
                     "--complete-ip-rotation": "bool",
@@ -8943,6 +8984,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-peering-route-sharing": "bool",
                     "--enable-pod-security-policy": "bool",
                     "--enable-resource-consumption-metering": "bool",
+                    "--enable-shielded-nodes": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-vertical-pod-autoscaling": "bool",
                     "--generate-password": "bool",
@@ -14944,7 +14986,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--additional-language-codes": "value",
+                    "--audio-channel-count": "value",
+                    "--audio-topic": "value",
                     "--diarization-speaker-count": "value",
+                    "--enable-automatic-punctuation": "bool",
                     "--enable-speaker-diarization": "bool",
                     "--encoding": [
                       "amr",
@@ -14961,9 +15006,39 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--hints": "value",
                     "--include-word-confidence": "bool",
                     "--include-word-time-offsets": "bool",
+                    "--interaction-type": [
+                      "dictation",
+                      "discussion",
+                      "phone-call",
+                      "professionally-produced",
+                      "voice-command",
+                      "voice-search",
+                      "voicemail"
+                    ],
                     "--language-code": "value",
                     "--max-alternatives": "value",
-                    "--sample-rate": "value"
+                    "--microphone-distance": [
+                      "farfield",
+                      "midfield",
+                      "nearfield"
+                    ],
+                    "--naics-code": "value",
+                    "--original-media-type": [
+                      "audio",
+                      "video"
+                    ],
+                    "--original-mime-type": "value",
+                    "--recording-device-name": "value",
+                    "--recording-device-type": [
+                      "indoor",
+                      "outdoor",
+                      "pc",
+                      "phone-line",
+                      "smartphone",
+                      "vehicle"
+                    ],
+                    "--sample-rate": "value",
+                    "--separate-channel-recognition": "bool"
                   }
                 },
                 "recognize-long-running": {
@@ -14971,7 +15046,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--additional-language-codes": "value",
                     "--async": "bool",
+                    "--audio-channel-count": "value",
+                    "--audio-topic": "value",
                     "--diarization-speaker-count": "value",
+                    "--enable-automatic-punctuation": "bool",
                     "--enable-speaker-diarization": "bool",
                     "--encoding": [
                       "amr",
@@ -14988,9 +15066,39 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--hints": "value",
                     "--include-word-confidence": "bool",
                     "--include-word-time-offsets": "bool",
+                    "--interaction-type": [
+                      "dictation",
+                      "discussion",
+                      "phone-call",
+                      "professionally-produced",
+                      "voice-command",
+                      "voice-search",
+                      "voicemail"
+                    ],
                     "--language-code": "value",
                     "--max-alternatives": "value",
-                    "--sample-rate": "value"
+                    "--microphone-distance": [
+                      "farfield",
+                      "midfield",
+                      "nearfield"
+                    ],
+                    "--naics-code": "value",
+                    "--original-media-type": [
+                      "audio",
+                      "video"
+                    ],
+                    "--original-mime-type": "value",
+                    "--recording-device-name": "value",
+                    "--recording-device-type": [
+                      "indoor",
+                      "outdoor",
+                      "pc",
+                      "phone-line",
+                      "smartphone",
+                      "vehicle"
+                    ],
+                    "--sample-rate": "value",
+                    "--separate-channel-recognition": "bool"
                   }
                 }
               },
@@ -15534,6 +15642,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--staging-bucket": "value",
                         "--stream-logs": "bool",
+                        "--tpu-tf-version": "value",
                         "--worker-accelerator": "value",
                         "--worker-count": "value",
                         "--worker-image-uri": "value",
@@ -16030,6 +16139,18 @@ STATIC_COMPLETION_CLI_TREE = {
             "set-iam-policy": {
               "commands": {},
               "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "policy-troubleshoot": {
+          "commands": {
+            "iam": {
+              "commands": {},
+              "flags": {
+                "--permission": "value",
+                "--principal-email": "value"
+              }
             }
           },
           "flags": {}
@@ -17259,7 +17380,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--add-cloudsql-instances": "value",
-                    "--allow-unauthenticated": "bool",
                     "--args": "value",
                     "--async": "bool",
                     "--clear-cloudsql-instances": "bool",
@@ -20182,6 +20302,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--staging-bucket": "value",
                         "--stream-logs": "bool",
+                        "--tpu-tf-version": "value",
                         "--worker-accelerator": "value",
                         "--worker-count": "value",
                         "--worker-image-uri": "value",
@@ -22975,7 +23096,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "windows-2012r2-byol",
                       "windows-2016",
                       "windows-2016-byol",
-                      "windows-7-byol"
+                      "windows-2019",
+                      "windows-2019-byol",
+                      "windows-7-byol",
+                      "windows-8-1-x64-byol"
                     ],
                     "--source-file": "value",
                     "--source-image": "dynamic",
@@ -23950,7 +24074,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "windows-2012r2-byol",
                       "windows-2016",
                       "windows-2016-byol",
-                      "windows-7-byol"
+                      "windows-2019",
+                      "windows-2019-byol",
+                      "windows-7-byol",
+                      "windows-8-1-x64-byol"
                     ],
                     "--private-network-ip": "value",
                     "--restart-on-failure": "bool",
@@ -27031,6 +27158,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--allow-route-overlap": "bool",
                     "--async": "bool",
                     "--autoprovisioning-config-file": "value",
+                    "--autoprovisioning-locations": "value",
                     "--cluster-ipv4-cidr": "value",
                     "--cluster-secondary-range-name": "value",
                     "--cluster-version": "value",
@@ -27064,6 +27192,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-private-endpoint": "bool",
                     "--enable-private-nodes": "bool",
                     "--enable-resource-consumption-metering": "bool",
+                    "--enable-shielded-nodes": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-tpu": "bool",
                     "--enable-vertical-pod-autoscaling": "bool",
@@ -27173,6 +27302,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--additional-zones": "value",
                     "--async": "bool",
                     "--autoprovisioning-config-file": "value",
+                    "--autoprovisioning-locations": "value",
                     "--clear-resource-usage-bigquery-dataset": "bool",
                     "--complete-credential-rotation": "bool",
                     "--complete-ip-rotation": "bool",
@@ -27193,6 +27323,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-network-policy": "bool",
                     "--enable-pod-security-policy": "bool",
                     "--enable-resource-consumption-metering": "bool",
+                    "--enable-shielded-nodes": "bool",
                     "--enable-stackdriver-kubernetes": "bool",
                     "--enable-vertical-pod-autoscaling": "bool",
                     "--generate-password": "bool",
@@ -30478,6 +30609,14 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {}
                 },
+                "disable": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "enable": {
+                  "commands": {},
+                  "flags": {}
+                },
                 "get-iam-policy": {
                   "commands": {},
                   "flags": {
@@ -32401,6 +32540,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         ],
                         "--staging-bucket": "value",
                         "--stream-logs": "bool",
+                        "--tpu-tf-version": "value",
                         "--worker-accelerator": "value",
                         "--worker-count": "value",
                         "--worker-image-uri": "value",
@@ -32669,6 +32809,18 @@ STATIC_COMPLETION_CLI_TREE = {
             "set-iam-policy": {
               "commands": {},
               "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "policy-troubleshoot": {
+          "commands": {
+            "iam": {
+              "commands": {},
+              "flags": {
+                "--permission": "value",
+                "--principal-email": "value"
+              }
             }
           },
           "flags": {}
@@ -33633,7 +33785,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--add-cloudsql-instances": "value",
-                    "--allow-unauthenticated": "bool",
                     "--async": "bool",
                     "--clear-cloudsql-instances": "bool",
                     "--clear-env-vars": "bool",
@@ -37095,7 +37246,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "windows-2012r2-byol",
                   "windows-2016",
                   "windows-2016-byol",
-                  "windows-7-byol"
+                  "windows-2019",
+                  "windows-2019-byol",
+                  "windows-7-byol",
+                  "windows-8-1-x64-byol"
                 ],
                 "--source-file": "value",
                 "--source-image": "dynamic",

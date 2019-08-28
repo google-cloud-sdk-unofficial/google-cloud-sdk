@@ -90,7 +90,7 @@ class UpdateHelper(object):
     flags.AddProtocol(parser, default=None)
 
     flags.AddConnectionDrainingTimeout(parser)
-    flags.AddEnableCdn(parser, default=None)
+    flags.AddEnableCdn(parser)
     flags.AddCacheKeyIncludeProtocol(parser, default=None)
     flags.AddCacheKeyIncludeHost(parser, default=None)
     flags.AddCacheKeyIncludeQueryString(parser, default=None)

@@ -31,6 +31,7 @@ from googlecloudsdk.api_lib.firebase.test.ios import arg_manager
 from googlecloudsdk.api_lib.firebase.test.ios import matrix_creator
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
+import six
 
 
 @base.UnicodeIsSupported
@@ -150,7 +151,7 @@ class Run(base.ListCommand):
 
     matrix = matrix_creator.CreateMatrix(args, self.context, history_id,
                                          bucket_ops.gcs_results_root,
-                                         str(self.ReleaseTrack()))
+                                         six.text_type(self.ReleaseTrack()))
     monitor = matrix_ops.MatrixMonitor(
         matrix.testMatrixId, args.type, self.context)
 

@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.addresses import flags
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 
-def _Args(cls, parser):
+def _Args(cls, parser, support_shared_loadbalancer_vip):
   """Argument parsing."""
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
@@ -36,7 +36,19 @@ def _Args(cls, parser):
   flags.AddDescription(parser)
   parser.display_info.AddCacheUpdater(flags.AddressesCompleter)
 
+  flags.AddAddressesAndIPVersions(parser, required=False)
+  flags.AddNetworkTier(parser)
+  flags.AddPrefixLength(parser)
+  flags.AddPurpose(parser, support_shared_loadbalancer_vip)
 
+  cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
+  cls.SUBNETWORK_ARG.AddArgument(parser)
+
+  cls.NETWORK_ARG = flags.NetworkArgument()
+  cls.NETWORK_ARG.AddArgument(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Reserve IP addresses.
 
@@ -80,19 +92,14 @@ class Create(base.CreateCommand):
   SUBNETWORK_ARG = None
   NETWORK_ARG = None
 
+  _support_shared_loadbalancer_vip = False
+
   @classmethod
   def Args(cls, parser):
-    _Args(cls, parser)
-    flags.AddAddressesAndIPVersions(parser, required=False)
-    flags.AddNetworkTier(parser)
-    flags.AddPrefixLength(parser)
-    flags.AddPurpose(parser)
-
-    cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
-    cls.SUBNETWORK_ARG.AddArgument(parser)
-
-    cls.NETWORK_ARG = flags.NetworkArgument()
-    cls.NETWORK_ARG.AddArgument(parser)
+    _Args(
+        cls,
+        parser,
+        support_shared_loadbalancer_vip=cls._support_shared_loadbalancer_vip)
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
@@ -116,7 +123,8 @@ class Create(base.CreateCommand):
       args.name = names
 
     address_refs = self.ADDRESSES_ARG.ResolveAsResource(
-        args, holder.resources,
+        args,
+        holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     requests = []
@@ -162,14 +170,30 @@ class Create(base.CreateCommand):
 
     return names, addresses
 
+  def CheckPurposeInSubnetwork(self, messages, purpose,
+                               support_shared_loadbalancer_vip):
+    if support_shared_loadbalancer_vip:
+      if (purpose != messages.Address.PurposeValueValuesEnum.GCE_ENDPOINT and
+          purpose !=
+          messages.Address.PurposeValueValuesEnum.SHARED_LOADBALANCER_VIP):
+        raise exceptions.InvalidArgumentException(
+            '--purpose',
+            'must be GCE_ENDPOINT or SHARED_LOADBALANCER_VIP for regional '
+            'internal addresses.')
+    else:
+      if purpose != messages.Address.PurposeValueValuesEnum.GCE_ENDPOINT:
+        raise exceptions.InvalidArgumentException(
+            '--purpose',
+            'must be GCE_ENDPOINT for regional internal addresses.')
+
   def GetAddress(self, messages, args, address, address_ref, resource_parser):
     network_tier = self.ConstructNetworkTier(messages, args)
 
     if args.ip_version or (
         address is None and
         address_ref.Collection() == 'compute.globalAddresses'):
-      ip_version = messages.Address.IpVersionValueValuesEnum(
-          args.ip_version or 'IPV4')
+      ip_version = messages.Address.IpVersionValueValuesEnum(args.ip_version or
+                                                             'IPV4')
     else:
       # IP version is only specified in global requests if an address is not
       # specified to determine whether an ipv4 or ipv6 address should be
@@ -195,10 +219,8 @@ class Create(base.CreateCommand):
           args, resource_parser).SelfLink()
       purpose = messages.Address.PurposeValueValuesEnum(args.purpose or
                                                         'GCE_ENDPOINT')
-      if purpose != messages.Address.PurposeValueValuesEnum.GCE_ENDPOINT:
-        raise exceptions.InvalidArgumentException(
-            '--purpose',
-            'must be GCE_ENDPOINT for regional internal addresses.')
+      self.CheckPurposeInSubnetwork(messages, purpose,
+                                    self._support_shared_loadbalancer_vip)
     else:
       subnetwork_url = None
 
@@ -236,3 +258,52 @@ class Create(base.CreateCommand):
         purpose=purpose,
         subnetwork=subnetwork_url,
         network=network_url)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Reserve IP addresses.
+
+  *{command}* is used to reserve one or more IP addresses. Once an IP address
+  is reserved, it will be associated with the project until it is released
+  using 'gcloud compute addresses delete'. Ephemeral IP addresses that are in
+  use by resources in the project can be reserved using the '--addresses' flag.
+
+  ## EXAMPLES
+  To reserve three IP addresses in the 'us-central1' region, run:
+
+    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region us-central1
+
+  To reserve ephemeral IP addresses 162.222.181.198 and 23.251.146.189 which
+  are being used by virtual machine instances in the 'us-central1' region, run:
+
+    $ {command} --addresses 162.222.181.198,23.251.146.189 --region us-central1
+
+  In the above invocation, the two addresses will be assigned random names.
+
+  To reserve an IP address from the subnet 'default' in the 'us-central1'
+  region, run:
+
+    $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
+
+  To reserve an IP address that can be used by multiple internal load balancers
+  from the subnet 'default' in the 'us-central1' region, run:
+
+    $ {command} SHARED-ADDRESS-1 --region us-central1 --subnet default
+    --purpose SHARED_LOADBALANCER_VIP
+
+  To reserve an IP range 10.110.0.0/16 from the network 'default' for
+  VPC_PEERING, run:
+
+    $ {command} IP-RANGE-1 --global --addresses 10.110.0.0 --prefix-length 16
+    --purpose VPC_PEERING --network default
+
+  To reserve any IP range with prefix length 16 from the network 'default' for
+  VPC_PEERING, run:
+
+    $ {command} IP-RANGE-1 --global --prefix-length 16 --purpose VPC_PEERING
+    --network default
+
+  """
+
+  _support_shared_loadbalancer_vip = True

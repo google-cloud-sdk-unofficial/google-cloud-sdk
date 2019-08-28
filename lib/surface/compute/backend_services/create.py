@@ -98,7 +98,7 @@ class CreateHelper(object):
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
-    flags.AddEnableCdn(parser, default=False)
+    flags.AddEnableCdn(parser)
     flags.AddSessionAffinity(parser)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)

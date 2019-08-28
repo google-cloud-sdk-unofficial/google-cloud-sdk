@@ -84,7 +84,7 @@ class Submit(base.CreateCommand):
   _machine_type_flag_map = arg_utils.ChoiceEnumMapper(
       '--machine-type', (cloudbuild_util.GetMessagesModule()
                         ).BuildOptions.MachineTypeValueValuesEnum,
-      include_filter=lambda s: str(s) != 'UNSPECIFIED',
+      include_filter=lambda s: six.text_type(s) != 'UNSPECIFIED',
       help_str='Machine type used to run the build.')
 
   @staticmethod

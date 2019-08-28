@@ -97,7 +97,6 @@ _MEDIA_SIZE_BIT_SHIFTS = {'KB': 10, 'MB': 20, 'GB': 30, 'TB': 40}
 BODY_PARAMETER_DEFAULT_VALUE = {
     'description': 'The request body.',
     'type': 'object',
-    'required': True,
 }
 MEDIA_BODY_PARAMETER_DEFAULT_VALUE = {
     'description': ('The filename of the media request body, or an instance '
@@ -127,14 +126,16 @@ class _BytesGenerator(BytesGenerator):
   _write_lines = BytesGenerator.write
 
 def fix_method_name(name):
-  """Fix method names to avoid reserved word conflicts.
+  """Fix method names to avoid '$' characters and reserved word conflicts.
 
   Args:
     name: string, method name.
 
   Returns:
-    The name with an '_' appended if the name is a reserved word.
+    The name with '_' appended if the name is a reserved word and '$' 
+    replaced with '_'. 
   """
+  name = name.replace('$', '_')
   if keyword.iskeyword(name) or name in RESERVED_WORDS:
     return name + '_'
   else:
@@ -333,6 +334,8 @@ def build_from_document(
 
   if isinstance(service, six.string_types):
     service = json.loads(service)
+  elif isinstance(service, six.binary_type):
+    service = json.loads(service.decode('utf-8'))
 
   if  'rootUrl' not in service and (isinstance(http, (HttpMock,
                                                       HttpMockSequence))):
@@ -493,9 +496,6 @@ def _fix_up_parameters(method_desc, root_desc, http_method, schema):
   if http_method in HTTP_PAYLOAD_METHODS and 'request' in method_desc:
     body = BODY_PARAMETER_DEFAULT_VALUE.copy()
     body.update(method_desc['request'])
-    # Make body optional for requests with no parameters.
-    if not _methodProperties(method_desc, schema, 'request'):
-      body['required'] = False
     parameters['body'] = body
 
   return parameters
@@ -504,10 +504,8 @@ def _fix_up_parameters(method_desc, root_desc, http_method, schema):
 def _fix_up_media_upload(method_desc, root_desc, path_url, parameters):
   """Adds 'media_body' and 'media_mime_type' parameters if supported by method.
 
-  SIDE EFFECTS: If the method supports media upload and has a required body,
-  sets body to be optional (required=False) instead. Also, if there is a
-  'mediaUpload' in the method description, adds 'media_upload' key to
-  parameters.
+  SIDE EFFECTS: If there is a 'mediaUpload' in the method description, adds
+  'media_upload' key to parameters.
 
   Args:
     method_desc: Dictionary with metadata describing an API method. Value comes
@@ -540,8 +538,6 @@ def _fix_up_media_upload(method_desc, root_desc, path_url, parameters):
     media_path_url = _media_path_url_from_info(root_desc, path_url)
     parameters['media_body'] = MEDIA_BODY_PARAMETER_DEFAULT_VALUE.copy()
     parameters['media_mime_type'] = MEDIA_MIME_TYPE_PARAMETER_DEFAULT_VALUE.copy()
-    if 'body' in parameters:
-      parameters['body']['required'] = False
 
   return accept, max_size, media_path_url
 
