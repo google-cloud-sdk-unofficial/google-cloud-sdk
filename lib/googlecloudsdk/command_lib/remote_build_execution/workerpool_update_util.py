@@ -13,35 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The eventflow command group."""
+"""Utilities for remotebuildexecution update command."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
 
-
-DETAILED_HELP = {
-    'brief': 'Manage your Eventflow resources.',
-    'DESCRIPTION': """
-        The gcloud eventflow command group lets you manage '
-        'your Eventflow resources.
-        """,
-    'EXAMPLES': """\
-        To view your existing triggers, use the `gcloud eventflow triggers list` command:
-
-          $ gcloud eventflow triggers list --cluster <cluster_name> --cluster-location <cluster_location>
-
-        For more information, run:
-          $ gcloud eventflow --help
-        """
-}
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Eventflow(base.Group):
-  """Manage events."""
-
-  detailed_help = DETAILED_HELP
+def RemoveAcceleratorConfig(ref, args, request):
+  del ref
+  if args.IsSpecified('clear_accelerator_config'):
+    request.googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.accelerator = None
+    request.googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.updateMask = u'workerConfig.accelerator.acceleratorCount,workerConfig.accelerator.acceleratorType'
+  return request

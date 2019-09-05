@@ -12,9 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Implementation of gcloud dataflow jobs list command.
-"""
+"""Implementation of gcloud dataflow jobs list command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,6 +23,7 @@ from googlecloudsdk.api_lib.dataflow import job_display
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_filter
 from googlecloudsdk.core.util import times
@@ -71,33 +70,39 @@ class List(base.ListCommand):
     parser.add_argument(
         '--status',
         choices={
-            'all': (
-                'Returns running jobs first, ordered on creation timestamp, '
-                'then, returns all terminated jobs ordered on the termination '
-                'timestamp.'),
-            'terminated': (
-                'Filters the jobs that have a terminated state, ordered on '
-                'the termination timestamp. Example terminated states: Done, '
-                'Updated, Cancelled, etc.'),
-            'active': (
-                'Filters the jobs that are running ordered on the creation '
-                'timestamp.'),
+            'all':
+                ('Returns running jobs first, ordered on creation timestamp, '
+                 'then, returns all terminated jobs ordered on the termination '
+                 'timestamp.'),
+            'terminated':
+                ('Filters the jobs that have a terminated state, ordered on '
+                 'the termination timestamp. Example terminated states: Done, '
+                 'Updated, Cancelled, etc.'),
+            'active':
+                ('Filters the jobs that are running ordered on the creation '
+                 'timestamp.'),
         },
         help='Filter the jobs to those with the selected status.')
     parser.add_argument(
-        '--created-after', type=arg_parsers.Datetime.Parse,
+        '--created-after',
+        type=arg_parsers.Datetime.Parse,
         help=('Filter the jobs to those created after the given time. '
               'See $ gcloud topic datetimes for information on time formats. '
               'For example, `2018-01-01` is the first day of the year, and '
               '`-P2W` is 2 weeks ago.'))
     parser.add_argument(
-        '--created-before', type=arg_parsers.Datetime.Parse,
+        '--created-before',
+        type=arg_parsers.Datetime.Parse,
         help=('Filter the jobs to those created before the given time. '
               'See $ gcloud topic datetimes for information on time formats.'))
     parser.add_argument(
         '--region',
         metavar='REGION',
-        help='If provided, only resources from the given region are queried.')
+        help=(
+            'Only resources from the given region are queried. '
+            'If not provided, an attempt will be made to query from all '
+            'available regions. In the event of an outage, jobs from certain '
+            'regions may not be available.'))
 
     parser.display_info.AddFormat("""
           table(
@@ -155,6 +160,10 @@ class List(base.ListCommand):
           projectId=project_id, location=args.region, filter=status_filter)
       service = apis.Jobs.GetService()
     else:
+      log.status.Print(
+          '`--region` not set; getting jobs from all available regions. ' +
+          'Some jobs may be missing in the event of an outage. ' +
+          'https://cloud.google.com/dataflow/docs/concepts/regional-endpoints')
       request = apis.Jobs.AGGREGATED_LIST_REQUEST(
           projectId=project_id, filter=status_filter)
       service = apis.GetClientInstance().projects_jobs
@@ -176,6 +185,7 @@ class List(base.ListCommand):
     Args:
       status: The job status enum
       region: The region argument, to select the correct wrapper message.
+
     Returns:
       string describing the job status
     """
@@ -183,12 +193,12 @@ class List(base.ListCommand):
     filter_value_enum = None
     if region:
       filter_value_enum = (
-          apis.GetMessagesModule()
-          .DataflowProjectsLocationsJobsListRequest.FilterValueValuesEnum)
+          apis.GetMessagesModule().DataflowProjectsLocationsJobsListRequest
+          .FilterValueValuesEnum)
     else:
       filter_value_enum = (
-          apis.GetMessagesModule()
-          .DataflowProjectsJobsAggregatedRequest.FilterValueValuesEnum)
+          apis.GetMessagesModule().DataflowProjectsJobsAggregatedRequest
+          .FilterValueValuesEnum)
 
     value_map = {
         'all': filter_value_enum.ALL,
@@ -199,8 +209,7 @@ class List(base.ListCommand):
 
 
 class _JobFilter(object):
-  """Predicate for filtering jobs.
-  """
+  """Predicate for filtering jobs."""
 
   def __init__(self, args):
     """Create a _JobFilter from the given args.
@@ -221,14 +230,15 @@ class _JobFilter(object):
     Args:
       after: Only return true if the job was created after this time.
       before: Only return true if the job was created before this time.
-
     """
     if after and (not before):
       self.preds.append(lambda x: times.ParseDateTime(x.createTime) > after)
     elif (not after) and before:
       self.preds.append(lambda x: times.ParseDateTime(x.createTime) <= before)
     elif after and before:
+
       def _Predicate(x):
         create_time = times.ParseDateTime(x.createTime)
         return after < create_time and create_time <= before
+
       self.preds.append(_Predicate)

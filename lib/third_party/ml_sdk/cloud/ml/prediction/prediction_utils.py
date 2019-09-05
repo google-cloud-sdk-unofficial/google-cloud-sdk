@@ -35,6 +35,7 @@ ENGINE = "Prediction-Engine"
 ENGINE_RUN_TIME = "Prediction-Engine-Run-Time"
 FRAMEWORK = "Framework"
 MODEL_SUBDIRECTORY = "model"
+PREPARED_MODEL_SUBDIRECTORY = "prepared_model"
 SCIKIT_LEARN_FRAMEWORK_NAME = "scikit_learn"
 SK_XGB_FRAMEWORK_NAME = "sk_xgb"
 XGBOOST_FRAMEWORK_NAME = "xgboost"
@@ -83,6 +84,8 @@ METADATA_KEY = "metadata"
 METADATA_FILE_NAME = "metadata.json"
 EXPLANATION_CONFIG_KEY = "explanation_config"
 ABLATION_ATTRIBUTION_KEY = "ablation_attribution"
+INTEGRATED_GRADIENTS_KEY = "integrated_gradients_attribution"
+NUM_INTEGRAL_STEPS = "num_integral_steps"
 TREE_SHAP_ATTRIBUTION_KEY = "tree_shap_attribution"
 SAABAS_ATTRIBUTION_KEY = "saabas_attribution"
 NUM_FEATURE_INTERACTIONS = "num_feature_interactions"
@@ -635,6 +638,7 @@ def get_tensorflow_explanation_config(tf_configs_module):
   elif IG_ATTRIBUTION_KEY in config_request:
     ig_attribution = config_request.get(IG_ATTRIBUTION_KEY)
     integral_steps = ig_attribution.get(NUM_INTEGRAL_STEPS, 50)
+    logging.debug("IG enabled, num_integral_steps: %s", integral_steps)
     return tf_configs_module.TFIGConfig(
         tf_configs_module.ModelType.CUSTOM,  # model_type
         tf_configs_module.InputType.FEED_DICT,  # input_type
@@ -660,8 +664,11 @@ def load_metadata(base_path):
     PredictionError: If there is a problem while loading the file.
   """
   if base_path.startswith("gs://"):
-    # Example structure: <base_path>/model/<random string>/metadata.json
-    metadata_file_path = os.path.join(base_path, MODEL_SUBDIRECTORY, "*",
+    # Example path: <base_path>/prepared_model/<model_version_stamp>/
+    # metadata.json
+    metadata_file_path = os.path.join(base_path,
+                                      PREPARED_MODEL_SUBDIRECTORY,
+                                      "*",
                                       METADATA_FILE_NAME)
     logging.debug("Starting to copy %s to %s", metadata_file_path,
                   LOCAL_MODEL_PATH)
@@ -686,9 +693,9 @@ def load_metadata(base_path):
   metadata = None
   try:
     # pylint: disable=g-import-not-at-top
-    from explainers.common import model_metadata
+    from explainers.common import explain_metadata
     # pylint: enable=g-import-not-at-top
-    metadata = model_metadata.ModelMetadata.from_file(metadata_file_path)
+    metadata = explain_metadata.ExplainMetadata.from_file(metadata_file_path)
   except IOError as e:
     error_msg = "Failed to read metadata.json: {}.".format(str(e))
     logging.critical(error_msg)

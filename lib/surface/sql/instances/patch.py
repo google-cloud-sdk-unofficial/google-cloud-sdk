@@ -100,10 +100,7 @@ def AddBaseArgs(parser):
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   flags.AddActivationPolicy(parser)
   flags.AddAssignIp(parser)
-  parser.add_argument(
-      '--async',
-      action='store_true',
-      help='Do not wait for the operation to complete.')
+  base.ASYNC_FLAG.AddToParser(parser)
   gae_apps_group = parser.add_mutually_exclusive_group()
   flags.AddAuthorizedGAEApps(gae_apps_group, update=True)
   gae_apps_group.add_argument(

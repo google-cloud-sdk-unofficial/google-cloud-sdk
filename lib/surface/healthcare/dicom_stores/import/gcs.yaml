@@ -18,3 +18,5 @@
       required: true
       help_text: |
         Google Cloud Storage URI containing DICOM object data.
+  async:
+    collection: healthcare.projects.locations.datasets.operations

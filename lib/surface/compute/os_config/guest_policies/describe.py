@@ -43,7 +43,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     parser.add_argument(
         'POLICY_ID', type=str, help='ID of the guest policy to describe.')
-    osconfig_utils.AddFolderAndOrgArgs(parser, 'guest policy', 'to describe')
+    osconfig_utils.AddResourceParentArgs(parser, 'guest policy', 'to describe')
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

@@ -158,6 +158,7 @@ class Import(base.CreateCommand):
         zone=properties.VALUES.compute.zone.Get(),
         project=args.project,
         output_filter=_OUTPUT_FILTER,
+        compute_release_track=self.ReleaseTrack().prefix
     )
 
 

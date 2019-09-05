@@ -12,29 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Wraps an Eventflow Trigger message, making fields more convenient."""
+"""The gcloud events triggers group."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.run import k8s_object
+from googlecloudsdk.calliope import base
 
 
-class Trigger(k8s_object.KubernetesObject):
-  """Wraps an Eventflow Trigger message, making fields more convenient."""
+class Triggers(base.Group):
+  """View and manage your Events triggers.
 
-  API_CATEGORY = 'eventing.knative.dev'
-  KIND = 'Trigger'
-  READY_CONDITION = 'Ready'
-  TERMINAL_CONDITIONS = {
-      READY_CONDITION,
+  This set of commands can be used to view and manage your Events resources.
+  """
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To list your existing triggers, run:
+
+            $ {command} list
+      """,
   }
-
-  @property
-  def broker(self):
-    return self._m.spec.broker
-
-  @property
-  def subscriber(self):
-    return self._m.spec.subscriber.ref.name

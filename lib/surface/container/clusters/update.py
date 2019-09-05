@@ -200,7 +200,7 @@ class Update(base.UpdateCommand):
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
-    flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
+    flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
@@ -230,6 +230,7 @@ class Update(base.UpdateCommand):
     cluster_name = args.name
     cluster_node_count = None
     cluster_zone = cluster_ref.zone
+    cluster_is_required = self.IsClusterRequired(args)
     try:
       # Attempt to get cluster for better prompts and to validate args.
       # Error is a warning but not fatal. Should only exit with a failure on
@@ -240,6 +241,8 @@ class Update(base.UpdateCommand):
       cluster_zone = cluster.zone
     except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
             util.Error) as error:
+      if cluster_is_required:
+        raise
       log.warning(('Problem loading details of cluster to update:\n\n{}\n\n'
                    'You can still attempt updates to the cluster.\n').format(
                        console_attr.SafeText(error)))
@@ -377,8 +380,39 @@ to completion."""
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.maintenance_window is not None:
       try:
-        op_ref = adapter.SetMaintenanceWindow(cluster_ref,
-                                              args.maintenance_window)
+        op_ref = adapter.SetDailyMaintenanceWindow(cluster_ref,
+                                                   cluster.maintenancePolicy,
+                                                   args.maintenance_window)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'maintenance_window_start', None) is not None:
+      try:
+        op_ref = adapter.SetRecurringMaintenanceWindow(
+            cluster_ref, cluster.maintenancePolicy,
+            args.maintenance_window_start, args.maintenance_window_end,
+            args.maintenance_window_recurrence)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'clear_maintenance_window', None):
+      try:
+        op_ref = adapter.RemoveMaintenanceWindow(cluster_ref,
+                                                 cluster.maintenancePolicy)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'add_maintenance_exclusion_end', None) is not None:
+      try:
+        op_ref = adapter.AddMaintenanceExclusion(
+            cluster_ref, cluster.maintenancePolicy,
+            args.add_maintenance_exclusion_name,
+            args.add_maintenance_exclusion_start,
+            args.add_maintenance_exclusion_end)
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'remove_maintenance_exclusion', None) is not None:
+      try:
+        op_ref = adapter.RemoveMaintenanceExclusion(
+            cluster_ref, cluster.maintenancePolicy,
+            args.remove_maintenance_exclusion)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
@@ -405,6 +439,14 @@ to completion."""
           util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
         except kconfig.MissingEnvVarError as error:
           log.warning(error)
+
+  def IsClusterRequired(self, args):
+    """Returns if getting the cluster should be an error for the flags."""
+    return bool(
+        getattr(args, 'add_maintenance_exclusion_end', False) or
+        getattr(args, 'clear_maintenance_window', False) or
+        getattr(args, 'add_maintenance_exclusion_end', False) or
+        getattr(args, 'remove_maintenance_exclusion', False))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -434,7 +476,9 @@ class UpdateBeta(Update):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
-    flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
+    flags.AddDailyMaintenanceWindowFlag(
+        group, add_unset_text=True, add_emw_text=False)
+    flags.AddRecurringMaintenanceWindowFlags(group, hidden=True, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
@@ -473,7 +517,7 @@ class UpdateBeta(Update):
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
-    opts.database_encryption_key = flags.GetDatabaseEncryptionOption(args)
+    opts.database_encryption_key = args.database_encryption_key
     opts.disable_database_encryption = args.disable_database_encryption
 
     # Top-level update options are automatically forced to be
@@ -514,7 +558,9 @@ class UpdateAlpha(Update):
     flags.AddNetworkPolicyFlags(group)
     flags.AddAutoprovisioningFlags(group, hidden=False)
     flags.AddAutoscalingProfilesFlag(group, hidden=True)
-    flags.AddMaintenanceWindowFlag(group, add_unset_text=True)
+    flags.AddDailyMaintenanceWindowFlag(
+        group, add_unset_text=True, add_emw_text=False)
+    flags.AddRecurringMaintenanceWindowFlags(group, hidden=True, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddResourceUsageExportFlags(group, is_update=True)
@@ -558,7 +604,7 @@ class UpdateAlpha(Update):
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_peering_route_sharing = args.enable_peering_route_sharing
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
-    opts.database_encryption_key = flags.GetDatabaseEncryptionOption(args)
+    opts.database_encryption_key = args.database_encryption_key
     opts.disable_database_encryption = args.disable_database_encryption
 
     # Top-level update options are automatically forced to be

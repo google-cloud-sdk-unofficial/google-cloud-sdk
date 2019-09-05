@@ -47,10 +47,7 @@ class CreateBackup(base.CreateCommand):
     flags.AddInstance(parser)
     parser.add_argument(
         '--description', help='A friendly description of the backup.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
+    base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):

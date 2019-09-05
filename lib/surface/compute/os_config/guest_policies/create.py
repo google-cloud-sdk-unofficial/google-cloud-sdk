@@ -63,7 +63,7 @@ class Create(base.Command):
         limited to 1024 characters.
 
         If specified, it will override any description provided in the file.""")
-    osconfig_utils.AddFolderAndOrgArgs(parser, 'guest policy', 'to create')
+    osconfig_utils.AddResourceParentArgs(parser, 'guest policy', 'to create')
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

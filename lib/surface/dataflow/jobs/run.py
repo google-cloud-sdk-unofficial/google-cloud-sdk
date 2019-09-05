@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.core import properties
 
 
@@ -74,10 +75,12 @@ def _CommonArgs(parser):
       action=arg_parsers.UpdateAction,
       help='The parameters to pass to the job.')
 
+  # TODO(b/139889563): Mark as required when default region is removed
   parser.add_argument(
       '--region',
       metavar='REGION_ID',
-      help='The region ID of the job\'s regional endpoint.')
+      help=('The region ID of the job\'s regional endpoint. ' +
+            dataflow_util.DEFAULT_REGION_MESSAGE))
 
 
 def _CommonRun(args, support_beta_features=False):
@@ -105,7 +108,7 @@ def _CommonRun(args, support_beta_features=False):
 
   job = apis.Templates.Create(
       project_id=properties.VALUES.core.project.Get(required=True),
-      region_id=args.region,
+      region_id=dataflow_util.GetRegion(args),
       gcs_location=args.gcs_location,
       staging_location=args.staging_location,
       job_name=args.job_name,

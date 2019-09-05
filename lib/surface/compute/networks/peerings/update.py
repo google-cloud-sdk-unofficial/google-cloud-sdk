@@ -25,9 +25,20 @@ from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.Command):
-  """Update a Google Compute Engine network peering."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class Update(base.Command):
+  r"""Update a Google Compute Engine network peering.
+
+  ## EXAMPLES
+
+  To update the peering named peering-name to both export and import custom
+  routes, run:
+
+    $ {command} peering-name \
+      --export-custom-routes \
+      --import-custom-routes
+
+  """
 
   enable_subnet_routes_with_public_ip = False
 
@@ -86,6 +97,24 @@ class UpdateBeta(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a Google Compute Engine network peering."""
+class UpdateAlpha(Update):
+  r"""Update a Google Compute Engine network peering.
+
+  ## EXAMPLES
+
+  To update the peering named peering-name to both export and import custom
+  routes, run:
+
+    $ {command} peering-name \
+      --export-custom-routes \
+      --import-custom-routes
+
+  To update the peering named peering-name to both export and import subnet
+  routes with public ip, run:
+
+    $ {command} peering-name \
+      --export-subnet-routes-with-public-ip \
+      --import-subnet-routes-with-public-ip
+
+  """
   enable_subnet_routes_with_public_ip = True

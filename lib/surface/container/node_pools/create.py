@@ -267,6 +267,7 @@ class CreateAlpha(Create):
     ops.node_locations = args.node_locations
     ops.shielded_secure_boot = args.shielded_secure_boot
     ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
+    ops.node_config = args.node_config
     return ops
 
   @staticmethod
@@ -290,6 +291,7 @@ class CreateAlpha(Create):
     flags.AddMaxUnavailableUpgradeFlag(parser, for_node_pool=True)
     flags.AddNodePoolLocationsFlag(parser, for_create=True)
     flags.AddShieldedInstanceFlags(parser)
+    flags.AddNodeConfigFlag(parser)
 
 
 Create.detailed_help = DETAILED_HELP

@@ -44,7 +44,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     parser.add_argument(
         'POLICY_ID', type=str, help='ID of the guest policy to delete.')
-    osconfig_utils.AddFolderAndOrgArgs(parser, 'guest policy', 'to delete')
+    osconfig_utils.AddResourceParentArgs(parser, 'guest policy', 'to delete')
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

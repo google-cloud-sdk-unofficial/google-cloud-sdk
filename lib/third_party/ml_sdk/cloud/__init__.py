@@ -19,6 +19,8 @@ except (AttributeError, ImportError):
 
 # GOOGLE_INTERNAL_BEGIN
 else:
+  _HAS_DYNAMIC_ATTRIBUTES = True  # Disable go/pytype checks.
+
   __all__ = getattr(__future, '__all__', None)
   locals().update({k: getattr(__future, k) for k in __all__ or []})
 

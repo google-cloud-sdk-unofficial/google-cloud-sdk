@@ -9,7 +9,7 @@
         $ {command}
 
   request:
-    collection: gkehub.projects.locations.global.memberships
+    collection: gkehub.projects.locations.memberships
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.memberships.util:SetParentCollection
 
@@ -17,6 +17,7 @@
     resource:
       help_text: project containing memberships you want to list.
       spec: !REF googlecloudsdk.command_lib.container.memberships.resources:project
+      override_resource_collection: true
 
   response:
     id_field: name

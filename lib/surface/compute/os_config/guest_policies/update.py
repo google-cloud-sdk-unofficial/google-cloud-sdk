@@ -51,7 +51,7 @@ class Update(base.Command):
   def Args(parser):
     parser.add_argument(
         'POLICY_ID', type=str, help='ID of the guest policy to update.')
-    osconfig_utils.AddFolderAndOrgArgs(parser, 'guest policy', 'to update')
+    osconfig_utils.AddResourceParentArgs(parser, 'guest policy', 'to update')
 
     update_group = parser.add_group(help='The update component.', required=True)
     update_group.add_argument(

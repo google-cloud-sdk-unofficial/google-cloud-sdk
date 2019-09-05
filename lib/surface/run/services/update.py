@@ -53,7 +53,6 @@ class Update(base.Command):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddRegionArg(managed_group)
-    flags.AddRevisionSuffixArg(managed_group)
     flags.AddServiceAccountFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
     # Flags specific to CRoGKE
@@ -147,6 +146,7 @@ class AlphaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcConnectorArg(managed_group)
+    flags.AddRevisionSuffixArg(managed_group)
     # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
     kubernetes_group = flags.GetKubernetesArgGroup(parser)
     flags.AddKubeconfigFlags(kubernetes_group)

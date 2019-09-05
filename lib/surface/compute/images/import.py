@@ -254,7 +254,11 @@ class BaseImportStager(object):
     daisy_utils.AppendBoolArg(import_args, 'no_guest_environment',
                               not self.args.guest_environment)
     daisy_utils.AppendNetworkAndSubnetArgs(self.args, import_args)
-
+    # TODO(b/122357922): Remove 'description' and 'family' guards once in GA.
+    if 'description' in self.args:
+      daisy_utils.AppendArg(import_args, 'description', self.args.description)
+    if 'family' in self.args:
+      daisy_utils.AppendArg(import_args, 'family', self.args.family)
     return import_args
 
   def GetAndCreateDaisyBucket(self):
@@ -403,6 +407,14 @@ class ImportBeta(Import):
       image content is to be stored. If absent, the multi-region location
       closest to the source is chosen automatically.
       """)
+
+    parser.add_argument(
+        '--family',
+        help='Family to set for the imported image.')
+
+    parser.add_argument(
+        '--description',
+        help='Description to set for the imported image.')
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,

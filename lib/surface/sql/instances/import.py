@@ -69,10 +69,7 @@ class Import(base.Command):
         help='Path to the MySQL dump file in Google Cloud Storage from which'
         ' the import is made. The URI is in the form gs://bucketName/fileName.'
         ' Compressed gzip files (.gz) are also supported.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
+    base.ASYNC_FLAG.AddToParser(parser)
     flags.AddDatabase(parser, flags.DEFAULT_DATABASE_IMPORT_HELP_TEXT)
 
   def Run(self, args):

@@ -55,7 +55,9 @@ class Export(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddParentArgs(parser)
+    flags.AddParentArgs(parser, 'The project which is the root asset.',
+                        'The ID of the organization which is the root asset.',
+                        'The ID of the folder which is the root asset.')
     flags.AddSnapshotTimeArgs(parser)
     flags.AddAssetTypesArgs(parser)
     flags.AddContentTypeArgs(parser, required=False)

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataflow import dataflow_util
 from googlecloudsdk.command_lib.dataflow import snapshot_utils
 from googlecloudsdk.core import properties
 
@@ -49,4 +50,4 @@ class List(base.Command):
     return apis.Snapshots.List(
         job_id=args.job_id,
         project_id=properties.VALUES.core.project.GetOrFail(),
-        region_id=args.region)
+        region_id=dataflow_util.GetRegion(args))

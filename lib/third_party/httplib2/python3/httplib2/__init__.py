@@ -969,8 +969,8 @@ class HTTPSConnectionWithTimeout(http.client.HTTPSConnection):
             self.proxy_info = proxy_info('https')
 
         context = _build_ssl_context(self.disable_ssl_certificate_validation, self.ca_certs, cert_file, key_file)
-        super(HTTPSConnectionWithTimeout, self).__init__(host, port=port, key_file=key_file, cert_file=cert_file,
-                                                         timeout=timeout, context=context)
+        super(HTTPSConnectionWithTimeout, self).__init__(
+          host, port=port, timeout=timeout, context=context)
 
     def connect(self):
         """Connect to a host on a given (SSL) port."""

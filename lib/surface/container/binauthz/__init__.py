@@ -85,7 +85,7 @@ class Binauthz(base.Group):
 
         ```sh
         {command} attestations create \
-          --pgp-key-fingerprint=${KEY_FINGERPRINT} \
+          --public-key-id=${KEY_FINGERPRINT} \
           --signature-file=example_signature.pgp \
           --artifact-url="${ARTIFACT_URL}" \
           --attestor=${ATTESTOR_NAME}

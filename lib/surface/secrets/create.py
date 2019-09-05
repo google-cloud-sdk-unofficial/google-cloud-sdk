@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
@@ -50,6 +51,12 @@ class Create(base.CreateCommand):
         --locations=us-central1,us-east1
   """
 
+  EMPTY_DATA_FILE_MESSAGE = (
+      'The value provided for --data-file is the empty string. This can happen '
+      'if you pass or pipe a variable that is undefined. Please verify that '
+      'the --data-file flag is not the empty string. If you are not providing '
+      'secret data, omit the --data-file flag.')
+
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
@@ -63,6 +70,11 @@ class Create(base.CreateCommand):
     secret_ref = args.CONCEPTS.secret.Parse()
     data = secrets_util.ReadFileOrStdin(args.data_file)
     labels = labels_util.ParseCreateArgs(args, messages.Secret.LabelsValue)
+
+    # Differentiate between the flag being provided with an empty value and the
+    # flag being omitted. See b/138796299 for info.
+    if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
+      raise exceptions.ToolException(self.EMPTY_DATA_FILE_MESSAGE)
 
     # Create the secret
     response = secrets_api.Secrets().Create(

@@ -2,6 +2,14 @@
     brief:  Create a Cloud Healthcare API FHIR store.
     description: |
       Creates a Cloud Healthcare API FHIR store.
+    examples: |
+      To create a FHIR store called 'test-fhir-store', run:
+
+        $ {command} test-fhir-store --dataset=test-dataset
+
+      To create a fhir store with the Cloud Pub/Sub topic 'test-pubsub-topic', run:
+
+        $ {command} test-fhir-store --dataset=test-dataset --pubsub-topic=projects/my-project/topics/test-pubsub-topic
 
   request:
     collection: healthcare.projects.locations.datasets.fhirStores

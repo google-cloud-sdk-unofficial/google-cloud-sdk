@@ -53,10 +53,7 @@ class RestoreBackup(base.RestoreCommand):
         '--backup-instance',
         completer=flags.InstanceCompleter,
         help='The ID of the instance that the backup was taken from.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Restores a backup of a Cloud SQL instance.

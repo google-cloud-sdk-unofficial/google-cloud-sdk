@@ -33,7 +33,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class SignAndCreate(base.CreateCommand):
   r"""Sign and create a Binary Authorization Attestation using a Cloud KMS key.
 

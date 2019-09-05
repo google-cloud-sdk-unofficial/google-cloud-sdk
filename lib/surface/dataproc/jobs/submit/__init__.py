@@ -62,10 +62,7 @@ class Submit(base.Group):
     parser.add_argument(
         '--id', hidden=True, help='THIS ARGUMENT NEEDS HELP TEXT.')
 
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Does not wait for the job to run.')
+    base.ASYNC_FLAG.AddToParser(parser)
 
     parser.add_argument(
         '--bucket',

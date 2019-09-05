@@ -116,19 +116,33 @@ Cannot be used with the "--create-subnetwork" option.
       '1.7.0 can be any RFC 1918 IP range.')
   parser.add_argument(
       '--enable-cloud-logging',
-      action='store_true',
-      default=True,
-      help='Automatically send logs from the cluster to the '
-      'Google Cloud Logging API.')
-  parser.set_defaults(enable_cloud_logging=True)
+      action=actions.DeprecationAction(
+          '--enable-cloud-logging',
+          warn='From 1.14, legacy Stackdriver GKE logging is deprecated. Thus, '
+          'flag `--enable-cloud-logging` is also deprecated. Please use '
+          '`--enable-stackdriver-kubernetes` instead, to migrate to new '
+          'Stackdriver Kubernetes Engine monitoring and logging. For more '
+          'details, please read: '
+          'https://cloud.google.com/monitoring/kubernetes-engine/migration.',
+          action='store_true'),
+      help='Automatically send logs from the cluster to the Google Cloud '
+      'Logging API. This flag is deprecated, use '
+      '`--enable-stackdriver-kubernetes` instead.')
   parser.add_argument(
       '--enable-cloud-monitoring',
-      action='store_true',
-      default=True,
-      help='Automatically send metrics from pods in the cluster to the '
-      'Google Cloud Monitoring API. VM metrics will be collected by Google '
-      'Compute Engine regardless of this setting.')
-  parser.set_defaults(enable_cloud_monitoring=True)
+      action=actions.DeprecationAction(
+          '--enable-cloud-monitoring',
+          warn='From 1.14, legacy Stackdriver GKE monitoring is deprecated. '
+          'Thus, flag `--enable-cloud-monitoring` is also deprecated. Please '
+          'use `--enable-stackdriver-kubernetes` instead, to migrate to new '
+          'Stackdriver Kubernetes Engine monitoring and logging. For more '
+          'details, please read: '
+          'https://cloud.google.com/monitoring/kubernetes-engine/migration.',
+          action='store_true'),
+      help='Automatically send metrics from pods in the cluster to the Google '
+      'Cloud Monitoring API. VM metrics will be collected by Google Compute '
+      'Engine regardless of this setting. This flag is deprecated, use '
+      '`--enable-stackdriver-kubernetes` instead.')
   parser.add_argument(
       '--disk-size',
       type=arg_parsers.BinarySize(lower_bound='10GB'),
@@ -224,6 +238,7 @@ def ParseCreateOptionsBase(args):
   flags.WarnForNodeModification(args, enable_autorepair)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
+
   return api_adapter.CreateClusterOptions(
       accelerators=args.accelerator,
       additional_zones=args.additional_zones,
@@ -237,9 +252,9 @@ def ParseCreateOptionsBase(args):
       enable_autorepair=enable_autorepair,
       enable_autoscaling=args.enable_autoscaling,
       enable_autoupgrade=cmd_util.GetAutoUpgrade(args),
-      enable_stackdriver_kubernetes=args.enable_stackdriver_kubernetes,
-      enable_cloud_logging=args.enable_cloud_logging,
-      enable_cloud_monitoring=args.enable_cloud_monitoring,
+      enable_stackdriver_kubernetes=args.enable_stackdriver_kubernetes if args.IsSpecified('enable_stackdriver_kubernetes') else None,
+      enable_cloud_logging=args.enable_cloud_logging if args.IsSpecified('enable_cloud_logging') else None,
+      enable_cloud_monitoring=args.enable_cloud_monitoring if args.IsSpecified('enable_cloud_monitoring') else None,
       enable_ip_alias=args.enable_ip_alias,
       enable_kubernetes_alpha=args.enable_kubernetes_alpha,
       enable_legacy_authorization=args.enable_legacy_authorization,
@@ -307,7 +322,8 @@ class Create(base.CreateCommand):
     flags.AddIPAliasFlags(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDFlag(parser)
-    flags.AddMaintenanceWindowFlag(parser)
+    flags.AddMaintenanceWindowGroup(
+        parser, add_emw_flags=False, emw_hidden=True)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
@@ -451,7 +467,7 @@ class CreateBeta(Create):
     flags.AddIstioConfigFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDFlag(parser)
-    flags.AddMaintenanceWindowFlag(parser)
+    flags.AddMaintenanceWindowGroup(parser, emw_hidden=True, add_emw_flags=True)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddWorkloadMetadataFromNodeFlag(parser)
@@ -496,7 +512,6 @@ class CreateBeta(Create):
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
     ops.private_cluster = args.private_cluster
-    ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.enable_binauthz = args.enable_binauthz
     ops.istio_config = args.istio_config
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
@@ -505,9 +520,12 @@ class CreateBeta(Create):
     ops.identity_namespace = args.identity_namespace
     ops.enable_shielded_nodes = args.enable_shielded_nodes
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
-    ops.database_encryption = flags.GetDatabaseEncryptionOption(args)
+    ops.database_encryption_key = args.database_encryption_key
     ops.shielded_secure_boot = args.shielded_secure_boot
     ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
+    ops.maintenance_window_start = args.maintenance_window_start
+    ops.maintenance_window_end = args.maintenance_window_end
+    ops.maintenance_window_recurrence = args.maintenance_window_recurrence
     return ops
 
 
@@ -532,7 +550,7 @@ class CreateAlpha(Create):
     flags.AddIstioConfigFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser)
-    flags.AddMaintenanceWindowFlag(parser)
+    flags.AddMaintenanceWindowGroup(parser, emw_hidden=True, add_emw_flags=True)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddWorkloadMetadataFromNodeFlag(parser)
@@ -574,6 +592,7 @@ class CreateAlpha(Create):
     flags.AddMaxUnavailableUpgradeFlag(parser)
     flags.AddLinuxSysctlFlags(parser)
     flags.AddShieldedInstanceFlags(parser)
+    flags.AddNodeConfigFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -598,7 +617,6 @@ class CreateAlpha(Create):
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.enable_tpu_service_networking = args.enable_tpu_service_networking
     ops.istio_config = args.istio_config
-    ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     ops.enable_managed_pod_identity = args.enable_managed_pod_identity
     ops.identity_namespace = args.identity_namespace
     ops.federating_service_account = args.federating_service_account
@@ -618,7 +636,7 @@ class CreateAlpha(Create):
     ops.autoprovisioning_service_account = args.autoprovisioning_service_account
     ops.autoprovisioning_scopes = args.autoprovisioning_scopes
     ops.autoprovisioning_locations = args.autoprovisioning_locations
-    ops.database_encryption = flags.GetDatabaseEncryptionOption(args)
+    ops.database_encryption_key = args.database_encryption_key
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.linux_sysctls = args.linux_sysctls
@@ -626,5 +644,10 @@ class CreateAlpha(Create):
 
     ops.shielded_secure_boot = args.shielded_secure_boot
     ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
+    ops.node_config = args.node_config
+
+    ops.maintenance_window_start = args.maintenance_window_start
+    ops.maintenance_window_end = args.maintenance_window_end
+    ops.maintenance_window_recurrence = args.maintenance_window_recurrence
 
     return ops

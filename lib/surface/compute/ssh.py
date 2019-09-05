@@ -166,8 +166,8 @@ class Ssh(base.Command):
       host_keys = ssh_helper.GetHostKeysFromGuestAttributes(
           client, instance_ref)
       if not host_keys:
-        log.warning('Unable to retrieve host keys from instance metadata. '
-                    'Continuing.')
+        log.status.Print('Unable to retrieve host keys from instance metadata. '
+                         'Continuing.')
     else:
       host_keys = {}
     expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)

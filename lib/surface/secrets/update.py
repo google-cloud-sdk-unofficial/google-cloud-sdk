@@ -52,6 +52,12 @@ class Update(base.UpdateCommand):
       'create the secret if it does not exist, specify the --create-if-missing '
       'flag on the update command.')
 
+  EMPTY_DATA_FILE_MESSAGE = (
+      'The value provided for --data-file is the empty string. This can happen '
+      'if you pass or pipe a variable that is undefined. Please verify that '
+      'the --data-file flag is not the empty string. If you are not providing '
+      'secret data, omit the --data-file flag.')
+
   NO_CHANGES_MESSAGE = (
       'There are no changes to the secret [{secret}] for update.')
 
@@ -132,6 +138,11 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     secret_ref = args.CONCEPTS.secret.Parse()
+
+    # Differentiate between the flag being provided with an empty value and the
+    # flag being omitted. See b/138796299 for info.
+    if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
+      raise exceptions.ToolException(self.EMPTY_DATA_FILE_MESSAGE)
 
     # Attempt to get the secret
     secret = secrets_api.Secrets().GetOrNone(secret_ref)

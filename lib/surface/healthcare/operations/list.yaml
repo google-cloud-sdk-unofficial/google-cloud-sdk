@@ -1,6 +1,10 @@
 - help_text:
     brief: List Cloud Healthcare API operations.
     description: List Cloud Healthcare API operations.
+    examples: |
+      To list the operations in the dataset 'test-dataset', run:
+
+        $ {command} --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.operations

@@ -93,7 +93,10 @@ class Update(base.SilentCommand):
     """
     project = properties.VALUES.core.project.Get(required=True)
     project_number = _GetProjectNumber(project)
-    ranges = args.ranges.split(',')
+
+    if args.ranges:
+      ranges = args.ranges.split(',')
+
     op = peering.UpdateConnection(project_number, args.service, args.network,
                                   ranges, args.force)
     if args.async:

@@ -23,7 +23,6 @@ import textwrap
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import containeranalysis
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
@@ -33,7 +32,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a Binary Authorization attestation.
 
@@ -99,44 +98,18 @@ class Create(base.CreateCommand):
               `containeranalysis.notes.attacher` role).""")),
     )
 
-    # TODO(b/133451183): Remove deprecated flag.
-    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
-      parser.add_argument(
-          '--public-key-id',
-          type=str,
-          required=True,
-          help=textwrap.dedent("""\
-            The ID of the public key that will be used to verify the signature
-            of the created Attestation. This ID must match the one found on the
-            Attestor resource(s) which will verify this Attestation.
+    parser.add_argument(
+        '--public-key-id',
+        required=True,
+        type=str,
+        help=textwrap.dedent("""\
+          The ID of the public key that will be used to verify the signature
+          of the created Attestation. This ID must match the one found on the
+          Attestor resource(s) which will verify this Attestation.
 
-            For PGP keys, this must be the version 4, full 160-bit fingerprint,
-            expressed as a 40 character hexadecimal string. See
-            https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
-    else:
-      mutex_group = parser.add_mutually_exclusive_group(required=True)
-      mutex_group.add_argument(
-          '--pgp-key-fingerprint',
-          action=actions.DeprecationAction(
-              'pgp-key-fingerprint',
-              warn='This flag is deprecated. Use --public-key-id instead.'),
-          type=str,
-          help=textwrap.dedent("""\
-            The cryptographic ID of the key used to generate the signature.  For
-            Binary Authorization, this must be the version 4, full 160-bit
-            fingerprint, expressed as a 40 character hexadecimal string.  See
-            https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
-      mutex_group.add_argument(
-          '--public-key-id',
-          type=str,
-          help=textwrap.dedent("""\
-            The ID of the public key that will be used to verify the signature
-            of the created Attestation. This ID must match the one found on the
-            Attestor resource(s) which will verify this Attestation.
-
-            For PGP keys, this must be the version 4, full 160-bit fingerprint,
-            expressed as a 40 character hexadecimal string. See
-            https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
+          For PGP keys, this must be the version 4, full 160-bit fingerprint,
+          expressed as a 40 character hexadecimal string. See
+          https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
 
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
@@ -165,14 +138,14 @@ class Create(base.CreateCommand):
         project_ref=project_ref,
         note_ref=note_ref,
         artifact_url=normalized_artifact_url,
-        public_key_id=args.public_key_id or args.pgp_key_fingerprint,
+        public_key_id=args.public_key_id,
         signature=signature,
         plaintext=payload,
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateWithPkixSupport(base.CreateCommand):
   r"""Create a Binary Authorization attestation.
 
   This command creates a Binary Authorization attestation for your project. The

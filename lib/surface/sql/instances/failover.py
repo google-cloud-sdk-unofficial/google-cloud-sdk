@@ -39,10 +39,7 @@ class Failover(base.Command):
         'instance',
         completer=flags.InstanceCompleter,
         help='Cloud SQL instance ID.')
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        help='Do not wait for the operation to complete.')
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     """Calls the failover api method.

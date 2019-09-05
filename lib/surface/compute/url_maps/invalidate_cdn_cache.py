@@ -79,11 +79,7 @@ def _Args(parser):
       specified host.
       """)
 
-  parser.add_argument(
-      '--async',
-      action='store_true',
-      help='Do not wait for the operation to complete.',
-  )
+  base.ASYNC_FLAG.AddToParser(parser)
 
 
 def _CreateRequests(holder, args, url_map_arg):

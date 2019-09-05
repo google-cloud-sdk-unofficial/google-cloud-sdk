@@ -48,7 +48,8 @@ class GetHistory(base.Command):
   @staticmethod
   def Args(parser):
     parent_group = parser.add_mutually_exclusive_group(required=True)
-    flags.AddOrganizationArgs(parent_group)
+    flags.AddOrganizationArgs(
+        parent_group, 'The ID of the organization which is the root asset.')
     common_args.ProjectArgument(
         help_text_to_prepend='The project which is the root asset.'
     ).AddToParser(parent_group)

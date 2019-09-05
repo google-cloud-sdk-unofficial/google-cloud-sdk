@@ -12,7 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The gcloud eventflow triggers group."""
+
+"""The simulator command group for the IAM CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,16 +22,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-class Triggers(base.Group):
-  """View and manage your Eventflow triggers.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+class Simulator(base.Group):
+  """Understand access permission impacts before IAM policy change deployment.
 
-  This set of commands can be used to view and manage your Eventflow resources.
+  Commands for analyzing access permission impacts before proposed IAM policy
+  changes are deployed.
   """
 
-  detailed_help = {
-      'EXAMPLES': """\
-          To list your existing triggers, run:
-
-            $ {command} list
-      """,
-  }
+  def Filter(self, context, args):
+    """Enables User-Project override for this surface."""
+    base.EnableUserProjectQuota()

@@ -111,6 +111,7 @@ class RegisterCluster(base.CreateCommand):
         latest connect version.
           """),
     )
+    # TODO(b/139814516): remove this flag.
     parser.add_argument(
         '--docker-image',
         type=str,
@@ -132,6 +133,15 @@ class RegisterCluster(base.CreateCommand):
             auth is required. The contents of the file will be stored into a
             Secret and referenced from the imagePullSecrets of the Connect
             agent workload.
+          """),
+    )
+    parser.add_argument(
+        '--docker-registry',
+        type=str,
+        hidden=True,
+        help=textwrap.dedent("""\
+            The registry to pull GKE Connect agent image if not using
+            gcr.io/gkeconnect.
           """),
     )
 
@@ -204,9 +214,8 @@ class RegisterCluster(base.CreateCommand):
       already_exists = True
       console_io.PromptContinue(
           message='A membership for [{}] already exists. Continuing will '
-          'update the Connect agent deployment to use a new image (if one is '
-          'available), or install the Connect agent if it is not already '
-          'running.'.format(args.CLUSTER_NAME),
+          'reinstall the Connect agent deployment to use a new image (if one '
+          'is available).'.format(args.CLUSTER_NAME),
           cancel_on_no=True)
 
     # A membership exists. Attempt to update the existing agent deployment, or
@@ -219,8 +228,8 @@ class RegisterCluster(base.CreateCommand):
             args, service_account_key_data, docker_credential_data,
             upgrade=True)
       else:
-        hub_util.DeployConnectAgent(args, service_account_key_data,
-                                    upgrade=True)
+        hub_util.DeployConnectAgent(
+            args, service_account_key_data, docker_credential_data)
       return obj
 
     # No membership exists. Attempt to create a new one, and install a new
@@ -233,7 +242,7 @@ class RegisterCluster(base.CreateCommand):
             upgrade=False)
       else:
         hub_util.DeployConnectAgent(
-            args, service_account_key_data, upgrade=False)
+            args, service_account_key_data, docker_credential_data)
     except:
       hub_util.DeleteMembership(name)
       hub_util.DeleteMembershipResources(kube_client)

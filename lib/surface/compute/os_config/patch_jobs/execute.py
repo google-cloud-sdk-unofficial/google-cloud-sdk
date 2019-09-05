@@ -40,11 +40,7 @@ def _AddTopLevelArguments(parser):
         the same filter mechanisms as `gcloud compute instances list`, allowing
         one to patch specific instances by name, zone, label, or other criteria.
         """)
-  parser.add_argument(
-      '--async',
-      action='store_true',
-      help="""Display information about the patch job that was started without
-        waiting for it to complete.""")
+  base.ASYNC_FLAG.AddToParser(parser)
   parser.add_argument(
       '--description', type=str, help='Textual description of the patch job.')
   parser.add_argument(

@@ -40,7 +40,7 @@ class Delete(base.DeleteCommand):
     concept_parsers.ConceptParser([flags.GetInstancePresentationSpec(
         'The instance to delete.')]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
-    instances_flags.AddAsyncFlag(parser, 'delete')
+    instances_flags.AddAsyncFlag(parser)
 
   def Run(self, args):
     """Delete a Cloud Filestore instance."""

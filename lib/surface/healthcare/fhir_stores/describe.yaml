@@ -1,6 +1,10 @@
 - help_text:
     brief:  Describe a Cloud Healthcare API FHIR store.
     description: Describe a Cloud Healthcare API FHIR store.
+    examples: |
+      To describe the FHIR store 'test-fhir-store', run:
+
+        $ {command} test-fhir-store --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.fhirStores

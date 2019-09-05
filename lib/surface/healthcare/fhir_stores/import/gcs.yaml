@@ -1,6 +1,14 @@
 - help_text:
-    brief:  Import FHIR resources into a Cloud Healthcare API FHIR store.
-    description: Import FHIR resources into a Cloud Healthcare API FHIR store.
+    brief:  Import FHIR resources from Google Cloud Storage into a Cloud Healthcare API FHIR store.
+    description: Import FHIR resources from Google Cloud Storage into a Cloud Healthcare API FHIR store.
+    examples: |
+      To import the FHIR resources from the existing bucket 'testGcsBucket' in the folder 'someFolder' into the FHIR store 'test-fhir-store', run:
+
+        $ {command} test-fhir-store --gcs-uri=gs://testGcsBucket/someFolder --dataset=test-dataset
+
+      To perform the same import, but importing resources with the content structure of 'RESOURCE', run:
+
+        $ {command} test-fhir-store --gcs-uri=gs://testGcsBucket/someFolder --dataset=test-dataset --content-structure=RESOURCE
 
   request:
     collection: healthcare.projects.locations.datasets.fhirStores
@@ -15,10 +23,11 @@
     params:
     - arg_name: gcs-uri
       api_field: importResourcesRequest.gcsSource.uri
+      required: true
       help_text: |
         Cloud Storage source data locations. Each Cloud Storage object
-        should be a text file that contains newline delimited JSON structures conforming
-        to FHIR standard.
+        should be a text file that contains newline-delimited JSON structures conforming
+        to the FHIR standard.
     - arg_name: content-structure
       api_field: importResourcesRequest.contentStructure
       choices:

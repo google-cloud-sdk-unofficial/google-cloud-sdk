@@ -66,7 +66,7 @@ class AdjustTraffic(base.Command):
         required=True,
         prefixes=False)
     flags.AddAsyncFlag(parser)
-    flags.AddSetTrafficFlags(parser)
+    flags.AddUpdateTrafficFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     flags.AddPlatformArg(parser)
 
@@ -90,16 +90,16 @@ class AdjustTraffic(base.Command):
           'No traffic configuration change requested.')
 
     with serverless_operations.Connect(conn_context) as client:
-      deployment_stages = stages.SetTrafficStages()
+      deployment_stages = stages.UpdateTrafficStages()
       with progress_tracker.StagedProgressTracker(
-          'Setting traffic...',
+          'Updating traffic...',
           deployment_stages,
-          failure_message='Setting traffic failed',
+          failure_message='Updating traffic failed',
           suppress_output=args.async) as tracker:
-        client.SetTraffic(
+        client.UpdateTraffic(
             service_ref, changes, tracker, args.async, flags.IsManaged(args))
         if args.async:
-          pretty_print.Success('Setting traffic asynchronously.')
+          pretty_print.Success('Updating traffic asynchronously.')
         else:
           serv = client.GetService(service_ref)
           splits = ['{{bold}}{rev}{{reset}}={percent}'.format(

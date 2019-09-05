@@ -1,6 +1,10 @@
 - help_text:
     brief:  Update a Cloud Healthcare API FHIR store.
     description: Update a Cloud Healthcare API FHIR store.
+    examples: |
+      To update the Cloud Pub/Sub topic on a FHIR store 'test-fhir-store', run:
+
+        $ {command} test-fhir-store --pubsub-topic=projects/my-project/topics/test-pubsub-topic
 
   request:
     collection: healthcare.projects.locations.datasets.fhirStores

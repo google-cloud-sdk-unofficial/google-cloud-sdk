@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 
 import contextlib
 
-from googlecloudsdk.api_lib.eventflow import metric_names
-from googlecloudsdk.api_lib.eventflow import trigger
+from googlecloudsdk.api_lib.events import metric_names
+from googlecloudsdk.api_lib.events import trigger
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import apis_internal
 from googlecloudsdk.core import metrics
@@ -50,7 +50,7 @@ def Connect(conn_context):
   # connection context so that it does not pick up the api_endpoint_overrides
   # values from the connection context.
   # pylint: disable=protected-access
-  op_client = apis._GetClientInstance(
+  op_client = apis.GetClientInstance(
       conn_context.api_name,
       conn_context.api_version)
   # pylint: enable=protected-access

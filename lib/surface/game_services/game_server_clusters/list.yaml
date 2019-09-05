@@ -24,6 +24,6 @@
          createTime,
          updateTime,
          connectionInfo.namespace:label=NAMPESPACE,
-         connectionInfo.gkeName:label=GKE_NAME,
+         connectionInfo.gkeClusterReference.cluster:label=GKE_CLUSTER,
          labels
        )

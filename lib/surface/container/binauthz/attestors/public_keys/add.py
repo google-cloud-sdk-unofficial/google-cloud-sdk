@@ -23,7 +23,6 @@ import textwrap
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import kms
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import exceptions
@@ -31,7 +30,7 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import pkix
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Add(base.Command):
   r"""Add a public key to an Attestor.
 
@@ -55,30 +54,12 @@ class Add(base.Command):
                 'The attestor to which the public key should be added.'),
         ),
     )
-    # TODO(b/133451183): Remove deprecated flag.
-    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
-      parser.add_argument(
-          '--pgp-public-key-file',
-          type=arg_parsers.FileContents(),
-          required=True,
-          help='The path to the file containing the '
-          'ASCII-armored PGP public key to add.')
-    else:
-      pgp_group = parser.add_mutually_exclusive_group(required=True)
-      pgp_group.add_argument(
-          '--public-key-file',
-          action=actions.DeprecationAction(
-              'public-key-file',
-              warn='This flag is deprecated. '
-              'Use --pgp-public-key-file instead.'),
-          type=arg_parsers.FileContents(),
-          help='The path to the file containing the '
-          'ASCII-armored PGP public key to add.')
-      pgp_group.add_argument(
-          '--pgp-public-key-file',
-          type=arg_parsers.FileContents(),
-          help='The path to the file containing the '
-          'ASCII-armored PGP public key to add.')
+    parser.add_argument(
+        '--pgp-public-key-file',
+        type=arg_parsers.FileContents(),
+        required=True,
+        help='The path to the file containing the '
+        'ASCII-armored PGP public key to add.')
     parser.add_argument(
         '--comment', help='The comment describing the public key.')
 
@@ -91,13 +72,32 @@ class Add(base.Command):
     # TODO(b/71700164): Validate the contents of the public key file.
     return attestors_client.AddPgpKey(
         attestor_ref,
-        pgp_pubkey_content=args.pgp_public_key_file or args.public_key_file,
+        pgp_pubkey_content=args.pgp_public_key_file,
         comment=args.comment)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddAlpha(base.Command):
-  """Add a public key to an Attestor."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class AddWithPkixSupport(base.Command):
+  r"""Add a public key to an Attestor.
+
+  ## EXAMPLES
+
+  To add a new KMS public key to an existing Attestor `my_attestor`:
+
+    $ {command} \
+        --attestor=my_attestor \
+        --keyversion-project=foo \
+        --keyversion-location=us-west1 \
+        --keyversion-keyring=aring \
+        --keyversion-key=akey \
+        --keyversion=1
+
+  To add a new PGP public key to an existing Attestor `my_attestor`:
+
+    $ {command} \
+        --attestor=my_attestor \
+        --pgp-public-key-file=my_key.pub
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -113,14 +113,14 @@ class AddAlpha(base.Command):
     parser.add_argument(
         '--comment', help='The comment describing the public key.')
 
-    key_group = parser.add_group(mutex=True, required=True)
-    pgp_group = key_group.add_group()
+    key_group = parser.add_mutually_exclusive_group(required=True)
+    pgp_group = key_group.add_group(help='PGP key definition')
     pgp_group.add_argument(
         '--pgp-public-key-file',
         type=arg_parsers.FileContents(),
         help='The path to the file containing the '
         'ASCII-armored PGP public key to add.')
-    kms_group = key_group.add_group()
+    kms_group = key_group.add_group(help='Cloud KMS key definition')
     flags.AddConcepts(
         kms_group,
         flags.GetCryptoKeyVersionPresentationSpec(
@@ -132,7 +132,7 @@ class AddAlpha(base.Command):
               The Cloud KMS (Key Management Service) CryptoKeyVersion whose
               public key will be added to the attestor.""")),
     )
-    pkix_group = key_group.add_group()
+    pkix_group = key_group.add_group(help='PKIX key definition')
     pkix_group.add_argument(
         '--pkix-public-key-file',
         required=True,

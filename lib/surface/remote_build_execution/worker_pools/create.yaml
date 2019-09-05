@@ -63,3 +63,17 @@
       help_text: |
         Determines the type of VM to use.  If set then reserved VMs are used, otherwise preemptable
         VMs are used.
+    - group:
+        required: false
+        params:
+        - api_field: workerPool.workerConfig.accelerator.acceleratorCount
+          arg_name: accelerator-count
+          required: true
+          help_text: Number of the guest accelerator cards attached to each VM in the pool.
+        - api_field: workerPool.workerConfig.accelerator.acceleratorType
+          arg_name: accelerator-type
+          required: true
+          help_text: |
+            Type of accelerator to attach to each VM in the pool, e.g. 'nvidia-tesla-k80' for
+            nVidia Tesla K80. Run `gcloud compute accelerator-types list` to learn about all
+            available accelerator types.

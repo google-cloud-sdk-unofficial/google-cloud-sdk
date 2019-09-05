@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.emulators import datastore_util
 from googlecloudsdk.command_lib.emulators import flags
@@ -43,10 +44,17 @@ class Datastore(base.Group):
   @staticmethod
   def Args(parser):
     flags.AddDataDirFlag(parser, datastore_util.DATASTORE)
+    legacy_flag = '--legacy'
     parser.add_argument(
-        '--legacy',
+        legacy_flag,
         default=False,
-        action='store_true',
+        action=actions.DeprecationAction(
+            legacy_flag,
+            warn=('This flag is deprecated due to the legacy Datastore '
+                  'emulator no longer being supported. It will be removed in '
+                  'early October 2019.'),
+            action='store_true'
+        ),
         help='Set to use the legacy emulator which supports Cloud Datastore'
              ' API v1beta2.')
 

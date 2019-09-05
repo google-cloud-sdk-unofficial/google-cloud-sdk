@@ -63,7 +63,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    osconfig_utils.AddFolderAndOrgArgs(parser, 'guest policies', 'to list')
+    osconfig_utils.AddResourceParentArgs(parser, 'guest policies', 'to list')
     parser.display_info.AddFormat("""
           table(
             name.basename(),

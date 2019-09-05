@@ -48,7 +48,7 @@ class Create(base.CreateCommand):
     resource_args.AddRegistrationResourceArg(parser, 'to create')
     flags.AddRegistrationSettingsFlagsToParser(parser)
     flags.AddValidateOnlyFlagToParser(parser, 'create')
-    flags.AddAsyncFlagToParser(parser, 'create')
+    flags.AddAsyncFlagToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
