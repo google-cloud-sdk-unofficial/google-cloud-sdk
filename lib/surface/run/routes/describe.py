@@ -51,6 +51,9 @@ class Describe(base.Command):
     gke_group = flags.GetGkeArgGroup(parser)
     concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
                                   ]).AddToParser(gke_group)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
     # Flags not specific to any platform
     route_presentation = presentation_specs.ResourcePresentationSpec(
         'ROUTE',
@@ -60,13 +63,12 @@ class Describe(base.Command):
         prefixes=False)
     concept_parsers.ConceptParser([
         route_presentation]).AddToParser(parser)
+    flags.AddPlatformArg(parser)
     parser.display_info.AddFormat('yaml')
 
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Obtain details about a given route."""
@@ -88,10 +90,5 @@ class AlphaDescribe(Describe):
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
-    flags.AddAlphaPlatformArg(parser)
 
 AlphaDescribe.__doc__ = Describe.__doc__

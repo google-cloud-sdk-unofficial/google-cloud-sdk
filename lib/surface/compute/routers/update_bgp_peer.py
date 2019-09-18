@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateBgpPeer(base.UpdateCommand):
   """Update a BGP peer on a Google Compute Engine router."""
 
@@ -52,7 +52,11 @@ class UpdateBgpPeer(base.UpdateCommand):
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(self, args, support_bfd=False, support_enable=False):
+  def _Run(self,
+           args,
+           support_bfd=False,
+           support_enable=False,
+           support_bfd_mode=False):
     # Manually ensure replace/incremental flags are mutually exclusive.
     router_utils.CheckIncompatibleFlagsOrRaise(args)
 
@@ -66,9 +70,13 @@ class UpdateBgpPeer(base.UpdateCommand):
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
     # Retrieve specified peer and update base fields.
-    peer = _UpdateBgpPeerMessage(messages, replacement, args,
-                                 support_bfd=support_bfd,
-                                 support_enable=support_enable)
+    peer = _UpdateBgpPeerMessage(
+        messages,
+        replacement,
+        args,
+        support_bfd=support_bfd,
+        support_enable=support_enable,
+        support_bfd_mode=support_bfd_mode)
 
     if router_utils.HasReplaceAdvertisementFlags(args):
       mode, groups, ranges = router_utils.ParseAdvertisements(
@@ -170,8 +178,8 @@ class UpdateBgpPeer(base.UpdateCommand):
     return self._Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateBgpPeerAlpha(UpdateBgpPeer):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBgpPeerBeta(UpdateBgpPeer):
   """Update a BGP peer on a Google Compute Engine router."""
 
   ROUTER_ARG = None
@@ -181,11 +189,31 @@ class UpdateBgpPeerAlpha(UpdateBgpPeer):
     cls._Args(parser, support_bfd=True, support_enable=True)
 
   def Run(self, args):
-    return self._Run(args, support_bfd=True, support_enable=True)
+    return self._Run(
+        args, support_bfd=True, support_enable=True, support_bfd_mode=False)
 
 
-def _UpdateBgpPeerMessage(messages, router_message, args, support_bfd=False,
-                          support_enable=False):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
+  """Update a BGP peer on a Google Compute Engine router."""
+
+  ROUTER_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls._Args(parser, support_bfd=True, support_enable=True)
+
+  def Run(self, args):
+    return self._Run(
+        args, support_bfd=True, support_enable=True, support_bfd_mode=True)
+
+
+def _UpdateBgpPeerMessage(messages,
+                          router_message,
+                          args,
+                          support_bfd=False,
+                          support_enable=False,
+                          support_bfd_mode=False):
   """Updates base attributes of a BGP peer based on flag arguments."""
 
   peer = router_utils.FindBgpPeerOrRaise(router_message, args.peer_name)
@@ -208,7 +236,10 @@ def _UpdateBgpPeerMessage(messages, router_message, args, support_bfd=False,
       setattr(peer, attr, value)
   if support_bfd:
     bfd = None
-    bfd = _UpdateBgpPeerBfdMessage(messages, peer, args)
+    if support_bfd_mode:
+      bfd = _UpdateBgpPeerBfdMessageMode(messages, peer, args)
+    else:
+      bfd = _UpdateBgpPeerBfdMessage(messages, peer, args)
     if bfd is not None:
       setattr(peer, 'bfd', bfd)
 
@@ -216,6 +247,32 @@ def _UpdateBgpPeerMessage(messages, router_message, args, support_bfd=False,
 
 
 def _UpdateBgpPeerBfdMessage(messages, peer, args):
+  """Updates BGP peer BFD messages based on flag arguments."""
+  if not (args.IsSpecified('bfd_min_receive_interval') or
+          args.IsSpecified('bfd_min_transmit_interval') or
+          args.IsSpecified('bfd_session_initialization_mode') or
+          args.IsSpecified('bfd_multiplier')):
+    return None
+  bfd = None
+  if peer.bfd is not None:
+    bfd = peer.bfd
+  else:
+    bfd = messages.RouterBgpPeerBfd()
+  attrs = {}
+  if args.bfd_session_initialization_mode is not None:
+    attrs['sessionInitializationMode'] = (
+        messages.RouterBgpPeerBfd.SessionInitializationModeValueValuesEnum(
+            args.bfd_session_initialization_mode))
+  attrs['minReceiveInterval'] = args.bfd_min_receive_interval
+  attrs['minTransmitInterval'] = args.bfd_min_transmit_interval
+  attrs['multiplier'] = args.bfd_multiplier
+  for attr, value in attrs.items():
+    if value is not None:
+      setattr(bfd, attr, value)
+  return bfd
+
+
+def _UpdateBgpPeerBfdMessageMode(messages, peer, args):
   """Updates BGP peer BFD messages based on flag arguments."""
   if not (args.IsSpecified('bfd_min_receive_interval') or
           args.IsSpecified('bfd_min_transmit_interval') or

@@ -59,6 +59,13 @@ class Update(base.Command):
     gke_group = flags.GetGkeArgGroup(parser)
     concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
                                   ]).AddToParser(gke_group)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags specific to connecting to a cluster
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(cluster_group)
+    flags.AddCpuFlag(cluster_group)
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
@@ -66,6 +73,7 @@ class Update(base.Command):
         'Service to update the configuration of.',
         required=True,
         prefixes=False)
+    flags.AddPlatformArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
@@ -77,12 +85,6 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(gke_group)
-    flags.AddCpuFlag(gke_group)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Update configuration information about the service.
@@ -148,17 +150,11 @@ class AlphaUpdate(Update):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcConnectorArg(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(cluster_group)
-    flags.AddCpuFlag(cluster_group)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
     # Flags not specific to any platform
-    flags.AddAlphaPlatformArg(parser)
     flags.AddScalingFlags(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)

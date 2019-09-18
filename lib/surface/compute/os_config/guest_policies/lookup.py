@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute.os_config import osconfig_utils
+from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
@@ -50,7 +50,8 @@ class Lookup(base.Command):
     return flags.INSTANCE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=flags.GetInstanceZoneScopeLister(holder.client))
+        scope_lister=flags.GetInstanceZoneScopeLister(holder.client),
+    )
 
   def _GetGuestInventoryGuestAttributes(self, instance_ref):
     try:
@@ -97,24 +98,24 @@ class Lookup(base.Command):
         packageRepositories:format="table[box,title='PACKAGE REPOSITORIES'](
           source,
           packageRepository.apt:format='table[box,title="APT"](
-            archiveType,
-            components.list(),
+            uri,
             distribution,
-            gpgKey,
-            uri)',
+            components.list())',
           packageRepository.goo:format='table[box,title="GOO"](
             name,
             url)',
           packageRepository.yum:format='table[box,title="YUM"](
-            baseUrl,
-            displayName,
-            gpgKeys.list(),
-            id)',
+            id,
+            baseUrl)',
           packageRepository.zypper:format='table[box,title="ZYPPER"](
-            baseUrl,
-            displayName,
-            gpgKeys.list(),
-            id)')"
+            id,
+            baseUrl)')",
+        softwareRecipes:format="table[box,title='SOFTWARE RECIPES'](
+          source,
+          softwareRecipe.name,
+          softwareRecipe.version,
+          softwareRecipe.desiredState
+        )"
       )
     """)
 
@@ -130,8 +131,8 @@ class Lookup(base.Command):
     os_shortname = os_info.get(self._OS_SHORTNAME_KEY)
     os_version = os_info.get(self._OS_VERSION_KEY)
 
-    client = osconfig_utils.GetClientInstance(release_track)
-    messages = osconfig_utils.GetClientMessages(release_track)
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
 
     request = messages.OsconfigProjectsZonesInstancesLookupGuestPoliciesRequest(
         instance=instance_ref.RelativeName(),
@@ -139,13 +140,16 @@ class Lookup(base.Command):
         .LookupEffectiveGuestPoliciesRequest(
             osArchitecture=os_architecture,
             osShortName=os_shortname,
-            osVersion=os_version))
+            osVersion=os_version,
+        ),
+    )
     service = client.projects_zones_instances
 
     response = service.LookupGuestPolicies(request)
-
-    # TODO(b/135553671): add Software Recipes to this check
-    if not response.packages and not response.packageRepositories:
+    if not any([
+        response.packages, response.packageRepositories,
+        response.softwareRecipes
+    ]):
       log.status.Print('No effective guest policy found for [{}].'.format(
           instance_ref.RelativeName()))
     return response

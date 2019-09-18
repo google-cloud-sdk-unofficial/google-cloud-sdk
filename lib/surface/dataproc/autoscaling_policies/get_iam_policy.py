@@ -23,7 +23,46 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
 
+def _Run(dataproc, args):
+  """Run command."""
+
+  messages = dataproc.messages
+
+  policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
+  # pylint: disable=line-too-long
+  request = messages.DataprocProjectsRegionsAutoscalingPoliciesGetIamPolicyRequest(
+      resource=policy_ref.RelativeName())
+  # pylint: enable=line-too-long
+
+  return dataproc.client.projects_regions_autoscalingPolicies.GetIamPolicy(
+      request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetIamPolicy(base.Command):
+  """Get IAM policy for an autoscaling policy.
+
+  Gets the IAM policy for an autoscaling policy, given an autoscaling policy ID.
+
+  ## EXAMPLES
+
+  The following command prints the IAM policy for an autoscaling policy with the
+  ID `example-autoscaling-policy`:
+
+    $ {command} example-autoscaling-policy
+  """
+
+  @staticmethod
+  def Args(parser):
+    flags.AddAutoscalingPolicyResourceArg(
+        parser, 'retrieve the IAM policy for', api_version='v1')
+
+  def Run(self, args):
+    return _Run(dp.Dataproc(self.ReleaseTrack()), args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class GetIamPolicyBeta(base.Command):
   """Get IAM policy for an autoscaling policy.
 
   Gets the IAM policy for an autoscaling policy, given an autoscaling policy ID.
@@ -42,14 +81,4 @@ class GetIamPolicy(base.Command):
         parser, 'retrieve the IAM policy for', api_version='v1beta2')
 
   def Run(self, args):
-    dataproc = dp.Dataproc(self.ReleaseTrack())
-    messages = dataproc.messages
-
-    policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
-    # pylint: disable=line-too-long
-    request = messages.DataprocProjectsRegionsAutoscalingPoliciesGetIamPolicyRequest(
-        resource=policy_ref.RelativeName())
-    # pylint: enable=line-too-long
-
-    return dataproc.client.projects_regions_autoscalingPolicies.GetIamPolicy(
-        request)
+    return _Run(dp.Dataproc(self.ReleaseTrack()), args)

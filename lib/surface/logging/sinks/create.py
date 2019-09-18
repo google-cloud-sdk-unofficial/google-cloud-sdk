@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -118,6 +119,9 @@ class Create(base.CreateCommand):
         bigquery_options['usePartitionedTables'] = args.use_partitioned_tables
         sink_data['bigqueryOptions'] = bigquery_options
 
+      if args.IsSpecified('exclusion'):
+        sink_data['exclusions'] = args.exclusion
+
     result = self.CreateSink(util.GetParentFromArgs(args), sink_data)
 
     log.CreatedResource(sink_ref)
@@ -178,6 +182,30 @@ class CreateAlpha(Create):
               'the suffix and special query syntax '
               '(https://cloud.google.com/bigquery/docs/'
               'querying-partitioned-tables) must be used.'))
+
+    parser.add_argument(
+        '--exclusion', action='append',
+        type=arg_parsers.ArgDict(
+            spec={
+                'name': str,
+                'description': str,
+                'filter': str,
+                'disabled': bool
+            },
+            required_keys=['name', 'filter']
+        ),
+        help=('Specify an exclusion filter for a log entry that is not to be '
+              'exported. This flag can be repeated.\n\n'
+              'The `name` and `filter` attributes are required. The following '
+              'keys are accepted:\n\n'
+              '*name*::: An identifier, such as "load-balancer-exclusion". '
+              'Identifiers are limited to 100 characters and can include only '
+              'letters, digits, underscores, hyphens, and periods.\n\n'
+              '*description*::: A description of this exclusion.\n\n'
+              '*filter*::: An advanced log filter that matches the log entries '
+              'to be excluded.\n\n'
+              '*disabled*::: If this exclusion should be disabled and not '
+              'exclude the log entries.'))
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

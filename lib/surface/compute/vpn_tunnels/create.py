@@ -77,18 +77,31 @@ def ValidateSimpleSharedSecret(possible_secret):
       'non-printable charcters.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create a VPN tunnel.
 
-    *{command}* is used to create a VPN tunnel between a VPN Gateway
-  in Google Cloud Platform and an external gateway that is
-  identified by --peer-address.
+    *{command}* is used to create a Classic VPN tunnel between a target VPN
+  gateway in Google Cloud Platform and a peer address; or create Highly
+  Available VPN tunnel between HA VPN gateway and another HA VPN gateway, or
+  Highly Available VPN tunnel between HA VPN gateway and an external VPN
+  gateway.
   """
 
   _TARGET_VPN_GATEWAY_ARG = (
       target_vpn_gateway_flags.TargetVpnGatewayArgumentForVpnTunnel(
-          required=True))
+          required=False))
+  _VPN_GATEWAY_ARG = (
+      vpn_gateway_flags.GetVpnGatewayArgumentForOtherResource(required=False))
+
+  _EXTERNAL_VPN_GATEWAY_ARG = (
+      external_vpn_gateway_flags.ExternalVpnGatewayArgumentForVpnTunnel(
+          required=False))
+
+  _PEER_GCP_GATEWAY_ARG = (
+      vpn_gateway_flags.GetPeerVpnGatewayArgumentForOtherResource(
+          required=False))
 
   @classmethod
   def _AddCommonFlags(cls, parser):
@@ -121,16 +134,27 @@ class CreateGA(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     """Adds arguments to the supplied parser."""
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    # TODO(b/129011963): add e2e tests for HA VPN tunnels
+    parser.display_info.AddFormat(flags.HA_VPN_LIST_FORMAT)
 
-    cls._TARGET_VPN_GATEWAY_ARG.AddArgument(parser)
     _VPN_TUNNEL_ARG.AddArgument(parser, operation_type='create')
-    cls._AddCommonFlags(parser)
+    vpn_gateway_group_parser = parser.add_mutually_exclusive_group(
+        required=True)
+    cls._TARGET_VPN_GATEWAY_ARG.AddArgument(vpn_gateway_group_parser)
+    cls._VPN_GATEWAY_ARG.AddArgument(vpn_gateway_group_parser)
 
-    parser.add_argument(
+    peer_vpn_gateway_group_parser = parser.add_mutually_exclusive_group(
+        required=True)
+    cls._EXTERNAL_VPN_GATEWAY_ARG.AddArgument(peer_vpn_gateway_group_parser)
+    cls._PEER_GCP_GATEWAY_ARG.AddArgument(peer_vpn_gateway_group_parser)
+    peer_vpn_gateway_group_parser.add_argument(
         '--peer-address',
-        required=True,
-        help='Valid IP-v4 address representing the remote tunnel endpoint')
+        required=False,
+        help='Valid IPV4 address representing the remote tunnel endpoint, '
+        'the peer address must be specified when creating Classic VPN '
+        'tunnels from Classic Target VPN gateway')
+
+    cls._AddCommonFlags(parser)
 
     parser.add_argument(
         '--local-traffic-selector',
@@ -139,13 +163,16 @@ class CreateGA(base.CreateCommand):
         help=("""\
         Traffic selector is an agreement between IKE peers to permit traffic
         through a tunnel if the traffic matches a specified pair of local and
-        remote addresses; this flag can only be specified for Classic VPN
-        tunnels.
+        remote addresses.
 
-        --local-traffic-selector allows to configure the local addresses that
-        are permitted. The value should be a comma separated list of CIDR
-        formatted strings. Example: 192.168.0.0/16,10.0.0.0/24.
-        """))
+        --local-traffic-selector allows to configure the local addresses that are
+        permitted. The value should be a comma separated list of CIDR formatted
+        strings. Example: 192.168.0.0/16,10.0.0.0/24.
+
+        Local traffic selector must be specified only for VPN tunnels that
+        do not use dynamic routing with a Cloud Router. Omit this flag when
+        creating a tunnel using dynamic routing, including a tunnel for a
+        Highly Available VPN gateway."""))
 
     parser.add_argument(
         '--remote-traffic-selector',
@@ -154,13 +181,39 @@ class CreateGA(base.CreateCommand):
         help=("""\
         Traffic selector is an agreement between IKE peers to permit traffic
         through a tunnel if the traffic matches a specified pair of local and
-        remote addresses; this flag can only be specified for Classic VPN
-        tunnels.
+        remote addresses.
 
-        --remote-traffic-selector allows to configure the remote addresses
-        that are permitted. The value should be a comma separated list
-        of CIDR formatted strings. Example: 192.168.0.0/16,10.0.0.0/24.
-        """))
+        --remote-traffic-selector allows to configure the remote addresses that
+        are permitted. The value should be a comma separated list of CIDR
+        formatted strings. Example: 192.168.0.0/16,10.0.0.0/24.
+
+        Remote traffic selector must be specified for VPN tunnels that do
+        not use dynamic routing with a Cloud Router. Omit this flag when
+        creating a tunnel using dynamic routing, including a tunnel for a
+        Highly Available VPN gateway."""))
+
+    parser.add_argument(
+        '--interface',
+        choices=[0, 1],
+        type=int,
+        required=False,
+        help="""\
+        Numeric interface ID of the VPN gateway with which this VPN tunnel
+        is associated. This flag is required if the tunnel is being attached
+        to a Highly Available VPN gateway. This option is only available
+        for use with Highly Available VPN gateway and must be omitted if the
+        tunnel is going to be connected to a Classic VPN gateway.""")
+
+    parser.add_argument(
+        '--peer-external-gateway-interface',
+        choices=[0, 1, 2, 3],
+        type=int,
+        required=False,
+        help="""\
+        Interface ID of the external VPN gateway to which this VPN tunnel
+        is connected to.
+        This flag is required if the tunnel is being created from
+        a Highly Available VPN gateway to an External Vpn Gateway.""")
 
     parser.display_info.AddCacheUpdater(flags.VpnTunnelsCompleter)
 
@@ -169,18 +222,18 @@ class CreateGA(base.CreateCommand):
       if not args.IsSpecified('interface'):
         raise exceptions.InvalidArgumentException(
             '--interface',
-            'When creating High Availability VPN tunnels, the VPN gateway '
+            'When creating Highly Available VPN tunnels, the VPN gateway '
             'interface must be specified using the --interface flag.')
       if not args.IsSpecified('router'):
         raise exceptions.InvalidArgumentException(
             '--router',
-            'When creating High Availability VPN tunnels, a Cloud Router '
+            'When creating Highly Available VPN tunnels, a Cloud Router '
             'must be specified using the --router flag.')
       if not args.IsSpecified('peer_gcp_gateway') and not args.IsSpecified(
           'peer_external_gateway'):
         raise exceptions.InvalidArgumentException(
             '--peer-gcp-gateway',
-            'When creating High Availability VPN tunnels, either '
+            'When creating Highly Available VPN tunnels, either '
             '--peer-gcp-gateway or --peer-external-gateway must be specified.')
       if args.IsSpecified('peer_external_gateway') and not args.IsSpecified(
           'peer_external_gateway_interface'):
@@ -191,17 +244,17 @@ class CreateGA(base.CreateCommand):
       if args.IsSpecified('local_traffic_selector'):
         raise exceptions.InvalidArgumentException(
             '--local-traffic-selector',
-            'Cannot specify local traffic selector with High Availability '
+            'Cannot specify local traffic selector with Highly Available '
             'VPN tunnels.')
       if args.IsSpecified('remote_traffic_selector'):
         raise exceptions.InvalidArgumentException(
             '--remote-traffic-selector',
-            'Cannot specify remote traffic selector with High Availability '
+            'Cannot specify remote traffic selector with Highly Available '
             'VPN tunnels.')
       if args.IsSpecified('peer_address'):
         raise exceptions.InvalidArgumentException(
             '--peer-address',
-            'Cannot specify the flag peer address with High Availability '
+            'Cannot specify the flag peer address with Highly Available '
             'VPN tunnels.')
 
   def _ValidateClassicVpnArgs(self, args):
@@ -301,120 +354,6 @@ class CreateGA(base.CreateCommand):
     operation_ref = helper.Create(vpn_tunnel_ref, vpn_tunnel_to_insert)
     return helper.WaitForOperation(vpn_tunnel_ref, operation_ref,
                                    'Creating VPN tunnel')
-
-  def Run(self, args):
-    """Issues API requests to construct VPN Tunnels."""
-    return self._Run(args, is_vpn_gateway_supported=False)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(CreateGA):
-  """Create a VPN tunnel.
-
-    *{command}* is used to create a VPN tunnel between a VPN Gateway
-  in Google Cloud Platform and an external gateway that is
-  identified by --peer-address.
-  """
-
-  _TARGET_VPN_GATEWAY_ARG = (
-      target_vpn_gateway_flags.TargetVpnGatewayArgumentForVpnTunnel(
-          required=False))
-  _VPN_GATEWAY_ARG = (
-      vpn_gateway_flags.GetVpnGatewayArgumentForOtherResource(required=False))
-
-  _EXTERNAL_VPN_GATEWAY_ARG = (
-      external_vpn_gateway_flags.ExternalVpnGatewayArgumentForVpnTunnel(
-          required=False))
-
-  _PEER_GCP_GATEWAY_ARG = (
-      vpn_gateway_flags.GetPeerVpnGatewayArgumentForOtherResource(
-          required=False))
-
-  @classmethod
-  def Args(cls, parser):
-    """Adds arguments to the supplied parser."""
-    # TODO(b/129011963): add e2e tests for HA VPN tunnels
-    parser.display_info.AddFormat(flags.HA_VPN_LIST_FORMAT)
-
-    _VPN_TUNNEL_ARG.AddArgument(parser, operation_type='create')
-    vpn_gateway_group_parser = parser.add_mutually_exclusive_group(
-        required=True)
-    cls._TARGET_VPN_GATEWAY_ARG.AddArgument(vpn_gateway_group_parser)
-    cls._VPN_GATEWAY_ARG.AddArgument(vpn_gateway_group_parser)
-
-    peer_vpn_gateway_group_parser = parser.add_mutually_exclusive_group(
-        required=True)
-    cls._EXTERNAL_VPN_GATEWAY_ARG.AddArgument(peer_vpn_gateway_group_parser)
-    cls._PEER_GCP_GATEWAY_ARG.AddArgument(peer_vpn_gateway_group_parser)
-    peer_vpn_gateway_group_parser.add_argument(
-        '--peer-address',
-        required=False,
-        help='Valid IP-v4 address representing the remote tunnel endpoint, '
-        'the peer address must be specified when creating Classic VPN '
-        'tunnels from Classic Target VPN Gateway')
-
-    cls._AddCommonFlags(parser)
-
-    parser.add_argument(
-        '--local-traffic-selector',
-        type=arg_parsers.ArgList(min_length=1),
-        metavar='CIDR',
-        help=("""\
-        Traffic selector is an agreement between IKE peers to permit traffic
-        through a tunnel if the traffic matches a specified pair of local and
-        remote addresses.
-
-        --local-traffic-selector allows to configure the local addresses that are
-        permitted. The value should be a comma separated list of CIDR formatted
-        strings. Example: 192.168.0.0/16,10.0.0.0/24.
-
-        Local traffic selector must be specified only for VPN tunnels that
-        do not use dynamic routing with a Cloud Router. Omit this flag when
-        creating a tunnel using dynamic routing, including a tunnel for a
-        highly available VPN gateway."""))
-
-    parser.add_argument(
-        '--remote-traffic-selector',
-        type=arg_parsers.ArgList(min_length=1),
-        metavar='CIDR',
-        help=("""\
-        Traffic selector is an agreement between IKE peers to permit traffic
-        through a tunnel if the traffic matches a specified pair of local and
-        remote addresses.
-
-        --remote-traffic-selector allows to configure the remote addresses that
-        are permitted. The value should be a comma separated list of CIDR
-        formatted strings. Example: 192.168.0.0/16,10.0.0.0/24.
-
-        Remote traffic selector must be specified for VPN tunnels that do
-        not use dynamic routing with a Cloud Router. Omit this flag when
-        creating a tunnel using dynamic routing, including a tunnel for a
-        highly available VPN gateway."""))
-
-    parser.add_argument(
-        '--interface',
-        choices=[0, 1],
-        type=int,
-        required=False,
-        help="""\
-        Numeric interface ID of the VPN gateway with which this VPN tunnel
-        is associated. This flag is required if the tunnel is being attached
-        to a High Availability VPN gateway. This option is only available
-        for use with High Availability VPN gateway and must be omitted if the
-        tunnel is going to be connected to a Classic VPN gateway.""")
-
-    parser.add_argument(
-        '--peer-external-gateway-interface',
-        choices=[0, 1, 2, 3],
-        type=int,
-        required=False,
-        help="""\
-        Interface ID of the external VPN gateway to which this VPN tunnel
-        is connected to.
-        This flag is required if the tunnel is being created from
-        a High Availability VPN gateway to an External Vpn Gateway.""")
-
-    parser.display_info.AddCacheUpdater(flags.VpnTunnelsCompleter)
 
   def Run(self, args):
     """Issues API requests to construct VPN Tunnels."""

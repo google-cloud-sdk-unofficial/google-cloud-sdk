@@ -19,8 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.compute.os_config import osconfig_utils
+from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -63,7 +64,8 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    osconfig_utils.AddResourceParentArgs(parser, 'guest policies', 'to list')
+    osconfig_command_utils.AddResourceParentArgs(parser, 'guest policies',
+                                                 'to list')
     parser.display_info.AddFormat("""
           table(
             name.basename(),
@@ -78,24 +80,28 @@ class List(base.ListCommand):
 
   def Run(self, args):
     release_track = self.ReleaseTrack()
-    client = osconfig_utils.GetClientInstance(release_track)
-    messages = osconfig_utils.GetClientMessages(release_track)
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
 
     if args.organization:
       request = messages.OsconfigOrganizationsGuestPoliciesListRequest(
           pageSize=args.page_size,
-          parent=osconfig_utils.GetOrganizationUriPath(args.organization))
+          parent=osconfig_command_utils.GetOrganizationUriPath(
+              args.organization),
+      )
       service = client.organizations_guestPolicies
     elif args.folder:
       request = messages.OsconfigFoldersGuestPoliciesListRequest(
           pageSize=args.page_size,
-          parent=osconfig_utils.GetFolderUriPath(args.folder))
+          parent=osconfig_command_utils.GetFolderUriPath(args.folder),
+      )
       service = client.folders_guestPolicies
     else:
       project = properties.VALUES.core.project.GetOrFail()
       request = messages.OsconfigProjectsGuestPoliciesListRequest(
           pageSize=args.page_size,
-          parent=osconfig_utils.GetProjectUriPath(project))
+          parent=osconfig_command_utils.GetProjectUriPath(project),
+      )
       service = client.projects_guestPolicies
 
     return list_pager.YieldFromList(
@@ -104,4 +110,5 @@ class List(base.ListCommand):
         limit=args.limit,
         batch_size=args.page_size,
         field='guestPolicies',
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+    )

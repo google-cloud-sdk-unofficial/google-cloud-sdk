@@ -171,12 +171,12 @@ def _BuildFileContents(args, client, modifiable_record, original_record, track):
 def _GetExampleResource(client, track):
   """Gets an example URL Map."""
   backend_service_uri_prefix = (
-      'https://www.googleapis.com/compute/%(track)s/projects/'
+      'https://compute.googleapis.com/compute/%(track)s/projects/'
       'my-project/global/backendServices/' % {
           'track': track
       })
   backend_bucket_uri_prefix = (
-      'https://www.googleapis.com/compute/%(track)s/projects/'
+      'https://compute.googleapis.com/compute/%(track)s/projects/'
       'my-project/global/backendBuckets/' % {
           'track': track
       })

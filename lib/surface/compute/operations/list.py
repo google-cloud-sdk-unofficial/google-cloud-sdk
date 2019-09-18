@@ -111,7 +111,7 @@ class List(base.ListCommand):
                      project=list(request_data.scope_set)[0].project)))
       if args.regions is not None:
         args_region_names = [
-            compute_holder.resources.Parse(
+            compute_holder.resources.Parse(  # pylint:disable=g-complex-comprehension
                 region,
                 params={'project': properties.VALUES.core.project.GetOrFail},
                 collection='compute.regions').Name()
@@ -119,7 +119,7 @@ class List(base.ListCommand):
         # If no regions were provided by the user, fetch a list.
         errors = []
         region_names = (
-            args_region_names or [res.name for res in lister.GetGlobalResources(
+            args_region_names or [res.name for res in lister.GetGlobalResources(  # pylint:disable=g-complex-comprehension
                 service=compute_client.apitools_client.regions,
                 project=properties.VALUES.core.project.GetOrFail(),
                 filter_expr=None,
@@ -142,7 +142,7 @@ class List(base.ListCommand):
                        project=list(request_data.scope_set)[0].project)))
       if args.zones is not None:
         args_zone_names = [
-            compute_holder.resources.Parse(
+            compute_holder.resources.Parse(  # pylint:disable=g-complex-comprehension
                 zone,
                 params={
                     'project': properties.VALUES.core.project.GetOrFail,
@@ -152,7 +152,7 @@ class List(base.ListCommand):
         # If no zones were provided by the user, fetch a list.
         errors = []
         zone_names = (
-            args_zone_names or [res.name for res in lister.GetGlobalResources(
+            args_zone_names or [res.name for res in lister.GetGlobalResources(  # pylint:disable=g-complex-comprehension
                 service=compute_client.apitools_client.zones,
                 project=properties.VALUES.core.project.GetOrFail(),
                 filter_expr=None,

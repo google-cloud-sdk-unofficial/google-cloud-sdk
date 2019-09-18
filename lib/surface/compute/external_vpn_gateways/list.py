@@ -29,12 +29,20 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """List Google Compute Engine external VPN gateways."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list all external VPN gateways, run:
+
+              $ {command}"""
+  }
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
 
   def Run(self, args):
-    """Issues the request to list all External VPN Gateways."""
+    """Issues the request to list all external VPN gateways."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = client.MESSAGES_MODULE

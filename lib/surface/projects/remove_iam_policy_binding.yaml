@@ -29,6 +29,10 @@ arguments:
     help_text: The project to remove the IAM policy binding from.
     spec: !REF googlecloudsdk.command_lib.projects.resources:project
 
+iam:
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
+
 ALPHA:
   help_text:
     brief: Remove IAM policy binding for a project.
@@ -69,3 +73,5 @@ ALPHA:
 
   iam:
     enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

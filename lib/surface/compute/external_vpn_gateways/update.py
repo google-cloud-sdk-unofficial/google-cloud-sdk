@@ -31,11 +31,12 @@ _EXTERNAL_VPN_GATEWAY_ARG = (
     external_vpn_gateway_flag.ExternalVpnGatewayArgument())
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine external VPN gateway.
 
-  *{command}* updates labels for a Google Compute Engine External VPN gateway.
+  *{command}* updates labels for a Google Compute Engine external VPN gateway.
   For example:
 
     $ {command} example-gateway \
@@ -53,6 +54,15 @@ class Update(base.UpdateCommand):
     $ {parent_command} describe example-gateway --format='default(labels)'
 
   """
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update labels for an external VPN gateway, run:
+
+              $ {command} my-external-gateway \
+                --update-labels=k0=value1,k1=value2"""
+  }
 
   @classmethod
   def Args(cls, parser):
@@ -100,5 +110,5 @@ class Update(base.UpdateCommand):
                                      labels_update.labels)
     return helper.WaitForOperation(
         external_gateway_ref, operation_ref,
-        'Updating labels of External VPN Gateway [{0}]'.format(
+        'Updating labels of external VPN gateway [{0}]'.format(
             external_gateway_ref.Name()))

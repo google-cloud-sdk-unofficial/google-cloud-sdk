@@ -30,7 +30,7 @@ from googlecloudsdk.core import resources
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine router.
 
@@ -143,8 +143,8 @@ class Create(base.CreateCommand):
     return self._Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateBeta(Create):
   """Create a Google Compute Engine router.
 
      *{command}* is used to create a router to provide dynamic routing to VPN

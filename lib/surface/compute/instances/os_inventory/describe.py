@@ -70,7 +70,7 @@ class Describe(base.DescribeCommand):
               "table[box,title='Installed Packages (RPM)']
                 (Name:sort=1,Arch,Version)",
             InstalledPackages.wua:format=
-              "table[box,title='Installed Packages (Windows Update Agent)'](
+              "table[all-box,title='Installed Packages (Windows Update Agent)'](
                 Title:sort=1:wrap,
                 Categories.list():wrap,
                 KBArticleIDs.list():wrap=14,
@@ -95,7 +95,7 @@ class Describe(base.DescribeCommand):
               "table[box,title='Package Updates Available (Yum)']
                 (Name:sort=1,Arch,Version)",
             PackageUpdates.wua:format=
-              "table[box,title='Package Updates Available (Windows Update Agent)'](
+              "table[all-box,title='Package Updates Available (Windows Update Agent)'](
                 Title:sort=1:wrap,
                 Categories.list():wrap,
                 KBArticleIDs.list():wrap=14,

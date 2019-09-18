@@ -24,11 +24,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.external_vpn_gateways import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new Google Compute Engine external VPN gateway.
 
-  *{command}* creates a new External VPN gateway.
+  *{command}* creates a new external VPN gateway.
 
   External VPN gateway is the on-premises VPN gateway or another cloud
   provider's VPN gateway that connects to your Google Cloud VPN gateway.
@@ -37,6 +38,12 @@ class Create(base.CreateCommand):
   gateway resource in Google Cloud Platform, which provides the information to
   Google Cloud Platform about your external VPN gateway.
   """
+  detailed_help = {
+      'EXAMPLES': """\
+          To create an external VPN gateway, run:
+
+              $ {command} my-external-gateway --interfaces=0=8.9.9.9"""
+  }
 
   @classmethod
   def Args(cls, parser):
@@ -65,5 +72,5 @@ class Create(base.CreateCommand):
         redundancy_type=redundancy_type)
     operation_ref = helper.Create(ref, external_vpn_gateway_to_insert)
     ret = helper.WaitForOperation(ref, operation_ref,
-                                  'Creating external VPN Gateway')
+                                  'Creating external VPN gateway')
     return ret

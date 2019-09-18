@@ -94,11 +94,11 @@ class RemoveBackend(base.UpdateCommand):
     replacement = encoding.CopyProtoMessage(existing)
 
     group_ref = self._GetGroupRef(args, resources, client)
-    group_uri = group_ref.SelfLink()
+    group_uri = group_ref.RelativeName()
 
     backend_idx = None
     for i, backend in enumerate(existing.backends):
-      if group_uri == backend.group:
+      if group_uri == resources.ParseURL(backend.group).RelativeName():
         backend_idx = i
 
     if backend_idx is None:

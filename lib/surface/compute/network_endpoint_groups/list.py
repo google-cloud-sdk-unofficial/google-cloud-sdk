@@ -77,8 +77,7 @@ class ListAlpha(base.ListCommand):
         client,
         zonal_service=client.apitools_client.networkEndpointGroups,
         global_service=client.apitools_client.globalNetworkEndpointGroups,
-        aggregation_service=client.apitools_client.networkEndpointGroups,
-        allow_partial_server_failure=True)
+        aggregation_service=client.apitools_client.networkEndpointGroups)
 
     return lister.Invoke(request_data, list_implementation)
 

@@ -20,6 +20,9 @@ arguments:
     help_text: The ID of the folder to add the IAM binding.
     spec: !REF googlecloudsdk.command_lib.resource_manager.resources:folder
 
+iam:
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
 
 ALPHA:
   help_text:
@@ -43,3 +46,5 @@ ALPHA:
 
   iam:
     enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

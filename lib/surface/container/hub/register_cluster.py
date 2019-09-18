@@ -229,7 +229,7 @@ class RegisterCluster(base.CreateCommand):
             upgrade=True)
       else:
         hub_util.DeployConnectAgent(
-            args, service_account_key_data, docker_credential_data)
+            args, service_account_key_data, docker_credential_data, name)
       return obj
 
     # No membership exists. Attempt to create a new one, and install a new
@@ -242,7 +242,7 @@ class RegisterCluster(base.CreateCommand):
             upgrade=False)
       else:
         hub_util.DeployConnectAgent(
-            args, service_account_key_data, docker_credential_data)
+            args, service_account_key_data, docker_credential_data, name)
     except:
       hub_util.DeleteMembership(name)
       hub_util.DeleteMembershipResources(kube_client)

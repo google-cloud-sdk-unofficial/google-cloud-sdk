@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a Cloud Pub/Sub Topic."""
 

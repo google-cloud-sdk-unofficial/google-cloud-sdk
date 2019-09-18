@@ -30,19 +30,28 @@ _NETWORK_ARG = network_flags.NetworkArgumentForOtherResource("""\
   """)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a new Google Compute Engine High Available VPN gateway.
+  """Create a new Google Compute Engine Highly Available VPN gateway.
 
-  *{command}* creates a new High Available VPN gateway.
+  *{command}* creates a new Highly Available VPN gateway.
 
-  High Available VPN Gateway provides a means to create a VPN solution with a
+  Highly Available VPN Gateway provides a means to create a VPN solution with a
   higher availability SLA compared to Classic Target VPN Gateway.
-  High Available VPN gateways are referred to as simply VPN gateways in the
+  Highly Available VPN gateways are simply referred to as VPN gateways in the
   API documentation and gcloud commands.
   A VPN Gateway can reference one or more VPN tunnels that connect it to
   external VPN gateways or Cloud VPN Gateways.
   """
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To create a VPN gateway, run:
+
+              $ {command} my-vpn-gateway --region=us-central1 --network=default
+          """
+  }
 
   @staticmethod
   def Args(parser):
@@ -55,7 +64,6 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Issues the request to create a new VPN gateway."""
-    # TODO(b/129011963): add e2e tests for HA VPN tunnels
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     helper = vpn_gateways_utils.VpnGatewayHelper(holder)
     vpn_gateway_ref = _VPN_GATEWAY_ARG.ResolveAsResource(args, holder.resources)

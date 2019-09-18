@@ -29,6 +29,11 @@ iam:
     set_iam_policy_request: ComputeSubnetworksSetIamPolicyRequest
   ALPHA:
     enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: optionsRequestedPolicyVersion
+  BETA:
+    policy_version: 3
+    get_iam_policy_version_path: optionsRequestedPolicyVersion
 
 arguments:
   resource:

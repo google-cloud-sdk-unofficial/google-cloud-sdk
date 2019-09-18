@@ -68,5 +68,5 @@ class Restart(base.DescribeCommand):
           'Waiting for [{}] to complete. This may take several minutes.'.format(
               operation.name),
           wait_ceiling_ms=df.OPERATION_TIMEOUT)
-      log.CreatedResource(
+      log.ResetResource(
           instance_ref.RelativeName(), kind='instance', is_async=False)

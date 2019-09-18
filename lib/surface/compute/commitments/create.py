@@ -37,8 +37,7 @@ _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 def _CommonArgsAlphaBeta(track, parser):
   """Add common flags for Alpha, Beta track."""
   flags.MakeCommitmentArg(False).AddArgument(parser, operation_type='create')
-  flags.AddCreateFlags(parser, enable_ssd_and_accelerator_support=True)
-  flags.AddReservationArgGroup(parser)
+  flags.AddCreateFlags(parser)
   messages = apis.GetMessagesModule('compute', track)
   flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
 
@@ -53,8 +52,10 @@ class Create(base.Command):
     flags.AddCreateFlags(parser)
 
   def _MakeCreateRequest(
-      self, args, messages, project, region, commitment_ref, unused_holder):
+      self, args, messages, project, region, commitment_ref, holder):
     commitment = messages.Commitment(
+        reservations=reservation_helper.MakeReservations(
+            args, messages, holder),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArg(messages, args.resources),

@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.vpn_gateways import flags
 
 
 class Describe(base.DescribeCommand):
-  """Get status of a Google Compute Engine VPN Gateway.
+  """Get status of a Google Compute Engine Highly Available VPN Gateway.
 
   *{command}* is used to display high availability configuration status for the
   Cloud VPN gateway, the command will show you the high availability
@@ -34,6 +34,14 @@ class Describe(base.DescribeCommand):
   to which the Cloud VPN gateway is connected; the peer gateway could be either
   a Cloud VPN gateway or an external VPN gateway.
   """
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To get status of a VPN gateway, run:
+
+              $ {command} my-gateway --region=us-central1"""
+  }
 
   VPN_GATEWAY_ARG = None
 

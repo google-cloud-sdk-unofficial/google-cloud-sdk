@@ -72,7 +72,7 @@ class DeployGKE(base.Command):
     parser.add_argument(
         'source',
         nargs='?',
-        help='The location of the source and configs to build and deploy. The '
+        help='Location of the source and configs to build and deploy. The '
         '`--config` option, if provided, is a relative path in the source '
         'directory. The location can be a directory on a local disk or a '
         'gzipped archive file (.tar.gz) in Google Cloud Storage.')
@@ -118,7 +118,7 @@ class DeployGKE(base.Command):
         help='If specified, the following label is added to the Kubernetes '
         "manifests: 'app.kubernetes.io/name: APP_NAME'. Defaults to the "
         'container image name provided by `--image` or `--tag` without the tag, '
-        "e.g. 'my-app' for 'gcr.io/my-project/my-app:1.0.0'")
+        "e.g. 'my-app' for 'gcr.io/my-project/my-app:1.0.0'.")
     parser.add_argument(
         '--app-version',
         help='If specified, the following label is added to the Kubernetes '
@@ -143,7 +143,7 @@ class DeployGKE(base.Command):
         '--config',
         help="""
         Path to the Kubernetes YAML, or directory containing multiple
-        Kubernetes YAML files, that are used to deploy the container image,
+        Kubernetes YAML files, used to deploy the container image,
         relative to SOURCE. The files must reference the provided container
         image or tag.
 
@@ -152,8 +152,8 @@ class DeployGKE(base.Command):
         """)
     parser.add_argument(
         '--timeout',
-        help='Maximum time a build is run before it time out. For example, '
-        '"2h15m5s" is two hours, fifteen minutes, and five seconds. If you '
+        help='Maximum time a build is run before it times out. For example, '
+        '"2h15m5s" is 2 hours, 15 minutes, and 5 seconds. If you '
         'do not specify a unit, seconds is assumed. Overrides the default '
         'builds/timeout property value for this command invocation.',
         action=actions.StoreProperty(properties.VALUES.builds.timeout),

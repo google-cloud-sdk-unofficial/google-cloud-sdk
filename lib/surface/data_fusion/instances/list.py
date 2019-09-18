@@ -39,14 +39,17 @@ class List(base.ListCommand):
   def Args(parser):
     resource_args.AddLocationResourceArg(parser,
                                          'Location to list instances for.')
-    parser.display_info.AddFormat('table[box]('
-                                  'name.segment(5):label=NAME,'
-                                  'type:label=EDITION,'
-                                  'createTime:reverse:label=CREATE_TIME,'
-                                  'updateTime:reverse:label=UPDATE_TIME,'
-                                  'zone:label=ZONE,'
-                                  'service_endpoint:label=INSTANCE_URL'
-                                  ')')
+    parser.display_info.AddFormat(
+        'table[box]('
+        'name.segment(5):label=NAME,'
+        'type:label=EDITION,'
+        'createTime:reverse:label=CREATE_TIME,'
+        'updateTime:reverse:label=UPDATE_TIME,'
+        'zone:label=ZONE,'
+        'version:label=VERSION,'
+        'availableVersion:label=AVAILABLE_VERSIONS_TO_UPDATE,'
+        'service_endpoint:label=INSTANCE_URL'
+        ')')
 
   def Run(self, args):
     datafusion = df.Datafusion()

@@ -110,7 +110,9 @@ class UpdateBackend(base.UpdateCommand):
     backend_to_update = None
     for backend in replacement.backends:
       # At most one backend will match
-      if group_ref.SelfLink() == backend.group:
+
+      if group_ref.RelativeName() == resources.ParseURL(
+          backend.group).RelativeName():
         backend_to_update = backend
         break
 
@@ -306,7 +308,8 @@ class UpdateBackendAlpha(UpdateBackendBeta):
     backend_to_update = None
     for backend in replacement.backends:
       # At most one backend will match
-      if group_ref.SelfLink() == backend.group:
+      if group_ref.RelativeName() == resources.ParseURL(
+          backend.group).RelativeName():
         backend_to_update = backend
         break
 

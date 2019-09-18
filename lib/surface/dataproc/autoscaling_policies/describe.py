@@ -23,7 +23,32 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
 
+def _Run(dataproc, args):
+  """Run command."""
+
+  messages = dataproc.messages
+
+  policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
+
+  request = messages.DataprocProjectsRegionsAutoscalingPoliciesGetRequest(
+      name=policy_ref.RelativeName())
+  return dataproc.client.projects_regions_autoscalingPolicies.Get(request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
+  """Describe an autoscaling policy."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddAutoscalingPolicyResourceArg(parser, 'describe', 'v1')
+
+  def Run(self, args):
+    return _Run(dp.Dataproc(self.ReleaseTrack()), args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeBeta(base.DescribeCommand):
   """Describe an autoscaling policy."""
 
   @staticmethod
@@ -31,11 +56,4 @@ class Describe(base.DescribeCommand):
     flags.AddAutoscalingPolicyResourceArg(parser, 'describe', 'v1beta2')
 
   def Run(self, args):
-    dataproc = dp.Dataproc(self.ReleaseTrack())
-    messages = dataproc.messages
-
-    policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
-
-    request = messages.DataprocProjectsRegionsAutoscalingPoliciesGetRequest(
-        name=policy_ref.RelativeName())
-    return dataproc.client.projects_regions_autoscalingPolicies.Get(request)
+    return _Run(dp.Dataproc(self.ReleaseTrack()), args)

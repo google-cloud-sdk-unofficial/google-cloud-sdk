@@ -55,22 +55,28 @@ class List(commands.List):
     ]).AddToParser(managed_group)
     # Flags specific to CRoGKE
     gke_group = flags.GetGkeArgGroup(parser)
+    concept_parsers.ConceptParser(
+        [resource_args.CLUSTER_PRESENTATION]).AddToParser(gke_group)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags specific to connecting to a cluster
+    cluster_group = flags.GetClusterArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
-        'Namespace list services in.',
+        'Namespace to list services in.',
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser(
-        [resource_args.CLUSTER_PRESENTATION,
-         namespace_presentation]).AddToParser(gke_group)
+        [namespace_presentation]).AddToParser(cluster_group)
+    # Flags not specific to any platform
+    flags.AddPlatformArg(parser)
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
 
   def _SetFormat(self, args, show_region=False, show_namespace=False):
     """Set display format for output.
@@ -129,10 +135,5 @@ class AlphaList(List):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
-    flags.AddAlphaPlatformArg(parser)
 
 AlphaList.__doc__ = List.__doc__

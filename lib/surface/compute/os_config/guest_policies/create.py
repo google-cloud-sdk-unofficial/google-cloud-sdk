@@ -18,8 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.compute.os_config import osconfig_utils
+from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
 
 
@@ -50,11 +51,13 @@ class Create(base.Command):
 
         This ID must contain only lowercase letters, numbers, and hyphens, start
         with a letter, end with a number or a letter, be between 1-63
-        characters, and unique within the project, folder, or organization.""")
+        characters, and unique within the project, folder, or organization.""",
+    )
     parser.add_argument(
         '--file',
         required=True,
-        help='The JSON or YAML file with the guest policy to create.')
+        help='The JSON or YAML file with the guest policy to create.',
+    )
     parser.add_argument(
         '--description',
         type=str,
@@ -62,38 +65,45 @@ class Create(base.Command):
         Description of the guest policy to create. Length of the description is
         limited to 1024 characters.
 
-        If specified, it will override any description provided in the file.""")
-    osconfig_utils.AddResourceParentArgs(parser, 'guest policy', 'to create')
+        If specified, it will override any description provided in the file.""",
+    )
+    osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
+                                                 'to create')
 
   def Run(self, args):
     release_track = self.ReleaseTrack()
-    client = osconfig_utils.GetClientInstance(release_track)
-    messages = osconfig_utils.GetClientMessages(release_track)
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
 
-    (guest_policy, _) = osconfig_utils.GetResourceAndUpdateFieldsFromFile(
-        args.file, messages.GuestPolicy)
+    (guest_policy,
+     _) = osconfig_command_utils.GetResourceAndUpdateFieldsFromFile(
+         args.file, messages.GuestPolicy)
 
     if args.organization:
-      parent_path = osconfig_utils.GetOrganizationUriPath(args.organization)
+      parent_path = osconfig_command_utils.GetOrganizationUriPath(
+          args.organization)
       request = messages.OsconfigOrganizationsGuestPoliciesCreateRequest(
           guestPolicy=guest_policy,
           guestPolicyId=args.POLICY_ID,
-          parent=parent_path)
+          parent=parent_path,
+      )
       service = client.organizations_guestPolicies
     elif args.folder:
-      parent_path = osconfig_utils.GetFolderUriPath(args.folder)
+      parent_path = osconfig_command_utils.GetFolderUriPath(args.folder)
       request = messages.OsconfigFoldersGuestPoliciesCreateRequest(
           guestPolicy=guest_policy,
           guestPolicyId=args.POLICY_ID,
-          parent=parent_path)
+          parent=parent_path,
+      )
       service = client.folders_guestPolicies
     else:
       project = properties.VALUES.core.project.GetOrFail()
-      parent_path = osconfig_utils.GetProjectUriPath(project)
+      parent_path = osconfig_command_utils.GetProjectUriPath(project)
       request = messages.OsconfigProjectsGuestPoliciesCreateRequest(
           guestPolicy=guest_policy,
           guestPolicyId=args.POLICY_ID,
-          parent=parent_path)
+          parent=parent_path,
+      )
       service = client.projects_guestPolicies
 
     return service.Create(request)

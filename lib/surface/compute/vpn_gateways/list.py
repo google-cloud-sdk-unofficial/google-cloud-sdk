@@ -27,9 +27,18 @@ from googlecloudsdk.command_lib.compute.vpn_gateways import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Compute Engine Highly Available VPN Gateways."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list all VPN gateways, run:
+
+              $ {command} --region=us-central1"""
+  }
 
   @staticmethod
   def Args(parser):

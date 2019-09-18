@@ -48,6 +48,14 @@ class Delete(base.DeleteCommand):
   about your on-premises side or another Cloud provider's VPN gateway.
   """
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete an external VPN gateway, run:
+
+              $ {command} my-external-gateway"""
+  }
+
   @staticmethod
   def Args(parser):
     _EXTERNAL_VPN_GATEWAY_ARG.AddArgument(parser, operation_type='delete')

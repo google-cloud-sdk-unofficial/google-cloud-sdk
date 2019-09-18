@@ -52,6 +52,9 @@ class Delete(base.Command):
     gke_group = flags.GetGkeArgGroup(parser)
     concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
                                   ]).AddToParser(gke_group)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
     # Flags not specific to any platform
     domain_mapping_presentation = presentation_specs.ResourcePresentationSpec(
         '--domain',
@@ -61,12 +64,11 @@ class Delete(base.Command):
         prefixes=False)
     concept_parsers.ConceptParser([
         domain_mapping_presentation]).AddToParser(parser)
+    flags.AddPlatformArg(parser)
 
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Delete domain mappings."""
@@ -86,10 +88,5 @@ class AlphaDelete(Delete):
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
-    flags.AddAlphaPlatformArg(parser)
 
 AlphaDelete.__doc__ = Delete.__doc__

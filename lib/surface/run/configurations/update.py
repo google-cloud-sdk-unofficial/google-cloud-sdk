@@ -64,7 +64,7 @@ class Update(base.Command):
         'Service to update the configuration of.',
         required=True,
         prefixes=False)
-    flags.AddAlphaPlatformArg(parser)
+    flags.AddPlatformArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)

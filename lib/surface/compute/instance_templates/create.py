@@ -51,7 +51,6 @@ def _CommonArgs(
     support_source_instance,
     support_local_ssd_size=False,
     support_kms=False,
-    support_reservation=False,
     support_resource_policy=False,
     support_min_node_cpus=False
 ):
@@ -134,27 +133,25 @@ def _CommonArgs(
         """.format(', '.join(_INSTANTIATE_FROM_VALUES)),
     )
 
-  if support_reservation:
-    instances_flags.AddReservationAffinityGroup(
-        parser,
-        group_text="""\
+  instances_flags.AddReservationAffinityGroup(
+      parser,
+      group_text="""\
 Specifies the reservation for instances created from this template.
 """,
-        affinity_text="""\
+      affinity_text="""\
 The type of reservation for instances created from this template.
 """)
 
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
 
 
-def _ValidateInstancesFlags(args, support_kms=False, support_reservation=False):
+def _ValidateInstancesFlags(args, support_kms=False,):
   """Validate flags for instance template that affects instance creation.
 
   Args:
       args: argparse.Namespace, An object that contains the values for the
         arguments specified in the .Args() method.
       support_kms: If KMS is supported.
-      support_reservation: If GCE reservation is supported.
   """
   instances_flags.ValidateDiskCommonFlags(args)
   instances_flags.ValidateDiskBootFlags(args, enable_kms=support_kms)
@@ -163,8 +160,7 @@ def _ValidateInstancesFlags(args, support_kms=False, support_reservation=False):
   instances_flags.ValidateNicFlags(args)
   instances_flags.ValidateServiceAccountAndScopeArgs(args)
   instances_flags.ValidateAcceleratorArgs(args)
-  if support_reservation:
-    instances_flags.ValidateReservationAffinityGroup(args)
+  instances_flags.ValidateReservationAffinityGroup(args)
 
 
 def _AddSourceInstanceToTemplate(
@@ -245,7 +241,6 @@ def _RunCreate(compute_api,
                args,
                support_source_instance,
                support_kms=False,
-               support_reservation=False,
                support_min_node_cpus=False):
   """Common routine for creating instance template.
 
@@ -257,8 +252,6 @@ def _RunCreate(compute_api,
         arguments specified in the .Args() method.
       support_source_instance: indicates whether source instance is supported.
       support_kms: Indicate whether KMS is integrated or not.
-      support_reservation: Indicate whether Reservation affinity is integrated
-        or not.
       support_min_node_cpus: Indicate whether the --min-node-cpus flag for
         sole tenancy overcommit is supported.
 
@@ -266,7 +259,7 @@ def _RunCreate(compute_api,
       A resource object dispatched by display.Displayer().
   """
   _ValidateInstancesFlags(
-      args, support_kms=support_kms, support_reservation=support_reservation)
+      args, support_kms=support_kms)
   instances_flags.ValidateNetworkTierArgs(args)
 
   client = compute_api.client
@@ -436,9 +429,8 @@ def _RunCreate(compute_api,
 
   instance_template.properties.shieldedInstanceConfig = shieldedinstance_config_message
 
-  if support_reservation:
-    instance_template.properties.reservationAffinity = instance_utils.GetReservationAffinity(
-        args, client)
+  instance_template.properties.reservationAffinity = instance_utils.GetReservationAffinity(
+      args, client)
 
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template,
@@ -515,7 +507,6 @@ class CreateBeta(Create):
   """
   _support_source_instance = True
   _support_kms = True
-  _support_reservation = True
   _support_resource_policy = True
 
   @classmethod
@@ -526,7 +517,6 @@ class CreateBeta(Create):
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_reservation=cls._support_reservation,
         support_resource_policy=cls._support_resource_policy
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
@@ -545,8 +535,7 @@ class CreateBeta(Create):
         base_classes.ComputeApiHolder(base.ReleaseTrack.BETA),
         args=args,
         support_source_instance=self._support_source_instance,
-        support_kms=self._support_kms,
-        support_reservation=self._support_reservation)
+        support_kms=self._support_kms)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -565,7 +554,6 @@ class CreateAlpha(Create):
   """
   _support_source_instance = True
   _support_kms = True
-  _support_reservation = True
   _support_resource_policy = True
   _support_min_node_cpus = True
 
@@ -577,7 +565,6 @@ class CreateAlpha(Create):
         support_local_ssd_size=True,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_reservation=cls._support_reservation,
         support_resource_policy=cls._support_resource_policy,
         support_min_node_cpus=cls._support_min_node_cpus)
     instances_flags.AddLocalNvdimmArgs(parser)
@@ -598,5 +585,4 @@ class CreateAlpha(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_reservation=self._support_reservation,
         support_min_node_cpus=self._support_min_node_cpus)

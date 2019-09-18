@@ -42,5 +42,7 @@ DETAILED_HELP = {
 class Serverless(base.Group):
   """Manage your Cloud Run resources."""
 
+  category = base.COMPUTE_CATEGORY
+
   detailed_help = DETAILED_HELP
 

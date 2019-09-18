@@ -22,6 +22,7 @@ request:
   ALPHA:
     api_version: alpha
 
+
 arguments:
   resource:
     help_text: The disk for which to remove IAM policy binding from.
@@ -34,6 +35,11 @@ iam:
     set_iam_policy_request: ComputeDisksSetIamPolicyRequest
   ALPHA:
     enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: optionsRequestedPolicyVersion
+  BETA:
+    policy_version: 3
+    get_iam_policy_version_path: optionsRequestedPolicyVersion
 
 ALPHA:
   help_text:

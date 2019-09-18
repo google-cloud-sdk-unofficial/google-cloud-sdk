@@ -18,8 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.compute.os_config import osconfig_utils
+from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
 
 
@@ -43,28 +44,29 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     parser.add_argument(
         'POLICY_ID', type=str, help='ID of the guest policy to describe.')
-    osconfig_utils.AddResourceParentArgs(parser, 'guest policy', 'to describe')
+    osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
+                                                 'to describe')
 
   def Run(self, args):
     release_track = self.ReleaseTrack()
-    client = osconfig_utils.GetClientInstance(release_track)
-    messages = osconfig_utils.GetClientMessages(release_track)
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
 
     if args.organization:
       request = messages.OsconfigOrganizationsGuestPoliciesGetRequest(
-          name=osconfig_utils.GetGuestPolicyUriPath(
+          name=osconfig_command_utils.GetGuestPolicyUriPath(
               'organizations', args.organization, args.POLICY_ID))
       service = client.organizations_guestPolicies
     elif args.folder:
       request = messages.OsconfigFoldersGuestPoliciesGetRequest(
-          name=osconfig_utils.GetGuestPolicyUriPath('folders', args.folder,
-                                                    args.POLICY_ID))
+          name=osconfig_command_utils.GetGuestPolicyUriPath(
+              'folders', args.folder, args.POLICY_ID))
       service = client.folders_guestPolicies
     else:
       project = properties.VALUES.core.project.GetOrFail()
       request = messages.OsconfigProjectsGuestPoliciesGetRequest(
-          name=osconfig_utils.GetGuestPolicyUriPath('projects', project,
-                                                    args.POLICY_ID))
+          name=osconfig_command_utils.GetGuestPolicyUriPath(
+              'projects', project, args.POLICY_ID))
       service = client.projects_guestPolicies
 
     return service.Get(request)

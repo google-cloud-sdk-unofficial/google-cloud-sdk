@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
@@ -70,11 +71,27 @@ class AdjustTraffic(base.Command):
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     flags.AddPlatformArg(parser)
 
+  def _SetFormat(self, args):
+    """Set display format for output.
+
+    Args:
+      args: Namespace, the args namespace
+    """
+    columns = [
+        'format("{}%", specPercent):label=TRAFFIC',
+        'displayRevisionId:label=REVISION',
+    ]
+    args.GetDisplayInfo().AddFormat(
+        'table({})'.format(','.join(columns)))
+
   def Run(self, args):
     """Update the traffic split for the service.
 
     Args:
       args: Args!
+
+    Returns:
+      List of traffic.TrafficTargetStatus instances reflecting the change.
     """
     conn_context = connection_context.GetConnectionContext(args)
     service_ref = flags.GetService(args)
@@ -101,10 +118,10 @@ class AdjustTraffic(base.Command):
         if args.async_:
           pretty_print.Success('Updating traffic asynchronously.')
         else:
+          self._SetFormat(args)
           serv = client.GetService(service_ref)
-          splits = ['{{bold}}{rev}{{reset}}={percent}'.format(
-              rev='latest' if target.latestRevision else target.revisionName,
-              percent=target.percent) for target in serv.spec.traffic]
-          msg = 'Traffic set to %s.' % ', '.join(splits)
-
-      pretty_print.Success(msg)
+          return traffic.GetTrafficTargetPairs(
+              serv.spec.traffic,
+              serv.status.traffic,
+              flags.IsManaged(args),
+              serv.status.latestReadyRevisionName)

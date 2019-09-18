@@ -73,7 +73,6 @@ def _CommonArgs(parser,
                 enable_regional=False,
                 enable_kms=False,
                 deprecate_maintenance_policy=False,
-                supports_reservation=False,
                 enable_resource_policy=False,
                 supports_min_node_cpus=False,
                 snapshot_csek=False,
@@ -116,11 +115,10 @@ def _CommonArgs(parser,
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddDisplayDeviceArg(parser)
 
-  if supports_reservation:
-    instances_flags.AddReservationAffinityGroup(
-        parser,
-        group_text='Specifies the reservation for the instance.',
-        affinity_text='The type of reservation for the instance.')
+  instances_flags.AddReservationAffinityGroup(
+      parser,
+      group_text='Specifies the reservation for the instance.',
+      affinity_text='The type of reservation for the instance.')
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
@@ -151,7 +149,6 @@ class Create(base.CreateCommand):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_reservation = False
   _support_disk_resource_policy = False
   _support_erase_vss = False
   _support_machine_image_key = False
@@ -481,9 +478,8 @@ class Create(base.CreateCommand):
         request.instance.displayDevice = compute_client.messages.DisplayDevice(
             enableDisplay=args.enable_display_device)
 
-      if self._support_reservation:
-        request.instance.reservationAffinity = instance_utils.GetReservationAffinity(
-            args, compute_client)
+      request.instance.reservationAffinity = instance_utils.GetReservationAffinity(
+          args, compute_client)
 
       requests.append(
           (compute_client.apitools_client.instances, 'Insert', request))
@@ -500,9 +496,7 @@ class Create(base.CreateCommand):
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidateAcceleratorArgs(args)
     instances_flags.ValidateNetworkTierArgs(args)
-
-    if self._support_reservation:
-      instances_flags.ValidateReservationAffinityGroup(args)
+    instances_flags.ValidateReservationAffinityGroup(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
@@ -563,7 +557,6 @@ class CreateBeta(Create):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_reservation = True
   _support_disk_resource_policy = True
   _support_erase_vss = False
   _support_machine_image_key = False
@@ -582,7 +575,6 @@ class CreateBeta(Create):
         parser,
         enable_regional=True,
         enable_kms=True,
-        supports_reservation=cls._support_reservation,
         enable_resource_policy=cls._support_disk_resource_policy,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
@@ -599,7 +591,6 @@ class CreateAlpha(CreateBeta):
   _support_kms = True
   _support_nvdimm = True
   _support_public_dns = True
-  _support_reservation = True
   _support_disk_resource_policy = True
   _support_erase_vss = True
   _support_machine_image_key = True
@@ -625,7 +616,6 @@ class CreateAlpha(CreateBeta):
         enable_regional=True,
         enable_kms=True,
         deprecate_maintenance_policy=True,
-        supports_reservation=cls._support_reservation,
         enable_resource_policy=cls._support_disk_resource_policy,
         supports_min_node_cpus=cls._support_min_node_cpus,
         snapshot_csek=True,

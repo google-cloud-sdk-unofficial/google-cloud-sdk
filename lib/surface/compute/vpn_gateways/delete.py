@@ -37,7 +37,8 @@ class DeleteBatchPoller(poller.BatchPoller):
     return
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine Highly Available VPN Gateways.
 
@@ -45,13 +46,21 @@ class Delete(base.DeleteCommand):
   Available VPN Gateways. VPN Gateways can only be deleted when no VPN tunnels
   refer to them.
 
-  High Available VPN Gateway provides a means to create a VPN solution with a
+  Highly Available VPN Gateway provides a means to create a VPN solution with a
   higher availability SLA compared to Classic Target VPN Gateway.
-  High Available VPN gateways are referred to as simply VPN gateways in the
+  Highly Available VPN gateways are simply referred to as VPN gateways in the
   API documentation and gcloud commands.
   A VPN Gateway can reference one or more VPN tunnels that connect it to
   external VPN gateways or Cloud VPN Gateways.
   """
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete a VPN gateway, run:
+
+              $ {command} my-gateway --region=us-central1"""
+  }
 
   @staticmethod
   def Args(parser):

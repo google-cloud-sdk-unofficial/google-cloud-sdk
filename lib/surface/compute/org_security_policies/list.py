@@ -18,8 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute.org_security_policies import client
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 
@@ -35,16 +36,24 @@ class List(base.ListCommand):
   @classmethod
   def Args(cls, parser):
     flags.AddArgsListSp(parser)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
     parser.display_info.AddCacheUpdater(flags.OrgSecurityPoliciesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    org_security_policy = client.OrgSecurityPolicy(compute_client=holder.client)
-
+    client = holder.client.apitools_client
+    messages = client.MESSAGES_MODULE
     if args.organization:
       parent_id = 'organizations/' + args.organization
     elif args.folder:
       parent_id = 'folders/' + args.folder
 
-    return org_security_policy.List(
-        parent_id=parent_id, only_generate_request=False)
+    request = messages.ComputeOrganizationSecurityPoliciesListRequest(
+        parentId=parent_id)
+    return list_pager.YieldFromList(
+        client.organizationSecurityPolicies,
+        request,
+        field='items',
+        limit=args.limit,
+        batch_size=None)

@@ -29,7 +29,6 @@ class Update(base.UpdateCommand):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
   _include_alpha_logging = False
-  _include_beta_logging = False
   _include_l7_internal_load_balancing = False
   _include_private_ipv6_access = False
 
@@ -44,7 +43,6 @@ class Update(base.UpdateCommand):
     cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
 
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
-                        cls._include_beta_logging,
                         cls._include_l7_internal_load_balancing,
                         cls._include_private_ipv6_access)
 
@@ -54,18 +52,17 @@ class Update(base.UpdateCommand):
     client = holder.client
     subnet_ref = self.SUBNETWORK_ARG.ResolveAsResource(args, holder.resources)
 
-    aggregation_interval = None
-    flow_sampling = None
-    metadata = None
+    aggregation_interval = args.logging_aggregation_interval
+    flow_sampling = args.logging_flow_sampling
+    metadata = args.logging_metadata
 
     if self._include_alpha_logging:
-      aggregation_interval = args.aggregation_interval
-      flow_sampling = args.flow_sampling
-      metadata = args.metadata
-    elif self._include_beta_logging:
-      aggregation_interval = args.logging_aggregation_interval
-      flow_sampling = args.logging_flow_sampling
-      metadata = args.logging_metadata
+      if args.aggregation_interval is not None:
+        aggregation_interval = args.aggregation_interval
+      if args.flow_sampling is not None:
+        flow_sampling = args.flow_sampling
+      if args.metadata is not None:
+        metadata = args.metadata
 
     set_role_active = None
     drain_timeout_seconds = None
@@ -87,7 +84,6 @@ class Update(base.UpdateCommand):
         client,
         subnet_ref,
         self._include_alpha_logging,
-        self._include_beta_logging,
         enable_private_ip_google_access=args.enable_private_ip_google_access,
         add_secondary_ranges=args.add_secondary_ranges,
         remove_secondary_ranges=args.remove_secondary_ranges,
@@ -107,7 +103,6 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
-  _include_beta_logging = True
   _include_l7_internal_load_balancing = True
 
 
@@ -116,5 +111,4 @@ class UpdateAlpha(UpdateBeta):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
   _include_alpha_logging = True
-  _include_beta_logging = False
   _include_private_ipv6_access = True

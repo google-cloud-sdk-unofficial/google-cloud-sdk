@@ -12,31 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Useful commands for interacting with the Cloud Resource Management API."""
+
+"""The backups command group for bigtable."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.cloudresourcemanager import organizations
+from googlecloudsdk.calliope import base
 
 
-def Get(organization_ref):
-  """Get Organization information.
-
-  Args:
-    organization_ref: Identifier for the organization (e.g., organization/12345)
-
-  Returns:
-    Organization object
-    Example:
-    {
-      organizationOwner: {
-        directoryCustomerId: A08w1n5gg
-      }
-    }
-  """
-  client = organizations.Client()
-  return client.organizations.Get(
-      client.MESSAGES_MODULE.CloudresourcemanagerOrganizationsGetRequest(
-          organizationsId=organization_ref.organization_id))
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class Backups(base.Group):
+  """Manage Cloud Bigtable backups."""

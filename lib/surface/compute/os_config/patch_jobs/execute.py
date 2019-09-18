@@ -18,10 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.compute.os_config import osconfig_utils
+from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -47,7 +48,8 @@ def _AddTopLevelArguments(parser):
       '--dry-run',
       action='store_true',
       help="""Whether to execute this patch job as a dry run. If this patch job
-        is a dry run, instances will be contacted, but they will do nothing.""")
+        is a dry run, instances will be contacted, but they will do nothing.""",
+  )
   parser.add_argument(
       '--duration',
       type=arg_parsers.Duration(),
@@ -59,7 +61,8 @@ def _AddTopLevelArguments(parser):
 
 
         If unspecified, the job will stay active until all instances complete
-        the patch.""")
+        the patch.""",
+  )
   base.ChoiceArgument(
       '--reboot-config',
       help_str='Post-patch reboot settings.',
@@ -71,13 +74,15 @@ def _AddTopLevelArguments(parser):
               """Always reboot the machine after the update has completed.""",
           'never':
               """Never reboot the machine after the update has completed."""
-      }).AddToParser(parser)
+      },
+  ).AddToParser(parser)
   parser.add_argument(
       '--retry',
       action='store_true',
       help="""Whether to attempt to retry during the duration window if
         patching fails. If omitted, the agent will use its default retry
-        strategy.""")
+        strategy.""",
+  )
 
 
 def _AddAptGroupArguments(parser):
@@ -88,7 +93,8 @@ def _AddAptGroupArguments(parser):
       action='store_true',
       help="""If specified, machines running Apt will patch using the command
         `apt-get dist-upgrade`; otherwise the patch will run `apt-get upgrade`.
-        """)
+        """,
+  )
 
 
 def _AddWinGroupArguments(parser):
@@ -104,12 +110,14 @@ def _AddWinGroupArguments(parser):
       help="""List of classifications to use to restrict the Windows update.
       Only patches of the given classifications will be applied. If omitted,
       a default Windows update will be performed. For more information on
-      classifications, see: https://support.microsoft.com/en-us/help/824684""")
+      classifications, see: https://support.microsoft.com/en-us/help/824684""",
+  )
   win_group.add_argument(
       '--windows-excludes',
       metavar='WINDOWS_EXCLUDES',
       type=arg_parsers.ArgList(),
-      help="""Optional list of KBs to exclude from the update operation.""")
+      help="""Optional list of KBs to exclude from the update operation.""",
+  )
 
 
 def _AddYumGroupArguments(parser):
@@ -119,19 +127,22 @@ def _AddYumGroupArguments(parser):
       '--yum-security',
       action='store_true',
       help="""If specified, machines running Yum will append the `--security`
-        flag to the patch command.""")
+        flag to the patch command.""",
+  )
   yum_group.add_argument(
       '--yum-minimal',
       action='store_true',
       help="""If specified, machines running Yum will patch using the command
-        `yum update-minimal`; otherwise the patch will run `yum-update`.""")
+        `yum update-minimal`; otherwise the patch will run `yum-update`.""",
+  )
   yum_group.add_argument(
       '--yum-excludes',
       metavar='YUM_EXCLUDES',
       type=arg_parsers.ArgList(),
       help="""Optional list of packages to exclude from updating. If this
         argument is specified, machines running Yum will exclude the given list
-        of packages using the Yum `--exclude` flag.""")
+        of packages using the Yum `--exclude` flag.""",
+  )
 
 
 def _AddZypperGroupArguments(parser):
@@ -143,24 +154,28 @@ def _AddZypperGroupArguments(parser):
       type=arg_parsers.ArgList(),
       help="""If specified, machines running Zypper will install only patches
       with these categories. Common categories include security, recommended,
-      and feature.""")
+      and feature.""",
+  )
   zypper_group.add_argument(
       '--zypper-severities',
       metavar='ZYPPER_SEVERITIES',
       type=arg_parsers.ArgList(),
       help="""If specified, machines running Zypper will install only patches
       with these severities. Common severities include critical, important,
-      moderate, and low.""")
+      moderate, and low.""",
+  )
   zypper_group.add_argument(
       '--zypper-with-optional',
       action='store_true',
       help="""If specified, machines running Zypper will add the
-      `--with-optional` flag to `zypper patch`.""")
+      `--with-optional` flag to `zypper patch`.""",
+  )
   zypper_group.add_argument(
       '--zypper-with-update',
       action='store_true',
       help="""If specified, machines running Zypper will add the `--with-update`
-      flag to `zypper patch`.""")
+      flag to `zypper patch`.""",
+  )
 
 
 def _GetWindowsUpdateSettings(args, messages):
@@ -172,7 +187,8 @@ def _GetWindowsUpdateSettings(args, messages):
     ] if args.windows_classifications else []
     return messages.WindowsUpdateSettings(
         classifications=classifications,
-        excludes=args.windows_excludes if args.windows_excludes else [])
+        excludes=args.windows_excludes if args.windows_excludes else [],
+    )
   else:
     return None
 
@@ -182,7 +198,8 @@ def _GetYumSettings(args, messages):
     return messages.YumSettings(
         excludes=args.yum_excludes if args.yum_excludes else [],
         minimal=args.yum_minimal,
-        security=args.yum_security)
+        security=args.yum_security,
+    )
   else:
     return None
 
@@ -198,7 +215,8 @@ def _GetZypperSettings(args, messages):
           categories=args.zypper_categories if args.zypper_categories else [],
           severities=args.zypper_severities if args.zypper_severities else [],
           withOptional=args.zypper_with_optional,
-          withUpdate=args.zypper_with_update)
+          withUpdate=args.zypper_with_update,
+      )
   return None
 
 
@@ -215,9 +233,11 @@ def _GetProgressTracker(patch_job_name):
 
 def _GetExecutionUpdateMessage(percent_complete, instance_details_json):
   """Construct a message to be displayed during synchronous execute."""
-  instance_states = {state: 0 for state in osconfig_utils.InstanceDetailsStates}
+  instance_states = {
+      state: 0 for state in osconfig_command_utils.InstanceDetailsStates
+  }
 
-  for key, state in osconfig_utils.INSTANCE_DETAILS_KEY_MAP.items():
+  for key, state in osconfig_command_utils.INSTANCE_DETAILS_KEY_MAP.items():
     num_instances = int(
         instance_details_json[key]) if key in instance_details_json else 0
     instance_states[state] = instance_states[state] + num_instances
@@ -300,10 +320,8 @@ class Execute(base.Command):
     project = properties.VALUES.core.project.GetOrFail()
 
     release_track = self.ReleaseTrack()
-    client = osconfig_utils.GetClientInstance(
-        release_track)
-    messages = osconfig_utils.GetClientMessages(
-        release_track)
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
 
     duration = six.text_type(args.duration) + 's' if args.duration else None
     filter_arg = 'id=*' if not args.instance_filter else args.instance_filter
@@ -321,7 +339,8 @@ class Execute(base.Command):
         retryStrategy=retry_strategy,
         windowsUpdate=_GetWindowsUpdateSettings(args, messages),
         yum=_GetYumSettings(args, messages),
-        zypper=_GetZypperSettings(args, messages))
+        zypper=_GetZypperSettings(args, messages),
+    )
 
     request = messages.OsconfigProjectsPatchJobsExecuteRequest(
         executePatchJobRequest=messages.ExecutePatchJobRequest(
@@ -329,11 +348,12 @@ class Execute(base.Command):
             dryRun=args.dry_run,
             duration=duration,
             filter=filter_arg,
-            patchConfig=patch_config),
-        parent=osconfig_utils.GetProjectUriPath(project))
+            patchConfig=patch_config,
+        ),
+        parent=osconfig_command_utils.GetProjectUriPath(project))
     async_response = client.projects_patchJobs.Execute(request)
 
-    patch_job_name = osconfig_utils.GetPatchJobName(async_response.name)
+    patch_job_name = osconfig_command_utils.GetPatchJobName(async_response.name)
 
     if args.async_:
       log.status.Print(
@@ -344,7 +364,7 @@ class Execute(base.Command):
       return async_response
 
     # Execute the patch job synchronously.
-    patch_job_poller = osconfig_utils.Poller(client, messages)
+    patch_job_poller = osconfig_api_utils.Poller(client, messages)
     get_request = messages.OsconfigProjectsPatchJobsGetRequest(
         name=async_response.name)
     sync_response = waiter.WaitFor(
@@ -354,7 +374,8 @@ class Execute(base.Command):
         tracker_update_func=_UpdateProgressTracker,
         pre_start_sleep_ms=5000,
         exponential_sleep_multiplier=1,  # Constant poll rate of 5s.
-        sleep_ms=5000)
+        sleep_ms=5000,
+    )
     log.status.Print(
         'Execution for patch job [{}] has completed with status [{}].'.format(
             patch_job_name, sync_response.state))

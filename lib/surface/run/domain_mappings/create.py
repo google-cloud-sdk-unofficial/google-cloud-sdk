@@ -56,6 +56,9 @@ class Create(base.Command):
     gke_group = flags.GetGkeArgGroup(parser)
     concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
                                   ]).AddToParser(gke_group)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
     # Flags not specific to any platform
     parser.add_argument(
         '--service', required=True,
@@ -68,6 +71,7 @@ class Create(base.Command):
         prefixes=False)
     concept_parsers.ConceptParser([
         domain_mapping_presentation]).AddToParser(parser)
+    flags.AddPlatformArg(parser)
     parser.display_info.AddFormat(
         """table(
         name:label=NAME,
@@ -77,8 +81,6 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Create a domain mapping."""
@@ -120,10 +122,5 @@ class AlphaCreate(Create):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
-    flags.AddAlphaPlatformArg(parser)
 
 AlphaCreate.__doc__ = Create.__doc__

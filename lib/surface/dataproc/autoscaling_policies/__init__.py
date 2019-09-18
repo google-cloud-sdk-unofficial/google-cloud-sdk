@@ -22,7 +22,39 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AutoscalingPoliciesBeta(base.Group):
+class AutoscalingPolicies(base.Group):
+  """Create and manage Google Cloud Dataproc autoscaling policies.
+
+  Create and manage Google Cloud Dataproc autoscaling policies.
+
+  ## EXAMPLES
+
+  To see the list of all autoscaling policies, run:
+
+    $ {command} list
+
+  To view the details of an autoscaling policy, run:
+
+    $ {command} describe my_policy
+
+  To view just the non-output only fields of an autoscaling policy, run:
+
+    $ {command} export my_policy --destination policy-file.yaml
+
+  To create or update an autoscaling policy, run:
+
+    $ {command} import my_policy --source policy-file.yaml
+
+  To delete an autoscaling policy, run:
+
+    $ {command} delete my_policy
+  """
+  pass
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class AutoscalingPoliciesGa(base.Group):
   r"""Create and manage Google Cloud Dataproc autoscaling policies.
 
   Create and manage Google Cloud Dataproc autoscaling policies.

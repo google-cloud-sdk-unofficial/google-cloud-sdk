@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [GA, BETA, ALPHA]
 help_text:
   brief: Add IAM policy binding to a subscription.
   description: |

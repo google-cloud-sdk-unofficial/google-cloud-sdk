@@ -20,7 +20,7 @@
     use_relative_name: false
     modify_request_hooks:
     - googlecloudsdk.command_lib.projects.util:SetIamPolicyFromFileHook
-
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=setIamPolicyRequest.policy.version
   arguments:
     resource:
       help_text: The project to set the IAM policy for.

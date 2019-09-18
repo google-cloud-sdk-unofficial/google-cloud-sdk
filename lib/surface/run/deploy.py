@@ -147,6 +147,13 @@ class Deploy(base.Command):
     gke_group = flags.GetGkeArgGroup(parser)
     concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
                                   ]).AddToParser(gke_group)
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+    # Flags specific to connecting to a cluster
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddEndpointVisibilityEnum(cluster_group)
+    flags.AddCpuFlag(cluster_group)
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
@@ -155,6 +162,7 @@ class Deploy(base.Command):
         required=True,
         prefixes=False)
     flags.AddImageArg(parser)
+    flags.AddPlatformArg(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
@@ -167,12 +175,6 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(gke_group)
-    flags.AddCpuFlag(gke_group)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -225,17 +227,11 @@ class AlphaDeploy(Deploy):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddRevisionSuffixArg(managed_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(cluster_group)
-    flags.AddCpuFlag(cluster_group)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
     # Flags not specific to any platform
-    flags.AddAlphaPlatformArg(parser)
     flags.AddScalingFlags(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)

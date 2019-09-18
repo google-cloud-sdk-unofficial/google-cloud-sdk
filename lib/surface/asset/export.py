@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to export assets to Google Cloud Storage."""
+"""Command to export assets to Google Cloud Storage or BigQuery."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,10 +35,10 @@ class Export(base.Command):
   detailed_help = {
       'DESCRIPTION':
           """\
-      Export the cloud assets to Google Cloud Storage. Use gcloud asset operations
-      describe to get the latest status of the operation. Note that to export a
-      project different from the project you want to bill, you can use
-      --billing-project or authenticate with a service account.
+      Export the cloud assets to Google Cloud Storage or BigQuery. Use gcloud
+      asset operations describe to get the latest status of the operation. Note
+      that to export a project different from the project you want to bill, you
+      can use  --billing-project or authenticate with a service account.
       See https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/gcloud-asset
       for examples of using a service account.
       """,
@@ -49,6 +49,12 @@ class Export(base.Command):
       'gs://bucket-name/object-name' and only export the asset metadata, run:
 
         $ {command} --project='test-project' --asset-types='compute.googleapis.com/Disk' --snapshot-time='2019-03-05T00:00:00Z' --output-path='gs://bucket-name/object-name' --content-type='resource'
+      To export a snapshot of assets of type 'compute.googleapis.com/Disk' in
+      project 'test-project' at '2019-03-05T00:00:00Z' to
+      'projects/projectId/datasets/datasetId/tables/table_name', overwrite the table
+      if existed, run:
+
+        $ {command} --project='test-project' --asset-types='compute.googleapis.com/Disk' --snapshot-time='2019-03-05T00:00:00Z' --bigquery-table='projects/projectId/datasets/datasetId/tables/table_name' --output-bigquery-force --content-type='resource'
       """
   }
   # pylint: enable=line-too-long

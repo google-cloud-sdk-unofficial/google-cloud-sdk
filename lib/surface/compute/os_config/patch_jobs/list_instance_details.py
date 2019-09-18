@@ -19,9 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
-from googlecloudsdk.api_lib.compute.os_config import osconfig_utils
+from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.os_config import resource_args
+from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projector
 
@@ -73,14 +74,13 @@ class ListInstanceDetails(base.ListCommand):
     patch_job_ref = args.CONCEPTS.patch_job.Parse()
 
     release_track = self.ReleaseTrack()
-    client = osconfig_utils.GetClientInstance(
-        release_track)
-    messages = osconfig_utils.GetClientMessages(
-        release_track)
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
 
     request = messages.OsconfigProjectsPatchJobsInstanceDetailsListRequest(
         pageSize=args.page_size,
-        parent=osconfig_utils.GetPatchJobUriPath(project, patch_job_ref.Name()))
+        parent=osconfig_command_utils.GetPatchJobUriPath(
+            project, patch_job_ref.Name()))
 
     results = list(
         list_pager.YieldFromList(
@@ -89,6 +89,6 @@ class ListInstanceDetails(base.ListCommand):
             limit=args.limit,
             batch_size=args.page_size,
             field='patchJobInstanceDetails',
-            batch_size_attribute='pageSize'))
+            batch_size_attribute='pageSize'),)
 
     return _PostProcessListResult(results)

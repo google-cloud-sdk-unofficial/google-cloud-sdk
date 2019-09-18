@@ -214,10 +214,10 @@ class Edit(base.Command):
     return resource_list
 
   def GetExampleResource(self, client):
-    uri_prefix = ('https://www.googleapis.com/compute/v1/projects/'
+    uri_prefix = ('https://compute.googleapis.com/compute/v1/projects/'
                   'my-project/')
     instance_groups_uri_prefix = (
-        'https://www.googleapis.com/compute/v1/projects/'
+        'https://compute.googleapis.com/compute/v1/projects/'
         'my-project/zones/')
 
     return client.messages.BackendService(

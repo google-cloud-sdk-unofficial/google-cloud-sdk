@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Utility functions for managing GCE OS Configs."""
+"""Utility functions for GCE OS Config commands."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,9 +20,6 @@ from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from enum import Enum
-from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.api_lib.util import waiter
-from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.util.args import common_args
 from googlecloudsdk.core import yaml
@@ -52,9 +49,6 @@ INSTANCE_DETAILS_KEY_MAP = {
     'instancesRunningPrePatchStep': InstanceDetailsStates.PATCHING,
     'instancesRunningPostPatchStep': InstanceDetailsStates.PATCHING,
 }
-
-_API_CLIENT_NAME = 'osconfig'
-_API_CLIENT_VERSION_MAP = {base.ReleaseTrack.ALPHA: 'v1alpha2'}
 
 
 def GetParentUriPath(parent_name, parent_id):
@@ -92,62 +86,13 @@ def GetGuestPolicyRelativePath(parent, guest_policy):
   return '/'.join([parent, 'guestPolicies', guest_policy])
 
 
-def GetClientClass(release_track, api_version_override=None):
-  return apis.GetClientClass(
-      _API_CLIENT_NAME, api_version_override or
-      _API_CLIENT_VERSION_MAP[release_track])
-
-
-def GetClientInstance(release_track, api_version_override=None):
-  return apis.GetClientInstance(
-      _API_CLIENT_NAME, api_version_override or
-      _API_CLIENT_VERSION_MAP[release_track])
-
-
-def GetClientMessages(release_track, api_version_override=None):
-  return apis.GetMessagesModule(
-      _API_CLIENT_NAME, api_version_override or
-      _API_CLIENT_VERSION_MAP[release_track])
-
-
-class Poller(waiter.OperationPoller):
-  """Poller for synchronous patch job execution."""
-
-  def __init__(self, client, messages):
-    """Initializes poller for patch job execution.
-
-    Args:
-      client: API client of the OsConfig service.
-      messages: API messages of the OsConfig service.
-    """
-    self.client = client
-    self.messages = messages
-    self.patch_job_terminal_states = [
-        self.messages.PatchJob.StateValueValuesEnum.SUCCEEDED,
-        self.messages.PatchJob.StateValueValuesEnum.COMPLETED_WITH_ERRORS,
-        self.messages.PatchJob.StateValueValuesEnum.TIMED_OUT,
-        self.messages.PatchJob.StateValueValuesEnum.CANCELED
-    ]
-
-  def IsDone(self, patch_job):
-    """Overrides."""
-    return patch_job.state in self.patch_job_terminal_states
-
-  def Poll(self, request):
-    """Overrides."""
-    return self.client.projects_patchJobs.Get(request)
-
-  def GetResult(self, patch_job):
-    """Overrides."""
-    return patch_job
-
-
 def AddResourceParentArgs(parser, noun, verb):
   """Add project, folder, and organization flags to the parser."""
   parent_resource_group = parser.add_group(
       help='The scope of the {} which defaults to project if unspecified.'
       .format(noun),
-      mutex=True)
+      mutex=True,
+  )
   common_args.ProjectArgument(
       help_text_to_prepend='The project of the {} {}.'.format(
           noun, verb)).AddToParser(parent_resource_group)
@@ -155,12 +100,14 @@ def AddResourceParentArgs(parser, noun, verb):
       '--folder',
       metavar='FOLDER_ID',
       type=str,
-      help='The folder of the {} {}.'.format(noun, verb))
+      help='The folder of the {} {}.'.format(noun, verb),
+  )
   parent_resource_group.add_argument(
       '--organization',
       metavar='ORGANIZATION_ID',
       type=str,
-      help='The organization of the {} {}.'.format(noun, verb))
+      help='The organization of the {} {}.'.format(noun, verb),
+  )
 
 
 def GetGuestPolicyUriPath(parent_type, parent_name, policy_id):
@@ -169,13 +116,31 @@ def GetGuestPolicyUriPath(parent_type, parent_name, policy_id):
 
 
 def GetResourceAndUpdateFieldsFromFile(file_path, resource_message_type):
+  """Return the resource message and update fields in file."""
   try:
     resource_to_parse = yaml.load_path(file_path)
-    update_fields = list(resource_to_parse.keys())
+  except yaml.YAMLParseError:
+    raise exceptions.BadFileException(
+        'Policy config file [{0}] cannot be parsed. {1}'
+        .format(file_path, six.text_type(e)))
+  except yaml.FileLoadError as e:
+    raise exceptions.BadFileException(
+        'Policy config file [{0}] cannot be opened or read. {1}'
+        .format(file_path, six.text_type(e)))
+
+  if not isinstance(resource_to_parse, dict):
+    raise exceptions.BadFileException(
+        'Policy config file [{0}] is not a properly formatted YAML or JSON '
+        'file.'.format(file_path))
+
+  update_fields = list(resource_to_parse.keys())
+
+  try:
     resource = encoding.PyValueToMessage(resource_message_type,
                                          resource_to_parse)
-    return (resource, update_fields)
   except (AttributeError) as e:
     raise exceptions.BadFileException(
         'Policy config file [{0}] is not a properly formatted YAML or JSON '
         'file. {1}'.format(file_path, six.text_type(e)))
+
+  return (resource, update_fields)

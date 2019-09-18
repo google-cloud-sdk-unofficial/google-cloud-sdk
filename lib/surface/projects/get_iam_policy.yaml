@@ -17,6 +17,8 @@
   request:
     collection: cloudresourcemanager.projects
     use_relative_name: false
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=getIamPolicyRequest.options.requestedPolicyVersion
 
   arguments:
     resource:

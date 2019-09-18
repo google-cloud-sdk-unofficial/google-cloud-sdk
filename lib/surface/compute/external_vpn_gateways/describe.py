@@ -38,6 +38,14 @@ class Describe(base.DescribeCommand):
   about your on-premises side or another Cloud provider's VPN gateway.
   """
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To describe an external VPN gateway, run:
+
+              $ {command} my-external-gateway"""
+  }
+
   @staticmethod
   def Args(parser):
     _EXTERNAL_VPN_GATEWAY_ARG.AddArgument(parser, operation_type='describe')

@@ -42,14 +42,17 @@ def _DetailedHelp():
   }
 
 
-def _AddArgs(parser, include_alpha_logging, include_beta_logging,
-             include_l7_internal_load_balancing, include_private_ipv6_access):
+def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
+             include_private_ipv6_access):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
 
   flags.SubnetworkArgument().AddArgument(parser, operation_type='create')
   network_flags.NetworkArgumentForOtherResource(
       'The network to which the subnetwork belongs.').AddArgument(parser)
+
+  messages = apis.GetMessagesModule('compute',
+                                    compute_api.COMPUTE_GA_API_VERSION)
 
   parser.add_argument(
       '--description', help='An optional description of this subnetwork.')
@@ -89,6 +92,19 @@ def _AddArgs(parser, include_alpha_logging, include_beta_logging,
             'for VPC flow logs can be found at '
             'https://cloud.google.com/vpc/docs/using-flow-logs.'))
 
+  flags.AddLoggingAggregationInterval(parser, messages)
+  parser.add_argument(
+      '--logging-flow-sampling',
+      type=arg_parsers.BoundedFloat(lower_bound=0.0, upper_bound=1.0),
+      help="""\
+      Can only be specified if VPC flow logging for this subnetwork is
+      enabled. The value of the field must be in [0, 1]. Set the sampling rate
+      of VPC flow logs within the subnetwork where 1.0 means all collected
+      logs are reported and 0.0 means no logs are reported. Default is 0.5
+      which means half of all collected logs are reported.
+      """)
+  flags.AddLoggingMetadata(parser, messages)
+
   if include_alpha_logging:
     messages = apis.GetMessagesModule('compute',
                                       compute_api.COMPUTE_ALPHA_API_VERSION)
@@ -104,21 +120,6 @@ def _AddArgs(parser, include_alpha_logging, include_beta_logging,
         which means half of all collected logs are reported.
         """)
     flags.AddLoggingMetadataAlpha(parser, messages)
-  elif include_beta_logging:
-    messages = apis.GetMessagesModule('compute',
-                                      compute_api.COMPUTE_BETA_API_VERSION)
-    flags.AddLoggingAggregationInterval(parser, messages)
-    parser.add_argument(
-        '--logging-flow-sampling',
-        type=arg_parsers.BoundedFloat(lower_bound=0.0, upper_bound=1.0),
-        help="""\
-        Can only be specified if VPC flow logging for this subnetwork is
-        enabled. The value of the field must be in [0, 1]. Set the sampling rate
-        of VPC flow logs within the subnetwork where 1.0 means all collected
-        logs are reported and 0.0 means no logs are reported. Default is 0.5
-        which means half of all collected logs are reported.
-        """)
-    flags.AddLoggingMetadata(parser, messages)
 
   if include_l7_internal_load_balancing:
     parser.add_argument(
@@ -189,8 +190,7 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
 
 
 def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
-                      include_alpha_logging, include_beta_logging,
-                      include_l7_internal_load_balancing,
+                      include_alpha_logging, include_l7_internal_load_balancing,
                       include_private_ipv6_access):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -198,14 +198,30 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
       description=args.description,
       network=network_ref.SelfLink(),
       ipCidrRange=args.range,
-      privateIpGoogleAccess=args.enable_private_ip_google_access,
-      enableFlowLogs=args.enable_flow_logs)
+      privateIpGoogleAccess=args.enable_private_ip_google_access)
+
+  if (args.enable_flow_logs is not None or
+      args.logging_aggregation_interval is not None or
+      args.logging_flow_sampling is not None or
+      args.logging_metadata is not None):
+    log_config = messages.SubnetworkLogConfig(enable=args.enable_flow_logs)
+    if args.logging_aggregation_interval:
+      log_config.aggregationInterval = flags.GetLoggingAggregationIntervalArg(
+          messages).GetEnumForChoice(args.logging_aggregation_interval)
+    if args.logging_flow_sampling is not None:
+      log_config.flowSampling = args.logging_flow_sampling
+    if args.logging_metadata:
+      log_config.metadata = flags.GetLoggingMetadataArg(
+          messages).GetEnumForChoice(args.logging_metadata)
+    subnetwork.logConfig = log_config
 
   if include_alpha_logging:
     if (args.enable_flow_logs is not None or
         args.aggregation_interval is not None or
         args.flow_sampling is not None or args.metadata is not None):
-      log_config = messages.SubnetworkLogConfig(enable=args.enable_flow_logs)
+      log_config = (
+          subnetwork.logConfig if subnetwork.logConfig is not None else
+          messages.SubnetworkLogConfig(enable=args.enable_flow_logs))
       if args.aggregation_interval:
         log_config.aggregationInterval = (
             flags.GetLoggingAggregationIntervalArgAlpha(
@@ -215,21 +231,6 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
       if args.metadata:
         log_config.metadata = flags.GetLoggingMetadataArgAlpha(
             messages).GetEnumForChoice(args.metadata)
-      subnetwork.logConfig = log_config
-  elif include_beta_logging:
-    if (args.enable_flow_logs is not None or
-        args.logging_aggregation_interval is not None or
-        args.logging_flow_sampling is not None or
-        args.logging_metadata is not None):
-      log_config = messages.SubnetworkLogConfig(enable=args.enable_flow_logs)
-      if args.logging_aggregation_interval:
-        log_config.aggregationInterval = flags.GetLoggingAggregationIntervalArg(
-            messages).GetEnumForChoice(args.logging_aggregation_interval)
-      if args.logging_flow_sampling is not None:
-        log_config.flowSampling = args.logging_flow_sampling
-      if args.logging_metadata:
-        log_config.metadata = flags.GetLoggingMetadataArg(
-            messages).GetEnumForChoice(args.logging_metadata)
       subnetwork.logConfig = log_config
 
   if include_l7_internal_load_balancing:
@@ -259,7 +260,7 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
   return subnetwork
 
 
-def _Run(args, holder, include_alpha_logging, include_beta_logging,
+def _Run(args, holder, include_alpha_logging,
          include_l7_internal_load_balancing, include_private_ipv6_access):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -273,7 +274,7 @@ def _Run(args, holder, include_alpha_logging, include_beta_logging,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   subnetwork = _CreateSubnetwork(client.messages, subnet_ref, network_ref, args,
-                                 include_alpha_logging, include_beta_logging,
+                                 include_alpha_logging,
                                  include_l7_internal_load_balancing,
                                  include_private_ipv6_access)
   request = client.messages.ComputeSubnetworksInsertRequest(
@@ -299,7 +300,6 @@ class Create(base.CreateCommand):
   """Create a GA subnet."""
 
   _include_alpha_logging = False
-  _include_beta_logging = False
   _include_l7_internal_load_balancing = False
   _include_private_ipv6_access = False
 
@@ -307,7 +307,7 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _AddArgs(parser, cls._include_alpha_logging, cls._include_beta_logging,
+    _AddArgs(parser, cls._include_alpha_logging,
              cls._include_l7_internal_load_balancing,
              cls._include_private_ipv6_access)
 
@@ -315,7 +315,6 @@ class Create(base.CreateCommand):
     """Issues a list of requests necessary for adding a subnetwork."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_alpha_logging,
-                self._include_beta_logging,
                 self._include_l7_internal_load_balancing,
                 self._include_private_ipv6_access)
 
@@ -323,7 +322,6 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
-  _include_beta_logging = True
   _include_l7_internal_load_balancing = True
 
 
@@ -331,5 +329,4 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
 
   _include_alpha_logging = True
-  _include_beta_logging = False
   _include_private_ipv6_access = True
