@@ -145,7 +145,7 @@ class Update(base.UpdateCommand):
             'region': router_ref.region,
         })
 
-    if args.async:
+    if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='router [{0}]'.format(router_ref.Name()),

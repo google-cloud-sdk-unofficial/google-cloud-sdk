@@ -90,7 +90,8 @@ class Create(base.CreateCommand):
         attachment_type='PARTNER',
         edge_availability_domain=args.edge_availability_domain,
         admin_enabled=args.admin_enabled,
-        validate_only=getattr(args, 'dry_run', None))
+        validate_only=getattr(args, 'dry_run', None),
+        mtu=getattr(args, 'mtu', None))
     self._pairing_key = attachment.pairingKey
     return attachment
 
@@ -111,3 +112,4 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
+    attachment_flags.AddMtu(parser)

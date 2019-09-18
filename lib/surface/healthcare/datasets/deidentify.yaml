@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: |
       Create a new Cloud Healthcare API dataset containing de-identified data from the source dataset.
     description: |
@@ -9,7 +11,10 @@
         $ {command} test-dataset --destination-dataset=projects/{projectId}/locations/us-central1/datasets/test-deid-dataset --default-fhir-config --dicom-filter-tags=MediaStorageSOPClassUID,SeriesInstanceUID,StudyInstanceUID
   request:
     collection: healthcare.projects.locations.datasets
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
     method: deidentify
 
   arguments:
@@ -43,7 +48,10 @@
         Determines how to redact text from image.
     - arg_name: default-fhir-config
       type: bool
-      processor: googlecloudsdk.command_lib.healthcare.util:InsertEmptyFhirConfig
+      ALPHA:
+        processor: googlecloudsdk.command_lib.healthcare.util:InsertEmptyFhirConfig:api_version=v1alpha2
+      BETA:
+        processor: googlecloudsdk.command_lib.healthcare.util:InsertEmptyFhirConfig:api_version=v1beta1
       api_field: deidentifyDatasetRequest.config.fhir
       help_text: |
         Deidentify FHIR data with default configurations.

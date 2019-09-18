@@ -56,6 +56,6 @@ class Update(base.Command):
     """
     op = instances.Patch(
         args.instance, description=args.description, nodes=args.nodes)
-    if args.async:
+    if args.async_:
       return op
     instance_operations.Await(op, 'Updating instance')

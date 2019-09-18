@@ -65,7 +65,7 @@ class SetMinCpuPlatform(base.UpdateCommand):
     operation_ref = holder.resources.Parse(
         operation.selfLink, collection='compute.zoneOperations')
 
-    if args.async:
+    if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='gce instance [{0}]'.format(instance_ref.Name()),

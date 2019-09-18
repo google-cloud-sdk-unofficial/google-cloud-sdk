@@ -142,7 +142,7 @@ class UpdateBgpPeer(base.UpdateCommand):
             'region': router_ref.region,
         })
 
-    if args.async:
+    if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='peer [{0}] in router [{1}]'.format(peer.name,

@@ -79,7 +79,7 @@ class Move(base.SilentCommand):
         },
         collection='compute.globalOperations')
 
-    if args.async:
+    if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='disk {0}'.format(target_disk.Name()),

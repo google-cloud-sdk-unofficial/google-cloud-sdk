@@ -96,7 +96,7 @@ class Connect(base.SilentCommand):
     ranges = args.ranges.split(',')
     op = peering.CreateConnection(project_number, args.service, args.network,
                                   ranges)
-    if args.async:
+    if args.async_:
       cmd = OP_WAIT_CMD.format(op.name)
       log.status.Print('Asynchronous operation is in progress... '
                        'Use the following command to wait for its '

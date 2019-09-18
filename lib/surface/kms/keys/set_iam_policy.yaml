@@ -18,6 +18,9 @@
       policy file format and contents.
   request:
     collection: cloudkms.projects.locations.keyRings.cryptoKeys
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=setIamPolicyRequest.policy.version
+    - googlecloudsdk.command_lib.iam.hooks:AddVersionToUpdateMaskIfNotPresent:update_mask_path=setIamPolicyRequest.updateMask
 
   arguments:
     resource:

@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a NAT on a Google Compute Engine router."""
   with_drain_ips = False
@@ -94,7 +94,7 @@ class Update(base.UpdateCommand):
             'region': router_ref.region,
         })
 
-    if args.async:
+    if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='nat [{0}] in router [{1}]'.format(nat.name, router_ref.Name()),
@@ -118,7 +118,7 @@ class Update(base.UpdateCommand):
             nat.name, router_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateAlpha(Update):
   """Update a NAT on a Google Compute Engine router."""
 

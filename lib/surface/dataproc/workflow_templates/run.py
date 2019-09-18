@@ -56,7 +56,7 @@ class Run(base.CreateCommand):
 
     operation = dataproc.client.projects_regions_workflowTemplates.Instantiate(
         request)
-    if args.async:
+    if args.async_:
       log.status.Print('Running [{0}].'.format(template_ref.Name()))
       return
 

@@ -335,7 +335,7 @@ class Execute(base.Command):
 
     patch_job_name = osconfig_utils.GetPatchJobName(async_response.name)
 
-    if args.async:
+    if args.async_:
       log.status.Print(
           'Execution in progress for patch job [{}]'.format(patch_job_name))
       log.status.Print(

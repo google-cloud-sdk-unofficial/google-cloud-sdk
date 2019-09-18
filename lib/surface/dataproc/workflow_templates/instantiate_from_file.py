@@ -70,7 +70,7 @@ class InstantiateFromFile(base.CreateCommand):
     operation = \
       dataproc.client.projects_regions_workflowTemplates.InstantiateInline(
           request)
-    if args.async:
+    if args.async_:
       log.status.Print('Instantiating with operation [{0}].'.format(
           operation.name))
       return
@@ -118,7 +118,7 @@ class InstantiateFromFileBeta(base.CreateCommand):
     operation = \
       dataproc.client.projects_regions_workflowTemplates.InstantiateInline(
           request)
-    if args.async:
+    if args.async_:
       log.status.Print('Instantiating with operation [{0}].'.format(
           operation.name))
       return

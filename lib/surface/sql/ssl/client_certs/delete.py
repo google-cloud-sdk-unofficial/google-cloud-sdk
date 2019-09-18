@@ -104,7 +104,7 @@ class Delete(_BaseDelete, base.Command):
     operation_ref = client.resource_parser.Create(
         'sql.operations', operation=result.name, project=cert_ref.project)
 
-    if args.async:
+    if args.async_:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project,

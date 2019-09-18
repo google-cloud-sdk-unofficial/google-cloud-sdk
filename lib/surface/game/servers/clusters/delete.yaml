@@ -1,0 +1,16 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Delete a Game Server Cluster.
+    description: Delete a Cloud Game Server Cluster.
+
+  request:
+    collection: gameservices.projects.locations.realms.gameServerClusters
+
+  arguments:
+    resource:
+      help_text: Cloud Game Server Cluster to describe.
+      spec: !REF googlecloudsdk.command_lib.game.resources:cluster
+
+  async:
+    collection: gameservices.projects.locations.operations

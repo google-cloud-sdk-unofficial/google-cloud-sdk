@@ -84,7 +84,7 @@ class Copy(base.Command):
         source_ref.Parent().Name(), source_ref.Name(),
         destination_ref.Parent().Name(), destination_ref.Name())
 
-    if not args.async:
+    if not args.async_:
       log.CreatedResource(job.id, kind='Job', details=copy_message)
       return job
 

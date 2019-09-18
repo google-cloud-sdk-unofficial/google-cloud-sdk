@@ -99,7 +99,7 @@ class Resize(base.Command):
 
     op_ref = adapter.ResizeNodePool(cluster_ref, pool_name, args.num_nodes)
 
-    if not args.async:
+    if not args.async_:
       adapter.WaitForOperation(op_ref,
                                'Resizing {0}'.format(cluster_ref.clusterId))
     log.UpdatedResource(cluster_ref)

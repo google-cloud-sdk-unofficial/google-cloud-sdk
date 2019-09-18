@@ -67,7 +67,7 @@ class Delete(base.DeleteCommand):
     log.status.write('Deleting [{0}] with operation [{1}].'.format(
         instance_ref.RelativeName(), operation.name))
 
-    if args.async:
+    if args.async_:
       return operation
     else:
       waiter.WaitFor(

@@ -1,15 +1,20 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief:  Export a Cloud Healthcare API API DICOM store to BigQuery.
     description: Export a Cloud Healthcare API API DICOM store to BigQuery.
     examples: |
-      To export the dicom-store 'test-dicom-store' to BigQuery, overwriting any existing table, run:
+      To export the dicom-store 'test-dicom-store' to the BigQuery table 'testtable' in the dataset 'testdataset', overwriting any existing table, run:
 
-        $ {command} test-dicom-store --bq-table=test-bq-table --overwrite-table
+        $ {command} test-dicom-store --bq-table=bq://my-project.testdataset.testtable --overwrite-table --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.dicomStores
     method: export
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

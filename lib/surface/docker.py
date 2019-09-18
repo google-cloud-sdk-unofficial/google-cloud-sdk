@@ -132,6 +132,16 @@ class Docker(base.Command):
     Raises:
       exceptions.ExitCodeNoError: The docker command execution failed.
     """
+    if args.account:
+      # Since the docker binary invokes `gcloud auth docker-helper` through
+      # `docker-credential-gcloud`, it cannot forward the command line
+      # arguments. Subsequently, we are unable to set the account (or any
+      # flag for that matter) used by `docker-credential-gcloud` with
+      # the global `--account` flag.
+      log.warning('Docker uses the account from the gcloud config.'
+                  'To set the account in the gcloud config, run '
+                  '`gcloud config set account <account_name>`.')
+
     base.DisableUserProjectQuota()
     force_refresh = True
     for server in args.server:

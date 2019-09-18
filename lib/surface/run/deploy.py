@@ -161,6 +161,7 @@ class Deploy(base.Command):
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
+    flags.AddLabelsFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -198,14 +199,14 @@ class Deploy(base.Command):
           header,
           deployment_stages,
           failure_message='Deployment failed',
-          suppress_output=args.async) as tracker:
+          suppress_output=args.async_) as tracker:
         operations.ReleaseService(
             service_ref,
             changes,
             tracker,
-            asyn=args.async,
+            asyn=args.async_,
             allow_unauthenticated=allow_unauth)
-      if args.async:
+      if args.async_:
         pretty_print.Success(
             'Service [{{bold}}{serv}{{reset}}] is deploying '
             'asynchronously.'.format(serv=service_ref.servicesId))
@@ -235,7 +236,6 @@ class AlphaDeploy(Deploy):
     flags.AddConfigMapsFlags(cluster_group)
     # Flags not specific to any platform
     flags.AddAlphaPlatformArg(parser)
-    flags.AddLabelsFlags(parser)
     flags.AddScalingFlags(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)

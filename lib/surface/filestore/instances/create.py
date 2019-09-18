@@ -60,8 +60,8 @@ class Create(base.CreateCommand):
     except filestore_client.InvalidCapacityError as e:
       raise exceptions.InvalidArgumentException('--file-share',
                                                 six.text_type(e))
-    result = client.CreateInstance(instance_ref, args.async, instance)
-    if args.async:
+    result = client.CreateInstance(instance_ref, args.async_, instance)
+    if args.async_:
       command = properties.VALUES.metrics.command_name.Get().split('.')
       if command:
         command[-1] = 'list'

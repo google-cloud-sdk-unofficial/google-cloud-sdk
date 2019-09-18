@@ -64,7 +64,7 @@ class UpdateAppProfile(base.CreateCommand):
     else:
       operation_ref = util.GetOperationRef(result)
 
-      if args.async:
+      if args.async_:
         log.UpdatedResource(
             operation_ref,
             kind='bigtable app profile {0}'.format(app_profile_ref.Name()),

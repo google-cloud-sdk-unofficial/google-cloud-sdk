@@ -106,6 +106,6 @@ class Create(base.CreateCommand, dm_base.DmCommand):
                      self.messages,
                      self.resources,
                      request,
-                     args.async,
+                     args.async_,
                      self.client.typeProviders.Insert,
                      LogResource)

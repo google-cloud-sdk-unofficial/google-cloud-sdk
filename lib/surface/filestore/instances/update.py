@@ -71,8 +71,8 @@ class Update(base.CreateCommand):
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateInstance(
-        instance_ref, instance, update_mask, args.async)
-    if args.async:
+        instance_ref, instance, update_mask, args.async_)
+    if args.async_:
       if self._API_VERSION == 'V1':
         log.status.Print(
             'To check the status of the operation, run `gcloud filestore '

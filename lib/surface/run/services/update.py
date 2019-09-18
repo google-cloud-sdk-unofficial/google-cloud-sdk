@@ -71,6 +71,7 @@ class Update(base.Command):
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
+    flags.AddLabelsFlags(parser, add_create=False)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -107,13 +108,13 @@ class Update(base.Command):
           'Deploying...',
           deployment_stages,
           failure_message='Deployment failed',
-          suppress_output=args.async) as tracker:
+          suppress_output=args.async_) as tracker:
         client.ReleaseService(
             service_ref,
             changes,
             tracker,
-            asyn=args.async)
-      if args.async:
+            asyn=args.async_)
+      if args.async_:
         pretty_print.Success(
             'Deploying asynchronously.')
       else:
@@ -157,7 +158,6 @@ class AlphaUpdate(Update):
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
     # Flags not specific to any platform
-    flags.AddLabelsFlags(parser, add_create=False)
     flags.AddAlphaPlatformArg(parser)
     flags.AddScalingFlags(parser)
     flags.AddCommandFlag(parser)

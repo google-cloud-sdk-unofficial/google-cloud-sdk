@@ -23,3 +23,7 @@ arguments:
   resource:
     help_text: The import job from which to remove the IAM policy binding.
     spec: !REF googlecloudsdk.command_lib.kms.resources:import_job
+
+iam:
+  policy_version: 3
+  get_iam_policy_version_path: options_requestedPolicyVersion

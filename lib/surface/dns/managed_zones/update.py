@@ -61,7 +61,7 @@ def _Update(zones_client,
     kwargs['peering_config'] = peering_config
   return zones_client.Patch(
       zone_ref,
-      args.async,
+      args.async_,
       dnssec_config=dnssec_config,
       description=args.description,
       labels=labels_update.GetOrNone(),

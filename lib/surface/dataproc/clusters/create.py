@@ -103,7 +103,7 @@ class Create(base.CreateCommand):
 
     self.ConfigureCluster(dataproc.messages, args, cluster)
 
-    return clusters.CreateCluster(dataproc, cluster, args.async, args.timeout)
+    return clusters.CreateCluster(dataproc, cluster, args.async_, args.timeout)
 
   @staticmethod
   def ConfigureCluster(messages, args, cluster):

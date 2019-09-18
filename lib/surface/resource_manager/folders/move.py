@@ -66,7 +66,7 @@ class Move(base.UpdateCommand):
         moveFolderRequest=messages.MoveFolderRequest(
             destinationParent=flags.GetParentFromFlags(args)))
     operation = folders.FoldersService().Move(move_request)
-    if args.async:
+    if args.async_:
       return operation
     else:
       if operation.done and not operation.name:

@@ -148,7 +148,7 @@ class Create(base.Command):
           project=properties.VALUES.core.project.GetOrFail())
 
     requests = [(client.apitools_client.networks, 'AddPeering', request)]
-    return _MakeRequests(client, requests, args.async)
+    return _MakeRequests(client, requests, args.async_)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

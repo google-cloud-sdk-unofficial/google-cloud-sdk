@@ -17,6 +17,8 @@ help_text:
 request:
   collection: compute.disks
   use_relative_name: false
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=zoneSetPolicyRequest.policy.version
   api_version: v1
   BETA:
     api_version: beta

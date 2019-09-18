@@ -80,7 +80,7 @@ class CreateInstance(base.CreateCommand):
     result = cli.projects_instances.Create(msg)
     operation_ref = bigtable_util.GetOperationRef(result)
 
-    if args.async:
+    if args.async_:
       log.CreatedResource(
           operation_ref,
           kind='bigtable instance {0}'.format(ref.Name()),

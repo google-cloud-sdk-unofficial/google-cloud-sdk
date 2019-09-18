@@ -32,6 +32,10 @@ arguments:
     help_text: The service account for which to remove IAM policy binding from.
     spec: !REF googlecloudsdk.command_lib.iam.resources:service_account
 
+iam:
+  policy_version: 3
+  get_iam_policy_version_path: options_requestedPolicyVersion
+
 ALPHA:
   help_text:
     brief: Remove IAM policy binding of a service account.
@@ -66,3 +70,5 @@ ALPHA:
 
   iam:
     enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

@@ -93,7 +93,7 @@ class AddBgpPeer(base.UpdateCommand):
             'region': router_ref.region,
         })
 
-    if args.async:
+    if args.async_:
       log.UpdatedResource(
           operation_ref,
           kind='router [{0}] to add peer [{1}]'.format(router_ref.Name(),

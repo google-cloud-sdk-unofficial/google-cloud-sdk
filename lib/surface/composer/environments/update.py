@@ -77,7 +77,7 @@ class Update(base.Command):
         env_ref,
         field_mask,
         patch,
-        args.async,
+        args.async_,
         release_track=self.ReleaseTrack())
 
 
@@ -117,7 +117,7 @@ class UpdateBeta(Update):
         env_ref,
         field_mask,
         patch,
-        args.async,
+        args.async_,
         release_track=self.ReleaseTrack())
 
 

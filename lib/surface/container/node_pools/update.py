@@ -165,6 +165,10 @@ class UpdateAlpha(Update):
     autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=True)
 
+    surge_upgrade_group = group.add_argument_group('Upgrade settings')
+    flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
+    flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
+
     flags.AddWorkloadMetadataFromNodeFlag(group)
 
     flags.AddNodePoolLocationsFlag(group)
@@ -178,7 +182,9 @@ class UpdateAlpha(Update):
         min_nodes=args.min_nodes,
         enable_autoprovisioning=args.enable_autoprovisioning,
         workload_metadata_from_node=args.workload_metadata_from_node,
-        node_locations=args.node_locations)
+        node_locations=args.node_locations,
+        max_surge_upgrade=args.max_surge_upgrade,
+        max_unavailable_upgrade=args.max_unavailable_upgrade)
     return ops
 
 

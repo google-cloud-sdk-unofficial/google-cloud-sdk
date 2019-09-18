@@ -17,6 +17,8 @@ help_text:
 request:
   collection: compute.machineImages
   use_relative_name: false
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=globalSetPolicyRequest.policy.version
   api_version: alpha
 
 arguments:

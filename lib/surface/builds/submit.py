@@ -479,7 +479,7 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
       log.status.Print('Logs are available in the Cloud Console.')
 
     # If the command is run --async, we just print out a reference to the build.
-    if args.async:
+    if args.async_:
       return build
 
     mash_handler = execution.MashHandler(

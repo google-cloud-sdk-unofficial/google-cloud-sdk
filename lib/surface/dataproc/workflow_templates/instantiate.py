@@ -63,7 +63,7 @@ class Instantiate(base.CreateCommand):
 
     operation = dataproc.client.projects_regions_workflowTemplates.Instantiate(
         request)
-    if args.async:
+    if args.async_:
       log.status.Print('Instantiating [{0}] with operation [{1}].'.format(
           template_ref.Name(), operation.name))
       return
@@ -100,7 +100,7 @@ class InstantiateBeta(Instantiate):
 
     operation = dataproc.client.projects_regions_workflowTemplates.Instantiate(
         request)
-    if args.async:
+    if args.async_:
       log.status.Print('Instantiating [{0}] with operation [{1}].'.format(
           template_ref.Name(), operation.name))
       return

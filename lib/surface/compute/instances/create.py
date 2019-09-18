@@ -73,7 +73,6 @@ def _CommonArgs(parser,
                 enable_regional=False,
                 enable_kms=False,
                 deprecate_maintenance_policy=False,
-                supports_display_device=False,
                 supports_reservation=False,
                 enable_resource_policy=False,
                 supports_min_node_cpus=False,
@@ -115,8 +114,7 @@ def _CommonArgs(parser,
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   instances_flags.AddShieldedInstanceConfigArgs(parser)
-  if supports_display_device:
-    instances_flags.AddDisplayDeviceArg(parser)
+  instances_flags.AddDisplayDeviceArg(parser)
 
   if supports_reservation:
     instances_flags.AddReservationAffinityGroup(
@@ -153,7 +151,6 @@ class Create(base.CreateCommand):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_display_device = False
   _support_reservation = False
   _support_disk_resource_policy = False
   _support_erase_vss = False
@@ -480,8 +477,7 @@ class Create(base.CreateCommand):
               '`--source-machine-image-csek-key-file` requires '
               '`--source-machine-image` to be specified`')
 
-      if (self._support_display_device and
-          args.IsSpecified('enable_display_device')):
+      if args.IsSpecified('enable_display_device'):
         request.instance.displayDevice = compute_client.messages.DisplayDevice(
             enableDisplay=args.enable_display_device)
 
@@ -516,7 +512,7 @@ class Create(base.CreateCommand):
 
     requests = self._CreateRequests(
         args, instance_refs, compute_client, resource_parser, holder)
-    if not args.async:
+    if not args.async_:
       # TODO(b/63664449): Replace this with poller + progress tracker.
       try:
         # Using legacy MakeRequests (which also does polling) here until
@@ -567,7 +563,6 @@ class CreateBeta(Create):
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
-  _support_display_device = True
   _support_reservation = True
   _support_disk_resource_policy = True
   _support_erase_vss = False
@@ -587,7 +582,6 @@ class CreateBeta(Create):
         parser,
         enable_regional=True,
         enable_kms=True,
-        supports_display_device=True,
         supports_reservation=cls._support_reservation,
         enable_resource_policy=cls._support_disk_resource_policy,
     )
@@ -605,7 +599,6 @@ class CreateAlpha(CreateBeta):
   _support_kms = True
   _support_nvdimm = True
   _support_public_dns = True
-  _support_display_device = True
   _support_reservation = True
   _support_disk_resource_policy = True
   _support_erase_vss = True
@@ -632,7 +625,6 @@ class CreateAlpha(CreateBeta):
         enable_regional=True,
         enable_kms=True,
         deprecate_maintenance_policy=True,
-        supports_display_device=True,
         supports_reservation=cls._support_reservation,
         enable_resource_policy=cls._support_disk_resource_policy,
         supports_min_node_cpus=cls._support_min_node_cpus,

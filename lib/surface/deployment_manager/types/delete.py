@@ -87,7 +87,7 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
                      self.messages,
                      self.resources,
                      request,
-                     args.async,
+                     args.async_,
                      self.client.compositeTypes.Delete,
                      LogResource)
 

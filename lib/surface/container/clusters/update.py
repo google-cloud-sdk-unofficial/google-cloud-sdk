@@ -196,6 +196,7 @@ class Update(base.UpdateCommand):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
+    flags.AddEnableIntraNodeVisibilityFlag(group)
     group_logging_monitoring = group.add_group()
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
@@ -211,6 +212,7 @@ class Update(base.UpdateCommand):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = \
         args.enable_resource_consumption_metering
+    opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     return opts
 
   def Run(self, args):
@@ -423,7 +425,7 @@ to completion."""
         options = self.ParseUpdateOptions(args, locations)
         op_ref = adapter.UpdateCluster(cluster_ref, options)
 
-    if not args.async:
+    if not args.async_:
       adapter.WaitForOperation(
           op_ref, 'Updating {0}'.format(cluster_ref.clusterId), timeout_s=1800)
 

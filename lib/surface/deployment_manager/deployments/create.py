@@ -163,7 +163,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
         args.deployment_name,
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='deploymentmanager.deployments')
-    if (not args.IsSpecified('format')) and (args.async):
+    if (not args.IsSpecified('format')) and (args.async_):
       args.format = flags.OPERATION_FORMAT
 
     deployment = self.messages.Deployment(
@@ -193,7 +193,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
 
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, dm_api_util.HTTP_ERROR_FORMAT)
-    if args.async:
+    if args.async_:
       return operation
     else:
       op_name = operation.name

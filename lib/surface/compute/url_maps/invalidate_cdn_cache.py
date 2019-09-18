@@ -113,7 +113,7 @@ def _Run(args, holder, url_map_arg):
   client = holder.client
 
   requests = _CreateRequests(holder, args, url_map_arg)
-  if args.async:
+  if args.async_:
     resources, errors = batch_helper.MakeRequests(
         requests=requests,
         http=client.apitools_client.http,

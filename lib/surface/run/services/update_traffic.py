@@ -95,10 +95,10 @@ class AdjustTraffic(base.Command):
           'Updating traffic...',
           deployment_stages,
           failure_message='Updating traffic failed',
-          suppress_output=args.async) as tracker:
+          suppress_output=args.async_) as tracker:
         client.UpdateTraffic(
-            service_ref, changes, tracker, args.async, flags.IsManaged(args))
-        if args.async:
+            service_ref, changes, tracker, args.async_, flags.IsManaged(args))
+        if args.async_:
           pretty_print.Success('Updating traffic asynchronously.')
         else:
           serv = client.GetService(service_ref)

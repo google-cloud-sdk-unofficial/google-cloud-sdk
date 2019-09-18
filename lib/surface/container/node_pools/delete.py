@@ -98,7 +98,7 @@ class Delete(base.DeleteCommand):
       adapter.GetNodePool(pool_ref)
 
       op_ref = adapter.DeleteNodePool(pool_ref)
-      if not args.async:
+      if not args.async_:
         adapter.WaitForOperation(
             op_ref,
             'Deleting node pool {0}'.format(pool_ref.nodePoolId),

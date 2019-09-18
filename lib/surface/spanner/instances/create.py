@@ -57,6 +57,6 @@ class Create(base.CreateCommand):
     """
     op = instances.Create(
         args.instance, args.config, args.description, args.nodes)
-    if args.async:
+    if args.async_:
       return op
     instance_operations.Await(op, 'Creating instance')

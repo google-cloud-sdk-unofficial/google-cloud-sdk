@@ -46,7 +46,7 @@ def _AddSubmitTrainingArgs(parser):
   # TODO(b/36195821): Use the flag deprecation machinery when it supports the
   # store_true action
   sync_group.add_argument(
-      '--async', action='store_true', help=(
+      '--async', action='store_true', dest='async_', help=(
           '(DEPRECATED) Display information about the operation in progress '
           'without waiting for the operation to complete. '
           'Enabled by default and can be omitted; use `--stream-logs` to run '
@@ -76,7 +76,7 @@ class Train(base.Command):
     parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
   def Run(self, args):
-    stream_logs = jobs_util.GetStreamLogs(args.async, args.stream_logs)
+    stream_logs = jobs_util.GetStreamLogs(args.async_, args.stream_logs)
     scale_tier = jobs_util.ScaleTierFlagMap().GetEnumForChoice(args.scale_tier)
     scale_tier_name = scale_tier.name if scale_tier else None
     jobs_client = jobs.JobsClient()

@@ -76,4 +76,4 @@ class Import(base.UpdateCommand):
     cluster.projectId = cluster_ref.projectId
 
     # Import only supports create, not update (for now).
-    return clusters.CreateCluster(dataproc, cluster, args.async, args.timeout)
+    return clusters.CreateCluster(dataproc, cluster, args.async_, args.timeout)

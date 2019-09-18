@@ -63,7 +63,7 @@ class Create(base.CreateCommand):
             parent=flags.GetParentFromFlags(args),
             folder=messages.Folder(
                 displayName=args.display_name)))
-    if args.async:
+    if args.async_:
       return operation
     else:
       finished_operation = operations.WaitForOperation(operation)

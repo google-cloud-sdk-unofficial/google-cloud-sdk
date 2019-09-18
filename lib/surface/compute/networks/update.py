@@ -62,7 +62,7 @@ class Update(base.UpdateCommand):
           params={'project': network_ref.project},
           collection='compute.globalOperations')
 
-      if args.async:
+      if args.async_:
         log.UpdatedResource(
             operation_ref,
             kind='network {0}'.format(network_ref.Name()),

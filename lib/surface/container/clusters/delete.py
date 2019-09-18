@@ -108,7 +108,7 @@ class Delete(base.DeleteCommand):
                 exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)))
       except util.Error as error:
         errors.append(error)
-    if not args.async:
+    if not args.async_:
       # Poll each operation for completion
       for operation_ref, cluster_ref in operations:
         try:

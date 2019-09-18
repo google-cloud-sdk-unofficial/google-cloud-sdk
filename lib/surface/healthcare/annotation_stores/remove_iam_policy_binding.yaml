@@ -7,7 +7,7 @@
       To remove an IAM policy binding for the role of 'roles/editor' for the user
       'test-user@gmail.com' on the annotation store 'test-annotation-store', run:
 
-        $ {command} annotation-store --dataset=test-dataset --member='user:test-user@gmail.com' --role='roles/editor'
+        $ {command} test-annotation-store --dataset=test-dataset --member='user:test-user@gmail.com' --role='roles/editor'
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.

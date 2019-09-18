@@ -18,6 +18,8 @@ request:
   collection: compute.nodeTemplates
   api_version: v1
   use_relative_name: false
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=regionSetPolicyRequest.policy.version
   BETA:
     api_version: beta
   ALPHA:

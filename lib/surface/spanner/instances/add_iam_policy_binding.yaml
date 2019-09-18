@@ -20,6 +20,10 @@ arguments:
     help_text: The Cloud Spanner instance to which to add the IAM policy binding.
     spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
 
+iam:
+  policy_version: 3
+  get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
+
 ALPHA:
   help_text:
     brief: Add IAM policy binding to a Cloud Spanner instance.
@@ -43,3 +47,5 @@ ALPHA:
 
   iam:
     enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

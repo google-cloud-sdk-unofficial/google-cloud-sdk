@@ -17,6 +17,8 @@
       policy file format and contents.
   request:
     collection: spanner.projects.instances
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=setIamPolicyRequest.policy.version
 
   arguments:
     resource:

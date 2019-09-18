@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief:  Export Cloud Healthcare API FHIR resources to BigQuery.
     description: Export Cloud Healthcare API FHIR resources to BigQuery.
     examples: |
@@ -8,12 +10,15 @@
 
       To perform the same export, but with the 'ANALYTICS' schema and the recursive structure depth of 3, run:
 
-        $ {command} test-fhir-store --bq-dataset=bq://my-project.bqdataset --dataset=test-dataset --schema-type=ANALYTICS --recursive-depth=3
+        $ {command} test-fhir-store --bq-dataset=bq://my-project.bqdataset --dataset=test-dataset --schema-type=analytics --recursive-depth=3
 
   request:
     collection: healthcare.projects.locations.datasets.fhirStores
     method: export
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

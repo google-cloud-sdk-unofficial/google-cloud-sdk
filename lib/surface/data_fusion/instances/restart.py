@@ -57,7 +57,7 @@ class Restart(base.DescribeCommand):
 
     operation = datafusion.client.projects_locations_instances.Restart(request)
 
-    if args.async:
+    if args.async_:
       log.CreatedResource(
           instance_ref.RelativeName(), kind='instance', is_async=True)
       return operation

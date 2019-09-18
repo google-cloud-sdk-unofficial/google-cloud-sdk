@@ -29,8 +29,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub subscription."""
 
@@ -59,6 +58,9 @@ class Update(base.UpdateCommand):
     """
     client = subscriptions.SubscriptionsClient()
     subscription_ref = args.CONCEPTS.subscription.Parse()
+    dead_letter_topic = getattr(args, 'dead_letter_topic', None)
+    max_delivery_attempts = getattr(args, 'max_delivery_attempts', None)
+    clear_dead_letter_policy = getattr(args, 'clear_dead_letter_policy', None)
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args, client.messages.Subscription.LabelsValue,
@@ -80,7 +82,10 @@ class Update(base.UpdateCommand):
           labels=labels_update.GetOrNone(),
           message_retention_duration=args.message_retention_duration,
           no_expiration=no_expiration,
-          expiration_period=expiration_period)
+          expiration_period=expiration_period,
+          dead_letter_topic=dead_letter_topic,
+          max_delivery_attempts=max_delivery_attempts,
+          clear_dead_letter_policy=clear_dead_letter_policy)
     except subscriptions.NoFieldsSpecifiedError:
       if not any(args.IsSpecified(arg) for arg in ('clear_labels',
                                                    'update_labels',
@@ -91,3 +96,20 @@ class Update(base.UpdateCommand):
     else:
       log.UpdatedResource(subscription_ref.RelativeName(), kind='subscription')
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Updates an existing Cloud Pub/Sub subscription."""
+
+  @classmethod
+  def Args(cls, parser):
+    resource_args.AddSubscriptionResourceArg(parser, 'to update.')
+    flags.AddSubscriptionSettingsFlags(
+        parser, is_update=True, support_dead_letter_queues=True)
+    labels_util.AddUpdateLabelsFlags(parser)
+
+  @exceptions.CatchHTTPErrorRaiseHTTPException()
+  def Run(self, args):
+    flags.ValidateDeadLetterPolicy(args)
+    return super(UpdateAlpha, self).Run(args)

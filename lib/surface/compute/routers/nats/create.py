@@ -76,7 +76,7 @@ class Create(base.CreateCommand):
             'region': router_ref.region,
         })
 
-    if args.async:
+    if args.async_:
       log.CreatedResource(
           operation_ref,
           kind='nat [{0}] in router [{1}]'.format(nat.name, router_ref.Name()),

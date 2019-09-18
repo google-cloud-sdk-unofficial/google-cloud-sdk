@@ -52,7 +52,7 @@ class Update(base.UpdateCommand):
     """
     op = databases.UpdateDdl(args.CONCEPTS.database.Parse(),
                              flags.SplitDdlIntoStatements(args.ddl or []))
-    if args.async:
+    if args.async_:
       return log.status.Print(
           'Schema update in progress. Operation name={}'.format(op.name))
     return database_operations.Await(op, 'Schema updating')

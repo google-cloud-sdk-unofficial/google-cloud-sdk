@@ -62,11 +62,12 @@ class Update(base.UpdateCommand):
     flags.AddShieldedInstanceConfigArgs(
         parser, use_default_value=False, for_update=True)
     flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
+    flags.AddDisplayDeviceArg(parser, is_update=True)
 
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, supports_display_device=False):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -129,7 +130,7 @@ class Update(base.UpdateCommand):
           'Setting shieldedInstanceIntegrityPolicy of instance [{0}]',
           instance_ref.Name()) or result
 
-    if supports_display_device and args.IsSpecified('enable_display_device'):
+    if args.IsSpecified('enable_display_device'):
       display_device_ref = self._GetDisplayDeviceOperationRef(
           args.enable_display_device,
           instance_ref,
@@ -269,7 +270,7 @@ class UpdateBeta(Update):
     flags.AddDisplayDeviceArg(parser, is_update=True)
 
   def Run(self, args):
-    return self._Run(args, supports_display_device=True)
+    return self._Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

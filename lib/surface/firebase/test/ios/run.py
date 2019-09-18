@@ -122,7 +122,7 @@ class Run(base.ListCommand):
         - a URL string pointing to the user's results in ToolResults or GCS.
     """
     # TODO(b/79369595): expand libs to share more code with android run command.
-    if args.async and not args.IsSpecified('format'):
+    if args.async_ and not args.IsSpecified('format'):
       args.format = """
           value(format('Final test results will be available at [{0}].', []))
       """
@@ -161,7 +161,7 @@ class Run(base.ListCommand):
 
       url = tool_results.CreateToolResultsUiUrl(project, tr_ids)
       log.status.Print('')
-      if args.async:
+      if args.async_:
         return url
       log.status.Print('Test results will be streamed to [{0}].'.format(url))
 

@@ -68,7 +68,7 @@ class SimulateMaintenanceEvent(base.UpdateCommand):
 
     operation_refs = [holder.resources.Parse(r.selfLink) for r in responses]
 
-    if args.async:
+    if args.async_:
       for i, operation_ref in enumerate(operation_refs):
         log.UpdatedResource(
             operation_ref,

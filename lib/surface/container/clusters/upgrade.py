@@ -194,7 +194,7 @@ class Upgrade(base.Command):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
-    if not args.async:
+    if not args.async_:
       adapter.WaitForOperation(
           op_ref,
           'Upgrading {0}'.format(cluster_ref.clusterId),

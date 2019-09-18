@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief: List Cloud Healthcare API datasets.
     description: List Cloud Healthcare API datasets.
     examples: |
@@ -12,7 +14,10 @@
 
   request:
     collection: healthcare.projects.locations.datasets
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   response:
     id_field: name

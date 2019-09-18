@@ -98,7 +98,8 @@ class Create(base.CreateCommand):
         admin_enabled=args.admin_enabled,
         candidate_subnets=args.candidate_subnets,
         bandwidth=getattr(args, 'bandwidth', None),
-        validate_only=getattr(args, 'dry_run', None))
+        validate_only=getattr(args, 'dry_run', None),
+        mtu=getattr(args, 'mtu', None))
 
   def Epilog(self, resources_were_displayed):
     message = ('You must configure your Google Cloud Router with an interface '
@@ -120,3 +121,4 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
+    attachment_flags.AddMtu(parser)

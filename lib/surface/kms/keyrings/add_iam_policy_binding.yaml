@@ -22,6 +22,10 @@ arguments:
     help_text: The keyring to add the IAM policy binding.
     spec: !REF googlecloudsdk.command_lib.kms.resources:keyring
 
+iam:
+  policy_version: 3
+  get_iam_policy_version_path: options_requestedPolicyVersion
+
 ALPHA:
   help_text:
     brief: Add IAM policy binding for a kms keyring.
@@ -46,3 +50,5 @@ ALPHA:
 
   iam:
     enable_condition: true
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

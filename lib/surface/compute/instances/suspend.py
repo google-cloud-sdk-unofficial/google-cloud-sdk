@@ -85,7 +85,7 @@ class Suspend(base.SilentCommand):
 
     operation_refs = [holder.resources.Parse(r.selfLink) for r in responses]
 
-    if args.async:
+    if args.async_:
       for operation_ref in operation_refs:
         log.status.Print('Suspend instance in progress for [{}].'.format(
             operation_ref.SelfLink()))

@@ -66,8 +66,8 @@ class Update(base.UpdateCommand):
         bandwidth=getattr(args, 'bandwidth', None))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class UpdateWithBandwidth(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
   """Update a Google Compute Engine dedicated interconnect attachment.
 
   *{command}* is used to update interconnect attachments. An interconnect
@@ -77,7 +77,7 @@ class UpdateWithBandwidth(Update):
 
   @classmethod
   def Args(cls, parser):
-    super(UpdateWithBandwidth, cls).Args(parser)
+    super(UpdateBeta, cls).Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -100,4 +100,20 @@ class UpdateWithBandwidth(Update):
         admin_enabled=args.admin_enabled,
         labels=labels,
         label_fingerprint=label_fingerprint,
-        bandwidth=getattr(args, 'bandwidth', None))
+        bandwidth=getattr(args, 'bandwidth', None),
+        mtu=getattr(args, 'mtu', None))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Google Compute Engine dedicated interconnect attachment.
+
+  *{command}* is used to update interconnect attachments. An interconnect
+  attachment is what binds the underlying connectivity of an interconnect to a
+  path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    attachment_flags.AddMtu(parser)

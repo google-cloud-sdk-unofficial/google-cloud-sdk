@@ -210,7 +210,7 @@ class DeployGKE(base.Command):
     else:
       log.status.Print('Logs are available in the Cloud Console.')
 
-    if args.async:
+    if args.async_:
       return
 
     mash_handler = execution.MashHandler(

@@ -80,7 +80,7 @@ class Create(base.CreateCommand):
         'sql.operations',
         operation=result_operation.name,
         project=instance_ref.project)
-    if args.async:
+    if args.async_:
       result = sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project, operation=operation_ref.operation))
@@ -89,6 +89,6 @@ class Create(base.CreateCommand):
                                                     'Creating Cloud SQL user')
       result = new_user
 
-    log.CreatedResource(args.username, kind='user', is_async=args.async)
+    log.CreatedResource(args.username, kind='user', is_async=args.async_)
 
     return result

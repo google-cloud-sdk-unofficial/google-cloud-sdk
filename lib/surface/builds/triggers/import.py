@@ -18,13 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import yaml
-from googlecloudsdk.core.util import files
 
 
 class Import(base.Command):
@@ -93,7 +90,4 @@ File path where trigger should be imported from.
       # No identifying information specified. Create a trigger with the given
       # specification.
       resp = self._CreateTrigger(client, messages, project, trigger)
-    if resp and resp != trigger:
-      with files.FileWriter(args.source) as out:
-        yaml.dump(encoding.MessageToDict(resp), stream=out)
     return resp

@@ -182,7 +182,7 @@ class Clone(base.CreateCommand):
         operation=result.name,
         project=destination_instance_ref.project)
 
-    if args.async:
+    if args.async_:
       if not args.IsSpecified('format'):
         args.format = 'default'
       return sql_client.operations.Get(

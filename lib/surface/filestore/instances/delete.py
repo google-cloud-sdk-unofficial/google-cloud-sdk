@@ -51,8 +51,8 @@ class Delete(base.DeleteCommand):
       return None
     client = filestore_client.FilestoreClient(version=self._API_VERSION)
     result = client.DeleteInstance(
-        instance_ref, args.async)
-    if args.async:
+        instance_ref, args.async_)
+    if args.async_:
       command = properties.VALUES.metrics.command_name.Get().split('.')
       if command:
         command[-1] = 'list'

@@ -116,7 +116,7 @@ class Create(base.CreateCommand):
       # TODO(b/110077203): Log something sensible.
       return
 
-    if args.async:
+    if args.async_:
       # TODO(b/110077203): Log something sensible.
       return response
 

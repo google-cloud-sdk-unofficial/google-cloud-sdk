@@ -51,4 +51,4 @@ class CreateFromFile(base.CreateCommand):
     data = console_io.ReadFromFileOrStdin(args.file or '-', binary=False)
     cluster = export_util.Import(message_type=dataproc.messages.Cluster,
                                  stream=data)
-    return clusters.CreateCluster(dataproc, cluster, args.async, args.timeout)
+    return clusters.CreateCluster(dataproc, cluster, args.async_, args.timeout)

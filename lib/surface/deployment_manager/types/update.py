@@ -102,7 +102,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
                      self.messages,
                      self.resources,
                      update_request,
-                     args.async,
+                     args.async_,
                      self.client.compositeTypes.Update,
                      LogResource)
 

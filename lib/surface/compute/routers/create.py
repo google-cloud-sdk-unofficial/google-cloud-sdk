@@ -114,7 +114,7 @@ class Create(base.CreateCommand):
             'region': router_ref.region,
         })
 
-    if args.async:
+    if args.async_:
       # Override the networks list format with the default operations format
       if not args.IsSpecified('format'):
         args.format = 'none'

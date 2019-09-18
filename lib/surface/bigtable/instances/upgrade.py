@@ -46,7 +46,7 @@ class UpgradeInstance(base.UpdateCommand):
       Some value that we want to have printed later.
     """
     op = instances.Upgrade(args.instance)
-    if args.async:
+    if args.async_:
       result = op
     else:
       op_ref = resources.REGISTRY.ParseRelativeName(
@@ -54,5 +54,5 @@ class UpgradeInstance(base.UpdateCommand):
       message = 'Upgrading bigtable instance {0}'.format(args.instance)
       result = util.AwaitInstance(op_ref, message)
 
-    log.UpdatedResource(args.instance, kind='instance', is_async=args.async)
+    log.UpdatedResource(args.instance, kind='instance', is_async=args.async_)
     return result

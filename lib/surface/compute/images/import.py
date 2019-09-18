@@ -98,7 +98,7 @@ def _CheckForExistingImage(image_name, compute_holder):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
-  """Import an image into Google Compute Engine."""
+  """Import an image into Compute Engine."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_GA
 
@@ -118,7 +118,7 @@ class Import(base.CreateCommand):
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument(
         '--source-file',
-        help=("""A local file, or the Google Cloud Storage URI of the virtual
+        help=("""A local file, or the Cloud Storage URI of the virtual
               disk file to import. For example: ``gs://my-bucket/my-image.vmdk''
               or ``./my-local-image.vmdk''"""),
     )
@@ -128,7 +128,7 @@ class Import(base.CreateCommand):
     workflow.add_argument(
         '--os',
         choices=sorted(cls._OS_CHOICES),
-        help='Specifies the OS of the image being imported.'
+        help='Specifies the OS of the disk image being imported.'
     )
     workflow.add_argument(
         '--data-disk',
@@ -154,12 +154,14 @@ class Import(base.CreateCommand):
         '--guest-environment',
         action='store_true',
         default=True,
-        help='Google Guest Environment will be installed on the image.')
+        help='Installs the guest environment on the image.'
+             ' See '
+             'https://cloud.google.com/compute/docs/images/guest-environment.')
 
     parser.add_argument(
         '--network',
         help=('Name of the network in your project to use for the image import.'
-              ' The network must have access to Google Cloud Storage. If not '
+              ' The network must have access to Cloud Storage. If not '
               'specified, the network named `default` is used.'),
     )
 
@@ -320,7 +322,7 @@ class BaseImportFromFileStager(BaseImportStager):
       raise exceptions.BadFileException(
           '`gcloud compute images import` does not support compressed '
           'archives. Please extract your image and try again.\n If you got '
-          'this file by exporting an image from Compute Engine (e.g. by '
+          'this file by exporting an image from Compute Engine (e.g., by '
           'using `gcloud compute images export`) then you can instead use '
           '`gcloud compute images create` to create your image from your '
           '.tar.gz file.')
@@ -336,7 +338,8 @@ class ImportFromLocalFileStager(BaseImportFromFileStager):
 
   def _CopySourceFileToScratchBucket(self):
     return self._UploadToGcs(
-        self.args.async, self.args.source_file, self.daisy_bucket, uuid.uuid4())
+        self.args.async_, self.args.source_file, self.daisy_bucket,
+        uuid.uuid4())
 
   def _UploadToGcs(self, is_async, local_path, daisy_bucket, image_uuid):
     """Uploads a local file to GCS. Returns the gs:// URI to that file."""
@@ -344,21 +347,21 @@ class ImportFromLocalFileStager(BaseImportFromFileStager):
     dest_path = 'gs://{0}/tmpimage/{1}-{2}'.format(
         daisy_bucket, image_uuid, file_name)
     if is_async:
-      log.status.Print('Async: Once upload is complete, your image will be '
+      log.status.Print('Async: After upload is complete, your image will be '
                        'imported from Cloud Storage asynchronously.')
     with progress_tracker.ProgressTracker(
         'Copying [{0}] to [{1}]'.format(local_path, dest_path)):
       return self._UploadToGcsStorageApi(local_path, dest_path)
 
   def _UploadToGcsStorageApi(self, local_path, dest_path):
-    """Uploads a local file to GCS using the gcloud storage api client."""
+    """Uploads a local file to Cloud Storage using the gcloud storage api client."""
     dest_object = storage_util.ObjectReference.FromUrl(dest_path)
     self.storage_client.CopyFileToGCS(local_path, dest_object)
     return dest_path
 
 
 class ImportFromGSFileStager(BaseImportFromFileStager):
-  """Image import stager from a file in GCS."""
+  """Image import stager from a file in Cloud Storage."""
 
   def __init__(self, storage_client, args, gcs_uri):
     self.source_file_gcs_uri = gcs_uri
@@ -388,7 +391,7 @@ class ImportFromGSFileStager(BaseImportFromFileStager):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ImportBeta(Import):
-  """Import an image into Google Compute Engine for Beta releases."""
+  """Import an image into Compute Engine for beta releases."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
 
@@ -403,7 +406,7 @@ class ImportBeta(Import):
     parser.add_argument(
         '--storage-location',
         help="""\
-      Google Cloud Storage location, either regional or multi-regional, where
+      Cloud Storage location, either regional or multi-regional, where
       image content is to be stored. If absent, the multi-region location
       closest to the source is chosen automatically.
       """)
@@ -423,32 +426,42 @@ class ImportBeta(Import):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ImportAlpha(ImportBeta):
-  """Import an image into Google Compute Engine for Alpha releases."""
+  """Import an image into Compute Engine for alpha releases."""
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_ALPHA
 
 
 Import.detailed_help = {
-    'brief': 'Import an image into Google Compute Engine',
+    'brief': 'Import an image into Compute Engine',
     'DESCRIPTION': """\
         *{command}* imports Virtual Disk images, such as VMWare VMDK files
-        and VHD files, into Google Compute Engine.
+        and VHD files, into Compute Engine.
 
-        Importing images involves 3 steps:
-        *  Upload the virtual disk file to Google Cloud Storage.
-        *  Import the image to Google Compute Engine.
+        Importing images involves three steps:
+        *  Upload the virtual disk file to Cloud Storage.
+        *  Import the image to Compute Engine.
         *  Translate the image to make a bootable image.
-        This command will perform all three of these steps as necessary,
-        depending on the input arguments specified by the user.
+        This command performs all three of these steps as required,
+        depending on the input arguments specified.
 
         This command uses the `--os` flag to choose the appropriate translation.
         You can omit the translation step using the `--data-disk` flag.
 
-        If you exported your disk from Google Compute Engine then you do not
-        need to re-import it. Instead, use the `create` command to create
-        further images from it.
+        If you exported your disk from Compute Engine then you don't
+        need to re-import it. Instead, use `{parent_command} create`
+        to create more images from the disk.
 
         Files stored on Cloud Storage and images in Compute Engine incur
         charges. See [](https://cloud.google.com/compute/docs/images/importing-virtual-disks#resource_cleanup).
+        """,
+
+    'EXAMPLES': """\
+        To import a centos-7 VMDK file, run:
+
+          $ {command} myimage-name --os=centos-7 --source-file=mysourcefile
+
+        To import a data disk without operating system, run:
+
+          $ {command} myimage-name --data-disk --source-file=mysourcefile
         """,
 }

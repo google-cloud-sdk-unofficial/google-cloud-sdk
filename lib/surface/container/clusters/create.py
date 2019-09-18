@@ -256,6 +256,7 @@ def ParseCreateOptionsBase(args):
       enable_cloud_logging=args.enable_cloud_logging if args.IsSpecified('enable_cloud_logging') else None,
       enable_cloud_monitoring=args.enable_cloud_monitoring if args.IsSpecified('enable_cloud_monitoring') else None,
       enable_ip_alias=args.enable_ip_alias,
+      enable_intra_node_visibility=args.enable_intra_node_visibility,
       enable_kubernetes_alpha=args.enable_kubernetes_alpha,
       enable_legacy_authorization=args.enable_legacy_authorization,
       enable_master_authorized_networks=args.enable_master_authorized_networks,
@@ -335,6 +336,7 @@ class Create(base.CreateCommand):
     flags.AddClusterVersionFlag(parser)
     flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser)
+    flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddResourceUsageExportFlags(parser)
 
@@ -355,7 +357,7 @@ class Create(base.CreateCommand):
     Raises:
       util.Error, if creation failed.
     """
-    if args.async and not args.IsSpecified('format'):
+    if args.async_ and not args.IsSpecified('format'):
       args.format = util.OPERATIONS_FORMAT
 
     util.CheckKubectlInstalled()
@@ -417,7 +419,7 @@ class Create(base.CreateCommand):
     operation = None
     try:
       operation_ref = adapter.CreateCluster(cluster_ref, options)
-      if args.async:
+      if args.async_:
         return adapter.GetCluster(cluster_ref)
 
       operation = adapter.WaitForOperation(
@@ -487,11 +489,10 @@ class CreateBeta(Create):
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddWorkloadIdentityFlags(parser)
     flags.AddEnableShieldedNodesFlags(parser)
-    flags.AddClusterVersionFlag(parser)
-    flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddDatabaseEncryptionFlag(parser)
     flags.AddShieldedInstanceFlags(parser)
+    _AddReleaseChannelGroup(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -515,7 +516,6 @@ class CreateBeta(Create):
     ops.enable_binauthz = args.enable_binauthz
     ops.istio_config = args.istio_config
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
-    ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.security_group = args.security_group
     ops.identity_namespace = args.identity_namespace
     ops.enable_shielded_nodes = args.enable_shielded_nodes
@@ -526,6 +526,7 @@ class CreateBeta(Create):
     ops.maintenance_window_start = args.maintenance_window_start
     ops.maintenance_window_end = args.maintenance_window_end
     ops.maintenance_window_recurrence = args.maintenance_window_recurrence
+    ops.release_channel = args.release_channel
     return ops
 
 
@@ -576,16 +577,7 @@ class CreateAlpha(Create):
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddEnableShieldedNodesFlags(parser)
     flags.AddDisableDefaultSnatFlag(parser, for_cluster_create=True)
-
-    versioning_groups = parser.add_mutually_exclusive_group("""\
-`--release-channel` cannot be specified if `--cluster-version` or
-`--node-version` are specified.
-""")
-    flags.AddReleaseChannelFlag(versioning_groups)
-
-    cluster_version_group = versioning_groups.add_group()
-    flags.AddClusterVersionFlag(cluster_version_group)
-    flags.AddNodeVersionFlag(cluster_version_group)
+    _AddReleaseChannelGroup(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddDatabaseEncryptionFlag(parser)
     flags.AddSurgeUpgradeFlag(parser)
@@ -629,7 +621,6 @@ class CreateAlpha(Create):
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
-    ops.enable_intra_node_visibility = args.enable_intra_node_visibility
     ops.enable_peering_route_sharing = args.enable_peering_route_sharing
     ops.enable_shielded_nodes = args.enable_shielded_nodes
     ops.release_channel = args.release_channel
@@ -651,3 +642,18 @@ class CreateAlpha(Create):
     ops.maintenance_window_recurrence = args.maintenance_window_recurrence
 
     return ops
+
+
+def _AddReleaseChannelGroup(parser):
+  """Add flag group for release channels."""
+  versioning_groups = parser.add_mutually_exclusive_group("""\
+--release-channel cannot be specified if Custom Version Flags
+(--cluster-version or --node-version) are used.
+""")
+  flags.AddReleaseChannelFlag(versioning_groups)
+  custom_version_group = versioning_groups.add_group("""\
+Custom Version Flags:
+""")
+  flags.AddClusterVersionFlag(custom_version_group)
+  flags.AddNodeVersionFlag(custom_version_group)
+

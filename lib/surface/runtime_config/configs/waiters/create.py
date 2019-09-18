@@ -150,7 +150,7 @@ class Create(base.CreateCommand):
 
     log.CreatedResource(waiter_resource)
 
-    if args.async:
+    if args.async_:
       # In async mode, we return the current waiter representation.
       # The waiter resource exists immediately after creation; the
       # operation resource returned from CreateWaiter only tracks the

@@ -1,15 +1,20 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief:  Export a Cloud Healthcare API DICOM store to Google Cloud Storage.
     description: Export a Cloud Healthcare API DICOM store to Google Cloud Storage.
     examples: |
-      To export the dicom-store 'test-dicom-store' to the existing bucket 'testGcsBucket' in the folder 'someFolder', with the mime-type 'application/dicom',  run:
+      To export the dicom-store 'test-dicom-store' to the existing bucket 'testGcsBucket' in the folder 'someFolder', with the mime-type 'application/dicom', run:
 
-        $ {command} test-dicom-store --gcs-uri-prefix=gs://testGcsBucket/someFolder --mime-type=application/dicom
+        $ {command} test-dicom-store --gcs-uri-prefix=gs://testGcsBucket/someFolder --mime-type=application/dicom --dataset=test-dataset
 
   request:
     collection: healthcare.projects.locations.datasets.dicomStores
     method: export
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

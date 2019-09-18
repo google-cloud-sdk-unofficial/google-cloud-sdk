@@ -48,6 +48,8 @@ args_v1p1beta1:
     If alternative languages are listed, recognition result will contain
     recognition in the most likely language detected including the main
     language-code.
+
+args_v1p1beta1_alpha_track:  # available only in 'gcloud alpha'
 - arg_name: enable-automatic-punctuation
   api_field: config.enableAutomaticPunctuation
   help_text: |

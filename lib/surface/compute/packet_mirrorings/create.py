@@ -97,4 +97,4 @@ class Create(base.CreateCommand):
     packet_mirroring = client.PacketMirroring(
         pm_ref, compute_client=holder.client, registry=holder.resources)
 
-    return packet_mirroring.Create(template, is_async=args.async or False)
+    return packet_mirroring.Create(template, is_async=args.async_ or False)

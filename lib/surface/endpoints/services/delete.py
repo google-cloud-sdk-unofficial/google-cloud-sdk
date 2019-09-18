@@ -92,4 +92,4 @@ class Delete(base.DeleteCommand):
 
     operation = client.services.Delete(request)
 
-    return services_util.ProcessOperationResult(operation, args.async)
+    return services_util.ProcessOperationResult(operation, args.async_)

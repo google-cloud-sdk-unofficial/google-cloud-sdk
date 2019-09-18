@@ -85,7 +85,7 @@ class Rollback(base.Command):
 
       op_ref = adapter.RollbackUpgrade(pool_ref)
 
-      if not args.async:
+      if not args.async_:
         adapter.WaitForOperation(
             op_ref,
             'Rolling back {0}'.format(pool_ref.nodePoolId),

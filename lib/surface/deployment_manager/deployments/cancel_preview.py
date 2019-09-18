@@ -124,7 +124,7 @@ class CancelPreview(base.Command, dm_base.DmCommand):
       dm_util.PrintFingerprint(new_fingerprint)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, dm_api_util.HTTP_ERROR_FORMAT)
-    if args.async:
+    if args.async_:
       return operation
     else:
       op_name = operation.name

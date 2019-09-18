@@ -49,7 +49,7 @@ class CreateCluster(base.CreateCommand):
     operation = clusters.Create(
         cluster_ref, args.zone, serve_nodes=args.num_nodes)
     operation_ref = util.GetOperationRef(operation)
-    if args.async:
+    if args.async_:
       log.CreatedResource(
           operation_ref,
           kind='bigtable cluster {0}'.format(cluster_ref.Name()),

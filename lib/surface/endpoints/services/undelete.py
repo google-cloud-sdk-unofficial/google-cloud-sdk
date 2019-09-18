@@ -79,4 +79,4 @@ class Undelete(base.Command):
 
     operation = client.services.Undelete(request)
 
-    return services_util.ProcessOperationResult(operation, args.async)
+    return services_util.ProcessOperationResult(operation, args.async_)

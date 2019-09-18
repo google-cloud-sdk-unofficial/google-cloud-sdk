@@ -55,6 +55,6 @@ class Create(base.CreateCommand):
     instance_ref = database_ref.Parent()
     op = databases.Create(instance_ref, args.database,
                           flags.SplitDdlIntoStatements(args.ddl or []))
-    if args.async:
+    if args.async_:
       return op
     return database_operations.Await(op, 'Creating database')

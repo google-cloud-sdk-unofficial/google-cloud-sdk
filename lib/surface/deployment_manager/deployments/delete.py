@@ -120,7 +120,7 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
                               GetEnumForChoice(args.delete_policy)),
             )
         )
-        if args.async:
+        if args.async_:
           operations.append(operation)
         else:
           op_name = operation.name

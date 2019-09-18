@@ -94,7 +94,7 @@ class Delete(base.DeleteCommand):
     operation_ref = client.resource_parser.Create(
         'sql.operations', operation=result.name, project=instance_ref.project)
 
-    if args.async:
+    if args.async_:
       # Don't wait for the running operation to complete when async is used.
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(

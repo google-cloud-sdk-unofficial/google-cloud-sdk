@@ -65,7 +65,7 @@ class Import(base.Command):
         namespaces=args.namespaces,
         labels=args.operation_labels)
 
-    if not args.async:
+    if not args.async_:
       operations.WaitForOperation(response)
 
     return response

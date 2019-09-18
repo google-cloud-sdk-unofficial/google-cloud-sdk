@@ -105,15 +105,15 @@ class Replace(base.Command):
           header,
           deployment_stages,
           failure_message='Deployment failed',
-          suppress_output=args.async) as tracker:
+          suppress_output=args.async_) as tracker:
         client.ReleaseService(
             service_ref,
             changes,
             tracker,
-            asyn=args.async,
+            asyn=args.async_,
             allow_unauthenticated=None,
             for_replace=True)
-      if args.async:
+      if args.async_:
         pretty_print.Success(
             'Service [{{bold}}{serv}{{reset}}] is deploying '
             'asynchronously.'.format(serv=service_ref.servicesId))

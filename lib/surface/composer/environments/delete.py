@@ -89,7 +89,7 @@ class Delete(base.DeleteCommand):
             details=details,
             failed=failed)
 
-    if not args.async:
+    if not args.async_:
       encountered_errors = waiter.Wait() or encountered_errors
     if encountered_errors:
       raise command_util.EnvironmentDeleteError(

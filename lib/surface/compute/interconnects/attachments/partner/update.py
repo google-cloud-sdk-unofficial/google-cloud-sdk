@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine partner interconnect attachment.
 
@@ -74,7 +74,8 @@ class Update(base.UpdateCommand):
         description=args.description,
         admin_enabled=args.admin_enabled,
         labels=labels,
-        label_fingerprint=label_fingerprint)
+        label_fingerprint=label_fingerprint,
+        mtu=getattr(args, 'mtu', None))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -106,3 +107,18 @@ class GaUpdate(Update):
 
     return interconnect_attachment.PatchGa(
         description=args.description, admin_enabled=args.admin_enabled)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Google Compute Engine partner interconnect attachment.
+
+  *{command}* is used to update partner interconnect attachments. A partner
+  interconnect attachment binds the underlying connectivity of a provider's
+  Interconnect to a path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    attachment_flags.AddMtu(parser)

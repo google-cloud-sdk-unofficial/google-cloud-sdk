@@ -184,7 +184,7 @@ class _BaseRun(object):
         - a list of TestOutcome tuples (if ToolResults are available).
         - a URL string pointing to the user's results in ToolResults or GCS.
     """
-    if args.async and not args.IsSpecified('format'):
+    if args.async_ and not args.IsSpecified('format'):
       args.format = """
           value(format(
             'Final test results will be available at [{0}].', [])
@@ -236,7 +236,7 @@ class _BaseRun(object):
 
       url = tool_results.CreateToolResultsUiUrl(project, tr_ids)
       log.status.Print('')
-      if args.async:
+      if args.async_:
         return url
       log.status.Print('Test results will be streamed to [{0}].'.format(url))
 

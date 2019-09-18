@@ -38,7 +38,8 @@ _EDITIONS = ['basic', 'enterprise']
 
 
 class Create(base.Command):
-  """Create and initialize a Cloud Data Fusion instance.
+  # pylint:disable=line-too-long
+  r"""Create and initialize a Cloud Data Fusion instance.
 
   If run asynchronously with `--async`, exits after printing an operation
   that can be used to poll the status of the creation operation via:
@@ -50,8 +51,7 @@ class Create(base.Command):
   To create instance 'my-instance' in project 'my-project', location in
   'my-location', and zone in 'my-zone' run:
 
-    $ {command} --project=my-project --location=my-location my-instance
-      --zone=my-zone
+    $ {command} --project=my-project --location=my-location my-instance --zone=my-zone
   """
 
   @staticmethod
@@ -134,7 +134,7 @@ class Create(base.Command):
 
     operation = datafusion.client.projects_locations_instances.Create(req)
 
-    if args.async:
+    if args.async_:
       log.CreatedResource(
           instance_ref.RelativeName(), kind='instance', is_async=True)
       return operation

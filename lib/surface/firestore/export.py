@@ -59,7 +59,7 @@ class Export(base.Command):
         object_ref.ToUrl().rstrip('/'),
         collection_ids=args.collection_ids)
 
-    if not args.async:
+    if not args.async_:
       operations.WaitForOperation(response)
 
     return response

@@ -116,7 +116,7 @@ class Import(base.Command):
         operation=result_operation.name,
         project=instance_ref.project)
 
-    if args.async:
+    if args.async_:
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
               project=operation_ref.project, operation=operation_ref.operation))

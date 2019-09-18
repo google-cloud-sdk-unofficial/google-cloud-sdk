@@ -212,7 +212,7 @@ class Create(base.Command):
     operation = self.GetOperationMessage(args)
 
     details = 'with operation [{0}]'.format(operation.name)
-    if args.async:
+    if args.async_:
       log.CreatedResource(
           self.env_ref.RelativeName(),
           kind='environment',

@@ -54,11 +54,15 @@ class Update(base.UpdateCommand):
         pm_ref, compute_client=holder.client, registry=holder.resources)
 
     resource = packet_mirroring.Describe()[0]
-    self._UpdateResource(pm_ref, resource, holder, args, messages)
+    cleared_fields = []
+    self._UpdateResource(pm_ref, resource, cleared_fields, holder, args,
+                         messages)
 
-    packet_mirroring.Update(resource, is_async=args.async or False)
+    packet_mirroring.Update(
+        resource, is_async=args.async_ or False, cleared_fields=cleared_fields)
 
-  def _UpdateResource(self, pm_ref, resource, holder, args, messages):
+  def _UpdateResource(self, pm_ref, resource, cleared_fields, holder, args,
+                      messages):
     if args.priority is not None:
       resource.priority = args.priority
 
@@ -77,6 +81,7 @@ class Update(base.UpdateCommand):
 
     if args.clear_mirrored_tags:
       resource.mirroredResources.tags[:] = []
+      cleared_fields.append('mirroredResources.tags')
     elif args.add_mirrored_tags:
       resource.mirroredResources.tags.extend(args.add_mirrored_tags)
     elif args.set_mirrored_tags:
@@ -98,6 +103,7 @@ class Update(base.UpdateCommand):
 
     if args.clear_mirrored_subnets:
       resource.mirroredResources.subnetworks[:] = []
+      cleared_fields.append('mirroredResources.subnetworks')
     elif args.add_mirrored_subnets:
       resource.mirroredResources.subnetworks.extend(
           [_MakeSubnetInfo(subnet) for subnet in args.add_mirrored_subnets])
@@ -128,6 +134,7 @@ class Update(base.UpdateCommand):
 
     if args.clear_mirrored_instances:
       resource.mirroredResources.instances[:] = []
+      cleared_fields.append('mirroredResources.instances')
     elif args.add_mirrored_instances:
       resource.mirroredResources.instances.extend([
           _MakeInstanceInfo(instance)
