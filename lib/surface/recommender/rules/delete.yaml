@@ -1,11 +1,13 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA]
   help_text:
     brief: |
       Delete a Rule.
     description: |
       Delete a Rule.
     examples: |
-      $ {command} abcd-1234 --project=concord-api-testing
+      To delete a rule:
+
+        $ {command} abcd-1234 --project=project-name
 
   request:
     collection: recommender.projects.rules

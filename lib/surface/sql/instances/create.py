@@ -101,9 +101,10 @@ def AddBaseArgs(parser):
       help=('Regional location (e.g. asia-east1, us-east1). See the full '
             'list of regions at '
             'https://cloud.google.com/sql/docs/instance-locations.'))
-  flags.AddZone(location_group, help_text=(
-      'Preferred Compute Engine zone (e.g. us-central1-a, '
-      'us-central1-b, etc.).'))
+  flags.AddZone(
+      location_group,
+      help_text=('Preferred Compute Engine zone (e.g. us-central1-a, '
+                 'us-central1-b, etc.).'))
   parser.add_argument(
       '--replica-type',
       choices=['READ', 'FAILOVER'],
@@ -139,8 +140,7 @@ def RunBaseCreateCommand(args, release_track):
   """Creates a new Cloud SQL instance.
 
   Args:
-    args: argparse.Namespace, The arguments that this command was invoked
-        with.
+    args: argparse.Namespace, The arguments that this command was invoked with.
     release_track: base.ReleaseTrack, the release track that this was run under.
 
   Returns:
@@ -194,6 +194,13 @@ def RunBaseCreateCommand(args, release_track):
     if master_instance_resource.diskEncryptionConfiguration:
       command_util.ShowCmekWarning('replica', 'the master instance')
 
+  # --root-password is required when creating SQL Server instances
+  if args.IsSpecified('database_version') and args.database_version.startswith(
+      'SQLSERVER') and not args.IsSpecified('root_password'):
+    raise exceptions.RequiredArgumentException(
+        '--root-password',
+        '`--root-password` is required when creating SQL Server instances.')
+
   instance_resource = (
       command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
           sql_messages,
@@ -214,7 +221,8 @@ def RunBaseCreateCommand(args, release_track):
   if args.pricing_plan == 'PACKAGE':
     console_io.PromptContinue(
         'Charges will begin accruing immediately. Really create Cloud '
-        'SQL instance?', cancel_on_no=True)
+        'SQL instance?',
+        cancel_on_no=True)
 
   operation_ref = None
   try:
@@ -230,8 +238,7 @@ def RunBaseCreateCommand(args, release_track):
         args.format = 'default'
       return sql_client.operations.Get(
           sql_messages.SqlOperationsGetRequest(
-              project=operation_ref.project,
-              operation=operation_ref.operation))
+              project=operation_ref.project, operation=operation_ref.operation))
 
     operations.OperationsV1Beta4.WaitForOperation(
         sql_client,
@@ -253,8 +260,7 @@ def RunBaseCreateCommand(args, release_track):
                              resource_lex.ParseKey('error.errors[0].reason'),
                              None) == 'errorMaxInstancePerLabel':
       msg = resource_property.Get(exc.payload.content,
-                                  resource_lex.ParseKey('error.message'),
-                                  None)
+                                  resource_lex.ParseKey('error.message'), None)
       raise exceptions.HttpException(msg)
     raise
 

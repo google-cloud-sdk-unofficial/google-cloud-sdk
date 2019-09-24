@@ -1,11 +1,13 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA]
   help_text:
     brief: |
       Create a Rule from the recommendation.
     description: |
       Create a Rule from the recommendation.
     examples: |
-      $ {command} abcd-1234 --project=concord-api-testing --location=global --recommender=google.iam.policy.RoleRecommender --etag=abc123 --target-state=succeeded
+      To create a rule from a recommendation:
+
+        $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender --target-state=succeeded
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations

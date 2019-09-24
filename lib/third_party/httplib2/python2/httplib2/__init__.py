@@ -78,7 +78,7 @@ if ssl is not None:
 
 
 def _ssl_wrap_socket(sock, key_file, cert_file, disable_validation,
-                     ca_certs, ssl_version, hostname):
+                     ca_certs, ssl_version, hostname, key_password):
     if disable_validation:
         cert_reqs = ssl.CERT_NONE
     else:
@@ -91,23 +91,29 @@ def _ssl_wrap_socket(sock, key_file, cert_file, disable_validation,
         context.verify_mode = cert_reqs
         context.check_hostname = (cert_reqs != ssl.CERT_NONE)
         if cert_file:
-            context.load_cert_chain(cert_file, key_file)
+            context.load_cert_chain(cert_file, key_file, key_password)
         if ca_certs:
             context.load_verify_locations(ca_certs)
         return context.wrap_socket(sock, server_hostname=hostname)
     else:
+        if key_password:
+            raise NotSupportedOnThisPlatform(
+                "Certificate with password is not supported.")
         return ssl.wrap_socket(sock, keyfile=key_file, certfile=cert_file,
                                cert_reqs=cert_reqs, ca_certs=ca_certs,
                                ssl_version=ssl_version)
 
 
 def _ssl_wrap_socket_unsupported(sock, key_file, cert_file, disable_validation,
-                                 ca_certs, ssl_version, hostname):
+                                 ca_certs, ssl_version, hostname, key_password):
     if not disable_validation:
         raise CertificateValidationUnsupported(
                 "SSL certificate validation is not supported without "
                 "the ssl module installed. To avoid this error, install "
                 "the ssl module, or explicity disable validation.")
+    if key_password:
+        raise NotSupportedOnThisPlatform(
+            "Certificate with password is not supported.")
     ssl_sock = socket.ssl(sock, key_file, cert_file)
     return httplib.FakeSocket(sock, ssl_sock)
 
@@ -772,7 +778,13 @@ class Credentials(object):
 class KeyCerts(Credentials):
     """Identical to Credentials except that
     name/password are mapped to key/cert."""
-    pass
+    def add(self, key, cert, domain, password):
+        self.credentials.append((domain.lower(), key, cert, password))
+
+    def iter(self, domain):
+        for (cdomain, key, cert, password) in self.credentials:
+            if cdomain == "" or domain == cdomain:
+                yield (key, cert, password)
 
 
 class AllHosts(object):
@@ -993,10 +1005,18 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None, timeout=None, proxy_info=None,
                  ca_certs=None, disable_ssl_certificate_validation=False,
-                 ssl_version=None):
-        httplib.HTTPSConnection.__init__(self, host, port=port,
-                                         key_file=key_file,
-                                         cert_file=cert_file, strict=strict)
+                 ssl_version=None, key_password=None):
+        if key_password:
+            httplib.HTTPSConnection.__init__(self, host, port=port, strict=strict)
+            self._context.load_cert_chain(cert_file, key_file, key_password)
+            self.key_file = key_file
+            self.cert_file = cert_file
+            self.key_password = key_password
+        else:
+            httplib.HTTPSConnection.__init__(self, host, port=port,
+                                             key_file=key_file,
+                                             cert_file=cert_file, strict=strict)
+            self.key_password = None
         self.timeout = timeout
         self.proxy_info = proxy_info
         if ca_certs is None:
@@ -1094,7 +1114,7 @@ class HTTPSConnectionWithTimeout(httplib.HTTPSConnection):
                 self.sock =_ssl_wrap_socket(
                     sock, self.key_file, self.cert_file,
                     self.disable_ssl_certificate_validation, self.ca_certs,
-                    self.ssl_version, self.host)
+                    self.ssl_version, self.host, self.key_password)
                 if self.debuglevel > 0:
                     print("connect: (%s, %s)" % (self.host, self.port))
                     if use_proxy:
@@ -1178,7 +1198,10 @@ class AppEngineHttpsConnection(httplib.HTTPSConnection):
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None, timeout=None, proxy_info=None, ca_certs=None,
                  disable_ssl_certificate_validation=False,
-                 ssl_version=None):
+                 ssl_version=None, key_password=None):
+        if key_password:
+            raise NotSupportedOnThisPlatform(
+                "Certificate with password is not supported.")
         httplib.HTTPSConnection.__init__(self, host, port=port,
                                          key_file=key_file,
                                          cert_file=cert_file, strict=strict,
@@ -1326,10 +1349,10 @@ class Http(object):
         any time a request requires authentication."""
         self.credentials.add(name, password, domain)
 
-    def add_certificate(self, key, cert, domain):
+    def add_certificate(self, key, cert, domain, password=None):
         """Add a key and cert that will be used
         any time a request requires authentication."""
-        self.certificates.add(key, cert, domain)
+        self.certificates.add(key, cert, domain, password)
 
     def clear_credentials(self):
         """Remove all the names and passwords
@@ -1554,7 +1577,8 @@ class Http(object):
                                 ca_certs=self.ca_certs,
                                 disable_ssl_certificate_validation=
                                         self.disable_ssl_certificate_validation,
-                                        ssl_version=self.ssl_version)
+                                ssl_version=self.ssl_version,
+                                key_password = certs[0][2])
                     else:
                         conn = self.connections[conn_key] = connection_type(
                                 authority, timeout=self.timeout,

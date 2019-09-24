@@ -128,7 +128,6 @@ class Ssh(base.Command):
   """SSH into a virtual machine instance."""
 
   category = base.TOOLS_CATEGORY
-  get_host_keys = False
 
   @staticmethod
   def Args(parser):
@@ -162,14 +161,14 @@ class Ssh(base.Command):
         scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
     instance = ssh_helper.GetInstance(client, instance_ref)
     project = ssh_helper.GetProject(client, instance_ref.project)
-    if self.get_host_keys:
-      host_keys = ssh_helper.GetHostKeysFromGuestAttributes(
-          client, instance_ref)
-      if not host_keys:
-        log.status.Print('Unable to retrieve host keys from instance metadata. '
-                         'Continuing.')
-    else:
-      host_keys = {}
+    host_keys = ssh_helper.GetHostKeysFromGuestAttributes(client, instance_ref,
+                                                          instance, project)
+    if not host_keys and host_keys is not None:
+      # Only display this message if there was an attempt to retrieve
+      # host keys but it was unsuccessful. If Guest Attributes is disabled,
+      # there is no attempt to retrieve host keys.
+      log.status.Print('Unable to retrieve host keys from instance metadata. '
+                       'Continuing.')
     expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(args)
     if args.plain:
       use_oslogin = False
@@ -270,8 +269,6 @@ class Ssh(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SshBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
-
-  get_host_keys = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

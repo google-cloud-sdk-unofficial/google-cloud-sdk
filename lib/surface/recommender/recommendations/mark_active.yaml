@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA]
   help_text:
     brief: |
       Mark a recommendation's state as ACTIVE. Can only be performed on a recommendation
@@ -7,7 +7,9 @@
       Mark a recommendation's state as ACTIVE. Can only be performed on a recommendation
       in DISMISSED state.
     examples: |
-      $ {command} abcd-1234 --project=concord-api-testing --location=global --recommender=google.iam.policy.RoleRecommender --etag=abc123
+      To mark a recommenation as ACTIVE:
+
+        $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender --etag=abc123
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations

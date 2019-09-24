@@ -38,11 +38,12 @@ class AddBackend(base.UpdateCommand):
   backend is a group of tasks that can handle requests sent to a
   backend service. Currently, the group of tasks can be one or
   more Google Compute Engine virtual machine instances grouped
-  together using an instance group.
+  together using an instance group or network endpoint group.
 
-  Traffic is first spread evenly across all virtual machines in
-  the group. When the group is full, traffic is sent to the next
-  nearest group(s) that still have remaining capacity.
+  Traffic is first spread evenly across all virtual machines or
+  network endpoints in the group. When the group is full, traffic
+  is sent to the next nearest group(s) that still have remaining
+  capacity.
 
   To modify the parameters of a backend after it has been added
   to the backend service, use

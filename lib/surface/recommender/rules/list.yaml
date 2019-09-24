@@ -1,11 +1,13 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA]
   help_text:
     brief: |
       Lists rules for a Cloud project.
     description: |
       Lists rules for a Cloud project.
     examples: |
-      $ {command} --project=concord-api-testing
+      To list rules:
+
+        $ {command} --project=project-name
 
   request:
     collection: recommender.projects.rules

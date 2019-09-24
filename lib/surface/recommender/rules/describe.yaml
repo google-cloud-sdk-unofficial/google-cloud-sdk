@@ -1,11 +1,13 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA]
   help_text:
     brief: |
       Get a Rule.
     description: |
       Get a Rule.
     examples: |
-      $ {command} abcd-1234 --project=concord-api-testing
+      To describe a rule:
+
+        $ {command} abcd-1234 --project=project-name
 
   request:
     collection: recommender.projects.rules

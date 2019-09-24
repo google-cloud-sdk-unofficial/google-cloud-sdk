@@ -67,7 +67,7 @@ class Import(base.CreateCommand):
 
     parser.add_argument(
         '--os',
-        required=True,
+        required=False,
         choices=sorted(os_choices.OS_CHOICES_INSTANCE_IMPORT_BETA),
         help='Specifies the OS of the image being imported.')
 

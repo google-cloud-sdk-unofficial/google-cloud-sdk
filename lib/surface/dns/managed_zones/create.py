@@ -38,6 +38,7 @@ def _AddArgsCommon(parser, messages):
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
   flags.GetManagedZoneVisibilityArg().AddToParser(parser)
+  flags.GetForwardingTargetsArg().AddToParser(parser)
 
 
 def _MakeDnssecConfig(args, messages):
@@ -126,6 +127,12 @@ class Create(base.CreateCommand):
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
           networks=network_configs)
 
+    if args.forwarding_targets:
+      forward_config = command_util.ParseManagedZoneForwardingConfig(
+          args.forwarding_targets, messages)
+    else:
+      forward_config = None
+
     dnssec_config = _MakeDnssecConfig(args, messages)
 
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
@@ -137,6 +144,7 @@ class Create(base.CreateCommand):
         dnssecConfig=dnssec_config,
         labels=labels,
         visibility=visibility,
+        forwardingConfig=forward_config,
         privateVisibilityConfig=visibility_config)
 
     result = dns.managedZones.Create(
@@ -170,7 +178,6 @@ class CreateBeta(base.CreateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetForwardingTargetsArg().AddToParser(parser)
     flags.GetDnsPeeringArgs().AddToParser(parser)
 
   def Run(self, args):
@@ -282,5 +289,4 @@ class CreateAlpha(CreateBeta):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetForwardingTargetsArg().AddToParser(parser)
     flags.GetDnsPeeringArgs().AddToParser(parser)

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import display
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
@@ -78,7 +79,7 @@ class AdjustTraffic(base.Command):
       args: Namespace, the args namespace
     """
     columns = [
-        'format("{}%", specPercent):label=TRAFFIC',
+        'displayPercent:label=TRAFFIC',
         'displayRevisionId:label=REVISION',
     ]
     args.GetDisplayInfo().AddFormat(
@@ -106,22 +107,36 @@ class AdjustTraffic(base.Command):
       raise exceptions.NoConfigurationChangeError(
           'No traffic configuration change requested.')
 
+    self._SetFormat(args)
+
     with serverless_operations.Connect(conn_context) as client:
       deployment_stages = stages.UpdateTrafficStages()
-      with progress_tracker.StagedProgressTracker(
-          'Updating traffic...',
-          deployment_stages,
-          failure_message='Updating traffic failed',
-          suppress_output=args.async_) as tracker:
-        client.UpdateTraffic(
-            service_ref, changes, tracker, args.async_, flags.IsManaged(args))
-        if args.async_:
-          pretty_print.Success('Updating traffic asynchronously.')
-        else:
-          self._SetFormat(args)
-          serv = client.GetService(service_ref)
-          return traffic.GetTrafficTargetPairs(
-              serv.spec.traffic,
-              serv.status.traffic,
-              flags.IsManaged(args),
-              serv.status.latestReadyRevisionName)
+      try:
+        with progress_tracker.StagedProgressTracker(
+            'Updating traffic...',
+            deployment_stages,
+            failure_message='Updating traffic failed',
+            suppress_output=args.async_) as tracker:
+          client.UpdateTraffic(
+              service_ref, changes, tracker, args.async_, flags.IsManaged(args))
+      except:
+        serv = client.GetService(service_ref)
+        resources = traffic.GetTrafficTargetPairs(
+            serv.spec.traffic,
+            serv.status.traffic,
+            flags.IsManaged(args),
+            serv.status.latestReadyRevisionName)
+        display.Displayer(
+            self, args, resources, display_info=args.GetDisplayInfo()).Display()
+        raise
+
+    if args.async_:
+      pretty_print.Success('Updating traffic asynchronously.')
+    else:
+      serv = client.GetService(service_ref)
+      resources = traffic.GetTrafficTargetPairs(
+          serv.spec.traffic,
+          serv.status.traffic,
+          flags.IsManaged(args),
+          serv.status.latestReadyRevisionName)
+      return resources

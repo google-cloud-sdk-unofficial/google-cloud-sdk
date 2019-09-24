@@ -44,6 +44,14 @@
         enum_value: RESOURCE
         help_text: |
           Each unit is a single resource.
+      - arg_value: bundle-pretty
+        enum_value: BUNDLE_PRETTY
+        help_text: |
+          The entire file is one JSON bundle. The JSON can span multiple lines.
+      - arg_value: resource-pretty
+        enum_value: RESOURCE_PRETTY
+        help_text: |
+          The entire file is one JSON resource. The JSON can span multiple lines.
       help_text: |
         Content structure in the source location. The default is BUNDLE.
     - arg_name: error-gcs-uri

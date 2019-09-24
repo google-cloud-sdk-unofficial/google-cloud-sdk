@@ -36,6 +36,7 @@ def _CommonArgs(parser, messages):
   labels_util.AddUpdateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
   base.ASYNC_FLAG.AddToParser(parser)
+  flags.GetForwardingTargetsArg().AddToParser(parser)
 
 
 def _Update(zones_client,
@@ -91,6 +92,11 @@ class UpdateGA(base.UpdateCommand):
     zones_client = managed_zones.Client.FromApiVersion('v1')
     messages = apis.GetMessagesModule('dns', 'v1')
 
+    forwarding_config = None
+    if args.forwarding_targets:
+      forwarding_config = command_util.ParseManagedZoneForwardingConfig(
+          args.forwarding_targets, messages)
+
     visibility_config = None
     if args.networks:
       networks = args.networks if args.networks != [''] else []
@@ -112,7 +118,8 @@ class UpdateGA(base.UpdateCommand):
           networks=network_configs)
 
     return _Update(zones_client, args,
-                   private_visibility_config=visibility_config)
+                   private_visibility_config=visibility_config,
+                   forwarding_config=forwarding_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -133,7 +140,6 @@ class UpdateBeta(base.UpdateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
-    flags.GetForwardingTargetsArg().AddToParser(parser)
     flags.GetDnsPeeringArgs().AddToParser(parser)
 
   def Run(self, args):
@@ -200,5 +206,4 @@ class UpdateAlpha(UpdateBeta):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _CommonArgs(parser, messages)
-    flags.GetForwardingTargetsArg().AddToParser(parser)
     flags.GetDnsPeeringArgs().AddToParser(parser)

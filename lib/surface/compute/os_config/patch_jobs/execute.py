@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
@@ -31,6 +32,7 @@ from googlecloudsdk.core.resource import resource_projector
 import six
 
 
+# TODO(b/140957414): update help text for arguments
 def _AddTopLevelArguments(parser):
   """Add top-level argument flags."""
   parser.add_argument(
@@ -178,6 +180,104 @@ def _AddZypperGroupArguments(parser):
   )
 
 
+def _AddPrePostStepArguments(parser):
+  """Add pre-/post-patch setting flags."""
+  pre_patch_linux_group = parser.add_group(
+      help='Pre-patch step settings for Linux machines:')
+  pre_patch_linux_group.add_argument(
+      '--pre-patch-linux-executable',
+      help="""\
+      A set of commands to run on a Linux machine before an OS patch begins.
+      Commands must be supplied in a file. If the file contains a shell script,
+      include the shebang line.
+
+      The path to the file must be supplied in one of the following formats:
+
+      An absolute path of the file on the local filesystem.
+
+      A URI for a Google Cloud Storage object with a generation number.
+      """,
+  )
+  pre_patch_linux_group.add_argument(
+      '--pre-patch-linux-success-codes',
+      type=arg_parsers.ArgList(element_type=int),
+      metavar='PRE_PATCH_LINUX_SUCCESS_CODES',
+      help="""Additional exit codes that the executable can return to indicate a
+      successful run. The default exit code for success is 0.""",
+  )
+  post_patch_linux_group = parser.add_group(
+      help='Post-patch step settings for Linux machines:')
+  post_patch_linux_group.add_argument(
+      '--post-patch-linux-executable',
+      help="""\
+      A set of commands to run on a Linux machine after an OS patch completes.
+      Commands must be supplied in a file. If the file contains a shell script,
+      include the shebang line.
+
+      The path to the file must be supplied in one of the following formats:
+
+      An absolute path of the file on the local filesystem.
+
+      A URI for a Google Cloud Storage object with a generation number.
+      """,
+  )
+  post_patch_linux_group.add_argument(
+      '--post-patch-linux-success-codes',
+      type=arg_parsers.ArgList(element_type=int),
+      metavar='POST_PATCH_LINUX_SUCCESS_CODES',
+      help="""Additional exit codes that the executable can return to indicate a
+      successful run. The default exit code for success is 0.""",
+  )
+
+  pre_patch_windows_group = parser.add_group(
+      help='Pre-patch step settings for Windows machines:')
+  pre_patch_windows_group.add_argument(
+      '--pre-patch-windows-executable',
+      help="""\
+      A set of commands to run on a Windows machine before an OS patch begins.
+      Commands must be supplied in a file. If the file contains a PowerShell
+      script, include the .ps1 file extension.
+
+      The path to the file must be supplied in one of the following formats:
+
+      An absolute path of the file on the local filesystem.
+
+      A URI for a Google Cloud Storage object with a generation number.
+      """,
+  )
+  pre_patch_windows_group.add_argument(
+      '--pre-patch-windows-success-codes',
+      type=arg_parsers.ArgList(element_type=int),
+      metavar='PRE_PATCH_WINDOWS_SUCCESS_CODES',
+      help="""Additional exit codes that the executable can return to indicate a
+      successful run. The default exit code for success is 0.""",
+  )
+
+  post_patch_windows_group = parser.add_group(
+      help='Post-patch step settings for Windows machines:')
+  post_patch_windows_group.add_argument(
+      '--post-patch-windows-executable',
+      help="""\
+      A set of commands to run on a Windows machine after an OS patch completes.
+      Commands must be supplied in a file. If the file contains a PowerShell
+      script, include the .ps1 file extension.
+
+      The path to the file must be supplied in one of the following formats:
+
+      An absolute path of the file on the local filesystem.
+
+      A URI for a Google Cloud Storage object with a generation number.
+      """,
+  )
+  post_patch_windows_group.add_argument(
+      '--post-patch-windows-success-codes',
+      type=arg_parsers.ArgList(element_type=int),
+      metavar='POST_PATCH_WINDOWS_SUCCESS_CODES',
+      help="""Additional exit codes that the executable can return to indicate a
+      successful run. The default exit code for success is 0.""",
+  )
+
+
 def _GetWindowsUpdateSettings(args, messages):
   """Create WindowsUpdateSettings from input arguments."""
   if args.windows_classifications or args.windows_excludes:
@@ -218,6 +318,126 @@ def _GetZypperSettings(args, messages):
           withUpdate=args.zypper_with_update,
       )
   return None
+
+
+def _GetWindowsExecStepConfigInterpreter(messages, path):
+  if path.endswith('.ps1'):
+    return messages.ExecStepConfig.InterpreterValueValuesEnum.POWERSHELL
+  else:
+    return messages.ExecStepConfig.InterpreterValueValuesEnum.SHELL
+
+
+def _GetExecStepConfig(messages, arg_name, path, allowed_success_codes,
+                       is_windows):
+  """Create ExecStepConfig from input arguments."""
+  interpreter = messages.ExecStepConfig.InterpreterValueValuesEnum.INTERPRETER_UNSPECIFIED
+  gcs_params = osconfig_command_utils.GetGcsParams(arg_name, path)
+  if gcs_params:
+    if is_windows:
+      interpreter = _GetWindowsExecStepConfigInterpreter(
+          messages, gcs_params['object'])
+    return messages.ExecStepConfig(
+        gcsObject=messages.GcsObject(
+            bucket=gcs_params['bucket'],
+            object=gcs_params['object'],
+            generationNumber=gcs_params['generationNumber'],
+        ),
+        allowedSuccessCodes=allowed_success_codes
+        if allowed_success_codes else [],
+        interpreter=interpreter,
+    )
+  else:
+    if is_windows:
+      interpreter = _GetWindowsExecStepConfigInterpreter(messages, path)
+    return messages.ExecStepConfig(
+        localPath=path,
+        allowedSuccessCodes=allowed_success_codes
+        if allowed_success_codes else [],
+        interpreter=interpreter,
+    )
+
+
+def _ValidatePrePostPatchStepArgs(executable_arg_name, executable_arg,
+                                  success_codes_arg_name, success_codes_arg):
+  if success_codes_arg and not executable_arg:
+    raise exceptions.InvalidArgumentException(
+        success_codes_arg_name,
+        '[{}] must also be specified.'.format(executable_arg_name))
+
+
+def _GetPrePostPatchStepSettings(args, messages, is_pre_patch_step):
+  """Create ExecStep from input arguments."""
+  if is_pre_patch_step:
+    if not any([
+        args.pre_patch_linux_executable, args.pre_patch_linux_success_codes,
+        args.pre_patch_windows_executable, args.pre_patch_windows_success_codes
+    ]):
+      return None
+
+    _ValidatePrePostPatchStepArgs('pre-patch-linux-executable',
+                                  args.pre_patch_linux_executable,
+                                  'pre-patch-linux-success-codes',
+                                  args.pre_patch_linux_success_codes)
+    _ValidatePrePostPatchStepArgs('pre-patch-windows-executable',
+                                  args.pre_patch_windows_executable,
+                                  'pre-patch-windows-success-codes',
+                                  args.pre_patch_windows_success_codes)
+
+    pre_patch_linux_step_config = pre_patch_windows_step_config = None
+    if args.pre_patch_linux_executable:
+      pre_patch_linux_step_config = _GetExecStepConfig(
+          messages,
+          'pre-patch-linux-executable',
+          args.pre_patch_linux_executable,
+          args.pre_patch_linux_success_codes,
+          is_windows=False)
+    if args.pre_patch_windows_executable:
+      pre_patch_windows_step_config = _GetExecStepConfig(
+          messages,
+          'pre-patch-windows-executable',
+          args.pre_patch_windows_executable,
+          args.pre_patch_windows_success_codes,
+          is_windows=True)
+    return messages.ExecStep(
+        linuxExecStepConfig=pre_patch_linux_step_config,
+        windowsExecStepConfig=pre_patch_windows_step_config,
+    )
+  else:
+    if not any([
+        args.post_patch_linux_executable, args.post_patch_linux_success_codes,
+        args.post_patch_windows_executable,
+        args.post_patch_windows_success_codes
+    ]):
+      return None
+
+    _ValidatePrePostPatchStepArgs('post-patch-linux-executable',
+                                  args.post_patch_linux_executable,
+                                  'post-patch-linux-success-codes',
+                                  args.post_patch_linux_success_codes)
+    _ValidatePrePostPatchStepArgs('post-patch-windows-executable',
+                                  args.post_patch_windows_executable,
+                                  'post-patch-windows-success-codes',
+                                  args.post_patch_windows_success_codes)
+
+    post_patch_linux_step_config = post_patch_windows_step_config = None
+    if args.post_patch_linux_executable:
+      post_patch_linux_step_config = _GetExecStepConfig(
+          messages,
+          'post-patch-linux-executable',
+          args.post_patch_linux_executable,
+          args.post_patch_linux_success_codes,
+          is_windows=False)
+    if args.post_patch_windows_executable:
+      post_patch_windows_step_config = _GetExecStepConfig(
+          messages,
+          'post-patch-windows-executable',
+          args.post_patch_windows_executable,
+          args.post_patch_windows_success_codes,
+          is_windows=True)
+    return messages.ExecStep(
+        linuxExecStepConfig=post_patch_linux_step_config,
+        windowsExecStepConfig=post_patch_windows_step_config,
+    )
 
 
 def _GetProgressTracker(patch_job_name):
@@ -304,6 +524,15 @@ class Execute(base.Command):
         $ {command} --instance-filter="name=my-instance" \
         --windows-classifications=SECURITY,CRITICAL
 
+  To patch all instances in the current project and specify scripts to run
+  pre-patch and post-patch, run:
+
+        $ {command} --instance-filter="" \
+        --pre-patch-linux-executable="/bin/my-script" \
+        --pre-patch-linux-success-codes=0,200 \
+        --pre-patch-windows-executable="C:\\Users\\user\\test-script.ps1" \
+        --post-patch-linux-executable="gs://my-bucket/my-linux-script#12345" \
+        --post-patch-windows-executable="gs://my-bucket/my-windows-script#67890"
   """
 
   _command_prefix = 'gcloud alpha compute os-config patch-jobs'
@@ -315,6 +544,7 @@ class Execute(base.Command):
     _AddYumGroupArguments(parser)
     _AddWinGroupArguments(parser)
     _AddZypperGroupArguments(parser)
+    _AddPrePostStepArguments(parser)
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
@@ -340,6 +570,10 @@ class Execute(base.Command):
         windowsUpdate=_GetWindowsUpdateSettings(args, messages),
         yum=_GetYumSettings(args, messages),
         zypper=_GetZypperSettings(args, messages),
+        preStep=_GetPrePostPatchStepSettings(
+            args, messages, is_pre_patch_step=True),
+        postStep=_GetPrePostPatchStepSettings(
+            args, messages, is_pre_patch_step=False),
     )
 
     request = messages.OsconfigProjectsPatchJobsExecuteRequest(

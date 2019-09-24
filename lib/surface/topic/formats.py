@@ -76,7 +76,7 @@ class Formats(base.TopicCommand):
 
           List a nested table of the quotas of a region:
 
-            $ gcloud compute regions describe us-central1 --format="table(quotas:format="table(metric,limit,usage)")"
+            $ gcloud compute regions describe us-central1 --format="table(quotas:format='table(metric,limit,usage)')"
 
           Print a flattened list of global quotas in CSV format:
 

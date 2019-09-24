@@ -1666,6 +1666,26 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--instance": "dynamic",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                }
+              },
+              "flags": {}
             }
           },
           "flags": {}
@@ -6471,6 +6491,14 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--dry-run": "bool",
                         "--duration": "value",
                         "--instance-filter": "value",
+                        "--post-patch-linux-executable": "value",
+                        "--post-patch-linux-success-codes": "value",
+                        "--post-patch-windows-executable": "value",
+                        "--post-patch-windows-success-codes": "value",
+                        "--pre-patch-linux-executable": "value",
+                        "--pre-patch-linux-success-codes": "value",
+                        "--pre-patch-windows-executable": "value",
+                        "--pre-patch-windows-success-codes": "value",
                         "--reboot-config": [
                           "always",
                           "default",
@@ -11700,6 +11728,19 @@ STATIC_COMPLETION_CLI_TREE = {
           "commands": {
             "registrations": {
               "commands": {
+                "authorization-code": {
+                  "commands": {
+                    "get": {
+                      "commands": {},
+                      "flags": {}
+                    },
+                    "reset": {
+                      "commands": {},
+                      "flags": {}
+                    }
+                  },
+                  "flags": {}
+                },
                 "check-availability": {
                   "commands": {},
                   "flags": {}
@@ -13472,7 +13513,9 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--content-structure": [
                           "bundle",
-                          "resource"
+                          "bundle-pretty",
+                          "resource",
+                          "resource-pretty"
                         ],
                         "--dataset": "value",
                         "--error-gcs-uri": "value",
@@ -14876,6 +14919,22 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "local": {
+          "commands": {
+            "setup": {
+              "commands": {},
+              "flags": {
+                "--build-context-directory": "value",
+                "--dockerfile": "value",
+                "--image-name": "value",
+                "--kubernetes-file": "value",
+                "--service-name": "value",
+                "--skaffold-file": "value"
+              }
             }
           },
           "flags": {}
@@ -16725,6 +16784,162 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--recompute-message-storage-policy": "bool",
                     "--remove-labels": "value",
                     "--update-labels": "value"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
+        "recommender": {
+          "commands": {
+            "insights": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--insight-type": "value",
+                    "--location": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--insight-type": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
+                  }
+                },
+                "mark-accepted": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--insight-type": "value",
+                    "--location": "value",
+                    "--state-metadata": "value"
+                  }
+                },
+                "mark-active": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--insight-type": "value",
+                    "--location": "value"
+                  }
+                },
+                "mark-dismissed": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--insight-type": "value",
+                    "--location": "value",
+                    "--recommendation-change-type": [
+                      "dismiss",
+                      "leave_unchanged"
+                    ]
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "recommendations": {
+              "commands": {
+                "create-rule": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value",
+                    "--recommender": "value",
+                    "--target-state": [
+                      "active",
+                      "claimed",
+                      "dismissed",
+                      "failed",
+                      "succeeded"
+                    ]
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value",
+                    "--recommender": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--recommender": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "mark-active": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--location": "value",
+                    "--recommender": "value"
+                  }
+                },
+                "mark-claimed": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--location": "value",
+                    "--recommender": "value",
+                    "--state-metadata": "value"
+                  }
+                },
+                "mark-failed": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--location": "value",
+                    "--recommender": "value",
+                    "--state-metadata": "value"
+                  }
+                },
+                "mark-succeeded": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--location": "value",
+                    "--recommender": "value",
+                    "--state-metadata": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "rules": {
+              "commands": {
+                "apply": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value"
                   }
                 }
               },
@@ -18701,6 +18916,13 @@ STATIC_COMPLETION_CLI_TREE = {
             },
             "export": {
               "commands": {
+                "bak": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--database": "value"
+                  }
+                },
                 "csv": {
                   "commands": {},
                   "flags": {
@@ -21530,6 +21752,26 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--async": "bool"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "operations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--instance": "dynamic",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
                   }
                 }
               },
@@ -31111,7 +31353,9 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--async": "bool",
                         "--content-structure": [
                           "bundle",
-                          "resource"
+                          "bundle-pretty",
+                          "resource",
+                          "resource-pretty"
                         ],
                         "--dataset": "value",
                         "--gcs-uri": "value",
@@ -33945,6 +34189,62 @@ STATIC_COMPLETION_CLI_TREE = {
           },
           "flags": {}
         },
+        "recommender": {
+          "commands": {
+            "recommendations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--location": "value",
+                    "--recommender": "value"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--location": "value",
+                    "--page-size": "value",
+                    "--recommender": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "mark-claimed": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--location": "value",
+                    "--recommender": "value",
+                    "--state-metadata": "value"
+                  }
+                },
+                "mark-failed": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--location": "value",
+                    "--recommender": "value",
+                    "--state-metadata": "value"
+                  }
+                },
+                "mark-succeeded": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--location": "value",
+                    "--recommender": "value",
+                    "--state-metadata": "value"
+                  }
+                }
+              },
+              "flags": {}
+            }
+          },
+          "flags": {}
+        },
         "redis": {
           "commands": {
             "instances": {
@@ -36494,6 +36794,26 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--async": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "operations": {
+          "commands": {
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--instance": "dynamic",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
               }
             }
           },
@@ -43258,6 +43578,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "on",
                   "transfer"
                 ],
+                "--forwarding-targets": "value",
                 "--ksk-algorithm": [
                   "ecdsap256sha256",
                   "ecdsap384sha384",
@@ -43315,6 +43636,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "on",
                   "transfer"
                 ],
+                "--forwarding-targets": "value",
                 "--ksk-algorithm": [
                   "ecdsap256sha256",
                   "ecdsap384sha384",
@@ -43354,6 +43676,47 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--limit": "value",
                 "--sort-by": "value",
                 "--zones": "dynamic"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "policies": {
+          "commands": {
+            "create": {
+              "commands": {},
+              "flags": {
+                "--alternative-name-servers": "value",
+                "--description": "value",
+                "--enable-inbound-forwarding": "bool",
+                "--networks": "value"
+              }
+            },
+            "delete": {
+              "commands": {},
+              "flags": {}
+            },
+            "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "list": {
+              "commands": {},
+              "flags": {
+                "--filter": "value",
+                "--limit": "value",
+                "--page-size": "value",
+                "--sort-by": "value",
+                "--uri": "bool"
+              }
+            },
+            "update": {
+              "commands": {},
+              "flags": {
+                "--alternative-name-servers": "value",
+                "--description": "value",
+                "--enable-inbound-forwarding": "bool",
+                "--networks": "value"
               }
             }
           },
@@ -47224,6 +47587,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "MYSQL_5_5",
                   "MYSQL_5_6",
                   "MYSQL_5_7",
+                  "POSTGRES_11",
                   "POSTGRES_9_6"
                 ],
                 "--filter": "value",
@@ -47293,6 +47657,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "MYSQL_5_5",
                   "MYSQL_5_6",
                   "MYSQL_5_7",
+                  "POSTGRES_11",
                   "POSTGRES_9_6"
                 ],
                 "--enable-bin-log": "bool",

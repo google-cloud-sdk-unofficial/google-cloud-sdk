@@ -64,16 +64,18 @@ class Dataproc(base.Group):
   detailed_help = DETAILED_HELP
 
   def Filter(self, context, args):
-    del context, args
+    del context
     base.DisableUserProjectQuota()
 
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      if not properties.VALUES.dataproc.region.Get():
-        log.warning(
-            'Dataproc --region flag will become required in January 2020. '
-            'Please either specify this flag, or set default by running '
-            '\'gcloud config set dataproc/region <your-default-region>\'')
-        properties.VALUES.dataproc.region.Set('global')
-    else:
-      # Enfore flag or default value is required.
-      properties.VALUES.dataproc.region.GetOrFail()
+    if hasattr(args, 'region') and not args.region:
+      if self.ReleaseTrack() == base.ReleaseTrack.GA:
+        if not properties.VALUES.dataproc.region.Get():
+          log.warning(
+              'Specifying a Cloud Dataproc region will become required in '
+              'January 2020. Please either specify --region=<your-region>, or '
+              'set a default Cloud Dataproc region by running '
+              '\'gcloud config set dataproc/region <your-default-region>\'')
+          properties.VALUES.dataproc.region.Set('global')
+      else:
+        # Enfore flag or default value is required.
+        properties.VALUES.dataproc.region.GetOrFail()

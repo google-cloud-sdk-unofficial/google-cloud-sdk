@@ -19,9 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.accelerator_types import flags
-from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
@@ -40,15 +40,14 @@ class List(base.ListCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    client = holder.client.apitools_client
-    messages = client.MESSAGES_MODULE
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+    list_implementation = lister.MultiScopeLister(
+        client,
+        aggregation_service=client.apitools_client.acceleratorTypes)
 
-    request = messages.ComputeAcceleratorTypesAggregatedListRequest(
-        project=properties.VALUES.core.project.Get(required=True))
-
-    return holder.client.MakeRequests(
-        [(client.acceleratorTypes, 'AggregatedList', request)])
+    return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = base_classes.GetZonalListerHelp('accelerator types')

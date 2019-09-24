@@ -26,7 +26,7 @@ import timeit
 from ._interfaces import Model
 import six
 
-from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import dtypes  # pylint: disable=g-direct-tensorflow-import
 
 # --------------------------
 # prediction.common
@@ -87,6 +87,8 @@ ABLATION_ATTRIBUTION_KEY = "ablation_attribution"
 INTEGRATED_GRADIENTS_KEY = "integrated_gradients_attribution"
 NUM_INTEGRAL_STEPS = "num_integral_steps"
 TREE_SHAP_ATTRIBUTION_KEY = "tree_shap_attribution"
+SAMPLING_SHAP_ATTRIBUTION_KEY = "sampling_shap_attribution"
+NUM_PATHS = "num_paths"
 SAABAS_ATTRIBUTION_KEY = "saabas_attribution"
 NUM_FEATURE_INTERACTIONS = "num_feature_interactions"
 IG_ATTRIBUTION_KEY = "integrated_gradients_attribution"
@@ -94,6 +96,7 @@ NUM_INTEGRAL_STEPS = "num_integral_steps"
 
 # Keys related to requests and responses to prediction server.
 PREDICTIONS_KEY = "predictions"
+OUTPUTS_KEY = "outputs"
 INSTANCES_KEY = "instances"
 
 
@@ -587,6 +590,7 @@ def get_field_in_version_json(field_name):
   return version.get(field_name)
 
 
+# TODO(user): Move this config loading logic to config_factory.
 def get_xgboost_explanation_config(xgboost_factory_module):
   """Returns an ExplanationConfig for XGBoost model.
 
@@ -616,6 +620,7 @@ def get_xgboost_explanation_config(xgboost_factory_module):
       repr(config_request), XGBOOST_FRAMEWORK_NAME))
 
 
+# TODO(user): Move this config loading logic to config_factory.
 def get_tensorflow_explanation_config(tf_configs_module):
   """Returns an ExplanationConfig for TensorFlow model.
 
@@ -631,20 +636,36 @@ def get_tensorflow_explanation_config(tf_configs_module):
   config_request = get_field_in_version_json(EXPLANATION_CONFIG_KEY)
   if config_request is None:
     return None
+  # config_request is a json representation of the proto message
+  # ExplanationConfig, see //cloud/ml/beta/proto/explanation.proto.
   if ABLATION_ATTRIBUTION_KEY in config_request:
+    logging.warning("Explanation strategy requested is Ablation (deprecated).")
     return tf_configs_module.TFAblationConfig(
         tf_configs_module.ModelType.CUSTOM,
         tf_configs_module.InputType.FEED_DICT)
+  elif SAMPLING_SHAP_ATTRIBUTION_KEY in config_request:
+    attribution_config = config_request.get(SAMPLING_SHAP_ATTRIBUTION_KEY)
+    num_paths = attribution_config.get(NUM_PATHS)
+    config = tf_configs_module.TFSHAPConfig(
+        tf_configs_module.ModelType.CUSTOM,
+        tf_configs_module.InputType.FEED_DICT,
+        num_paths=num_paths)
+    logging.debug(
+        "Explanation strategy requested is SamplingShap, "
+        "num_paths: %s", config.num_paths)
+    return config
   elif IG_ATTRIBUTION_KEY in config_request:
     ig_attribution = config_request.get(IG_ATTRIBUTION_KEY)
     integral_steps = ig_attribution.get(NUM_INTEGRAL_STEPS, 50)
-    logging.debug("IG enabled, num_integral_steps: %s", integral_steps)
+    logging.debug(
+        "Explanation strategy requested is integrated_gradients, "
+        "num_integral_steps: %s", integral_steps)
     return tf_configs_module.TFIGConfig(
         tf_configs_module.ModelType.CUSTOM,  # model_type
         tf_configs_module.InputType.FEED_DICT,  # input_type
         integral_steps)  # integral_steps
   raise ValueError("{} is not a supported explanation config for {}.".format(
-      config_request, TENSORFLOW_FRAMEWORK_NAME))
+      repr(config_request), TENSORFLOW_FRAMEWORK_NAME))
 
 
 def load_metadata(base_path):
@@ -724,6 +745,29 @@ def parse_predictions(response_json):
         "Required field '{}' missing in prediction server response: {}".format(
             PREDICTIONS_KEY, repr(response_json)))
   return response_json.pop(PREDICTIONS_KEY)
+
+
+def parse_outputs(response_json):
+  """Parses the outputs from the json response from prediction server.
+
+  Args:
+    response_json(Text): The JSON formatted response to parse.
+
+  Returns:
+    Outputs from the response json.
+
+  Raises:
+    ValueError if response_json is malformed.
+  """
+  if not isinstance(response_json, collections.Mapping):
+    raise ValueError(
+        "Invalid response received from prediction server: {}".format(
+            repr(response_json)))
+  if OUTPUTS_KEY not in response_json:
+    raise ValueError(
+        "Required field '{}' missing in prediction server response: {}".format(
+            OUTPUTS_KEY, repr(response_json)))
+  return response_json.pop(OUTPUTS_KEY)
 
 
 def parse_instances(request_json):

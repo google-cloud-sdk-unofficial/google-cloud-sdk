@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListInstances(base.ListCommand):
   """List Google Compute Engine instances present in managed instance group."""
 
@@ -129,8 +129,8 @@ ListInstances.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListInstancesAlpha(ListInstances):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListInstancesBeta(ListInstances):
   """List Google Compute Engine instances present in managed instance group."""
 
   @staticmethod
@@ -153,4 +153,4 @@ class ListInstancesAlpha(ListInstances):
         parser)
 
 
-ListInstancesAlpha.detailed_help = ListInstances.detailed_help
+ListInstancesBeta.detailed_help = ListInstances.detailed_help

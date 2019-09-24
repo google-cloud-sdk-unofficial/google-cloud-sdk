@@ -54,6 +54,24 @@ File path where trigger should be imported from.
         messages.CloudbuildProjectsTriggersCreateRequest(
             projectId=project, buildTrigger=trigger))
 
+  def _CreateOrUpdateTrigger(self, client, messages, project, trigger):
+    if trigger.id:
+      # Trigger already has an ID - only try update.
+      return self._UpdateTrigger(client, messages, project, trigger.id, trigger)
+    elif trigger.name:
+      # No ID specified, but trigger with given name could still exist.
+      # Try to update an existing trigger; if it doesn't exist, then
+      # create it.
+      try:
+        return self._UpdateTrigger(client, messages, project, trigger.name,
+                                   trigger)
+      except apitools_exceptions.HttpNotFoundError:
+        return self._CreateTrigger(client, messages, project, trigger)
+    else:
+      # No identifying information specified. Create a trigger with the given
+      # specification.
+      return self._CreateTrigger(client, messages, project, trigger)
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -68,26 +86,12 @@ File path where trigger should be imported from.
     messages = cloudbuild_util.GetMessagesModule()
 
     project = properties.VALUES.core.project.Get(required=True)
-    trigger = cloudbuild_util.LoadMessageFromPath(
+    triggers = cloudbuild_util.LoadMessagesFromPath(
         args.source,
         messages.BuildTrigger,
         'BuildTrigger',
         skip_camel_case=['substitutions'])
-    resp = None
-    if trigger.id:
-      # Trigger already has an ID - only try update.
-      resp = self._UpdateTrigger(client, messages, project, trigger.id, trigger)
-    elif trigger.name:
-      # No ID specified, but trigger with given name could still exist.
-      # Try to update an existing trigger; if it doesn't exist, then
-      # create it.
-      try:
-        resp = self._UpdateTrigger(client, messages, project, trigger.name,
-                                   trigger)
-      except apitools_exceptions.HttpNotFoundError:
-        resp = self._CreateTrigger(client, messages, project, trigger)
-    else:
-      # No identifying information specified. Create a trigger with the given
-      # specification.
-      resp = self._CreateTrigger(client, messages, project, trigger)
-    return resp
+    return [
+        self._CreateOrUpdateTrigger(client, messages, project, trigger)
+        for trigger in triggers
+    ]

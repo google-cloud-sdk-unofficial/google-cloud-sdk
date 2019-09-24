@@ -90,19 +90,22 @@ class Update(base.Command):
 
     update_fields = []
     if args.file:
-      (guest_policy, update_fields
-      ) = osconfig_command_utils.GetResourceAndUpdateFieldsFromFile(
-          args.file, messages.GuestPolicy)
+      (guest_policy,
+       _) = osconfig_command_utils.GetResourceAndUpdateFieldsFromFile(
+           args.file, messages.GuestPolicy)
     else:
       guest_policy = messages.GuestPolicy()
 
     if args.description:
       guest_policy.description = args.description
-      update_fields.append('description')
+      if not args.file:
+        update_fields.append('description')
     if args.etag:
       guest_policy.etag = args.etag
-      update_fields.append('etag')
-    update_mask = ','.join(sorted(list(set(update_fields))))
+      if not args.file:
+        update_fields.append('etag')
+    update_mask = (','.join(sorted(list(update_fields)))
+                   if update_fields else None)
 
     if args.organization:
       request = messages.OsconfigOrganizationsGuestPoliciesPatchRequest(

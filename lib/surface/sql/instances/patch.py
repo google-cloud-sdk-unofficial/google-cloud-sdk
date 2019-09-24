@@ -52,9 +52,11 @@ def _PrintAndConfirmWarningMessage(args, database_version):
         'your instance to be restarted. Submitting this patch '
         'will immediately restart your instance if it\'s running.')
   elif any([args.database_flags, args.clear_database_flags]):
-    is_postgres = api_util.InstancesV1Beta4.IsPostgresDatabaseVersion(
-        database_version)
-    database_type_fragment = 'postgres' if is_postgres else 'mysql'
+    database_type_fragment = 'mysql'
+    if api_util.InstancesV1Beta4.IsPostgresDatabaseVersion(database_version):
+      database_type_fragment = 'postgres'
+    elif api_util.InstancesV1Beta4.IsSqlServerDatabaseVersion(database_version):
+      database_type_fragment = 'sqlserver'
     flag_docs_url = 'https://cloud.google.com/sql/docs/{}/flags'.format(
         database_type_fragment)
     continue_msg = (

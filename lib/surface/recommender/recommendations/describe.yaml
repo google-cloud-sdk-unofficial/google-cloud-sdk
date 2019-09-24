@@ -5,7 +5,9 @@
     description: |
       Describe a recommendation for a Cloud project.
     examples: |
-      $ {command} abcd-1234 --project=concord-api-testing --location=global --recommender=google.iam.policy.RoleRecommender
+      To describe a recommendation:
+
+        $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations

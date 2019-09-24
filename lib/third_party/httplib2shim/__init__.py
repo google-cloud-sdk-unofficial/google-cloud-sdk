@@ -72,6 +72,28 @@ def _default_make_pool(http, proxy_info):
     )
 
 
+def _patch_add_certificate(pool_manager):
+    """Monkey-patches PoolManager to make it accept client certificates."""
+    def add_certificate(key, cert, password):
+        pool_manager._client_key = key
+        pool_manager._client_cert = cert
+        pool_manager._client_key_password = password
+
+    def connection_from_host(host, port=None, scheme='http', pool_kwargs=None):
+        pool = pool_manager._connection_from_host(host, port, scheme, pool_kwargs)
+        # pool is urllib3.HTTPSConnectionPool, which uses VerifiedHTTPSConnection
+        # to handle cert when ssl library is linked.
+        pool.key_file = pool_manager._client_key
+        pool.cert_file = pool_manager._client_cert
+        pool.key_password = pool_manager._client_key_password
+        return pool
+
+    pool_manager.add_certificate = add_certificate
+    pool_manager.add_certificate(None, None, None)
+    pool_manager._connection_from_host = pool_manager.connection_from_host
+    pool_manager.connection_from_host = connection_from_host
+
+
 def patch(make_pool=_default_make_pool):
     """Monkey-patches httplib2.Http to be httplib2shim.Http.
 
@@ -115,6 +137,7 @@ class Http(httplib2.Http):
         if not pool:
             pool = self._make_pool(proxy_info=proxy_info)
 
+        _patch_add_certificate(pool)
         self.pool = pool
 
     @classmethod
@@ -161,9 +184,8 @@ class Http(httplib2.Http):
 
         return response, content
 
-    def add_certificate(self, *args, **kwargs):
-        warnings.warn('httplib2shim does not support add_certificate.')
-        return super(Http, self).add_certificate(*args, **kwargs)
+    def add_certificate(self, key, cert, domain, password=None):
+        self.pool.add_certificate(key, cert, password)
 
     def __getstate__(self):
         dict = super(Http, self).__getstate__()

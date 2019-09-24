@@ -5,7 +5,9 @@
     description: |
       Lists recommendations for a Cloud project.
     examples: |
-      $ {command} --project=concord-api-testing --location=global --recommender=google.iam.policy.RoleRecommender
+      To list recommendations:
+
+        $ {command} --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations
