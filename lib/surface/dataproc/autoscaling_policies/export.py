@@ -57,6 +57,13 @@ class ExportBeta(base.Command):
   export omits output only fields, such as the policy id and resource name. This
   is to allow piping the output of export directly into import, which requires
   that output only fields are omitted.
+
+  ## EXAMPLES
+
+  The following command saves the contents of autoscaling policy
+  `example-autoscaling-policy` to a file so that it can be imported later:
+
+    $ {command} example-autoscaling-policy --destination=saved-policy.yaml
   """
 
   @staticmethod
@@ -75,6 +82,13 @@ class ExportGa(base.Command):
   export omits output only fields, such as the policy id and resource name. This
   is to allow piping the output of export directly into import, which requires
   that output only fields are omitted.
+
+  ## EXAMPLES
+
+  The following command saves the contents of autoscaling policy
+  `example-autoscaling-policy` to a file so that it can be imported later:
+
+    $ {command} example-autoscaling-policy --destination=saved-policy.yaml
   """
 
   @staticmethod

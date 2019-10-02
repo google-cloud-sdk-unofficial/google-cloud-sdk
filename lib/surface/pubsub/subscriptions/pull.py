@@ -41,6 +41,7 @@ table[box](
   message.messageId,
   message.orderingKey,
   message.attributes.list(separator='\n'),
+  deliveryAttempt,
   ackId.if(NOT auto_ack)
 )
 """

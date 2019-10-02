@@ -55,15 +55,9 @@ class ReplayRecentAccesses(base.Command):
         'resource',
         metavar='RESOURCE',
         help="""
-        Full resource name or URI to simulate the IAM policy for.
+        Full resource name to simulate the IAM policy for.
 
-        See ["Resource Names"](https://cloud.google.com/apis/design/resource_names)
-        for details. To get a URI from most `list` commands in `gcloud`, pass
-        the `--uri` flag. For example:
-
-        $ gcloud compute instances list --project prj --uri
-        https://www.googleapis.com/compute/v1/projects/prj/zones/us-east1-c/instances/i1
-        https://www.googleapis.com/compute/v1/projects/prj/zones/us-east1-d/instances/i2
+        See: https://cloud.google.com/apis/design/resource_names#full_resource_name.
         """)
     parser.add_argument(
         'policy_file',

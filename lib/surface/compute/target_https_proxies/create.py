@@ -131,7 +131,8 @@ class Create(base.CreateCommand):
         ssl_certificates_flags.SslCertificatesArgumentForOtherResource(
             'target HTTPS proxy',
             required=ssl_certificates_required,
-            include_alpha=cls._include_l7_internal_load_balancing))
+            include_l7_internal_load_balancing=cls
+            ._include_l7_internal_load_balancing))
     cls.SSL_CERTIFICATES_ARG.AddArgument(parser, cust_metavar='SSL_CERTIFICATE')
 
     cls.TARGET_HTTPS_PROXY_ARG = flags.TargetHttpsProxyArgument(

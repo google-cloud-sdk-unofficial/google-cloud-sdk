@@ -37,7 +37,8 @@ from googlecloudsdk.core import properties
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
   """Import an instance into Google Compute Engine from OVF."""
 
@@ -158,13 +159,14 @@ class Import(base.CreateCommand):
         zone=properties.VALUES.compute.zone.Get(),
         project=args.project,
         output_filter=_OUTPUT_FILTER,
-        compute_release_track=self.ReleaseTrack().prefix
+        compute_release_track=
+        self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None
     )
 
 
 Import.detailed_help = {
     'brief': (
-        'create Google Compute Engine virtual machine instances from virtual '
+        'Create Google Compute Engine virtual machine instances from virtual '
         'appliance in OVA/OVF format.'),
     'DESCRIPTION':
         """\

@@ -104,6 +104,9 @@ class GcloudignoreHelp(base.TopicCommand):
   *cannot* `#!include` another file) and cannot be anywhere but the top-level
   directory to be uploaded.
 
+  The `gcloud meta list-files-for-upload` command can be used to display files
+  files that will uploaded.
+
 
   ## EXAMPLES
 

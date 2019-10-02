@@ -139,7 +139,10 @@ class Run(base.ListCommand):
     bucket_ops = results_bucket.ResultsBucketOps(project, args.results_bucket,
                                                  args.results_dir, tr_client,
                                                  tr_messages, storage_client)
-    bucket_ops.UploadFileToGcs(args.test)
+    if getattr(args, 'app', None):
+      bucket_ops.UploadFileToGcs(args.app)
+    if args.test:
+      bucket_ops.UploadFileToGcs(args.test)
     if args.xctestrun_file:
       bucket_ops.UploadFileToGcs(args.xctestrun_file)
     bucket_ops.LogGcsResultsUrl()
@@ -210,8 +213,82 @@ def PickHistoryName(args):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RunBeta(Run):
   """Invoke a test in Firebase Test Lab for iOS and view test results."""
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          *{command}* invokes and monitors tests in Firebase Test Lab for iOS.
+
+          Two types of iOS tests are currently supported:
+          - *xctest*: corresponds to the XCTest and XCUITest frameworks. Other
+            iOS testing frameworks which are built upon XCTest and XCUITest
+            should also work. The XCTEST_ZIP test package is a zip file built
+            using Apple's Xcode and supporting tools. For a detailed
+            description of the process to create your XCTEST_ZIP file, see
+            https://firebase.google.com/docs/test-lab/ios/command-line.
+          - *game-loop*: launches the game app through a custom URL scheme to
+            execute a "demo mode" built into the game app that simulates
+            actions of a real player. This test type can include multiple
+            game loops (also called "scenarios") indicated by positive
+            numbers.
+
+          The type of test to run can be specified with the *--type* flag,
+          which defaults to `xctest`.
+
+          All arguments for *{command}* may be specified on the command line
+          and/or within an argument file. Run *$ gcloud topic arg-files* for
+          more information about argument files.
+        """,
+      'EXAMPLES':
+          """\
+          To invoke an XCTest lasting up to five minutes against the default
+          device environment, run:
+
+            $ {command} --test XCTEST_ZIP --timeout 5m
+
+          To invoke an XCTest against an iPad 5 running iOS 11.2, run:
+
+            $ {command} --test XCTEST_ZIP --device model=ipad5,version=11.2
+
+          To run your tests against multiple iOS devices simultaneously, specify
+          the *--device* flag more than once:
+
+            $ {command} --test XCTEST_ZIP \
+              --device model=iphone7 \
+              --device model=ipadmini4,version=11.2 \
+              --device model=iphonese
+
+          To run your XCTest using a specific version of Xcode, say 9.4.1, run:
+
+            $ {command} --test XCTEST_ZIP --xcode-version=9.4.1
+
+          To run an iOS game loop, specify the *--type* and *--app* flags:
+
+            $ {command} --type game-loop --app app.ipa
+
+          To run an iOS game loop with specific scenario(s), use the
+          *--scenario-numbers* flag:
+
+            $ {command} --type game-loop --app app.ipa --scenario-numbers 1,2,3
+
+          All test arguments for a given test may alternatively be stored in an
+          argument group within a YAML-formatted argument file. The _ARG_FILE_
+          may contain one or more named argument groups, and argument groups may
+          be combined using the `include:` attribute (Run *$ gcloud topic
+          arg-files* for more information). The ARG_FILE can easily be shared
+          with colleagues or placed under source control to ensure consistent
+          test executions.
+
+          To run a test using arguments loaded from an ARG_FILE named
+          *excelsior_app_args*, which contains an argument group named
+          *ios-args:*, use the following syntax:
+
+            $ {command} path/to/excelsior_app_args:ios-args
+
+          """,
+  }
 
   @staticmethod
   def Args(parser):
     super(RunBeta, RunBeta).Args(parser)
+    arg_util.AddIosBetaArgs(parser)
     arg_util.AddBetaArgs(parser)

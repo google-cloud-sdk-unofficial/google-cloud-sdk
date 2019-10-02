@@ -41,6 +41,27 @@ DETAILED_HELP = {
     Delete a membership:
 
       $ gcloud container memberships delete a-membership
+
+    Register a cluster referenced from the default kubeconfig file, installing the
+    Connect agent:
+
+        $ {command} register my-cluster \
+            --context=my-cluster-context \
+            --service-account-key-file=/tmp/keyfile.json
+
+    Upgrade the Connect agent in a cluster:
+
+        $ {command} register my-cluster \
+            --context=my-cluster-context \
+            --service-account-key-file=/tmp/keyfile.json
+
+    Register a cluster and output a manifest that can be used to install the
+    Connect agent:
+
+        $ {command} register my-cluster \
+            --context=my-cluster-context \
+            --manifest-output-file=/tmp/manifest.yaml \
+            --service-account-key-file=/tmp/keyfile.json
     """
 }
 

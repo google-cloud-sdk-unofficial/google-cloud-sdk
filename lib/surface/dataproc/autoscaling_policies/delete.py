@@ -44,7 +44,15 @@ def _Run(dataproc, args):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  """Delete an autoscaling policy."""
+  """Delete an autoscaling policy.
+
+  ## EXAMPLES
+
+  The following command deletes the autoscaling policy
+  `example-autoscaling-policy`:
+
+    $ {command} example-autoscaling-policy
+  """
 
   @staticmethod
   def Args(parser):
@@ -56,7 +64,15 @@ class Delete(base.DeleteCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeleteBeta(base.DeleteCommand):
-  """Delete an autoscaling policy."""
+  """Delete an autoscaling policy.
+
+  ## EXAMPLES
+
+  The following command deletes the autoscaling policy
+  `example-autoscaling-policy`:
+
+    $ {command} example-autoscaling-policy
+  """
 
   @staticmethod
   def Args(parser):

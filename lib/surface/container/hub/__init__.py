@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
-
+# LINT.IfChange
 DETAILED_HELP = {
     'brief': 'Registers a cluster with Google Cloud Platform.',
     'description': """\
@@ -51,6 +51,7 @@ DETAILED_HELP = {
             --service-account-key-file=/tmp/keyfile.json
     """,
 }
+# LINT.ThenChange(../memberships/__init__.py)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

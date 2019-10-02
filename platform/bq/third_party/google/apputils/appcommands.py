@@ -287,7 +287,7 @@ class Cmd(object):
         else:
           assert isinstance(ret, int)
         return ret
-      except app.UsageError, error:
+      except app.UsageError as error:
         app.usage(shorthelp=1, detailed_error=error, exitcode=error.exitcode)
     finally:
       # Restore app.usage and remove this command's flags from the global flags.
@@ -409,7 +409,7 @@ def _AddCmdInstance(command_name, cmd, command_aliases=None):
     AppCommandsError: if name is already registered OR name is not a string OR
                       name is too short OR name does not start with a letter OR
                       name contains any non alphanumeric characters besides
-                      '_'.
+                      '_', '-', or ':'.
   """
   # Update global command list.
   # pylint: disable-msg=W0602
@@ -437,7 +437,7 @@ def _CheckCmdName(name_or_alias):
     AppCommandsError: if name is already registered OR name is not a string OR
                       name is too short OR name does not start with a letter OR
                       name contains any non alphanumeric characters besides
-                      '_'.
+                      '_', '-', or ':'.
   """
   if name_or_alias in GetCommandAliasList():
     raise AppCommandsError("Command or Alias '%s' already defined" %
@@ -448,7 +448,7 @@ def _CheckCmdName(name_or_alias):
   if not name_or_alias[0].isalpha():
     raise AppCommandsError("Command '%s' does not start with a letter"
                            % name_or_alias)
-  if [c for c in name_or_alias if not (c.isalnum() or c == '_')]:
+  if [c for c in name_or_alias if not (c.isalnum() or c in ('_', '-', ':'))]:
     raise AppCommandsError("Command '%s' contains non alphanumeric characters"
                            % name_or_alias)
 
@@ -700,7 +700,7 @@ def ParseFlagsWithUsage(argv):
   try:
     _cmd_argv = FLAGS(argv)
     return _cmd_argv
-  except flags.FlagsError, error:
+  except flags.FlagsError as error:
     ShortHelpAndExit('FATAL Flags parsing error: %s' % error)
 
 
@@ -743,9 +743,9 @@ def _CommandsStart():
   try:
     sys.modules['__main__'].main(GetCommandArgv())
   # If sys.exit was called, return with error code.
-  except SystemExit, e:
+  except SystemExit as e:
     sys.exit(e.code)
-  except Exception, error:
+  except Exception as error:
     traceback.print_exc()  # Print a backtrace to stderr.
     ShortHelpAndExit('\nFATAL error in main: %s' % error)
 

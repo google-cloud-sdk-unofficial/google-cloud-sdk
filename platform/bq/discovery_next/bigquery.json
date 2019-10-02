@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20190815",
+ "revision": "20190919",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -15,9 +15,9 @@
  },
  "documentationLink": "https://cloud.google.com/bigquery/",
  "protocol": "rest",
- "baseUrl": "https://www.googleapis.com/bigquery/v2/",
+ "baseUrl": "https://bigquery.googleapis.com/bigquery/v2/",
  "basePath": "/bigquery/v2/",
- "rootUrl": "https://www.googleapis.com/",
+ "rootUrl": "https://bigquery.googleapis.com/",
  "servicePath": "bigquery/v2/",
  "batchPath": "batch/bigquery/v2",
  "parameters": {
@@ -883,7 +883,7 @@
    "properties": {
     "range": {
      "type": "string",
-     "description": "[Beta] [Optional] Range of a sheet to query from. Only used when non-empty. Typical format: sheet_name!top_left_cell_id:bottom_right_cell_id For example: sheet1!A1:B20"
+     "description": "[Optional] Range of a sheet to query from. Only used when non-empty. Typical format: sheet_name!top_left_cell_id:bottom_right_cell_id For example: sheet1!A1:B20"
     },
     "skipLeadingRows": {
      "type": "string",
@@ -1038,9 +1038,17 @@
      "description": "[Optional] Whether to print out a header row in the results. Default is true.",
      "default": "true"
     },
+    "sourceModel": {
+     "$ref": "ModelReference",
+     "description": "A reference to the model being exported."
+    },
     "sourceTable": {
      "$ref": "TableReference",
-     "description": "[Required] A reference to the table being exported."
+     "description": "A reference to the table being exported."
+    },
+    "useAvroLogicalTypes": {
+     "type": "boolean",
+     "description": "[Optional] If destinationFormat is set to \"AVRO\", this flag indicates whether to enable extracting applicable column types (such as TIMESTAMP) to their corresponding AVRO logical types (timestamp-micros), instead of only using their raw types (avro-long)."
     }
    }
   },
@@ -1483,6 +1491,10 @@
      "type": "string",
      "description": "[Output-only] Name of the primary reservation assigned to this job. Note that this could be different than reservations reported in the reservation usage field if parent reservations were used to execute this job."
     },
+    "scriptStatistics": {
+     "$ref": "ScriptStatistics",
+     "description": "[Output-only] Statistics for a child job of a script."
+    },
     "startTime": {
      "type": "string",
      "description": "[Output-only] Start time of this job, in milliseconds since the epoch. This field will be present when the job transitions from the PENDING state to either RUNNING or DONE.",
@@ -1762,6 +1774,24 @@
      "items": {
       "$ref": "BqmlTrainingRun"
      }
+    }
+   }
+  },
+  "ModelReference": {
+   "id": "ModelReference",
+   "type": "object",
+   "properties": {
+    "datasetId": {
+     "type": "string",
+     "description": "[Required] The ID of the dataset containing this model."
+    },
+    "modelId": {
+     "type": "string",
+     "description": "[Required] The ID of the model. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 1,024 characters."
+    },
+    "projectId": {
+     "type": "string",
+     "description": "[Required] The ID of the project containing this model."
     }
    }
   },
@@ -2111,6 +2141,57 @@
     "routineId": {
      "type": "string",
      "description": "[Required] The ID of the routine. The ID must contain only letters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum length is 256 characters."
+    }
+   }
+  },
+  "ScriptStackFrame": {
+   "id": "ScriptStackFrame",
+   "type": "object",
+   "properties": {
+    "endColumn": {
+     "type": "integer",
+     "description": "[Output-only] One-based end column.",
+     "format": "int32"
+    },
+    "endLine": {
+     "type": "integer",
+     "description": "[Output-only] One-based end line.",
+     "format": "int32"
+    },
+    "procedureId": {
+     "type": "string",
+     "description": "[Output-only] Name of the active procedure, empty if in a top-level script."
+    },
+    "startColumn": {
+     "type": "integer",
+     "description": "[Output-only] One-based start column.",
+     "format": "int32"
+    },
+    "startLine": {
+     "type": "integer",
+     "description": "[Output-only] One-based start line.",
+     "format": "int32"
+    },
+    "text": {
+     "type": "string",
+     "description": "[Output-only] Text of the current statement/expression."
+    }
+   }
+  },
+  "ScriptStatistics": {
+   "id": "ScriptStatistics",
+   "type": "object",
+   "properties": {
+    "evaluationKind": {
+     "type": "string",
+     "description": "[Output-only] Whether this child job was a statement or expression."
+    },
+    "stackFrames": {
+     "type": "array",
+     "description": "Stack trace showing the line/column/procedure name of each frame on the stack at the point where the current evaluation happened. The leaf frame is first, the primary script is last. Never empty.",
+     "items": {
+      "$ref": "ScriptStackFrame"
+     }
     }
    }
   },
@@ -2637,38 +2718,42 @@
      "$ref": "ModelReference"
     },
     "creationTime": {
-     "description": "Output only. The time when this model was created, in millisecs since the\nepoch.",
+     "description": "Output only. The time when this model was created, in millisecs since the epoch.",
      "type": "string",
      "format": "int64"
     },
     "lastModifiedTime": {
-     "description": "Output only. The time when this model was last modified, in millisecs\nsince the epoch.",
+     "description": "Output only. The time when this model was last modified, in millisecs since the epoch.",
      "type": "string",
      "format": "int64"
     },
     "description": {
-     "description": "[Optional] A user-friendly description of this model.",
+     "description": "Optional. A user-friendly description of this model.",
      "type": "string"
     },
     "friendlyName": {
-     "description": "[Optional] A descriptive name for this model.",
+     "description": "Optional. A descriptive name for this model.",
      "type": "string"
     },
     "labels": {
-     "description": "[Optional] The labels associated with this model. You can use these to\norganize and group your models. Label keys and values can be no longer\nthan 63 characters, can only contain lowercase letters, numeric\ncharacters, underscores and dashes. International characters are allowed.\nLabel values are optional. Label keys must start with a letter and each\nlabel in the list must have a different key.",
+     "description": "The labels associated with this model. You can use these to organize\nand group your models. Label keys and values can be no longer\nthan 63 characters, can only contain lowercase letters, numeric\ncharacters, underscores and dashes. International characters are allowed.\nLabel values are optional. Label keys must start with a letter and each\nlabel in the list must have a different key.",
      "type": "object",
      "additionalProperties": {
       "type": "string"
      }
     },
     "expirationTime": {
-     "description": "[Optional] The time when this model expires, in milliseconds since the\nepoch. If not present, the model will persist indefinitely. Expired models\nwill be deleted and their storage reclaimed.  The defaultTableExpirationMs\nproperty of the encapsulating dataset can be used to set a default\nexpirationTime on newly created models.",
+     "description": "Optional. The time when this model expires, in milliseconds since the epoch.\nIf not present, the model will persist indefinitely. Expired models\nwill be deleted and their storage reclaimed.  The defaultTableExpirationMs\nproperty of the encapsulating dataset can be used to set a default\nexpirationTime on newly created models.",
      "type": "string",
      "format": "int64"
     },
     "location": {
      "description": "Output only. The geographic location where the model resides. This value\nis inherited from the dataset.",
      "type": "string"
+    },
+    "encryptionConfiguration": {
+     "description": "Custom encryption configuration (e.g., Cloud KMS keys). This shows the\nencryption configuration of the model data while stored in BigQuery\nstorage.",
+     "$ref": "EncryptionConfiguration"
     },
     "modelType": {
      "description": "Output only. Type of the model resource.",
@@ -2689,7 +2774,7 @@
      ]
     },
     "trainingRuns": {
-     "description": "Output only. Information for all training runs in increasing order of\nstart_time.",
+     "description": "Output only. Information for all training runs in increasing order of start_time.",
      "type": "array",
      "items": {
       "$ref": "TrainingRun"
@@ -2708,25 +2793,6 @@
      "items": {
       "$ref": "StandardSqlField"
      }
-    }
-   }
-  },
-  "ModelReference": {
-   "id": "ModelReference",
-   "description": "Id path of a model.",
-   "type": "object",
-   "properties": {
-    "projectId": {
-     "description": "[Required] The ID of the project containing this model.",
-     "type": "string"
-    },
-    "datasetId": {
-     "description": "[Required] The ID of the dataset containing this model.",
-     "type": "string"
-    },
-    "modelId": {
-     "description": "[Required] The ID of the model. The ID must contain only\nletters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum\nlength is 1,024 characters.",
-     "type": "string"
     }
    }
   },
@@ -3442,7 +3508,7 @@
      "$ref": "RoutineReference"
     },
     "routineType": {
-     "description": "Required.",
+     "description": "Required. The type of routine.",
      "enumDescriptions": [
       "",
       "Non-builtin permanent scalar function.",
@@ -3500,6 +3566,10 @@
     "definitionBody": {
      "description": "Required. The body of the routine.\n\nFor functions, this is the expression in the AS clause.\n\nIf language=SQL, it is the substring inside (but excluding) the\nparentheses. For example, for the function created with the following\nstatement:\n\n`CREATE FUNCTION JoinLines(x string, y string) as (concat(x, \"\\n\", y))`\n\nThe definition_body is `concat(x, \"\\n\", y)` (\\n is not replaced with\nlinebreak).\n\nIf language=JAVASCRIPT, it is the evaluated string in the AS clause.\nFor example, for the function created with the following statement:\n\n`CREATE FUNCTION f() RETURNS STRING LANGUAGE js AS 'return \"\\n\";\\n'`\n\nThe definition_body is\n\n`return \"\\n\";\\n`\n\nNote that both \\n are replaced with linebreaks.",
      "type": "string"
+    },
+    "description": {
+     "description": "Optional. [Experimental] The description of the routine if defined.",
+     "type": "string"
     }
    }
   },
@@ -3509,7 +3579,7 @@
    "type": "object",
    "properties": {
     "name": {
-     "description": "Optional. The name of this argument. Can be absent for function return\nargument.",
+     "description": "Optional. The name of this argument. Can be absent for function return argument.",
      "type": "string"
     },
     "argumentKind": {
@@ -4511,21 +4581,21 @@
      "httpMethod": "GET",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the requested model.",
+       "description": "Required. Project ID of the requested model.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the requested model.",
+       "description": "Required. Dataset ID of the requested model.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "modelId": {
-       "description": "Model ID of the requested model.",
+       "description": "Required. Model ID of the requested model.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
@@ -4555,14 +4625,14 @@
      "httpMethod": "GET",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the models to list.",
+       "description": "Required. Project ID of the models to list.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the models to list.",
+       "description": "Required. Dataset ID of the models to list.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
@@ -4602,21 +4672,21 @@
      "httpMethod": "PATCH",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the model to patch.",
+       "description": "Required. Project ID of the model to patch.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the model to patch.",
+       "description": "Required. Dataset ID of the model to patch.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "modelId": {
-       "description": "Model ID of the model to patch.",
+       "description": "Required. Model ID of the model to patch.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
@@ -4647,21 +4717,21 @@
      "httpMethod": "DELETE",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the model to delete.",
+       "description": "Required. Project ID of the model to delete.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the model to delete.",
+       "description": "Required. Dataset ID of the model to delete.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "modelId": {
-       "description": "Model ID of the model to delete.",
+       "description": "Required. Model ID of the model to delete.",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
@@ -4690,21 +4760,21 @@
      "httpMethod": "GET",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the requested routine",
+       "description": "Required. Project ID of the requested routine",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the requested routine",
+       "description": "Required. Dataset ID of the requested routine",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "routineId": {
-       "description": "Routine ID of the requested routine",
+       "description": "Required. Routine ID of the requested routine",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
@@ -4740,14 +4810,14 @@
      "httpMethod": "POST",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the new routine",
+       "description": "Required. Project ID of the new routine",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the new routine",
+       "description": "Required. Dataset ID of the new routine",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
@@ -4777,21 +4847,21 @@
      "httpMethod": "PUT",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the routine to update",
+       "description": "Required. Project ID of the routine to update",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the routine to update",
+       "description": "Required. Dataset ID of the routine to update",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "routineId": {
-       "description": "Routine ID of the routine to update",
+       "description": "Required. Routine ID of the routine to update",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
@@ -4822,21 +4892,21 @@
      "httpMethod": "DELETE",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the routine to delete",
+       "description": "Required. Project ID of the routine to delete",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the routine to delete",
+       "description": "Required. Dataset ID of the routine to delete",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "routineId": {
-       "description": "Routine ID of the routine to delete",
+       "description": "Required. Routine ID of the routine to delete",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
@@ -4861,14 +4931,14 @@
      "httpMethod": "GET",
      "parameters": {
       "projectId": {
-       "description": "Project ID of the routines to list",
+       "description": "Required. Project ID of the routines to list",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",
        "type": "string"
       },
       "datasetId": {
-       "description": "Dataset ID of the routines to list",
+       "description": "Required. Dataset ID of the routines to list",
        "location": "path",
        "required": true,
        "pattern": "^[^/]+$",

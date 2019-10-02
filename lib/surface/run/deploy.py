@@ -170,6 +170,7 @@ class Deploy(base.Command):
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
+    flags.AddMaxInstancesFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -232,7 +233,7 @@ class AlphaDeploy(Deploy):
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
     # Flags not specific to any platform
-    flags.AddScalingFlags(parser)
+    flags.AddMinInstancesFlag(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
 

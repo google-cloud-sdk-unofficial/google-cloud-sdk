@@ -58,7 +58,7 @@ class Create(base.Command):
             args, messages, holder),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
-        resources=flags.TranslateResourcesArg(messages, args.resources),
+        resources=flags.TranslateResourcesArgGroup(messages, args)
     )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,

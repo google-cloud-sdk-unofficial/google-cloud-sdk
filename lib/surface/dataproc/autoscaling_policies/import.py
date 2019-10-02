@@ -63,6 +63,13 @@ class ImportBeta(base.Command):
   This command does not allow output only fields, such as policy id and resource
   name. It populates the id field based on the resource name specified as the
   first command line argument.
+
+  ## EXAMPLES
+
+  The following command creates or updates the contents of autoscaling policy
+  `example-autoscaling-policy` based on a yaml file:
+
+    $ {command} example-autoscaling-policy --source=saved-policy.yaml
   """
 
   @staticmethod
@@ -85,6 +92,13 @@ class ImportGa(base.Command):
   This command does not allow output only fields, such as policy id and resource
   name. It populates the id field based on the resource name specified as the
   first command line argument.
+
+  ## EXAMPLES
+
+  The following command creates or updates the contents of autoscaling policy
+  `example-autoscaling-policy` based on a yaml file:
+
+    $ {command} example-autoscaling-policy --source=saved-policy.yaml
   """
 
   @staticmethod

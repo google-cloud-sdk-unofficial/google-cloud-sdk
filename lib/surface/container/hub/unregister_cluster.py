@@ -26,6 +26,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
+# LINT.IfChange
 class UnregisterCluster(base.DeleteCommand):
   r"""Unregisters a cluster from Google Cloud Platform.
 
@@ -115,3 +116,4 @@ class UnregisterCluster(base.DeleteCommand):
       raise exceptions.Error(
           'You are not authorized to unregister clusters from project [{}]. '
           'Underlying error: {}'.format(project, e))
+# LINT.ThenChange(../memberships/unregister.py)

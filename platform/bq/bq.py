@@ -545,11 +545,28 @@ def _PrintDryRunInfo(job):
           (num_bytes,)))
 
 
-def _PrintFormattedJsonObject(obj):
-  if FLAGS.format == 'prettyjson':
+def _PrintFormattedJsonObject(obj, default_format='json'):
+  """Prints obj in a JSON format according to the "--format" flag.
+
+  Args:
+    obj: The object to print.
+    default_format: The format to use if the "--format" flag does not specify a
+      valid json format: 'json' or 'prettyjson'.
+  """
+  json_formats = ['json', 'prettyjson']
+  if FLAGS.format in json_formats:
+    use_format = FLAGS.format
+  else:
+    use_format = default_format
+
+  if use_format == 'json':
+    print(json.dumps(obj, separators=(',', ':')))
+  elif use_format == 'prettyjson':
     print(json.dumps(obj, sort_keys=True, indent=2))
   else:
-    print(json.dumps(obj, separators=(',', ':')))
+    raise ValueError(
+        'Invalid json format for printing: \'%s\', expected one of: %s' %
+        (use_format, json_formats))
 
 
 def _GetJobIdFromFlags():
@@ -1336,8 +1353,7 @@ class _Load(BigqueryCmd):
         'Enables time based partitioning on the table and sets the number of '
         'seconds for which to keep the storage for the partitions in the table.'
         ' The storage in a partition will have an expiration time of its '
-        'partition time plus this value. A negative number means no '
-        'expiration.',
+        'partition time plus this value.',
         flag_values=fv)
     flags.DEFINE_string(
         'range_partitioning',
@@ -1866,8 +1882,7 @@ class _Query(BigqueryCmd):
         'Enables time based partitioning on the table and sets the number of '
         'seconds for which to keep the storage for the partitions in the table.'
         ' The storage in a partition will have an expiration time of its '
-        'partition time plus this value. A negative number means no '
-        'expiration.',
+        'partition time plus this value.',
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_field',
@@ -2103,8 +2118,67 @@ class _Query(BigqueryCmd):
           BigqueryClient.ReadSchema(self.destination_schema))
 
   def _PrintQueryJobResults(self, client, job):
+    if job['statistics']['query']['statementType'] == 'SCRIPT':
+      # Fetch one more child job than the maximum, so we can tell if some of the
+      # child jobs are missing.
+      child_jobs = list(
+          client.ListJobs(
+              reference=bigquery_client.ApiClientHelper.ProjectReference.Create(
+                  projectId=job['jobReference']['projectId']),
+              max_results=self.max_child_jobs + 1,
+              all_users=False,
+              min_creation_time=None,
+              max_creation_time=None,
+              page_token=None,
+              parent_job_id=job['jobReference']['jobId']))
+      child_jobs.sort(key=lambda job: job['statistics']['creationTime'])
+      if len(child_jobs) == self.max_child_jobs + 1:
+        # The number of child jobs exceeds the maximum number to fetch.  There
+        # is no way to tell which child jobs are missing, so just display the
+        # final result of the script.
+        sys.stderr.write(
+            'Showing only the final result because the number of child jobs '
+            'exceeds --max_child_jobs (%s).\n' % self.max_child_jobs)
+        self.PrintNonScriptQueryJobResults(client, job)
+        return
+      # To reduce verbosity, only show the results for statements, not
+      # expressions.
+      statement_child_jobs = [job for job in child_jobs if job
+                              .get('statistics', {}).get('scriptStatistics', {})
+                              .get('evaluationKind', '') == 'STATEMENT']
+      is_json = FLAGS.format == 'json' or FLAGS.format == 'prettyjson'
+      if is_json:
+        sys.stdout.write('[')
+      for (i, child_job_info) in enumerate(statement_child_jobs):
+        if is_json:
+          if i > 0:
+            sys.stdout.write(',\n')
+        else:
+          stack_frames = (
+              child_job_info.get('statistics',
+                                 {}).get('scriptStatistics',
+                                         {}).get('stackFrames', []))
+          if len(stack_frames) <= 0:
+            break
+          sys.stdout.write('%s; ' % stack_frames[0].get('text', ''))
+          if len(stack_frames) >= 2:
+            sys.stdout.write('\n')
+          # Print stack traces
+          for stack_frame in stack_frames:
+            sys.stdout.write(
+                '-- at %s[%d:%d]\n' %
+                (stack_frame.get('procedureId', ''), stack_frame['startLine'],
+                 stack_frame['startColumn']))
+        self.PrintNonScriptQueryJobResults(client, child_job_info)
+      if is_json:
+        sys.stdout.write(']\n')
+    else:
+      self.PrintNonScriptQueryJobResults(client, job)
+
+  def PrintNonScriptQueryJobResults(self, client, job):
     printable_job_info = client.FormatJobInfo(job)
-    if not _IsSuccessfulDmlOrDdlJob(printable_job_info):
+    if not BigqueryClient.IsFailedJob(job) and not _IsSuccessfulDmlOrDdlJob(
+        printable_job_info):
       # ReadSchemaAndJobRows can handle failed jobs, but cannot handle
       # a successful DML job if the destination table is already deleted.
       # DML and DDL do not have query result, so skip ReadSchemaAndJobRows.
@@ -2188,7 +2262,7 @@ class _Extract(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'destination_format',
-        None, ['CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO'],
+        None, ['CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO', 'SAVED_MODEL'],
         'The format with which to write the extracted data. Tables with '
         'nested or repeated fields cannot be extracted to CSV.',
         flag_values=fv)
@@ -2204,9 +2278,17 @@ class _Extract(BigqueryCmd):
         'Whether to print header rows for formats that '
         'have headers. Prints headers by default.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_avro_logical_types',
+        None,
+        'If destinationFormat is set to "AVRO", this flag indicates whether to '
+        'enable extracting applicable column types (such as TIMESTAMP) to '
+        'their corresponding AVRO logical types (timestamp-micros), instead of '
+        'only using their raw types (avro-long).',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
-  def RunWithArgs(self, source_table, destination_uris):
+  def RunWithArgs(self, identifier, destination_uris):
     """Perform an extract operation of source_table into destination_uris.
 
     Usage:
@@ -2227,14 +2309,15 @@ class _Extract(BigqueryCmd):
     if FLAGS.location:
       kwds['location'] = FLAGS.location
 
-    table_reference = client.GetTableReference(source_table)
+    reference = client.GetTableReference(identifier)
     job = client.Extract(
-        table_reference,
+        reference,
         destination_uris,
         print_header=self.print_header,
         field_delimiter=_NormalizeFieldDelimiter(self.field_delimiter),
         destination_format=self.destination_format,
         compression=self.compression,
+        use_avro_logical_types=self.use_avro_logical_types,
         **kwds)
     if FLAGS.sync:
       # If we are here, the job succeeded, but print warnings if any.
@@ -2266,8 +2349,7 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
         'Enables time based partitioning on the table and sets the number of '
         'seconds for which to keep the storage for the partitions in the table.'
         ' The storage in a partition will have an expiration time of its '
-        'partition time plus this value. A negative number means no '
-        'expiration.',
+        'partition time plus this value.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -2312,9 +2394,8 @@ class _Partition(BigqueryCmd):  # pylint: disable=missing-docstring
     destination_dataset = destination_table.GetDatasetReference()
 
     BigqueryClient.ConfigureFormatter(formatter, TableReference)
-    results = list(
-        map(client.FormatTableInfo,
-            client.ListTables(source_dataset, max_results=1000 * 1000)))
+    results = map(client.FormatTableInfo,
+                  client.ListTables(source_dataset, max_results=1000 * 1000))
 
     dates = []
     representative_table = None
@@ -2526,6 +2607,12 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'List all reservation grants for given project/location or '
         'reservation.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'parent_job_id',
+        None,
+        'Only show jobs which are children of this parent job; if omitted, '
+        'shows all jobs which have no parent.',
+        flag_values=fv)
     flags.DEFINE_boolean(
         'connection', None,
         'List all connections for given project/location',
@@ -2614,7 +2701,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
             all_users=self.a,
             min_creation_time=self.min_creation_time,
             max_creation_time=self.max_creation_time,
-            page_token=page_token
+            page_token=page_token,
+            parent_job_id=self.parent_job_id
             )
         assert object_type is not None
         _PrintObjectsArrayWithToken(results, object_type)
@@ -2625,7 +2713,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           all_users=self.a,
           min_creation_time=self.min_creation_time,
           max_creation_time=self.max_creation_time,
-          page_token=page_token
+          page_token=page_token,
+          parent_job_id=self.parent_job_id
       )
     elif self.m:
       object_type = ModelReference
@@ -2844,7 +2933,7 @@ class _Delete(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'force',
-        False,
+        None,
         "Ignore existing tables and datasets, don't prompt.",
         short_name='f',
         flag_values=fv)
@@ -2884,7 +2973,7 @@ class _Delete(BigqueryCmd):
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier):
-    """Delete the dataset, table, or transfer config described by identifier.
+    """Delete the dataset, table, transfer config, or slot pool described by identifier.
 
     Always requires an identifier, unlike the show and ls commands.
     By default, also requires confirmation before deleting. Supports
@@ -2928,7 +3017,7 @@ class _Delete(BigqueryCmd):
         try:
           reference = client.GetSlotPoolReference(
               identifier=identifier, default_location=FLAGS.location)
-          client.DeleteSlotPool(reference)
+          client.DeleteSlotPool(reference, self.force)
           print("Slot pool '%s' successfully deleted." % identifier)
         except BaseException as e:
           raise bigquery_client.BigqueryError(
@@ -3150,14 +3239,16 @@ def _ParseClustering(clustering_fields=None):
     clustering_fields: Comma-separated field names.
 
   Returns:
-    Clustering if any of the arguments is not None, otherwise None.
+    Clustering if any of the arguments is not None, otherwise None. Special
+    case if clustering_fields is passed in as an empty string instead of None,
+    in which case we'll return {}, to support the scenario where user wants to
+    update a table and remove the clustering spec.
   """
 
-  clustering = {}
-  key_field = 'fields'
-  if clustering_fields:
-    clustering[key_field] = clustering_fields.split(',')
-    return clustering
+  if clustering_fields == '':  # pylint: disable=g-explicit-bool-comparison
+    return {}
+  elif clustering_fields is not None:
+    return {'fields': clustering_fields.split(',')}
   else:
     return None
 
@@ -3394,8 +3485,7 @@ class _Make(BigqueryCmd):
         'Enables time based partitioning on the table and sets the number of '
         'seconds for which to keep the storage for the partitions in the table.'
         ' The storage in a partition will have an expiration time of its '
-        'partition time plus this value. A negative number means no '
-        'expiration.',
+        'partition time plus this value.',
         flag_values=fv)
     flags.DEFINE_string(
         'time_partitioning_field',
@@ -3608,8 +3698,8 @@ class _Make(BigqueryCmd):
               name=data_sources_reference).execute()
         except:
           raise bigquery_client.BigqueryNotFoundError(
-              'Unknown data source %r' % (self.data_source),
-              {'reason': 'notFound'}, [])
+              'Unknown data source %r. Please make sure BQ Data Transfer API is enabled in Cloud Console, and the data source is enrolled in Cloud Marketplace.'
+              % (self.data_source), {'reason': 'notFound'}, [])
         credentials = transfer_client.projects().dataSources().checkValidCreds(
             name=data_sources_reference, body={}).execute()
       else:
@@ -4013,7 +4103,8 @@ class _Update(BigqueryCmd):
         None,
         'Comma separated field names. Can only be specified for time based '
         'partitioned tables. Data will be first partitioned and subsequently "'
-        'clustered on these fields.',
+        'clustered on these fields. Set this to an empty string to remove '
+        'clustering on a table.',
         flag_values=fv)
     flags.DEFINE_string(
         'etag', None, 'Only update if etag matches.', flag_values=fv)
@@ -4993,6 +5084,147 @@ class _Wait(BigqueryCmd):  # pylint: disable=missing-docstring
     return 1 if self.fail_on_error else 0
 
 
+class _IamPolicyCmd(BigqueryCmd):
+  """Common super class for _SetIamPolicy and _GetIamPolicy.
+
+  Both commands use the same flags and identifier decoding logic, which they
+  inherit from this class.
+  """
+
+  def __init__(self, name, fv, verb):
+    """Initialize.
+
+    Args:
+      name: the command name string to bind to this handler class.
+      fv: the FlagValues flag-registry object.
+      verb: the verb string ("Set" or "Get") to print in various descriptions.
+    """
+    super(_IamPolicyCmd, self).__init__(name, fv)
+
+    # The shell doesn't currently work with commands containing hyphens. That
+    # requires some internal rewriting logic.
+    self.surface_in_shell = False
+
+    flags.DEFINE_boolean(
+        'dataset',
+        False,
+        '%s IAM policy for dataset described by this identifier.' % verb,
+        short_name='d',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'table',
+        False,
+        '%s IAM policy for table described by this identifier.' % verb,
+        short_name='t',
+        flag_values=fv)
+    self._ProcessCommandRc(fv)
+
+  def GetReferenceFromIdentifier(self, client, identifier):
+    # pylint: disable=g-doc-exception
+    if self.d and self.t:
+      raise app.UsageError('Cannot specify more than one of -d and -t.')
+    if not identifier:
+      raise app.UsageError('Must provide an identifier for %s.' %
+                           (self._command_name,))
+
+    if self.t:
+      reference = client.GetTableReference(identifier)
+    elif self.d:
+      reference = client.GetDatasetReference(identifier)
+    else:
+      reference = client.GetReference(identifier)
+      _Typecheck(
+          reference, (DatasetReference, TableReference),
+          'Invalid identifier "%s" for %s.' % (identifier, self._command_name))
+    return reference
+
+
+class _GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
+  usage = """get-iam-policy [(-d|-t)] <identifier>"""
+
+  def __init__(self, name, fv):
+    super(_GetIamPolicy, self).__init__(name, fv, 'Get')
+
+  def RunWithArgs(self, identifier):
+    """Get the IAM policy for a resource.
+
+    Gets the IAM policy for a dataset or table resource, and prints it to
+    stdout. The policy is in JSON format.
+
+    Examples:
+      bq get-iam-policy ds
+      pq get-iam-policy proj:ds
+      bq get-iam-policy ds.table
+      bq get-iam-policy --project_id=proj -t ds.table
+
+    Note: As of September, 2019 this command is an ALPHA feature. It is only
+    enabled for customer's projects that are on the feature's ALPHA list until
+    it is released as a public generally-available feature. This command may
+    change before the public release. Users who need to get access controls for
+    BigQuery resources in projects that are not enabled for this ALPHA may still
+    use the 'gcloud projects get-iam-policy' and 'bq show' commands to get
+    access controls on projects and datasets, respectively.
+    """
+    client = Client.Get()
+    reference = self.GetReferenceFromIdentifier(client, identifier)
+    result = None
+    if isinstance(reference, TableReference):
+      result = client.GetTableIAMPolicy(reference)
+    elif isinstance(reference, DatasetReference):
+      result = client.GetDatasetIAMPolicy(reference)
+    _PrintFormattedJsonObject(result, default_format='prettyjson')
+
+
+class _SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
+  usage = """set-iam-policy [(-d|-t)] <identifier> <filename>"""
+
+  def __init__(self, name, fv):
+    super(_SetIamPolicy, self).__init__(name, fv, 'Set')
+
+  def RunWithArgs(self, identifier, filename):
+    """Set the IAM policy for a resource.
+
+    Sets the IAM policy for a dataset or table resource. After setting the
+    policy, the new policy is printed to stdout. Policies are in JSON format.
+
+    If the 'etag' field is present in the policy, it must match the value in the
+    current policy, which can be obtained with 'bq get-iam-policy'. Otherwise
+    this command will fail. This feature allows users to prevent concurrent
+    updates.
+
+    Usage:
+    set-iam-policy <identifier> <filename>
+
+    The <identifier> can be an identifier for a table or dataset.
+
+    The <filename> is the name of a file containing the policy in JSON format.
+
+    Examples:
+      bq set-iam-policy ds /tmp/policy.json
+      pq set-iam-policy proj:ds /tmp/policy.json
+      bq set-iam-policy ds.table /tmp/policy.json
+      bq set-iam-policy --project_id=proj -t ds.table /tmp/policy.json
+
+    Note: As of September, 2019 this command is an ALPHA feature. It is only
+    enabled for customer's projects that are on the feature's ALPHA list until
+    it is released as a public generally-available feature. This command may
+    change before the public release. Users who need to set access controls for
+    BigQuery resources in projects that are not enabled for this ALPHA may still
+    use the 'gcloud projects set-iam-policy' and 'bq update' commands to set
+    access controls on projects and datasets, respectively.
+    """
+    client = Client.Get()
+    reference = self.GetReferenceFromIdentifier(client, identifier)
+    with open(filename, 'r') as file_obj:
+      policy = json.load(file_obj)
+      result = None
+      if isinstance(reference, TableReference):
+        result = client.SetTableIAMPolicy(reference, policy)
+      elif isinstance(reference, DatasetReference):
+        result = client.SetDatasetIAMPolicy(reference, policy)
+      _PrintFormattedJsonObject(result, default_format='prettyjson')
+
+
 # pylint: disable=g-bad-name
 class CommandLoop(cmd.Cmd):
   """Instance of cmd.Cmd built to work with NewCmd."""
@@ -5503,6 +5735,7 @@ def main(unused_argv):
         'cancel': _Cancel,
         'cp': _Copy,
         'extract': _Extract,
+        'get-iam-policy': _GetIamPolicy,
         'head': _Head,
         'init': _Init,
         'insert': _Insert,
@@ -5513,6 +5746,7 @@ def main(unused_argv):
         'partition': _Partition,
         'query': _Query,
         'rm': _Delete,
+        'set-iam-policy': _SetIamPolicy,
         'shell': _Repl,
         'show': _Show,
         'update': _Update,
@@ -5536,10 +5770,6 @@ def main(unused_argv):
       if not FLAGS.headless:
         pdb.post_mortem()
     sys.exit(1)
-
-
-
-
 
 
 # pylint: disable=g-bad-name

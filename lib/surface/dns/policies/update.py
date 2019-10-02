@@ -63,6 +63,7 @@ class UpdateGA(base.UpdateCommand):
     flags.GetPolicyNetworksArg().AddToParser(parser)
     flags.GetPolicyInboundForwardingArg().AddToParser(parser)
     flags.GetPolicyAltNameServersnArg().AddToParser(parser)
+    flags.GetPolicyLoggingArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -76,6 +77,7 @@ class UpdateGA(base.UpdateCommand):
 
     if not (args.IsSpecified('networks') or args.IsSpecified('description') or
             args.IsSpecified('enable_inbound_forwarding') or
+            args.IsSpecified('enable_logging') or
             args.IsSpecified('alternative_name_servers')):
       log.status.Print('Nothing to update.')
       return to_update
@@ -95,6 +97,9 @@ class UpdateGA(base.UpdateCommand):
 
     if args.IsSpecified('enable_inbound_forwarding'):
       to_update.enableInboundForwarding = args.enable_inbound_forwarding
+
+    if args.IsSpecified('enable_logging'):
+      to_update.enableLogging = args.enable_logging
 
     if args.IsSpecified('description'):
       to_update.description = args.description
@@ -128,7 +133,6 @@ class Update(UpdateGA):
   @staticmethod
   def Args(parser):
     UpdateGA.ArgsVersioned(parser, version='v1beta2')
-    flags.GetPolicyLoggingArg().AddToParser(parser)
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())

@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.app import deploy_util
 _DETAILED_HELP = {
     'brief': ('Deploy the local code and/or configuration of your app to App '
               'Engine.'),
-    'DESCRIPTION': """\
+    'DESCRIPTION':
+        """\
         This command is used to deploy both code and configuration to the App
         Engine server. As an input it takes one or more ``DEPLOYABLES'' that
         should be uploaded.  A ``DEPLOYABLE'' can be a service's .yaml file or a
@@ -35,19 +36,27 @@ _DETAILED_HELP = {
         files specific to your App Engine environment, refer to
         [](https://cloud.google.com/appengine/docs/standard/python/configuration-files)
         or [](https://cloud.google.com/appengine/docs/flexible/python/configuration-files)).
-        Note, for Java Standard apps, you must add the path to the
+        Note, for Java8 Standard apps, you must add the path to the
         `appengine-web.xml` file inside the WEB-INF directory. {command}
         skips files specified in the .gcloudignore file (see `gcloud topic
         gcloudignore` for more information).
+        For Java11 Standard, you can either use the yaml file, or, if the
+        application is a single self-contained jar, you can give the path to the
+        jar and a simple service configuration will be generated.
         """,
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
         To deploy a single service, run:
 
           $ {command} ~/my_app/app.yaml
 
-        To deploy an App Engine Standard Java service, run:
+        To deploy an App Engine Standard Java8 service, run:
 
           $ {command} ~/my_app/WEB-INF/appengine-web.xml
+
+        To deploy an App Engine Standard Java11 single jar, run:
+
+          $ {command} ~/my_app/my_jar.jar
 
         By default, the service is deployed the current project configured via:
 

@@ -55,7 +55,7 @@ class Update(base.UpdateCommand):
         help=('A new destination for the sink. '
               'If omitted, the sink\'s existing destination is unchanged.'))
     parser.add_argument(
-        '--log-filter', required=False,
+        '--log-filter',
         help=('A new filter expression for the sink. '
               'If omitted, the sink\'s existing filter (if any) is unchanged.'))
     util.AddParentArgs(parser, 'Update a sink')
@@ -95,7 +95,7 @@ class Update(base.UpdateCommand):
     if is_alpha:
       parameter_names.extend(
           ['--dlp-inspect-template', '--dlp-deidentify-template',
-           '--use-partitioned-tables'])
+           '--use-partitioned-tables', '--clear-exclusions'])
       if args.IsSpecified('dlp_inspect_template'):
         dlp_options['inspectTemplateName'] = args.dlp_inspect_template
         update_mask.append('dlp_options.inspect_template_name')
@@ -110,6 +110,9 @@ class Update(base.UpdateCommand):
         bigquery_options['usePartitionedTables'] = args.use_partitioned_tables
         sink_data['bigqueryOptions'] = bigquery_options
         update_mask.append('bigquery_options.use_partitioned_tables')
+
+      if args.IsSpecified('clear_exclusions'):
+        update_mask.append('exclusions')
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
@@ -166,13 +169,11 @@ class UpdateAlpha(Update):
               'are omitted they are unchanged.'))
     dlp_group.add_argument(
         '--dlp-inspect-template',
-        required=False,
         help=('Relative path to a Cloud DLP inspection template resource. For '
               'example "projects/my-project/inspectTemplates/my-template" or '
               '"organizations/my-org/inspectTemplates/my-template".'))
     dlp_group.add_argument(
         '--dlp-deidentify-template',
-        required=False,
         help=('Relative path to a Cloud DLP de-identification template '
               'resource. For example '
               '"projects/my-project/deidentifyTemplates/my-template" or '
@@ -181,13 +182,17 @@ class UpdateAlpha(Update):
     bigquery_group = parser.add_argument_group(
         help='Settings for sink exporting data to BigQuery.')
     bigquery_group.add_argument(
-        '--use-partitioned-tables', required=False, action='store_true',
+        '--use-partitioned-tables', action='store_true',
         help=('If specified, use BigQuery\'s partitioned tables. By default, '
               'Logging creates dated tables based on the log entries\' '
               'timestamps, e.g. \'syslog_20170523\'. Partitioned tables remove '
               'the suffix and special query syntax '
               '(https://cloud.google.com/bigquery/docs/'
               'querying-partitioned-tables) must be used.'))
+
+    parser.add_argument(
+        '--clear-exclusions', action='store_true',
+        help=('Remove all logging exclusions.'))
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

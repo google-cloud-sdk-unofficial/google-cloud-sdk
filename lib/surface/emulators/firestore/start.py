@@ -52,8 +52,8 @@ class Start(base.Command):
         required=False,
         type=lambda arg: arg_parsers.HostPort.Parse(arg, ipv6_enabled=True),
         help='The host:port to which the emulator should be bound. Can '
-        'take the form of a single address (hostname, IPv4, or IPv6) and port:'
-        '\n\n  ADDRESS[:PORT]\n\n'
+        'take the form of a single address (hostname, IPv4, or IPv6) and/or '
+        'port:\n\n  [ADDRESS][:PORT]\n\n'
         'In this format you must enclose IPv6 addresses in square brackets: '
         'e.g.\n\n'
         '  [2001:db8:0:0:0:ff00:42:8329]:8080\n\n'
@@ -64,6 +64,7 @@ class Start(base.Command):
       args.host_port = arg_parsers.HostPort.Parse(
           firestore_util.GetHostPort(), ipv6_enabled=socket.has_ipv6)
     args.host_port.host = args.host_port.host or 'localhost'
+    args.host_port.port = args.host_port.port or '8080'
     firestore_util.ValidateStartArgs(args)
     with firestore_util.StartFirestoreEmulator(args) as proc:
       util.PrefixOutput(proc, 'firestore')

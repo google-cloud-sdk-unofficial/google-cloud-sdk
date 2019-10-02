@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine SSL certificates.
 
@@ -63,8 +63,8 @@ class Delete(base.DeleteCommand):
     return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(Delete):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
   """Delete Google Compute Engine SSL certificates.
 
   *{command}* deletes one or more Google Compute Engine SSL certificates.
@@ -76,9 +76,9 @@ class DeleteAlpha(Delete):
   @classmethod
   def Args(cls, parser):
     cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
-        plural=True, include_alpha=True)
+        plural=True, include_l7_internal_load_balancing=True)
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterAlpha)
+    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterBeta)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

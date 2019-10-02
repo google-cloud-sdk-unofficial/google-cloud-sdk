@@ -32,7 +32,8 @@ from googlecloudsdk.core.resource import resource_projector
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine virtual instance's OS inventory data.
 

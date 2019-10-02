@@ -80,6 +80,7 @@ class Update(base.Command):
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser, add_create=False)
+    flags.AddMaxInstancesFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -155,7 +156,7 @@ class AlphaUpdate(Update):
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
     # Flags not specific to any platform
-    flags.AddScalingFlags(parser)
+    flags.AddMinInstancesFlag(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
 

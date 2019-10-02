@@ -29,7 +29,14 @@ from googlecloudsdk.core import properties
 
 
 class List(base.ListCommand):
-  """List autoscaling policies."""
+  """List autoscaling policies.
+
+  ## EXAMPLES
+
+  The following command lists all autoscaling policies in the project:
+
+    $ {command}
+  """
 
   @staticmethod
   def Args(parser):

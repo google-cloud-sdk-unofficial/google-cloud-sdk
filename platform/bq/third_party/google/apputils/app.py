@@ -133,7 +133,7 @@ def parse_flags_with_usage(args):
   try:
     argv = FLAGS(args)
     return argv
-  except flags.FlagsError, error:
+  except flags.FlagsError as error:
     sys.stderr.write('FATAL Flags parsing error: %s\n' % error)
     sys.stderr.write('Pass --help or --helpshort to see help on flags.\n')
     sys.exit(1)
@@ -201,7 +201,7 @@ def really_start(main=None):
         sys.exit(retval)
       else:
         sys.exit(main(argv))
-  except UsageError, error:
+  except UsageError as error:
     usage(shorthelp=1, detailed_error=error, exitcode=error.exitcode)
 
 
@@ -242,9 +242,9 @@ def _actual_start():
 
   try:
     really_start()
-  except SystemExit, e:
+  except SystemExit as e:
     raise
-  except Exception, e:
+  except Exception as e:
     # Call any installed exception handlers which may, for example,
     # log to a file or send email.
     for handler in EXCEPTION_HANDLERS:
@@ -300,7 +300,7 @@ def usage(shorthelp=0, writeto_stdout=0, detailed_error=None, exitcode=None):
     stdfile.write('\n')
     if detailed_error is not None:
       stdfile.write('\n%s\n' % detailed_error)
-  except IOError, e:
+  except IOError as e:
     # We avoid printing a huge backtrace if we get EPIPE, because
     # "foo.par --help | less" is a frequent use case.
     if e.errno != errno.EPIPE:

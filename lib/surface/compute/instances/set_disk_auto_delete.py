@@ -111,7 +111,8 @@ class SetDiskAutoDelete(base.UpdateCommand):
           })
 
       for disk in replacement.disks:
-        if disk.source == disk_ref.SelfLink():
+        disk_rel_name = resources.ParseURL(disk.source).RelativeName()
+        if disk_rel_name == disk_ref.RelativeName():
           disk.autoDelete = args.auto_delete
           disk_found = True
 

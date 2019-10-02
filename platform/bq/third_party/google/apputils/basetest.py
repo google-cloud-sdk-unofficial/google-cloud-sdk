@@ -567,7 +567,7 @@ class TestCase(unittest.TestCase):
     """
     try:
       callable_obj(*args, **kwargs)
-    except expected_exception, err:
+    except expected_exception as err:
       self.assert_(predicate(err),
                    '%r does not match predicate %r' % (err, predicate))
     else:
@@ -592,7 +592,7 @@ class TestCase(unittest.TestCase):
     """
     try:
       callable_obj(*args, **kwargs)
-    except expected_exception, err:
+    except expected_exception as err:
       actual_exception_message = str(err)
       self.assert_(expected_exception_message == actual_exception_message,
                    'Exception message does not match.\n'
@@ -854,7 +854,7 @@ class CapturedStream(object):
     # Open file to save stream to
     cap_fd = os.open(self._filename,
                      os.O_CREAT | os.O_TRUNC | os.O_WRONLY,
-                     0600)
+                     0o600)
 
     # Send stream to this file
     self._stream.flush()
@@ -869,7 +869,7 @@ class CapturedStream(object):
     # Append stream to file
     cap_fd = os.open(self._filename,
                      os.O_CREAT | os.O_APPEND | os.O_WRONLY,
-                     0600)
+                     0o600)
 
     # Send stream to this file
     self._stream.flush()
@@ -959,7 +959,7 @@ def StopCapturing():
 
 def _WriteTestData(data, filename):
   """Write data into file named filename."""
-  fd = os.open(filename, os.O_CREAT | os.O_TRUNC | os.O_WRONLY, 0600)
+  fd = os.open(filename, os.O_CREAT | os.O_TRUNC | os.O_WRONLY, 0o600)
   os.write(fd, data)
   os.close(fd)
 

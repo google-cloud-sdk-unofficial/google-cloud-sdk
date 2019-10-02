@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UnicodeIsSupported
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine SSL certificate.
@@ -57,7 +57,7 @@ class Describe(base.DescribeCommand):
                                  'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeAlpha(Describe):
   """Describe a Google Compute Engine SSL certificate.
 
@@ -69,7 +69,8 @@ class DescribeAlpha(Describe):
 
   @classmethod
   def Args(cls, parser):
-    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(include_alpha=True)
+    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
+        include_l7_internal_load_balancing=True)
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):

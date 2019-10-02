@@ -52,6 +52,7 @@ When your project is installed, setuptools will generate minimal wrapper scripts
 to call your stub functions, which in turn execv your script modules. That's it!
 """
 
+from __future__ import print_function
 __author__ = 'dborowitz@google.com (Dave Borowitz)'
 
 import os
@@ -119,7 +120,7 @@ def StripQuotes(s):
 
 def PrintOurUsage():
   """Print usage for the stub script."""
-  print 'Stub script %s (auto-generated). Options:' % sys.argv[0]
+  print('Stub script %s (auto-generated). Options:' % sys.argv[0])
   print ('--helpstub               '
          'Show help for stub script.')
   print ('--debug_binary           '
@@ -204,14 +205,14 @@ def RunScriptModule(module):
     args = [sys.executable] + args
 
   if show_command_and_exit:
-    print 'program: "%s"' % program
-    print 'args:', args
+    print('program: "%s"' % program)
+    print('args:', args)
     sys.exit(0)
 
   try:
     sys.stdout.flush()
     os.execv(program, args)
-  except EnvironmentError, e:
+  except EnvironmentError as e:
     if not getattr(e, 'filename', None):
       e.filename = program  # Add info to error message
     raise

@@ -29,6 +29,8 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
+
+# LINT.IfChange
 SERVICE_ACCOUNT_KEY_FILE_FLAG = '--service-account-key-file'
 DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
 
@@ -109,19 +111,6 @@ class RegisterCluster(base.CreateCommand):
         help=textwrap.dedent("""\
         The version of the connect agent to install/upgrade if not using the
         latest connect version.
-          """),
-    )
-    # TODO(b/139814516): remove this flag.
-    parser.add_argument(
-        '--docker-image',
-        type=str,
-        hidden=True,
-        help=textwrap.dedent("""\
-            The image to use for the Connect agent, as it would be passed to the
-            `docker pull` command. The user is responsible for ensuring that
-            this image can be pulled from the cluster that is being registered,
-            and is responsible for maintaining and updating the agent image if
-            a private registry is being used.
           """),
     )
     parser.add_argument(
@@ -222,27 +211,15 @@ class RegisterCluster(base.CreateCommand):
     # install a new agent if necessary.
     if already_exists:
       obj = hub_util.GetMembership(name)
-      # TODO(b/137108762): Use the V1beta1 API after we make it formally public.
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        hub_util.DeployConnectAgentAlpha(
-            args, service_account_key_data, docker_credential_data,
-            upgrade=True)
-      else:
-        hub_util.DeployConnectAgent(
-            args, service_account_key_data, docker_credential_data, name)
+      hub_util.DeployConnectAgent(
+          args, service_account_key_data, docker_credential_data, name)
       return obj
 
     # No membership exists. Attempt to create a new one, and install a new
     # agent.
     try:
-      # TODO(b/137108762): Use the V1beta1 API after we make it formally public.
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        hub_util.DeployConnectAgentAlpha(
-            args, service_account_key_data, docker_credential_data,
-            upgrade=False)
-      else:
-        hub_util.DeployConnectAgent(
-            args, service_account_key_data, docker_credential_data, name)
+      hub_util.DeployConnectAgent(
+          args, service_account_key_data, docker_credential_data, name)
     except:
       hub_util.DeleteMembership(name)
       hub_util.DeleteMembershipResources(kube_client)
@@ -304,3 +281,4 @@ class RegisterCluster(base.CreateCommand):
           .format(registered_membership_project,
                   hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
                   registered_membership_project, context))
+# LINT.ThenChange(../memberships/register.py)

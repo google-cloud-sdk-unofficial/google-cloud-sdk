@@ -541,12 +541,16 @@ def EncodeForPrinting(o):
   # Not all file objects provide an encoding attribute, so we make sure to
   # handle the case where the attribute is completely absent.
   encoding = getattr(sys.stdout, 'encoding', None) or 'ascii'
-  try:
-    s = six.text_type(o)
-  except UnicodeDecodeError:
-    # Try an encoding that has a mapping for every byte value.
-    s = str(o).decode('latin-1')
-  return s.encode(encoding, 'backslashreplace')
+  # We want to prevent conflicts in python2 between formatting
+  # a str type with a unicode type, e.g. b'abc%s' % (u'[unicode]',)
+  # where the byte type will be auto decoded as ascii thus causing
+  # an error.
+  # Thus we only want to encode the object if it's passed in as a
+  # unicode type and the unicode type is not a str type.
+  if isinstance(o, type(u'')) and not isinstance(o, str):
+    return o.encode(encoding, 'backslashreplace')
+  else:
+    return str(o)
 
 
 class BigqueryError(Exception):
@@ -938,6 +942,7 @@ class BigqueryClient(object):
     self._op_bi_reservation_client = None
     self._models_apiclient = None
     self._op_connection_service_client = None
+    self._iam_policy_apiclient = None
     for required_flag in ('api', 'api_version'):
       if required_flag not in kwds:
         raise ValueError('Missing required flag: %s' % (required_flag,))
@@ -945,6 +950,7 @@ class BigqueryClient(object):
         'project_id': '',
         'dataset_id': '',
         'discovery_document': _DEFAULT,
+        'iam_policy_discovery_document': _DEFAULT,
         'job_property': '',
         'trace': None,
         'sync': True,
@@ -1103,6 +1109,33 @@ class BigqueryClient(object):
                     models_discovery_document)
       raise
 
+  def BuildIAMPolicyApiClient(self):
+    """Builds and returns IAM policy API client from discovery document."""
+    http = self.credentials.authorize(self.GetHttp())
+    bigquery_model = BigqueryModel(
+        trace=self.trace)
+    bigquery_http = BigqueryHttp.Factory(
+        bigquery_model,
+    )
+    iam_policy_discovery_document = None
+    try:
+      iam_policy_discovery_document = pkgutil.get_data(
+          'bigquery_client',
+          'discovery_next/iam-policy.json')
+    except IOError:
+      logging.error('Failed to build iam policy discovery document')
+      raise
+    try:
+      return discovery.build_from_document(
+          iam_policy_discovery_document,
+          http=http,
+          model=bigquery_model,
+          requestBuilder=bigquery_http)
+    except Exception:
+      logging.error('Error building from iam policy document: %s',
+                    iam_policy_discovery_document)
+      raise
+
 
   @property
   def apiclient(self):
@@ -1122,6 +1155,12 @@ class BigqueryClient(object):
     if self._routines_apiclient is None:
       self._routines_apiclient = self.BuildDiscoveryNextApiClient()
     return self._routines_apiclient
+
+  def GetIAMPolicyApiClient(self):
+    """Return the apiclient attached to self."""
+    if self._iam_policy_apiclient is None:
+      self._iam_policy_apiclient = self.BuildIAMPolicyApiClient()
+    return self._iam_policy_apiclient
 
   def GetInsertApiClient(self):
     """Return the apiclient that supports insert operation."""
@@ -1857,15 +1896,16 @@ class BigqueryClient(object):
     return client.projects().locations().reservations().slotPools().get(
         name=reference.path()).execute()
 
-  def DeleteSlotPool(self, reference):
+  def DeleteSlotPool(self, reference, force=None):
     """Deletes a slot pool with the given slot pool reference.
 
     Arguments:
       reference: Slot pool to delete.
+      force: Force delete slot pool, ignoring commitment end time.
     """
     client = self.GetReservationApiClient()
     client.projects().locations().reservations().slotPools().delete(
-        name=reference.path()).execute()
+        name=reference.path(), force=force).execute()
 
   def PrepareReservationGrantForCreation(self, reference, reservation_id,
                                          job_type, grantee_type, grantee_id):
@@ -2202,6 +2242,8 @@ class BigqueryClient(object):
         formatter.AddColumns(('Id', 'Model Type', 'Feature Columns',
                               'Label Columns', 'Labels', 'Creation Time',
                               'Expiration Time'))
+        if 'encryptionConfiguration' in object_info:
+          formatter.AddColumns(('kmsKeyName',))
     elif reference_type == ApiClientHelper.RoutineReference:
       if print_format == 'list':
         formatter.AddColumns(('Id', 'Routine Type', 'Language', 'Creation Time',
@@ -2528,6 +2570,8 @@ class BigqueryClient(object):
     if 'labelColumns' in model_info:
       result['Label Columns'] = _FormatStandardSqlFields(
           model_info['labelColumns'])
+    if 'encryptionConfiguration' in model_info:
+      result['kmsKeyName'] = model_info['encryptionConfiguration']['kmsKeyName']
     return result
 
   @staticmethod
@@ -2994,7 +3038,8 @@ class BigqueryClient(object):
       state_filter=None,
       min_creation_time=None,
       max_creation_time=None,
-      all_users=None
+      all_users=None,
+      parent_job_id=None
   ):
     # pylint: disable=g-doc-args
     """Return a list of jobs.
@@ -3011,6 +3056,8 @@ class BigqueryClient(object):
         before or at this timestamp.
       all_users: Whether to list jobs for all users of the project. Requesting
         user must be an owner of the project to list all jobs.
+      parent_job_id: Retrieve only child jobs belonging to this parent; None to
+        retrieve top-level jobs.
     Returns:
       A list of jobs.
     """
@@ -3021,7 +3068,8 @@ class BigqueryClient(object):
         state_filter,
         min_creation_time,
         max_creation_time,
-        all_users
+        all_users,
+        parent_job_id
     )['results']
 
   def ListJobsAndToken(
@@ -3032,7 +3080,8 @@ class BigqueryClient(object):
       state_filter=None,
       min_creation_time=None,
       max_creation_time=None,
-      all_users=None
+      all_users=None,
+      parent_job_id=None
   ):
     # pylint: disable=g-doc-args
     """Return a list of jobs.
@@ -3049,6 +3098,8 @@ class BigqueryClient(object):
         before or at this timestamp.
       all_users: Whether to list jobs for all users of the project. Requesting
         user must be an owner of the project to list all jobs.
+      parent_job_id: Retrieve only child jobs belonging to this parent; None to
+        retrieve top-level jobs.
 
     Returns:
       A dict that contains enytries:
@@ -3070,7 +3121,8 @@ class BigqueryClient(object):
         request,
         projection='full',
         state_filter=state_filter,
-        all_users=all_users
+        all_users=all_users,
+        parent_job_id=parent_job_id
     )
     if min_creation_time is not None:
       request['minCreationTime'] = min_creation_time
@@ -3316,6 +3368,91 @@ class BigqueryClient(object):
         maxResults=max_results,
         pageToken=page_token).execute()
 
+  def GetDatasetIAMPolicy(self, reference):
+    """Gets IAM policy for the given dataset resource.
+
+    Arguments:
+      reference: the DatasetReference for the dataset resource.
+
+    Returns:
+      The IAM policy attached to the given dataset resource.
+
+    Raises:
+      TypeError: if reference is not a DatasetReference.
+    """
+    _Typecheck(
+        reference,
+        ApiClientHelper.DatasetReference,
+        method='GetDatasetIAMPolicy')
+    formatted_resource = ('projects/%s/datasets/%s' %
+                          (reference.projectId, reference.datasetId))
+    return self.GetIAMPolicyApiClient().datasets().getIamPolicy(
+        resource=formatted_resource).execute()
+
+  def GetTableIAMPolicy(self, reference):
+    """Gets IAM policy for the given table resource.
+
+    Arguments:
+      reference: the TableReference for the table resource.
+
+    Returns:
+      The IAM policy attached to the given table resource.
+
+    Raises:
+      TypeError: if reference is not a TableReference.
+    """
+    _Typecheck(
+        reference, ApiClientHelper.TableReference, method='GetTableIAMPolicy')
+    formatted_resource = (
+        'projects/%s/datasets/%s/tables/%s' %
+        (reference.projectId, reference.datasetId, reference.tableId))
+    return self.GetIAMPolicyApiClient().tables().getIamPolicy(
+        resource=formatted_resource).execute()
+
+  def SetDatasetIAMPolicy(self, reference, policy):
+    """Sets IAM policy for the given dataset resource.
+
+    Arguments:
+      reference: the DatasetReference for the dataset resource.
+      policy: The policy string in JSON format.
+
+    Returns:
+      The updated IAM policy attached to the given dataset resource.
+
+    Raises:
+      TypeError: if reference is not a DatasetReference.
+    """
+    _Typecheck(
+        reference,
+        ApiClientHelper.DatasetReference,
+        method='SetDatasetIAMPolicy')
+    formatted_resource = ('projects/%s/datasets/%s' %
+                          (reference.projectId, reference.datasetId))
+    request = {'policy': policy}
+    return self.GetIAMPolicyApiClient().datasets().setIamPolicy(
+        body=request, resource=formatted_resource).execute()
+
+  def SetTableIAMPolicy(self, reference, policy):
+    """Sets IAM policy for the given table resource.
+
+    Arguments:
+      reference: the TableReference for the table resource.
+      policy: The policy string in JSON format.
+
+    Returns:
+      The updated IAM policy attached to the given table resource.
+
+    Raises:
+      TypeError: if reference is not a TableReference.
+    """
+    _Typecheck(
+        reference, ApiClientHelper.TableReference, method='SetTableIAMPolicy')
+    formatted_resource = (
+        'projects/%s/datasets/%s/tables/%s' %
+        (reference.projectId, reference.datasetId, reference.tableId))
+    request = {'policy': policy}
+    return self.GetIAMPolicyApiClient().tables().setIamPolicy(
+        body=request, resource=formatted_resource).execute()
 
   #################################
   ##       Transfer run
@@ -3944,7 +4081,10 @@ class BigqueryClient(object):
     if range_partitioning is not None:
       table['rangePartitioning'] = range_partitioning
     if clustering is not None:
-      table['clustering'] = clustering
+      if clustering == {}:  # pylint: disable=g-explicit-bool-comparison
+        table['clustering'] = None
+      else:
+        table['clustering'] = clustering
     if require_partition_filter is not None:
       table['requirePartitionFilter'] = require_partition_filter
 
@@ -4961,8 +5101,7 @@ class BigqueryClient(object):
         min_completion_ratio=min_completion_ratio,
         range_partitioning=range_partitioning)
     request = {'query': query_config}
-    _ApplyParameters(request, dry_run=dry_run,
-                     labels=labels)
+    _ApplyParameters(request, dry_run=dry_run, labels=labels)
     return self.ExecuteJob(request, **kwds)
 
   def Load(
@@ -5093,25 +5232,33 @@ class BigqueryClient(object):
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
 
-  def Extract(self, source_table, destination_uris,
-              print_header=None, field_delimiter=None,
-              destination_format=None, compression=None,
-              **kwds):
+  def Extract(
+      self,
+      reference,
+      destination_uris,
+      print_header=None,
+      field_delimiter=None,
+      destination_format=None,
+      compression=None,
+      use_avro_logical_types=None,
+      **kwds):
     """Extract the given table from BigQuery.
 
     The job will execute synchronously if sync=True is provided as an
     argument or if self.sync is true.
 
     Args:
-      source_table: TableReference to read data from.
+      reference: TableReference to read data from.
       destination_uris: String specifying one or more destination locations,
          separated by commas.
       print_header: Optional. Whether to print out a header row in the results.
       field_delimiter: Optional. Specifies the single byte field delimiter.
       destination_format: Optional. Format to extract table to. May be "CSV",
-         "AVRO", or "NEWLINE_DELIMITED_JSON".
+         "AVRO" or "NEWLINE_DELIMITED_JSON".
       compression: Optional. The compression type to use for exported files.
         Possible values include "GZIP" and "NONE". The default value is NONE.
+      use_avro_logical_types: Optional. Whether to use avro logical types for
+        applicable column types on extract jobs.
       **kwds: Passed on to self.ExecuteJob.
 
     Returns:
@@ -5120,19 +5267,25 @@ class BigqueryClient(object):
     Raises:
       BigqueryClientError: if required parameters are invalid.
     """
-    _Typecheck(source_table, ApiClientHelper.TableReference)
     uris = destination_uris.split(',')
     for uri in uris:
       if not uri.startswith(_GCS_SCHEME_PREFIX):
         raise BigqueryClientError(
             'Illegal URI: {}. Extract URI must start with "{}".'.format(
                 uri, _GCS_SCHEME_PREFIX))
-    extract_config = {'sourceTable': dict(source_table)}
+    if isinstance(reference, ApiClientHelper.TableReference):
+      extract_config = {'sourceTable': dict(reference)}
+    else:
+      raise TypeError('Type of %r should be one of %s' % (
+          reference,
+          [
+              ApiClientHelper.TableReference
+          ]))
     _ApplyParameters(
         extract_config, destination_uris=uris,
         destination_format=destination_format,
         print_header=print_header, field_delimiter=field_delimiter,
-        compression=compression
+        compression=compression, use_avro_logical_types=use_avro_logical_types
     )
     return self.ExecuteJob(configuration={'extract': extract_config}, **kwds)
 

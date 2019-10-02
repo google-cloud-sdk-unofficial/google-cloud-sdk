@@ -136,27 +136,21 @@ class Create(base.CreateCommand):
                  _GetTopicPresentationSpec()])
     labels_util.AddCreateLabelsFlags(parser)
 
-  def Run(self, args):
-    return _Run(args, enable_labels=True, enable_kms=True)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Creates one or more Cloud Pub/Sub topics."""
-
-  @classmethod
-  def Args(cls, parser):
-    resource_args.AddResourceArgs(
-        parser, [_GetKmsKeyPresentationSpec(),
-                 _GetTopicPresentationSpec()])
-    labels_util.AddCreateLabelsFlags(parser)
-
     parser.add_argument(
         '--message-storage-policy-allowed-regions',
         metavar='REGION',
         type=arg_parsers.ArgList(),
         help='A list of one or more Cloud regions where messages are allowed to'
         ' be stored at rest.')
+
+  def Run(self, args):
+    return _Run(
+        args, enable_labels=True, enable_kms=True, enable_geofencing=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Creates one or more Cloud Pub/Sub topics."""
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
@@ -169,27 +163,5 @@ class CreateBeta(Create):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Creates one or more Cloud Pub/Sub topics."""
-
-  @classmethod
-  def Args(cls, parser):
-    resource_args.AddResourceArgs(
-        parser, [_GetKmsKeyPresentationSpec(),
-                 _GetTopicPresentationSpec()])
-    labels_util.AddCreateLabelsFlags(parser)
-    parser.add_argument(
-        '--message-storage-policy-allowed-regions',
-        metavar='REGION',
-        type=arg_parsers.ArgList(),
-        help='A list of one or more Cloud regions where messages are allowed to'
-        ' be stored at rest.')
-
-  def Run(self, args):
-    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(
-        args,
-        enable_labels=True,
-        enable_kms=True,
-        enable_geofencing=True,
-        legacy_output=legacy_output)

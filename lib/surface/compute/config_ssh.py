@@ -289,14 +289,14 @@ class ConfigSSH(base.Command):
         help=('If provided, any changes made to the SSH config file by this '
               'tool are reverted.'))
 
-  def GetInstances(self, client):
-    """Returns a generator of all instances in the project."""
+  def GetRunningInstances(self, client):
+    """Returns a generator of all running instances in the project."""
     errors = []
     instances = lister.GetZonalResources(
         service=client.apitools_client.instances,
         project=properties.VALUES.core.project.GetOrFail(),
         requested_zones=None,
-        filter_expr=None,
+        filter_expr='status eq RUNNING',
         http=client.apitools_client.http,
         batch_url=client.batch_url,
         errors=errors)
@@ -336,7 +336,7 @@ class ConfigSSH(base.Command):
     else:
       ssh_helper.EnsureSSHKeyIsInProject(
           client, ssh.GetDefaultSshUsername(warn_on_account_user=True), None)
-      instances = list(self.GetInstances(client))
+      instances = list(self.GetRunningInstances(client))
       if instances:
         compute_section = _BuildComputeSection(
             instances, ssh_helper.keys.key_file, ssh.KnownHosts.DEFAULT_PATH)
@@ -388,5 +388,5 @@ class ConfigSSH(base.Command):
     elif not instances and not args.remove:
       log.warning(
           'No host aliases were added to your SSH configs because you do not '
-          'have any instances. Try running this command again after creating '
-          'some instances.')
+          'have any running instances. Try running this command again after '
+          'running some instances.')

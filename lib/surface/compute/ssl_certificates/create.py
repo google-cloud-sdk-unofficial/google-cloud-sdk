@@ -26,15 +26,17 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates
 from googlecloudsdk.core.util import files
 
 
-def _Args(parser, include_alpha=False, support_managed_certs=False):
+def _Args(parser,
+          include_l7_internal_load_balancing=False,
+          support_managed_certs=False):
   """Add the SSL certificates command line flags to the parser."""
   parser.add_argument(
       '--description',
       help='An optional, textual description for the SSL certificate.')
 
-  parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterAlpha
-                                      if include_alpha else
-                                      flags.SslCertificatesCompleter)
+  parser.display_info.AddCacheUpdater(
+      flags.SslCertificatesCompleterBeta
+      if include_l7_internal_load_balancing else flags.SslCertificatesCompleter)
 
   if support_managed_certs:
     managed_or_not = parser.add_group(
@@ -121,6 +123,41 @@ def _ParseCertificateArguments(client, args):
   return certificate_type, self_managed, managed
 
 
+def _Run(args, holder, ssl_certificate_ref):
+  """Make a SslCertificates.Insert request."""
+  client = holder.client
+
+  certificate_type, self_managed, managed = _ParseCertificateArguments(
+      client, args)
+
+  if ssl_certificates_utils.IsRegionalSslCertificatesRef(ssl_certificate_ref):
+    request = client.messages.ComputeRegionSslCertificatesInsertRequest(
+        sslCertificate=client.messages.SslCertificate(
+            type=certificate_type,
+            name=ssl_certificate_ref.Name(),
+            selfManaged=self_managed,
+            managed=managed,
+            description=args.description),
+        region=ssl_certificate_ref.region,
+        project=ssl_certificate_ref.project)
+  else:
+    request = client.messages.ComputeSslCertificatesInsertRequest(
+        sslCertificate=client.messages.SslCertificate(
+            type=certificate_type,
+            name=ssl_certificate_ref.Name(),
+            selfManaged=self_managed,
+            managed=managed,
+            description=args.description),
+        project=ssl_certificate_ref.project)
+
+  if ssl_certificates_utils.IsRegionalSslCertificatesRef(ssl_certificate_ref):
+    collection = client.apitools_client.regionSslCertificates
+  else:
+    collection = client.apitools_client.sslCertificates
+
+  return client.MakeRequests([(collection, 'Insert', request)])
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine SSL certificate.
@@ -139,7 +176,10 @@ class Create(base.CreateCommand):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument()
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
-    _Args(parser, include_alpha=False, support_managed_certs=False)
+    _Args(
+        parser,
+        include_l7_internal_load_balancing=False,
+        support_managed_certs=False)
 
   def Run(self, args):
     """Issues the request necessary for adding the SSL certificate."""
@@ -184,31 +224,21 @@ class CreateBeta(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.BETA_LIST_FORMAT)
-    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument()
+    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
+        include_l7_internal_load_balancing=True)
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
-    _Args(parser, include_alpha=False, support_managed_certs=True)
+    _Args(
+        parser,
+        include_l7_internal_load_balancing=True,
+        support_managed_certs=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the SSL certificate."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
 
     ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
         args, holder.resources)
-
-    certificate_type, self_managed, managed = _ParseCertificateArguments(
-        client, args)
-    request = client.messages.ComputeSslCertificatesInsertRequest(
-        sslCertificate=client.messages.SslCertificate(
-            type=certificate_type,
-            name=ssl_certificate_ref.Name(),
-            selfManaged=self_managed,
-            managed=managed,
-            description=args.description),
-        project=ssl_certificate_ref.project)
-
-    return client.MakeRequests([(client.apitools_client.sslCertificates,
-                                 'Insert', request)])
+    return _Run(args, holder, ssl_certificate_ref)
 
 
 @base.UnicodeIsSupported
@@ -232,44 +262,19 @@ class CreateAlpha(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.ALPHA_LIST_FORMAT)
-    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(include_alpha=True)
+    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
+        include_l7_internal_load_balancing=True)
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
-    _Args(parser, include_alpha=True, support_managed_certs=True)
+    _Args(
+        parser,
+        include_l7_internal_load_balancing=True,
+        support_managed_certs=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the SSL certificate."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
 
     ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
         args, holder.resources)
 
-    certificate_type, self_managed, managed = _ParseCertificateArguments(
-        client, args)
-
-    if ssl_certificates_utils.IsRegionalSslCertificatesRef(ssl_certificate_ref):
-      request = client.messages.ComputeRegionSslCertificatesInsertRequest(
-          sslCertificate=client.messages.SslCertificate(
-              type=certificate_type,
-              name=ssl_certificate_ref.Name(),
-              selfManaged=self_managed,
-              managed=managed,
-              description=args.description),
-          region=ssl_certificate_ref.region,
-          project=ssl_certificate_ref.project)
-    else:
-      request = client.messages.ComputeSslCertificatesInsertRequest(
-          sslCertificate=client.messages.SslCertificate(
-              type=certificate_type,
-              name=ssl_certificate_ref.Name(),
-              selfManaged=self_managed,
-              managed=managed,
-              description=args.description),
-          project=ssl_certificate_ref.project)
-
-    if ssl_certificates_utils.IsRegionalSslCertificatesRef(ssl_certificate_ref):
-      collection = client.apitools_client.regionSslCertificates
-    else:
-      collection = client.apitools_client.sslCertificates
-
-    return client.MakeRequests([(collection, 'Insert', request)])
+    return _Run(args, holder, ssl_certificate_ref)

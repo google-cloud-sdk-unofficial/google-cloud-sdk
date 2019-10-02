@@ -19,6 +19,7 @@
         --networks=network1,network2 \
         --alternative-name-servers=192.168.1.1,192.168.1.2
         --enable-inbound-forwarding
+        --enable-logging
 
   request:
     method: create
@@ -59,6 +60,12 @@
         List of alternative name servers to forward to. Must be a comma separated list of IPv4
         addresses. Non-RFC1918 addresses will forward to the target through the Internet.
         RFC1918 addresses will forward through the VPC.
+    - api_field: policy.enableLogging
+      arg_name: enable-logging
+      action: store_true
+      default: false
+      help_text: |
+        Specifies whether to enable query logging. Defaults to False.
 
   output:
     format: json

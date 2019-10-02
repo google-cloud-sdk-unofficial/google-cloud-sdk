@@ -37,7 +37,15 @@ def _Run(dataproc, args):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe an autoscaling policy."""
+  """Describe an autoscaling policy.
+
+  ## EXAMPLES
+
+  The following command prints out the autoscaling policy
+  `example-autoscaling-policy`:
+
+    $ {command} example-autoscaling-policy
+  """
 
   @staticmethod
   def Args(parser):
@@ -49,7 +57,15 @@ class Describe(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeBeta(base.DescribeCommand):
-  """Describe an autoscaling policy."""
+  """Describe an autoscaling policy.
+
+  ## EXAMPLES
+
+  The following command prints out the autoscaling policy
+  `example-autoscaling-policy`:
+
+    $ {command} example-autoscaling-policy
+  """
 
   @staticmethod
   def Args(parser):

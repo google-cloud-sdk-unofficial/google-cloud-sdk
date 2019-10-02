@@ -32,7 +32,8 @@ class UpdateAlphaBeta(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To update existing labels on a Cloud Pub/Sub topic, run:
 
               $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
@@ -47,7 +48,11 @@ class UpdateAlphaBeta(base.UpdateCommand):
 
           To update a Cloud Pub/Sub topic's message storage policy, run:
 
-              $ {command} mytopic message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
+              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
+
+          To recompute a Cloud Pub/Sub topic's message storage policy based on your organization's "Resource Location Restriction" policy, run:
+
+              $ {command} mytopic --recompute-message-storage-policy
           """
   }
 
@@ -95,11 +100,9 @@ class UpdateAlphaBeta(base.UpdateCommand):
 
     result = None
     try:
-      result = client.Patch(
-          topic_ref,
-          labels_update.GetOrNone(),
-          args.recompute_message_storage_policy,
-          args.message_storage_policy_allowed_regions)
+      result = client.Patch(topic_ref, labels_update.GetOrNone(),
+                            args.recompute_message_storage_policy,
+                            args.message_storage_policy_allowed_regions)
     except topics.NoFieldsSpecifiedError:
       operations = [
           'clear_labels', 'update_labels', 'remove_labels',
@@ -119,7 +122,8 @@ class UpdateGA(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub topic."""
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To update existing labels on a Cloud Pub/Sub topic, run:
 
               $ {command} mytopic --update-labels=KEY1=VAL1,KEY2=VAL2
@@ -131,6 +135,14 @@ class UpdateGA(base.UpdateCommand):
           To remove an existing label on a Cloud Pub/Sub topic, run:
 
               $ {command} mytopic --remove-labels=KEY1,KEY2
+
+          To update a Cloud Pub/Sub topic's message storage policy, run:
+
+              $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
+
+          To recompute a Cloud Pub/Sub topic's message storage policy based on your organization's "Resource Location Restriction" policy, run:
+
+              $ {command} mytopic --recompute-message-storage-policy
           """
   }
 
@@ -139,6 +151,21 @@ class UpdateGA(base.UpdateCommand):
     """Registers flags for this command."""
     resource_args.AddTopicResourceArg(parser, 'to update.')
     labels_util.AddUpdateLabelsFlags(parser)
+
+    msp_group = parser.add_group(
+        mutex=True, help='Message storage policy options.')
+    msp_group.add_argument(
+        '--recompute-message-storage-policy',
+        action='store_true',
+        help='If given, Cloud Pub/Sub will recompute the regions where messages'
+        ' can be stored at rest, based on your organization\'s "Resource '
+        ' Location Restriction" policy.')
+    msp_group.add_argument(
+        '--message-storage-policy-allowed-regions',
+        metavar='REGION',
+        type=arg_parsers.ArgList(),
+        help='A list of one or more Cloud regions where messages are allowed to'
+        ' be stored at rest.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -163,12 +190,14 @@ class UpdateGA(base.UpdateCommand):
 
     result = None
     try:
-      result = client.Patch(
-          topic_ref,
-          labels_update.GetOrNone())
+      result = client.Patch(topic_ref, labels_update.GetOrNone(),
+                            args.recompute_message_storage_policy,
+                            args.message_storage_policy_allowed_regions)
     except topics.NoFieldsSpecifiedError:
       operations = [
-          'clear_labels', 'update_labels', 'remove_labels'
+          'clear_labels', 'update_labels', 'remove_labels',
+          'recompute_message_storage_policy',
+          'message_storage_policy_allowed_regions'
       ]
       if not any(args.IsSpecified(arg) for arg in operations):
         raise

@@ -236,18 +236,38 @@ def _Run(args,
       log.status.Print('Nothing to update.')
       return
 
-  try:
-    if ensure_all_users_invoke:
-      api_util.AddFunctionIamPolicyBinding(function.name)
-    elif deny_all_users_invoke:
-      api_util.RemoveFunctionIamPolicyBindingIfFound(function.name)
-  except exceptions.HttpException:
-    log.warning(
-        'Setting IAM policy failed, try "%s"' % _CreateBindPolicyCommand(
-            args.NAME, args.region))
+  stop_trying_perm_set = [False]
+
+  # The server asyncrhonously sets allUsers invoker permissions some time after
+  # we create the function. That means, to remove it, we need do so after the
+  # server adds it. We can remove this mess after the default changes.
+  # TODO(b/139026575): Remove the "remove" path, only bother adding. Remove the
+  # logic from the polling loop. Remove the ability to add logic like this to
+  # the polling loop.
+  def TryToSetInvokerPermission():
+    """Try to make the invoker permission be what we said it should.
+
+    This is for executing in the polling loop, and will stop trying as soon as
+    it succeeds at making a change.
+    """
+    if stop_trying_perm_set[0]:
+      return
+    try:
+      if ensure_all_users_invoke:
+        api_util.AddFunctionIamPolicyBinding(function.name)
+        stop_trying_perm_set[0] = True
+      elif deny_all_users_invoke:
+        stop_trying_perm_set[0] = (
+            api_util.RemoveFunctionIamPolicyBindingIfFound(function.name))
+    except exceptions.HttpException:
+      stop_trying_perm_set[0] = True
+      log.warning(
+          'Setting IAM policy failed, try "%s"' % _CreateBindPolicyCommand(
+              args.NAME, args.region))
 
   if op:
-    api_util.WaitForFunctionUpdateOperation(op)
+    api_util.WaitForFunctionUpdateOperation(
+        op, do_every_poll=TryToSetInvokerPermission)
   return api_util.GetFunction(function.name)
 
 
