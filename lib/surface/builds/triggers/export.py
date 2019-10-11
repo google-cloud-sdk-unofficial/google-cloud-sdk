@@ -31,6 +31,15 @@ from googlecloudsdk.core.util import files
 class Export(base.Command):
   """Export a build trigger."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To export a trigger to a file called trigger.yaml:
+
+            $ {command} my-trigger --destination=trigger.yaml
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

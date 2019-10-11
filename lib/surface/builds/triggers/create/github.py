@@ -30,6 +30,19 @@ from googlecloudsdk.core import resources
 class CreateGitHub(base.CreateCommand):
   """Create a build trigger for a GitHub repository."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+            To create a push trigger for all branches:
+
+              $ {command} --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --branch-pattern=".*" --build-config="cloudbuild.yaml"
+
+            To create a pull request trigger for master:
+
+              $ {command} --repo-owner="GoogleCloudPlatform" --repo-name="cloud-builders" --pull-request-pattern="^master$" --build-config="cloudbuild.yaml"
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

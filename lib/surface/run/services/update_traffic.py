@@ -45,11 +45,24 @@ class AdjustTraffic(base.Command):
           """,
       'EXAMPLES':
           """\
-          To adjust the traffic assignments for myservice
+          To assign 10% of traffic to revision myservice-s5sxn and
+          90% of traffic to revision myservice-cp9kw run:
 
-              $ {command} myservice --to-revision=revis-name-1=10,revis-name-2=34 --to-latest=23`
+              $ {command} myservice --to-revisions=myservice-s5sxn=10,myservice-cp9kw=90
 
-         Sets 10% on revis-name1, 34% on revis-name-2, and 23% on the latest revision
+          To increase the traffic to revision myservice-s5sxn to 20% and
+          by reducing the traffic to revision myservice-cp9kw to 80% run:
+
+              $ {command} myservice --to-revisions=myservice-s5sxn=20
+
+          To rollback to revision myservice-cp9kw run:
+
+              $ {command} myservice --to-revisions=myservice-cp9kw=100
+
+          To assign 100% of traffic to the current or future LATEST revision
+          run:
+
+              $ {command} myservice --to-latest
          """,
   }
 
@@ -117,8 +130,7 @@ class AdjustTraffic(base.Command):
             deployment_stages,
             failure_message='Updating traffic failed',
             suppress_output=args.async_) as tracker:
-          client.UpdateTraffic(
-              service_ref, changes, tracker, args.async_, flags.IsManaged(args))
+          client.UpdateTraffic(service_ref, changes, tracker, args.async_)
       except:
         serv = client.GetService(service_ref)
         resources = traffic.GetTrafficTargetPairs(

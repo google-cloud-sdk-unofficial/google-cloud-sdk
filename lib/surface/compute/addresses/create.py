@@ -48,7 +48,7 @@ def _Args(cls, parser, support_shared_loadbalancer_vip):
   cls.NETWORK_ARG.AddArgument(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Reserve IP addresses.
 
@@ -260,8 +260,9 @@ class Create(base.CreateCommand):
         network=network_url)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateAlpha(Create):
+  # pylint: disable=line-too-long
   """Reserve IP addresses.
 
   *{command}* is used to reserve one or more IP addresses. Once an IP address
@@ -289,20 +290,17 @@ class CreateAlpha(Create):
   To reserve an IP address that can be used by multiple internal load balancers
   from the subnet 'default' in the 'us-central1' region, run:
 
-    $ {command} SHARED-ADDRESS-1 --region us-central1 --subnet default
-    --purpose SHARED_LOADBALANCER_VIP
+    $ {command} SHARED-ADDRESS-1 --region us-central1 --subnet default --purpose SHARED_LOADBALANCER_VIP
 
   To reserve an IP range 10.110.0.0/16 from the network 'default' for
   VPC_PEERING, run:
 
-    $ {command} IP-RANGE-1 --global --addresses 10.110.0.0 --prefix-length 16
-    --purpose VPC_PEERING --network default
+    $ {command} IP-RANGE-1 --global --addresses 10.110.0.0 --prefix-length 16 --purpose VPC_PEERING --network default
 
   To reserve any IP range with prefix length 16 from the network 'default' for
   VPC_PEERING, run:
 
-    $ {command} IP-RANGE-1 --global --prefix-length 16 --purpose VPC_PEERING
-    --network default
+    $ {command} IP-RANGE-1 --global --prefix-length 16 --purpose VPC_PEERING --network default
 
   """
 

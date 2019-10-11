@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.sql import export_util
 from googlecloudsdk.command_lib.sql import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Bak(base.Command):
   """Export data from a Cloud SQL instance to a BAK file.
 
@@ -45,7 +45,7 @@ class Bak(base.Command):
           instance `my-instance` to a BAK file `my-bucket/my-export.bak`,
           run:
 
-            $  gcloud sql export bak my-instance gs://my-bucket/my-export.bak --database=my-database
+            $ {command} my-instance gs://my-bucket/my-export.bak --database=my-database
           """),
   }
 

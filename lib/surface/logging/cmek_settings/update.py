@@ -49,7 +49,7 @@ class Update(base.Command):
 
   To disable CMEK for the Logs Router for an organization, run:
 
-    $ {command} --organization=[ORGANIZATION_ID] --kms-key-name=''
+    $ {command} --organization=[ORGANIZATION_ID] --clear-kms-key
   """
 
   @staticmethod
@@ -62,14 +62,21 @@ class Update(base.Command):
         completer=completers.OrganizationCompleter,
         help='Organization to update Logs Router CMEK settings for.')
 
+    group = parser.add_mutually_exclusive_group(required=True)
+
     kms_resource_args.AddKmsKeyResourceArg(
-        parser,
+        group,
         resource='logs being processed by the Stackdriver Logs Router',
-        required=True,
         permission_info=('The Cloud KMS CryptoKey Encrypter/Decryper role must '
                          'be assigned to the Stackdriver Logs Router service '
-                         'account.'),
+                         'account'),
         name='--kms-key-name')
+
+    group.add_argument(
+        '--clear-kms-key',
+        action='store_true',
+        help=('Disable CMEK for the Logs Router by clearing out Cloud KMS '
+              'cryptokey in the organization\'s CMEK settings.'))
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -82,19 +89,16 @@ class Update(base.Command):
       The updated CMEK settings.
     """
     cmek_settings = {}
-    update_mask = []
-    if hasattr(args.CONCEPTS, 'kms_key_name'):
-      if args.kms_key_name is '':
-        cmek_settings['kmsKeyName'] = ''
-      else:
-        cmek_settings['kmsKeyName'] = (
-            args.CONCEPTS.kms_key_name.Parse().RelativeName())
-      update_mask.append('kms_key_name')
+    if args.IsSpecified('kms_key_name'):
+      cmek_settings['kmsKeyName'] = (
+          args.CONCEPTS.kms_key_name.Parse().RelativeName())
+
+    if args.IsSpecified('clear_kms_key'):
+      cmek_settings['kmsKeyName'] = ''
 
     parent_name = util.GetParentFromArgs(args)
     return util.GetClient().organizations.UpdateCmekSettings(
         util.GetMessages().LoggingOrganizationsUpdateCmekSettingsRequest(
             name=parent_name,
             cmekSettings=util.GetMessages().CmekSettings(**cmek_settings),
-            updateMask=','.join(update_mask)))
-
+            updateMask='kms_key_name'))

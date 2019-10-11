@@ -206,17 +206,6 @@ def ValidateBasicAuthFlags(args):
 
 def ParseCreateOptionsBase(args):
   """Parses the flags provided with the cluster creation command."""
-  if not (args.IsSpecified('enable_basic_auth') or
-          args.IsSpecified('username')):
-    log.warning('Starting in 1.12, new clusters will have basic '
-                'authentication disabled by default. Basic authentication '
-                'can be enabled (or disabled) manually using the '
-                '`--[no-]enable-basic-auth` flag.')
-  if not args.IsSpecified('issue_client_certificate'):
-    log.warning('Starting in 1.12, new clusters will not have a client '
-                'certificate issued. You can manually enable (or disable) the '
-                'issuance of the client certificate using the '
-                '`--[no-]issue-client-certificate` flag.')
   if args.IsSpecified('addons') and api_adapter.DASHBOARD in args.addons:
     log.warning(
         'The `KubernetesDashboard` addon is deprecated, and will be removed as '
@@ -252,6 +241,7 @@ def ParseCreateOptionsBase(args):
       enable_autorepair=enable_autorepair,
       enable_autoscaling=args.enable_autoscaling,
       enable_autoupgrade=cmd_util.GetAutoUpgrade(args),
+      enable_binauthz=args.enable_binauthz,
       enable_stackdriver_kubernetes=args.enable_stackdriver_kubernetes if args.IsSpecified('enable_stackdriver_kubernetes') else None,
       enable_cloud_logging=args.enable_cloud_logging if args.IsSpecified('enable_cloud_logging') else None,
       enable_cloud_monitoring=args.enable_cloud_monitoring if args.IsSpecified('enable_cloud_monitoring') else None,
@@ -301,7 +291,8 @@ def ParseCreateOptionsBase(args):
       resource_usage_bigquery_dataset=args.resource_usage_bigquery_dataset,
       enable_network_egress_metering=args.enable_network_egress_metering,
       enable_resource_consumption_metering=\
-          args.enable_resource_consumption_metering)
+          args.enable_resource_consumption_metering,
+      enable_vertical_pod_autoscaling=args.enable_vertical_pod_autoscaling)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -317,6 +308,7 @@ class Create(base.CreateCommand):
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
+    flags.AddEnableBinAuthzFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
@@ -339,6 +331,7 @@ class Create(base.CreateCommand):
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddResourceUsageExportFlags(parser)
+    flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
 
   def ParseCreateOptions(self, args):
     flags.WarnGAForFutureAutoUpgradeChange()
@@ -469,7 +462,8 @@ class CreateBeta(Create):
     flags.AddIstioConfigFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDFlag(parser)
-    flags.AddMaintenanceWindowGroup(parser, emw_hidden=True, add_emw_flags=True)
+    flags.AddMaintenanceWindowGroup(
+        parser, emw_hidden=False, add_emw_flags=True)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddWorkloadMetadataFromNodeFlag(parser)
@@ -513,7 +507,6 @@ class CreateBeta(Create):
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
     ops.private_cluster = args.private_cluster
-    ops.enable_binauthz = args.enable_binauthz
     ops.istio_config = args.istio_config
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.security_group = args.security_group
@@ -551,7 +544,8 @@ class CreateAlpha(Create):
     flags.AddIstioConfigFlag(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser)
-    flags.AddMaintenanceWindowGroup(parser, emw_hidden=True, add_emw_flags=True)
+    flags.AddMaintenanceWindowGroup(
+        parser, emw_hidden=False, add_emw_flags=True)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddWorkloadMetadataFromNodeFlag(parser)
@@ -585,6 +579,7 @@ class CreateAlpha(Create):
     flags.AddLinuxSysctlFlags(parser)
     flags.AddShieldedInstanceFlags(parser)
     flags.AddNodeConfigFlag(parser)
+    flags.AddCostManagementConfigFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -599,7 +594,6 @@ class CreateAlpha(Create):
     ops.max_accelerator = args.max_accelerator
     ops.autoscaling_profile = args.autoscaling_profile
     ops.local_ssd_volume_configs = args.local_ssd_volumes
-    ops.enable_binauthz = args.enable_binauthz
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
@@ -641,6 +635,8 @@ class CreateAlpha(Create):
     ops.maintenance_window_end = args.maintenance_window_end
     ops.maintenance_window_recurrence = args.maintenance_window_recurrence
 
+    ops.enable_cost_management = args.enable_cost_management
+
     return ops
 
 
@@ -656,4 +652,3 @@ Custom Version Flags:
 """)
   flags.AddClusterVersionFlag(custom_version_group)
   flags.AddNodeVersionFlag(custom_version_group)
-

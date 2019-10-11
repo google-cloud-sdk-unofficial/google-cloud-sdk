@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   command_type: DESCRIBE
   help_text:
     brief: Describe a build trigger.
     description: Describe a build trigger.
+    examples: |
+      To describe a trigger:
+
+        $ {command} my-trigger
   request:
     collection: cloudbuild.projects.triggers
     api_version: v1

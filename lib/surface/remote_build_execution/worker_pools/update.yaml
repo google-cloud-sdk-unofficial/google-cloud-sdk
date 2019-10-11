@@ -21,6 +21,7 @@
     collection: remotebuildexecution.projects.instances.workerpools
     modify_request_hooks:
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAcceleratorConfig
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:UpdateLabels
 
   async:
     collection: remotebuildexecution.projects.operations
@@ -58,7 +59,6 @@
     - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.reserved
       arg_name: reserved
       required: false
-      default: false
       help_text: |
         Determines the type of VM to use.  If set then reserved VMs are used, otherwise preemptable
         VMs are used.
@@ -84,3 +84,23 @@
           processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
           help_text: |
             Remove all accelerators from the VMs in the worker pool.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.networkAccess
+      arg_name: network-access
+      required: false
+      choices:
+      - arg_value: public
+        enum_value: public
+        help_text: |
+          Workers can connect to the public internet.
+      - arg_value: private
+        enum_value: private
+        help_text: |
+          Workers can only connect to Google APIs and services.
+      - arg_value: restricted-private
+        enum_value: restricted-private
+        help_text: |
+          Workers can only connect to Google APIs that are
+          reachable through `restricted.googleapis.com` (`199.36.153.4/30`).
+      help_text: |
+        Level of network access available to the pool.
+    additional_arguments_hook: googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:AddLabelsFlags

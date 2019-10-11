@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.spanner import database_sessions
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.command_lib.spanner import sql
@@ -90,6 +91,13 @@ def AddBaseArgs(parser):
       action='store_true',
       help='Execute DML statement using Partitioned DML')
 
+  parser.add_argument(
+      '--timeout',
+      type=arg_parsers.Duration(),
+      default='10m',
+      help='Maximum time to wait for the SQL query to complete. See $ gcloud '
+           'topic datetimes for information on duration formats.')
+
 
 def AddBetaArgs(parser):
   """Parses provided arguments to add arguments for Beta.
@@ -128,7 +136,8 @@ class Query(base.Command):
     session = CreateSession(args)
     try:
       return database_sessions.ExecuteSql(session, args.sql, args.query_mode,
-                                          args.enable_partitioned_dml)
+                                          args.enable_partitioned_dml,
+                                          args.timeout)
     finally:
       database_sessions.Delete(session)
 

@@ -65,7 +65,6 @@ class Delete(base.DeleteCommand):
     """Returns a delete message for instance group manager."""
     messages = holder.client.messages
     req = messages.InstanceGroupManagersDeletePerInstanceConfigsReq(
-        instances=instances,
         names=Delete._GetInstanceNameListFromUrlList(holder, instances))
     return messages.ComputeInstanceGroupManagersDeletePerInstanceConfigsRequest(
         instanceGroupManager=igm_ref.Name(),
@@ -80,7 +79,6 @@ class Delete(base.DeleteCommand):
 
     messages = holder.client.messages
     req = messages.RegionInstanceGroupManagerDeleteInstanceConfigReq(
-        instances=instances,
         names=Delete._GetInstanceNameListFromUrlList(holder, instances))
     return (messages.
             ComputeRegionInstanceGroupManagersDeletePerInstanceConfigsRequest)(

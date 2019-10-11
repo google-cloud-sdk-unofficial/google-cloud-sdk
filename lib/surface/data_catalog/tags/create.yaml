@@ -20,7 +20,7 @@
       help_text: Entry to attach the tag to. The arguments in this group can be used to specify the attributes of this resource.
       is_positional: false
       is_parent_resource: true
-      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:entry
+      spec: !REF googlecloudsdk.command_lib.data_catalog.resources:non_primary_entry
 
     params:
     - arg_name: tag-file

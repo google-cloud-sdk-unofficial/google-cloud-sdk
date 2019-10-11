@@ -22,7 +22,7 @@ from googlecloudsdk.api_lib.cloudbuild import transforms
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class TriggerCreate(base.Group):
   """Create build triggers for Google Cloud Build."""
 

@@ -1,8 +1,13 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   command_type: GENERIC
   help_text:
     brief: Run a build trigger.
     description: Run a build trigger.
+    examples: |
+      To run a build trigger at the master branch, run:
+
+        $ {command} --branch=master my-trigger
+
   request:
     collection: cloudbuild.projects.triggers
     api_version: v1

@@ -9,7 +9,7 @@
         $ {command} a-membership
 
   request:
-    collection: gkehub.projects.locations.global.memberships
+    collection: gkehub.projects.locations.memberships
 
   async:
     collection: gkehub.projects.locations.operations

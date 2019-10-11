@@ -1,8 +1,12 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   command_type: LIST
   help_text:
     brief: List build triggers.
     description: list Google Cloud Build Triggers for a project.
+    examples: |
+      To list triggers for a particular GitHub repo:
+
+        $ {command} --filter=github.name=my-repo
   request:
     collection: cloudbuild.projects.triggers
     api_version: v1

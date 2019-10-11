@@ -9,9 +9,7 @@
         $ {command} a-membership --description="Description of a-membership."
 
   request:
-    collection: gkehub.projects.locations.global.memberships
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.container.memberships.util:SetParentCollection
+    collection: gkehub.projects.locations.memberships
 
   async:
     collection: gkehub.projects.locations.operations

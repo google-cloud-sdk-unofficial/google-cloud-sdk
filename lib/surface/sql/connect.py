@@ -262,15 +262,12 @@ def RunConnectCommand(args, supports_database=False):
 
 
 def RunProxyConnectCommand(args,
-                           supports_database=False,
-                           supports_mssqlcli=False):
+                           supports_database=False):
   """Connects to a Cloud SQL instance through the Cloud SQL Proxy.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
     supports_database: Whether or not the `--database` flag needs to be
-      accounted for.
-    supports_mssqlcli: Whether or not mssql-cli's hostname handling needs to be
       accounted for.
 
   Returns:
@@ -299,7 +296,7 @@ def RunProxyConnectCommand(args,
   # If the instance is V2, keep going with the proxy.
   util.EnsureComponentIsInstalled('cloud_sql_proxy', '`sql connect` command')
 
-  # Check for the mysql or psql executable based on the db version.
+  # Check for the executable based on the db version.
   db_type = instance_info.databaseVersion.split('_')[0]
   exe_name = constants.DB_EXE.get(db_type, 'mysql')
   exe = files.FindExecutableOnPath(exe_name)
@@ -322,7 +319,7 @@ def RunProxyConnectCommand(args,
   # We have everything we need, time to party!
   flags = constants.EXE_FLAGS[exe_name]
   sql_args = [exe_name]
-  if supports_mssqlcli and exe_name == 'mssql-cli':
+  if exe_name == 'mssql-cli':
     # mssql-cli merges hostname and port into a single argument
     hostname = 'tcp:127.0.0.1,{0}'.format(port)
     sql_args.extend([flags['hostname'], hostname])
@@ -354,30 +351,8 @@ class Connect(base.Command):
     return RunConnectCommand(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ConnectBeta(base.Command):
-  """Connects to a Cloud SQL instance.
-
-  Connects to Cloud SQL V2 instances through the Cloud SQL Proxy. Connects to
-  Cloud SQL V1 instances directly.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser)
-    AddBetaArgs(parser)
-    sql_flags.AddDatabase(parser, 'The PostgreSQL database to connect to.')
-
-  def Run(self, args):
-    """Connects to a Cloud SQL instance."""
-    return RunProxyConnectCommand(args, supports_database=True)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ConnectAlpha(base.Command):
   """Connects to a Cloud SQL instance.
 
   Connects to Cloud SQL V2 instances through the Cloud SQL Proxy. Connects to
@@ -396,5 +371,4 @@ class ConnectAlpha(base.Command):
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
-    return RunProxyConnectCommand(
-        args, supports_database=True, supports_mssqlcli=True)
+    return RunProxyConnectCommand(args, supports_database=True)

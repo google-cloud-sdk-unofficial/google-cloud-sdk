@@ -79,7 +79,7 @@ class Update(base.Command):
     flags.AddConcurrencyFlag(parser)
     flags.AddTimeoutFlag(parser)
     flags.AddAsyncFlag(parser)
-    flags.AddLabelsFlags(parser, add_create=False)
+    flags.AddLabelsFlags(parser)
     flags.AddMaxInstancesFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 

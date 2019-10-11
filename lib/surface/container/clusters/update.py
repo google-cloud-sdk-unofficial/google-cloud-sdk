@@ -200,9 +200,11 @@ class Update(base.UpdateCommand):
     group_logging_monitoring = group.add_group()
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
+    flags.AddEnableBinAuthzFlag(group)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
+    flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -479,8 +481,9 @@ class UpdateBeta(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
     flags.AddDailyMaintenanceWindowFlag(
-        group, add_unset_text=True, add_emw_text=False)
-    flags.AddRecurringMaintenanceWindowFlags(group, hidden=True, is_update=True)
+        group, add_unset_text=True, add_emw_text=True)
+    flags.AddRecurringMaintenanceWindowFlags(
+        group, hidden=False, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
@@ -497,7 +500,6 @@ class UpdateBeta(Update):
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
-    opts.enable_binauthz = args.enable_binauthz
     opts.enable_autoprovisioning = args.enable_autoprovisioning
     opts.autoprovisioning_config_file = args.autoprovisioning_config_file
     opts.autoprovisioning_service_account = args.autoprovisioning_service_account
@@ -509,7 +511,6 @@ class UpdateBeta(Update):
     opts.max_memory = args.max_memory
     opts.min_accelerator = args.min_accelerator
     opts.max_accelerator = args.max_accelerator
-    opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     opts.istio_config = args.istio_config
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
@@ -561,8 +562,9 @@ class UpdateAlpha(Update):
     flags.AddAutoprovisioningFlags(group, hidden=False)
     flags.AddAutoscalingProfilesFlag(group, hidden=True)
     flags.AddDailyMaintenanceWindowFlag(
-        group, add_unset_text=True, add_emw_text=False)
-    flags.AddRecurringMaintenanceWindowFlags(group, hidden=True, is_update=True)
+        group, add_unset_text=True, add_emw_text=True)
+    flags.AddRecurringMaintenanceWindowFlags(
+        group, hidden=False, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddResourceUsageExportFlags(group, is_update=True)
@@ -577,6 +579,7 @@ class UpdateAlpha(Update):
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
+    flags.AddCostManagementConfigFlag(group, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -593,11 +596,9 @@ class UpdateAlpha(Update):
     opts.max_accelerator = args.max_accelerator
     opts.autoscaling_profile = args.autoscaling_profile
     opts.enable_pod_security_policy = args.enable_pod_security_policy
-    opts.enable_binauthz = args.enable_binauthz
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.clear_resource_usage_bigquery_dataset = \
         args.clear_resource_usage_bigquery_dataset
-    opts.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     opts.security_profile = args.security_profile
     opts.istio_config = args.istio_config
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
@@ -615,5 +616,6 @@ class UpdateAlpha(Update):
     opts.disable_workload_identity = args.disable_workload_identity
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.disable_default_snat = args.disable_default_snat
+    opts.enable_cost_management = args.enable_cost_management
 
     return opts

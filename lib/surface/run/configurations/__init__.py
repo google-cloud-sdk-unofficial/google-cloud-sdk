@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 class Configurations(base.Group):
   """View and manage your Cloud Run configurations."""
 

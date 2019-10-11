@@ -32,58 +32,61 @@ from googlecloudsdk.core.resource import resource_projector
 import six
 
 
-# TODO(b/140957414): update help text for arguments
 def _AddTopLevelArguments(parser):
   """Add top-level argument flags."""
   parser.add_argument(
       '--instance-filter',
       required=True,
       type=str,
-      help="""Filter for selecting the instances to patch. Patching supports
-        the same filter mechanisms as `gcloud compute instances list`, allowing
-        one to patch specific instances by name, zone, label, or other criteria.
-        """)
+      help="""\
+      Filter for selecting the instances to patch. Patching supports the same
+      filter mechanisms as `gcloud compute instances list`, allowing one to
+      patch specific instances by name, zone, label, or other criteria.""",
+  )
   base.ASYNC_FLAG.AddToParser(parser)
   parser.add_argument(
       '--description', type=str, help='Textual description of the patch job.')
   parser.add_argument(
       '--dry-run',
       action='store_true',
-      help="""Whether to execute this patch job as a dry run. If this patch job
-        is a dry run, instances will be contacted, but they will do nothing.""",
+      help="""\
+      Whether to execute this patch job as a dry run. If this patch job is a dry
+      run, instances are contacted, but the patch is not run.""",
   )
   parser.add_argument(
       '--duration',
       type=arg_parsers.Duration(),
-      help="""Total duration in which the patch job must complete. If the
-        patch does not complete in this time, it will time out, and while some
-        instances may still be running the patch, they will not continue to work
-        after they complete their current step. See $ gcloud topic datetimes
-        for information on specifying absolute time durations.
+      help="""\
+      Total duration in which the patch job must complete. If the patch does not
+      complete in this time, the process times out. While some instances might
+      still be running the patch, they will not continue to work after
+      completing the current step. See $ gcloud topic datetimes for information
+      on specifying absolute time durations.
 
-
-        If unspecified, the job will stay active until all instances complete
-        the patch.""",
+      If unspecified, the job stays active until all instances complete the
+      patch.""",
   )
   base.ChoiceArgument(
       '--reboot-config',
       help_str='Post-patch reboot settings.',
       choices={
           'default':
-              """The agent will decide if a reboot is necessary by checking
-          well known signals such as registry keys or '/var/run/reboot-required'.""",
+              """\
+          The agent decides if a reboot is necessary by checking signals such as
+          registry keys or '/var/run/reboot-required'.""",
           'always':
-              """Always reboot the machine after the update has completed.""",
+              """Always reboot the machine after the update completes.""",
           'never':
-              """Never reboot the machine after the update has completed."""
+              """Never reboot the machine after the update completes.""",
       },
   ).AddToParser(parser)
   parser.add_argument(
       '--retry',
       action='store_true',
-      help="""Whether to attempt to retry during the duration window if
-        patching fails. If omitted, the agent will use its default retry
-        strategy.""",
+      help="""\
+      Specifies whether to attempt to retry, within the duration window, if
+      patching initially fails. If omitted, the agent uses its default retry
+      strategy.""",
   )
 
 
@@ -93,9 +96,9 @@ def _AddAptGroupArguments(parser):
   apt_group.add_argument(
       '--apt-dist',
       action='store_true',
-      help="""If specified, machines running Apt will patch using the command
-        `apt-get dist-upgrade`; otherwise the patch will run `apt-get upgrade`.
-        """,
+      help="""\
+      If specified, machines running Apt use the `apt-get dist-upgrade` command;
+      otherwise the `apt-get upgrade` command is used.""",
   )
 
 
@@ -109,10 +112,11 @@ def _AddWinGroupArguments(parser):
           'critical', 'security', 'definition', 'driver', 'feature-pack',
           'service-pack', 'tool', 'update-rollup', 'update'
       ]),
-      help="""List of classifications to use to restrict the Windows update.
-      Only patches of the given classifications will be applied. If omitted,
-      a default Windows update will be performed. For more information on
-      classifications, see: https://support.microsoft.com/en-us/help/824684""",
+      help="""\
+      List of classifications to use to restrict the Windows update. Only
+      patches of the given classifications are applied. If omitted, a default
+      Windows update is performed. For more information on classifications,
+      see: https://support.microsoft.com/en-us/help/824684""",
   )
   win_group.add_argument(
       '--windows-excludes',
@@ -128,22 +132,25 @@ def _AddYumGroupArguments(parser):
   yum_group.add_argument(
       '--yum-security',
       action='store_true',
-      help="""If specified, machines running Yum will append the `--security`
-        flag to the patch command.""",
+      help="""\
+      If specified, machines running Yum append the `--security` flag to the
+      patch command.""",
   )
   yum_group.add_argument(
       '--yum-minimal',
       action='store_true',
-      help="""If specified, machines running Yum will patch using the command
-        `yum update-minimal`; otherwise the patch will run `yum-update`.""",
+      help="""\
+      If specified, machines running Yum use the command `yum update-minimal`;
+      otherwise the patch uses `yum-update`.""",
   )
   yum_group.add_argument(
       '--yum-excludes',
       metavar='YUM_EXCLUDES',
       type=arg_parsers.ArgList(),
-      help="""Optional list of packages to exclude from updating. If this
-        argument is specified, machines running Yum will exclude the given list
-        of packages using the Yum `--exclude` flag.""",
+      help="""\
+      Optional list of packages to exclude from updating. If this argument is
+      specified, machines running Yum exclude the given list of packages using
+      the Yum `--exclude` flag.""",
   )
 
 
@@ -154,29 +161,33 @@ def _AddZypperGroupArguments(parser):
       '--zypper-categories',
       metavar='ZYPPER_CATEGORIES',
       type=arg_parsers.ArgList(),
-      help="""If specified, machines running Zypper will install only patches
-      with these categories. Common categories include security, recommended,
-      and feature.""",
+      help="""\
+      If specified, machines running Zypper install only patches with the
+      specified categories. Categories include security, recommended, and
+      feature.""",
   )
   zypper_group.add_argument(
       '--zypper-severities',
       metavar='ZYPPER_SEVERITIES',
       type=arg_parsers.ArgList(),
-      help="""If specified, machines running Zypper will install only patches
-      with these severities. Common severities include critical, important,
-      moderate, and low.""",
+      help="""\
+      If specified, machines running Zypper install only patch with the
+      specified severities. Severities include critical, important, moderate,
+      and low.""",
   )
   zypper_group.add_argument(
       '--zypper-with-optional',
       action='store_true',
-      help="""If specified, machines running Zypper will add the
-      `--with-optional` flag to `zypper patch`.""",
+      help="""\
+      If specified, machines running Zypper add the `--with-optional` flag to
+      `zypper patch`.""",
   )
   zypper_group.add_argument(
       '--zypper-with-update',
       action='store_true',
-      help="""If specified, machines running Zypper will add the `--with-update`
-      flag to `zypper patch`.""",
+      help="""\
+      If specified, machines running Zypper add the `--with-update` flag to
+      `zypper patch`.""",
   )
 
 
@@ -202,7 +213,8 @@ def _AddPrePostStepArguments(parser):
       '--pre-patch-linux-success-codes',
       type=arg_parsers.ArgList(element_type=int),
       metavar='PRE_PATCH_LINUX_SUCCESS_CODES',
-      help="""Additional exit codes that the executable can return to indicate a
+      help="""\
+      Additional exit codes that the executable can return to indicate a
       successful run. The default exit code for success is 0.""",
   )
   post_patch_linux_group = parser.add_group(
@@ -225,7 +237,8 @@ def _AddPrePostStepArguments(parser):
       '--post-patch-linux-success-codes',
       type=arg_parsers.ArgList(element_type=int),
       metavar='POST_PATCH_LINUX_SUCCESS_CODES',
-      help="""Additional exit codes that the executable can return to indicate a
+      help="""\
+      Additional exit codes that the executable can return to indicate a
       successful run. The default exit code for success is 0.""",
   )
 
@@ -249,7 +262,8 @@ def _AddPrePostStepArguments(parser):
       '--pre-patch-windows-success-codes',
       type=arg_parsers.ArgList(element_type=int),
       metavar='PRE_PATCH_WINDOWS_SUCCESS_CODES',
-      help="""Additional exit codes that the executable can return to indicate a
+      help="""\
+      Additional exit codes that the executable can return to indicate a
       successful run. The default exit code for success is 0.""",
   )
 
@@ -273,7 +287,8 @@ def _AddPrePostStepArguments(parser):
       '--post-patch-windows-success-codes',
       type=arg_parsers.ArgList(element_type=int),
       metavar='POST_PATCH_WINDOWS_SUCCESS_CODES',
-      help="""Additional exit codes that the executable can return to indicate a
+      help="""\
+      Additional exit codes that the executable can return to indicate a
       successful run. The default exit code for success is 0.""",
   )
 

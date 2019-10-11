@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import import_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Bak(base.Command):
   """Import data into a Cloud SQL instance from a BAK file."""
 
@@ -51,7 +51,7 @@ class Bak(base.Command):
           database `my-database` in the Cloud SQL instance `my-instance`,
           run:
 
-            $ gcloud alpha sql import bak my-instance gs://my-bucket/my-export.bak --database=my-database
+            $ {command} my-instance gs://my-bucket/my-export.bak --database=my-database
 
           To import data from the encrypted BAK file `my-bucket/my-export.bak` into the database
           `my-database` in the Cloud SQL instance `my-instance`, with the certificate
@@ -59,7 +59,7 @@ class Bak(base.Command):
           private key password,
           run:
 
-            $ gcloud alpha sql import bak my-instance gs://my-bucket/my-export.bak --database=my-database --cert-path=gs://my-bucket/my-cert.crt --pvk-path=gs://my-bucket/my-key.key --prompt-for-pvk-password
+            $ {command} my-instance gs://my-bucket/my-export.bak --database=my-database --cert-path=gs://my-bucket/my-cert.crt --pvk-path=gs://my-bucket/my-key.key --prompt-for-pvk-password
           """),
   }
 

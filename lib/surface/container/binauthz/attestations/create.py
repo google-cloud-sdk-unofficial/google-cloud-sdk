@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import containeranalysis
+from googlecloudsdk.api_lib.container.binauthz import containeranalysis_apis as ca_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
@@ -248,11 +249,25 @@ class CreateWithPkixSupport(base.CreateCommand):
         'containeranalysis.projects.notes',
         attestor.userOwnedDrydockNote.noteReference, {})
 
-    return containeranalysis.Client().CreateGenericAttestationOccurrence(
-        project_ref=project_ref,
-        note_ref=note_ref,
-        artifact_url=normalized_artifact_url,
-        public_key_id=args.public_key_id,
-        signature=signature,
-        plaintext=payload,
-    )
+    ca_api_version = ca_apis.GetApiVersion(self.ReleaseTrack())
+    # TODO(b/138859339): Remove when remainder of surface migrated to V1 API.
+    if ca_api_version == ca_apis.V1:
+      return containeranalysis.Client(
+          ca_api_version).CreateAttestationOccurrence(
+              project_ref=project_ref,
+              note_ref=note_ref,
+              artifact_url=normalized_artifact_url,
+              public_key_id=args.public_key_id,
+              signature=signature,
+              plaintext=payload,
+          )
+    else:
+      return containeranalysis.Client(
+          ca_api_version).CreateGenericAttestationOccurrence(
+              project_ref=project_ref,
+              note_ref=note_ref,
+              artifact_url=normalized_artifact_url,
+              public_key_id=args.public_key_id,
+              signature=signature,
+              plaintext=payload,
+          )

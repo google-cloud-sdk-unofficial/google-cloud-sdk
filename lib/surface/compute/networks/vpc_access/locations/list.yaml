@@ -1,4 +1,4 @@
-- release_tracks: [BETA, ALPHA]
+- release_tracks: [GA, BETA, ALPHA]
   help_text:
     brief: |
       List VPC Access Service regions
@@ -12,7 +12,9 @@
 
   request:
     collection: vpcaccess.projects.locations
-    api_version: v1beta1
+    api_version: v1
+    BETA:
+      api_version: v1beta1
     ALPHA:
       api_version: v1alpha1
 

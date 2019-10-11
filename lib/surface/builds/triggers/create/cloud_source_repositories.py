@@ -32,6 +32,15 @@ from googlecloudsdk.core import resources
 class CreateCSR(base.CreateCommand):
   """Create a build trigger from a Cloud Source Repository."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+            To create a push trigger for all branches:
+
+              $ {command} --repo="my-repo" --branch-pattern=".*" --build-config="cloudbuild.yaml"
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

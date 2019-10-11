@@ -64,25 +64,15 @@ class UpdatePerimetersAlpha(base.UpdateCommand):
         args, result, dry_run=True)
     levels = perimeters.ParseLevels(
         args, result, perimeter_ref.accessPoliciesId, dry_run=True)
-    ingress_allowed_services = perimeters.ParseIngressRestriction(
-        args, result, self._API_VERSION, dry_run=True)
     vpc_allowed_services = perimeters.ParseVpcRestriction(
         args, result, self._API_VERSION, dry_run=True)
-    bridge_allowed_services = perimeters.ParseBridgeRestriction(
-        args, result, self._API_VERSION, dry_run=True)
-    enable_ingress_restriction = args.enable_ingress_service_restriction
     enable_vpc_restriction = args.enable_vpc_service_restriction
-    enable_bridge_restriction = args.enable_bridge_service_restriction
 
     return client.Patch(
         perimeter_ref,
         resources=resources,
         restricted_services=restricted_services,
         levels=levels,
-        ingress_allowed_services=ingress_allowed_services,
         vpc_allowed_services=vpc_allowed_services,
-        bridge_allowed_services=bridge_allowed_services,
-        enable_ingress_service_restriction=enable_ingress_restriction,
         enable_vpc_service_restriction=enable_vpc_restriction,
-        enable_bridge_service_restriction=enable_bridge_restriction,
         apply_to_dry_run_config=True)

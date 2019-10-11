@@ -77,3 +77,25 @@
             Type of accelerator to attach to each VM in the pool, e.g. 'nvidia-tesla-k80' for
             nVidia Tesla K80. Run `gcloud compute accelerator-types list` to learn about all
             available accelerator types.
+    - api_field: workerPool.workerConfig.networkAccess
+      arg_name: network-access
+      required: false
+      default: public
+      choices:
+      - arg_value: public
+        enum_value: public
+        help_text: |
+          Workers can connect to the public internet.
+      - arg_value: private
+        enum_value: private
+        help_text: |
+          Workers can only connect to Google APIs and services.
+      - arg_value: restricted-private
+        enum_value: restricted-private
+        help_text: |
+          Workers can only connect to Google APIs that are
+          reachable through `restricted.googleapis.com` (`199.36.153.4/30`).
+      help_text: |
+        Level of network access available to the pool.
+    labels:
+      api_field: workerPool.workerConfig.labels

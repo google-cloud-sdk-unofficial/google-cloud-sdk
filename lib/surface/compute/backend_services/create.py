@@ -362,6 +362,7 @@ class CreateBeta(CreateGA):
   _support_failover = True
   _support_logging = True
   _support_l7_internal_load_balancer = True
+  _support_multinic = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -380,4 +381,4 @@ class CreateAlpha(CreateBeta):
   compute backend-services add-backend' or 'gcloud compute
   backend-services edit'.
   """
-  _support_multinic = True
+  pass

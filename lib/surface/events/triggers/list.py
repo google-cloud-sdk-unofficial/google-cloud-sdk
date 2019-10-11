@@ -18,10 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.events import trigger
 from googlecloudsdk.command_lib.events import eventflow_operations
+from googlecloudsdk.command_lib.events import exceptions
+from googlecloudsdk.command_lib.events import flags as events_flags
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
@@ -62,20 +64,21 @@ class List(commands.List):
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
-        'Namespace list triggers in.',
+        'Namespace to list triggers in.',
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser(
         [namespace_presentation]).AddToParser(cluster_group)
     # Flags not specific to any platform
     flags.AddPlatformArg(parser)
+    events_flags.AddTargetServiceFlag(parser)
     parser.display_info.AddFormat("""table(
         {ready_column},
         firstof(id,metadata.name):label=TRIGGER,
-        region:label=REGION,
-        broker:label=BROKER,
-        subscriber:label=SUBSCRIBER)""".format(
-            ready_column=pretty_print.READY_COLUMN))
+        filter_attributes.extract({type_field}).join():label="EVENT TYPE",
+        subscriber:label=TARGET)""".format(
+            ready_column=pretty_print.READY_COLUMN,
+            type_field=trigger.EVENT_TYPE_FIELD))
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod
@@ -85,11 +88,13 @@ class List(commands.List):
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(args)
     if conn_context.supports_one_platform:
-      raise exceptions.ConfigurationError(
-          'Triggers are not yet supported on the fully managed version '
-          'of Cloud Run.')
+      raise exceptions.UnsupportedArgumentError(
+          'Events are only available with Cloud Run for Anthos.')
 
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with eventflow_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
-      return client.ListTriggers(namespace_ref)
+      triggers = client.ListTriggers(namespace_ref)
+      if args.target_service:
+        triggers = [t for t in triggers if t.subscriber == args.target_service]
+      return triggers

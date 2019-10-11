@@ -1,8 +1,13 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   command_type: DELETE
   help_text:
     brief: Delete a build trigger.
     description: Delete a build trigger.
+    examples: |
+      To delete a build trigger, run:
+
+        $ {command} my-trigger
+
   request:
     collection: cloudbuild.projects.triggers
     api_version: v1

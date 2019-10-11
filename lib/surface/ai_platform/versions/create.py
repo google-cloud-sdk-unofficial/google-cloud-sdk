@@ -135,11 +135,13 @@ class CreateBeta(CreateGA):
     flags.SERVICE_ACCOUNT.AddToParser(parser)
     flags.AddMachineTypeFlagToParser(parser)
     flags.AddUserCodeArgs(parser)
+    flags.GetAcceleratorFlag().AddToParser(parser)
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
     labels = versions_util.ParseCreateLabels(versions_client, args)
     framework = flags.FRAMEWORK_MAPPER.GetEnumForChoice(args.framework)
+    accelerator = flags.ParseAcceleratorFlag(args.accelerator)
     return versions_util.Create(
         versions_client,
         operations.OperationsClient(),
@@ -157,11 +159,12 @@ class CreateBeta(CreateGA):
         python_version=args.python_version,
         service_account=args.service_account,
         prediction_class=args.prediction_class,
-        package_uris=args.package_uris)
+        package_uris=args.package_uris,
+        accelerator_config=accelerator)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+class CreateAlpha(CreateBeta):
   """Create a new AI Platform version.
 
   Creates a new version of an AI Platform model.
@@ -169,14 +172,6 @@ class CreateAlpha(base.CreateCommand):
   For more details on managing AI Platform models and versions see
   https://cloud.google.com/ml-engine/docs/how-tos/managing-models-jobs
   """
-
-  @staticmethod
-  def Args(parser):
-    _AddCreateArgs(parser)
-    flags.SERVICE_ACCOUNT.AddToParser(parser)
-    flags.AddMachineTypeFlagToParser(parser)
-    flags.AddUserCodeArgs(parser)
-    flags.GetAcceleratorFlag().AddToParser(parser)
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()

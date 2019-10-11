@@ -96,15 +96,9 @@ class UpdatePerimetersAlpha(UpdatePerimetersGA):
 
   def Patch(self, client, args, perimeter_ref, result, description, title,
             perimeter_type, resources, restricted_services, levels):
-    ingress_allowed_services = perimeters.ParseIngressRestriction(
-        args, result, self._API_VERSION)
     vpc_allowed_services = perimeters.ParseVpcRestriction(
         args, result, self._API_VERSION)
-    bridge_allowed_services = perimeters.ParseBridgeRestriction(
-        args, result, self._API_VERSION)
-    enable_ingress_restriction = args.enable_ingress_service_restriction
     enable_vpc_restriction = args.enable_vpc_service_restriction
-    enable_bridge_restriction = args.enable_bridge_service_restriction
 
     return client.Patch(
         perimeter_ref,
@@ -114,10 +108,6 @@ class UpdatePerimetersAlpha(UpdatePerimetersGA):
         resources=resources,
         restricted_services=restricted_services,
         levels=levels,
-        ingress_allowed_services=ingress_allowed_services,
         vpc_allowed_services=vpc_allowed_services,
-        bridge_allowed_services=bridge_allowed_services,
-        enable_ingress_service_restriction=enable_ingress_restriction,
         enable_vpc_service_restriction=enable_vpc_restriction,
-        enable_bridge_service_restriction=enable_bridge_restriction,
     )

@@ -64,7 +64,6 @@ def _GetProject(args):
 def _Run(args,
          track=None,
          enable_runtime=True,
-         enable_vpc_connector=False,
          enable_traffic_control=False,
          enable_allow_unauthenticated=False):
   """Run a function deployment with the given args."""
@@ -135,11 +134,10 @@ def _Run(args,
     elif is_new_function:
       raise exceptions.RequiredArgumentException(
           'runtime', 'Flag `--runtime` is required for new functions.')
-  if enable_vpc_connector:
-    if args.vpc_connector or args.clear_vpc_connector:
-      function.vpcConnector = ('' if args.clear_vpc_connector else
-                               args.vpc_connector)
-      updated_fields.append('vpcConnector')
+  if args.vpc_connector or args.clear_vpc_connector:
+    function.vpcConnector = ('' if args.clear_vpc_connector else
+                             args.vpc_connector)
+    updated_fields.append('vpcConnector')
   if enable_traffic_control:
     if args.IsSpecified('egress_settings'):
       will_have_vpc_connector = ((had_vpc_connector and
@@ -307,6 +305,8 @@ class Deploy(base.Command):
     # Add args for specifying ignore files to upload source
     flags.AddIgnoreFileFlag(parser)
 
+    flags.AddVPCConnectorMutexGroup(parser)
+
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack())
 
@@ -319,14 +319,12 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddVPCConnectorMutexGroup(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
 
   def Run(self, args):
     return _Run(
         args,
         track=self.ReleaseTrack(),
-        enable_vpc_connector=True,
         enable_allow_unauthenticated=True)
 
 
@@ -338,7 +336,6 @@ class DeployAlpha(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddVPCConnectorMutexGroup(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddIngressSettingsFlag(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
@@ -347,6 +344,5 @@ class DeployAlpha(base.Command):
     return _Run(
         args,
         track=self.ReleaseTrack(),
-        enable_vpc_connector=True,
         enable_traffic_control=True,
         enable_allow_unauthenticated=True)

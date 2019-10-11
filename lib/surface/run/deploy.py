@@ -236,5 +236,6 @@ class AlphaDeploy(Deploy):
     flags.AddMinInstancesFlag(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
+    flags.AddNoTrafficFlag(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

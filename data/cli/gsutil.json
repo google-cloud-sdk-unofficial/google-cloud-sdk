@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.43",
+  "CLI_VERSION": "4.44",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -1486,7 +1486,7 @@
           "release": "GA",
           "sections": {
             "DESCRIPTION": "gsutil currently supports several types of credentials/authentication, as\nwell as the ability to access public data anonymously (see \"gsutil help anon\"\nfor more on anonymous access). Each of these type of credentials is discussed\nin more detail below, along with information about configuring and using\ncredentials via either the Cloud SDK or standalone installations of gsutil.",
-            "SUPPORTED CREDENTIAL TYPES": "gsutil supports several types of credentials (the specific subset depends on\nwhich distribution of gsutil you are using; see above discussion).\n\nOAuth2 User Account:\n  This is the preferred type of credentials for authenticating requests on\n  behalf of a specific user (which is probably the most common use of gsutil).\n  This is the default type of credential that will be created when you run\n  \"gsutil config\" (or \"gcloud init\" for Cloud SDK installs).\n  For more details about OAuth2 authentication, see:\n  https://developers.google.com/accounts/docs/OAuth2#scenarios\n\nHMAC:\n  This type of credential can be used by programs that are implemented using\n  HMAC authentication, which is an authentication mechanism supported by\n  certain other cloud storage service providers. This type of credential can\n  also be used for interactive use when moving data to/from service providers\n  that support HMAC credentials. This is the type of credential that will be\n  created when you run \"gsutil config -a\".\n\n  Note that it's possible to set up HMAC credentials for both Google Cloud\n  Storage and another service provider; or to set up OAuth2 user account\n  credentials for Google Cloud Storage and HMAC credentials for another\n  service provider. To do so, after you run the \"gsutil config\" command (or\n  \"gcloud init\" for Cloud SDK installs), you can edit the generated ~/.boto\n  config file and look for comments for where other credentials can be added.\n\n  For more details about HMAC authentication, see:\n    https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys\n\nOAuth2 Service Account:\n  This is the preferred type of credential to use when authenticating on\n  behalf of a service or application (as opposed to a user). For example, if\n  you will run gsutil out of a nightly cron job to upload/download data,\n  using a service account allows the cron job not to depend on credentials of\n  an individual employee at your company. This is the type of credential that\n  will be configured when you run \"gsutil config -e\". To configure service\n  account credentials when installed via the Cloud SDK, run \"gcloud auth\n  activate-service-account\".\n\n  It is important to note that a service account is considered an Editor by\n  default for the purposes of API access, rather than an Owner. In particular,\n  the fact that Editors have OWNER access in the default object and\n  bucket ACLs, but the canned ACL options remove OWNER access from\n  Editors, can lead to unexpected results. The solution to this problem is to\n  use \"gsutil acl ch\" instead of \"gsutil acl set <canned-ACL>\" to change\n  permissions on a bucket.\n\n  To set up a service account for use with \"gsutil config -e\" or \"gcloud auth\n  activate-service-account\", see:\n   https://cloud.google.com/storage/docs/authentication#generating-a-private-key\n\n  For more details about OAuth2 service accounts, see:\n    https://developers.google.com/accounts/docs/OAuth2ServiceAccount\n\n  For further information about account roles, see:\n    https://developers.google.com/console/help/#DifferentRoles\n\nGoogle Compute Engine Internal Service Account:\n  This is the type of service account used for accounts hosted by App Engine\n  or Google Compute Engine. Such credentials are created automatically for\n  you on Google Compute Engine when you run the gcloud compute instances\n  creates command and the credentials can be controlled with the --scopes\n  flag.\n\n  For more details about Google Compute Engine service accounts, see:\n    https://developers.google.com/compute/docs/authentication;\n\n  For more details about App Engine service accounts, see:\n    https://developers.google.com/appengine/docs/python/appidentity/overview"
+            "SUPPORTED CREDENTIAL TYPES": "gsutil supports several types of credentials (the specific subset depends on\nwhich distribution of gsutil you are using; see above discussion).\n\nOAuth2 User Account:\n  This is the preferred type of credentials for authenticating requests on\n  behalf of a specific user (which is probably the most common use of gsutil).\n  This is the default type of credential that will be created when you run\n  \"gsutil config\" (or \"gcloud init\" for Cloud SDK installs).\n  For more details about OAuth2 authentication, see:\n  https://developers.google.com/accounts/docs/OAuth2#scenarios\n\nHMAC:\n  This type of credential can be used by programs that are implemented using\n  HMAC authentication, which is an authentication mechanism supported by\n  certain other cloud storage service providers. This type of credential can\n  also be used for interactive use when moving data to/from service providers\n  that support HMAC credentials. This is the type of credential that will be\n  created when you run \"gsutil config -a\".\n\n  Note that it's possible to set up HMAC credentials for both Google Cloud\n  Storage and another service provider; or to set up OAuth2 user account\n  credentials for Google Cloud Storage and HMAC credentials for another\n  service provider. To do so, after you run the \"gsutil config\" command (or\n  \"gcloud init\" for Cloud SDK installs), you can edit the generated ~/.boto\n  config file and look for comments for where other credentials can be added.\n\n  For more details about HMAC authentication, see:\n    https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys\n\nOAuth2 Service Account:\n  This is the preferred type of credential to use when authenticating on\n  behalf of a service or application (as opposed to a user). For example, if\n  you will run gsutil out of a nightly cron job to upload/download data,\n  using a service account allows the cron job not to depend on credentials of\n  an individual employee at your company. This is the type of credential that\n  will be configured when you run \"gsutil config -e\". To configure service\n  account credentials when installed via the Cloud SDK, run \"gcloud auth\n  activate-service-account\".\n\n  It is important to note that a service account is considered an Editor by\n  default for the purposes of API access, rather than an Owner. In particular,\n  the fact that Editors have OWNER access in the default object and\n  bucket ACLs, but the canned ACL options remove OWNER access from\n  Editors, can lead to unexpected results. The solution to this problem is to\n  use \"gsutil acl ch\" instead of \"gsutil acl set <canned-ACL>\" to change\n  permissions on a bucket.\n\n  To set up a service account for use with \"gsutil config -e\" or \"gcloud auth\n  activate-service-account\", see:\n   https://cloud.google.com/storage/docs/authentication#generating-a-private-key\n\n  For more details about OAuth2 service accounts, see:\n    https://developers.google.com/accounts/docs/OAuth2ServiceAccount\n\n  For further information about account roles, see:\n    https://developers.google.com/console/help/#DifferentRoles\n\nGoogle Compute Engine Internal Service Account:\n  This is the type of service account used for accounts hosted by App Engine\n  or Google Compute Engine. Such credentials are created automatically for\n  you on Google Compute Engine when you run the gcloud compute instances\n  creates command and the credentials can be controlled with the --scopes\n  flag.\n\n  For more details about Google Compute Engine service accounts, see:\n    https://developers.google.com/compute/docs/authentication;\n\n  For more details about App Engine service accounts, see:\n    https://developers.google.com/appengine/docs/python/appidentity/overview\n\nService Account Impersonation:\n  Impersonating a service account is useful in scenarios where you need to\n  grant short-term access to specific resources. For example, if you have a\n  bucket of sensitive data that is typically read-only and want to\n  temporarily grant write access through a trusted service account.\n\n  You can specify which service account to use for impersonation by running\n  \"gsutil -i\", \"gsutil config\" and editing the boto configuration file, or\n  \"gcloud config set auth/impersonate_service_account\".\n\n  In order to impersonate, your original credentials need to be granted\n  roles/iam.serviceAccountTokenCreator on the target service account.\n  For more information see:\n    https://cloud.google.com/iam/docs/creating-short-lived-service-account-credentials"
           }
         },
         "dev": {
@@ -1641,6 +1641,20 @@
               "is_hidden": false,
               "is_required": false,
               "name": "-h",
+              "nargs": "0",
+              "type": "bool",
+              "value": ""
+            },
+            "-i": {
+              "attr": {},
+              "category": "",
+              "default": "",
+              "description": "Allows you to use the configured credentials to impersonate a\nrvice account, for example:\ngsutil -i \"service-account@google.com\" ls gs://pub\nte that this setting will be ignored by the XML API and S3. See\nsutil help creds' for more information on impersonating service\ncounts.",
+              "group": "",
+              "is_global": false,
+              "is_hidden": false,
+              "is_required": false,
+              "name": "-i",
               "nargs": "0",
               "type": "bool",
               "value": ""
@@ -2519,7 +2533,7 @@
           "release": "GA",
           "sections": {
             "DESCRIPTION": "The encryption sub-command is used to set, display, or clear a bucket's\ndefault KMS key, which is used to encrypt newly-written objects if no other\nkey is specified.",
-            "EXAMPLES": "Set the default KMS key for my-bucket:\n\n  gsutil kms encryption \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key \\\n      gs://my-bucket\n\nShow the default KMS key for my-bucket, if one is set:\n\n  gsutil kms encryption gs://my-bucket\n\nClear the default KMS key so newly-written objects will not be encrypted:\n\n  gsutil kms encryption -d gs://my-bucket"
+            "EXAMPLES": "Set the default KMS key for my-bucket:\n\n  gsutil kms encryption \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key \\\n      gs://my-bucket\n\nSet the default KMS key for my-bucket, but display a warning rather than failing if\ngsutil is unable to verify that the specified key contains the correct IAM bindings\nfor encryption/decryption. This is useful for users that do not have getIamPolicy\npermission but know that the key has the correct IAM policy for encryption in the\nuser's project.\n\n  gsutil kms encryption \\\n      -k projects/key-project/locations/us-east1/keyRings/key-ring/cryptoKeys/my-key \\\n      -w \\\n      gs://my-bucket\n\nShow the default KMS key for my-bucket, if one is set:\n\n  gsutil kms encryption gs://my-bucket\n\nClear the default KMS key so newly-written objects will not be encrypted:\n\n  gsutil kms encryption -d gs://my-bucket"
           }
         },
         "serviceaccount": {
@@ -4294,6 +4308,65 @@
         "DESCRIPTION": "The gsutil test command runs the gsutil unit tests and integration tests.\nThe unit tests use an in-memory mock storage service implementation, while\nthe integration tests send requests to the production service using the\npreferred API set in the boto configuration file (see \"gsutil help apis\" for\ndetails).\n\nTo run both the unit tests and integration tests, run the command with no\narguments:\n\n  gsutil test\n\nTo run the unit tests only (which run quickly):\n\n  gsutil test -u\n\nTests run in parallel regardless of whether the top-level -m flag is\npresent. To limit the number of tests run in parallel to 10 at a time:\n\n  gsutil test -p 10\n\nTo force tests to run sequentially:\n\n  gsutil test -p 1\n\nTo have sequentially-run tests stop running immediately when an error occurs:\n\n  gsutil test -f\n\nTo run tests for one or more individual commands add those commands as\narguments. For example, the following command will run the cp and mv command\ntests:\n\n  gsutil test cp mv\n\nTo list available tests, run the test command with the -l argument:\n\n  gsutil test -l\n\nThe tests are defined in the code under the gslib/tests module. Each test\nfile is of the format test_[name].py where [name] is the test name you can\npass to this command. For example, running \"gsutil test ls\" would run the\ntests in \"gslib/tests/test_ls.py\".\n\nYou can also run an individual test class or function name by passing the\ntest module followed by the class name and optionally a test name. For\nexample, to run the an entire test class by name:\n\n  gsutil test naming.GsutilNamingTests\n\nor an individual test function:\n\n  gsutil test cp.TestCp.test_streaming\n\nYou can list the available tests under a module or class by passing arguments\nwith the -l option. For example, to list all available test functions in the\ncp module:\n\n  gsutil test -l cp\n\nTo output test coverage:\n\n  gsutil test -c -p 500\n  coverage html\n\nThis will output an HTML report to a directory named 'htmlcov'.\n\nTest coverage is compatible with v4.1 of the coverage module\n(https://pypi.python.org/pypi/coverage)."
       }
     },
+    "ubla": {
+      "capsule": "Configure Uniform bucket-level access",
+      "commands": {
+        "get": {
+          "capsule": "Configure Uniform bucket-level access",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "ubla",
+            "get"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``ubla get`` command shows whether uniform bucket-level access is enabled\nfor the specified Cloud Storage bucket(s).",
+            "EXAMPLES": "Check if your buckets are using uniform bucket-level access:\n\n  gsutil ubla get gs://redbucket gs://bluebucket"
+          }
+        },
+        "set": {
+          "capsule": "Configure Uniform bucket-level access",
+          "commands": {},
+          "flags": {},
+          "groups": {},
+          "is_group": false,
+          "is_hidden": false,
+          "path": [
+            "gsutil",
+            "ubla",
+            "set"
+          ],
+          "positionals": [],
+          "release": "GA",
+          "sections": {
+            "DESCRIPTION": "The ``ubla set`` command enables or disables uniform\nbucket-level access for Google Cloud Storage bucket(s).",
+            "EXAMPLES": "Configure your buckets to use uniform bucket-level access:\n\n  gsutil ubla set on gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use uniform bucket-level access:\n\n  gsutil ubla set off gs://redbucket gs://bluebucket"
+          }
+        }
+      },
+      "flags": {},
+      "groups": {},
+      "is_group": true,
+      "is_hidden": false,
+      "path": [
+        "gsutil",
+        "ubla"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "The ``ubla`` command is used to retrieve or configure the\n`Access controls (Beta)\n<https://cloud.google.com/storage/docs/bucket-policy-only>`_ setting of\nCloud Storage bucket(s). This command has two sub-commands, ``get`` and\n``set``.",
+        "EXAMPLES": "Configure your buckets to use uniform bucket-level access:\n\n  gsutil ubla set on gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use uniform bucket-level access:\n\n  gsutil ubla set off gs://redbucket gs://bluebucket",
+        "GET": "The ``ubla get`` command shows whether uniform bucket-level access is enabled\nfor the specified Cloud Storage bucket(s).",
+        "SET": "The ``ubla set`` command enables or disables uniform\nbucket-level access for Google Cloud Storage bucket(s)."
+      }
+    },
     "version": {
       "capsule": "Print version info about gsutil",
       "commands": {},
@@ -4536,6 +4609,20 @@
       "is_hidden": false,
       "is_required": false,
       "name": "-h",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "-i": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "Allows you to use the configured credentials to impersonate a\nrvice account, for example:\ngsutil -i \"service-account@google.com\" ls gs://pub\nte that this setting will be ignored by the XML API and S3. See\nsutil help creds' for more information on impersonating service\ncounts.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "-i",
       "nargs": "0",
       "type": "bool",
       "value": ""

@@ -47,6 +47,26 @@ _GKE_DEPLOY_PROD = 'gcr.io/cloud-builders/gke-deploy:stable'
 _CLOUD_BUILD_DEPLOY_TAGS = [
     'gcp-cloud-build-deploy', 'gcp-cloud-build-deploy-gcloud'
 ]
+_SUGGESTED_CONFIGS_PATH = 'gs://{0}/config/{1}/suggested'
+_EXPANDED_CONFIGS_PATH = 'gs://{0}/config/{1}/expanded'
+_COPY_AUDIT_FILES_SCRIPT = '''
+set -e
+
+gsutil cp -r output/suggested {0}
+echo "Copied suggested base configs to {0}"
+gsutil cp -r output/expanded {1}
+echo "Copied expanded configs to {1}"
+'''.format(
+    _SUGGESTED_CONFIGS_PATH.format('{0}', '$BUILD_ID'),
+    _EXPANDED_CONFIGS_PATH.format('{0}', '$BUILD_ID')
+)
+
+# Build step IDs
+_BUILD_BUILD_STEP_ID = 'Build'
+_PUSH_BUILD_STEP_ID = 'Push'
+_PREPARE_DEPLOY_BUILD_STEP_ID = 'Prepare deploy'
+_SAVE_CONFIGS_BUILD_STEP_ID = 'Save configs'
+_APPLY_DEPLOY_BUILD_STEP_ID = 'Apply deploy'
 
 
 class FailedDeployException(core_exceptions.Error):
@@ -96,7 +116,7 @@ class DeployGKE(base.Command):
         help="""
         Default tag to use with a 'docker build' image creation. Cloud Build
         runs a remote 'docker build -t $TAG .' command, where $TAG is the tag,
-        in the format ```gcr.io/$PROJECT_ID/<source directory>:$SHORT_SHA```.
+        in the format 'gcr.io/$PROJECT_ID/<source directory>:$SHORT_SHA'.
 
         Your source must include a Dockerfile. For instructions on building
         using a Dockerfile see
@@ -109,10 +129,17 @@ class DeployGKE(base.Command):
         'be in the gcr.io/* or *.gcr.io/* namespaces.')
     parser.add_argument(
         '--gcs-staging-dir',
-        help='A directory in Google Cloud Storage to copy the source and '
-        'configs used for staging the build. If the specified bucket does not '
-        'exist, Cloud Build creates one and stages the source and configs at '
-        '```gs://[PROJECT_ID]_cloudbuild/deploy```.')
+        help="""
+        Path to the Google Cloud Storage subdirectory into which to copy the
+        source and configs (suggested base and expanded Kubernetes YAML files)
+        that are used to stage and deploy your app. If the bucket in this path
+        doesn't exist, Cloud Build creates it.
+
+        If this field is not set, the source and configs are written to
+        'gs://[PROJECT_ID]_cloudbuild/deploy', where source is written to the
+        'source' sub-directory and configs are written to the 'config'
+        sub-directory.
+        """)
     parser.add_argument(
         '--app-name',
         help='If specified, the following label is added to the Kubernetes '
@@ -225,21 +252,32 @@ class DeployGKE(base.Command):
           'Your build and deploy timed out. Use the [--timeout=DURATION] flag '
           'to change the timeout threshold.')
 
-    if build.status != messages.Build.StatusValueValuesEnum.SUCCESS:
-      raise FailedDeployException(build)
+    suggested_configs_path = _SUGGESTED_CONFIGS_PATH.format(
+        self.staging_path, build.id)
+    expanded_configs_path = _EXPANDED_CONFIGS_PATH.format(
+        self.staging_path, build.id)
 
-    # Get location of suggested config bucket from gsutil build step
-    suggested_configs = build.steps[-1].args[-1]
+    if build.status != messages.Build.StatusValueValuesEnum.SUCCESS:
+      save_configs_build_step = next((
+          x for x in build.steps if x.id == _SAVE_CONFIGS_BUILD_STEP_ID
+      ), None)
+
+      status = save_configs_build_step.status
+      if status == messages.BuildStep.StatusValueValuesEnum.SUCCESS:
+        log.status.Print(
+            'You can find the configuration files for this attempt at {}.'
+            .format(expanded_configs_path)
+        )
+      raise FailedDeployException(build)
 
     log.status.Print(
         'Successfully deployed to your Google Kubernetes Engine cluster.\n\n'
         'You can find the configuration files of the deployed Kubernetes '
-        'objects stored at {expanded} These configurations are expanded by the '
-        'deployer with additional labels like app name and version.\n\n'
+        'objects stored at {expanded}.\n\n'
         'You can also find suggested base Kubernetes configuration files '
-        'created by the deployer at {suggested}'.format(
-            expanded=build.artifacts.objects.location,
-            suggested=suggested_configs))
+        'at {suggested}.'.format(
+            expanded=expanded_configs_path,
+            suggested=suggested_configs_path))
     return
 
   def _CreateBuildFromArgs(self, args, messages):
@@ -323,6 +361,7 @@ class DeployGKE(base.Command):
             'Tag value must be in the gcr.io/* or *.gcr.io/* namespace.')
       build.steps.append(
           messages.BuildStep(
+              id=_BUILD_BUILD_STEP_ID,
               name='gcr.io/cloud-builders/docker',
               args=[
                   'build', '--network', 'cloudbuild', '--no-cache', '-t',
@@ -331,6 +370,7 @@ class DeployGKE(base.Command):
           ))
       build.steps.append(
           messages.BuildStep(
+              id=_PUSH_BUILD_STEP_ID,
               name='gcr.io/cloud-builders/docker', args=['push', args.tag]))
 
     if args.image and (properties.VALUES.builds.check_tag.GetBool() and
@@ -347,49 +387,64 @@ class DeployGKE(base.Command):
 
     image = args.image if args.image else args.tag
 
-    deploy_step = messages.BuildStep(
+    prepare_deploy_step = messages.BuildStep(
+        id=_PREPARE_DEPLOY_BUILD_STEP_ID,
         name=_GKE_DEPLOY_PROD,
         args=[
-            'run',
+            'prepare',
             '--image={}'.format(image),
-            '--cluster={}'.format(args.cluster),
-            '--location={}'.format(args.location),
             '--namespace={}'.format(args.namespace),
             '--output=output',
-            '--label=gcb-build-id=$BUILD_ID',
+            '--annotation=gcb-build-id=$BUILD_ID',
         ],
     )
     image_name = image.split('/')[-1]
     image_with_digest = image_name.split('@')
     image_with_tag = image_name.split(':')
     if args.app_name:
-      deploy_step.args.append('--app={}'.format(args.app_name))
+      prepare_deploy_step.args.append('--app={}'.format(args.app_name))
     else:
       if len(image_with_digest) > 1:
-        deploy_step.args.append('--app={}'.format(image_with_digest[0]))
+        prepare_deploy_step.args.append('--app={}'.format(image_with_digest[0]))
       else:
-        deploy_step.args.append('--app={}'.format(image_with_tag[0]))
+        prepare_deploy_step.args.append('--app={}'.format(image_with_tag[0]))
 
     if args.app_version:
-      deploy_step.args.append('--version={}'.format(args.app_version))
+      prepare_deploy_step.args.append('--version={}'.format(args.app_version))
     elif len(image_with_digest) == 1 and len(image_with_tag) > 1:
-      deploy_step.args.append('--version={}'.format(image_with_tag[1]))
+      prepare_deploy_step.args.append('--version={}'.format(image_with_tag[1]))
     elif args.source:
       if git.IsGithubRepository(
           args.source) and not git.HasPendingChanges(args.source):
         short_sha = git.GetShortGitHeadRevision(args.source)
         if short_sha:
-          deploy_step.args.append('--version={}'.format(short_sha))
+          prepare_deploy_step.args.append('--version={}'.format(short_sha))
 
     if args.config:
-      deploy_step.args.append('--filename={}'.format(args.config))
+      prepare_deploy_step.args.append('--filename={}'.format(args.config))
     if args.expose:
-      deploy_step.args.append('--expose={}'.format(args.expose))
-    if build.timeout is not None:
-      deploy_step.args.append('--timeout={}'.format(build.timeout))
+      prepare_deploy_step.args.append('--expose={}'.format(args.expose))
 
     # Append before the gsutil copy step
-    build.steps.insert(-1, deploy_step)
+    build.steps.insert(-1, prepare_deploy_step)
+
+    apply_deploy_step = messages.BuildStep(
+        id=_APPLY_DEPLOY_BUILD_STEP_ID,
+        name=_GKE_DEPLOY_PROD,
+        args=[
+            'apply',
+            '--filename=output/expanded',
+            '--namespace={}'.format(args.namespace),
+            '--cluster={}'.format(args.cluster),
+            '--location={}'.format(args.location)
+        ],
+    )
+    if build.timeout is not None:
+      apply_deploy_step.args.append('--timeout={}'.format(build.timeout))
+
+    # Append after the gsutil copy step
+    build.steps.append(apply_deploy_step)
+
     return build
 
   def _StageSourceAndConfigFiles(self, args, messages, build):
@@ -499,23 +554,25 @@ class DeployGKE(base.Command):
               object=staged_source_obj.name,
               generation=staged_source_obj.generation,
           ))
-    if gcs_staging_dir_obj:
-      config_path = gcs_staging_dir.bucket + '/' + gcs_staging_dir_obj
-    else:
-      config_path = gcs_staging_dir.bucket
 
-    build.artifacts = messages.Artifacts(
-        objects=messages.ArtifactObjects(
-            location='gs://{}/config/$BUILD_ID/expanded'.format(config_path),
-            paths=['output/expanded/*'],
-        ))
+    if gcs_staging_dir_obj:
+      staging_path = gcs_staging_dir.bucket + '/' + gcs_staging_dir_obj
+    else:
+      staging_path = gcs_staging_dir.bucket
+
+    # TODO(b/139489312): Revisit when implementing `gcloud builds configure
+    #  gke`, since it will require refactoring this entire file.
+    #  This is the easiest way to propagate staging_path up for now.
+    self.staging_path = staging_path
 
     build.steps.append(
         messages.BuildStep(
+            id=_SAVE_CONFIGS_BUILD_STEP_ID,
             name='gcr.io/cloud-builders/gsutil',
+            entrypoint='sh',
             args=[
-                'cp', '-r', 'output/suggested',
-                'gs://{}/config/$BUILD_ID/suggested'.format(config_path)
+                '-c',
+                _COPY_AUDIT_FILES_SCRIPT.format(staging_path)
             ],
         ))
     return

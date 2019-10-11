@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
@@ -80,6 +81,7 @@ class Update(base.UpdateCommand):
 
   def _Run(self, args, is_alpha=False):
     sink_ref = util.GetSinkReference(args.sink_name, args)
+    sink = self.GetSink(util.GetParentFromArgs(args), sink_ref)
 
     sink_data = {'name': sink_ref.sinksId}
     update_mask = []
@@ -111,8 +113,23 @@ class Update(base.UpdateCommand):
         sink_data['bigqueryOptions'] = bigquery_options
         update_mask.append('bigquery_options.use_partitioned_tables')
 
+      sink_data['exclusions'] = []
       if args.IsSpecified('clear_exclusions'):
         update_mask.append('exclusions')
+      elif args.IsSpecified('remove_exclusions'):
+        update_mask.append('exclusions')
+        exclusions_to_remove = args.remove_exclusions
+        for exclusion in sink.exclusions:
+          if exclusion.name in exclusions_to_remove:
+            exclusions_to_remove.remove(exclusion.name)
+          else:
+            sink_data['exclusions'].append(exclusion)
+
+        if exclusions_to_remove:
+          raise calliope_exceptions.InvalidArgumentException(
+              '--remove-exclusions',
+              'Exclusions {0} do not exist'.format(
+                  ','.join(exclusions_to_remove)))
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
@@ -120,7 +137,6 @@ class Update(base.UpdateCommand):
 
     # Check for legacy configuration, and let users decide if they still want
     # to update the sink with new settings.
-    sink = self.GetSink(util.GetParentFromArgs(args), sink_ref)
     if 'cloud-logs@' in sink.writerIdentity:
       console_io.PromptContinue(
           'This update will create a new writerIdentity (service account) for '
@@ -193,6 +209,11 @@ class UpdateAlpha(Update):
     parser.add_argument(
         '--clear-exclusions', action='store_true',
         help=('Remove all logging exclusions.'))
+    parser.add_argument(
+        '--remove-exclusions',
+        type=arg_parsers.ArgList(),
+        metavar='EXCLUSION ID',
+        help=('Specify the name of the Logging exclusion(s) to delete.'))
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

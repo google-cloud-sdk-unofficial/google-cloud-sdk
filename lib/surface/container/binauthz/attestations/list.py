@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import attestors
 from googlecloudsdk.api_lib.container.binauthz import containeranalysis
+from googlecloudsdk.api_lib.container.binauthz import containeranalysis_apis as ca_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
@@ -86,7 +87,8 @@ class List(base.ListCommand):
         'containeranalysis.projects.notes',
         client.GetNoteAttr(attestor).noteReference, {})
 
-    client = containeranalysis.Client()
+    client = containeranalysis.Client(ca_apis.GetApiVersion(
+        self.ReleaseTrack()))
     return client.YieldAttestations(
         note_ref=note_ref,
         artifact_url=normalized_artifact_url,
