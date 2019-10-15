@@ -19,12 +19,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc.jobs import pig
 from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Pig(pig.PigBase, submitter.JobSubmitter):
   """Submit a Pig job to a cluster.
 
@@ -56,38 +54,6 @@ class Pig(pig.PigBase, submitter.JobSubmitter):
     submitter.JobSubmitter.ConfigureJob(messages, job, args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PigBeta(pig.PigBase, submitter.JobSubmitterBeta):
-  """Submit a Pig job to a cluster.
-
-  Submit a Pig job to a cluster.
-
-  ## EXAMPLES
-
-  To submit a Pig job with a local script, run:
-
-    $ {command} --cluster my_cluster --file my_queries.pig
-
-  To submit a Pig job with inline queries, run:
-
-    $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt'
-    AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word"
-    -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE
-    group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
-  """
-
-  @staticmethod
-  def Args(parser):
-    pig.PigBase.Args(parser)
-    submitter.JobSubmitterBeta.Args(parser)
-
-  def ConfigureJob(self, messages, job, args):
-    pig.PigBase.ConfigureJob(messages, job, self.files_by_type,
-                             self.BuildLoggingConfig(
-                                 messages, args.driver_log_levels), args)
-    submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)
-
-
 Pig.detailed_help = {
     'EXAMPLES': """\
         To submit a Pig job with a local script, run:
@@ -99,4 +65,3 @@ Pig.detailed_help = {
           $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
         """,
 }
-PigBeta.detailed_help = Pig.detailed_help

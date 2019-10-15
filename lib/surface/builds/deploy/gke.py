@@ -29,6 +29,8 @@ from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.command_lib.builds import staging_bucket_util
+from googlecloudsdk.command_lib.builds.deploy import build_util
 from googlecloudsdk.command_lib.builds.deploy import git
 from googlecloudsdk.command_lib.cloudbuild import execution
 from googlecloudsdk.core import exceptions as core_exceptions
@@ -39,34 +41,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import times
 
-import six
-
 _ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
-
-_GKE_DEPLOY_PROD = 'gcr.io/cloud-builders/gke-deploy:stable'
-_CLOUD_BUILD_DEPLOY_TAGS = [
-    'gcp-cloud-build-deploy', 'gcp-cloud-build-deploy-gcloud'
-]
-_SUGGESTED_CONFIGS_PATH = 'gs://{0}/config/{1}/suggested'
-_EXPANDED_CONFIGS_PATH = 'gs://{0}/config/{1}/expanded'
-_COPY_AUDIT_FILES_SCRIPT = '''
-set -e
-
-gsutil cp -r output/suggested {0}
-echo "Copied suggested base configs to {0}"
-gsutil cp -r output/expanded {1}
-echo "Copied expanded configs to {1}"
-'''.format(
-    _SUGGESTED_CONFIGS_PATH.format('{0}', '$BUILD_ID'),
-    _EXPANDED_CONFIGS_PATH.format('{0}', '$BUILD_ID')
-)
-
-# Build step IDs
-_BUILD_BUILD_STEP_ID = 'Build'
-_PUSH_BUILD_STEP_ID = 'Push'
-_PREPARE_DEPLOY_BUILD_STEP_ID = 'Prepare deploy'
-_SAVE_CONFIGS_BUILD_STEP_ID = 'Save configs'
-_APPLY_DEPLOY_BUILD_STEP_ID = 'Apply deploy'
 
 
 class FailedDeployException(core_exceptions.Error):
@@ -207,105 +182,6 @@ class DeployGKE(base.Command):
       FailedDeployException: If the build is completed and not 'SUCCESS'.
     """
 
-    client = cloudbuild_util.GetClientInstance()
-    messages = cloudbuild_util.GetMessagesModule()
-
-    build_config = self._CreateBuildFromArgs(args, messages)
-
-    # Start the build
-    project = properties.VALUES.core.project.Get(required=True)
-    op = client.projects_builds.Create(
-        messages.CloudbuildProjectsBuildsCreateRequest(
-            build=build_config, projectId=project))
-    log.debug('submitting build: ' + repr(build_config))
-
-    json = encoding.MessageToJson(op.metadata)
-    build = encoding.JsonToMessage(messages.BuildOperationMetadata, json).build
-
-    build_ref = resources.REGISTRY.Create(
-        collection='cloudbuild.projects.builds',
-        projectId=build.projectId,
-        id=build.id)
-
-    log.status.Print('Starting Cloud Build to build and deploy to the target '
-                     'Google Kubernetes Engine cluster...\n')
-
-    log.CreatedResource(build_ref)
-    if build.logUrl:
-      log.status.Print(
-          'Logs are available at [{log_url}].'.format(log_url=build.logUrl))
-    else:
-      log.status.Print('Logs are available in the Cloud Console.')
-
-    if args.async_:
-      return
-
-    mash_handler = execution.MashHandler(
-        execution.GetCancelBuildHandler(client, messages, build_ref))
-
-    # Otherwise, logs are streamed from GCS.
-    with execution_utils.CtrlCSection(mash_handler):
-      build = cb_logs.CloudBuildClient(client, messages).Stream(build_ref)
-
-    if build.status == messages.Build.StatusValueValuesEnum.TIMEOUT:
-      log.status.Print(
-          'Your build and deploy timed out. Use the [--timeout=DURATION] flag '
-          'to change the timeout threshold.')
-
-    suggested_configs_path = _SUGGESTED_CONFIGS_PATH.format(
-        self.staging_path, build.id)
-    expanded_configs_path = _EXPANDED_CONFIGS_PATH.format(
-        self.staging_path, build.id)
-
-    if build.status != messages.Build.StatusValueValuesEnum.SUCCESS:
-      save_configs_build_step = next((
-          x for x in build.steps if x.id == _SAVE_CONFIGS_BUILD_STEP_ID
-      ), None)
-
-      status = save_configs_build_step.status
-      if status == messages.BuildStep.StatusValueValuesEnum.SUCCESS:
-        log.status.Print(
-            'You can find the configuration files for this attempt at {}.'
-            .format(expanded_configs_path)
-        )
-      raise FailedDeployException(build)
-
-    log.status.Print(
-        'Successfully deployed to your Google Kubernetes Engine cluster.\n\n'
-        'You can find the configuration files of the deployed Kubernetes '
-        'objects stored at {expanded}.\n\n'
-        'You can also find suggested base Kubernetes configuration files '
-        'at {suggested}.'.format(
-            expanded=expanded_configs_path,
-            suggested=suggested_configs_path))
-    return
-
-  def _CreateBuildFromArgs(self, args, messages):
-    """Creates the Cloud Build config from the arguments.
-
-    Args:
-      args: argsparse object from the DeployGKE command.
-      messages: Cloud Build messages module.
-
-    Returns:
-      messages.Build, the Cloud Build config.
-    """
-    build = messages.Build(steps=[], tags=_CLOUD_BUILD_DEPLOY_TAGS)
-
-    if args.app_name:
-      build.tags.append(args.app_name)
-
-    build_timeout = properties.VALUES.builds.timeout.Get()
-
-    if build_timeout is not None:
-      try:
-        # A bare number is interpreted as seconds.
-        build_timeout_secs = int(build_timeout)
-      except ValueError:
-        build_timeout_duration = times.ParseDuration(build_timeout)
-        build_timeout_secs = int(build_timeout_duration.total_seconds)
-      build.timeout = six.text_type(build_timeout_secs) + 's'
-
     if args.source is None:
       if args.tag or args.tag_default:
         raise c_exceptions.RequiredArgumentException(
@@ -322,6 +198,105 @@ class DeployGKE(base.Command):
           'SOURCE', 'Source should not be provided when no Kubernetes '
           'configs and no docker builds are required.')
 
+    image = self._DetermineImageFromArgs(args)
+
+    # Determine app_name
+    if args.app_name:
+      app_name = args.app_name
+    else:
+      app_name = self._ImageName(image)
+
+    # Determine app_version
+    app_version = ''
+    image_has_tag = '@' not in image and ':' in image
+    if args.app_version:
+      app_version = args.app_version
+    elif image_has_tag:
+      app_version = image.split(':')[-1]  # Set version to tag
+    elif args.source:
+      if git.IsGithubRepository(
+          args.source) and not git.HasPendingChanges(args.source):
+        short_sha = git.GetShortGitHeadRevision(args.source)
+        if short_sha:
+          app_version = short_sha
+
+    # Validate expose
+    if args.expose and args.expose < 0:
+      raise c_exceptions.InvalidArgumentException('--expose',
+                                                  'port number is invalid')
+
+    # Determine gcs_staging_dir_bucket and gcs_staging_dir_object
+    if args.gcs_staging_dir is None:
+      gcs_staging_dir_bucket = staging_bucket_util.GetDefaultStagingBucket()
+      gcs_staging_dir_object = 'deploy'
+    else:
+      try:
+        gcs_staging_dir_ref = resources.REGISTRY.Parse(
+            args.gcs_staging_dir, collection='storage.objects')
+        gcs_staging_dir_object = gcs_staging_dir_ref.object
+      except resources.WrongResourceCollectionException:
+        gcs_staging_dir_ref = resources.REGISTRY.Parse(
+            args.gcs_staging_dir, collection='storage.buckets')
+        gcs_staging_dir_object = None
+      gcs_staging_dir_bucket = gcs_staging_dir_ref.bucket
+
+    gcs_client = storage_api.StorageClient()
+    gcs_client.CreateBucketIfNotExists(gcs_staging_dir_bucket)
+
+    # If we are using a default bucket check that it is owned by user project
+    # (b/33046325)
+    if (args.gcs_staging_dir is None
+        and not staging_bucket_util.BucketIsInProject(
+            gcs_client, gcs_staging_dir_bucket)):
+      raise c_exceptions.RequiredArgumentException(
+          '--gcs-staging-dir',
+          'A bucket with name {} already exists and is owned by '
+          'another project. Specify a bucket using '
+          '--gcs-staging-dir.'.format(gcs_staging_dir_bucket))
+
+    if gcs_staging_dir_object:
+      gcs_config_staging_path = '{}/{}'.format(
+          gcs_staging_dir_bucket, gcs_staging_dir_object)
+    else:
+      gcs_config_staging_path = gcs_staging_dir_bucket
+
+    if args.source:
+      staged_source = self._StageSource(args.source, gcs_staging_dir_bucket,
+                                        gcs_staging_dir_object)
+    else:
+      staged_source = None
+
+    messages = cloudbuild_util.GetMessagesModule()
+    build_config = build_util.CreateBuild(
+        messages,
+        build_timeout=properties.VALUES.builds.timeout.Get(),
+        build_and_push=(args.tag_default or args.tag),
+        staged_source=staged_source,
+        image=image,
+        dockerfile_path='Dockerfile',
+        app_name=app_name,
+        app_version=app_version,
+        config_path=args.config,
+        namespace=args.namespace,
+        expose_port=args.expose,
+        gcs_config_staging_path=gcs_config_staging_path,
+        cluster=args.cluster,
+        location=args.location,
+        build_tags=([] if not args.app_name else [args.app_name]))
+
+    client = cloudbuild_util.GetClientInstance()
+    self. _SubmitBuild(
+        client, messages, build_config, gcs_config_staging_path, args.async_)
+
+  def _DetermineImageFromArgs(self, args):
+    """Gets the image to use for the build, given the user args.
+
+    Args:
+      args: argsparse object from the DeployGKE command.
+
+    Returns:
+      Full image string representation.
+    """
     if args.tag_default:
       if args.app_name:
         default_name = args.app_name
@@ -350,7 +325,7 @@ class DeployGKE(base.Command):
             'No default container image tag available. Please provide an app '
             'version with --app-version, or provide a valid --tag.')
 
-      args.tag = 'gcr.io/$PROJECT_ID/{name}:{tag}'.format(
+      return 'gcr.io/$PROJECT_ID/{name}:{tag}'.format(
           name=default_name, tag=default_tag)
 
     if args.tag:
@@ -359,220 +334,187 @@ class DeployGKE(base.Command):
         raise c_exceptions.InvalidArgumentException(
             '--tag',
             'Tag value must be in the gcr.io/* or *.gcr.io/* namespace.')
-      build.steps.append(
-          messages.BuildStep(
-              id=_BUILD_BUILD_STEP_ID,
-              name='gcr.io/cloud-builders/docker',
-              args=[
-                  'build', '--network', 'cloudbuild', '--no-cache', '-t',
-                  args.tag, '.'
-              ],
-          ))
-      build.steps.append(
-          messages.BuildStep(
-              id=_PUSH_BUILD_STEP_ID,
-              name='gcr.io/cloud-builders/docker', args=['push', args.tag]))
+      return args.tag
 
-    if args.image and (properties.VALUES.builds.check_tag.GetBool() and
-                       'gcr.io/' not in args.image):
-      raise c_exceptions.InvalidArgumentException(
-          '--image',
-          'Image value must be in the gcr.io/* or *.gcr.io/* namespace.')
+    if args.image:
+      if (properties.VALUES.builds.check_tag.GetBool() and
+          'gcr.io/' not in args.image):
+        raise c_exceptions.InvalidArgumentException(
+            '--image',
+            'Image value must be in the gcr.io/* or *.gcr.io/* namespace.')
+      return args.image
 
-    if args.expose and args.expose < 0:
-      raise c_exceptions.InvalidArgumentException('EXPOSE',
-                                                  'port number is invalid')
-
-    self._StageSourceAndConfigFiles(args, messages, build)
-
-    image = args.image if args.image else args.tag
-
-    prepare_deploy_step = messages.BuildStep(
-        id=_PREPARE_DEPLOY_BUILD_STEP_ID,
-        name=_GKE_DEPLOY_PROD,
-        args=[
-            'prepare',
-            '--image={}'.format(image),
-            '--namespace={}'.format(args.namespace),
-            '--output=output',
-            '--annotation=gcb-build-id=$BUILD_ID',
-        ],
-    )
-    image_name = image.split('/')[-1]
-    image_with_digest = image_name.split('@')
-    image_with_tag = image_name.split(':')
-    if args.app_name:
-      prepare_deploy_step.args.append('--app={}'.format(args.app_name))
-    else:
-      if len(image_with_digest) > 1:
-        prepare_deploy_step.args.append('--app={}'.format(image_with_digest[0]))
-      else:
-        prepare_deploy_step.args.append('--app={}'.format(image_with_tag[0]))
-
-    if args.app_version:
-      prepare_deploy_step.args.append('--version={}'.format(args.app_version))
-    elif len(image_with_digest) == 1 and len(image_with_tag) > 1:
-      prepare_deploy_step.args.append('--version={}'.format(image_with_tag[1]))
-    elif args.source:
-      if git.IsGithubRepository(
-          args.source) and not git.HasPendingChanges(args.source):
-        short_sha = git.GetShortGitHeadRevision(args.source)
-        if short_sha:
-          prepare_deploy_step.args.append('--version={}'.format(short_sha))
-
-    if args.config:
-      prepare_deploy_step.args.append('--filename={}'.format(args.config))
-    if args.expose:
-      prepare_deploy_step.args.append('--expose={}'.format(args.expose))
-
-    # Append before the gsutil copy step
-    build.steps.insert(-1, prepare_deploy_step)
-
-    apply_deploy_step = messages.BuildStep(
-        id=_APPLY_DEPLOY_BUILD_STEP_ID,
-        name=_GKE_DEPLOY_PROD,
-        args=[
-            'apply',
-            '--filename=output/expanded',
-            '--namespace={}'.format(args.namespace),
-            '--cluster={}'.format(args.cluster),
-            '--location={}'.format(args.location)
-        ],
-    )
-    if build.timeout is not None:
-      apply_deploy_step.args.append('--timeout={}'.format(build.timeout))
-
-    # Append after the gsutil copy step
-    build.steps.append(apply_deploy_step)
-
-    return build
-
-  def _StageSourceAndConfigFiles(self, args, messages, build):
-    """Stages the source and config files in a staging Google Cloud Storage bucket.
+  def _ImageName(self, image):
+    """Given a full image string, return just the name of the image.
 
     Args:
-      args: argsparse object from the DeployGKE command.
-      messages: Cloud Build messages module.
-      build: Cloud Build config.
+      image: Full image string, represented in one of the following ways:
+        - <protocol>/<name> (e.g., gcr.io/my-image)
+        - <protocol>/<name>:<tag> (e.g., gcr.io/my-image:my-tag)
+        - <protocol>/<name>@<digest> (e.g., gcr.io/my-image@sha256:asdfasdf)
+
+    Returns:
+      The image, minus the protocol, tag, and/or digest.
     """
 
-    project = properties.VALUES.core.project.Get(required=True)
-    safe_project = project.replace(':', '_')
-    safe_project = safe_project.replace('.', '_')
-    # The string 'google' is not allowed in bucket names.
-    safe_project = safe_project.replace('google', 'elgoog')
+    image_without_protocol = image.split('/')[-1]
+    if '@' in image_without_protocol:
+      return image_without_protocol.split('@')[0]
+    elif ':' in image:
+      return image_without_protocol.split(':')[0]
+    else:
+      return image_without_protocol
+
+  def _StageSource(self, source, gcs_staging_dir_bucket,
+                   gcs_staging_dir_object):
+    """Stages source onto the provided bucket and returns its reference.
+
+    Args:
+      source: Path to source repo as a directory on a local disk or a
+        gzipped archive file (.tar.gz) in Google Cloud Storage.
+      gcs_staging_dir_bucket: Bucket name of staging directory.
+      gcs_staging_dir_object: Bucket object of staging directory.
+
+    Returns:
+      Reference to the staged source, which has bucket, name, and generation
+        fields.
+    """
+
+    suffix = '.tgz'
+    if source.startswith('gs://') or os.path.isfile(source):
+      _, suffix = os.path.splitext(source)
+
+    source_object = 'source/{stamp}-{uuid}{suffix}'.format(
+        stamp=times.GetTimeStampFromDateTime(times.Now()),
+        uuid=uuid.uuid4().hex,
+        suffix=suffix,
+    )
+
+    if gcs_staging_dir_object:
+      source_object = gcs_staging_dir_object + '/' + source_object
+
+    gcs_source_staging = resources.REGISTRY.Create(
+        collection='storage.objects',
+        bucket=gcs_staging_dir_bucket,
+        object=source_object)
 
     gcs_client = storage_api.StorageClient()
-
-    default_bucket_name = '{}_cloudbuild'.format(safe_project)
-
-    gcs_staging_dir_name = (
-        args.gcs_staging_dir if args.gcs_staging_dir else
-        'gs://{}/deploy'.format(default_bucket_name))
-
-    try:
-      gcs_staging_dir = resources.REGISTRY.Parse(
-          gcs_staging_dir_name, collection='storage.objects')
-      gcs_staging_dir_obj = gcs_staging_dir.object
-    except resources.WrongResourceCollectionException:
-      gcs_staging_dir = resources.REGISTRY.Parse(
-          gcs_staging_dir_name, collection='storage.buckets')
-      gcs_staging_dir_obj = None
-
-    gcs_client.CreateBucketIfNotExists(gcs_staging_dir.bucket)
-
-    if args.gcs_staging_dir is None:
-      # Check that the default bucket is also owned by the project (b/33046325)
-      bucket_list_req = gcs_client.messages.StorageBucketsListRequest(
-          project=project, prefix=default_bucket_name)
-      bucket_list = gcs_client.client.buckets.List(bucket_list_req)
-
-      if not any(
-          bucket.id == default_bucket_name for bucket in bucket_list.items):
-        raise c_exceptions.RequiredArgumentException(
-            '--gcs-staging-dir',
-            'A bucket with name {} already exists and is owned by '
-            'another project. Specify a bucket using '
-            '--gcs-staging-dir.'.format(default_bucket_name))
-
-    if args.source:
-      suffix = '.tgz'
-      if args.source.startswith('gs://') or os.path.isfile(args.source):
-        _, suffix = os.path.splitext(args.source)
-
-      staged_source = 'source/{stamp}-{uuid}{suffix}'.format(
-          stamp=times.GetTimeStampFromDateTime(times.Now()),
-          uuid=uuid.uuid4().hex,
-          suffix=suffix,
-      )
-
-      if gcs_staging_dir_obj:
-        staged_source = gcs_staging_dir_obj + '/' + staged_source
-      gcs_source_staging = resources.REGISTRY.Create(
-          collection='storage.objects',
-          bucket=gcs_staging_dir.bucket,
-          object=staged_source)
-
-      staged_source_obj = None
-
-      if args.source.startswith('gs://'):
-        gcs_source = resources.REGISTRY.Parse(
-            args.source, collection='storage.objects')
-        staged_source_obj = gcs_client.Rewrite(gcs_source, gcs_source_staging)
-      else:
-        if not os.path.exists(args.source):
-          raise c_exceptions.BadFileException(
-              'could not find source [{src}]'.format(src=args.source))
-        elif os.path.isdir(args.source):
-          source_snapshot = snapshot.Snapshot(args.source)
-          size_str = resource_transform.TransformSize(
-              source_snapshot.uncompressed_size)
-          log.status.Print(
-              'Creating temporary tarball archive of {num_files} file(s)'
-              ' totalling {size} before compression.'.format(
-                  num_files=len(source_snapshot.files), size=size_str))
-          staged_source_obj = source_snapshot.CopyTarballToGCS(
-              gcs_client, gcs_source_staging)
-        elif os.path.isfile(args.source):
-          unused_root, ext = os.path.splitext(args.source)
-          if ext not in _ALLOWED_SOURCE_EXT:
-            raise c_exceptions.BadFileException(
-                'Local file [{src}] is none of '.format(src=args.source) +
-                ', '.join(_ALLOWED_SOURCE_EXT))
-          log.status.Print('Uploading local file [{src}] to '
-                           '[gs://{bucket}/{object}].'.format(
-                               src=args.source,
-                               bucket=gcs_source_staging.bucket,
-                               object=gcs_source_staging.object,
-                           ))
-          staged_source_obj = gcs_client.CopyFileToGCS(args.source,
-                                                       gcs_source_staging)
-
-      build.source = messages.Source(
-          storageSource=messages.StorageSource(
-              bucket=staged_source_obj.bucket,
-              object=staged_source_obj.name,
-              generation=staged_source_obj.generation,
-          ))
-
-    if gcs_staging_dir_obj:
-      staging_path = gcs_staging_dir.bucket + '/' + gcs_staging_dir_obj
+    if source.startswith('gs://'):
+      gcs_source = resources.REGISTRY.Parse(
+          source, collection='storage.objects')
+      staged_source = gcs_client.Rewrite(gcs_source, gcs_source_staging)
     else:
-      staging_path = gcs_staging_dir.bucket
+      if not os.path.exists(source):
+        raise c_exceptions.BadFileException(
+            'could not find source [{src}]'.format(src=source))
+      elif os.path.isdir(source):
+        source_snapshot = snapshot.Snapshot(source)
+        size_str = resource_transform.TransformSize(
+            source_snapshot.uncompressed_size)
+        log.status.Print(
+            'Creating temporary tarball archive of {num_files} file(s)'
+            ' totalling {size} before compression.'.format(
+                num_files=len(source_snapshot.files), size=size_str))
+        staged_source = source_snapshot.CopyTarballToGCS(
+            gcs_client, gcs_source_staging)
+      elif os.path.isfile(source):
+        unused_root, ext = os.path.splitext(source)
+        if ext not in _ALLOWED_SOURCE_EXT:
+          raise c_exceptions.BadFileException(
+              'Local file [{src}] is none of '.format(src=source) +
+              ', '.join(_ALLOWED_SOURCE_EXT))
+        log.status.Print('Uploading local file [{src}] to '
+                         '[gs://{bucket}/{object}].'.format(
+                             src=source,
+                             bucket=gcs_source_staging.bucket,
+                             object=gcs_source_staging.object,
+                         ))
+        staged_source = gcs_client.CopyFileToGCS(source,
+                                                 gcs_source_staging)
 
-    # TODO(b/139489312): Revisit when implementing `gcloud builds configure
-    #  gke`, since it will require refactoring this entire file.
-    #  This is the easiest way to propagate staging_path up for now.
-    self.staging_path = staging_path
+    return staged_source
 
-    build.steps.append(
-        messages.BuildStep(
-            id=_SAVE_CONFIGS_BUILD_STEP_ID,
-            name='gcr.io/cloud-builders/gsutil',
-            entrypoint='sh',
-            args=[
-                '-c',
-                _COPY_AUDIT_FILES_SCRIPT.format(staging_path)
-            ],
-        ))
-    return
+  def _SubmitBuild(
+      self, client, messages, build_config, gcs_config_staging_path, async_):
+    """Submits the build.
+
+    Args:
+      client: Client used to make calls to Cloud Build API.
+      messages: Cloud Build messages module. i.e., the return value of
+        cloudbuild_util.GetMessagesModule().
+      build_config: Build to submit.
+      gcs_config_staging_path: A path to a GCS subdirectory where deployed
+        configs will be saved to. This value will be printed to the user.
+      async_: If true, exit immediately after submitting Build, rather than
+        waiting for it to complete or fail.
+
+    Raises:
+      FailedDeployException: If the build is completed and not 'SUCCESS'.
+    """
+    project = properties.VALUES.core.project.Get(required=True)
+    op = client.projects_builds.Create(
+        messages.CloudbuildProjectsBuildsCreateRequest(
+            build=build_config, projectId=project))
+    log.debug('submitting build: ' + str(build_config))
+
+    json = encoding.MessageToJson(op.metadata)
+    build = encoding.JsonToMessage(messages.BuildOperationMetadata, json).build
+
+    build_ref = resources.REGISTRY.Create(
+        collection='cloudbuild.projects.builds',
+        projectId=build.projectId,
+        id=build.id)
+
+    log.status.Print('Starting Cloud Build to build and deploy to the target '
+                     'Google Kubernetes Engine cluster...\n')
+
+    log.CreatedResource(build_ref)
+    if build.logUrl:
+      log.status.Print(
+          'Logs are available at [{log_url}].'.format(log_url=build.logUrl))
+    else:
+      log.status.Print('Logs are available in the Cloud Console.')
+
+    suggested_configs_path = build_util.SuggestedConfigsPath(
+        gcs_config_staging_path, build.id)
+    expanded_configs_path = build_util.ExpandedConfigsPath(
+        gcs_config_staging_path, build.id)
+
+    if async_:
+      log.status.Print(
+          '\nIf successful, you can find the configuration files of the deployed '
+          'Kubernetes objects stored at {expanded}.\n\n'
+          'You will also be able to find the suggested base Kubernetes '
+          'configuration files at {suggested}.'.format(
+              expanded=expanded_configs_path,
+              suggested=suggested_configs_path))
+      # Return here, otherwise, logs are streamed from GCS.
+      return
+
+    mash_handler = execution.MashHandler(
+        execution.GetCancelBuildHandler(client, messages, build_ref))
+
+    with execution_utils.CtrlCSection(mash_handler):
+      build = cb_logs.CloudBuildClient(client, messages).Stream(build_ref)
+
+    if build.status == messages.Build.StatusValueValuesEnum.TIMEOUT:
+      log.status.Print(
+          'Your build and deploy timed out. Use the [--timeout=DURATION] flag '
+          'to change the timeout threshold.')
+
+    if build.status != messages.Build.StatusValueValuesEnum.SUCCESS:
+      if build_util.SaveConfigsBuildStepIsSuccessful(messages, build):
+        log.status.Print(
+            'You can find the configuration files for this attempt at {}.'
+            .format(expanded_configs_path)
+        )
+      raise FailedDeployException(build)
+
+    log.status.Print(
+        'Successfully deployed to your Google Kubernetes Engine cluster.\n\n'
+        'You can find the configuration files of the deployed Kubernetes '
+        'objects stored at {expanded}.\n\n'
+        'You can also find suggested base Kubernetes configuration files '
+        'at {suggested}.'.format(
+            expanded=expanded_configs_path,
+            suggested=suggested_configs_path))

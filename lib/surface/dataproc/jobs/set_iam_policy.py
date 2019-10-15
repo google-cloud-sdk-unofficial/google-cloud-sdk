@@ -36,9 +36,10 @@ class SetIamPolicy(base.Command):
 
   detailed_help = iam_util.GetDetailedHelpForSetIamPolicy('job')
 
-  @staticmethod
-  def Args(parser):
-    flags.AddJobFlag(parser, 'set the policy on')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddJobResourceArg(parser, 'set the policy on', dataproc.api_version)
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):

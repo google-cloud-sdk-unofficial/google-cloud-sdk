@@ -73,6 +73,9 @@ class Update(base.UpdateCommand):
         no_expiration = True
         expiration_period = None
 
+    if dead_letter_topic:
+      dead_letter_topic = args.CONCEPTS.dead_letter_topic.Parse().RelativeName()
+
     try:
       result = client.Patch(
           subscription_ref,

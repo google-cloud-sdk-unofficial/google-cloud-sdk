@@ -28,10 +28,11 @@ from googlecloudsdk.command_lib.dataproc.jobs import spark_r
 class SparkR(spark_r.SparkRBase, base.Command):
   """Add a SparkR job to the workflow template."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     spark_r.SparkRBase.Args(parser)
-    workflow_templates.AddWorkflowTemplatesArgs(parser)
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    workflow_templates.AddWorkflowTemplatesArgs(parser, dataproc.api_version)
 
   def ConfigureJob(self, messages, job, files_by_type, args):
     spark_r.SparkRBase.ConfigureJob(

@@ -23,7 +23,9 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import properties
 
 
@@ -68,6 +70,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddRegionFlag(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, constants.DEFAULT_PAGE_SIZE)
     parser.display_info.AddFormat("""
@@ -85,14 +88,15 @@ class List(base.ListCommand):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
     project = properties.VALUES.core.project.GetOrFail()
-    region = properties.VALUES.dataproc.region.GetOrFail()
+    region = util.ResolveRegion(self.ReleaseTrack())
 
     request = self.GetRequest(dataproc.messages, project, region, args)
 
     return list_pager.YieldFromList(
         dataproc.client.projects_regions_clusters,
         request,
-        limit=args.limit, field='clusters',
+        limit=args.limit,
+        field='clusters',
         batch_size=args.page_size,
         batch_size_attribute='pageSize')
 

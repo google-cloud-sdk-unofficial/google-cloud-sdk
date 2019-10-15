@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Set IAM policy for a workflow template.
 
@@ -35,10 +34,11 @@ class SetIamPolicy(base.Command):
 
   detailed_help = iam_util.GetDetailedHelpForSetIamPolicy('template')
 
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(
-        parser, 'set the policy on', api_version='v1')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddTemplateResourceArg(parser, 'set the policy on',
+                                 dataproc.api_version)
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):
@@ -55,18 +55,3 @@ class SetIamPolicy(base.Command):
 
     return dataproc.client.projects_regions_workflowTemplates.SetIamPolicy(
         request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SetIamPolicyBeta(SetIamPolicy):
-  """Set IAM policy for a workflow template.
-
-  Sets the IAM policy for a workflow template, given a template ID and the
-  policy.
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(
-        parser, 'set the policy on', api_version='v1beta2')
-    iam_util.AddArgForPolicyFile(parser)

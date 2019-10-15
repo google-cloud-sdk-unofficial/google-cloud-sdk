@@ -16,10 +16,12 @@
 
   request:
     collection: cloudkms.projects.locations.keyRings.cryptoKeys
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=options_requestedPolicyVersion
 
   arguments:
     resource:
       help_text: The key for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.kms.resources:key
+
+  iam:
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

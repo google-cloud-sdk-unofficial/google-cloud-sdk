@@ -89,9 +89,8 @@ class Gcloud(base.Group):
         Disable all interactive prompts when running gcloud commands. If input
         is required, defaults will be used, or an error will be raised.
         Overrides the default core/disable_prompts property value for this
-        command invocation. Must be used at the beginning of commands. This
-        is equivalent to setting the environment variable
-        `CLOUDSDK_CORE_DISABLE_PROMPTS` to 1.
+        command invocation. This is equivalent to setting the environment
+        variable `CLOUDSDK_CORE_DISABLE_PROMPTS` to 1.
         """)
 
     trace_group = parser.add_mutually_exclusive_group()

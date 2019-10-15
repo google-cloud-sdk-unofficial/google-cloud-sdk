@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
@@ -31,8 +32,8 @@ from googlecloudsdk.core.console import console_io
 class CreateFromFile(base.CreateCommand):
   """Create a cluster from a file."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         '--file',
         help="""
@@ -44,11 +45,14 @@ class CreateFromFile(base.CreateCommand):
         required=True)
     # TODO(b/80197067): Move defaults to a common location.
     flags.AddTimeoutFlag(parser, default='35m')
+    flags.AddRegionFlag(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     data = console_io.ReadFromFileOrStdin(args.file or '-', binary=False)
-    cluster = export_util.Import(message_type=dataproc.messages.Cluster,
-                                 stream=data)
-    return clusters.CreateCluster(dataproc, cluster, args.async_, args.timeout)
+    cluster = export_util.Import(
+        message_type=dataproc.messages.Cluster, stream=data)
+    cluster_ref = util.ParseCluster(cluster.clusterName, dataproc)
+    return clusters.CreateCluster(dataproc, cluster_ref, cluster, args.async_,
+                                  args.timeout)

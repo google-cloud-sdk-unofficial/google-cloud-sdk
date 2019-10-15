@@ -26,3 +26,6 @@
     resource:
       help_text: The import job for which to set the IAM policy binding.
       spec: !REF googlecloudsdk.command_lib.kms.resources:import_job
+
+  iam:
+    policy_version: 3

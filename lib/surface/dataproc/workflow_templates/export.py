@@ -35,24 +35,18 @@ class Describe(base.DescribeCommand):
   This configuration can be imported at a later time.
   """
 
-  @classmethod
-  def GetApiVersion(cls):
-    """Returns the API version based on the release track."""
-    if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
-      return 'v1beta2'
-    return 'v1'
-
-  @classmethod
-  def GetSchemaPath(cls, for_help=False):
+  @staticmethod
+  def GetSchemaPath(api_version, for_help=False):
     """Returns the resource schema path."""
     return export_util.GetSchemaPath(
-        'dataproc', cls.GetApiVersion(), 'WorkflowTemplate', for_help=for_help)
+        'dataproc', api_version, 'WorkflowTemplate', for_help=for_help)
 
   @classmethod
   def Args(cls, parser):
-    flags.AddTemplateResourceArg(
-        parser, 'export', api_version=cls.GetApiVersion())
-    export_util.AddExportFlags(parser, cls.GetSchemaPath(for_help=True))
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddTemplateResourceArg(parser, 'export', dataproc.api_version)
+    export_util.AddExportFlags(
+        parser, cls.GetSchemaPath(dataproc.api_version, for_help=True))
     flags.AddVersionFlag(parser)
 
   def Run(self, args):
@@ -68,8 +62,8 @@ class Describe(base.DescribeCommand):
       with files.FileWriter(args.destination) as stream:
         export_util.Export(message=workflow_template,
                            stream=stream,
-                           schema_path=self.GetSchemaPath())
+                           schema_path=self.GetSchemaPath(dataproc.api_version))
     else:
       export_util.Export(message=workflow_template,
                          stream=sys.stdout,
-                         schema_path=self.GetSchemaPath())
+                         schema_path=self.GetSchemaPath(dataproc.api_version))

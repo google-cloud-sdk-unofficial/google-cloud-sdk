@@ -29,6 +29,19 @@ from googlecloudsdk.core import properties
 class Export(base.Command):
   """export Cloud Firestore documents to Google Cloud Storage"""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To export all collection groups to `mybucket` in objects prefixed with `my/path`, run:
+
+            $ {command} gs://mybucket/my/path
+
+          To export a specific set of collections groups asynchronously, run:
+
+            $ {command} gs://mybucket/my/path --collection-ids='specific collection group1','specific collection group2' --async
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
@@ -63,4 +76,3 @@ class Export(base.Command):
       operations.WaitForOperation(response)
 
     return response
-

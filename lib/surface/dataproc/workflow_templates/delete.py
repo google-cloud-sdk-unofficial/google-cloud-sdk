@@ -24,13 +24,13 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a workflow template."""
 
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'delete', api_version='v1')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddTemplateResourceArg(parser, 'delete', dataproc.api_version)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -47,12 +47,3 @@ class Delete(base.DeleteCommand):
         cancel_on_no=True)
 
     dataproc.client.projects_regions_workflowTemplates.Delete(request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(Delete):
-  """Delete a workflow template."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(parser, 'delete', api_version='v1beta2')

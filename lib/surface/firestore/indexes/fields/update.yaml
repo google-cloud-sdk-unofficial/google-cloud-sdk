@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Update the index configuration of the given field.
     description: |
@@ -21,15 +21,15 @@
       collection group, in which the list of indexes is explicitly set to [ASCENDING, DESCENDING]:
 
         $ {command} timestamp \
-            collection-group=Events \
-            --index order=ASCENDING \
-            --index order=DESCENDING
+            --collection-group=Events \
+            --index=order=ASCENDING \
+            --index=order=DESCENDING
 
       The following command clears the exemption on the `timestamp` field in the `Events` collection
       group, so that the field will return to inheriting its index settings from its ancestors:
 
         $ {command} timestamp \
-            collection-group=Events --clear-exemption
+            --collection-group=Events --clear-exemption
 
   request:
     collection: firestore.projects.databases.collectionGroups.fields

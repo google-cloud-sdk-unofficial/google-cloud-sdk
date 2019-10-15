@@ -27,10 +27,11 @@ from googlecloudsdk.command_lib.dataproc.jobs import pyspark
 class PySpark(pyspark.PySparkBase, base.Command):
   """Add a PySpark job to the workflow template."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     pyspark.PySparkBase.Args(parser)
-    workflow_templates.AddWorkflowTemplatesArgs(parser)
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    workflow_templates.AddWorkflowTemplatesArgs(parser, dataproc.api_version)
 
   def ConfigureJob(self, messages, job, files_by_type, args):
     pyspark.PySparkBase.ConfigureJob(messages, job, files_by_type,

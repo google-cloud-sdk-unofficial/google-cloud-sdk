@@ -40,9 +40,11 @@ class GetIamPolicy(base.ListCommand):
     $ {command} example-job
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddJobFlag(parser, 'retrieve the policy for')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddJobResourceArg(parser, 'retrieve the policy for',
+                            dataproc.api_version)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):

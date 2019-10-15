@@ -33,6 +33,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.command_lib.builds import staging_bucket_util
 from googlecloudsdk.command_lib.cloudbuild import execution
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions as core_exceptions
@@ -232,17 +233,11 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
       FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
 
-    project = properties.VALUES.core.project.Get(required=True)
-    safe_project = project.replace(':', '_')
-    safe_project = safe_project.replace('.', '_')
-    # The string 'google' is not allowed in bucket names.
-    safe_project = safe_project.replace('google', 'elgoog')
-
-    default_bucket_name = '{}_cloudbuild'.format(safe_project)
-
     default_gcs_source = False
+    default_bucket_name = None
     if args.gcs_source_staging_dir is None:
       default_gcs_source = True
+      default_bucket_name = staging_bucket_util.GetDefaultStagingBucket()
       args.gcs_source_staging_dir = 'gs://{}/source'.format(default_bucket_name)
 
     client = cloudbuild_util.GetClientInstance()
@@ -353,23 +348,13 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
 
       # If no bucket is specified (for the source `default_gcs_source`), check
       # that the default bucket is also owned by the project (b/33046325).
-      if default_gcs_source:
-        # This request returns only the buckets owned by the project.
-        bucket_list_req = gcs_client.messages.StorageBucketsListRequest(
-            project=project, prefix=default_bucket_name)
-        bucket_list = gcs_client.client.buckets.List(bucket_list_req)
-        found_bucket = False
-        for bucket in bucket_list.items:
-          if bucket.id == default_bucket_name:
-            found_bucket = True
-            break
-        if not found_bucket:
-          if default_gcs_source:
-            raise c_exceptions.RequiredArgumentException(
-                'gcs_source_staging_dir',
-                'A bucket with name {} already exists and is owned by '
-                'another project. Specify a bucket using '
-                '--gcs_source_staging_dir.'.format(default_bucket_name))
+      if default_gcs_source and not staging_bucket_util.BucketIsInProject(
+          gcs_client, default_bucket_name):
+        raise c_exceptions.RequiredArgumentException(
+            'gcs-source-staging-dir',
+            'A bucket with name {} already exists and is owned by '
+            'another project. Specify a bucket using '
+            '--gcs-source-staging-dir.'.format(default_bucket_name))
 
       if gcs_source_staging_dir.object:
         staged_object = gcs_source_staging_dir.object + '/' + staged_object

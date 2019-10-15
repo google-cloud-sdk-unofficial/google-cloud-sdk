@@ -29,6 +29,19 @@ from googlecloudsdk.core import properties
 class Import(base.Command):
   """import Cloud Firestore documents from Google Cloud Storage"""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To import all collection groups from `mybucket/my/path`, run:
+
+            $ {command} gs://mybucket/my/path
+
+          To import a specific set of collections groups asynchronously, run:
+
+            $ {command} gs://mybucket/my/path --collection-ids='specific collection group1','specific collection group2' --async
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

@@ -675,6 +675,9 @@
           "items": {
             "$ref": "ClusterInfo"
           }
+        },
+        "arimaResult": {
+          "$ref": "ArimaResult"
         }
       }
     },
@@ -697,6 +700,136 @@
           "description": "Cluster size, the total number of points assigned to the cluster.",
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "ArimaResult": {
+      "id": "ArimaResult",
+      "description": "(Auto-)arima fitting result. Wrap everything in ArimaResult for easier\nrefactoring if we want to use model-specific iteration results.",
+      "type": "object",
+      "properties": {
+        "arimaModelInfo": {
+          "description": "This message is repeated because there are multiple arima models\nfitted in auto-arima. For non-auto-arima model, its size is one.",
+          "type": "array",
+          "items": {
+            "$ref": "ArimaModelInfo"
+          }
+        },
+        "seasonalPeriods": {
+          "description": "Seasonal periods. Repeated because multiple periods are supported for\none time series.",
+          "enumDescriptions": [
+            "",
+            "No seasonality",
+            "Daily period, 24 hours.",
+            "Weekly period, 7 days.",
+            "Monthly period, can be as 30 days or irregular.",
+            "Quarterly period, can be as 90 days or irregular.",
+            "Yearly period, can be as 365 days or irregular."
+          ],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SEASONAL_PERIOD_TYPE_UNSPECIFIED",
+              "NO_SEASONALITY",
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "YEARLY"
+            ]
+          }
+        }
+      }
+    },
+    "ArimaModelInfo": {
+      "id": "ArimaModelInfo",
+      "description": "Arima model information.",
+      "type": "object",
+      "properties": {
+        "nonSeasonalOrder": {
+          "description": "Non-seasonal order.",
+          "$ref": "ArimaOrder"
+        },
+        "arimaCoefficients": {
+          "description": "Arima coefficients.",
+          "$ref": "ArimaCoefficients"
+        },
+        "arimaFittingMetrics": {
+          "description": "Arima fitting metrics.",
+          "$ref": "ArimaFittingMetrics"
+        }
+      }
+    },
+    "ArimaOrder": {
+      "id": "ArimaOrder",
+      "description": "Arima order, can be used for both non-seasonal and seasonal parts.",
+      "type": "object",
+      "properties": {
+        "p": {
+          "description": "Order of the autoregressive part.",
+          "type": "string",
+          "format": "int64"
+        },
+        "d": {
+          "description": "Order of the differencing part.",
+          "type": "string",
+          "format": "int64"
+        },
+        "q": {
+          "description": "Order of the moving-average part.",
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "ArimaCoefficients": {
+      "id": "ArimaCoefficients",
+      "description": "Arima coefficients.",
+      "type": "object",
+      "properties": {
+        "autoRegressiveCoefficients": {
+          "description": "Auto-regressive coefficients, an array of double.",
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "movingAverageCoefficients": {
+          "description": "Moving-average coefficients, an array of double.",
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "interceptCoefficient": {
+          "description": "Intercept coefficient, just a double not an array.",
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "ArimaFittingMetrics": {
+      "id": "ArimaFittingMetrics",
+      "description": "ARIMA model fitting metrics.",
+      "type": "object",
+      "properties": {
+        "logLikelihood": {
+          "description": "log-likelihood",
+          "type": "number",
+          "format": "double"
+        },
+        "aic": {
+          "description": "AIC",
+          "type": "number",
+          "format": "double"
+        },
+        "variance": {
+          "description": "variance.",
+          "type": "number",
+          "format": "double"
         }
       }
     },
@@ -2201,7 +2334,7 @@
           }
         },
         "statementType": {
-          "description": "Output only. The type of query statement, if valid.\nPossible values (new values might be added in the future):\n\"SELECT\": SELECT query.\n\"INSERT\": INSERT query; see\nhttps:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language.\n\"UPDATE\": UPDATE query; see\nhttps:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language.\n\"DELETE\": DELETE query; see\nhttps:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language.\n\"MERGE\": MERGE query; see\nhttps:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language.\n\"ALTER_TABLE\": ALTER TABLE query.\n\"ALTER_VIEW\": ALTER VIEW query.\n\"CREATE_FUNCTION\": CREATE FUNCTION query.\n\"CREATE_MODEL\": CREATE [OR REPLACE] MODEL ... AS SELECT ... .\n\"CREATE_PROCEDURE\": CREATE PROCEDURE query.\n\"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT.\n\"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... .\n\"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... .\n\"DROP_FUNCTION\" : DROP FUNCTION query.\n\"DROP_PROCEDURE\": DROP PROCEDURE query.\n\"DROP_TABLE\": DROP TABLE query.\n\"DROP_VIEW\": DROP VIEW query.",
+          "description": "Output only. The type of query statement, if valid.\nPossible values (new values might be added in the future):\n\"SELECT\": SELECT query.\n\"INSERT\": INSERT query; see\nhttps:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language.\n\"UPDATE\": UPDATE query; see\nhttps:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language.\n\"DELETE\": DELETE query; see\nhttps:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language.\n\"MERGE\": MERGE query; see\nhttps:\/\/cloud.google.com\/bigquery\/docs\/reference\/standard-sql\/data-manipulation-language.\n\"ALTER_TABLE\": ALTER TABLE query.\n\"ALTER_VIEW\": ALTER VIEW query.\n\"ASSERT\": ASSERT condition AS 'description'.\n\"CREATE_FUNCTION\": CREATE FUNCTION query.\n\"CREATE_MODEL\": CREATE [OR REPLACE] MODEL ... AS SELECT ... .\n\"CREATE_PROCEDURE\": CREATE PROCEDURE query.\n\"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT.\n\"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... .\n\"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... .\n\"DROP_FUNCTION\" : DROP FUNCTION query.\n\"DROP_PROCEDURE\": DROP PROCEDURE query.\n\"DROP_TABLE\": DROP TABLE query.\n\"DROP_VIEW\": DROP VIEW query.",
           "type": "string"
         },
         "ddlOperationPerformed": {
@@ -3228,6 +3361,15 @@
           "description": "Output only. The time when this materialized view was last refreshed, in\nmilliseconds since the epoch.",
           "type": "string",
           "format": "int64"
+        },
+        "enableRefresh": {
+          "description": "Optional. Enable automatic refresh of the materialized view when the base table is\nupdated. The default value is \"true\".",
+          "type": "boolean"
+        },
+        "refreshIntervalMs": {
+          "description": "Optional. The maximum frequency at which this materialized view will be refreshed.\nThe default value is \"1800000\" (30 minutes).",
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -3297,6 +3439,10 @@
               "timePartitioning": {
                 "description": "The time-based partitioning for this table.",
                 "$ref": "TimePartitioning"
+              },
+              "rangePartitioning": {
+                "description": "The range partitioning for this table.",
+                "$ref": "RangePartitioning"
               },
               "clustering": {
                 "description": "[TrustedTester] Clustering specification for this table, if configured.",
@@ -3448,7 +3594,7 @@
     },
     "Policy": {
       "id": "Policy",
-      "description": "Defines an Identity and Access Management (IAM) policy. It is used to\nspecify access control policies for Cloud Platform resources.\n\n\nA `Policy` is a collection of `bindings`. A `binding` binds one or more\n`members` to a single `role`. Members can be user accounts, service accounts,\nGoogle groups, and domains (such as G Suite). A `role` is a named list of\npermissions (defined by IAM or configured by users). A `binding` can\noptionally specify a `condition`, which is a logic expression that further\nconstrains the role binding based on attributes about the request and\/or\ntarget resource.\n\n**JSON Example**\n\n    {\n      \"bindings\": [\n        {\n          \"role\": \"role\/resourcemanager.organizationAdmin\",\n          \"members\": [\n            \"user:mike@example.com\",\n            \"group:admins@example.com\",\n            \"domain:google.com\",\n            \"serviceAccount:my-project-id@appspot.gserviceaccount.com\"\n          ]\n        },\n        {\n          \"role\": \"roles\/resourcemanager.organizationViewer\",\n          \"members\": [\"user:eve@example.com\"],\n          \"condition\": {\n            \"title\": \"expirable access\",\n            \"description\": \"Does not grant access after Sep 2020\",\n            \"expression\": \"request.time <\n            timestamp('2020-10-01T00:00:00.000Z')\",\n          }\n        }\n      ]\n    }\n\n**YAML Example**\n\n    bindings:\n    - members:\n      - user:mike@example.com\n      - group:admins@example.com\n      - domain:google.com\n      - serviceAccount:my-project-id@appspot.gserviceaccount.com\n      role: roles\/resourcemanager.organizationAdmin\n    - members:\n      - user:eve@example.com\n      role: roles\/resourcemanager.organizationViewer\n      condition:\n        title: expirable access\n        description: Does not grant access after Sep 2020\n        expression: request.time < timestamp('2020-10-01T00:00:00.000Z')\n\nFor a description of IAM and its features, see the\n[IAM developer's guide](https:\/\/cloud.google.com\/iam\/docs).",
+      "description": "Defines an Identity and Access Management (IAM) policy. It is used to\nspecify access control policies for Cloud Platform resources.\n\n\nA `Policy` is a collection of `bindings`. A `binding` binds one or more\n`members` to a single `role`. Members can be user accounts, service accounts,\nGoogle groups, and domains (such as G Suite). A `role` is a named list of\npermissions (defined by IAM or configured by users). A `binding` can\noptionally specify a `condition`, which is a logic expression that further\nconstrains the role binding based on attributes about the request and\/or\ntarget resource.\n\n**JSON Example**\n\n    {\n      \"bindings\": [\n        {\n          \"role\": \"roles\/resourcemanager.organizationAdmin\",\n          \"members\": [\n            \"user:mike@example.com\",\n            \"group:admins@example.com\",\n            \"domain:google.com\",\n            \"serviceAccount:my-project-id@appspot.gserviceaccount.com\"\n          ]\n        },\n        {\n          \"role\": \"roles\/resourcemanager.organizationViewer\",\n          \"members\": [\"user:eve@example.com\"],\n          \"condition\": {\n            \"title\": \"expirable access\",\n            \"description\": \"Does not grant access after Sep 2020\",\n            \"expression\": \"request.time <\n            timestamp('2020-10-01T00:00:00.000Z')\",\n          }\n        }\n      ]\n    }\n\n**YAML Example**\n\n    bindings:\n    - members:\n      - user:mike@example.com\n      - group:admins@example.com\n      - domain:google.com\n      - serviceAccount:my-project-id@appspot.gserviceaccount.com\n      role: roles\/resourcemanager.organizationAdmin\n    - members:\n      - user:eve@example.com\n      role: roles\/resourcemanager.organizationViewer\n      condition:\n        title: expirable access\n        description: Does not grant access after Sep 2020\n        expression: request.time < timestamp('2020-10-01T00:00:00.000Z')\n\nFor a description of IAM and its features, see the\n[IAM developer's guide](https:\/\/cloud.google.com\/iam\/docs).",
       "type": "object",
       "properties": {
         "version": {
@@ -3921,7 +4067,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy."
+          "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy.\n\nCan return Public Errors: NOT_FOUND, INVALID_ARGUMENT and PERMISSION_DENIED"
         },
         "getIamPolicy": {
           "id": "bigquery.datasets.getIamPolicy",
@@ -4926,7 +5072,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy."
+          "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy.\n\nCan return Public Errors: NOT_FOUND, INVALID_ARGUMENT and PERMISSION_DENIED"
         },
         "getIamPolicy": {
           "id": "bigquery.tables.getIamPolicy",

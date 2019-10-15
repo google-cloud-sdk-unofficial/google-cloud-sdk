@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetIamPolicy(base.Command):
   """Get IAM policy for a workflow template.
 
@@ -38,10 +37,11 @@ class GetIamPolicy(base.Command):
     $ {command} example-workflow
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
     flags.AddTemplateResourceArg(
-        parser, 'retrieve the policy for', api_version='v1')
+        parser, 'retrieve the policy for', api_version=dataproc.api_version)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -53,24 +53,3 @@ class GetIamPolicy(base.Command):
 
     return dataproc.client.projects_regions_workflowTemplates.GetIamPolicy(
         request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class GetIamPolicyBeta(GetIamPolicy):
-  """Get IAM policy for a workflow template.
-
-  Gets the IAM policy for a workflow template, given a template ID.
-
-  ## EXAMPLES
-
-  The following command prints the IAM policy for a workflow template with the
-  ID `example-workflow`:
-
-    $ {command} example-workflow
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddTemplateResourceArg(
-        parser, 'retrieve the policy for', api_version='v1beta2')
-    base.URI_FLAG.RemoveFromParser(parser)

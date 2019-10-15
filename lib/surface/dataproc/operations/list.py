@@ -25,6 +25,7 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import properties
@@ -75,6 +76,8 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, constants.DEFAULT_PAGE_SIZE)
 
+    flags.AddRegionFlag(parser)
+
     parser.add_argument(
         '--cluster',
         help=('Restrict to the operations of this Dataproc cluster. This flag '
@@ -93,8 +96,8 @@ class List(base.ListCommand):
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
+    region_callback = lambda: util.ResolveRegion(self.ReleaseTrack())
     # Parse Operations endpoint.
-    region_callback = properties.VALUES.dataproc.region.GetOrFail
     project_callback = properties.VALUES.core.project.GetOrFail
     operation_list_ref = dataproc.resources.Parse(
         None,

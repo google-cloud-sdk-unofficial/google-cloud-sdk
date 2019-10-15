@@ -27,12 +27,12 @@ from googlecloudsdk.command_lib.dataproc.jobs import hadoop
 
 class Hadoop(hadoop.HadoopBase, base.Command):
   """Add a hadoop job to the workflow template."""
-  # TODO(b/65846493): clear up multiple inheritance structure all jobs command
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     hadoop.HadoopBase.Args(parser)
-    workflow_templates.AddWorkflowTemplatesArgs(parser)
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    workflow_templates.AddWorkflowTemplatesArgs(parser, dataproc.api_version)
     driver_group = parser.add_mutually_exclusive_group(required=True)
     util.AddJvmDriverFlags(driver_group)
 

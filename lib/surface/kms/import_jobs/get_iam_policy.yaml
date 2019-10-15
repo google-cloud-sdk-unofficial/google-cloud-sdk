@@ -16,10 +16,12 @@
 
   request:
     collection: cloudkms.projects.locations.keyRings.importJobs
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=options_requestedPolicyVersion
 
   arguments:
     resource:
       help_text: The import job for which to get the IAM policy binding.
       spec: !REF googlecloudsdk.command_lib.kms.resources:import_job
+
+  iam:
+    policy_version: 3
+    get_iam_policy_version_path: options_requestedPolicyVersion

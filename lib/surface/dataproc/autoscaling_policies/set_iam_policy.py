@@ -24,56 +24,7 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-def _Run(dataproc, args):
-  """Run command."""
-
-  messages = dataproc.messages
-
-  policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
-  set_iam_policy_request = messages.SetIamPolicyRequest(policy=policy)
-
-  policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
-  # pylint: disable=line-too-long
-  request = messages.DataprocProjectsRegionsAutoscalingPoliciesSetIamPolicyRequest(
-      resource=policy_ref.RelativeName(),
-      setIamPolicyRequest=set_iam_policy_request)
-  # pylint: enable=line-too-long
-
-  return dataproc.client.projects_regions_autoscalingPolicies.SetIamPolicy(
-      request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
-  """Set IAM policy for an autoscaling policy.
-
-  Sets the IAM policy for an autoscaling policy, given an autoscaling policy ID
-  and the IAM policy.
-
-  ## EXAMPLES
-  The following command will read an IAM policy defined in a JSON file
-  'policy.json' and set it for an autoscaling-policy with identifier
-  'example-autoscaling-policy'
-
-    $ {command} example-autoscaling-policy policy.json
-
-
-  See https://cloud.google.com/iam/docs/managing-policies for details
-  of the policy file format and contents.
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddAutoscalingPolicyResourceArg(
-        parser, 'retrieve the IAM policy for', api_version='v1')
-    iam_util.AddArgForPolicyFile(parser)
-
-  def Run(self, args):
-    return _Run(dp.Dataproc(self.ReleaseTrack()), args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SetIamPolicyBeta(base.Command):
   r"""Set IAM policy for an autoscaling policy.
 
   Sets the IAM policy for an autoscaling policy, given an autoscaling policy ID
@@ -91,11 +42,27 @@ class SetIamPolicyBeta(base.Command):
     policy file format and contents.
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddAutoscalingPolicyResourceArg(
-        parser, 'retrieve the IAM policy for', api_version='v1beta2')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddAutoscalingPolicyResourceArg(parser, 'retrieve the IAM policy for',
+                                          dataproc.api_version)
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):
-    return _Run(dp.Dataproc(self.ReleaseTrack()), args)
+    dataproc = dp.Dataproc(self.ReleaseTrack())
+
+    messages = dataproc.messages
+
+    policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
+    set_iam_policy_request = messages.SetIamPolicyRequest(policy=policy)
+
+    policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
+    # pylint: disable=line-too-long
+    request = messages.DataprocProjectsRegionsAutoscalingPoliciesSetIamPolicyRequest(
+        resource=policy_ref.RelativeName(),
+        setIamPolicyRequest=set_iam_policy_request)
+    # pylint: enable=line-too-long
+
+    return dataproc.client.projects_regions_autoscalingPolicies.SetIamPolicy(
+        request)

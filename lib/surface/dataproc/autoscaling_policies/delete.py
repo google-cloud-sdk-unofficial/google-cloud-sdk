@@ -24,25 +24,6 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core.console import console_io
 
 
-def _Run(dataproc, args):
-  """Run command."""
-
-  messages = dataproc.messages
-
-  policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
-
-  request = messages.DataprocProjectsRegionsAutoscalingPoliciesDeleteRequest(
-      name=policy_ref.RelativeName())
-
-  console_io.PromptContinue(
-      message="The autoscaling policy '[{0}]' will be deleted.".format(
-          policy_ref.Name()),
-      cancel_on_no=True)
-
-  dataproc.client.projects_regions_autoscalingPolicies.Delete(request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete an autoscaling policy.
 
@@ -54,30 +35,24 @@ class Delete(base.DeleteCommand):
     $ {command} example-autoscaling-policy
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddAutoscalingPolicyResourceArg(parser, 'delete', api_version='v1')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddAutoscalingPolicyResourceArg(parser, 'delete',
+                                          dataproc.api_version)
 
   def Run(self, args):
-    _Run(dp.Dataproc(self.ReleaseTrack()), args)
+    dataproc = dp.Dataproc(self.ReleaseTrack())
+    messages = dataproc.messages
 
+    policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
-  """Delete an autoscaling policy.
+    request = messages.DataprocProjectsRegionsAutoscalingPoliciesDeleteRequest(
+        name=policy_ref.RelativeName())
 
-  ## EXAMPLES
+    console_io.PromptContinue(
+        message="The autoscaling policy '[{0}]' will be deleted.".format(
+            policy_ref.Name()),
+        cancel_on_no=True)
 
-  The following command deletes the autoscaling policy
-  `example-autoscaling-policy`:
-
-    $ {command} example-autoscaling-policy
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddAutoscalingPolicyResourceArg(
-        parser, 'delete', api_version='v1beta2')
-
-  def Run(self, args):
-    _Run(dp.Dataproc(self.ReleaseTrack()), args)
+    dataproc.client.projects_regions_autoscalingPolicies.Delete(request)

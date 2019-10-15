@@ -19,12 +19,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc.jobs import spark_sql
 from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SparkSql(spark_sql.SparkSqlBase, submitter.JobSubmitter):
   """Submit a Spark SQL job to a cluster.
 
@@ -52,33 +50,3 @@ class SparkSql(spark_sql.SparkSqlBase, submitter.JobSubmitter):
                                             messages, args.driver_log_levels),
                                         args)
     submitter.JobSubmitter.ConfigureJob(messages, job, args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SparkSqlBeta(spark_sql.SparkSqlBase, submitter.JobSubmitterBeta):
-  """Submit a Spark SQL job to a cluster.
-
-  Submit a Spark SQL job to a cluster.
-
-  ## EXAMPLES
-
-  To submit a Spark SQL job with a local script, run:
-
-    $ {command} --cluster my_cluster --file my_queries.ql
-
-  To submit a Spark SQL job with inline queries, run:
-
-    $ {command} --cluster my_cluster -e "CREATE EXTERNAL TABLE foo(bar int) LOCATION 'gs://my_bucket/'" -e "SELECT * FROM foo WHERE bar > 2"
-  """
-
-  @staticmethod
-  def Args(parser):
-    spark_sql.SparkSqlBase.Args(parser)
-    submitter.JobSubmitterBeta.Args(parser)
-
-  def ConfigureJob(self, messages, job, args):
-    spark_sql.SparkSqlBase.ConfigureJob(messages, job, self.files_by_type,
-                                        self.BuildLoggingConfig(
-                                            messages, args.driver_log_levels),
-                                        args)
-    submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)

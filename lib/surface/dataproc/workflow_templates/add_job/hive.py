@@ -27,10 +27,11 @@ from googlecloudsdk.command_lib.dataproc.jobs import hive
 class Hive(hive.HiveBase, base.Command):
   """Add a Hive job to the workflow template."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     hive.HiveBase.Args(parser)
-    workflow_templates.AddWorkflowTemplatesArgs(parser)
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    workflow_templates.AddWorkflowTemplatesArgs(parser, dataproc.api_version)
 
   def ConfigureJob(self, messages, job, files_by_type, args):
     hive.HiveBase.ConfigureJob(messages, job, files_by_type, args)

@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
-from googlecloudsdk.api_lib.dataproc import util as dp_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
@@ -52,7 +51,8 @@ class Import(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument('name', help='The name of the cluster to import.')
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddClusterResourceArg(parser, 'import', dataproc.api_version)
     export_util.AddImportFlags(parser, cls.GetSchemaPath(for_help=True))
     base.ASYNC_FLAG.AddToParser(parser)
     # 30m is backend timeout + 5m for safety buffer.
@@ -71,9 +71,10 @@ class Import(base.UpdateCommand):
     except yaml_validator.ValidationError as e:
       raise exceptions.ValidationError(e.message)
 
-    cluster_ref = dp_util.ParseCluster(args.name, dataproc)
+    cluster_ref = args.CONCEPTS.cluster.Parse()
     cluster.clusterName = cluster_ref.clusterName
     cluster.projectId = cluster_ref.projectId
 
     # Import only supports create, not update (for now).
-    return clusters.CreateCluster(dataproc, cluster, args.async_, args.timeout)
+    return clusters.CreateCluster(dataproc, cluster_ref, cluster, args.async_,
+                                  args.timeout)

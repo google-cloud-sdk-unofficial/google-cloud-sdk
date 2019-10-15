@@ -16,10 +16,12 @@
 
   request:
     collection: spanner.projects.instances
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=getIamPolicyRequest.options.requestedPolicyVersion
 
   arguments:
     resource:
       help_text: The Cloud Spanner instance for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
+
+  iam:
+    policy_version: 3
+    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

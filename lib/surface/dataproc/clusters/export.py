@@ -20,9 +20,9 @@ from __future__ import unicode_literals
 
 import sys
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util as dp_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
@@ -51,13 +51,14 @@ class Export(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.add_argument('name', help='The name of the cluster to export.')
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddClusterResourceArg(parser, 'export', dataproc.api_version)
     export_util.AddExportFlags(parser, cls.GetSchemaPath(for_help=True))
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    cluster_ref = dp_util.ParseCluster(args.name, dataproc)
+    cluster_ref = args.CONCEPTS.cluster.Parse()
 
     request = dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
         projectId=cluster_ref.projectId,

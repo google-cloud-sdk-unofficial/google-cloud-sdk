@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Life Sciences workflows sub-group."""
+"""Life Sciences pipelines sub-group."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,9 +28,9 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Workflows(base.Group):
-  """Commands for Life Sciences workflows.
+  """Commands for Life Sciences pipelines.
 
-  Command to run workflows.
+  Command to run pipelines.
   """
 
   def Filter(self, context, args):

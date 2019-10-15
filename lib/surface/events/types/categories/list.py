@@ -58,7 +58,7 @@ class List(base.ListCommand):
     # Flags not specific to any platform
     flags.AddPlatformArg(parser)
     parser.display_info.AddFormat("""table(
-        source_name:label=CATEGORY:sort=1)""")
+        source_kind:label=CATEGORY:sort=1)""")
 
   @staticmethod
   def Args(parser):

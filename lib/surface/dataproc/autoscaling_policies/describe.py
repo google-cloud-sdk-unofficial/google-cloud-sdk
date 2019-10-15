@@ -23,19 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
 
-def _Run(dataproc, args):
-  """Run command."""
-
-  messages = dataproc.messages
-
-  policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
-
-  request = messages.DataprocProjectsRegionsAutoscalingPoliciesGetRequest(
-      name=policy_ref.RelativeName())
-  return dataproc.client.projects_regions_autoscalingPolicies.Get(request)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe an autoscaling policy.
 
@@ -47,29 +34,18 @@ class Describe(base.DescribeCommand):
     $ {command} example-autoscaling-policy
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddAutoscalingPolicyResourceArg(parser, 'describe', 'v1')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddAutoscalingPolicyResourceArg(parser, 'describe',
+                                          dataproc.api_version)
 
   def Run(self, args):
-    return _Run(dp.Dataproc(self.ReleaseTrack()), args)
+    dataproc = dp.Dataproc(self.ReleaseTrack())
+    messages = dataproc.messages
 
+    policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DescribeBeta(base.DescribeCommand):
-  """Describe an autoscaling policy.
-
-  ## EXAMPLES
-
-  The following command prints out the autoscaling policy
-  `example-autoscaling-policy`:
-
-    $ {command} example-autoscaling-policy
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddAutoscalingPolicyResourceArg(parser, 'describe', 'v1beta2')
-
-  def Run(self, args):
-    return _Run(dp.Dataproc(self.ReleaseTrack()), args)
+    request = messages.DataprocProjectsRegionsAutoscalingPoliciesGetRequest(
+        name=policy_ref.RelativeName())
+    return dataproc.client.projects_regions_autoscalingPolicies.Get(request)

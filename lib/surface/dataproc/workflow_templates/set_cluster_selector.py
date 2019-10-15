@@ -25,27 +25,23 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _CommonArgs(parser):
-  parser.add_argument(
-      '--cluster-labels',
-      metavar='KEY=VALUE',
-      type=arg_parsers.ArgDict(
-          key_type=labels_util.KEY_FORMAT_VALIDATOR,
-          value_type=labels_util.VALUE_FORMAT_VALIDATOR,
-          min_length=1),
-      action=arg_parsers.UpdateAction,
-      help='A list of label KEY=VALUE pairs to add.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetClusterSelector(base.UpdateCommand):
   """Set cluster selector for the workflow template."""
 
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    flags.AddTemplateResourceArg(
-        parser, 'set cluster selector', api_version='v1')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    parser.add_argument(
+        '--cluster-labels',
+        metavar='KEY=VALUE',
+        type=arg_parsers.ArgDict(
+            key_type=labels_util.KEY_FORMAT_VALIDATOR,
+            value_type=labels_util.VALUE_FORMAT_VALIDATOR,
+            min_length=1),
+        action=arg_parsers.UpdateAction,
+        help='A list of label KEY=VALUE pairs to add.')
+    flags.AddTemplateResourceArg(parser, 'set cluster selector',
+                                 dataproc.api_version)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -66,14 +62,3 @@ class SetClusterSelector(base.UpdateCommand):
     response = dataproc.client.projects_regions_workflowTemplates.Update(
         workflow_template)
     return response
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SetClusterSelectorBeta(SetClusterSelector):
-  """Set cluster selector for the workflow template."""
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
-    flags.AddTemplateResourceArg(
-        parser, 'set cluster selector', api_version='v1beta2')

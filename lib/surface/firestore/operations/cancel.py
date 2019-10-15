@@ -29,6 +29,15 @@ from googlecloudsdk.core.console import console_io
 class Cancel(base.Command):
   """Cancel a currently-running Cloud Firestore admin operation."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To cancel the currently-running `exampleOperationId` operation, run:
+
+            $ {command} exampleOperationId
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

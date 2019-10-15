@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20190919",
+ "revision": "20191008",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -766,7 +766,7 @@
     },
     "hivePartitioningMode": {
      "type": "string",
-     "description": "[Optional, Trusted Tester] If hive partitioning is enabled, which mode to use. Two modes are supported: - AUTO: automatically infer partition key name(s) and type(s). - STRINGS: automatic infer partition key name(s). All types are strings. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error. Note: this setting is in the process of being deprecated in favor of hivePartitioningOptions."
+     "description": "[Optional, Trusted Tester] Deprecated, do not use. Please set hivePartitioningOptions instead."
     },
     "hivePartitioningOptions": {
      "$ref": "HivePartitioningOptions",
@@ -1098,7 +1098,7 @@
     },
     "hivePartitioningMode": {
      "type": "string",
-     "description": "[Optional, Trusted Tester] If hive partitioning is enabled, which mode to use. Two modes are supported: - AUTO: automatically infer partition key name(s) and type(s). - STRINGS: automatic infer partition key name(s). All types are strings. Not all storage formats support hive partitioning -- requesting hive partitioning on an unsupported format will lead to an error."
+     "description": "[Optional, Trusted Tester] Deprecated, do not use. Please set hivePartitioningOptions instead."
     },
     "hivePartitioningOptions": {
      "$ref": "HivePartitioningOptions",
@@ -1606,7 +1606,7 @@
     },
     "statementType": {
      "type": "string",
-     "description": "The type of query statement, if valid. Possible values (new values might be added in the future): \"SELECT\": SELECT query. \"INSERT\": INSERT query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"UPDATE\": UPDATE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"DELETE\": DELETE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"MERGE\": MERGE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"ALTER_TABLE\": ALTER TABLE query. \"ALTER_VIEW\": ALTER VIEW query. \"CREATE_FUNCTION\": CREATE FUNCTION query. \"CREATE_MODEL\": CREATE [OR REPLACE] MODEL ... AS SELECT ... . \"CREATE_PROCEDURE\": CREATE PROCEDURE query. \"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT. \"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... . \"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... . \"DROP_FUNCTION\" : DROP FUNCTION query. \"DROP_PROCEDURE\": DROP PROCEDURE query. \"DROP_TABLE\": DROP TABLE query. \"DROP_VIEW\": DROP VIEW query."
+     "description": "The type of query statement, if valid. Possible values (new values might be added in the future): \"SELECT\": SELECT query. \"INSERT\": INSERT query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"UPDATE\": UPDATE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"DELETE\": DELETE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"MERGE\": MERGE query; see https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language. \"ALTER_TABLE\": ALTER TABLE query. \"ALTER_VIEW\": ALTER VIEW query. \"ASSERT\": ASSERT condition AS 'description'. \"CREATE_FUNCTION\": CREATE FUNCTION query. \"CREATE_MODEL\": CREATE [OR REPLACE] MODEL ... AS SELECT ... . \"CREATE_PROCEDURE\": CREATE PROCEDURE query. \"CREATE_TABLE\": CREATE [OR REPLACE] TABLE without AS SELECT. \"CREATE_TABLE_AS_SELECT\": CREATE [OR REPLACE] TABLE ... AS SELECT ... . \"CREATE_VIEW\": CREATE [OR REPLACE] VIEW ... AS SELECT ... . \"DROP_FUNCTION\" : DROP FUNCTION query. \"DROP_PROCEDURE\": DROP PROCEDURE query. \"DROP_TABLE\": DROP TABLE query. \"DROP_VIEW\": DROP VIEW query."
     },
     "timeline": {
      "type": "array",
@@ -2557,6 +2557,10 @@
          "type": "string"
         }
        },
+       "rangePartitioning": {
+        "$ref": "RangePartitioning",
+        "description": "The range partitioning specification for this table, if configured."
+       },
        "tableReference": {
         "$ref": "TableReference",
         "description": "A reference uniquely identifying the table."
@@ -3030,6 +3034,9 @@
      "items": {
       "$ref": "ClusterInfo"
      }
+    },
+    "arimaResult": {
+     "$ref": "ArimaResult"
     }
    }
   },
@@ -3052,6 +3059,136 @@
      "description": "Cluster size, the total number of points assigned to the cluster.",
      "type": "string",
      "format": "int64"
+    }
+   }
+  },
+  "ArimaResult": {
+   "id": "ArimaResult",
+   "description": "(Auto-)arima fitting result. Wrap everything in ArimaResult for easier\nrefactoring if we want to use model-specific iteration results.",
+   "type": "object",
+   "properties": {
+    "arimaModelInfo": {
+     "description": "This message is repeated because there are multiple arima models\nfitted in auto-arima. For non-auto-arima model, its size is one.",
+     "type": "array",
+     "items": {
+      "$ref": "ArimaModelInfo"
+     }
+    },
+    "seasonalPeriods": {
+     "description": "Seasonal periods. Repeated because multiple periods are supported for\none time series.",
+     "enumDescriptions": [
+      "",
+      "No seasonality",
+      "Daily period, 24 hours.",
+      "Weekly period, 7 days.",
+      "Monthly period, can be as 30 days or irregular.",
+      "Quarterly period, can be as 90 days or irregular.",
+      "Yearly period, can be as 365 days or irregular."
+     ],
+     "type": "array",
+     "items": {
+      "type": "string",
+      "enum": [
+       "SEASONAL_PERIOD_TYPE_UNSPECIFIED",
+       "NO_SEASONALITY",
+       "DAILY",
+       "WEEKLY",
+       "MONTHLY",
+       "QUARTERLY",
+       "YEARLY"
+      ]
+     }
+    }
+   }
+  },
+  "ArimaModelInfo": {
+   "id": "ArimaModelInfo",
+   "description": "Arima model information.",
+   "type": "object",
+   "properties": {
+    "nonSeasonalOrder": {
+     "description": "Non-seasonal order.",
+     "$ref": "ArimaOrder"
+    },
+    "arimaCoefficients": {
+     "description": "Arima coefficients.",
+     "$ref": "ArimaCoefficients"
+    },
+    "arimaFittingMetrics": {
+     "description": "Arima fitting metrics.",
+     "$ref": "ArimaFittingMetrics"
+    }
+   }
+  },
+  "ArimaOrder": {
+   "id": "ArimaOrder",
+   "description": "Arima order, can be used for both non-seasonal and seasonal parts.",
+   "type": "object",
+   "properties": {
+    "p": {
+     "description": "Order of the autoregressive part.",
+     "type": "string",
+     "format": "int64"
+    },
+    "d": {
+     "description": "Order of the differencing part.",
+     "type": "string",
+     "format": "int64"
+    },
+    "q": {
+     "description": "Order of the moving-average part.",
+     "type": "string",
+     "format": "int64"
+    }
+   }
+  },
+  "ArimaCoefficients": {
+   "id": "ArimaCoefficients",
+   "description": "Arima coefficients.",
+   "type": "object",
+   "properties": {
+    "autoRegressiveCoefficients": {
+     "description": "Auto-regressive coefficients, an array of double.",
+     "type": "array",
+     "items": {
+      "type": "number",
+      "format": "double"
+     }
+    },
+    "movingAverageCoefficients": {
+     "description": "Moving-average coefficients, an array of double.",
+     "type": "array",
+     "items": {
+      "type": "number",
+      "format": "double"
+     }
+    },
+    "interceptCoefficient": {
+     "description": "Intercept coefficient, just a double not an array.",
+     "type": "number",
+     "format": "double"
+    }
+   }
+  },
+  "ArimaFittingMetrics": {
+   "id": "ArimaFittingMetrics",
+   "description": "ARIMA model fitting metrics.",
+   "type": "object",
+   "properties": {
+    "logLikelihood": {
+     "description": "log-likelihood",
+     "type": "number",
+     "format": "double"
+    },
+    "aic": {
+     "description": "AIC",
+     "type": "number",
+     "format": "double"
+    },
+    "variance": {
+     "description": "variance.",
+     "type": "number",
+     "format": "double"
     }
    }
   },

@@ -37,9 +37,9 @@ class Create(base.Command):
           To create a new feed 'feed1' in project 'p1' which alerts on compute
           disks and network resources types, run:
 
-          $ {command} feed1 --project=p1
-          --asset-types=compute.googleapis.com/Network,compute.googleapis.com/Disk
-          --content-type=resource --pubsub-topic=projects/project1/topics/feed-topic
+            $ {command} feed1 --project=p1
+            --asset-types=compute.googleapis.com/Network,compute.googleapis.com/Disk
+            --content-type=resource --pubsub-topic=projects/project1/topics/feed-topic
       """
   }
 

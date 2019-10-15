@@ -20,8 +20,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
@@ -40,11 +40,11 @@ class SetIamPolicy(base.Command):
     $ {command} example-cluster-name-1 policy.yaml
   """
 
-  @staticmethod
-  def Args(parser):
-    parser.add_argument(
-        'cluster',
-        help='The ID of the cluster to set the policy on.')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddClusterResourceArg(parser, 'set the policy on',
+                                dataproc.api_version)
     parser.add_argument(
         'policy_file',
         metavar='POLICY_FILE',
@@ -56,12 +56,10 @@ class SetIamPolicy(base.Command):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     messages = dataproc.messages
 
-    policy = iam_util.ParsePolicyFile(
-        args.policy_file, messages.Policy)
-    set_iam_policy_request = messages.SetIamPolicyRequest(
-        policy=policy)
+    policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
+    set_iam_policy_request = messages.SetIamPolicyRequest(policy=policy)
 
-    cluster_ref = util.ParseCluster(args.cluster, dataproc)
+    cluster_ref = args.CONCEPTS.cluster.Parse()
     request = messages.DataprocProjectsRegionsClustersSetIamPolicyRequest(
         resource=cluster_ref.RelativeName(),
         setIamPolicyRequest=set_iam_policy_request)

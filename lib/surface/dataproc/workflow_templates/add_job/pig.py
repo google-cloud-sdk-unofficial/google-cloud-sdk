@@ -27,10 +27,11 @@ from googlecloudsdk.command_lib.dataproc.jobs import pig
 class Pig(pig.PigBase, base.Command):
   """Add a Pig job to the workflow template."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     pig.PigBase.Args(parser)
-    workflow_templates.AddWorkflowTemplatesArgs(parser)
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    workflow_templates.AddWorkflowTemplatesArgs(parser, dataproc.api_version)
 
   def ConfigureJob(self, messages, job, files_by_type, args):
     pig.PigBase.ConfigureJob(messages, job, files_by_type,

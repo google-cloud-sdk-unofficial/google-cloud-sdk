@@ -42,9 +42,7 @@ class Import(base.UpdateCommand):
   @classmethod
   def GetApiVersion(cls):
     """Returns the API version based on the release track."""
-    if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
-      return 'v1beta2'
-    return 'v1'
+    return dp.Dataproc(cls.ReleaseTrack()).api_version
 
   @classmethod
   def GetSchemaPath(cls, for_help=False):

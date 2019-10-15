@@ -31,93 +31,6 @@ from googlecloudsdk.core.util import times
 import six
 
 
-def _CommonArgs(parser):
-  """Register flags common to all tracks."""
-  base.ASYNC_FLAG.AddToParser(parser)
-  # Allow the user to specify new labels as well as update/remove existing
-  labels_util.AddUpdateLabelsFlags(parser)
-  # Updates can take hours if a lot of data needs to be moved on HDFS
-  flags.AddTimeoutFlag(parser, default='3h')
-  parser.add_argument('name', help='The name of the cluster to update.')
-  parser.add_argument(
-      '--num-workers',
-      type=int,
-      help='The new number of worker nodes in the cluster.')
-  parser.add_argument(
-      '--num-preemptible-workers',
-      type=int,
-      help='The new number of preemptible worker nodes in the cluster.')
-
-  parser.add_argument(
-      '--graceful-decommission-timeout',
-      type=arg_parsers.Duration(lower_bound='0s', upper_bound='1d'),
-      help="""
-            The graceful decommission timeout for decommissioning Node Managers
-            in the cluster, used when removing nodes. Graceful decommissioning
-            allows removing nodes from the cluster without interrupting jobs in
-            progress. Timeout specifies how long to wait for jobs in progress to
-            finish before forcefully removing nodes (and potentially
-            interrupting jobs). Timeout defaults to 0 if not set (for forceful
-            decommission), and the maximum allowed timeout is 1 day.
-            See $ gcloud topic datetimes for information on duration formats.
-            """)
-
-  idle_delete_group = parser.add_mutually_exclusive_group()
-  idle_delete_group.add_argument(
-      '--max-idle',
-      type=arg_parsers.Duration(),
-      help="""\
-      The duration before cluster is auto-deleted after last job finished,
-      such as "2h" or "1d".
-      See $ gcloud topic datetimes for information on duration formats.
-      """)
-  idle_delete_group.add_argument(
-      '--no-max-idle',
-      action='store_true',
-      help="""\
-      Cancels the cluster auto-deletion by cluster idle duration (configured
-       by --max-idle flag)
-      """)
-
-  auto_delete_group = parser.add_mutually_exclusive_group()
-  auto_delete_group.add_argument(
-      '--max-age',
-      type=arg_parsers.Duration(),
-      help="""\
-      The lifespan of the cluster before it is auto-deleted, such as
-      "2h" or "1d".
-      See $ gcloud topic datetimes for information on duration formats.
-      """)
-  auto_delete_group.add_argument(
-      '--expiration-time',
-      type=arg_parsers.Datetime.Parse,
-      help="""\
-      The time when cluster will be auto-deleted, such as
-      "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
-      information on time formats.
-      """)
-  auto_delete_group.add_argument(
-      '--no-max-age',
-      action='store_true',
-      help="""\
-      Cancels the cluster auto-deletion by maximum cluster age (configured by
-       --max-age or --expiration-time flags)
-      """)
-
-  # Can only specify one of --autoscaling-policy or --disable-autoscaling
-  autoscaling_group = parser.add_mutually_exclusive_group()
-  flags.AddAutoscalingPolicyResourceArgForCluster(
-      autoscaling_group, api_version='v1')
-  autoscaling_group.add_argument(
-      '--disable-autoscaling',
-      action='store_true',
-      help="""\
-      Disable autoscaling, if it is enabled. This is an alias for passing the
-      empty string to --autoscaling-policy',
-      """)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update labels and/or the number of worker nodes in a cluster.
 
@@ -147,14 +60,96 @@ class Update(base.UpdateCommand):
 
   """
 
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    base.ASYNC_FLAG.AddToParser(parser)
+    # Allow the user to specify new labels as well as update/remove existing
+    labels_util.AddUpdateLabelsFlags(parser)
+    # Updates can take hours if a lot of data needs to be moved on HDFS
+    flags.AddTimeoutFlag(parser, default='3h')
+    flags.AddClusterResourceArg(parser, 'update', dataproc.api_version)
+    parser.add_argument(
+        '--num-workers',
+        type=int,
+        help='The new number of worker nodes in the cluster.')
+    parser.add_argument(
+        '--num-preemptible-workers',
+        type=int,
+        help='The new number of preemptible worker nodes in the cluster.')
+
+    parser.add_argument(
+        '--graceful-decommission-timeout',
+        type=arg_parsers.Duration(lower_bound='0s', upper_bound='1d'),
+        help="""
+              The graceful decommission timeout for decommissioning Node Managers
+              in the cluster, used when removing nodes. Graceful decommissioning
+              allows removing nodes from the cluster without interrupting jobs in
+              progress. Timeout specifies how long to wait for jobs in progress to
+              finish before forcefully removing nodes (and potentially
+              interrupting jobs). Timeout defaults to 0 if not set (for forceful
+              decommission), and the maximum allowed timeout is 1 day.
+              See $ gcloud topic datetimes for information on duration formats.
+              """)
+
+    idle_delete_group = parser.add_mutually_exclusive_group()
+    idle_delete_group.add_argument(
+        '--max-idle',
+        type=arg_parsers.Duration(),
+        help="""\
+        The duration before cluster is auto-deleted after last job finished,
+        such as "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
+        """)
+    idle_delete_group.add_argument(
+        '--no-max-idle',
+        action='store_true',
+        help="""\
+        Cancels the cluster auto-deletion by cluster idle duration (configured
+         by --max-idle flag)
+        """)
+
+    auto_delete_group = parser.add_mutually_exclusive_group()
+    auto_delete_group.add_argument(
+        '--max-age',
+        type=arg_parsers.Duration(),
+        help="""\
+        The lifespan of the cluster before it is auto-deleted, such as
+        "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
+        """)
+    auto_delete_group.add_argument(
+        '--expiration-time',
+        type=arg_parsers.Datetime.Parse,
+        help="""\
+        The time when cluster will be auto-deleted, such as
+        "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
+        information on time formats.
+        """)
+    auto_delete_group.add_argument(
+        '--no-max-age',
+        action='store_true',
+        help="""\
+        Cancels the cluster auto-deletion by maximum cluster age (configured by
+         --max-age or --expiration-time flags)
+        """)
+
+    # Can only specify one of --autoscaling-policy or --disable-autoscaling
+    autoscaling_group = parser.add_mutually_exclusive_group()
+    flags.AddAutoscalingPolicyResourceArgForCluster(
+        autoscaling_group, api_version='v1')
+    autoscaling_group.add_argument(
+        '--disable-autoscaling',
+        action='store_true',
+        help="""\
+        Disable autoscaling, if it is enabled. This is an alias for passing the
+        empty string to --autoscaling-policy',
+        """)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    cluster_ref = util.ParseCluster(args.name, dataproc)
+    cluster_ref = args.CONCEPTS.cluster.Parse()
 
     cluster_config = dataproc.messages.ClusterConfig()
     changed_fields = []
@@ -278,38 +273,3 @@ class Update(base.UpdateCommand):
     cluster = dataproc.client.projects_regions_clusters.Get(request)
     log.UpdatedResource(cluster_ref)
     return cluster
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Update labels and/or the number of worker nodes in a cluster.
-
-  Update the number of worker nodes and/or the labels in a cluster.
-
-  ## EXAMPLES
-
-  To resize a cluster, run:
-
-    $ {command} my_cluster --num-workers 5
-
-  To change the number preemptible workers in a cluster, run:
-
-    $ {command} my_cluster --num-preemptible-workers 5
-
-  To add the label 'customer=acme' to a cluster, run:
-
-    $ {command} my_cluster --update-labels=customer=acme
-
-  To update the label 'customer=ackme' to 'customer=acme', run:
-
-    $ {command} my_cluster --update-labels=customer=acme
-
-  To remove the label whose key is 'customer', run:
-
-    $ {command} my_cluster --remove-labels=customer
-
-  """
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser)

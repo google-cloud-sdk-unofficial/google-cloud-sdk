@@ -61,7 +61,7 @@ class Describe(base.Command):
     flags.AddPlatformArg(parser)
     events_flags.AddEventTypePositionalArg(parser)
     parser.display_info.AddFormat("""multi[separator='\n'](
-        schema:format="yaml",
+        details:format="yaml",
         crd.properties:format="table[title='Parameter(s) to create a trigger for this event type:'](
           required.yesno(yes='Yes', no=''):sort=1:reverse,
           name:label=PARAMETER:sort=2,
@@ -83,4 +83,4 @@ class Describe(base.Command):
 
     with eventflow_operations.Connect(conn_context) as client:
       source_crds = client.ListSourceCustomResourceDefinitions()
-      return util.EventTypeFromPattern(source_crds, args.event_type)
+      return util.EventTypeFromTypeString(source_crds, args.event_type)

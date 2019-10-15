@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
@@ -39,14 +38,15 @@ class Cancel(base.Command):
     $ {command} operation_id
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddOperationFlag(parser, 'cancel')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddOperationResourceArg(parser, 'cancel', dataproc.api_version)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    operation_ref = util.ParseOperation(args.operation, dataproc)
+    operation_ref = args.CONCEPTS.operation.Parse()
 
     request = dataproc.messages.DataprocProjectsRegionsOperationsCancelRequest(
         name=operation_ref.RelativeName())

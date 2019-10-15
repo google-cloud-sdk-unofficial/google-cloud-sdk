@@ -28,10 +28,11 @@ from googlecloudsdk.command_lib.dataproc.jobs import spark
 class Spark(spark.SparkBase, base.Command):
   """Add a Spark job to the workflow template."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     spark.SparkBase.Args(parser)
-    workflow_templates.AddWorkflowTemplatesArgs(parser)
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    workflow_templates.AddWorkflowTemplatesArgs(parser, dataproc.api_version)
     driver_group = parser.add_argument_group()
     util.AddJvmDriverFlags(driver_group)
 

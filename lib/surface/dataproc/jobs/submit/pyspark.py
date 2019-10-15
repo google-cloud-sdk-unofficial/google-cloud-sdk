@@ -19,12 +19,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc.jobs import pyspark
 from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class PySpark(pyspark.PySparkBase, submitter.JobSubmitter):
   # pylint: disable=line-too-long
   """Submit a PySpark job to a cluster.
@@ -54,33 +52,3 @@ class PySpark(pyspark.PySparkBase, submitter.JobSubmitter):
                                          messages, args.driver_log_levels),
                                      args)
     submitter.JobSubmitter.ConfigureJob(messages, job, args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PySparkBeta(pyspark.PySparkBase, submitter.JobSubmitterBeta):
-  """Submit a PySpark job to a cluster.
-
-  Submit a PySpark job to a cluster.
-
-  ## EXAMPLES
-
-  To submit a PySpark job with a local script and custom flags, run:
-
-    $ {command} --cluster my_cluster my_script.py -- --custom-flag
-
-  To submit a Spark job that runs a script that is already on the cluster, run:
-
-    $ {command} --cluster my_cluster file:///usr/lib/spark/examples/src/main/python/pi.py 100
-  """
-
-  @staticmethod
-  def Args(parser):
-    pyspark.PySparkBase.Args(parser)
-    submitter.JobSubmitterBeta.Args(parser)
-
-  def ConfigureJob(self, messages, job, args):
-    pyspark.PySparkBase.ConfigureJob(messages, job, self.files_by_type,
-                                     self.BuildLoggingConfig(
-                                         messages, args.driver_log_levels),
-                                     args)
-    submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)

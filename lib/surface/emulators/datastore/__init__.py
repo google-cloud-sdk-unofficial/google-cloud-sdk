@@ -44,27 +44,10 @@ class Datastore(base.Group):
   @staticmethod
   def Args(parser):
     flags.AddDataDirFlag(parser, datastore_util.DATASTORE)
-    legacy_flag = '--legacy'
-    parser.add_argument(
-        legacy_flag,
-        default=False,
-        action=actions.DeprecationAction(
-            legacy_flag,
-            warn=('This flag is deprecated due to the legacy Datastore '
-                  'emulator no longer being supported. It will be removed in '
-                  'early October 2019.'),
-            action='store_true'
-        ),
-        help='Set to use the legacy emulator which supports Cloud Datastore'
-             ' API v1beta2.')
 
   def Filter(self, context, args):
     java.RequireJavaInstalled(datastore_util.DATASTORE_TITLE, min_version=8)
-    if args.legacy:
-      util.EnsureComponentIsInstalled('gcd-emulator',
-                                      datastore_util.DATASTORE_TITLE)
-    else:
-      util.EnsureComponentIsInstalled('cloud-datastore-emulator',
-                                      datastore_util.DATASTORE_TITLE)
+    util.EnsureComponentIsInstalled('cloud-datastore-emulator',
+                                    datastore_util.DATASTORE_TITLE)
     if not args.data_dir:
       args.data_dir = datastore_util.GetDataDir()

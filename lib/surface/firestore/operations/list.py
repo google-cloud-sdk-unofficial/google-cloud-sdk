@@ -37,6 +37,19 @@ class List(base.ListCommand):
   operator.
   """
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To retrieve information about recent operations, run:
+
+            $ {command}
+
+          To only list operations that are done, run:
+
+            $ {command} --filter="done:true"
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

@@ -28,6 +28,15 @@ from googlecloudsdk.core import resources
 class Describe(base.DescribeCommand):
   """Retrieves information about a Cloud Firestore admin operation."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To retrieve information about the `exampleOperationId` operation, run:
+
+            $ {command} exampleOperationId
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

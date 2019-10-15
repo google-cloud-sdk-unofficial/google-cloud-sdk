@@ -253,7 +253,8 @@ def RunConnectCommand(args, supports_database=False):
   flags = constants.EXE_FLAGS[exe_name]
   sql_args = [exe_name, flags['hostname'], ip_address]
   sql_args.extend([flags['user'], sql_user])
-  sql_args.append(flags['password'])
+  if 'password' in flags:
+    sql_args.append(flags['password'])
 
   if supports_database:
     sql_args.extend(instances_command_util.GetDatabaseArgs(args, flags))
@@ -326,7 +327,8 @@ def RunProxyConnectCommand(args,
   else:
     sql_args.extend([flags['hostname'], '127.0.0.1', flags['port'], port])
   sql_args.extend([flags['user'], sql_user])
-  sql_args.append(flags['password'])
+  if 'password' in flags:
+    sql_args.append(flags['password'])
 
   if supports_database:
     sql_args.extend(instances_command_util.GetDatabaseArgs(args, flags))

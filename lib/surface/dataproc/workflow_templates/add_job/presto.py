@@ -28,10 +28,11 @@ from googlecloudsdk.command_lib.dataproc.jobs import presto
 class Presto(presto.PrestoBase, base.Command):
   """Add a Presto job to the workflow template."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     presto.PrestoBase.Args(parser)
-    workflow_templates.AddWorkflowTemplatesArgs(parser)
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    workflow_templates.AddWorkflowTemplatesArgs(parser, dataproc.api_version)
 
   def ConfigureJob(self, messages, job, files_by_type, args):
     presto.PrestoBase.ConfigureJob(messages, job, files_by_type,

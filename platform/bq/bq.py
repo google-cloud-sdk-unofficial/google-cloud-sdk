@@ -1917,6 +1917,23 @@ class _Query(BigqueryCmd):
         None,
         'Cloud KMS key for encryption of the destination table data.',
         flag_values=fv)
+    flags.DEFINE_integer(
+        'max_statement_results',
+        100,
+        'Maximum number of script statements to display the results for.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'max_child_jobs',
+        1000,
+        'Maximum number of child jobs to fetch results from after executing a '
+        'script.  If the number of child jobs exceeds this limit, only the '
+        'final result will be displayed.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'job_timeout_ms',
+        None,
+        'Maximum time to run the entire script.',
+        flag_values=fv)
     flags.DEFINE_string(
         'schedule',
         None,
@@ -2105,6 +2122,8 @@ class _Query(BigqueryCmd):
       kwds['allow_large_results'] = self.allow_large_results
       kwds['flatten_results'] = self.flatten_results
       kwds['job_id'] = _GetJobIdFromFlags()
+      if self.job_timeout_ms:
+        kwds['job_timeout_ms'] = self.job_timeout_ms
       job = client.Query(query, **kwds)
       if self.dry_run:
         _PrintDryRunInfo(job)
@@ -2146,13 +2165,24 @@ class _Query(BigqueryCmd):
       statement_child_jobs = [job for job in child_jobs if job
                               .get('statistics', {}).get('scriptStatistics', {})
                               .get('evaluationKind', '') == 'STATEMENT']
-      is_json = FLAGS.format == 'json' or FLAGS.format == 'prettyjson'
+      is_raw_json = FLAGS.format == 'json'
+      is_json = is_raw_json or FLAGS.format == 'prettyjson'
       if is_json:
         sys.stdout.write('[')
+      statements_printed = 0
       for (i, child_job_info) in enumerate(statement_child_jobs):
+        if statements_printed >= self.max_statement_results:
+          if not is_json:
+            sys.stdout.write('Maximum statement results limit reached. '
+                             'Specify --max_statement_results to increase this '
+                             'limit.\n')
+          break
         if is_json:
           if i > 0:
-            sys.stdout.write(',\n')
+            if is_raw_json:
+              sys.stdout.write(',')
+            else:
+              sys.stdout.write(',\n')
         else:
           stack_frames = (
               child_job_info.get('statistics',
@@ -2170,6 +2200,7 @@ class _Query(BigqueryCmd):
                 (stack_frame.get('procedureId', ''), stack_frame['startLine'],
                  stack_frame['startColumn']))
         self.PrintNonScriptQueryJobResults(client, child_job_info)
+        statements_printed = statements_printed + 1
       if is_json:
         sys.stdout.write(']\n')
     else:
@@ -3451,7 +3482,9 @@ class _Make(BigqueryCmd):
         'Specifies a table definition to use to create an external table. '
         'The value can be either an inline table definition or a path to a '
         'file containing a JSON table definition. '
-        'The format of inline definition is "schema@format=uri".',
+        'The format of inline definition is "schema@format=uri", '
+        'where "schema@" and "format=" are optional and "format" has the '
+        'default value of "CSV" if not specified.',
         flag_values=fv)
     flags.DEFINE_string(
         'view', '', 'Create view with this SQL query.', flag_values=fv)

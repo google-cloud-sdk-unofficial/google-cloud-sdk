@@ -17,10 +17,11 @@
       policy file format and contents.
   request:
     collection: spanner.projects.instances
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=setIamPolicyRequest.policy.version
 
   arguments:
     resource:
       help_text: The Spanner instance to set the IAM policy for.
       spec: !REF googlecloudsdk.command_lib.spanner.resources:instance
+
+  iam:
+    policy_version: 3

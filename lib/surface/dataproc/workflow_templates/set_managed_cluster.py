@@ -26,29 +26,33 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _CommonArgs(parser, beta, include_deprecated):
-  parser.add_argument(
-      '--cluster-name',
-      help="""\
-        The name of the managed dataproc cluster.
-        If unspecified, the workflow template ID will be used.""")
-  clusters.ArgsForClusterRef(parser, beta, include_deprecated)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetManagedCluster(base.UpdateCommand):
   """Set a managed cluster for the workflow template."""
-  BETA = False
 
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, beta=False, include_deprecated=False)
-    flags.AddTemplateResourceArg(
-        parser, 'set managed cluster', api_version='v1')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    parser.add_argument(
+        '--cluster-name',
+        help="""\
+          The name of the managed dataproc cluster.
+          If unspecified, the workflow template ID will be used.""")
+    clusters.ArgsForClusterRef(
+        parser, cls.Beta(), include_deprecated=cls.Beta())
+    flags.AddTemplateResourceArg(parser, 'set managed cluster',
+                                 dataproc.api_version)
+    if cls.Beta():
+      clusters.BetaArgsForClusterRef(parser)
 
-  def GetCluster(self, cluster_name, cluster_region):
-    return compute_helpers.GetComputeResources(
-        base.ReleaseTrack.GA, cluster_name, cluster_region)
+  @classmethod
+  def Beta(cls):
+    return cls.ReleaseTrack() != base.ReleaseTrack.GA
+
+  @classmethod
+  def GetComputeReleaseTrack(cls):
+    if cls.Beta():
+      return base.ReleaseTrack.BETA
+    return base.ReleaseTrack.GA
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -63,15 +67,16 @@ class SetManagedCluster(base.UpdateCommand):
     else:
       cluster_name = template_ref.workflowTemplatesId
 
-    compute_resources = self.GetCluster(cluster_name, args.region)
+    compute_resources = compute_helpers.GetComputeResources(
+        self.GetComputeReleaseTrack(), cluster_name, template_ref.regionsId)
 
     cluster_config = clusters.GetClusterConfig(
         args,
         dataproc,
         template_ref.projectsId,
         compute_resources,
-        self.BETA,
-        include_deprecated=self.BETA)
+        self.Beta(),
+        include_deprecated=self.Beta())
 
     labels = labels_util.ParseCreateArgs(
         args, dataproc.messages.ManagedCluster.LabelsValue)
@@ -85,20 +90,3 @@ class SetManagedCluster(base.UpdateCommand):
     response = dataproc.client.projects_regions_workflowTemplates.Update(
         workflow_template)
     return response
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SetManagedClusterBeta(SetManagedCluster):
-  """Set a managed cluster for the workflow template."""
-  BETA = True
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, beta=True, include_deprecated=True)
-    flags.AddTemplateResourceArg(
-        parser, 'set managed cluster', api_version='v1beta2')
-    clusters.BetaArgsForClusterRef(parser)
-
-  def GetCluster(self, cluster_name, cluster_region):
-    return compute_helpers.GetComputeResources(
-        base.ReleaseTrack.BETA, cluster_name, cluster_region)

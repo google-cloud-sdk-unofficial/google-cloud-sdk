@@ -19,9 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -57,12 +55,3 @@ class Jobs(base.Group):
 
     $ {command} delete job_id
   """
-
-  @classmethod
-  def Args(cls, parser):
-    region_prop = properties.VALUES.dataproc.region
-    parser.add_argument(
-        '--region',
-        help=region_prop.help_text,
-        # Don't set default, because it would override users' property setting.
-        action=actions.StoreProperty(region_prop))

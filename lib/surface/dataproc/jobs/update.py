@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -47,9 +46,10 @@ class Update(base.UpdateCommand):
     $ {command} job_id --remove-labels=customer
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddJobFlag(parser, 'update')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddJobResourceArg(parser, 'update', dataproc.api_version)
     changes = parser.add_argument_group(required=True)
     # Allow the user to specify new labels as well as update/remove existing
     labels_util.AddUpdateLabelsFlags(changes)
@@ -57,7 +57,7 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    job_ref = util.ParseJob(args.job, dataproc)
+    job_ref = args.CONCEPTS.job.Parse()
 
     changed_fields = []
 

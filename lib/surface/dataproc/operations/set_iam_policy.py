@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.iam import iam_util
@@ -37,9 +36,11 @@ class SetIamPolicy(base.Command):
   detailed_help = iam_util.GetDetailedHelpForSetIamPolicy('operation',
                                                           use_an=True)
 
-  @staticmethod
-  def Args(parser):
-    flags.AddOperationFlag(parser, 'set the policy on')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddOperationResourceArg(parser, 'set the policy on',
+                                  dataproc.api_version)
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):
@@ -49,9 +50,9 @@ class SetIamPolicy(base.Command):
     policy = iam_util.ParsePolicyFile(args.policy_file, msgs.Policy)
     set_iam_policy_request = msgs.SetIamPolicyRequest(policy=policy)
 
-    operation = util.ParseOperation(args.operation, dataproc)
+    operation_ref = args.CONCEPTS.operation.Parse()
     request = msgs.DataprocProjectsRegionsOperationsSetIamPolicyRequest(
-        resource=operation.RelativeName(),
+        resource=operation_ref.RelativeName(),
         setIamPolicyRequest=set_iam_policy_request)
 
     return dataproc.client.projects_regions_operations.SetIamPolicy(request)

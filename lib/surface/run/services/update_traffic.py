@@ -63,6 +63,13 @@ class AdjustTraffic(base.Command):
           run:
 
               $ {command} myservice --to-latest
+
+          You can also refer to the current or future LATEST revision in
+          --to-revisions by the string "LATEST". For example, to set 10% of
+          traffic to always float to the latest revision:
+
+              $ {command} myservice --to-revisions=LATEST=10
+
          """,
   }
 

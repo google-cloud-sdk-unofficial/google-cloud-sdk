@@ -29,6 +29,15 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.DeleteCommand):
   """Delete a completed Cloud Firestore admin operation."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete the completed `exampleOperationId` operation, run:
+
+            $ {command} exampleOperationId
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

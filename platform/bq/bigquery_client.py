@@ -12,6 +12,7 @@ from __future__ import print_function
 import abc
 import collections
 import datetime
+import errno
 import hashlib
 import itertools
 import json
@@ -20,8 +21,10 @@ import os
 import pkgutil
 import random
 import re
+import shutil
 import string
 import sys
+import tempfile
 import textwrap
 import time
 import traceback
@@ -1005,12 +1008,16 @@ class BigqueryClient(object):
     discovery_url = self.api + '/discovery/v1/apis/{api}/{apiVersion}/rest'
     return discovery_url
 
+  def GetAuthorizedHttp(self, credentials, http):
+    """Returns an http client that is authorized with the given credentials."""
+    return credentials.authorize(http)
+
   def BuildApiClient(
       self,
       discovery_url=None,
   ):
     """Build and return BigQuery Dynamic client from discovery document."""
-    http = self.credentials.authorize(self.GetHttp())
+    http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
         trace=self.trace)
     bigquery_http = BigqueryHttp.Factory(
@@ -1084,7 +1091,7 @@ class BigqueryClient(object):
 
   def BuildDiscoveryNextApiClient(self):
     """Builds and returns BigQuery API client from discovery_next document."""
-    http = self.credentials.authorize(self.GetHttp())
+    http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
         trace=self.trace)
     bigquery_http = BigqueryHttp.Factory(
@@ -1111,7 +1118,7 @@ class BigqueryClient(object):
 
   def BuildIAMPolicyApiClient(self):
     """Builds and returns IAM policy API client from discovery document."""
-    http = self.credentials.authorize(self.GetHttp())
+    http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
     bigquery_model = BigqueryModel(
         trace=self.trace)
     bigquery_http = BigqueryHttp.Factory(
@@ -1182,7 +1189,6 @@ class BigqueryClient(object):
       self._op_transfer_client = self.BuildApiClient(
       discovery_url=discovery_url)
     return self._op_transfer_client
-
 
 
   def GetReservationApiClient(self,
@@ -1701,7 +1707,6 @@ class BigqueryClient(object):
     transfer_client = self.GetTransferV1ApiClient()
     return transfer_client.projects().locations().transferConfigs().runs().get(
         name=identifier).execute()
-
 
   def CreateReservation(self, reference, slots, use_parent):
     """Create a reservation with the given reservation reference.
@@ -2279,7 +2284,9 @@ class BigqueryClient(object):
       if print_format == 'view':
         formatter.AddColumns(('Query',))
       if print_format == 'materialized_view':
-        formatter.AddColumns(('Query',))
+        formatter.AddColumns((
+            'Query',
+        ))
     elif reference_type == ApiClientHelper.EncryptionServiceAccount:
       formatter.AddColumns(list(object_info.keys()))
     elif reference_type == ApiClientHelper.ReservationReference:
@@ -3664,25 +3671,27 @@ class BigqueryClient(object):
       if not ignore_existing:
         raise
 
-  def CreateTable(
-      self,
-      reference,
-      ignore_existing=False,
-      schema=None,
-      description=None,
-      display_name=None,
-      expiration=None,
-      view_query=None,
-      materialized_view_query=None,
-      external_data_config=None,
-      view_udf_resources=None,
-      use_legacy_sql=None,
-      labels=None,
-      time_partitioning=None,
-      clustering=None,
-      range_partitioning=None,
-      require_partition_filter=None,
-      destination_kms_key=None):
+  def CreateTable(self,
+                  reference,
+                  ignore_existing=False,
+                  schema=None,
+                  description=None,
+                  display_name=None,
+                  expiration=None,
+                  view_query=None,
+                  materialized_view_query=None,
+                  enable_refresh=None,
+                  refresh_interval_ms=None,
+                  external_data_config=None,
+                  view_udf_resources=None,
+                  use_legacy_sql=None,
+                  labels=None,
+                  time_partitioning=None,
+                  clustering=None,
+                  range_partitioning=None,
+                  require_partition_filter=None,
+                  destination_kms_key=None,
+                  location=None):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -3695,7 +3704,12 @@ class BigqueryClient(object):
       expiration: optional expiration time in milliseconds since the epoch for
         tables or views.
       view_query: an optional Sql query for views.
-      materialized_view_query: an optional Standard SQL query for materialized views.
+      materialized_view_query: an optional standard SQL query for materialized
+        views.
+      enable_refresh: for materialized views, an optional toggle to enable /
+        disable automatic refresh when the base table is updated.
+      refresh_interval_ms: for materialized views, an optional maximum frequency
+        for automatic refreshes.
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
@@ -3711,6 +3725,7 @@ class BigqueryClient(object):
       require_partition_filter: if set, partition filter is required for
         queires over this table.
       destination_kms_key: User specified KMS key for encryption.
+      location: an optional location for which to create tables or views.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -3738,6 +3753,11 @@ class BigqueryClient(object):
           view_args['useLegacySql'] = use_legacy_sql
       if materialized_view_query is not None:
         materialized_view_args = {'query': materialized_view_query}
+        if enable_refresh is not None:
+          materialized_view_args.update({'enableRefresh': enable_refresh})
+        if refresh_interval_ms is not None:
+          materialized_view_args.update(
+              {'refreshIntervalMs': refresh_interval_ms})
         body['materializedView'] = materialized_view_args
       if external_data_config is not None:
         body['externalDataConfiguration'] = external_data_config
@@ -3753,6 +3773,8 @@ class BigqueryClient(object):
         body['requirePartitionFilter'] = require_partition_filter
       if destination_kms_key is not None:
         body['encryptionConfiguration'] = {'kmsKeyName': destination_kms_key}
+      if location is not None:
+        body['location'] = location
       self.apiclient.tables().insert(
           body=body,
           **dict(reference.GetDatasetReference())).execute()
@@ -3982,26 +4004,28 @@ class BigqueryClient(object):
           'Data source \'%s\' does not'
           ' support refresh window days.' % data_source)
 
-  def UpdateTable(
-      self,
-      reference,
-      schema=None,
-      description=None,
-      display_name=None,
-      expiration=None,
-      view_query=None,
-      materialized_view_query=None,
-      external_data_config=None,
-      view_udf_resources=None,
-      use_legacy_sql=None,
-      labels_to_set=None,
-      label_keys_to_remove=None,
-      time_partitioning=None,
-      range_partitioning=None,
-      clustering=None,
-      require_partition_filter=None,
-      etag=None,
-      encryption_configuration=None):
+  def UpdateTable(self,
+                  reference,
+                  schema=None,
+                  description=None,
+                  display_name=None,
+                  expiration=None,
+                  view_query=None,
+                  materialized_view_query=None,
+                  enable_refresh=None,
+                  refresh_interval_ms=None,
+                  external_data_config=None,
+                  view_udf_resources=None,
+                  use_legacy_sql=None,
+                  labels_to_set=None,
+                  label_keys_to_remove=None,
+                  time_partitioning=None,
+                  range_partitioning=None,
+                  clustering=None,
+                  require_partition_filter=None,
+                  etag=None,
+                  encryption_configuration=None,
+                  location=None):
     """Updates a table.
 
     Args:
@@ -4012,7 +4036,12 @@ class BigqueryClient(object):
       expiration: optional expiration time in milliseconds since the epoch for
         tables or views. Specifying 0 removes expiration time.
       view_query: an optional Sql query to update a view.
-      materialized_view_query: an optional Standard SQL query for materialized views.
+      materialized_view_query: an optional Standard SQL query for materialized
+        views.
+      enable_refresh: for materialized views, an optional toggle to enable /
+        disable automatic refresh when the base table is updated.
+      refresh_interval_ms: for materialized views, an optional maximum frequency
+        for automatic refreshes.
       external_data_config: defines a set of external resources used to create
         an external table. For example, a BigQuery table backed by CSV files
         in GCS.
@@ -4032,6 +4061,7 @@ class BigqueryClient(object):
         queires over this table.
       etag: if set, checks that etag in the existing table matches.
       encryption_configuration: Updates the encryption configuration.
+      location: an optional location for which to update tables or views.
 
     Raises:
       TypeError: if reference is not a TableReference.
@@ -4063,8 +4093,14 @@ class BigqueryClient(object):
       if use_legacy_sql is not None:
         view_args['useLegacySql'] = use_legacy_sql
       table['view'] = view_args
+    materialized_view_args = {}
     if materialized_view_query is not None:
-      materialized_view_args = {'query': materialized_view_query}
+      materialized_view_args.update({'query': materialized_view_query})
+    if enable_refresh is not None:
+      materialized_view_args.update({'enableRefresh': enable_refresh})
+    if refresh_interval_ms is not None:
+      materialized_view_args.update({'refreshIntervalMs': refresh_interval_ms})
+    if materialized_view_args:
       table['materializedView'] = materialized_view_args
     if external_data_config is not None:
       table['externalDataConfiguration'] = external_data_config
@@ -4087,6 +4123,8 @@ class BigqueryClient(object):
         table['clustering'] = clustering
     if require_partition_filter is not None:
       table['requirePartitionFilter'] = require_partition_filter
+    if location is not None:
+      table['location'] = location
 
     request = self.apiclient.tables().patch(body=table, **dict(reference))
 
@@ -5630,7 +5668,6 @@ class ApiClientHelper(object):
     # an unnecessary line that would have tried to print a reference in other
     # cases, i.e. datasets, tables, etc.
     typename = None
-
 
   class ReservationReference(Reference):
     _required_fields = frozenset(('projectId', 'location', 'reservationId'))

@@ -26,33 +26,7 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core.console import console_io
 
 
-def _Run(dataproc, args):
-  """Runs import command."""
-
-  policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
-  policy = util.ReadAutoscalingPolicy(
-      dataproc=dataproc,
-      policy_id=policy_ref.Name(),
-      policy_file_name=args.source)
-
-  try:
-    return util.CreateAutoscalingPolicy(dataproc, policy_ref.RelativeName(),
-                                        policy)
-  except apitools_exceptions.HttpError as error:
-    # Catch ALREADY_EXISTS
-    if error.status_code != 409:
-      raise error
-    # Warn the user that they're going to overwrite an existing policy
-    console_io.PromptContinue(
-        message=('Autoscaling policy [{0}] will be overwritten.').format(
-            policy.id),
-        cancel_on_no=True)
-    return util.UpdateAutoscalingPolicy(dataproc, policy_ref.RelativeName(),
-                                        policy)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ImportBeta(base.Command):
+class Import(base.Command):
   """Import an autoscaling policy.
 
   If the specified autoscaling policy already exists, it will be overwritten.
@@ -72,38 +46,31 @@ class ImportBeta(base.Command):
     $ {command} example-autoscaling-policy --source=saved-policy.yaml
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddImportArgs(parser, 'import', 'v1beta2', 'AutoscalingPolicy')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddImportArgs(parser, 'import', dataproc.api_version,
+                        'AutoscalingPolicy')
 
   def Run(self, args):
-    return _Run(dp.Dataproc(self.ReleaseTrack()), args)
+    dataproc = dp.Dataproc(self.ReleaseTrack())
+    policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
+    policy = util.ReadAutoscalingPolicy(
+        dataproc=dataproc,
+        policy_id=policy_ref.Name(),
+        policy_file_name=args.source)
 
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class ImportGa(base.Command):
-  """Import an autoscaling policy.
-
-  If the specified autoscaling policy already exists, it will be overwritten.
-  Otherwise, a new autoscaling policy will be created.
-  To edit an existing autoscaling policy, you can export the autoscaling policy
-  to a file, edit its configuration, and then import the new configuration.
-
-  This command does not allow output only fields, such as policy id and resource
-  name. It populates the id field based on the resource name specified as the
-  first command line argument.
-
-  ## EXAMPLES
-
-  The following command creates or updates the contents of autoscaling policy
-  `example-autoscaling-policy` based on a yaml file:
-
-    $ {command} example-autoscaling-policy --source=saved-policy.yaml
-  """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddImportArgs(parser, 'import', 'v1', 'AutoscalingPolicy')
-
-  def Run(self, args):
-    return _Run(dp.Dataproc(self.ReleaseTrack()), args)
+    try:
+      return util.CreateAutoscalingPolicy(dataproc, policy_ref.RelativeName(),
+                                          policy)
+    except apitools_exceptions.HttpError as error:
+      # Catch ALREADY_EXISTS
+      if error.status_code != 409:
+        raise error
+      # Warn the user that they're going to overwrite an existing policy
+      console_io.PromptContinue(
+          message=('Autoscaling policy [{0}] will be overwritten.').format(
+              policy.id),
+          cancel_on_no=True)
+      return util.UpdateAutoscalingPolicy(dataproc, policy_ref.RelativeName(),
+                                          policy)

@@ -23,9 +23,8 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dataproc import constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
+from googlecloudsdk.command_lib.dataproc import flags
 
 
 class List(base.ListCommand):
@@ -33,15 +32,10 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    region_prop = properties.VALUES.dataproc.region
-    parser.add_argument(
-        '--region',
-        help=region_prop.help_text,
-        # Don't set default, because it would override users' property setting.
-        action=actions.StoreProperty(region_prop))
     # TODO(b/65634121): Implement URI listing for dataproc
     base.URI_FLAG.RemoveFromParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, constants.DEFAULT_PAGE_SIZE)
+    flags.AddRegionFlag(parser)
     parser.display_info.AddFormat("""
           table(
             id:label=ID,
@@ -55,10 +49,10 @@ class List(base.ListCommand):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     messages = dataproc.messages
 
-    regions = util.ParseRegion(dataproc)
+    region_ref = util.ParseRegion(dataproc)
 
     request = messages.DataprocProjectsRegionsWorkflowTemplatesListRequest(
-        parent=regions.RelativeName())
+        parent=region_ref.RelativeName())
 
     return list_pager.YieldFromList(
         dataproc.client.projects_regions_workflowTemplates,

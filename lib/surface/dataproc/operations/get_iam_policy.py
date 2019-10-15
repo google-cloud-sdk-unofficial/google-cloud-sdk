@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Get IAM operation policy command."""
 
 from __future__ import absolute_import
@@ -20,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
@@ -40,17 +38,19 @@ class GetIamPolicy(base.ListCommand):
     $ {command} example-operation
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.AddOperationFlag(parser, 'retrieve the policy for')
+  @classmethod
+  def Args(cls, parser):
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddOperationResourceArg(parser, 'retrieve the policy for',
+                                  dataproc.api_version)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     msgs = dataproc.messages
 
-    operation = util.ParseOperation(args.operation, dataproc)
+    operation_ref = args.CONCEPTS.operation.Parse()
     request = msgs.DataprocProjectsRegionsOperationsGetIamPolicyRequest(
-        resource=operation.RelativeName())
+        resource=operation_ref.RelativeName())
 
     return dataproc.client.projects_regions_operations.GetIamPolicy(request)

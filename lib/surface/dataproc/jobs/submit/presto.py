@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PrestoBeta(presto.PrestoBase, submitter.JobSubmitterBeta):
+class PrestoBeta(presto.PrestoBase, submitter.JobSubmitter):
   r"""Submit a Presto job to a cluster.
 
   Submit a Presto job to a cluster
@@ -49,4 +49,4 @@ class PrestoBeta(presto.PrestoBase, submitter.JobSubmitterBeta):
     presto.PrestoBase.ConfigureJob(
         messages, job, self.files_by_type,
         self.BuildLoggingConfig(messages, args.driver_log_levels), args)
-    submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)
+    submitter.JobSubmitter.ConfigureJob(messages, job, args)

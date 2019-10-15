@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SparkRBeta(spark_r.SparkRBase, submitter.JobSubmitterBeta):
+class SparkR(spark_r.SparkRBase, submitter.JobSubmitter):
   r"""Submit a SparkR job to a cluster.
 
   Submit a SparkR job to a cluster.
@@ -44,10 +44,10 @@ class SparkRBeta(spark_r.SparkRBase, submitter.JobSubmitterBeta):
   @staticmethod
   def Args(parser):
     spark_r.SparkRBase.Args(parser)
-    submitter.JobSubmitterBeta.Args(parser)
+    submitter.JobSubmitter.Args(parser)
 
   def ConfigureJob(self, messages, job, args):
     spark_r.SparkRBase.ConfigureJob(
         messages, job, self.files_by_type,
         self.BuildLoggingConfig(messages, args.driver_log_levels), args)
-    submitter.JobSubmitterBeta.ConfigureJob(messages, job, args)
+    submitter.JobSubmitter.ConfigureJob(messages, job, args)

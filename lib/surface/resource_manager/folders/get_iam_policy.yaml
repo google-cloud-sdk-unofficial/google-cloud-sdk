@@ -17,10 +17,12 @@
   request:
     collection: cloudresourcemanager.folders
     api_version: v2
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=getIamPolicyRequest.options.requestedPolicyVersion
 
   arguments:
     resource:
       help_text: The ID of the folder for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.resource_manager.resources:folder
+
+  iam:
+    policy_version: 3
+    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

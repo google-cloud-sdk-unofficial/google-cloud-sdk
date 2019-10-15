@@ -53,6 +53,9 @@ def _Run(args, enable_labels=False, legacy_output=False):
       no_expiration = True
       expiration_period = None
 
+  if dead_letter_topic:
+    dead_letter_topic = args.CONCEPTS.dead_letter_topic.Parse().RelativeName()
+
   labels = None
   if enable_labels:
     labels = labels_util.ParseCreateArgs(

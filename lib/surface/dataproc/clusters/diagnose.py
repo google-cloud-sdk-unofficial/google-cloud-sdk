@@ -34,17 +34,16 @@ from googlecloudsdk.core.util import retry
 class Diagnose(base.Command):
   """Run a detailed diagnostic on a cluster."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddTimeoutFlag(parser)
-    parser.add_argument(
-        'name',
-        help='The name of the cluster to diagnose.')
+    dataproc = dp.Dataproc(cls.ReleaseTrack())
+    flags.AddClusterResourceArg(parser, 'diagnose', dataproc.api_version)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    cluster_ref = util.ParseCluster(args.name, dataproc)
+    cluster_ref = args.CONCEPTS.cluster.Parse()
 
     request = dataproc.messages.DataprocProjectsRegionsClustersDiagnoseRequest(
         clusterName=cluster_ref.clusterName,

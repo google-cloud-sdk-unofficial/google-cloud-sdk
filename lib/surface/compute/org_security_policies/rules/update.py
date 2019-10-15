@@ -48,6 +48,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableLogging(parser)
     flags.AddTargetResources(parser)
     flags.AddDescription(parser)
+    flags.AddNewPriority(parser, operation='update')
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -55,11 +56,13 @@ class Update(base.UpdateCommand):
         args, holder.resources, with_project=False)
     security_policy_rule_client = client.OrgSecurityPolicyRule(
         ref=ref, compute_client=holder.client)
+    priority = rule_utils.ConvertPriorityToInt(ref.Name())
     src_ip_ranges = []
     dest_ip_ranges = []
     dest_ports = []
     target_resources = []
     enable_logging = False
+
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -70,6 +73,10 @@ class Update(base.UpdateCommand):
       target_resources = args.target_resources
     if args.IsSpecified('enable_logging'):
       enable_logging = True
+    if args.IsSpecified('new_priority'):
+      new_priority = rule_utils.ConvertPriorityToInt(args.new_priority)
+    else:
+      new_priority = priority
 
     dest_port_list = rule_utils.ParseDestPorts(dest_ports,
                                                holder.client.messages)
@@ -87,9 +94,9 @@ class Update(base.UpdateCommand):
         traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
       else:
         traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
-    priority = rule_utils.ConvertPriorityToInt(ref.Name())
+
     security_policy_rule = holder.client.messages.SecurityPolicyRule(
-        priority=priority,
+        priority=new_priority,
         action=args.action,
         match=matcher,
         direction=traffic_direct,
