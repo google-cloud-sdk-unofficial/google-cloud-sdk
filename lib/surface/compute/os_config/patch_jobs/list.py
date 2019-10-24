@@ -29,11 +29,29 @@ from googlecloudsdk.core import resources
 _DEFAULT_LIMIT = 10
 
 
+def _TransformPatchJobDisplayName(resource):
+  max_len = 15  # Show only the first 15 characters if display name is long.
+  name = resource.get('displayName', '')
+  return (name[:max_len] + '..') if len(name) > max_len else name
+
+
 def _TransformPatchJobDescription(resource):
   max_len = 30  # Show only the first 30 characters if description is long.
   description = resource.get('description', '')
   return (description[:max_len] +
           '..') if len(description) > max_len else description
+
+
+def _TransformState(resource):
+  state = resource.get('state', '')
+
+  if 'instanceDetailsSummary' in resource:
+    num_instances_pending_reboot = int(resource['instanceDetailsSummary'].get(
+        'instancesSucceededRebootRequired', '0'))
+    if state == 'SUCCEEDED' and num_instances_pending_reboot > 0:
+      return 'SUCCEEDED_INSTANCES_PENDING_REBOOT'
+
+  return state
 
 
 def _TransformNumInstances(resource):
@@ -81,16 +99,20 @@ class List(base.ListCommand):
     base.LIMIT_FLAG.SetDefault(parser, _DEFAULT_LIMIT)
     parser.display_info.AddFormat("""
           table(
-            name.basename(),
+            name.basename():label=ID,
+            display_name(),
             description(),
             create_time,
-            state,
-            num_instances()
+            update_time,
+            state(),
+            targeted_instances()
           )
         """)
     parser.display_info.AddTransforms({
+        'display_name': _TransformPatchJobDisplayName,
         'description': _TransformPatchJobDescription,
-        'num_instances': _TransformNumInstances
+        'state': _TransformState,
+        'targeted_instances': _TransformNumInstances,
     })
     parser.display_info.AddUriFunc(_MakeGetUriFunc())
 

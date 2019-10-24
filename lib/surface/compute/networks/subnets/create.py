@@ -234,7 +234,9 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
   if (args.enable_flow_logs is not None or
       args.logging_aggregation_interval is not None or
       args.logging_flow_sampling is not None or
-      args.logging_metadata is not None):
+      args.logging_metadata is not None or
+      (include_alpha_logging and args.logging_filter_expr is not None) or
+      (include_alpha_logging and args.logging_metadata_fields is not None)):
     log_config = messages.SubnetworkLogConfig(enable=args.enable_flow_logs)
     if args.logging_aggregation_interval:
       log_config.aggregationInterval = flags.GetLoggingAggregationIntervalArg(

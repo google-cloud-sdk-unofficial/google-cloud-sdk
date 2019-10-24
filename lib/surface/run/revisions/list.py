@@ -75,8 +75,9 @@ class List(commands.List):
         '{ready_column},'
         'name:label=REVISION,'
         'active.yesno(yes="yes", no=""),'
-        'service_name:label=SERVICE,'
-        'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label=DEPLOYED,'
+        'service_name:label=SERVICE:sort=1,'
+        'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):'
+        'label=DEPLOYED:sort=2:reverse,'
         'author:label="DEPLOYED BY")'.format(
             ready_column=pretty_print.READY_COLUMN))
     parser.display_info.AddUriFunc(cls._GetResourceUri)
@@ -97,7 +98,9 @@ class List(commands.List):
         log.status.Print('For cluster [{cluster}]{zone}:'.format(
             cluster=conn_context.cluster_name,
             zone=location_msg if conn_context.cluster_location else ''))
-      return client.ListRevisions(namespace_ref, service_name)
+      for rev in client.ListRevisions(namespace_ref, service_name,
+                                      args.limit, args.page_size):
+        yield rev
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

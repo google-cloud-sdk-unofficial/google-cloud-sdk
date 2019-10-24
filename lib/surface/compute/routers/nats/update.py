@@ -33,7 +33,6 @@ from googlecloudsdk.core import resources
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a NAT on a Google Compute Engine router."""
-  with_drain_ips = False
 
   @classmethod
   def Args(cls, parser):
@@ -47,8 +46,7 @@ class Update(base.UpdateCommand):
     nats_flags.AddNatNameArg(parser, operation_type='create')
     nats_flags.AddCommonNatArgs(
         parser,
-        for_create=False,
-        with_drain_ips=cls.with_drain_ips)
+        for_create=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -62,8 +60,7 @@ class Update(base.UpdateCommand):
 
     # Retrieve specified NAT and update base fields.
     existing_nat = nats_utils.FindNatOrRaise(replacement, args.name)
-    nat = nats_utils.UpdateNatMessage(
-        existing_nat, args, holder, with_drain_ips=self.with_drain_ips)
+    nat = nats_utils.UpdateNatMessage(existing_nat, args, holder)
 
     cleared_fields = []
     if args.clear_min_ports_per_vm:
@@ -121,8 +118,6 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateAlpha(Update):
   """Update a NAT on a Google Compute Engine router."""
-
-  with_drain_ips = True
 
 
 Update.detailed_help = {

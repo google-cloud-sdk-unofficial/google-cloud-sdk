@@ -21,7 +21,9 @@ import os
 import os.path
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.run import local
+from googlecloudsdk.command_lib.local import local
+from googlecloudsdk.command_lib.local import yaml_helper
+from googlecloudsdk.core import config
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
@@ -36,9 +38,11 @@ build:
     context: {context_path}
 deploy:
   kubectl:
-    manifests:
-      - .dev/*.yaml
+    manifests: []
 """
+
+_DEFAULT_SECRET_PATH = os.path.join(config.Paths().global_config_dir,
+                                    'local_developer_credential_secret.yaml')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -75,9 +79,17 @@ class Setup(base.Command):
         'container image. Otherwise, the directory of the Dockerfile will be '
         'used.')
 
+    parser.add_argument(
+        '--service-account',
+        help='When connecting to Google Cloud Platform services, use a service '
+        'account key.')
+
   def Run(self, args):
+    project_name = properties.VALUES.core.project.Get(required=True)
+
     if not args.IsSpecified('service_name'):
-      dir_name = os.path.basename(os.path.dirname(args.dockerfile))
+      dir_name = os.path.basename(
+          os.path.dirname(os.path.join(files.GetCWD(), args.dockerfile)))
       service_name = console_io.PromptWithDefault(
           message='Service name', default=dir_name)
     else:
@@ -85,20 +97,34 @@ class Setup(base.Command):
 
     if not args.IsSpecified('image_name'):
       default_image_name = 'gcr.io/{project}/{service}'.format(
-          project=properties.VALUES.core.project.Get(required=True),
-          service=service_name)
+          project=project_name, service=service_name)
       image_name = console_io.PromptWithDefault(
           message='Docker image tag', default=default_image_name)
     else:
       image_name = args.image_name
 
+    kubernetes_yaml_paths = []
     kubernetes_configs = local.CreatePodAndService(service_name, image_name)
+    if args.service_account:
+      service_account = local.CreateDevelopmentServiceAccount(
+          args.service_account)
+      private_key_json = local.CreateServiceAccountKey(service_account)
+      secret_yaml = local.LocalDevelopmentSecretSpec(private_key_json)
+      kubernetes_configs.append(secret_yaml)
+      local.AddServiceAccountSecret(kubernetes_configs)
+
     with files.FileWriter(args.kubernetes_file) as output:
       yaml.dump_all(kubernetes_configs, output)
+    kubernetes_yaml_paths.append(args.kubernetes_file)
 
     skaffold_yaml_text = _SKAFFOLD_TEMPLATE.format(
         image_name=image_name,
         context_path=args.build_context_directory or
         os.path.dirname(args.dockerfile) or '.')
+    skaffold_yaml = yaml.load(skaffold_yaml_text)
+    manifests = yaml_helper.GetOrCreate(
+        skaffold_yaml, ('deploy', 'kubectl', 'manifests'), constructor=list)
+    manifests.extend(kubernetes_yaml_paths)
+
     with files.FileWriter(args.skaffold_file) as output:
-      output.write(skaffold_yaml_text)
+      yaml.dump(skaffold_yaml, output)

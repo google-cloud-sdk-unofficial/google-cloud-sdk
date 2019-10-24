@@ -35,6 +35,7 @@ SERVICE_ACCOUNT_KEY_FILE_FLAG = '--service-account-key-file'
 DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
 
 
+@base.Hidden
 class RegisterCluster(base.CreateCommand):
   r"""Registers a cluster with Google Cloud Platform.
 

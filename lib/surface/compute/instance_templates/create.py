@@ -237,11 +237,37 @@ def BuildShieldedInstanceConfigMessage(messages, args):
   return shielded_instance_config_message
 
 
+def BuildConfidentialInstanceConfigMessage(messages, args):
+  """Build a Confidential Instance Config message.
+
+  Args:
+      messages: The client messages.
+      args: the arguments passed to the test.
+
+  Returns:
+      A Confidential Instance Config message.
+  """
+  confidential_instance_config_message = None
+  enable_confidential_compute = False
+  if not (hasattr(args, 'confidential_compute') and
+          args.IsSpecified('confidential_compute')):
+    return confidential_instance_config_message
+
+  if args.confidential_compute is not None and (isinstance(
+      args.confidential_compute, bool)):
+    enable_confidential_compute = args.confidential_compute
+  confidential_instance_config_message = (
+      instance_utils.CreateConfidentialInstanceMessage(
+          messages, enable_confidential_compute))
+  return confidential_instance_config_message
+
+
 def _RunCreate(compute_api,
                args,
                support_source_instance,
                support_kms=False,
-               support_min_node_cpus=False):
+               support_min_node_cpus=False,
+               support_confidential_compute=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -254,6 +280,8 @@ def _RunCreate(compute_api,
       support_kms: Indicate whether KMS is integrated or not.
       support_min_node_cpus: Indicate whether the --min-node-cpus flag for
         sole tenancy overcommit is supported.
+      support_confidential_compute: Indicate whether confidential compute is
+        supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -303,6 +331,11 @@ def _RunCreate(compute_api,
   # Compute the shieldedInstanceConfig message.
   shieldedinstance_config_message = BuildShieldedInstanceConfigMessage(
       messages=client.messages, args=args)
+
+  if support_confidential_compute:
+    confidential_instance_config_message = (
+        BuildConfidentialInstanceConfigMessage(
+            messages=client.messages, args=args))
 
   node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
       args, client.messages)
@@ -432,6 +465,10 @@ def _RunCreate(compute_api,
   instance_template.properties.reservationAffinity = instance_utils.GetReservationAffinity(
       args, client)
 
+  if support_confidential_compute:
+    instance_template.properties.confidentialInstanceConfig = (
+        confidential_instance_config_message)
+
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template,
       project=instance_template_ref.project)
@@ -556,6 +593,7 @@ class CreateAlpha(Create):
   _support_kms = True
   _support_resource_policy = True
   _support_min_node_cpus = True
+  _support_confidential_compute = True
 
   @classmethod
   def Args(cls, parser):
@@ -569,6 +607,7 @@ class CreateAlpha(Create):
         support_min_node_cpus=cls._support_min_node_cpus)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+    instances_flags.AddConfidentialComputeArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -585,4 +624,5 @@ class CreateAlpha(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_min_node_cpus=self._support_min_node_cpus)
+        support_min_node_cpus=self._support_min_node_cpus,
+        support_confidential_compute=self._support_confidential_compute)

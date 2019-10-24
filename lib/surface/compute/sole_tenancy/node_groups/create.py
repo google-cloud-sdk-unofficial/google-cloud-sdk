@@ -59,14 +59,10 @@ class Create(base.CreateCommand):
       maintenance_policy = mapper.GetEnumForChoice(args.maintenance_policy)
       node_group.maintenancePolicy = maintenance_policy
 
-    if hasattr(args, 'autoscaling_policy') and args.autoscaling_policy:
-      mapper = flags.GetAutoscalingModeEnumMapper(messages)
-      mode = mapper.GetEnumForChoice(args.autoscaling_policy['mode'])
-      autoscaling_policy = messages.NodeGroupAutoscalingPolicy(
-          mode=mode,
-          minSize=args.autoscaling_policy.get('min-size'),
-          maxSize=args.autoscaling_policy.get('max-size'))
-      node_group.autoscalingPolicy = autoscaling_policy
+    if hasattr(args, 'mode'):
+      autoscaling_policy = util.BuildAutoscaling(args, messages)
+      node_group.autoscalingPolicy = autoscaling_policy if autoscaling_policy \
+                                     else None
 
     request = messages.ComputeNodeGroupsInsertRequest(
         nodeGroup=node_group,
@@ -93,4 +89,3 @@ class CreateAlpha(CreateBeta):
     flags.AddCreateArgsToParser(parser)
     flags.AddMaintenancePolicyArgToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser)
-

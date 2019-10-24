@@ -91,8 +91,6 @@ def _ValidateAndMergeArgInputs(args):
   return arg_inputs, is_local_file
 
 
-# TODO(b/137185310): Make this visible once the API is public.
-@base.Hidden
 class Run(base.SilentCommand):
   r"""Defines and runs a pipeline.
 

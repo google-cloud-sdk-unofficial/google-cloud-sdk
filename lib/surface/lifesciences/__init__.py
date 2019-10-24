@@ -22,8 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/137185310): Make this visible once the API is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Lifesciences(base.Group):
   """Manage Cloud Life Sciences resources."""

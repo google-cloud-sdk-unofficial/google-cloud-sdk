@@ -145,7 +145,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
 
     parser.add_argument(
         '--preview',
-        help='Preview the requested update without making any changes to the'
+        help='Preview the requested update without making any changes to the '
         'underlying resources. (default=False)',
         dest='preview',
         default=False,

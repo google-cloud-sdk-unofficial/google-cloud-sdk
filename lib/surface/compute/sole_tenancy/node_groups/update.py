@@ -44,14 +44,14 @@ class Update(base.UpdateCommand):
         args, holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
-    autoscaling_policy = getattr(args, 'autoscaling_policy', None)
+    autoscaling_policy = getattr(args, 'mode', None)
 
     return groups_client.Update(
         node_group_ref,
         node_template=args.node_template,
         additional_node_count=args.add_nodes,
         delete_nodes=args.delete_nodes,
-        autoscaling_policy=autoscaling_policy)
+        autoscaling_policy_args=args if autoscaling_policy else None)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

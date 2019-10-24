@@ -27,8 +27,6 @@ from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-# TODO(b/137185310): Make this visible once the API is public.
-@base.Hidden
 class Wait(base.SilentCommand):
   r"""Wait for Cloud Life Sciences operation to complete.
 

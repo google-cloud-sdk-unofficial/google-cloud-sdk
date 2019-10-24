@@ -47,7 +47,7 @@ class EnableEnforce(interfaces.OrgPolicyGetAndUpdateCommand):
   associated with the label key `1111`, run:
 
     $ {command} iam.disableServiceAccountCreation --project=foo-project \
-    --condition='resource.matchLabels(1111, 2222)'
+    --condition='resource.matchLabels("labelKeys/1111", "labelValues/2222")'
   """
 
   @staticmethod

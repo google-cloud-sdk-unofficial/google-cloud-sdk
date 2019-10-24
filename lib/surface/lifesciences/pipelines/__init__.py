@@ -24,8 +24,6 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/137185310): Make this visible once the API is public.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Workflows(base.Group):
   """Commands for Life Sciences pipelines.

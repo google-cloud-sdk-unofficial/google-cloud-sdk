@@ -1,6 +1,4 @@
-- hidden: true
-
-  help_text:
+- help_text:
     brief:  List Cloud Life Sciences operations.
     description: List Cloud Life Sciences operations.
     examples: |

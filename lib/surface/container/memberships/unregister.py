@@ -27,7 +27,6 @@ from googlecloudsdk.core import log
 
 
 # LINT.IfChange
-@base.Hidden
 class Unregister(base.DeleteCommand):
   r"""Unregisters a cluster from Google Cloud Platform.
 

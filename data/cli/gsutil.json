@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.44",
+  "CLI_VERSION": "4.45",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -4345,7 +4345,7 @@
           "positionals": [],
           "release": "GA",
           "sections": {
-            "DESCRIPTION": "The ``ubla set`` command enables or disables uniform\nbucket-level access for Google Cloud Storage bucket(s).",
+            "DESCRIPTION": "The ``ubla set`` command enables or disables uniform\nbucket-level access for Google Cloud Storage buckets.",
             "EXAMPLES": "Configure your buckets to use uniform bucket-level access:\n\n  gsutil ubla set on gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use uniform bucket-level access:\n\n  gsutil ubla set off gs://redbucket gs://bluebucket"
           }
         }
@@ -4361,10 +4361,10 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "The ``ubla`` command is used to retrieve or configure the\n`Access controls (Beta)\n<https://cloud.google.com/storage/docs/bucket-policy-only>`_ setting of\nCloud Storage bucket(s). This command has two sub-commands, ``get`` and\n``set``.",
+        "DESCRIPTION": "The ``ubla`` command is used to retrieve or configure the\n`uniform bucket-level access\n<https://cloud.google.com/storage/docs/bucket-policy-only>`_ setting of\nCloud Storage bucket(s). This command has two sub-commands, ``get`` and\n``set``.",
         "EXAMPLES": "Configure your buckets to use uniform bucket-level access:\n\n  gsutil ubla set on gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use uniform bucket-level access:\n\n  gsutil ubla set off gs://redbucket gs://bluebucket",
         "GET": "The ``ubla get`` command shows whether uniform bucket-level access is enabled\nfor the specified Cloud Storage bucket(s).",
-        "SET": "The ``ubla set`` command enables or disables uniform\nbucket-level access for Google Cloud Storage bucket(s)."
+        "SET": "The ``ubla set`` command enables or disables uniform\nbucket-level access for Google Cloud Storage buckets."
       }
     },
     "version": {

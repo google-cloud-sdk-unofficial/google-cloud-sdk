@@ -47,7 +47,7 @@ class DomainMappings(base.Group):
 
             $ {command} list
 
-          To create a domain with an automatically managed certiticate, run:
+          To create a domain with an automatically managed certificate, run:
 
             $ {command} create 'example.com' --certificate-management=AUTOMATIC
 

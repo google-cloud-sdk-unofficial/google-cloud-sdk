@@ -126,6 +126,16 @@ def AddBaseArgs(parser):
       default=None,
       help='The storage type for the instance. The default is SSD.')
   flags.AddTier(parser)
+  kms_flag_overrides = {
+      'kms-key': '--disk-encryption-key',
+      'kms-keyring': '--disk-encryption-key-keyring',
+      'kms-location': '--disk-encryption-key-location',
+      'kms-project': '--disk-encryption-key-project'
+  }
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser,
+      'instance',
+      flag_overrides=kms_flag_overrides)
 
 
 def AddBetaArgs(parser):
@@ -307,18 +317,3 @@ class CreateAlpha(base.Command):
     AddBaseArgs(parser)
     AddBetaArgs(parser)
     flags.AddDatabaseVersion(parser, restrict_choices=False)
-    kms_flag_overrides = {
-        'kms-key': '--disk-encryption-key',
-        'kms-keyring': '--disk-encryption-key-keyring',
-        'kms-location': '--disk-encryption-key-location',
-        'kms-project': '--disk-encryption-key-project'
-    }
-    permission_info = (
-        'Please ensure that you have the '
-        '`resourcemanager.projects.setIamPolicy` permission for the project '
-        'associated with the key')
-    kms_resource_args.AddKmsKeyResourceArg(
-        parser,
-        'instance',
-        flag_overrides=kms_flag_overrides,
-        permission_info=permission_info)
