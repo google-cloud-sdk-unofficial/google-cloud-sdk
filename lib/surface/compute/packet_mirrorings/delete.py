@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import client
 from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Google Compute Engine packet mirroring."""
 
@@ -54,3 +54,14 @@ class Delete(base.DeleteCommand):
           ref, compute_client=holder.client)
       requests.append(packet_mirroring.MakeDeleteRequestTuple())
     return holder.client.MakeRequests(requests)
+
+Delete.detailed_help = {
+    'DESCRIPTION': 'Delete a Google Compute Engine Packet Mirroring',
+    'EXAMPLES':
+    """\
+    Delete the Packet Mirroring resource pm-1 in region us-central1.
+
+      $ {command} pm-1
+        --region us-central1
+    """
+}

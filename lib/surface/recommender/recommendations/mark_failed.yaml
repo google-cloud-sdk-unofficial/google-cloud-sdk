@@ -6,10 +6,16 @@
     description: |
       Mark a recommendation's state as FAILED. mark-failed can be applied to recommendations in
       ACTIVE, CLAIMED, SUCCEEDED, or FAILED state.
-    examples: |
-      To mark a recommendation as FAILED:
+    ALPHA:
+      examples: |
+        To mark a recommendation as FAILED:
 
-        $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender --etag=abc123 --state-metadata=key1=value1,key2=value2
+          $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender --etag=abc123 --state-metadata=key1=value1,key2=value2
+    BETA:
+      examples: |
+        To mark a recommendation as FAILED:
+
+          $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.Recommender --etag=abc123 --state-metadata=key1=value1,key2=value2
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations

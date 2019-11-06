@@ -99,11 +99,11 @@ Update.detailed_help = {
 The following command updates the Cloud Filestore instance NAME to change the
 description to "A new description."
 
-  $ {command} NAME --description "A new description."
+  $ {command} NAME --description="A new description."
 
 The following command updates a Cloud Filestore instance named NAME to add the
 label "key1=value1" and remove any metadata with the label "key2".
 
-  $ {command} NAME --update-labels key1=value1 --remove-labels key2
+  $ {command} NAME --update-labels=key1=value1 --remove-labels=key2
 """
 }

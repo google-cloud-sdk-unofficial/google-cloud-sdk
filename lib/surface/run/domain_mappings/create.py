@@ -84,7 +84,8 @@ class Create(base.Command):
 
   def Run(self, args):
     """Create a domain mapping."""
-    conn_context = connection_context.GetConnectionContext(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, self.ReleaseTrack())
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
 
     # Check if the provided domain has already been verified

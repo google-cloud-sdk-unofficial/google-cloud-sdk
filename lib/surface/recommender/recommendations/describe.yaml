@@ -7,7 +7,7 @@
     examples: |
       To describe a recommendation:
 
-        $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender
+        $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.Recommender
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations

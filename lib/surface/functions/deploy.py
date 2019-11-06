@@ -64,8 +64,7 @@ def _GetProject(args):
 def _Run(args,
          track=None,
          enable_runtime=True,
-         enable_traffic_control=False,
-         enable_allow_unauthenticated=False):
+         enable_traffic_control=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
   labels_util.CheckNoDeploymentLabels('--remove-labels', args.remove_labels)
@@ -199,14 +198,11 @@ def _Run(args,
   # Apply environment variables args to function
   updated_fields.extend(_ApplyEnvVarsArgsToFunction(function, args))
 
-  ensure_all_users_invoke = (
-      enable_allow_unauthenticated and flags.ShouldEnsureAllUsersInvoke(args))
-  deny_all_users_invoke = (
-      enable_allow_unauthenticated and flags.ShouldDenyAllUsersInvoke(args))
+  ensure_all_users_invoke = flags.ShouldEnsureAllUsersInvoke(args)
+  deny_all_users_invoke = flags.ShouldDenyAllUsersInvoke(args)
 
   if is_new_function:
-    if (enable_allow_unauthenticated
-        and not ensure_all_users_invoke
+    if (not ensure_all_users_invoke
         and not deny_all_users_invoke
         and api_util.CanAddFunctionIamPolicyBinding(_GetProject(args))):
       ensure_all_users_invoke = console_io.PromptContinue(
@@ -216,8 +212,7 @@ def _Run(args,
           default=False)
 
     op = api_util.CreateFunction(function, function_ref.Parent().RelativeName())
-    if (enable_allow_unauthenticated
-        and not ensure_all_users_invoke
+    if (not ensure_all_users_invoke
         and not deny_all_users_invoke):
       template = (
           'Function created with limited-access IAM policy. '
@@ -288,6 +283,7 @@ class Deploy(base.Command):
         extra_remove_message=labels_util.NO_LABELS_STARTING_WITH_DEPLOY_MESSAGE)
 
     flags.AddServiceAccountFlag(parser)
+    flags.AddAllowUnauthenticatedFlag(parser)
 
     # Add args for specifying the function source code
     flags.AddSourceFlag(parser)
@@ -319,13 +315,14 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddAllowUnauthenticatedFlag(parser)
+    flags.AddEgressSettingsFlag(parser)
+    flags.AddIngressSettingsFlag(parser)
 
   def Run(self, args):
     return _Run(
         args,
         track=self.ReleaseTrack(),
-        enable_allow_unauthenticated=True)
+        enable_traffic_control=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -338,11 +335,9 @@ class DeployAlpha(base.Command):
     Deploy.Args(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddIngressSettingsFlag(parser)
-    flags.AddAllowUnauthenticatedFlag(parser)
 
   def Run(self, args):
     return _Run(
         args,
         track=self.ReleaseTrack(),
-        enable_traffic_control=True,
-        enable_allow_unauthenticated=True)
+        enable_traffic_control=True)

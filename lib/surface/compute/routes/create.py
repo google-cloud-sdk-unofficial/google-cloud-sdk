@@ -62,7 +62,7 @@ def _AddGaHops(next_hop_group):
       help=('The target VPN tunnel that will receive forwarded traffic.'))
 
 
-def _Args(parser, support_next_hop_ilb=False):
+def _Args(parser):
   """Add arguments for route creation."""
 
   parser.add_argument(
@@ -117,19 +117,17 @@ def _Args(parser, support_next_hop_ilb=False):
       help=('The region of the next hop vpn tunnel. ' +
             compute_flags.REGION_PROPERTY_EXPLANATION))
 
-  if support_next_hop_ilb:
-    next_hop.add_argument(
-        '--next-hop-ilb',
-        help="""\
-        The target forwarding rule that will receive forwarded traffic. This
-        can only be used when the destination_range is a public (non-RFC 1918)
-        IP CIDR range. Requires --load-balancing-scheme=INTERNAL on the
-        corresponding forwarding rule.
-        """)
-    parser.add_argument(
-        '--next-hop-ilb-region',
-        help=('The region of the next hop forwarding rule. ' +
-              compute_flags.REGION_PROPERTY_EXPLANATION))
+  next_hop.add_argument(
+      '--next-hop-ilb',
+      help="""\
+      The target forwarding rule that will receive forwarded traffic. This
+      can only be used when the destination_range is a public (non-RFC 1918)
+      IP CIDR range. Requires --load-balancing-scheme=INTERNAL on the
+      corresponding forwarding rule.
+      """)
+  parser.add_argument('--next-hop-ilb-region',
+                      help=('The region of the next hop forwarding rule. ' +
+                            compute_flags.REGION_PROPERTY_EXPLANATION))
 
   parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
@@ -163,8 +161,6 @@ class Create(base.CreateCommand):
   provided with this command.
   """
 
-  _support_next_hop_ilb = False
-
   NETWORK_ARG = None
   INSTANCE_ARG = None
   VPN_TUNNEL_ARG = None
@@ -179,11 +175,10 @@ class Create(base.CreateCommand):
         required=False)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRoute(required=False)
     cls.VPN_TUNNEL_ARG = vpn_flags.VpnTunnelArgumentForRoute(required=False)
-    if cls._support_next_hop_ilb:
-      cls.ILB_ARG = ilb_flags.ForwardingRuleArgumentForRoute(required=False)
+    cls.ILB_ARG = ilb_flags.ForwardingRuleArgumentForRoute(required=False)
     cls.ROUTE_ARG = flags.RouteArgument()
     cls.ROUTE_ARG.AddArgument(parser, operation_type='create')
-    _Args(parser, support_next_hop_ilb=cls._support_next_hop_ilb)
+    _Args(parser)
 
   def Run(self, args):
     """Issue API requests for route creation, callable from multiple tracks."""
@@ -229,17 +224,16 @@ class Create(base.CreateCommand):
 
     next_hop_ilb_uri = None
 
-    if self._support_next_hop_ilb:
-      if args.next_hop_ilb:
-        next_hop_ilb_uri = self.ILB_ARG.ResolveAsResource(
-            args,
-            holder.resources,
-            scope_lister=compute_flags.GetDefaultScopeLister(
-                client)).SelfLink()
-      elif args.next_hop_ilb_region:
-        raise exceptions.ToolException(
-            '[--next-hop-ilb-region] can only be specified in '
-            'conjunction with [--next-hop-ilb].')
+    if args.next_hop_ilb:
+      next_hop_ilb_uri = self.ILB_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(
+              client)).SelfLink()
+    elif args.next_hop_ilb_region:
+      raise exceptions.ToolException(
+          '[--next-hop-ilb-region] can only be specified in '
+          'conjunction with [--next-hop-ilb].')
 
     request = client.messages.ComputeRoutesInsertRequest(
         project=route_ref.project,
@@ -255,8 +249,7 @@ class Create(base.CreateCommand):
             priority=args.priority,
             tags=args.tags,
         ))
-    if self._support_next_hop_ilb:
-      request.route.nextHopIlb = next_hop_ilb_uri
+    request.route.nextHopIlb = next_hop_ilb_uri
 
     return client.MakeRequests([(client.apitools_client.routes, 'Insert',
                                  request)])
@@ -291,4 +284,3 @@ class CreateAlphaBeta(Create):
   must be provided with this command.
   """
 
-  _support_next_hop_ilb = True

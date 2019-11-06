@@ -67,7 +67,7 @@ class List(base.ListCommand):
         dns_client.managedZones,
         dns_client.MESSAGES_MODULE.DnsManagedZonesListRequest(
             project=project_id),
-        limit=args.limit, field='managedZones')
+        field='managedZones')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -103,7 +103,7 @@ class ListBeta(base.ListCommand):
         dns_client.managedZones,
         dns_client.MESSAGES_MODULE.DnsManagedZonesListRequest(
             project=project_id),
-        limit=args.limit, field='managedZones')
+        field='managedZones')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

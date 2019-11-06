@@ -72,7 +72,8 @@ class Describe(base.Command):
 
   def Run(self, args):
     """Obtain details about a given service."""
-    conn_context = connection_context.GetConnectionContext(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, self.ReleaseTrack())
     service_ref = flags.GetService(args)
     with serverless_operations.Connect(conn_context) as client:
       serv = client.GetService(service_ref)

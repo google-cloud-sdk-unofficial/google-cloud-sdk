@@ -69,7 +69,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
           table(
             service,
-            id:label=VERSION,
+            version.id:label=VERSION.ID,
             traffic_split.format("{0:.2f}", .),
             last_deployed_time.date("%Y-%m-%dT%H:%M:%S%Oz", undefined="-")
               :label=LAST_DEPLOYED,

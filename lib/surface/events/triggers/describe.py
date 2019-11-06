@@ -18,15 +18,23 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
 from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.events import resource_args as events_resource_args
+from googlecloudsdk.command_lib.events import util
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
+
+
+SerializedTriggerAndSource = collections.namedtuple(
+    'SerializedTriggerAndSource', 'serialized_trigger serialized_source')
 
 
 class Describe(base.Command):
@@ -64,7 +72,9 @@ class Describe(base.Command):
         'Name of the trigger to delete',
         required=True)
     concept_parsers.ConceptParser([trigger_presentation]).AddToParser(parser)
-    parser.display_info.AddFormat('yaml')
+    parser.display_info.AddFormat("""multi[separator='\n'](
+        serialized_trigger:format="yaml",
+        serialized_source:format="yaml(spec)")""")
 
   @staticmethod
   def Args(parser):
@@ -80,7 +90,23 @@ class Describe(base.Command):
     trigger_ref = args.CONCEPTS.trigger.Parse()
     with eventflow_operations.Connect(conn_context) as client:
       trigger_obj = client.GetTrigger(trigger_ref)
+      source_obj = None
+      if trigger_obj is not None:
+        source_crds = client.ListSourceCustomResourceDefinitions()
+        source_obj_ref = trigger_obj.dependency
+        source_crd = next(
+            (s for s in source_crds if s.source_kind == source_obj_ref.kind),
+            None)
+        if source_crd is not None:
+          source_ref = util.GetSourceRef(source_obj_ref.name,
+                                         source_obj_ref.namespace, source_crd)
+          source_obj = client.GetSource(source_ref, source_crd)
     if not trigger_obj:
       raise exceptions.TriggerNotFound(
           'Trigger [{}] not found.'.format(trigger_ref.Name()))
-    return trigger_obj
+    if not source_obj:
+      log.warning('No matching event source for trigger [{}].'.format(
+          trigger_ref.Name()))
+    return SerializedTriggerAndSource(
+        trigger_obj.MakeSerializable(),
+        source_obj.MakeSerializable() if source_obj else None)

@@ -72,7 +72,8 @@ class Delete(base.Command):
 
   def Run(self, args):
     """Delete domain mappings."""
-    conn_context = connection_context.GetConnectionContext(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, self.ReleaseTrack())
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
       client.DeleteDomainMapping(domain_mapping_ref)

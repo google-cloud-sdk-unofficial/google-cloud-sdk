@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 from googlecloudsdk.command_lib.compute.packet_mirrorings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine packet mirroring."""
 
@@ -191,3 +191,32 @@ class Update(base.UpdateCommand):
           x for x in resource.filter.cidrRanges
           if x not in args.remove_filter_cidr_ranges
       ]
+
+
+Update.detailed_help = {
+    'DESCRIPTION':
+        'Update a Google Compute Engine packet mirroring.',
+    'EXAMPLES':
+        """\
+    Stop mirroring by tags, add subnet-1 as a mirrored subnet.
+
+      $ {command} my-pm
+          --region us-central1 --clear-mirrored-tags
+          --add-mirrored-subnets subnet-1
+
+    Change the load-balancer to send mirrored traffic to.
+
+      $ {command} my-pm
+          --region us-central1 --collector-ilb new-forwarding-rule
+
+    Disable a Packet Mirroring policy.
+
+      $ {command} my-pm
+          --region us-central1 --no-enable
+
+    Re-enable a disabled Packet Mirroring policy.
+
+      $ {command} my-pm
+          --region us-central1 --enable
+    """,
+}

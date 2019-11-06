@@ -47,7 +47,7 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
       'EXAMPLES': """\
           To update a type provider, run:
 
-            $ {command} my-type-provider --api-options=my-options.yaml --descriptor-url <descriptor URL> --description "My type."
+            $ {command} my-type-provider --api-options-file=my-options.yaml --descriptor-url=<descriptor URL> --description="My type."
           """,
   }
 

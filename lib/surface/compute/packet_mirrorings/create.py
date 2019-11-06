@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 from googlecloudsdk.command_lib.compute.packet_mirrorings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine packet mirroring."""
 
@@ -98,3 +98,27 @@ class Create(base.CreateCommand):
         pm_ref, compute_client=holder.client, registry=holder.resources)
 
     return packet_mirroring.Create(template, is_async=args.async_ or False)
+
+Create.detailed_help = {
+    'DESCRIPTION': 'Create a Google Compute Engine packet mirroring.',
+    'EXAMPLES':
+    """\
+    Mirror all tcp traffic to/from all instances in subnet my-subnet in
+    us-central1, and send the mirrored traffic to the collector-fr
+    Forwarding Rule.
+
+      $ {command} my-pm
+        --network my-network --region us-central1
+        --mirrored-subnets my-subnet --collector-ilb collector-fr
+        --filter-protocols tcp
+
+    Mirror all traffic between instances with tag t1 and external server with IP
+    11.22.33.44 in us-central1, and send the mirrored traffic to the
+    collector-fr Forwarding Rule.
+
+      $ {command} my-pm
+        --network my-network --region us-central1
+        --mirrored-tags t1 --collector-ilb collector-fr
+        --filter-cidr-ranges 11.22.33.44/32
+    """,
+}

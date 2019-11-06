@@ -192,8 +192,7 @@ class Import(base.CreateCommand):
     _CheckImageName(args.image_name)
     _CheckForExistingImage(args.image_name, compute_holder)
 
-    stager = self._CreateImportStager(args)
-    stager.support_storage_location = support_storage_location
+    stager = self._CreateImportStager(args, support_storage_location)
     import_metadata = stager.Stage()
 
     # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
@@ -207,12 +206,14 @@ class Import(base.CreateCommand):
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER)
 
-  def _CreateImportStager(self, args):
+  def _CreateImportStager(self, args, support_storage_location):
     if args.source_image:
-      return ImportFromImageStager(self.storage_client, args)
+      return ImportFromImageStager(
+          self.storage_client, args, support_storage_location)
 
     if _IsLocalFile(args.source_file):
-      return ImportFromLocalFileStager(self.storage_client, args)
+      return ImportFromLocalFileStager(
+          self.storage_client, args, support_storage_location)
 
     try:
       gcs_uri = daisy_utils.MakeGcsObjectOrPathUri(args.source_file)
@@ -221,7 +222,8 @@ class Import(base.CreateCommand):
           'source-file',
           'must be a path to an object in Google Cloud Storage')
     else:
-      return ImportFromGSFileStager(self.storage_client, args, gcs_uri)
+      return ImportFromGSFileStager(
+          self.storage_client, args, gcs_uri, support_storage_location)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -233,11 +235,11 @@ class BaseImportStager(object):
   the appropriate location.
   """
 
-  def __init__(self, storage_client, args):
+  def __init__(self, storage_client, args, support_storage_location):
     self.storage_client = storage_client
     self.args = args
+    self.support_storage_location = support_storage_location
     self.daisy_bucket = self.GetAndCreateDaisyBucket()
-    self.support_storage_location = False
 
   def Stage(self):
     """Prepares for import args.
@@ -270,9 +272,17 @@ class BaseImportStager(object):
     return import_args
 
   def GetAndCreateDaisyBucket(self):
-    bucket_name = daisy_utils.GetDaisyBucketName()
-    self.storage_client.CreateBucketIfNotExists(bucket_name)
+    bucket_location = self.GetBucketLocation()
+    bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
+    self.storage_client.CreateBucketIfNotExists(
+        bucket_name, location=bucket_location)
     return bucket_name
+
+  def GetBucketLocation(self):
+    if self.support_storage_location and self.args.storage_location:
+      return self.args.storage_location
+
+    return None
 
 
 class ImportFromImageStager(BaseImportStager):
@@ -369,17 +379,14 @@ class ImportFromLocalFileStager(BaseImportFromFileStager):
 class ImportFromGSFileStager(BaseImportFromFileStager):
   """Image import stager from a file in Cloud Storage."""
 
-  def __init__(self, storage_client, args, gcs_uri):
+  def __init__(self, storage_client, args, gcs_uri, support_storage_location):
     self.source_file_gcs_uri = gcs_uri
-    super(ImportFromGSFileStager, self).__init__(storage_client, args)
+    super(ImportFromGSFileStager, self).__init__(
+        storage_client, args, support_storage_location)
 
-  def GetAndCreateDaisyBucket(self):
-    bucket_location = self.storage_client.GetBucketLocationForFile(
+  def GetBucketLocation(self):
+    return self.storage_client.GetBucketLocationForFile(
         self.source_file_gcs_uri)
-    bucket_name = daisy_utils.GetDaisyBucketName(bucket_location)
-    self.storage_client.CreateBucketIfNotExists(
-        bucket_name, location=bucket_location)
-    return bucket_name
 
   def _CopySourceFileToScratchBucket(self):
     image_file = os.path.basename(self.source_file_gcs_uri)

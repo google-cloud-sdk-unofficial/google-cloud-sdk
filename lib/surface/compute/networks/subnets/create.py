@@ -291,6 +291,20 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
     if getattr(args, 'role', None):
       subnetwork.role = messages.Subnetwork.RoleValueValuesEnum(args.role)
 
+  # At present aggregate purpose is available only in alpha whereas
+  # https_load_balancer is available in Beta. Given Aggregate Purpose Enum
+  # is not available in Beta, the code duplication below is necessary.
+  if include_aggregate_purpose:
+    if args.purpose:
+      subnetwork.purpose = messages.Subnetwork.PurposeValueValuesEnum(
+          args.purpose)
+      if (subnetwork.purpose ==
+          messages.Subnetwork.PurposeValueValuesEnum.AGGREGATE):
+        # Clear unsupported fields in the subnet resource
+        subnetwork.privateIpGoogleAccess = None
+        subnetwork.enableFlowLogs = None
+        subnetwork.logConfig = None
+
   if include_private_ipv6_access:
     if args.enable_private_ipv6_access is not None:
       subnetwork.enablePrivateV6Access = args.enable_private_ipv6_access
@@ -301,10 +315,6 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
     if args.private_ipv6_google_access_service_accounts is not None:
       subnetwork.privateIpv6GoogleAccessServiceAccounts = (
           args.private_ipv6_google_access_service_accounts)
-  if include_aggregate_purpose:
-    if args.purpose:
-      subnetwork.purpose = messages.Subnetwork.PurposeValueValuesEnum(
-          args.purpose)
 
   return subnetwork
 

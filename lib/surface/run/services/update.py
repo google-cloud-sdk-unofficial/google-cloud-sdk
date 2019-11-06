@@ -102,7 +102,8 @@ class Update(base.Command):
           'Did you mean to include the flags `--update-env-vars`, '
           '`--memory`, `--concurrency`, `--timeout`, `--connectivity`?')
 
-    conn_context = connection_context.GetConnectionContext(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, self.ReleaseTrack())
     service_ref = flags.GetService(args)
 
     with serverless_operations.Connect(conn_context) as client:
@@ -159,5 +160,6 @@ class AlphaUpdate(Update):
     flags.AddMinInstancesFlag(parser)
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
+    flags.AddPortFlag(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

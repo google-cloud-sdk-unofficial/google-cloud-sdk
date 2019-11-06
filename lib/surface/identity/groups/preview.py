@@ -38,6 +38,9 @@ class Preview(base.Command):
 
             $ {command} --query="user.locations.exists(loc, loc.desk_code == 'abc')" --customer=A1234abcd
 
+          To retrieve a list of users with only fullName and primaryEMail fields, run:
+
+            $ {command} --query="user.locations.exists(loc, loc.desk_code == 'abc')" --customer=A1234abcd --format="flattened(nextPageToken, users[].primaryEmail, users[].name.fullName)"
 
           """,
   }
@@ -78,17 +81,7 @@ class Preview(base.Command):
         help=('Maximum number of results to return. Acceptable values are 1 to '
               '500, inclusive.'))
     parser.add_argument(
-        '--order-by',
-        choices=['email', 'familyName', 'givenName'],
-        default='email',
-        help=('Property to use for sorting results.'))
-    parser.add_argument(
         '--page-token', help=('Token to specify next page in the list.'))
-    parser.add_argument(
-        '--sort-order',
-        choices=['ASCENDING', 'DESCENDING'],
-        default='ASCENDING',
-        help=('Whether to return results in ascending or descending order.'))
 
   def Run(self, args):
     messages = admin_directory.GetMessages()
@@ -98,12 +91,6 @@ class Preview(base.Command):
     view_type = ChoiceToEnum(
         args.view_type,
         (messages.DirectoryUsersListRequest.ViewTypeValueValuesEnum))
-    order_by = ChoiceToEnum(
-        args.order_by,
-        (messages.DirectoryUsersListRequest.OrderByValueValuesEnum))
-    sort_order = ChoiceToEnum(
-        args.sort_order,
-        (messages.DirectoryUsersListRequest.SortOrderValueValuesEnum))
 
     return admin_directory.Preview(
         messages.DirectoryUsersListRequest(
@@ -113,9 +100,7 @@ class Preview(base.Command):
             customFieldMask=args.custom_field_mask,
             viewType=view_type,
             maxResults=args.max_results,
-            orderBy=order_by,
-            pageToken=args.page_token,
-            sortOrder=sort_order))
+            pageToken=args.page_token))
 
 
 def ChoiceToEnumName(choice):

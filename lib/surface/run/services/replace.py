@@ -21,17 +21,20 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.api_lib.util import messages as messages_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
-from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import progress_tracker
 from surface.run import deploy
 
@@ -65,34 +68,64 @@ class Replace(base.Command):
     concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
                                   ]).AddToParser(gke_group)
 
+    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
+    kubernetes_group = flags.GetKubernetesArgGroup(parser)
+    flags.AddKubeconfigFlags(kubernetes_group)
+
+    # Flags specific to connecting to a cluster
+    cluster_group = flags.GetClusterArgGroup(parser)
+    namespace_presentation = presentation_specs.ResourcePresentationSpec(
+        '--namespace',
+        resource_args.GetNamespaceResourceSpec(),
+        'Namespace to replace service.',
+        required=True,
+        prefixes=False)
+    concept_parsers.ConceptParser(
+        [namespace_presentation]).AddToParser(cluster_group)
+
     # Flags not specific to any platform
     flags.AddAsyncFlag(parser)
     flags.AddPlatformArg(parser)
     parser.add_argument(
         'FILE',
         action='store',
+        type=arg_parsers.YAMLFileContents(),
         help='The absolute path to the YAML file with a Knative '
         'service definition for the service to update or deploy.')
 
   def Run(self, args):
     """Create or Update service from YAML."""
-    conn_context = connection_context.GetConnectionContext(args)
-    if conn_context.supports_one_platform:
-      flags.VerifyOnePlatformFlags(args)
-    else:
-      flags.VerifyGKEFlags(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, self.ReleaseTrack())
 
     with serverless_operations.Connect(conn_context) as client:
-      message_dict = yaml.load_path(args.FILE)
       new_service = service.Service(
           messages_util.DictToMessageWithErrorCheck(
-              message_dict, client.messages_module.Service),
+              args.FILE, client.messages_module.Service),
           client.messages_module)
+
+      # If managed, namespace must match project (or will default to project if
+      # not specified).
+      # If not managed, namespace simply must not conflict if specified in
+      # multiple places (or will default to "default" if not specified).
+      namespace = args.CONCEPTS.namespace.Parse().Name()  # From flag or default
+      if new_service.metadata.namespace is not None:
+        if (args.IsSpecified('namespace') and
+            namespace != new_service.metadata.namespace):
+          raise exceptions.ConfigurationError(
+              'Namespace specified in file does not match passed flag.')
+        namespace = new_service.metadata.namespace
+        project = properties.VALUES.core.project.Get()
+        if flags.IsManaged(args) and namespace != project:
+          raise exceptions.ConfigurationError(
+              'Namespace must be [{}] for Cloud Run (fully managed).'.format(
+                  project))
+      new_service.metadata.namespace = namespace
 
       changes = [config_changes.ReplaceServiceChange(new_service)]
       service_ref = resources.REGISTRY.Parse(
           new_service.metadata.name,
-          params={'namespacesId': new_service.metadata.namespace},
+          params={'namespacesId': namespace},
           collection='run.namespaces.services')
       original_service = client.GetService(service_ref)
 

@@ -181,7 +181,8 @@ class Deploy(base.Command):
     """Deploy a container to Cloud Run."""
     image = args.image
 
-    conn_context = connection_context.GetConnectionContext(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, self.ReleaseTrack())
     config_changes = flags.GetConfigurationChanges(args)
 
     service_ref = flags.GetService(args)
@@ -237,5 +238,6 @@ class AlphaDeploy(Deploy):
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
     flags.AddNoTrafficFlag(parser)
+    flags.AddPortFlag(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import client
 from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine packet mirroring.
 
@@ -50,3 +50,15 @@ class Describe(base.DescribeCommand):
     ref = self.PACKET_MIRRORING_ARG.ResolveAsResource(args, holder.resources)
     packet_mirroring = client.PacketMirroring(ref, compute_client=holder.client)
     return packet_mirroring.Describe()
+
+
+Describe.detailed_help = {
+    'DESCRIPTION': 'Describe a Google Compute Engine Packet Mirroring',
+    'EXAMPLES':
+    """\
+    Describe the Packet Mirroring resource pm-1 in region us-central1.
+
+      $ {command} pm-1
+        --region us-central1
+    """
+}

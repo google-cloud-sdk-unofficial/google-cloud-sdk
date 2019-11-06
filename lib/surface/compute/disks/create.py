@@ -95,9 +95,15 @@ def _SourceArgs(parser, source_disk_enabled=False):
 
   source_group.add_argument(
       '--image-family',
-      help=('The family of the image that the boot disk will be initialized '
-            'with. When a family is used instead of an image, the latest '
-            'non-deprecated image associated with that family is used.')
+      help="""\
+        The image family for the operating system that the boot disk will be
+        initialized with. Compute Engine offers multiple Linux
+        distributions, some of which are available as both regular and
+        Shielded VM images.  When a family is specified instead of an image,
+        the latest non-deprecated image associated with that family is
+        used. It is best practice to use --image-family when the latest
+        version of an image is needed.
+        """
   )
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
   if source_disk_enabled:

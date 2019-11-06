@@ -49,7 +49,7 @@ class Create(base.CreateCommand, dm_base.DmCommand):
       'EXAMPLES': """\
           To create a new type provider, run:
 
-            $ {command} my-type-provider --api-options-file=my-options.yaml --descriptor-url <descriptor URL> --description "My type."
+            $ {command} my-type-provider --api-options-file=my-options.yaml --descriptor-url=<descriptor URL> --description="My type."
           """,
   }
 

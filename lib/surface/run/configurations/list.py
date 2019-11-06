@@ -112,7 +112,8 @@ class List(commands.List):
   def Run(self, args):
     """List available configurations."""
     is_managed = flags.IsManaged(args)
-    conn_context = connection_context.GetConnectionContext(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, self.ReleaseTrack())
     self._SetFormat(
         args, show_region=is_managed, show_namespace=(not is_managed))
     namespace_ref = args.CONCEPTS.namespace.Parse()

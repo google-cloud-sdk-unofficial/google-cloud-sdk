@@ -49,7 +49,7 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--service',
         required=True,
-        help='The service to create a service identity.')
+        help='The service to create a service identity for.')
 
   def Run(self, args):
     """Run 'services identity create'.

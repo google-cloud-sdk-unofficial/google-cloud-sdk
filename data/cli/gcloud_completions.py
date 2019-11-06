@@ -1280,6 +1280,22 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "asset": {
           "commands": {
+            "analyze-iam-policy": {
+              "commands": {},
+              "flags": {
+                "--expand-groups": "bool",
+                "--expand-resources": "bool",
+                "--expand-roles": "bool",
+                "--full-resource-name": "value",
+                "--identity": "value",
+                "--organization": "value",
+                "--output-group-edges": "bool",
+                "--output-partial-result-before-timeout": "bool",
+                "--output-resource-edges": "bool",
+                "--permissions": "value",
+                "--roles": "value"
+              }
+            },
             "export": {
               "commands": {},
               "flags": {
@@ -2272,6 +2288,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "get-mount-command": {
               "commands": {},
               "flags": {
+                "--boosted": "bool",
                 "--force-key-file-overwrite": "bool",
                 "--ssh-key-file": "bool"
               }
@@ -2279,6 +2296,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "scp": {
               "commands": {},
               "flags": {
+                "--boosted": "bool",
                 "--dry-run": "bool",
                 "--force-key-file-overwrite": "bool",
                 "--recurse": "bool",
@@ -2289,6 +2307,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "ssh": {
               "commands": {},
               "flags": {
+                "--boosted": "bool",
                 "--command": "value",
                 "--dry-run": "bool",
                 "--force-key-file-overwrite": "bool",
@@ -5848,8 +5867,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network": "value",
                     "--network-endpoint-type": [
                       "gce-vm-ip-port",
+                      "gce-vm-primary-ip",
                       "internet-fqdn-port",
-                      "internet-ip-port"
+                      "internet-ip-port",
+                      "non-gcp-private-ip-port"
                     ],
                     "--subnet": "value",
                     "--zone": "dynamic"
@@ -6074,8 +6095,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--logging-flow-sampling": "value",
                         "--logging-metadata": [
                           "custom",
-                          "exclude-all-metadata",
-                          "include-all-metadata"
+                          "exclude-all",
+                          "include-all"
                         ],
                         "--logging-metadata-fields": "value",
                         "--metadata": [
@@ -6202,8 +6223,8 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--logging-flow-sampling": "value",
                         "--logging-metadata": [
                           "custom",
-                          "exclude-all-metadata",
-                          "include-all-metadata"
+                          "exclude-all",
+                          "include-all"
                         ],
                         "--logging-metadata-fields": "value",
                         "--metadata": [
@@ -7097,13 +7118,12 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
-                        "--clear-drain-nat-ips": "bool",
                         "--clear-icmp-idle-timeout": "bool",
                         "--clear-min-ports-per-vm": "bool",
+                        "--clear-nat-external-drain-ip-pool": "bool",
                         "--clear-tcp-established-idle-timeout": "bool",
                         "--clear-tcp-transitory-idle-timeout": "bool",
                         "--clear-udp-idle-timeout": "bool",
-                        "--drain-nat-ips": "value",
                         "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
                         "--log-filter": [
@@ -7114,6 +7134,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
+                        "--nat-external-drain-ip-pool": "value",
                         "--nat-external-ip-pool": "value",
                         "--nat-primary-subnet-ip-ranges": "bool",
                         "--region": "dynamic",
@@ -12704,7 +12725,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--ignore-file": "value",
                 "--ingress-settings": [
                   "all",
-                  "internal-and-gclb",
                   "internal-only"
                 ],
                 "--max-instances": "value",
@@ -13273,6 +13293,44 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--location": "value"
                   }
                 },
+                "evaluate": {
+                  "commands": {
+                    "bq": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--bq-table": "value",
+                        "--dataset": "value",
+                        "--golden-store": "value",
+                        "--location": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
+                "export": {
+                  "commands": {
+                    "bq": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--bq-table": "value",
+                        "--dataset": "value",
+                        "--location": "value"
+                      }
+                    },
+                    "gcs": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--dataset": "value",
+                        "--gcs-uri": "value",
+                        "--location": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
                 "get-iam-policy": {
                   "commands": {},
                   "flags": {
@@ -13283,6 +13341,20 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--sort-by": "value"
                   }
+                },
+                "import": {
+                  "commands": {
+                    "gcs": {
+                      "commands": {},
+                      "flags": {
+                        "--async": "bool",
+                        "--dataset": "value",
+                        "--gcs-uri": "value",
+                        "--location": "value"
+                      }
+                    }
+                  },
+                  "flags": {}
                 },
                 "list": {
                   "commands": {},
@@ -14162,6 +14234,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     ]
                   }
                 },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
                 "describe": {
                   "commands": {},
                   "flags": {}
@@ -14199,11 +14275,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--custom-field-mask": "value",
                     "--customer": "value",
                     "--max-results": "value",
-                    "--order-by": [
-                      "email",
-                      "familyName",
-                      "givenName"
-                    ],
                     "--page-token": "value",
                     "--projection": [
                       "basic",
@@ -14211,10 +14282,6 @@ STATIC_COMPLETION_CLI_TREE = {
                       "full"
                     ],
                     "--query": "value",
-                    "--sort-order": [
-                      "ASCENDING",
-                      "DESCENDING"
-                    ],
                     "--view-type": [
                       "admin-view",
                       "domain-public"
@@ -15398,6 +15465,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "update": {
                   "commands": {},
                   "flags": {
+                    "--add-exclusions": "value",
                     "--billing-account": "value",
                     "--clear-exclusions": "bool",
                     "--dlp-deidentify-template": "value",
@@ -17811,6 +17879,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "kubernetes",
                   "managed"
                 ],
+                "--port": "value",
                 "--region": "value",
                 "--remove-cloudsql-instances": "value",
                 "--remove-config-maps": "value",
@@ -18074,6 +18143,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--cluster": "value",
                     "--cluster-location": "value",
+                    "--context": "value",
+                    "--kubeconfig": "value",
+                    "--namespace": "value",
                     "--platform": [
                       "gke",
                       "kubernetes",
@@ -18126,6 +18198,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "kubernetes",
                       "managed"
                     ],
+                    "--port": "value",
                     "--region": "value",
                     "--remove-cloudsql-instances": "value",
                     "--remove-config-maps": "value",
@@ -18152,12 +18225,15 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--cluster": "value",
                     "--cluster-location": "value",
+                    "--context": "value",
+                    "--kubeconfig": "value",
                     "--namespace": "value",
                     "--platform": [
                       "gke",
                       "kubernetes",
                       "managed"
                     ],
+                    "--region": "value",
                     "--to-latest": "bool",
                     "--to-revisions": "value"
                   }
@@ -18637,17 +18713,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--full": "value"
                   }
                 },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--service": "dynamic",
-                    "--sort-by": "value",
-                    "--uri": "bool"
-                  }
-                },
                 "wait": {
                   "commands": {},
                   "flags": {}
@@ -18900,12 +18965,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--instance": "dynamic",
                     "--member": "value",
                     "--role": "dynamic"
-                  }
-                },
-                "sampledb": {
-                  "commands": {},
-                  "flags": {
-                    "--instance": "value"
                   }
                 },
                 "sessions": {
@@ -23445,6 +23504,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "IPV4",
                       "IPV6"
                     ],
+                    "--is-mirroring-collector": "bool",
                     "--load-balancing-scheme": [
                       "EXTERNAL",
                       "INTERNAL",
@@ -25952,6 +26012,83 @@ STATIC_COMPLETION_CLI_TREE = {
               },
               "flags": {}
             },
+            "packet-mirrorings": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--async": "bool",
+                    "--collector-ilb": "value",
+                    "--description": "value",
+                    "--enable": "bool",
+                    "--filter-cidr-ranges": "value",
+                    "--filter-protocols": "value",
+                    "--mirrored-instances": "value",
+                    "--mirrored-subnets": "value",
+                    "--mirrored-tags": "value",
+                    "--network": "value",
+                    "--priority": "value",
+                    "--region": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--regexp": "value",
+                    "--regions": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--add-filter-cidr-ranges": "value",
+                    "--add-filter-protocols": "value",
+                    "--add-mirrored-instances": "value",
+                    "--add-mirrored-subnets": "value",
+                    "--add-mirrored-tags": "value",
+                    "--async": "bool",
+                    "--clear-filter-cidr-ranges": "bool",
+                    "--clear-filter-protocols": "bool",
+                    "--clear-mirrored-instances": "bool",
+                    "--clear-mirrored-subnets": "bool",
+                    "--clear-mirrored-tags": "bool",
+                    "--collector-ilb": "value",
+                    "--description": "value",
+                    "--enable": "bool",
+                    "--priority": "value",
+                    "--region": "dynamic",
+                    "--remove-filter-cidr-ranges": "value",
+                    "--remove-filter-protocols": "value",
+                    "--remove-mirrored-instances": "value",
+                    "--remove-mirrored-subnets": "value",
+                    "--remove-mirrored-tags": "value",
+                    "--set-filter-cidr-ranges": "value",
+                    "--set-filter-protocols": "value",
+                    "--set-mirrored-instances": "value",
+                    "--set-mirrored-subnets": "value",
+                    "--set-mirrored-tags": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "project-info": {
               "commands": {
                 "add-metadata": {
@@ -26329,13 +26466,12 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--auto-allocate-nat-external-ips": "bool",
-                        "--clear-drain-nat-ips": "bool",
                         "--clear-icmp-idle-timeout": "bool",
                         "--clear-min-ports-per-vm": "bool",
+                        "--clear-nat-external-drain-ip-pool": "bool",
                         "--clear-tcp-established-idle-timeout": "bool",
                         "--clear-tcp-transitory-idle-timeout": "bool",
                         "--clear-udp-idle-timeout": "bool",
-                        "--drain-nat-ips": "value",
                         "--enable-logging": "bool",
                         "--icmp-idle-timeout": "value",
                         "--log-filter": [
@@ -26346,6 +26482,7 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--min-ports-per-vm": "value",
                         "--nat-all-subnet-ip-ranges": "bool",
                         "--nat-custom-subnet-ip-ranges": "value",
+                        "--nat-external-drain-ip-pool": "value",
                         "--nat-external-ip-pool": "value",
                         "--nat-primary-subnet-ip-ranges": "bool",
                         "--region": "dynamic",
@@ -31508,9 +31645,17 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--clear-labels": "bool",
                 "--clear-max-instances": "bool",
                 "--clear-vpc-connector": "bool",
+                "--egress-settings": [
+                  "all",
+                  "private-ranges-only"
+                ],
                 "--entry-point": "value",
                 "--env-vars-file": "value",
                 "--ignore-file": "value",
+                "--ingress-settings": [
+                  "all",
+                  "internal-only"
+                ],
                 "--max-instances": "value",
                 "--memory": "value",
                 "--region": "dynamic",
@@ -35443,6 +35588,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--platform": [
                       "gke",
+                      "kubernetes",
                       "managed"
                     ],
                     "--region": "value",
@@ -35489,6 +35635,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--platform": [
                       "gke",
+                      "kubernetes",
                       "managed"
                     ],
                     "--region": "value",
@@ -35525,6 +35672,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--member": "value",
                     "--platform": [
                       "gke",
+                      "kubernetes",
                       "managed"
                     ],
                     "--region": "value",
@@ -35536,6 +35684,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--platform": [
                       "gke",
+                      "kubernetes",
                       "managed"
                     ],
                     "--region": "value"
@@ -35965,6 +36114,17 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--async": "bool"
               }
             },
+            "identity": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--service": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
             "list": {
               "commands": {},
               "flags": {
@@ -35982,17 +36142,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--full": "value"
-                  }
-                },
-                "list": {
-                  "commands": {},
-                  "flags": {
-                    "--filter": "value",
-                    "--limit": "value",
-                    "--page-size": "value",
-                    "--service": "dynamic",
-                    "--sort-by": "value",
-                    "--uri": "bool"
                   }
                 },
                 "wait": {
@@ -41246,13 +41395,12 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--auto-allocate-nat-external-ips": "bool",
-                    "--clear-drain-nat-ips": "bool",
                     "--clear-icmp-idle-timeout": "bool",
                     "--clear-min-ports-per-vm": "bool",
+                    "--clear-nat-external-drain-ip-pool": "bool",
                     "--clear-tcp-established-idle-timeout": "bool",
                     "--clear-tcp-transitory-idle-timeout": "bool",
                     "--clear-udp-idle-timeout": "bool",
-                    "--drain-nat-ips": "value",
                     "--enable-logging": "bool",
                     "--icmp-idle-timeout": "value",
                     "--log-filter": [
@@ -41263,6 +41411,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--min-ports-per-vm": "value",
                     "--nat-all-subnet-ip-ranges": "bool",
                     "--nat-custom-subnet-ip-ranges": "value",
+                    "--nat-external-drain-ip-pool": "value",
                     "--nat-external-ip-pool": "value",
                     "--nat-primary-subnet-ip-ranges": "bool",
                     "--region": "dynamic",
@@ -41355,6 +41504,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--network": "value",
                 "--next-hop-address": "value",
                 "--next-hop-gateway": "dynamic",
+                "--next-hop-ilb": "value",
+                "--next-hop-ilb-region": "value",
                 "--next-hop-instance": "value",
                 "--next-hop-instance-zone": "value",
                 "--next-hop-vpn-tunnel": "value",
@@ -45340,6 +45491,7 @@ STATIC_COMPLETION_CLI_TREE = {
         "deploy": {
           "commands": {},
           "flags": {
+            "--allow-unauthenticated": "bool",
             "--clear-env-vars": "bool",
             "--clear-labels": "bool",
             "--clear-max-instances": "bool",
@@ -45550,6 +45702,14 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {}
             },
             "describe": {
+              "commands": {},
+              "flags": {}
+            },
+            "disable": {
+              "commands": {},
+              "flags": {}
+            },
+            "enable": {
               "commands": {},
               "flags": {}
             },
@@ -48000,17 +48160,6 @@ STATIC_COMPLETION_CLI_TREE = {
               "commands": {},
               "flags": {
                 "--full": "value"
-              }
-            },
-            "list": {
-              "commands": {},
-              "flags": {
-                "--filter": "value",
-                "--limit": "value",
-                "--page-size": "value",
-                "--service": "dynamic",
-                "--sort-by": "value",
-                "--uri": "bool"
               }
             },
             "wait": {

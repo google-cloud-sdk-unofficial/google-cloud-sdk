@@ -1,5 +1,4 @@
-- &BETA
-  release_tracks: [BETA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Get the IAM policy for a Cloud Run service.
@@ -24,13 +23,3 @@
       spec: !REF googlecloudsdk.command_lib.run.resources:service
     params:
     - _REF_: googlecloudsdk.command_lib.run.flags:platform
-
-- <<: *BETA
-  release_tracks: [ALPHA]
-
-  arguments:
-    resource:
-      help_text: The service for which to display the IAM policy.
-      spec: !REF googlecloudsdk.command_lib.run.resources:service
-    params:
-    - _REF_: googlecloudsdk.command_lib.run.flags:platform_alpha

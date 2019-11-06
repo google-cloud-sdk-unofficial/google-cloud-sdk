@@ -4,10 +4,16 @@
       Lists recommendations for a Cloud project.
     description: |
       Lists recommendations for a Cloud project.
-    examples: |
-      To list recommendations:
+    ALPHA:
+      examples: |
+        To list recommendations:
 
-        $ {command} --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender
+          $ {command} --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender
+    BETA:
+      examples: |
+        To list recommendations:
+
+          $ {command} --project=project-name --location=global --recommender=google.iam.policy.Recommender
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations

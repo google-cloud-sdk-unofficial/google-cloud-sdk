@@ -25,6 +25,16 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import versions_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To create an AI Platform version model with the version ID 'versionId'
+        and with the name 'model-name', run:
+
+          $ {command} versionId --model=model-name
+        """,
+}
+
 
 def _AddCreateArgs(parser):
   """Add common arguments for `versions create` command."""
@@ -94,6 +104,8 @@ class CreateGA(base.CreateCommand):
   For more details on managing AI Platform models and versions see
   https://cloud.google.com/ml-engine/docs/how-tos/managing-models-jobs
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

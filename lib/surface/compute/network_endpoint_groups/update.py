@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  r"""Updates a Google Compute Engine network endpoint group.
+  r"""Update a Google Compute Engine network endpoint group.
 
   ## EXAMPLES
 
@@ -77,7 +77,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
-  r"""Updates a Google Compute Engine network endpoint group.
+  r"""Update a Google Compute Engine network endpoint group.
 
   ## EXAMPLES
 
@@ -98,7 +98,11 @@ class AlphaUpdate(Update):
   def Args(parser):
     flags.MakeNetworkEndpointGroupsArg(
         support_global_scope=True).AddArgument(parser)
-    flags.AddUpdateNegArgsToParser(parser, support_global_scope=True)
+    flags.AddUpdateNegArgsToParser(
+        parser,
+        support_global_scope=True,
+        support_hybrid_neg=True,
+        support_l4ilb_neg=True)
 
   def Run(self, args):
     return self._Run(args, support_global_scope=True)

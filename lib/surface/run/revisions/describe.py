@@ -73,7 +73,8 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Show details about a revision."""
-    conn_context = connection_context.GetConnectionContext(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, self.ReleaseTrack())
     revision_ref = args.CONCEPTS.revision.Parse()
 
     with serverless_operations.Connect(conn_context) as client:

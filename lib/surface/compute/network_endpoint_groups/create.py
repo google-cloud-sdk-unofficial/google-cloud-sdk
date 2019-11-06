@@ -28,7 +28,11 @@ from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 from googlecloudsdk.core import log
 
 
-def _Run(args, holder, support_global_scope=False):
+def _Run(args,
+         holder,
+         support_global_scope=False,
+         support_hybrid_neg=False,
+         support_l4ilb_neg=False):
   """Issues the request necessary for adding the network endpoint group."""
   client = holder.client
   messages = holder.client.messages
@@ -42,7 +46,7 @@ def _Run(args, holder, support_global_scope=False):
           default_scope=compute_scope.ScopeEnum.ZONE,
           scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
-  _ValidateNEG(args, neg_ref)
+  _ValidateNEG(args, neg_ref, support_hybrid_neg, support_l4ilb_neg)
 
   result = neg_client.Create(
       neg_ref,
@@ -54,21 +58,29 @@ def _Run(args, holder, support_global_scope=False):
   return result
 
 
-def _ValidateNEG(args, neg_ref):
+def _ValidateNEG(args, neg_ref, support_hybrid_neg, support_l4ilb_neg):
   """Validate NEG input before making request."""
   is_zonal = hasattr(neg_ref, 'zone')
   network_endpoint_type = args.network_endpoint_type
 
   if is_zonal:
-    if network_endpoint_type == 'internet-ip-port' or network_endpoint_type == 'internet-fqdn-port':
+    valid_zonal_types = ['gce-vm-ip-port']
+    if support_hybrid_neg:
+      valid_zonal_types.append('non-gcp-private-ip-port')
+    if support_l4ilb_neg:
+      valid_zonal_types.append('gce-vm-primary-ip')
+    if network_endpoint_type not in valid_zonal_types:
       raise exceptions.InvalidArgumentException(
           '--network-endpoint-type',
-          'Internet network endpoint types not supported for zonal NEGs.')
+          'Zonal NEGs only support network endpoint types of {0}.'.format(
+              ' or '.join(valid_zonal_types)))
   else:
-    if network_endpoint_type == 'gce-vm-ip-port':
+    valid_global_types = ['internet-ip-port', 'internet-fqdn-port']
+    if network_endpoint_type not in valid_global_types:
       raise exceptions.InvalidArgumentException(
           '--network-endpoint-type',
-          'GCE_VM_IP_PORT network endpoint type not supported for global NEGs.')
+          'Global NEGs only support network endpoint types of {0}.'.format(
+              ' or '.join(valid_global_types)))
     if args.network is not None:
       raise exceptions.InvalidArgumentException(
           '--network', 'Global NEGs cannot specify network.')
@@ -113,8 +125,17 @@ class CreateAlpha(Create):
     flags.MakeNetworkEndpointGroupsArg(
         support_global_scope=True).AddArgument(parser)
     flags.AddCreateNegArgsToParser(
-        parser, support_neg_type=True, support_global_scope=True)
+        parser,
+        support_neg_type=True,
+        support_global_scope=True,
+        support_hybrid_neg=True,
+        support_l4ilb_neg=True)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, support_global_scope=True)
+    return _Run(
+        args,
+        holder,
+        support_global_scope=True,
+        support_hybrid_neg=True,
+        support_l4ilb_neg=True)
