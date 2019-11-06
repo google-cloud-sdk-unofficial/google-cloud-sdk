@@ -52,6 +52,6 @@ class DisableInherit(interfaces.OrgPolicyGetAndUpdateCommand):
       The updated policy.
     """
     new_policy = copy.deepcopy(policy)
-    new_policy.inheritFromParent = False
+    new_policy.spec.inheritFromParent = False
 
     return new_policy

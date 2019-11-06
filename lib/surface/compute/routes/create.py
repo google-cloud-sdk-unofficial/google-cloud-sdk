@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for creating routes."""
 
 from __future__ import absolute_import
@@ -66,8 +65,7 @@ def _Args(parser):
   """Add arguments for route creation."""
 
   parser.add_argument(
-      '--description',
-      help='An optional, textual description for the route.')
+      '--description', help='An optional, textual description for the route.')
 
   parser.add_argument(
       '--network',
@@ -125,16 +123,17 @@ def _Args(parser):
       IP CIDR range. Requires --load-balancing-scheme=INTERNAL on the
       corresponding forwarding rule.
       """)
-  parser.add_argument('--next-hop-ilb-region',
-                      help=('The region of the next hop forwarding rule. ' +
-                            compute_flags.REGION_PROPERTY_EXPLANATION))
+  parser.add_argument(
+      '--next-hop-ilb-region',
+      help=('The region of the next hop forwarding rule. ' +
+            compute_flags.REGION_PROPERTY_EXPLANATION))
 
   parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a new route.
+  r"""Create a new route.
 
     *{command}* is used to create routes. A route is a rule that
   specifies how certain packets should be handled by the virtual
@@ -159,6 +158,16 @@ class Create(base.CreateCommand):
   Exactly one of ``--next-hop-address'', ``--next-hop-gateway'',
   ``--next-hop-vpn-tunnel'', or ``--next-hop-instance'' must be
   provided with this command.
+
+  ## EXAMPLES
+
+  To create a route with the name 'route-name' with destination range
+  '0.0.0.0/0' and with next hop gateway 'default-internet-gateway', run:
+
+    $ {command} route-name \
+      --destination-range=0.0.0.0/0 \
+      --next-hop-gateway=default-internet-gateway
+
   """
 
   NETWORK_ARG = None
@@ -228,8 +237,7 @@ class Create(base.CreateCommand):
       next_hop_ilb_uri = self.ILB_ARG.ResolveAsResource(
           args,
           holder.resources,
-          scope_lister=compute_flags.GetDefaultScopeLister(
-              client)).SelfLink()
+          scope_lister=compute_flags.GetDefaultScopeLister(client)).SelfLink()
     elif args.next_hop_ilb_region:
       raise exceptions.ToolException(
           '[--next-hop-ilb-region] can only be specified in '
@@ -257,7 +265,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateAlphaBeta(Create):
-  """Create a new route.
+  r"""Create a new route.
 
     *{command}* is used to create routes. A route is a rule that
   specifies how certain packets should be handled by the virtual
@@ -282,5 +290,14 @@ class CreateAlphaBeta(Create):
   Exactly one of ``--next-hop-address'', ``--next-hop-gateway'',
   ``--next-hop-vpn-tunnel'', ``--next-hop-instance'', or ``--next-hop-ilb''
   must be provided with this command.
-  """
 
+  ## EXAMPLES
+
+  To create a route with the name 'route-name' with destination range
+  '0.0.0.0/0' and with next hop gateway 'default-internet-gateway', run:
+
+    $ {command} route-name \
+      --destination-range=0.0.0.0/0 \
+      --next-hop-gateway=default-internet-gateway
+
+  """

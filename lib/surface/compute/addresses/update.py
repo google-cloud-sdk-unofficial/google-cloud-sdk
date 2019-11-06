@@ -33,18 +33,21 @@ class Update(base.UpdateCommand):
   r"""Update a Google Compute Engine address.
 
   *{command}* updates labels for a Google Compute Engine
-  address.  For example:
+  address.
 
-    $ {command} example-address --region us-central1 \
+  ## EXAMPLES
+
+  To add/update labels 'k0' and 'k1' and remove labels with key 'k3' for address
+  'example-address', run:
+
+    $ {command} example-address --region=us-central1 \
       --update-labels=k0=value1,k1=value2 --remove-labels=k3
 
-  will add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''.
-
-  Labels can be used to identify the address and to filter them as in
+  Labels can be used to identify the address and to filter them as in:
 
     $ {parent_command} list --filter='labels.k1:value2'
 
-  To list existing labels
+  To list existing labels for address 'example-address', run:
 
     $ {parent_command} describe example-address --format='default(labels)'
 
@@ -76,13 +79,11 @@ class Update(base.UpdateCommand):
 
     if address_ref.Collection() == 'compute.globalAddresses':
       address = client.globalAddresses.Get(
-          messages.ComputeGlobalAddressesGetRequest(
-              **address_ref.AsDict()))
+          messages.ComputeGlobalAddressesGetRequest(**address_ref.AsDict()))
       labels_value = messages.GlobalSetLabelsRequest.LabelsValue
     else:
       address = client.addresses.Get(
-          messages.ComputeAddressesGetRequest(
-              **address_ref.AsDict()))
+          messages.ComputeAddressesGetRequest(**address_ref.AsDict()))
       labels_value = messages.RegionSetLabelsRequest.LabelsValue
 
     labels_update = labels_diff.Apply(labels_value, address.labels)
@@ -118,6 +119,6 @@ class Update(base.UpdateCommand):
 
       operation_poller = poller.Poller(client.addresses)
 
-    return waiter.WaitFor(operation_poller, operation_ref,
-                          'Updating labels of address [{0}]'.format(
-                              address_ref.Name()))
+    return waiter.WaitFor(
+        operation_poller, operation_ref,
+        'Updating labels of address [{0}]'.format(address_ref.Name()))

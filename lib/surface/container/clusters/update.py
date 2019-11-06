@@ -206,8 +206,13 @@ class Update(base.UpdateCommand):
     flags.AddEnableBinAuthzFlag(group)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
+    flags.AddRecurringMaintenanceWindowFlags(
+        group, hidden=False, is_update=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
+    flags.AddDatabaseEncryptionFlag(group)
+    flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddVerticalPodAutoscalingFlag(group, hidden=True)
+    flags.AddAutoprovisioningFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -448,9 +453,9 @@ to completion."""
           log.warning(error)
 
   def IsClusterRequired(self, args):
-    """Returns if getting the cluster should be an error for the flags."""
+    """Returns if failure getting the cluster should be an error."""
     return bool(
-        getattr(args, 'add_maintenance_exclusion_end', False) or
+        getattr(args, 'maintenance_window_end', False) or
         getattr(args, 'clear_maintenance_window', False) or
         getattr(args, 'add_maintenance_exclusion_end', False) or
         getattr(args, 'remove_maintenance_exclusion', False))
@@ -483,8 +488,7 @@ class UpdateBeta(Update):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
-    flags.AddDailyMaintenanceWindowFlag(
-        group, add_unset_text=True, add_emw_text=True)
+    flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(
         group, hidden=False, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
@@ -503,17 +507,6 @@ class UpdateBeta(Update):
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.enable_pod_security_policy = args.enable_pod_security_policy
-    opts.enable_autoprovisioning = args.enable_autoprovisioning
-    opts.autoprovisioning_config_file = args.autoprovisioning_config_file
-    opts.autoprovisioning_service_account = args.autoprovisioning_service_account
-    opts.autoprovisioning_scopes = args.autoprovisioning_scopes
-    opts.autoprovisioning_locations = args.autoprovisioning_locations
-    opts.min_cpu = args.min_cpu
-    opts.max_cpu = args.max_cpu
-    opts.min_memory = args.min_memory
-    opts.max_memory = args.max_memory
-    opts.min_accelerator = args.min_accelerator
-    opts.max_accelerator = args.max_accelerator
     opts.istio_config = args.istio_config
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
@@ -523,8 +516,6 @@ class UpdateBeta(Update):
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
-    opts.database_encryption_key = args.database_encryption_key
-    opts.disable_database_encryption = args.disable_database_encryption
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.
@@ -564,8 +555,7 @@ class UpdateAlpha(Update):
     flags.AddNetworkPolicyFlags(group)
     flags.AddAutoprovisioningFlags(group, hidden=False)
     flags.AddAutoscalingProfilesFlag(group, hidden=True)
-    flags.AddDailyMaintenanceWindowFlag(
-        group, add_unset_text=True, add_emw_text=True)
+    flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(
         group, hidden=False, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
@@ -586,17 +576,6 @@ class UpdateAlpha(Update):
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
-    opts.enable_autoprovisioning = args.enable_autoprovisioning
-    opts.autoprovisioning_config_file = args.autoprovisioning_config_file
-    opts.autoprovisioning_service_account = args.autoprovisioning_service_account
-    opts.autoprovisioning_scopes = args.autoprovisioning_scopes
-    opts.autoprovisioning_locations = args.autoprovisioning_locations
-    opts.min_cpu = args.min_cpu
-    opts.max_cpu = args.max_cpu
-    opts.min_memory = args.min_memory
-    opts.max_memory = args.max_memory
-    opts.min_accelerator = args.min_accelerator
-    opts.max_accelerator = args.max_accelerator
     opts.autoscaling_profile = args.autoscaling_profile
     opts.enable_pod_security_policy = args.enable_pod_security_policy
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
@@ -610,8 +589,6 @@ class UpdateAlpha(Update):
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
     opts.enable_peering_route_sharing = args.enable_peering_route_sharing
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
-    opts.database_encryption_key = args.database_encryption_key
-    opts.disable_database_encryption = args.disable_database_encryption
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.

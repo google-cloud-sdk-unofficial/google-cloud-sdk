@@ -24,12 +24,24 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.snapshots import flags
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To delete Google Compute Engine snapshots with the names 'snapshot-1'
+        and 'snapshot-2', run:
+
+          $ {command} snapshot-1 snapshot-2
+        """,
+}
+
 
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine snapshots.
 
   *{command}* deletes one or more Google Compute Engine snapshots.
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

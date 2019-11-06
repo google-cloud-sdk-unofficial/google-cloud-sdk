@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
+from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -76,6 +77,9 @@ class Describe(base.DescribeCommand):
     cls.TARGET_HTTPS_PROXY_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The target-https-proxies describe command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.TARGET_HTTPS_PROXY_ARG)
 

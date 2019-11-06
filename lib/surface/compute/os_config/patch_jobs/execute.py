@@ -249,7 +249,8 @@ def _AddPrePostStepArguments(parser):
       help="""\
       A set of commands to run on a Windows machine before an OS patch begins.
       Commands must be supplied in a file. If the file contains a PowerShell
-      script, include the .ps1 file extension.
+      script, include the .ps1 file extension. The PowerShell script executes
+      with flags `-NonInteractive`, `-NoProfile`, and `-ExecutionPolicy Bypass`.
 
       The path to the file must be supplied in one of the following formats:
 
@@ -274,7 +275,8 @@ def _AddPrePostStepArguments(parser):
       help="""\
       A set of commands to run on a Windows machine after an OS patch completes.
       Commands must be supplied in a file. If the file contains a PowerShell
-      script, include the .ps1 file extension.
+      script, include the .ps1 file extension. The PowerShell script executes
+      with flags `-NonInteractive`, `-NoProfile`, and `-ExecutionPolicy Bypass`.
 
       The path to the file must be supplied in one of the following formats:
 

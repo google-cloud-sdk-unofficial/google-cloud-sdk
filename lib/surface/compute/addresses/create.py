@@ -50,7 +50,7 @@ def _Args(cls, parser, support_shared_loadbalancer_vip):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Reserve IP addresses.
+  r"""Reserve IP addresses.
 
   *{command}* is used to reserve one or more IP addresses. Once an IP address
   is reserved, it will be associated with the project until it is released
@@ -60,31 +60,33 @@ class Create(base.CreateCommand):
   ## EXAMPLES
   To reserve three IP addresses in the 'us-central1' region, run:
 
-    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region us-central1
+    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region=us-central1
 
-  To reserve ephemeral IP addresses 162.222.181.198 and 23.251.146.189 which
+  To reserve ephemeral IP addresses '162.222.181.198' and '23.251.146.189' which
   are being used by virtual machine instances in the 'us-central1' region, run:
 
-    $ {command} --addresses 162.222.181.198,23.251.146.189 --region us-central1
+    $ {command} --addresses=162.222.181.198,23.251.146.189 --region=us-central1
 
   In the above invocation, the two addresses will be assigned random names.
 
   To reserve an IP address from the subnet 'default' in the 'us-central1'
   region, run:
 
-    $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
+    $ {command} SUBNET-ADDRESS-1 \
+      --region=us-central1 \
+      --subnet=default
 
-  To reserve an IP range 10.110.0.0/16 from the network 'default' for
-  VPC_PEERING, run:
+  To reserve an IP range '10.110.0.0/16' from the network 'default' for
+  'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --addresses 10.110.0.0 --prefix-length 16
-    --purpose VPC_PEERING --network default
+    $ {command} IP-RANGE-1 --global --addresses=10.110.0.0 --prefix-length=16 \
+      --purpose=VPC_PEERING --network=default
 
-  To reserve any IP range with prefix length 16 from the network 'default' for
-  VPC_PEERING, run:
+  To reserve any IP range with prefix length '16' from the network 'default' for
+  'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --prefix-length 16 --purpose VPC_PEERING
-    --network default
+    $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
+      --network=default
 
   """
 
@@ -263,7 +265,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateAlpha(Create):
   # pylint: disable=line-too-long
-  """Reserve IP addresses.
+  r"""Reserve IP addresses.
 
   *{command}* is used to reserve one or more IP addresses. Once an IP address
   is reserved, it will be associated with the project until it is released
@@ -273,34 +275,37 @@ class CreateAlpha(Create):
   ## EXAMPLES
   To reserve three IP addresses in the 'us-central1' region, run:
 
-    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region us-central1
+    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region=us-central1
 
-  To reserve ephemeral IP addresses 162.222.181.198 and 23.251.146.189 which
+  To reserve ephemeral IP addresses '162.222.181.198' and '23.251.146.189' which
   are being used by virtual machine instances in the 'us-central1' region, run:
 
-    $ {command} --addresses 162.222.181.198,23.251.146.189 --region us-central1
+    $ {command} --addresses=162.222.181.198,23.251.146.189 --region=us-central1
 
   In the above invocation, the two addresses will be assigned random names.
 
   To reserve an IP address from the subnet 'default' in the 'us-central1'
   region, run:
 
-    $ {command} SUBNET-ADDRESS-1 --region us-central1 --subnet default
+    $ {command} SUBNET-ADDRESS-1 --region=us-central1 --subnet=default
 
   To reserve an IP address that can be used by multiple internal load balancers
   from the subnet 'default' in the 'us-central1' region, run:
 
-    $ {command} SHARED-ADDRESS-1 --region us-central1 --subnet default --purpose SHARED_LOADBALANCER_VIP
+    $ {command} SHARED-ADDRESS-1 --region=us-central1 --subnet=default \
+      --purpose=SHARED_LOADBALANCER_VIP
 
-  To reserve an IP range 10.110.0.0/16 from the network 'default' for
-  VPC_PEERING, run:
+  To reserve an IP range '10.110.0.0/16' from the network 'default' for
+  'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --addresses 10.110.0.0 --prefix-length 16 --purpose VPC_PEERING --network default
+    $ {command} IP-RANGE-1 --global --addresses=10.110.0.0 --prefix-length=16 \
+      --purpose=VPC_PEERING --network=default
 
-  To reserve any IP range with prefix length 16 from the network 'default' for
-  VPC_PEERING, run:
+  To reserve any IP range with prefix length '16' from the network 'default' for
+  'VPC_PEERING', run:
 
-    $ {command} IP-RANGE-1 --global --prefix-length 16 --purpose VPC_PEERING --network default
+    $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
+      --network=default
 
   """
 

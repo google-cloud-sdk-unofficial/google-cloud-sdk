@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
+from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -74,6 +75,9 @@ class Describe(base.DescribeCommand):
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The url-maps describe command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG)
 

@@ -35,7 +35,7 @@ _DETAILED_HELP = {
           To link a billing account `0X0X0X-0X0X0X-0X0X0X` with a project
           `my-project`, run:
 
-            $ {command} my-project --billing-account 0X0X0X-0X0X0X-0X0X0X
+            $ {command} my-project --billing-account=0X0X0X-0X0X0X-0X0X0X
           """
 }
 

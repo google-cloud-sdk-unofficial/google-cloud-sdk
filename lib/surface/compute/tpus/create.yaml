@@ -7,19 +7,19 @@
       `10.240.0.0/29` in the default user project, network and compute/region
       (with other defaults supplied by API):
 
-        $ {command}  my-tpu --range 10.240.0.0/29 --network default
+        $ {command}  my-tpu --range=10.240.0.0/29 --network=default
 
 
       The following command creates a TPU with ID `my-tpu` with explicit values
       for all required and optional parameters:
 
         $ {command} my-tpu \
-            --zone us-central1-a \
-            --range '10.240.0.0/29' \
-            --accelerator-type 'v2-8' \
-            --network my-tf-network \
-            --description 'My TF Node' \
-            --version '1.1'
+            --zone=us-central1-a \
+            --range='10.240.0.0/29' \
+            --accelerator-type='v2-8' \
+            --network=my-tf-network \
+            --description='My TF Node' \
+            --version='1.1'
 
   request:
     _COMMON_: create_request
@@ -55,19 +55,19 @@
       `10.240.0.0/29` in the default user project, network and compute/region
       (with other defaults supplied by API):
 
-        $ {command}  my-tpu --range 10.240.0.0/29 --network default
+        $ {command}  my-tpu --range=10.240.0.0/29 --network=default
 
 
       The following command creates a TPU with ID `my-tpu` with explicit values
       for all required and optional parameters:
 
         $ {command} my-tpu \
-            --zone us-central1-a \
-            --range '10.240.0.0/29' \
-            --accelerator-type 'v2-8' \
-            --network my-tf-network \
-            --description 'My TF Node' \
-            --version '1.1'
+            --zone=us-central1-a \
+            --range='10.240.0.0/29' \
+            --accelerator-type='v2-8' \
+            --network=my-tf-network \
+            --description='My TF Node' \
+            --version='1.1'
 
   request:
     _COMMON_: create_request

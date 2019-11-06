@@ -89,13 +89,13 @@ class Delete(base.Command):
       policy = policy_service.Get(get_request)
 
       new_policy = copy.deepcopy(policy)
-      new_policy.rules = org_policy_utils.GetNonMatchingRulesFromPolicy(
+      new_policy.spec.rules = org_policy_utils.GetNonMatchingRulesFromPolicy(
           policy, args.condition)
 
       if policy == new_policy:
         return policy
 
-      if new_policy.rules or new_policy.inheritFromParent:
+      if new_policy.spec.rules or new_policy.spec.inheritFromParent:
         update_request = org_policy_messages.OrgpolicyPoliciesPatchRequest(
             name=policy_name,
             forceUnconditionalWrite=False,

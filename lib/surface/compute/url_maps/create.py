@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_
 from googlecloudsdk.command_lib.compute.backend_services import flags as backend_service_flags
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
+from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -153,6 +154,9 @@ class Create(base.CreateCommand):
         ._include_l7_internal_load_balancing)
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The url-maps create command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.BACKEND_BUCKET_ARG, self.BACKEND_SERVICE_ARG,
                 self.URL_MAP_ARG)

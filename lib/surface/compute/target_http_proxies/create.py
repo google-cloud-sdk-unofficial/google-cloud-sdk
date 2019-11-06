@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -125,6 +126,9 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Issue a Target HTTP Proxy Insert request."""
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The target-http-proxies create command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
         args, holder.resources)

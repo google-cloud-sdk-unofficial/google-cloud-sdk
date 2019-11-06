@@ -48,7 +48,7 @@ class List(base.ListCommand):
 
           List images with names prefixed with 'test-project':
 
-            $ {command} --filter "name:test-project"
+            $ {command} --filter="name:test-project"
 
       """,
   }

@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -88,6 +89,9 @@ class Update(base.SilentCommand):
     cls.URL_MAP_ARG.AddArgument(parser)
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The target-http-proxies update command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
         args,

@@ -34,6 +34,16 @@ def _GetUriFunction(resource):
       collection='bigtableadmin.operations').SelfLink()
 
 
+def _TransformOperationName(resource):
+  """Get operation name without project prefix."""
+  # operation name is in the format of:
+  # operations/projects/{}/instances/{}/.../locations/{}/operations/{}
+  operation_name = resource.get('name')
+  results = operation_name.split('/')
+  short_name = '/'.join(results[3:])
+  return short_name
+
+
 class ListOperations(base.ListCommand):
   """List Cloud Bigtable operations."""
 
@@ -60,14 +70,14 @@ class ListOperations(base.ListCommand):
                                      required=False)
     parser.display_info.AddFormat("""
           table(
-             name.basename():label=OPERATION_ID,
-             name.segment(4):label=INSTANCE,
+             name():label=NAME,
              done,
              metadata.firstof(startTime, requestTime).date():label=START_TIME:sort=1:reverse,
              metadata.firstof(endTime, finishTime).date():label=END_TIME
            )
         """)
     parser.display_info.AddUriFunc(_GetUriFunction)
+    parser.display_info.AddTransforms({'name': _TransformOperationName})
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

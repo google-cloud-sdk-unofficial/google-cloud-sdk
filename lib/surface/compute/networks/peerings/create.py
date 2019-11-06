@@ -54,7 +54,22 @@ def _MakeRequests(client, requests, is_async):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
-  """Create a Google Compute Engine network peering."""
+  r"""Create a Google Compute Engine network peering.
+
+  *{command}* is used to create peerings between virtual networks. Each side of
+  a peering association is set up independently. Peering will be active only
+  when the configuration from both sides matches.
+
+  ## EXAMPLES
+
+  To create a network peering with the name 'peering-name' between the network
+  'local-network' and the network 'peer-network', run:
+
+    $ {command} peering-name \
+      --network=local-network \
+      --peer-network=peer-network
+
+  """
 
   enable_custom_route = False
   enable_subnet_routes_with_public_ip = False
@@ -69,7 +84,7 @@ class Create(base.Command):
         '--network',
         required=True,
         help='The name of the network in the current project to be peered '
-             'with the peer network.')
+        'with the peer network.')
 
     parser.add_argument(
         '--peer-network',
@@ -80,7 +95,7 @@ class Create(base.Command):
         '--peer-project',
         required=False,
         help='The name of the project for the peer network.  If not specified, '
-             'defaults to current project.')
+        'defaults to current project.')
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -101,8 +116,8 @@ class Create(base.Command):
         default=False,
         required=False,
         help='If set, will automatically create routes for the network '
-             'peering.  Note that a backend error will be returned if this is '
-             'not set.')
+        'peering.  Note that a backend error will be returned if this is '
+        'not set.')
 
   def Run(self, args):
     """Issues the request necessary for adding the peering."""
@@ -153,7 +168,25 @@ class Create(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Create a Google Compute Engine network peering."""
+  r"""Create a Google Compute Engine network peering.
+
+  *{command}* is used to create peerings between virtual networks. Each side of
+  a peering association is set up independently. Peering will be active only
+  when the configuration from both sides matches.
+
+  ## EXAMPLES
+
+  To create a network peering with the name 'peering-name' between the network
+  'local-network' and the network 'peer-network' which exports and imports
+  custom routes, run:
+
+    $ {command} peering-name \
+      --network=local-network \
+      --peer-network=peer-network \
+      --export-custom-routes \
+      --import-custom-routes
+
+  """
 
   enable_custom_route = True
   enable_nested_network_peering = True
@@ -179,6 +212,26 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Create a Google Compute Engine network peering."""
+  r"""Create a Google Compute Engine network peering.
+
+  *{command}* is used to create peerings between virtual networks. Each side of
+  a peering association is set up independently. Peering will be active only
+  when the configuration from both sides matches.
+
+  ## EXAMPLES
+
+  To create a network peering with the name 'peering-name' between the network
+  'local-network' and the network 'peer-network' which exports and imports
+  custom routes and subnet routes with public IPs, run:
+
+    $ {command} peering-name \
+      --network=local-network \
+      --peer-network=peer-network \
+      --export-custom-routes \
+      --import-custom-routes \
+      --export-subnet-routes-with-public-ip \
+      --import-subnet-routes-with-public-ip
+
+  """
 
   enable_subnet_routes_with_public_ip = True

@@ -68,13 +68,14 @@ class List(base.ListCommand):
           list_constraints_request)
       constraints = list_constraints_response.constraints
 
-      existing_policy_names = {policy.name for policy in policies}
+      existing_policy_names = {policy.spec.name for policy in policies}
       for constraint in constraints:
         policy_name = org_policy_utils.GetPolicyNameFromConstraintName(
             constraint.name)
         if policy_name not in existing_policy_names:
           stubbed_policy = org_policy_messages.GoogleCloudOrgpolicyV2alpha1Policy(
-              name=policy_name)
+              spec=org_policy_messages.GoogleCloudOrgpolicyV2alpha1PolicySpec(
+                  name=policy_name))
           policies.append(stubbed_policy)
 
     return policies

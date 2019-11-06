@@ -21,3 +21,4 @@ gcloud: google-cloud-sdk
 gsutil: google-cloud-sdk
 kubectl: kubectl
 pubsub-emulator: google-cloud-sdk-pubsub-emulator
+skaffold: unavailable

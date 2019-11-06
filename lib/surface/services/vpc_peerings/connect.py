@@ -45,13 +45,13 @@ class Connect(base.SilentCommand):
           service called `your-service` with IP CIDR ranges
           `google-range-1,google-range-2` for the service to use, run:
 
-            $ {command} --network my-network --service your-service \\
-                --ranges google-range-1,google-range-2
+            $ {command} --network=my-network --service=your-service \\
+                --ranges=google-range-1,google-range-2
 
           To run the same command asynchronously (non-blocking), run:
 
-            $ {command} --network my-network --service your-service \\
-                --ranges google-range-1,google-range-2 --async
+            $ {command} --network=my-network --service=your-service \\
+                --ranges=google-range-1,google-range-2 --async
           """,
   }
 

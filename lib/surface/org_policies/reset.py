@@ -56,8 +56,8 @@ class Reset(interfaces.OrgPolicyGetAndUpdateCommand):
       The updated policy.
     """
     new_policy = copy.deepcopy(policy)
-    new_policy.reset = True
-    new_policy.rules = []
-    new_policy.inheritFromParent = False
+    new_policy.spec.reset = True
+    new_policy.spec.rules = []
+    new_policy.spec.inheritFromParent = False
 
     return new_policy

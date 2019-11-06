@@ -41,6 +41,8 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_transform
 from googlecloudsdk.core.util import times
 
+import six
+
 _ALLOWED_SOURCE_EXT = ['.zip', '.tgz', '.gz']
 
 
@@ -138,16 +140,15 @@ class DeployGKE(base.Command):
         required=True)
     parser.add_argument(
         '--namespace',
-        default='default',
         help='Namespace of the target cluster to deploy to. If this field is '
         "not set, the 'default' namespace is used.")
     parser.add_argument(
         '--config',
         help="""
         Path to the Kubernetes YAML, or directory containing multiple
-        Kubernetes YAML files, used to deploy the container image,
-        relative to SOURCE. The files must reference the provided container
-        image or tag.
+        Kubernetes YAML files, used to deploy the container image. The path is
+        relative to the repository root. The files must reference the provided
+        container image or tag.
 
         If this field is not set, a default Deployment config and Horizontal
         Pod Autoscaler config are used to deploy the image.
@@ -163,7 +164,7 @@ class DeployGKE(base.Command):
     parser.add_argument(
         '--expose',
         type=int,
-        help='Port that the deployed application listens to. If set, a '
+        help='Port that the deployed application listens on. If set, a '
         "Kubernetes Service of type 'LoadBalancer' is created with a "
         'single TCP port mapping that exposes this port.')
     base.ASYNC_FLAG.AddToParser(parser)
@@ -195,7 +196,7 @@ class DeployGKE(base.Command):
 
     if args.source and args.image and not args.config:
       raise c_exceptions.InvalidArgumentException(
-          'SOURCE', 'Source should not be provided when no Kubernetes '
+          'SOURCE', 'Source must not be provided when no Kubernetes '
           'configs and no docker builds are required.')
 
     image = self._DetermineImageFromArgs(args)
@@ -207,7 +208,7 @@ class DeployGKE(base.Command):
       app_name = self._ImageName(image)
 
     # Determine app_version
-    app_version = ''
+    app_version = None
     image_has_tag = '@' not in image and ':' in image
     if args.app_version:
       app_version = args.app_version
@@ -255,7 +256,7 @@ class DeployGKE(base.Command):
           '--gcs-staging-dir.'.format(gcs_staging_dir_bucket))
 
     if gcs_staging_dir_object:
-      gcs_config_staging_path = '{}/{}'.format(
+      gcs_config_staging_path = '{}/{}/config'.format(
           gcs_staging_dir_bucket, gcs_staging_dir_object)
     else:
       gcs_config_staging_path = gcs_staging_dir_bucket
@@ -305,7 +306,7 @@ class DeployGKE(base.Command):
       else:
         raise c_exceptions.InvalidArgumentException(
             '--tag-default',
-            'No default container image name available. Please provide an '
+            'No default container image name available. Provide an '
             'app name with --app-name, or provide a valid --tag.')
 
       if args.app_version:
@@ -317,12 +318,12 @@ class DeployGKE(base.Command):
           raise c_exceptions.InvalidArgumentException(
               '--tag-default',
               'No default tag available, no commit sha at HEAD of source '
-              'repository available for tag. Please provide an app version '
+              'repository available for tag. Provide an app version '
               'with --app-version, or provide a valid --tag.')
       else:
         raise c_exceptions.InvalidArgumentException(
             '--tag-default',
-            'No default container image tag available. Please provide an app '
+            'No default container image tag available. Provide an app '
             'version with --app-version, or provide a valid --tag.')
 
       return 'gcr.io/$PROJECT_ID/{name}:{tag}'.format(
@@ -440,7 +441,7 @@ class DeployGKE(base.Command):
 
     Args:
       client: Client used to make calls to Cloud Build API.
-      messages: Cloud Build messages module. i.e., the return value of
+      messages: Cloud Build messages module. This is the value returned from
         cloudbuild_util.GetMessagesModule().
       build_config: Build to submit.
       gcs_config_staging_path: A path to a GCS subdirectory where deployed
@@ -455,7 +456,7 @@ class DeployGKE(base.Command):
     op = client.projects_builds.Create(
         messages.CloudbuildProjectsBuildsCreateRequest(
             build=build_config, projectId=project))
-    log.debug('submitting build: ' + str(build_config))
+    log.debug('submitting build: ' + six.text_type(build_config))
 
     json = encoding.MessageToJson(op.metadata)
     build = encoding.JsonToMessage(messages.BuildOperationMetadata, json).build
@@ -483,9 +484,12 @@ class DeployGKE(base.Command):
     if async_:
       log.status.Print(
           '\nIf successful, you can find the configuration files of the deployed '
-          'Kubernetes objects stored at {expanded}.\n\n'
+          'Kubernetes objects stored at gs://{expanded} or by visiting '
+          'https://console.cloud.google.com/storage/browser/{expanded}/.\n\n'
           'You will also be able to find the suggested base Kubernetes '
-          'configuration files at {suggested}.'.format(
+          'configuration files at gs://{suggested} or by visiting '
+          'https://console.cloud.google.com/storage/browser/{suggested}/.'
+          .format(
               expanded=expanded_configs_path,
               suggested=suggested_configs_path))
       # Return here, otherwise, logs are streamed from GCS.
@@ -505,7 +509,7 @@ class DeployGKE(base.Command):
     if build.status != messages.Build.StatusValueValuesEnum.SUCCESS:
       if build_util.SaveConfigsBuildStepIsSuccessful(messages, build):
         log.status.Print(
-            'You can find the configuration files for this attempt at {}.'
+            'You can find the configuration files for this attempt at gs://{}.'
             .format(expanded_configs_path)
         )
       raise FailedDeployException(build)
@@ -513,8 +517,11 @@ class DeployGKE(base.Command):
     log.status.Print(
         'Successfully deployed to your Google Kubernetes Engine cluster.\n\n'
         'You can find the configuration files of the deployed Kubernetes '
-        'objects stored at {expanded}.\n\n'
-        'You can also find suggested base Kubernetes configuration files '
-        'at {suggested}.'.format(
+        'objects stored at gs://{expanded} or by visiting '
+        'https://console.cloud.google.com/storage/browser/{expanded}/.\n\n'
+        'You can also find suggested base Kubernetes configuration files at '
+        'gs://{suggested} or by visiting '
+        'https://console.cloud.google.com/storage/browser/{suggested}/.'
+        .format(
             expanded=expanded_configs_path,
             suggested=suggested_configs_path))

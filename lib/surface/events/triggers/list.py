@@ -49,9 +49,7 @@ class List(commands.List):
   def CommonArgs(cls, parser):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    concept_parsers.ConceptParser([
-        resource_args.CLOUD_RUN_LOCATION_PRESENTATION
-    ]).AddToParser(managed_group)
+    flags.AddRegionArg(managed_group)
     # Flags specific to CRoGKE
     gke_group = flags.GetGkeArgGroup(parser)
     concept_parsers.ConceptParser(

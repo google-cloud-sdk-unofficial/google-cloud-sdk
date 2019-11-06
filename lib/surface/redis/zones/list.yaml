@@ -3,6 +3,10 @@
       List Memorystore Redis zones
     description: |
       List all zones where Memorystore Redis API is available.
+    examples: |
+      To list all the zones where Redis instances can be created, run:
+
+          $ {command}
 
   arguments:
     resource:

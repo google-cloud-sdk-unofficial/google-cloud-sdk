@@ -31,7 +31,27 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine Network."""
+  r"""Update a Google Compute Engine Network.
+
+  *{command}* is used to update virtual networks. The updates that
+  cabe be performed on a network are changing the BGP routing mode
+  and switching from auto subnet mode to custom subnet mode. Switching
+  from auto subnet mode to custom subnet mode cannot be undone.
+
+  ## EXAMPLES
+
+  To update regional network with the name 'network-name' to global, run:
+
+    $ {command} network-name \
+      --bgp-routing-mode=global
+
+  To update an auto subnet mode network with the name 'network-name' to custom
+  subnet mode, run:
+
+    $ {command} network-name \
+      --switch-to-custom-subnet-mode
+
+  """
 
   NETWORK_ARG = None
 

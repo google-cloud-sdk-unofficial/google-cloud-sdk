@@ -33,7 +33,7 @@ class List(base.ListCommand):
 
   To list only open billing accounts, run:
 
-      $ {command} --filter open=true
+      $ {command} --filter=open=true
   """
 
   @staticmethod

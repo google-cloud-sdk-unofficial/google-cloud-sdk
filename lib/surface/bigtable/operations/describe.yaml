@@ -10,6 +10,8 @@
 
   request:
     collection: bigtableadmin.operations
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.bigtable.operations:ModifyDescribeRequest
 
   arguments:
     resource:

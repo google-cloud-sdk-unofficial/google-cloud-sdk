@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
+from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
@@ -183,6 +184,9 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Issues the request necessary for adding the SSL certificate."""
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The ssl-certificates create command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 

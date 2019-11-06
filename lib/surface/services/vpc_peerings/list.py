@@ -34,11 +34,11 @@ _DETAILED_HELP = {
         To list connections of a network called `my-network` to a service called
         `your-service`, run:
 
-          $ {command} --network my-network --service your-service
+          $ {command} --network=my-network --service=your-service
 
         To list connections of a network against all services, run:
 
-          $ {command} --network my-network
+          $ {command} --network=my-network
 
         """,
 }

@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -42,6 +43,9 @@ class Describe(base.DescribeCommand):
     Describe.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The ssl-certificates describe command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 

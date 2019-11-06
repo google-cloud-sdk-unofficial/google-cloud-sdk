@@ -169,6 +169,9 @@ class SetDefaultService(base.UpdateCommand):
     _Args(parser)
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The url-maps set-default-service command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.BACKEND_BUCKET_ARG, self.BACKEND_SERVICE_ARG,
                 self.URL_MAP_ARG)

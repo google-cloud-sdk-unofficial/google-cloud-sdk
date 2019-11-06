@@ -156,6 +156,7 @@ class AlphaUpdate(Update):
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
+    flags.AddHttp2Flag(cluster_group)
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddCommandFlag(parser)

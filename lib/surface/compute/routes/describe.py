@@ -25,10 +25,17 @@ from googlecloudsdk.command_lib.compute.routes import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a route.
+  r"""Describe a route.
 
   *{command}* displays all data associated with a Google Compute
   Engine route in a project.
+
+  ## EXAMPLES
+
+  To describe a route with the name 'route-name', run:
+
+    $ {command} route-name
+
   """
 
   ROUTE_ARG = None

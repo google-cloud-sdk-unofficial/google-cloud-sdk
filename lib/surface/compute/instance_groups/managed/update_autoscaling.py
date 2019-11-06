@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2015 Google LLC. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,25 +26,29 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.core import exceptions
 
 
+def _CommonArgs(parser):
+  instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+      parser)
+  mig_utils.GetModeFlag().AddToParser(parser)
+
+
 class NoMatchingAutoscalerFoundError(exceptions.Error):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAutoscaling(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateAutoscalingBeta(base.Command):
   """Update autoscaling parameters of a managed instance group."""
+
+  scale_down = False
 
   @staticmethod
   def Args(parser):
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-    mig_utils.GetModeFlag().AddToParser(parser)
-    mig_utils.AddScaleDownControlFlag(parser)
+    _CommonArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
-
     igm_ref = instance_groups_flags.CreateGroupReference(
         client, holder.resources, args)
 
@@ -65,15 +69,33 @@ class UpdateAutoscaling(base.Command):
     if args.IsSpecified('mode'):
       mode = mig_utils.ParseModeString(args.mode, client.messages)
       new_autoscaler.autoscalingPolicy.mode = mode
-
-    new_autoscaler.autoscalingPolicy.scaleDownControl = \
-      mig_utils.BuildScaleDown(args, client.messages)
+    if self.scale_down:
+      new_autoscaler.autoscalingPolicy.scaleDownControl = \
+        mig_utils.BuildScaleDown(args, client.messages)
 
     return autoscalers_client.Patch(igm_ref, new_autoscaler)
 
 
-UpdateAutoscaling.detailed_help = {
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
+  """Update autoscaling parameters of a managed instance group."""
+
+  scale_down = True
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    mig_utils.AddScaleDownControlFlag(parser)
+
+UpdateAutoscalingBeta.detailed_help = {
     'brief': 'Update autoscaling parameters of a managed instance group',
+    'EXAMPLES':
+        """\
+        To update an existing instance group:
+
+            $ {command} --mode=only-up
+
+        """,
     'DESCRIPTION': """\
 *{command}* updates autoscaling parameters of specified managed instance
 group.
@@ -90,3 +112,4 @@ would change the *mode* field of the autoscaler policy, but leave the rest of
 the settings intact.
         """,
 }
+UpdateAutoscalingAlpha.detailed_help = UpdateAutoscalingBeta.detailed_help

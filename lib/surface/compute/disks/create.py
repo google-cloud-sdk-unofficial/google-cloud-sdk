@@ -44,8 +44,10 @@ from googlecloudsdk.core import log
 import six
 
 DETAILED_HELP = {
-    'brief': 'Create Google Compute Engine persistent disks',
-    'DESCRIPTION': """\
+    'brief':
+        'Create Google Compute Engine persistent disks',
+    'DESCRIPTION':
+        """\
         *{command}* creates one or more Google Compute Engine
         persistent disks. When creating virtual machine instances,
         disks can be attached to the instances through the
@@ -62,10 +64,13 @@ DETAILED_HELP = {
         image (using `gcloud compute images create`) and creating a
         new disk using `--image` in the desired project and/or
         zone.
+        """,
+    'EXAMPLES':
+        """\
+        When creating disks, be sure to include the `--zone` option. To create
+        disks 'my-disk-1' and 'my-disk-2' in zone us-east1-a:
 
-        When creating disks, be sure to include the `--zone` option:
-
-          $ {command} my-disk-1 my-disk-2 --zone us-east1-a
+          $ {command} my-disk-1 my-disk-2 --zone=us-east1-a
         """,
 }
 

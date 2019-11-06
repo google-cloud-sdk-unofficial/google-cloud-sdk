@@ -74,34 +74,35 @@ class SetPolicy(base.Command):
         args.policy_file,
         org_policy_messages.GoogleCloudOrgpolicyV2alpha1Policy)
 
-    if not input_policy.name:
+    if not input_policy.spec.name:
       raise exceptions.InvalidInputError(
           'Name field not present in the organization policy.')
 
     get_request = org_policy_messages.OrgpolicyPoliciesGetRequest(
-        name=input_policy.name)
+        name=input_policy.spec.name)
     try:
       policy = policy_service.Get(get_request)
     except api_exceptions.HttpNotFoundError:
       constraint = org_policy_utils.GetConstraintFromPolicyName(
-          input_policy.name)
-      parent = org_policy_utils.GetResourceFromPolicyName(input_policy.name)
+          input_policy.spec.name)
+      parent = org_policy_utils.GetResourceFromPolicyName(
+          input_policy.spec.name)
 
       create_request = org_policy_messages.OrgpolicyPoliciesCreateRequest(
           constraint=constraint,
           parent=parent,
           googleCloudOrgpolicyV2alpha1Policy=input_policy)
       create_response = policy_service.Create(create_request)
-      log.CreatedResource(input_policy.name, 'policy')
+      log.CreatedResource(input_policy.spec.name, 'policy')
       return create_response
 
     if policy == input_policy:
       return policy
 
     update_request = org_policy_messages.OrgpolicyPoliciesPatchRequest(
-        name=input_policy.name,
+        name=input_policy.spec.name,
         forceUnconditionalWrite=False,
         googleCloudOrgpolicyV2alpha1Policy=input_policy)
     update_response = policy_service.Patch(update_request)
-    log.UpdatedResource(input_policy.name, 'policy')
+    log.UpdatedResource(input_policy.spec.name, 'policy')
     return update_response

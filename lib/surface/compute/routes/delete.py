@@ -27,9 +27,21 @@ from googlecloudsdk.command_lib.compute.routes import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete routes.
+  r"""Delete routes.
 
   *{command}* deletes one or more Google Compute Engine routes.
+
+  ## EXAMPLES
+
+  To delete a route with the name 'route-name', run:
+
+    $ {command} route-name
+
+  To delete two routes with the names 'route-name1' and 'route-name2',
+  run:
+
+    $ {command} route-name1 route-name2
+
   """
 
   ROUTE_ARG = None

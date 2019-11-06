@@ -45,7 +45,7 @@ def EpilogText(network_name):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Create a Google Compute Engine network.
+  r"""Create a Google Compute Engine network.
 
   *{command}* is used to create virtual networks. A network
   performs the same function that a router does in a home
@@ -53,6 +53,21 @@ class Create(base.CreateCommand):
   address, handles communication between instances, and serves
   as a gateway between instances and callers outside the
   network.
+
+  ## EXAMPLES
+
+  To create a regional auto subnet mode network with the name 'network-name',
+  run:
+
+    $ {command} network-name
+
+  To create a global custom subnet mode network with the name 'network-name',
+  run:
+
+    $ {command} network-name \
+      --bgp-routing-mode=global \
+      --subnet-mode=custom
+
   """
 
   NETWORK_ARG = None

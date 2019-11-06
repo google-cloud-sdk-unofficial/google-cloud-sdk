@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2015 Google LLC. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ class SetAutoscalingBeta(SetAutoscaling):
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
         parser=parser, autoscaling_file_enabled=True,
-        stackdriver_metrics_flags=True)
+        stackdriver_metrics_flags=True, mode_enabled=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -164,7 +164,7 @@ class SetAutoscalingBeta(SetAutoscaling):
         igm_ref, client)
 
     autoscaler_resource, is_new = self.CreateAutoscalerResource(
-        client, holder.resources, igm_ref, args)
+        client, holder.resources, igm_ref, args, mode_enabled=True)
 
     managed_instance_groups_utils.ValidateGeneratedAutoscalerIsValid(
         args, autoscaler_resource)

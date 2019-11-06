@@ -84,7 +84,7 @@ class DisableEnforce(interfaces.OrgPolicyGetAndUpdateCommand):
     Returns:
       The updated policy.
     """
-    if policy.rules:
+    if policy.spec.rules:
       unconditional_rules = org_policy_utils.GetMatchingRulesFromPolicy(
           policy, None)
       if not unconditional_rules:
@@ -94,7 +94,7 @@ class DisableEnforce(interfaces.OrgPolicyGetAndUpdateCommand):
         )
       unconditional_rule = unconditional_rules[0]
 
-      if args.condition is None and len(policy.rules) > 1:
+      if args.condition is None and len(policy.spec.rules) > 1:
         # Unconditional enforce value cannot be changed on policies with more
         # than one rule.
 
@@ -115,12 +115,12 @@ class DisableEnforce(interfaces.OrgPolicyGetAndUpdateCommand):
 
     new_policy = copy.deepcopy(policy)
 
-    if not new_policy.rules and args.condition is not None:
+    if not new_policy.spec.rules and args.condition is not None:
       unconditional_rule, new_policy = org_policy_utils.CreateRuleOnPolicy(
           new_policy, None)
       unconditional_rule.enforce = True
 
-    new_policy.rules = org_policy_utils.GetNonMatchingRulesFromPolicy(
+    new_policy.spec.rules = org_policy_utils.GetNonMatchingRulesFromPolicy(
         new_policy, args.condition)
 
     rule_to_update, new_policy = org_policy_utils.CreateRuleOnPolicy(

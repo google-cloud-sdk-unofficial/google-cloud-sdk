@@ -1,6 +1,10 @@
 - help_text:
     brief: Show details about the configuration of a project.
     description: Show details about the configuration of a project.
+    examples: |
+      To show the current configuration of the current project run:
+
+        $ {command}
 
   request:
     collection: sourcerepo.projects

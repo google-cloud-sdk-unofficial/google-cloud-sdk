@@ -52,6 +52,6 @@ class EnableInherit(interfaces.OrgPolicyGetAndUpdateCommand):
       The updated policy.
     """
     new_policy = copy.deepcopy(policy)
-    new_policy.inheritFromParent = True
+    new_policy.spec.inheritFromParent = True
 
     return new_policy

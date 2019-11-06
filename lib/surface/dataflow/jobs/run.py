@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataflow import apis
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
@@ -82,6 +83,13 @@ def _CommonArgs(parser):
       help=('The region ID of the job\'s regional endpoint. ' +
             dataflow_util.DEFAULT_REGION_MESSAGE))
 
+  parser.add_argument(
+      '--disable-public-ips',
+      action=actions.StoreBooleanProperty(
+          properties.VALUES.dataflow.disable_public_ips),
+      help='The Cloud Dataflow workers must not use public IP addresses.'
+  )
+
 
 def _CommonRun(args, support_beta_features=False):
   """Runs the command.
@@ -120,7 +128,9 @@ def _CommonRun(args, support_beta_features=False):
       worker_machine_type=worker_machine_type,
       network=network,
       subnetwork=subnetwork,
-      dataflow_kms_key=dataflow_kms_key)
+      dataflow_kms_key=dataflow_kms_key,
+      disable_public_ips=properties.VALUES.dataflow.disable_public_ips.GetBool(
+      ))
 
   return job
 

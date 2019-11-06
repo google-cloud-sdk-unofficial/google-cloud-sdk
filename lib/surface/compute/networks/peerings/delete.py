@@ -24,20 +24,30 @@ from googlecloudsdk.core import properties
 
 
 class Delete(base.DeleteCommand):
-  """Delete a Google Compute Engine network peering."""
+  r"""Delete a Google Compute Engine network peering.
+
+  *{command}* deletes a Google Compute Engine network peering.
+
+  ## EXAMPLES
+
+  To delete a network peering with the name 'peering-name' on the network
+  'local-network', run:
+
+    $ {command} peering-name \
+      --network=local-network
+
+  """
 
   @staticmethod
   def Args(parser):
 
-    parser.add_argument(
-        'name',
-        help='The name of the peering to delete.')
+    parser.add_argument('name', help='The name of the peering to delete.')
 
     parser.add_argument(
         '--network',
         required=True,
         help='The name of the network in the current project containing the '
-             'peering.')
+        'peering.')
 
   def Run(self, args):
     """Issues the request necessary for deleting the peering."""

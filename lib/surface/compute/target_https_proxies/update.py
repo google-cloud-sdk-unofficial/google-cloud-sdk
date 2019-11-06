@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -199,6 +200,9 @@ class Update(base.SilentCommand):
 
   def Run(self, args):
     _CheckMissingArgument(args)
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The target-https-proxies update command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.SSL_CERTIFICATES_ARG,
                 self.TARGET_HTTPS_PROXY_ARG, self.URL_MAP_ARG,

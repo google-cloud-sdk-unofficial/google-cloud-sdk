@@ -27,10 +27,17 @@ from googlecloudsdk.core.resource import resource_projector
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine network.
+  r"""Describe a Google Compute Engine network.
 
-    *{command}* displays all data associated with Google Compute
+  *{command}* displays all data associated with Google Compute
   Engine network in a project.
+
+  ## EXAMPLES
+
+  To describe a network with the name 'network-name', run:
+
+    $ {command} network-name
+
   """
 
   NETWORK_ARG = None

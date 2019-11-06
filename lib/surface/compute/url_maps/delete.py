@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
+from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -84,6 +85,9 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Issues requests necessary to delete URL maps."""
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The url-maps delete command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG)
 

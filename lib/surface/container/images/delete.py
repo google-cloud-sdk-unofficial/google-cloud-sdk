@@ -69,7 +69,7 @@ class Delete(base.DeleteCommand):
 
           Then, delete these tagless images without prompting by running:
 
-            $ {command} --quiet [HOSTNAME]/[PROJECT-ID]/[IMAGE]@DIGEST
+            $ {command} [HOSTNAME]/[PROJECT-ID]/[IMAGE]@DIGEST --quiet
 
       """,
   }

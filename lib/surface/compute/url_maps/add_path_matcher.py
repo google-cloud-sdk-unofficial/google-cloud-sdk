@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 import six
 
@@ -379,6 +380,9 @@ class AddPathMatcher(base.UpdateCommand):
     _Args(parser)
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The url-maps add-path-matcher command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG, self.BACKEND_SERVICE_ARG,
                 self.BACKEND_BUCKET_ARG)

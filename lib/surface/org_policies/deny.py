@@ -177,7 +177,7 @@ class Deny(interfaces.OrgPolicyGetAndUpdateCommand):
       rule_to_update.denyAll = None
 
     if rule_to_update.values is None:
-      rule_to_update.values = self.org_policy_messages.GoogleCloudOrgpolicyV2alpha1PolicyPolicyRuleStringValues(
+      rule_to_update.values = self.org_policy_messages.GoogleCloudOrgpolicyV2alpha1PolicySpecPolicyRuleStringValues(
       )
     rule_to_update.values.deniedValues += list(missing_values)
 
@@ -202,7 +202,7 @@ class Deny(interfaces.OrgPolicyGetAndUpdateCommand):
       The updated policy.
     """
     new_policy = copy.deepcopy(policy)
-    new_policy.rules = org_policy_utils.GetNonMatchingRulesFromPolicy(
+    new_policy.spec.rules = org_policy_utils.GetNonMatchingRulesFromPolicy(
         new_policy, args.condition)
 
     rule_to_update, new_policy = org_policy_utils.CreateRuleOnPolicy(

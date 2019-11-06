@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -158,6 +159,9 @@ class Create(base.CreateCommand):
         traffic_director_security=cls._traffic_director_security)
 
   def Run(self, args):
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      log.warning('The target-https-proxies create command will soon require '
+                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
         args, holder.resources)
