@@ -101,13 +101,18 @@ RoutineReference = bigquery_client.ApiClientHelper.RoutineReference
 EncryptionServiceAccount = (
     bigquery_client.ApiClientHelper.EncryptionServiceAccount)
 BigqueryClient = bigquery_client.BigqueryClient
+ApiClientHelper = bigquery_client.ApiClientHelper
 JobIdGenerator = bigquery_client.JobIdGenerator
 JobIdGeneratorIncrementing = bigquery_client.JobIdGeneratorIncrementing
 JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
+V1Beta1ReservationReference = bigquery_client.ApiClientHelper.V1Beta1ReservationReference
+V1Alpha2ReservationReference = bigquery_client.ApiClientHelper.V1Alpha2ReservationReference
 SlotPoolReference = bigquery_client.ApiClientHelper.SlotPoolReference
 ReservationGrantReference = bigquery_client.ApiClientHelper.ReservationGrantReference  # pylint: disable=line-too-long
+CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
+ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
 ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
 
 # pylint: enable=g-bad-name
@@ -2171,6 +2176,12 @@ class _Query(BigqueryCmd):
         sys.stdout.write('[')
       statements_printed = 0
       for (i, child_job_info) in enumerate(statement_child_jobs):
+        if (is_json and BigqueryClient.IsFailedJob(child_job_info) and
+            not BigqueryClient.IsFailedJob(job)):
+          # Skip failed jobs in json mode if the overall script job succeeds,
+          # so we can conform to the schema where we show only results, not
+          # error messages.
+          continue
         if statements_printed >= self.max_statement_results:
           if not is_json:
             sys.stdout.write('Maximum statement results limit reached. '
@@ -2208,11 +2219,13 @@ class _Query(BigqueryCmd):
 
   def PrintNonScriptQueryJobResults(self, client, job):
     printable_job_info = client.FormatJobInfo(job)
+    is_assert_job = job['statistics']['query']['statementType'] == 'ASSERT'
     if not BigqueryClient.IsFailedJob(job) and not _IsSuccessfulDmlOrDdlJob(
-        printable_job_info):
+        printable_job_info) and not is_assert_job:
       # ReadSchemaAndJobRows can handle failed jobs, but cannot handle
       # a successful DML job if the destination table is already deleted.
-      # DML and DDL do not have query result, so skip ReadSchemaAndJobRows.
+      # DML, DDL, and ASSERT do not have query result, so skip
+      # ReadSchemaAndJobRows.
       fields, rows = client.ReadSchemaAndJobRows(
           job['jobReference'], start_row=self.start_row, max_rows=self.max_rows)
       Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
@@ -2634,9 +2647,20 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'List all slot pools for the given reservation.',
         flag_values=fv)
     flags.DEFINE_boolean(
-        'reservation_grant', None,
-        'List all reservation grants for given project/location or '
+        'capacity_commitment',
+        None,
+        'Lists all capacity commitments (e.g. slots) for the given project and '
+        'location.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_grant',
+        None, 'List all reservation grants for given project/location or '
         'reservation.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_assignment',
+        None,
+        'List all reservation assignments for given project/location',
         flag_values=fv)
     flags.DEFINE_string(
         'parent_job_id',
@@ -2647,6 +2671,14 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
     flags.DEFINE_boolean(
         'connection', None,
         'List all connections for given project/location',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'reservation_version',
+        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
+        'Type of grantees for the reservation grant. Options include:'
+        '\n V1ALPHA2'
+        '\n V1BETA1'
+        'Used in conjuction with --reservation.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -2677,6 +2709,12 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       bq ls --reservation_grant --project_id=proj --location='us'
       bq ls --reservation_grant --project_id=proj --location='us' --reservation
           <reservation_ref>
+      bq ls --capacity_commitment --project_id=proj --location='us'
+      bq ls --reservation --project_id=proj --location='us'
+          --reservation_version='V1BETA1'
+      bq ls --reservation_assignment --project_id=proj --location='us'
+      bq ls --reservation_assignment --project_id=proj --location='us'
+          <reservation_id>
       bq ls --connection --project_id=proj --location=us
     """
 
@@ -2787,10 +2825,51 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to list reservation grants '%s': %s" % (identifier, e))
+    elif self.reservation_assignment:
+      try:
+        object_type = ReservationAssignmentReference
+        reference = client.GetReservationReference(
+            version='V1BETA1',
+            identifier=identifier if identifier else '-',
+            default_location=FLAGS.location,
+            default_reservation_id=' ')
+        response = client.ListReservationAssignments(reference,
+                                                     self.max_results,
+                                                     self.page_token)
+        if 'assignments' in response:
+          results = response['assignments']
+        else:
+          print('No reservation assignments found.')
+        if 'nextPageToken' in response:
+          _PrintPageToken(response)
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to list reservation assignments '%s': %s" % (identifier, e))
+    elif self.capacity_commitment:
+      try:
+        object_type = CapacityCommitmentReference
+        reference = client.GetCapacityCommitmentReference(
+            identifier=identifier,
+            default_location=FLAGS.location,
+            default_capacity_commitment_id=' ')
+        response = client.ListCapacityCommitments(reference, self.max_results,
+                                                  self.page_token)
+        if 'capacityCommitments' in response:
+          results = response['capacityCommitments']
+        else:
+          print('No capacity commitments found.')
+        if 'nextPageToken' in response:
+          _PrintPageToken(response)
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to list capacity commitments '%s': %s" % (identifier, e))
     elif self.reservation:
       if self.slot_pool:
         object_type = SlotPoolReference
-        reference = client.GetReservationReference(identifier, FLAGS.location)
+        reference = client.GetReservationReference(
+            version='V1ALPHA2',
+            identifier=identifier,
+            default_location=FLAGS.location)
         try:
           response = client.ListSlotPools(
               reference, self.max_results, self.page_token)
@@ -2805,9 +2884,15 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       else:
         bi_response = None
         response = []
-        object_type = ReservationReference
+        if self.reservation_version == 'V1ALPHA2':
+          object_type = V1Alpha2ReservationReference
+        else:
+          object_type = V1Beta1ReservationReference
         reference = client.GetReservationReference(
-            identifier, FLAGS.location, ' ')
+            version=self.reservation_version,
+            identifier=identifier,
+            default_location=FLAGS.location,
+            default_reservation_id=' ')
         try:
           bi_response = client.ListBiReservations(reference)
           if 'size' in bi_response:
@@ -2821,7 +2906,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
 
         try:
           response = client.ListReservations(
-              reference, self.max_results, self.page_token)
+              reference=reference,
+              page_size=self.max_results,
+              page_token=self.page_token,
+              version=self.reservation_version)
         except BaseException as e:
           if 'is disabled' not in e.message:
             raise bigquery_client.BigqueryError(
@@ -2985,7 +3073,17 @@ class _Delete(BigqueryCmd):
         'Deletes the slot pool described by this identifier.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'capacity_commitment',
+        None,
+        'Deletes the capacity commitment described by this identifier.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'reservation_grant', None, 'Delete a reservation grant.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_assignment',
+        None,
+        'Delete a reservation assignment.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'model',
@@ -3000,6 +3098,14 @@ class _Delete(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'connection', None, 'Delete a connection.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'reservation_version',
+        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
+        'Type of grantees for the reservation grant. Options include:'
+        '\n V1ALPHA2'
+        '\n V1BETA1'
+        'Used in conjuction with --reservation.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -3021,6 +3127,11 @@ class _Delete(BigqueryCmd):
       bq rm --transfer_config=projects/p/locations/l/transferConfigs/c
       bq rm --reservation_grant --project_id=proj --location=us query_proj_dev
       bq rm --connection --project_id=proj --location=us con
+      bq rm --capacity_commitment proj:US.capacity_commitment_id
+      bq rm --reservation --project_id=proj --location=us
+          --reservation_version='V1BETA1' reservation_name
+      bq rm --reservation_assignment --project_id=proj --location=us
+          assignment_name
     """
 
     client = Client.Get()
@@ -3055,8 +3166,12 @@ class _Delete(BigqueryCmd):
               "Failed to delete slot pool in '%s': %s" % (identifier, e))
       else:
         try:
-          reference = client.GetReservationReference(identifier, FLAGS.location)
-          client.DeleteReservation(reference, self.force)
+          reference = client.GetReservationReference(
+              version=self.reservation_version,
+              identifier=identifier,
+              default_location=FLAGS.location)
+          client.DeleteReservation(reference, self.force,
+                                   self.reservation_version)
           print("Reservation '%s' successfully deleted." % identifier)
         except BaseException as e:
           raise bigquery_client.BigqueryError(
@@ -3070,6 +3185,25 @@ class _Delete(BigqueryCmd):
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to delete reservation grant '%s': %s" % (identifier, e))
+    elif self.reservation_assignment:
+      try:
+        reference = client.GetReservationAssignmentReference(
+            identifier=identifier, default_location=FLAGS.location)
+        client.DeleteReservationAssignment(reference)
+        print("Reservation assignment '%s' successfully deleted." % identifier)
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to delete reservation assignment '%s': %s" %
+            (identifier, e))
+    elif self.capacity_commitment:
+      try:
+        reference = client.GetCapacityCommitmentReference(
+            identifier=identifier, default_location=FLAGS.location)
+        client.DeleteCapacityCommitment(reference)
+        print("Capacity commitment '%s' successfully deleted." % identifier)
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to delete capacity commitment '%s': %s" % (identifier, e))
     elif self.connection:
       reference = client.GetConnectionReference(
           identifier=identifier, default_location=FLAGS.location)
@@ -3501,6 +3635,19 @@ class _Make(BigqueryCmd):
         '[Experimental] Create materialized view with this Standard SQL query.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'enable_refresh',
+        None,
+        'Whether to enable automatic refresh of the materialized views when '
+        'the base table is updated. If not set, the default is true.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'refresh_interval_ms',
+        None,
+        'Milliseconds that must have elapsed since last refresh until the '
+        'materialized view can be automatically refreshed again. If not set, '
+        'the default value is "1800000" (30 minutes).',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'use_legacy_sql',
         None,
         ('Whether to use Legacy SQL for the view. If not set, the default '
@@ -3579,6 +3726,12 @@ class _Make(BigqueryCmd):
         'the parent reservation.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'use_idle_slots',
+        True,
+        'If true, any query running in this reservation will be able to use '
+        'idle slots from other reservations.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'reservation_grant',
         None,
         'Create a reservation grant.',
@@ -3586,22 +3739,25 @@ class _Make(BigqueryCmd):
     flags.DEFINE_enum(
         'job_type',
         None, ['QUERY', 'PIPELINE'],
-        'Type of jobs to create reservation grant for. Options include:'
+        'Type of jobs to create reservation assignment for. Options include:'
         '\n QUERY'
-        '\n PIPELINE',
+        '\n PIPELINE'
+        '\n Note if PIPELINE reservations are created, then load jobs will '
+        'just use the slots from this reservation and slots from shared pool '
+        'won\'t be used.',
         flag_values=fv)
     flags.DEFINE_string(
-        'reservation_id', None,
-        'Reservation ID used to create reservation grant for. '
-        'Used in conjuction with --reservation_grant.',
+        'reservation_id',
+        None, 'Reservation ID used to create reservation assignment for. '
+        'Used in conjuction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_enum(
         'grantee_type',
         None, ['PROJECT', 'FOLDER', 'ORGANIZATION'],
         'Type of grantees for the reservation grant. Options include:'
-        '\n PROJECTS'
-        '\n FOLDERS'
-        '\n ORGANIZATIONS'
+        '\n PROJECT'
+        '\n FOLDER'
+        '\n ORGANIZATION'
         'Used in conjuction with --reservation_grant.',
         flag_values=fv)
     flags.DEFINE_string(
@@ -3609,6 +3765,26 @@ class _Make(BigqueryCmd):
         None,
         'Project/folder/organization ID, to which the reservation is granted. '
         'Used in conjuction with --reservation_grant.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_assignment',
+        None,
+        'Create a reservation assignment.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'assignee_type',
+        None, ['PROJECT', 'FOLDER', 'ORGANIZATION'],
+        'Type of assignees for the reservation assignment. Options include:'
+        '\n PROJECT'
+        '\n FOLDER'
+        '\n ORGANIZATION'
+        'Used in conjuction with --reservation_assignment.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'assignee_id',
+        None,
+        'Project/folder/organization ID, to which the reservation is assigned. '
+        'Used in conjuction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'connection',
@@ -3638,6 +3814,14 @@ class _Make(BigqueryCmd):
         'Defines default KMS key name for all newly objects created in the '
         'dataset. Table/Model creation request can override this default.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'reservation_version',
+        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
+        'Type of grantees for the reservation grant. Options include:'
+        '\n V1ALPHA2'
+        '\n V1BETA1'
+        'Used in conjuction with --reservation.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -3664,12 +3848,20 @@ class _Make(BigqueryCmd):
           projects/p/locations/l/transferConfigs/c
       bq mk --transfer_run --run_time={run_time}
           projects/p/locations/l/transferConfigs/c
+      bq mk --reservation --project_id=project --location=us
+          --reservation_version='V1BETA1' reservation_name
       bq mk --reservation_grant --location=us
           --reservation_id=project:us.dev --job_type=QUERY
-          --grantee_type=PROJECTS grantee_id=myproject
+          --grantee_type=PROJECT grantee_id=myproject
       bq mk --reservation_grant --location=us
           --reservation_id=project:us.dev --job_type=QUERY
-          --grantee_type=FOLDERS grantee_id=123
+          --grantee_type=FOLDER grantee_id=123
+      bq mk --reservation_assignment --reservation_id=project:us.dev
+          --job_type=QUERY --assignee_type=PROJECT --assignee_id=myproject
+      bq mk --reservation_assignment --reservation_id=project:us.dev
+          --job_type=QUERY --assignee_type=FOLDER --assignee_id=123
+      bq mk --reservation_assignment --reservation_id=project:us.dev
+          --job_type=QUERY --assignee_type=ORGANIZATION --assignee_id=456
       bq mk --connection --connection_type='CLOUD_SQL'
         --properties='{"instanceId" : "instance",
         "database" : "db", "type" : "MYSQL" }'
@@ -3693,11 +3885,18 @@ class _Make(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.reservation:
       object_info = None
-      reference = client.GetReservationReference(identifier, FLAGS.location)
       if True:
+        reference = client.GetReservationReference(
+            version=self.reservation_version,
+            identifier=identifier,
+            default_location=FLAGS.location)
         try:
-          object_info = client.CreateReservation(reference, self.slots,
-                                                 self.use_parent)
+          object_info = client.CreateReservation(
+              reference=reference,
+              slots=self.slots,
+              use_idle_slots=self.use_idle_slots,
+              use_parent=self.use_parent,
+              version=self.reservation_version)
         except BaseException as e:
           raise bigquery_client.BigqueryError(
               "Failed to create reservation '%s': %s" % (identifier, e))
@@ -3719,6 +3918,24 @@ class _Make(BigqueryCmd):
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to create reservation grant '%s': %s" % (identifier, e))
+    elif self.reservation_assignment:
+      try:
+        reference = client.GetReservationReference(
+            version='V1BETA1',
+            default_location=FLAGS.location,
+            identifier=self.reservation_id)
+        object_info = client.CreateReservationAssignment(
+            reference=reference,
+            job_type=self.job_type,
+            assignee_type=self.assignee_type,
+            assignee_id=self.assignee_id)
+        reference = client.GetReservationAssignmentReference(
+            path=object_info['name'])
+        _PrintObjectInfo(object_info, reference, custom_format='show')
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to create reservation assignment '%s': %s" %
+            (identifier, e))
     elif self.transfer_config:
       transfer_client = client.GetTransferV1ApiClient()
       reference = 'projects/' + (client.GetProjectReference().projectId)
@@ -3902,6 +4119,8 @@ class _Make(BigqueryCmd):
           expiration=expiration,
           view_query=view_query_arg,
           materialized_view_query=materialized_view_query_arg,
+          enable_refresh=self.enable_refresh,
+          refresh_interval_ms=self.refresh_interval_ms,
           view_udf_resources=view_udf_resources,
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
@@ -3951,6 +4170,18 @@ class _Update(BigqueryCmd):
         'The number of slots associated with the reservation subtree rooted at '
         'this reservation node.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_assignment',
+        None,
+        'Updates a reservation assignment and so that the assignee will use a '
+        'new reservation.'
+        'Used in conjuction with --destination_reservation_id',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'destination_reservation_id',
+        None, 'Destination reservation ID'
+        'Used in conjuction with --reservation_assignment.',
+        flag_values=fv)
     flags.DEFINE_string(
         'reservation_size',
         None, 'BI reservation size. Can be specified in bytes '
@@ -3962,6 +4193,12 @@ class _Update(BigqueryCmd):
         None,
         'If true, any query using this reservation will also be submitted to '
         'the parent reservation.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'use_idle_slots',
+        None,
+        'If true, any query running in this reservation will be able to use '
+        'idle slots from other reservations.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'transfer_config',
@@ -4087,6 +4324,19 @@ class _Update(BigqueryCmd):
         None,
         'Standard SQL query of a materialized view.',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'enable_refresh',
+        None,
+        'Whether to enable automatic refresh of the materialized views when '
+        'the base table is updated. If not set, the default is true.',
+        flag_values=fv)
+    flags.DEFINE_integer(
+        'refresh_interval_ms',
+        None,
+        'Milliseconds that must have elapsed since last refresh until the '
+        'materialized view can be automatically refreshed again. If not set, '
+        'the default value is "1800000" (30 minutes).',
+        flag_values=fv)
     flags.DEFINE_string(
         'external_table_definition',
         None,
@@ -4188,6 +4438,14 @@ class _Update(BigqueryCmd):
         'Defines default KMS key name for all newly objects created in the '
         'dataset. Table/Model creation request can override this default.',
         flag_values=fv)
+    flags.DEFINE_enum(
+        'reservation_version',
+        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
+        'Type of grantees for the reservation grant. Options include:'
+        '\n V1ALPHA2'
+        '\n V1BETA1'
+        'Used in conjuction with --reservation.',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier='', schema=''):
@@ -4213,6 +4471,8 @@ class _Update(BigqueryCmd):
           projects/p/locations/l/transferConfigs/c
       bq update --reservation --location=US --project_id=my-project
           --reservation_size=2G
+      bq update --reservation_assignment --reservation_id=proj:US.reservation1
+          reservation2.<reservation_assignment_id>
       bq update --connection_credential='{"username":"u", "password":"p"}'
         --location=US --project_id=my-project existing_connection
     """
@@ -4237,13 +4497,42 @@ class _Update(BigqueryCmd):
                                                    self.reservation_size)
           print(object_info)
         else:
-          reference = client.GetReservationReference(identifier, FLAGS.location)
-          object_info = client.UpdateReservation(reference, self.slots,
-                                                 self.use_parent)
+          reference = client.GetReservationReference(
+              version=self.reservation_version,
+              identifier=identifier,
+              default_location=FLAGS.location)
+          object_info = client.UpdateReservation(
+              reference=reference,
+              slots=self.slots,
+              use_parent=self.use_parent,
+              use_idle_slots=self.use_idle_slots,
+              version=self.reservation_version)
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to update reservation '%s': %s" % (identifier, e))
+    elif self.reservation_assignment:
+      try:
+        reference = client.GetReservationAssignmentReference(
+            identifier=identifier, default_location=FLAGS.location)
+        object_info = client.MoveReservationAssignment(
+            reference=reference,
+            destination_reservation_id=FLAGS.destination_reservation_id,
+            default_location=FLAGS.location)
+        moved_reference = client.GetReservationAssignmentReference(
+            path=object_info['name'])
+        print(
+            'Moved assignment from reservation \'%s\' to \'%s\'' %
+            (reference.reservation_path(), moved_reference.reservation_path()))
+        _PrintObjectInfo(
+            object_info,
+            moved_reference,
+            custom_format='show',
+            print_reference=False)
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to update reservation assignment '%s': %s" %
+            (identifier, e))
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
     elif self.m:
@@ -4369,6 +4658,8 @@ class _Update(BigqueryCmd):
           expiration=expiration,
           view_query=view_query_arg,
           materialized_view_query=materialized_view_query_arg,
+          enable_refresh=self.enable_refresh,
+          refresh_interval_ms=self.refresh_interval_ms,
           view_udf_resources=view_udf_resources,
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
@@ -4594,9 +4885,54 @@ class _Show(BigqueryCmd):
         'Shows details for the slot pool described by this identifier.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'capacity_commitment',
+        None, 'Shows details for the capacity commitment described by this '
+        'identifier.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'reservation_assignment',
+        None, 'Looks up reservation assignments for a specified '
+        'project/folder/organization. Explicit reservation assignments will be '
+        'returned if exist. Otherwise implicit reservation assignments from '
+        'parents will be returned.'
+        'Used in conjuction with --job_type, --assignee_type and'
+        '--assignee_id.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'job_type',
+        None, ['QUERY', 'PIPELINE'],
+        'Type of jobs to search reservation assignment for. Options include:'
+        '\n QUERY'
+        '\n PIPELINE'
+        'Used in conjuction with --reservation_assignment.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'assignee_type',
+        None, ['PROJECT', 'FOLDER', 'ORGANIZATION'],
+        'Type of assignees for the reservation assignment. Options include:'
+        '\n PROJECT'
+        '\n FOLDER'
+        '\n ORGANIZATION'
+        'Used in conjuction with --reservation_assignment.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'assignee_id',
+        None,
+        'Project/folder/organization ID, to which the reservation is assigned. '
+        'Used in conjuction with --reservation_assignment.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'connection',
         None,
         'Shows details for the connection described by this identifier.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'reservation_version',
+        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
+        'Type of grantees for the reservation grant. Options include:'
+        '\n V1ALPHA2'
+        '\n V1BETA1'
+        'Used in conjuction with --reservation.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4615,11 +4951,21 @@ class _Show(BigqueryCmd):
       bq show --transfer_run projects/p/locations/l/transferConfigs/c/runs/r
       bq show --encryption_service_account
       bq show --connection --project_id=project --location=us connection
+      bq show --capacity_commitment project:US.capacity_commitment_id
+      bq show --reservation --location=US --project_id=project
+          --reservation_version='V1BETA1' reservation_name
+      bq show --reservation_assignment --project_id=project --location=US
+          --assignee_type=PROJECT --assignee_id=myproject --job_type=QUERY
+      bq show --reservation_assignment --project_id=project --location=US
+          --assignee_type=FOLDER --assignee_id=123 --job_type=QUERY
+      bq show --reservation_assignment --project_id=project --location=US
+          --assignee_type=ORGANIZATION --assignee_id=456 --job_type=QUERY
     """
     # pylint: disable=g-doc-exception
     client = Client.Get()
     custom_format = 'show'
     object_info = None
+    print_reference = True
     if self.j:
       reference = client.GetJobReference(identifier, FLAGS.location)
     elif self.d:
@@ -4655,8 +5001,27 @@ class _Show(BigqueryCmd):
             identifier=identifier, default_location=FLAGS.location)
         object_info = client.GetSlotPool(reference)
       else:
-        reference = client.GetReservationReference(identifier, FLAGS.location)
-        object_info = client.GetReservation(reference)
+        reference = client.GetReservationReference(
+            version=self.reservation_version,
+            identifier=identifier,
+            default_location=FLAGS.location)
+        object_info = client.GetReservation(reference, self.reservation_version)
+    elif self.reservation_assignment:
+      object_info = client.SearchReservationAssignments(
+          location=FLAGS.location,
+          job_type=FLAGS.job_type,
+          assignee_type=FLAGS.assignee_type,
+          assignee_id=FLAGS.assignee_id)
+      reference = ApiClientHelper.ReservationAssignmentReference.Create(
+          projectId=FLAGS.project_id,
+          location=FLAGS.location,
+          reservationId=' ',
+          reservationAssignmentId=' ')
+      print_reference = False
+    elif self.capacity_commitment:
+      reference = client.GetCapacityCommitmentReference(
+          identifier=identifier, default_location=FLAGS.location)
+      object_info = client.GetCapacityCommitment(reference)
     elif self.encryption_service_account:
       object_info = client.apiclient.projects().getServiceAccount(
           projectId=client.GetProjectReference().projectId).execute()
@@ -4674,7 +5039,11 @@ class _Show(BigqueryCmd):
 
     if object_info is None:
       object_info = client.GetObjectInfo(reference)
-    _PrintObjectInfo(object_info, reference, custom_format=custom_format)
+    _PrintObjectInfo(
+        object_info,
+        reference,
+        custom_format=custom_format,
+        print_reference=print_reference)
 
 
 def _IsSuccessfulDmlOrDdlJob(printable_job_info):
@@ -4748,9 +5117,15 @@ def _PrintJobMessages(printable_job_info):
         printable_job_info.get('DDL Operation Performed'))
     if project_id and dataset_id and routine_id and op:
       print('%s %s.%s.%s' % (op, project_id, dataset_id, routine_id))
+  elif 'Assertion' in printable_job_info:
+    print('Assertion successful')
 
 
-def _PrintObjectInfo(object_info, reference, custom_format):
+def _PrintObjectInfo(object_info,
+                     reference,
+                     custom_format,
+                     print_reference=True):
+  """Prints the object with various formats."""
   # The JSON formats are handled separately so that they don't print
   # the record as a list of one record.
   if custom_format == 'schema':
@@ -4769,7 +5144,7 @@ def _PrintObjectInfo(object_info, reference, custom_format):
     object_info = BigqueryClient.FormatInfoByType(object_info, type(reference))
     if object_info:
       formatter.AddDict(object_info)
-    if reference.typename:
+    if reference.typename and print_reference:
       print('%s %s\n' % (reference.typename.capitalize(), reference))
     formatter.Print()
     print()

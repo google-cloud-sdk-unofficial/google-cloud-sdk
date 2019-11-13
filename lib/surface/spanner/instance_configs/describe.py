@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
@@ -25,6 +27,19 @@ from googlecloudsdk.command_lib.spanner import flags
 
 class Describe(base.DescribeCommand):
   """Describe a Cloud Spanner instance config."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To describe an instance config named regional-us-central1, run:
+
+          $ {command} regional-us-central1
+
+        To describe an instance config named nam-eur-asia1, run:
+
+          $ {command} nam-eur-asia1
+        """),
+  }
 
   @staticmethod
   def Args(parser):

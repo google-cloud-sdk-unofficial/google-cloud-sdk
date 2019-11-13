@@ -33,6 +33,17 @@ class Create(base.CreateCommand):
   A registry may have at most 10 credentials.
   """
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To add a credential located in '/path/to/cert.pem' to a registry, run:
+
+            $ {command} --region=us-central1 --registry=my-registry --path=/path/to/cert.pem
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddRegistryResourceArg(parser,

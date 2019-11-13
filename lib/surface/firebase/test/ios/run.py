@@ -62,23 +62,21 @@ class Run(base.ListCommand):
           To invoke an XCTest lasting up to five minutes against the default
           device environment, run:
 
-            $ {command} --test XCTEST_ZIP --timeout 5m
+            $ {command} --test=XCTEST_ZIP --timeout=5m
 
           To invoke an XCTest against an iPad 5 running iOS 11.2, run:
 
-            $ {command} --test XCTEST_ZIP --device model=ipad5,version=11.2
+            $ {command} --test=XCTEST_ZIP --device=model=ipad5,version=11.2
 
           To run your tests against multiple iOS devices simultaneously, specify
           the *--device* flag more than once:
 
-            $ {command} --test XCTEST_ZIP \
-              --device model=iphone7 \
-              --device model=ipadmini4,version=11.2 \
-              --device model=iphonese
+            $ {command} --test=XCTEST_ZIP --device=model=iphone7
+            --device=model=ipadmini4,version=11.2 --device=model=iphonese
 
           To run your XCTest using a specific version of Xcode, say 9.4.1, run:
 
-            $ {command} --test XCTEST_ZIP --xcode-version=9.4.1
+            $ {command} --test=XCTEST_ZIP --xcode-version=9.4.1
 
           All test arguments for a given test may alternatively be stored in an
           argument group within a YAML-formatted argument file. The _ARG_FILE_
@@ -243,32 +241,30 @@ class RunBeta(Run):
           To invoke an XCTest lasting up to five minutes against the default
           device environment, run:
 
-            $ {command} --test XCTEST_ZIP --timeout 5m
+            $ {command} --test=XCTEST_ZIP --timeout=5m
 
           To invoke an XCTest against an iPad 5 running iOS 11.2, run:
 
-            $ {command} --test XCTEST_ZIP --device model=ipad5,version=11.2
+            $ {command} --test=XCTEST_ZIP --device=model=ipad5,version=11.2
 
           To run your tests against multiple iOS devices simultaneously, specify
           the *--device* flag more than once:
 
-            $ {command} --test XCTEST_ZIP \
-              --device model=iphone7 \
-              --device model=ipadmini4,version=11.2 \
-              --device model=iphonese
+            $ {command} --test=XCTEST_ZIP --device=model=iphone7
+            --device=model=ipadmini4,version=11.2 --device=model=iphonese
 
           To run your XCTest using a specific version of Xcode, say 9.4.1, run:
 
-            $ {command} --test XCTEST_ZIP --xcode-version=9.4.1
+            $ {command} --test=XCTEST_ZIP --xcode-version=9.4.1
 
           To run an iOS game loop, specify the *--type* and *--app* flags:
 
-            $ {command} --type game-loop --app app.ipa
+            $ {command} --type=game-loop --app=app.ipa
 
           To run an iOS game loop with specific scenario(s), use the
           *--scenario-numbers* flag:
 
-            $ {command} --type game-loop --app app.ipa --scenario-numbers 1,2,3
+            $ {command} --type=game-loop --app=app.ipa --scenario-numbers=1,2,3
 
           All test arguments for a given test may alternatively be stored in an
           argument group within a YAML-formatted argument file. The _ARG_FILE_

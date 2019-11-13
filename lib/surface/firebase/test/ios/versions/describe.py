@@ -26,6 +26,20 @@ from googlecloudsdk.calliope import base
 class Describe(base.DescribeCommand):
   """Describe an iOS operating system version."""
 
+  detailed_help = {
+      'DESCRIPTION': 'Describe an iOS operating system version.',
+      'EXAMPLES': """To describe an iOS operating system version available for
+testing, run:
+
+  {command} 12.1
+
+To describe an iOS operating system version available for testing in JSON
+format, run:
+
+  {command} 12.1 --format=json
+"""
+  }
+
   @staticmethod
   def Args(parser):
     """Method called by Calliope to register flags for this command.

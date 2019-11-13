@@ -27,30 +27,45 @@ from googlecloudsdk.command_lib.labelmanager import utils
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.Command):
-  """Describes a label key resource under the specified label parent.
+  """Describes a LabelKey resource.
 
-  ## EXAMPLES
-
-  To describe a label key with the name env under the organization/123 run:
-
-        $ gcloud alpha labelmanager keys describe env
-        --label_parent='organizations/123'
+    Gets metadata for a LabelKey resource given the LabelKey's display name
+    and parent or the LabelKey's numeric id.
   """
+
+  detailed_help = {
+      'EXAMPLES': """
+          To describe a label key with id 123 run:
+
+            $ {command} labelKeys/123
+
+          To describe a label key with the name env under the organization/123
+          run:
+
+            $ {command} env --label_parent='organizations/123'
+          """
+  }
 
   @staticmethod
   def Args(parser):
-    group = parser.add_argument_group('label key', required=True)
-    arguments.AddLabelParentArgToParser(group)
-    arguments.AddDisplayNameArgToParser(group)
+    group = parser.add_argument_group('LabelKey.')
+    arguments.AddLabelParentArgToParser(
+        group,
+        message=('This field is required if LABEL_KEY_ID is a display name '
+                 'instead of a numeric id.'))
+    arguments.AddLabelKeyIdArgToParser(group)
 
   def Run(self, args):
     labelkeys_service = labelmanager.LabelKeysService()
     labelmanager_messages = labelmanager.LabelManagerMessages()
 
-    display_name = args.DISPLAY_NAME
-    label_parent = args.label_parent
+    label_key_id = args.LABEL_KEY_ID
 
-    label_key = utils.GetLabelKeyDisplayName(display_name, label_parent)
+    if args.IsSpecified('label_parent'):
+      label_key = utils.GetLabelKeyFromDisplayName(label_key_id,
+                                                   args.label_parent)
+    else:
+      label_key = label_key_id
 
     get_request = labelmanager_messages.LabelmanagerLabelKeysGetRequest(
         name=label_key)

@@ -106,6 +106,7 @@ for examples.
   flags.AddAcceleratorArgs(parser)
   flags.AddDiskTypeFlag(parser)
   flags.AddMetadataFlags(parser)
+  flags.AddShieldedInstanceFlags(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -140,7 +141,9 @@ def ParseCreateNodePoolOptionsBase(args):
       disk_type=args.disk_type,
       metadata=metadata,
       max_pods_per_node=args.max_pods_per_node,
-      enable_autoprovisioning=args.enable_autoprovisioning)
+      enable_autoprovisioning=args.enable_autoprovisioning,
+      shielded_secure_boot=args.shielded_secure_boot,
+      shielded_integrity_monitoring=args.shielded_integrity_monitoring)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -159,10 +162,9 @@ class Create(base.CreateCommand):
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
-    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
+    flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
 
   def ParseCreateNodePoolOptions(self, args):
-    flags.WarnGAForFutureAutoUpgradeChange()
     return ParseCreateNodePoolOptionsBase(args)
 
   def Run(self, args):
@@ -237,7 +239,6 @@ class CreateBeta(Create):
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
     flags.AddSandboxFlag(parser)
     flags.AddNodePoolLocationsFlag(parser, for_create=True)
-    flags.AddShieldedInstanceFlags(parser)
     flags.AddSurgeUpgradeFlag(parser, for_node_pool=True, default=1)
     flags.AddMaxUnavailableUpgradeFlag(parser, for_node_pool=True,
                                        is_create=True)
@@ -249,8 +250,6 @@ class CreateBeta(Create):
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.sandbox = args.sandbox
     ops.node_locations = args.node_locations
-    ops.shielded_secure_boot = args.shielded_secure_boot
-    ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     return ops
@@ -272,8 +271,6 @@ class CreateAlpha(Create):
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.node_locations = args.node_locations
-    ops.shielded_secure_boot = args.shielded_secure_boot
-    ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
     ops.node_config = args.node_config
     return ops
 
@@ -298,7 +295,6 @@ class CreateAlpha(Create):
     flags.AddMaxUnavailableUpgradeFlag(parser, for_node_pool=True,
                                        is_create=True)
     flags.AddNodePoolLocationsFlag(parser, for_create=True)
-    flags.AddShieldedInstanceFlags(parser)
     flags.AddNodeConfigFlag(parser)
 
 

@@ -42,7 +42,7 @@ class GetIamPolicy(base.ListCommand):
           """\
           To print the IAM policy for a given device registry, run:
 
-            $ {command} --region us-central1 my-registry
+            $ {command} --region=us-central1 my-registry
           """,
   }
 

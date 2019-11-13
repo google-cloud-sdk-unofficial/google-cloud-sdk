@@ -25,6 +25,8 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
+from googlecloudsdk.command_lib.compute.ssh_utils import GetExternalIPAddress
+from googlecloudsdk.command_lib.compute.ssh_utils import GetInternalIPAddress
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
@@ -143,8 +145,14 @@ class Start(base.SilentCommand):
             i.Name() for i in instance_refs)),
         max_wait_ms=None)
 
-    for instance_ref in instance_refs:
+    for instance_ref, res in zip(instance_refs, result):
       log.status.Print('Updated [{0}].'.format(instance_ref))
+
+      log.status.Print('Instance internal IP is {0}'.format(
+          GetInternalIPAddress(res)))
+      if GetExternalIPAddress(res):
+        log.status.Print('Instance external IP is {0}'.format(
+            GetExternalIPAddress(res)))
 
     return result
 

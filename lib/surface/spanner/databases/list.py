@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
@@ -25,6 +27,15 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 class List(base.ListCommand):
   """List the Cloud Spanner databases contained within the given instance."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To list the Cloud Spanner databases in an instance, run:
+
+          $ {command} --instance=my-instance-id
+        """),
+  }
 
   @staticmethod
   def Args(parser):

@@ -41,7 +41,7 @@ class SetIamPolicy(base.Command):
   """
 
   detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(
-      'device registry', 'my-registry', additional_flags='--region us-central1')
+      'device registry', 'my-registry', additional_flags='--region=us-central1')
 
   @staticmethod
   def Args(parser):

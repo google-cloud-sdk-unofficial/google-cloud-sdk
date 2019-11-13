@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -29,7 +28,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a revision."""
 
@@ -46,26 +45,13 @@ class Delete(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
     revision_presentation = presentation_specs.ResourcePresentationSpec(
         'REVISION',
         resource_args.GetRevisionResourceSpec(),
         'Revision to delete.',
         required=True,
         prefixes=False)
-    concept_parsers.ConceptParser([
-        revision_presentation]).AddToParser(parser)
-    flags.AddPlatformArg(parser)
+    concept_parsers.ConceptParser([revision_presentation]).AddToParser(parser)
 
   @staticmethod
   def Args(parser):

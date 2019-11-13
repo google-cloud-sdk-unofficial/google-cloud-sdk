@@ -35,7 +35,7 @@ class List(base.ListCommand):
 
           To filter the locales to see only Spanish-speaking regions, run:
 
-            $ {command} --filter Spanish
+            $ {command} --filter=Spanish
           """,
   }
 

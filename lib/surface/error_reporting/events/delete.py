@@ -56,11 +56,14 @@ class Delete(base.DeleteCommand):
                      'the deleted error events stop being visible.')
 
 Delete.detailed_help = {
-    'DESCRIPTION': """\
-        {index}
+    'DESCRIPTION': """        {index}
        All error events which are stored for the given project are deleted and
        the error counters are reset to zero. If you're subscribed to error
        notifications for the project, then you receive notifications of the
        reoccurrence of errors that were previously resolved.
+    """,
+    'EXAMPLES': """        To delete all errors, run:
+
+          $ {command}
     """,
 }

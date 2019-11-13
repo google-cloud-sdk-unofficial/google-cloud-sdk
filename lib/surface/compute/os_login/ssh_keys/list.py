@@ -66,5 +66,20 @@ class List(base.ListCommand):
 
 List.detailed_help = {
     'brief': 'List SSH public keys from an OS Login profile.',
+    'DESCRIPTION': """
+      *{command}* lists the SSH public keys in an OS Login profile. By
+      default, the command only displays the fingerprints and experation
+      time for the keys. Additional data can be displayed using the `--format`
+      flag.
+    """,
+    'EXAMPLES': """
+      To list the keys in your OS Login profile, run:
+
+        $ {command}
+
+      To show all of the SSH public key information, in YAML format, run:
+
+        $ {command} --format=yaml
+    """,
 }
 

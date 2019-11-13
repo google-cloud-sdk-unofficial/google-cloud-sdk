@@ -57,9 +57,23 @@ class Add(base.Command):
 Add.detailed_help = {
     'brief': 'Add an SSH public key to an OS Login profile.',
     'DESCRIPTION': """\
-      *{command}* will take either a string containing an SSH public
-      key or a filename for an SSH public key and will add that key to the
+      *{command}* accepts either a string containing an SSH public
+      key or a filename for an SSH public key and adds that key to the
       user's OS Login profile.
-    """
+    """,
+    'EXAMPLES': """
+      To add the key in `/home/user/.ssh/id_rsa.pub` to your OS Login profile,
+      run:
+
+        $ {command} --key-file=/home/user/.ssh/id_rsa.pub
+
+      To add the same key, but with a one year expiration time, run:
+
+        $ {command} --key-file=/home/user/.ssh/id_rsa.pub --ttl=1y
+
+      To add a key not stored in a file, run:
+
+        $ {command} --key='ssh-rsa AAAAB3NzaC1yc2EAAA...MTg+InRG47+/O4/uWEOy6gIQEF user@example.com'
+    """,
 }
 

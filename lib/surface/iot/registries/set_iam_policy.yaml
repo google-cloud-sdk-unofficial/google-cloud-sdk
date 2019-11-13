@@ -16,7 +16,7 @@
       'policy.json' and set it for a device registry with identifier
       'my-registry'
 
-        $ {command} --region us-central1 my-registry policy.json
+        $ {command} --region=us-central1 my-registry policy.json
 
       See https://cloud.google.com/iam/docs/managing-policies for details of the
       policy file format and contents.

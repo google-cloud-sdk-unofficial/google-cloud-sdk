@@ -87,11 +87,11 @@ def _Run(args, holder, url_map_arg, release_track):
         schema_path=_GetSchemaPath(release_track))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ExportBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Export(base.Command):
   """Export a URL map."""
 
-  _include_l7_internal_load_balancing = True
+  _include_l7_internal_load_balancing = False
 
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
@@ -108,6 +108,11 @@ class ExportBeta(base.Command):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG, self.ReleaseTrack())
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ExportBeta(Export):
+  _include_l7_internal_load_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

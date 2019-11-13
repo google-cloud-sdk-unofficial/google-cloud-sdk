@@ -33,7 +33,6 @@ import six
 
 
 def _Args(parser, release_track, supports_force_create=False,
-          supports_storage_location=False,
           supports_shielded_instance_initial_state=False):
   """Set Args based on Release Track."""
   # GA Args
@@ -60,15 +59,14 @@ def _Args(parser, release_track, supports_force_create=False,
     # Deprecated as of Aug 2017.
     flags.MakeForceCreateArg().AddToParser(parser)
 
-  if supports_storage_location:
-    parser.add_argument(
-        '--storage-location',
-        metavar='LOCATION',
-        help="""\
-      Google Cloud Storage location, either regional or multi-regional, where
-      image content is to be stored. If absent, the multi-region location
-      closest to the source is chosen automatically.
-      """)
+  parser.add_argument(
+      '--storage-location',
+      metavar='LOCATION',
+      help="""\
+    Specifies a Cloud Storage location, either regional or multi-regional,
+    where image content is to be stored. If not specified, the multi-region
+    location closest to the source is chosen automatically.
+    """)
 
   if supports_shielded_instance_initial_state:
     compute_flags.AddShieldedInstanceInitialStateKeyArg(parser)
@@ -88,7 +86,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args, supports_storage_location=False,
+  def _Run(self, args,
            supports_shielded_instance_initial_state=False):
     """Returns a list of requests necessary for adding images."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -178,7 +176,7 @@ class Create(base.CreateCommand):
       if has_set:
         image.shieldedInstanceInitialState = initial_state
 
-    if (supports_storage_location and args.IsSpecified('storage_location')):
+    if args.IsSpecified('storage_location'):
       image.storageLocations = [args.storage_location]
 
     request = messages.ComputeImagesInsertRequest(
@@ -213,12 +211,11 @@ class CreateBeta(Create):
   def Args(cls, parser):
     _Args(parser,
           cls.ReleaseTrack(),
-          supports_force_create=True,
-          supports_storage_location=True)
+          supports_force_create=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args, supports_storage_location=True)
+    return self._Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -232,12 +229,11 @@ class CreateAlpha(Create):
     _Args(parser,
           cls.ReleaseTrack(),
           supports_force_create=True,
-          supports_storage_location=True,
           supports_shielded_instance_initial_state=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args, supports_storage_location=True,
+    return self._Run(args,
                      supports_shielded_instance_initial_state=True)
 
 
@@ -260,6 +256,26 @@ Create.detailed_help = {
 
         To learn more about creating image tarballs, visit
         [](https://cloud.google.com/compute/docs/creating-custom-image)
+        """,
+    'EXAMPLES':
+        """\
+        To create an image 'my-image' from a disk 'my-disk' in zone 'us-east1-a', run:
+
+            $ {command} my-image --source-disk=my-disk --source-disk-zone=us-east1-a
+
+        To create an image 'my-image' from another image 'source-image'
+        with source image project 'source-image-project', run:
+
+            $ {command} my-image --source-image=source-image --source-image-project=source-image-project
+
+        To create an image 'my-image' from the latest non-deprecated image in the family 'source-image-family'
+        with source image project 'source-image-project', run:
+
+            $ {command} my-image --source-image-family=source-image-family --source-image-project=source-image-project
+
+        To create an image 'my-image' from a snapshot 'source-snapshot', run:
+
+            $ {command} my-image --source-snapshot=source-snapshot
         """,
 }
 

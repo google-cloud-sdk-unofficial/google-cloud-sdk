@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -45,17 +44,6 @@ class Delete(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
     domain_mapping_presentation = presentation_specs.ResourcePresentationSpec(
         '--domain',
         resource_args.GetDomainMappingResourceSpec(),
@@ -64,7 +52,6 @@ class Delete(base.Command):
         prefixes=False)
     concept_parsers.ConceptParser([
         domain_mapping_presentation]).AddToParser(parser)
-    flags.AddPlatformArg(parser)
 
   @staticmethod
   def Args(parser):

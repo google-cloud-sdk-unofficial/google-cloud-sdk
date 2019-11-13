@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
@@ -25,6 +27,15 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 class List(base.ListCommand):
   """List the Cloud Spanner sessions contained within the given database."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To list the sessions for a given Cloud Spanner database, run:
+
+          $ {command} --instance=my-instance-id --database=my-database-id
+        """),
+  }
 
   @staticmethod
   def Args(parser):

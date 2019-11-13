@@ -198,7 +198,7 @@ class ListBeta(List):
 List.detailed_help = base_classes.GetGlobalRegionalListerHelp('operations')
 ListBeta.detailed_help = {
     'brief': 'List Google Compute Engine operations',
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* displays all Google Compute Engine operations in a
         project.
 
@@ -209,7 +209,7 @@ ListBeta.detailed_help = {
         Note: *{command}* displays operations fewer than 14 days old, up to a
         maximum of 5000.
         """,
-    'EXAMPLES': """\
+    'EXAMPLES': """
         To list all operations in a project in table form, run:
 
           $ {command}
@@ -221,7 +221,7 @@ ListBeta.detailed_help = {
         To list all operations in zones us-central1-b and
         europe-west1-d, run:
 
-           $ {command} --zones us-central1-b,europe-west1-d
+           $ {command} --zones=us-central1-b,europe-west1-d
 
         To list all global operations in a project, run:
 
@@ -229,7 +229,7 @@ ListBeta.detailed_help = {
 
         To list all regional operations in a project, run:
 
-           $ {command} --regions ""
+           $ {command} --regions=""
 
         To list all operations with names prefixed with `operation`, run:
 
@@ -238,7 +238,7 @@ ListBeta.detailed_help = {
         To list all operations in the us-central1 and europe-west1
         regions and all operations in the us-central1-a zone, run:
 
-           $ {command} --zones us-central1-a --regions us-central1,europe-west1
+           $ {command} --zones=us-central1-a --regions=us-central1,europe-west1
 
         To list all operations with a specified target, filter on the targetLink
         field (run `{command} --format=json` to see a full, well-structured list

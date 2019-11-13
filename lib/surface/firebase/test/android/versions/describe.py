@@ -27,6 +27,20 @@ from googlecloudsdk.calliope import base
 class Describe(base.DescribeCommand):
   """Describe an Android OS version."""
 
+  detailed_help = {
+      'DESCRIPTION': 'Describe an Android OS version.',
+      'EXAMPLES': """To describe an Android OS version available for testing,
+run:
+
+  {command} Q
+
+To describe an Android OS version available for testing in JSON format,
+run:
+
+  {command} Q --format=json
+"""
+  }
+
   @staticmethod
   def Args(parser):
     """Method called by Calliope to register flags for this command.

@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.calliope import base
@@ -26,6 +28,20 @@ from googlecloudsdk.command_lib.spanner import flags
 
 class Describe(base.DescribeCommand):
   """Describe a Cloud Spanner operation."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To describe a Cloud Spanner instance operation, run:
+
+          $ {command} _auto_12345 --instance=my-instance-id
+
+        To describe a Cloud Spanner database operation, run:
+
+          $ {command}  _auto_12345 --instance=my-instance-id
+              --database=my-database-id
+        """),
+  }
 
   @staticmethod
   def Args(parser):

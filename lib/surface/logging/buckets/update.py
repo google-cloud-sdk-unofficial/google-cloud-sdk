@@ -77,7 +77,8 @@ class Update(base.UpdateCommand):
         util.GetMessages().LoggingProjectsLocationsBucketsPatchRequest(
             name=util.CreateResourceName(
                 util.CreateResourceName(
-                    util.GetProjectResource().RelativeName(), 'locations',
+                    util.GetProjectResource(args.project).RelativeName(),
+                    'locations',
                     args.location),
                 'buckets', args.BUCKET_ID),
             logBucket=util.GetMessages().LogBucket(**bucket_data),

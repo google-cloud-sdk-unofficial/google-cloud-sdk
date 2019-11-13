@@ -75,20 +75,6 @@ class AdjustTraffic(base.Command):
 
   @staticmethod
   def Args(parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
-
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-
-    # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(prompt=True),
@@ -98,7 +84,6 @@ class AdjustTraffic(base.Command):
     flags.AddAsyncFlag(parser)
     flags.AddUpdateTrafficFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
-    flags.AddPlatformArg(parser)
 
   def _SetFormat(self, args):
     """Set display format for output.

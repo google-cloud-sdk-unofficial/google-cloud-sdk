@@ -3,6 +3,14 @@
   help_text:
     brief: Update a Cloud Spanner instance.
     description: Update a Cloud Spanner instance.
+    examples: |
+      To update the display name of a Cloud Spanner instance, run:
+
+        $ {command} my-instance-id --description=my-new-display-name
+
+      To update the node count of a Cloud Spanner instance, run:
+
+        $ {command} my-instance-id --nodes=1
 
   arguments:
     resource:

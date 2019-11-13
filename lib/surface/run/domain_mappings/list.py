@@ -46,16 +46,6 @@ class List(commands.List):
 
   @classmethod
   def CommonArgs(cls, parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArgWithDefault(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
@@ -66,8 +56,7 @@ class List(commands.List):
         prefixes=False)
     concept_parsers.ConceptParser(
         [namespace_presentation]).AddToParser(cluster_group)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
+
     parser.display_info.AddFormat(
         """table(
         {ready_column},

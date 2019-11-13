@@ -34,16 +34,16 @@ class Update(base.SilentCommand):
   local workstation.
   """
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': """
           {description}
 
           The command lists all components it is about to update, and asks for
           confirmation before proceeding.
 
           By default, this command will update all components to their latest
-          version. This can be configured by using the --version flag to choose
-          a specific version to update to. This version may also be a version
-          older than the one that is currently installed.
+          version. This can be configured by using the `--version` flag to
+          choose a specific version to update to. This version may also be a
+          version older than the one that is currently installed.
 
           You can see your current Cloud SDK version by running:
 
@@ -56,14 +56,14 @@ class Update(base.SilentCommand):
           If you run this command without the `--version` flag and you already
           have the latest version installed, no update will be performed.
       """,
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To update all installed components to the latest version:
 
             $ {command}
 
           To update all installed components to version 1.2.3:
 
-            $ {command} --version 1.2.3
+            $ {command} --version=1.2.3
       """,
   }
 

@@ -41,7 +41,7 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing):
+def _Args(parser, include_l7_internal_load_balancing, include_log_config):
   """Set up arguments to create a HTTP HealthCheck."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
   flags.HealthCheckArgument(
@@ -52,12 +52,15 @@ def _Args(parser, include_l7_internal_load_balancing):
   health_checks_utils.AddHttpRelatedCreationArgs(parser)
   health_checks_utils.AddProtocolAgnosticCreationArgs(parser, 'HTTP')
   health_checks_utils.AddHttpRelatedResponseArg(parser)
+  if include_log_config:
+    health_checks_utils.AddHealthCheckLoggingRelatedArgs(parser)
+
   parser.display_info.AddCacheUpdater(
       completers.HealthChecksCompleterAlpha if
       include_l7_internal_load_balancing else completers.HealthChecksCompleter)
 
 
-def _Run(args, holder, include_l7_internal_load_balancing):
+def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   """Issues the request necessary for adding the health check."""
   client = holder.client
   messages = client.messages
@@ -106,6 +109,11 @@ def _Run(args, holder, include_l7_internal_load_balancing):
             unhealthyThreshold=args.unhealthy_threshold),
         project=health_check_ref.project)
     collection = client.apitools_client.healthChecks
+
+  if include_log_config:
+    request.healthCheck.logConfig = health_checks_utils.CreateLogConfig(
+        client, args)
+
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
@@ -116,17 +124,20 @@ class Create(base.CreateCommand):
   detailed_help = _DetailedHelp()
 
   _include_l7_internal_load_balancing = False
+  _include_log_config = False
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_l7_internal_load_balancing)
+    _Args(parser, cls._include_l7_internal_load_balancing,
+          cls._include_log_config)
 
   def Run(self, args):
     if self.ReleaseTrack() == base.ReleaseTrack.GA:
       log.warning('The health-checks create http command will soon require '
                   'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_l7_internal_load_balancing)
+    return _Run(args, holder, self._include_l7_internal_load_balancing,
+                self._include_log_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -137,4 +148,5 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  pass
+
+  _include_log_config = True

@@ -57,7 +57,7 @@ def AddSSHArgs(parser):
       replace occurences of ``%USER%'' and ``%INSTANCE%'' with their
       dereferenced values. Example:
 
-        $ {command} example-instance --zone us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:%INSTANCE%:80"
+        $ {command} example-instance --zone=us-central1-a --ssh-flag="-vvv" --ssh-flag="-L 80:%INSTANCE%:80"
 
       is equivalent to passing the flags ``--vvv'' and ``-L
       80:162.222.181.197:80'' to *ssh(1)* if the external IP address of
@@ -88,7 +88,7 @@ def AddSSHArgs(parser):
           Flags and positionals passed to the underlying ssh implementation.
           """,
       example="""\
-        $ {command} example-instance --zone us-central1-a -- -vvv -L 80:%INSTANCE%:80
+        $ {command} example-instance --zone=us-central1-a -- -vvv -L 80:%INSTANCE%:80
       """)
 
 
@@ -295,7 +295,7 @@ def DetailedHelp():
         a firewall-rule:
 
           $ gcloud compute firewall-rules create --network=NETWORK \
-            default-allow-ssh --allow tcp:22
+            default-allow-ssh --allow=tcp:22
 
         {command} ensures that the user's public SSH key is present
         in the project's metadata. If the user does not have a public
@@ -305,26 +305,26 @@ def DetailedHelp():
       'EXAMPLES': """\
         To SSH into 'example-instance' in zone ``us-central1-a'', run:
 
-          $ {command} example-instance --zone us-central1-a
+          $ {command} example-instance --zone=us-central1-a
 
         You can also run a command on the virtual machine. For
         example, to get a snapshot of the guest's process tree, run:
 
-          $ {command} example-instance --zone us-central1-a --command "ps -ejH"
+          $ {command} example-instance --zone=us-central1-a --command="ps -ejH"
 
         If you are using the Google Container-Optimized virtual machine image,
         you can SSH into one of your containers with:
 
-          $ {command} example-instance --zone us-central1-a --container CONTAINER
+          $ {command} example-instance --zone=us-central1-a --container=CONTAINER
 
         You can limit the allowed time to ssh. For example, to allow a key to be
         used through 2019:
 
-          $ {command} example-instance --zone us-central1-a --ssh-key-expiration "2020-01-01T00:00:00:00Z"
+          $ {command} example-instance --zone=us-central1-a --ssh-key-expiration="2020-01-01T00:00:00:00Z"
 
         Or alternatively, allow access for the next two minutes:
 
-          $ {command} example-instance --zone us-central1-a --ssh-key-expire-after 2m
+          $ {command} example-instance --zone=us-central1-a --ssh-key-expire-after=2m
         """,
   }
   return detailed_help

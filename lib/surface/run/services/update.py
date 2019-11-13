@@ -32,7 +32,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings.
   """
@@ -44,7 +44,7 @@ class Update(base.Command):
       'EXAMPLES': """\
           To update one or more env vars:
 
-              $ {command} myservice --update-env-vars KEY1=VALUE1,KEY2=VALUE2
+              $ {command} myservice --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
          """,
   }
 
@@ -52,20 +52,14 @@ class Update(base.Command):
   def CommonArgs(parser):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
     flags.AddServiceAccountFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
+
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddCpuFlag(cluster_group)
+
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
@@ -73,7 +67,6 @@ class Update(base.Command):
         'Service to update the configuration of.',
         required=True,
         prefixes=False)
-    flags.AddPlatformArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
     flags.AddConcurrencyFlag(parser)
@@ -148,15 +141,18 @@ class AlphaUpdate(Update):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
+
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcConnectorArg(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
+
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
     flags.AddHttp2Flag(cluster_group)
+
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddCommandFlag(parser)

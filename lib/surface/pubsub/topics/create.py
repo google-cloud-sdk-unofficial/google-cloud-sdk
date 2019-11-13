@@ -61,40 +61,30 @@ def _GetTopicPresentationSpec():
       'to create.', positional=True, plural=True)
 
 
-def _Run(args,
-         enable_labels=False,
-         legacy_output=False,
-         enable_kms=False,
-         enable_geofencing=False):
+def _Run(args, legacy_output=False):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
-  labels = None
-  if enable_labels:
-    labels = labels_util.ParseCreateArgs(args,
-                                         client.messages.Topic.LabelsValue)
-  kms_key = None
-  if enable_kms:
-    kms_ref = args.CONCEPTS.kms_key.Parse()
-    if kms_ref:
-      kms_key = kms_ref.RelativeName()
-    else:
-      # Did user supply any topic-encryption-key flags?
-      for keyword in [
-          'topic-encryption-key', 'topic-encryption-key-project',
-          'topic-encryption-key-location', 'topic-encryption-key-keyring'
-      ]:
-        if args.IsSpecified(keyword.replace('-', '_')):
-          raise core_exceptions.Error(
-              '--topic-encryption-key was not fully specified.')
+  labels = labels_util.ParseCreateArgs(args, client.messages.Topic.LabelsValue)
 
-  message_storage_policy_allowed_regions = None
-  if enable_geofencing:
-    message_storage_policy_allowed_regions = args.message_storage_policy_allowed_regions
+  kms_key = None
+  kms_ref = args.CONCEPTS.kms_key.Parse()
+  if kms_ref:
+    kms_key = kms_ref.RelativeName()
+  else:
+    # Did user supply any topic-encryption-key flags?
+    for keyword in [
+        'topic-encryption-key', 'topic-encryption-key-project',
+        'topic-encryption-key-location', 'topic-encryption-key-keyring'
+    ]:
+      if args.IsSpecified(keyword.replace('-', '_')):
+        raise core_exceptions.Error(
+            '--topic-encryption-key was not fully specified.')
+
+  message_storage_policy_allowed_regions = args.message_storage_policy_allowed_regions
 
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
-
     try:
       result = client.Create(
           topic_ref,
@@ -144,8 +134,7 @@ class Create(base.CreateCommand):
         ' be stored at rest.')
 
   def Run(self, args):
-    return _Run(
-        args, enable_labels=True, enable_kms=True, enable_geofencing=True)
+    return _Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -154,12 +143,7 @@ class CreateBeta(Create):
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(
-        args,
-        enable_labels=True,
-        enable_kms=True,
-        enable_geofencing=True,
-        legacy_output=legacy_output)
+    return _Run(args, legacy_output=legacy_output)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

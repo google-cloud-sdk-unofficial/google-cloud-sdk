@@ -111,7 +111,7 @@ def GetSuccessMessageForSynchronousDeploy(operations, service_ref):
       latest_percent_traffic=latest_percent_traffic)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Deploy a container to Cloud Run."""
 
@@ -122,16 +122,16 @@ class Deploy(base.Command):
       'EXAMPLES': """\
           To deploy a container to the service `my-backend` on Cloud Run:
 
-              $ {command} my-backend --image gcr.io/my/image
+              $ {command} my-backend --image=gcr.io/my/image
 
           You may also omit the service name. Then a prompt will be displayed
           with a suggested default value:
 
-              $ {command} --image gcr.io/my/image
+              $ {command} --image=gcr.io/my/image
 
           To deploy to Cloud Run on Kubernetes Engine, you need to specify a cluster:
 
-              $ {command} --image gcr.io/my/image --cluster my-cluster
+              $ {command} --image=gcr.io/my/image --cluster=my-cluster
           """,
   }
 
@@ -139,21 +139,15 @@ class Deploy(base.Command):
   def CommonArgs(parser):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
     flags.AddAllowUnauthenticatedFlag(managed_group)
     flags.AddServiceAccountFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
+
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
     flags.AddCpuFlag(cluster_group)
+
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
@@ -162,7 +156,6 @@ class Deploy(base.Command):
         required=True,
         prefixes=False)
     flags.AddImageArg(parser)
-    flags.AddPlatformArg(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
@@ -226,14 +219,17 @@ class AlphaDeploy(Deploy):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddRevisionSuffixArg(managed_group)
+
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddSecretsFlags(cluster_group)
     flags.AddConfigMapsFlags(cluster_group)
     flags.AddHttp2Flag(cluster_group)
+
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddCommandFlag(parser)

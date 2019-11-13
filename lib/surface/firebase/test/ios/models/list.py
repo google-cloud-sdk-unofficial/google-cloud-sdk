@@ -27,6 +27,15 @@ from googlecloudsdk.core import log
 class List(base.ListCommand):
   """List all iOS models available for testing."""
 
+  detailed_help = {
+      'DESCRIPTION': 'List all iOS models available for testing.',
+      'EXAMPLES': """
+To list all iOS models available for testing, run:
+
+  {command}
+"""
+  }
+
   @staticmethod
   def Args(parser):
     """Method called by Calliope to register flags for this command.

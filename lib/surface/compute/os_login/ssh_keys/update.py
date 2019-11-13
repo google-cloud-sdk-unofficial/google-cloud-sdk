@@ -67,10 +67,22 @@ class Update(base.Command):
 Update.detailed_help = {
     'brief': 'Update an SSH public key in an OS Login profile.',
     'DESCRIPTION': """\
-      *{command}* will take either a string containing an SSH public
-      key or a filename for an SSH public key and will update the key
+      *{command}* accepts either a string containing an SSH public
+      key or a filename for an SSH public key, and updates the key
       in the user's OS Login profile. Currently, only the expiration time,
       ``--ttl'', can be updated.
-    """
+    """,
+    'EXAMPLES': """
+      To update the SSH public key found in `/home/user/.ssh/id_rsa.pub` with
+      an expiration time of one week from now, run:
+
+        $ {command} --ttl=7d --key-file=/home/user/.ssh/id_rsa.pub
+
+      To update the SSH public key with a fingerprint of
+      'e0d96d6fad35a61a0577f467940509b5aa08b6dea8d99456ec19a6e47126bc52' and
+      an expiration time of five years from now, run:
+
+        $ {command} --ttl=5y --key='e0d96d6fad35a61a0577f467940509b5aa08b6dea8d99456ec19a6e47126bc52'
+    """,
 }
 

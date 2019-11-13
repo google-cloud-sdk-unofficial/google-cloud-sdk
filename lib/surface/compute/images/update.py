@@ -26,31 +26,36 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.images import flags as images_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        '*{command}* updates labels for a Google Compute image.',
+    'EXAMPLES':
+        """\
+      To update labels ``k0'' and ``k1'' and remove labels with key ``k3'', run:
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+        $ {command} example-image --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+        k0 and k1 will be added as new labels if not already present.
+
+      Labels can be used to identify the image and to filter them like:
+
+        $ {parent_command} list --filter='labels.k1:value2'
+
+      To list only the labels when describing a resource, use --format:
+
+        $ {parent_command} describe example-image --format='default(labels)'
+
+    """,
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine image.
-
-  *{command}* updates labels for a Google Compute image.
-  For example:
-
-    $ {command} example-image \
-      --update-labels=k0=value1,k1=value2 --remove-labels=k3
-
-  will add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''.
-
-  Labels can be used to identify the image and to filter them as in
-
-    $ {parent_command} list --filter='labels.k1:value2'
-
-  To list existing labels
-
-    $ {parent_command} describe example-image --format='default(labels)'
-
-  """
+  """Update a Google Compute Engine image."""
 
   DISK_IMAGE_ARG = None
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

@@ -23,12 +23,12 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Labelkeys(base.Group):
-  """Create and manipulate label keys.
+class LabelKeys(base.Group):
+  """Create and manipulate LabelKeys.
 
     The Label Manager Service gives you centralized and programmatic
     control over your organization's labels. As the label
     administrator, you will be able to create and configure restrictions across
-    the labels in the org. As the label user, you will be able to bind label
-    values to different resources.
+    the labels in the org. As the label user, you will be able to bind
+    LabelValues to different resources.
   """

@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Obtain details about revisions."""
 
@@ -38,23 +38,12 @@ class Describe(base.DescribeCommand):
       'EXAMPLES': """\
           To describe all revisions of service default in us-central1:
 
-              $ {command} --region us-central1 default
+              $ {command} --region=us-central1 default
           """,
   }
 
   @staticmethod
   def CommonArgs(parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
     revision_presentation = presentation_specs.ResourcePresentationSpec(
         'REVISION',
         resource_args.GetRevisionResourceSpec(),
@@ -63,7 +52,7 @@ class Describe(base.DescribeCommand):
         prefixes=False)
     concept_parsers.ConceptParser([
         revision_presentation]).AddToParser(parser)
-    flags.AddPlatformArg(parser)
+
     parser.display_info.AddFormat(
         'yaml(apiVersion, kind, metadata, spec, status)')
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2017 Google LLC. All Rights Reserved.
+# Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for remote building a rime image artifact from source code."""
+"""The command group for the Label Manager CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,24 +22,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-class Build(base.Command):
-  """Remote build a Cloud Run image artifact from source code."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class LabelValues(base.Group):
+  """Create and manipulate LabelValues.
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          {description}
-          """,
-      'EXAMPLES': """\
-          To build your container image:
-
-              $ {command}
-          """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    pass
-
-  def Run(self, args):
-    """Remote build a Cloud Run image artifact from source code."""
-    pass
+    The Label Manager Service gives you centralized and programmatic
+    control over your organization's labels. As the label
+    administrator, you will be able to create and configure restrictions across
+    the labels in the org. As the label user, you will be able to bind
+    LabelValues to different resources.
+  """

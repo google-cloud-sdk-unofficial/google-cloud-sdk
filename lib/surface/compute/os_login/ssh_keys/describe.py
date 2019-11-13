@@ -60,10 +60,21 @@ class Describe(base.Command):
 Describe.detailed_help = {
     'brief': 'Describe an SSH Public Key from an OS Login Profile.',
     'DESCRIPTION': """\
-      *{command}* will take either a string containing an SSH Public
-      Key or a filename for an SSH Public key and will display that key from the
-      user's OS Login Profile. The key value passed in can either be the
+      *{command}* accepts either a string containing an SSH Public
+      Key or a filename for an SSH Public key and displays that key from the
+      user's OS Login Profile. The key value used can either be the
       full SSH key or the OS Login fingerprint for that key.
-    """
+    """,
+    'EXAMPLES': """
+      To show all of the information for the key stored in your OS Login
+      profile that matches the key in `/home/user/.ssh/id_rsa.pub`, run:
+
+        $ {command} --key-file=/home/user/.ssh/id_rsa.pub
+
+      To show all of the information about the key with a fingerprint of
+      'e0d96d6fad35a61a0577f467940509b5aa08b6dea8d99456ec19a6e47126bc52', run:
+
+        $ {command} --key='e0d96d6fad35a61a0577f467940509b5aa08b6dea8d99456ec19a6e47126bc52'
+    """,
 }
 

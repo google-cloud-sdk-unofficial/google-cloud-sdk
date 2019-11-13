@@ -62,6 +62,7 @@ def _Args(parser, release_track, container_mount_enabled=False):
   instances_flags.AddMinCpuPlatformArgs(parser, release_track)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
   labels_util.AddCreateLabelsFlags(parser)
+  instances_flags.AddPrivateNetworkIpArgs(parser)
 
   flags.AddRegionFlag(
       parser,
@@ -128,6 +129,7 @@ class CreateWithContainer(base.CreateCommand):
         scope_lister=flags.GetDefaultScopeLister(client),
         messages=client.messages,
         network=args.network,
+        private_ip=args.private_network_ip,
         region=args.region,
         subnet=args.subnet,
         address=(instance_template_utils.EPHEMERAL_ADDRESS

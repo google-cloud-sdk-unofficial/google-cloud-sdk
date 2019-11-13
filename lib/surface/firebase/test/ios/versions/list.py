@@ -26,6 +26,19 @@ from googlecloudsdk.calliope import base
 class List(base.ListCommand):
   """List all iOS versions available for testing."""
 
+  detailed_help = {
+      'DESCRIPTION': 'List all iOS versions available for testing.',
+      'EXAMPLES': """
+To list all iOS versions available for testing, run:
+
+  {command}
+
+To filter major versions available for testing, run:
+
+  {command} --filter=majorVersion:12
+"""
+  }
+
   @staticmethod
   def Args(parser):
     """Method called by Calliope to register flags for this command.

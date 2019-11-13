@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Get the IAM policy for a Cloud Run service.
@@ -16,10 +16,15 @@
 
   request:
     collection: run.projects.locations.services
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.run.flags:ValidatePlatformIsManaged
 
   arguments:
     resource:
       help_text: The service for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.run.resources:service
-    params:
-    - _REF_: googlecloudsdk.command_lib.run.flags:platform
+      # The --region flag is specified at the group level, so don't try to add it here
+      removed_flags: ['region']
+      command_level_fallthroughs:
+        region:
+        - arg_name: 'region'

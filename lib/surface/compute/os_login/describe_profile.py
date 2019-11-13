@@ -39,9 +39,20 @@ class DescribeProfile(base.Command):
 
 DescribeProfile.detailed_help = {
     'brief': 'Describe the OS Login profile for the current user.',
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
       *{command}* displays the OS Login profile for the currently
       authenticated user, including Posix accounts and SSH keys
       associated with the user.
+      """,
+    'EXAMPLES': """
+      To show all of the information about your OS Login profile, including
+      POSIX account information and stored SSH public keys, run:
+
+        $ {command}
+
+      To show all of the information in a different format, such as JSON, use
+      the `--format` flag:
+
+        $ {command} --format=json
       """
 }

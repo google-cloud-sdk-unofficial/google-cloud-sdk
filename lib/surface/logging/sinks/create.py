@@ -122,6 +122,12 @@ class Create(base.CreateCommand):
       if args.IsSpecified('exclusion'):
         sink_data['exclusions'] = args.exclusion
 
+      if args.IsSpecified('description'):
+        sink_data['description'] = args.description
+
+      if args.IsSpecified('disabled'):
+        sink_data['disabled'] = args.disabled
+
     result = self.CreateSink(util.GetParentFromArgs(args), sink_data)
 
     log.CreatedResource(sink_ref)
@@ -206,6 +212,14 @@ class CreateAlpha(Create):
               'to be excluded.\n\n'
               '*disabled*::: If this exclusion should be disabled and not '
               'exclude the log entries.'))
+
+    parser.add_argument(
+        '--description',
+        help='Description of the sink.')
+
+    parser.add_argument(
+        '--disabled', action='store_true',
+        help=('Sink will be disabled. Disabled sinks do not export logs.'))
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

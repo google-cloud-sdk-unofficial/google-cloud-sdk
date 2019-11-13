@@ -37,7 +37,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    arguments.AddLabelParentArgToParser(parser)
+    arguments.AddLabelParentArgToParser(parser, required=True)
     parser.display_info.AddFormat('table(name:sort=1, displayName)')
 
   def Run(self, args):

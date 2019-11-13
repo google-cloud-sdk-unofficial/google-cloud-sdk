@@ -39,8 +39,8 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
-    group = parser.add_argument_group('label key', required=True)
-    arguments.AddLabelParentArgToParser(group)
+    group = parser.add_argument_group('LabelKey.', required=True)
+    arguments.AddLabelParentArgToParser(group, required=True)
     arguments.AddDisplayNameArgToParser(group)
     arguments.AddDescriptionArgToParser(parser)
     arguments.AddAsyncArgToParser(parser)
@@ -61,6 +61,8 @@ class Create(base.Command):
       return op
     else:
       done_op = operations.WaitForOperation(
-          op, 'Waiting for label [{}] to be created with [{}]'.format(
-              display_name, op.name))
+          op,
+          'Waiting for label [{}] to be created with [{}]'.format(
+              display_name, op.name),
+          service=labelkeys_service)
       return done_op

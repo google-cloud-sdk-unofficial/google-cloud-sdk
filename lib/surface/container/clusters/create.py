@@ -180,6 +180,7 @@ for examples.
   flags.AddDiskTypeFlag(parser)
   flags.AddMetadataFlags(parser)
   flags.AddDatabaseEncryptionFlag(parser)
+  flags.AddShieldedInstanceFlags(parser)
 
 
 def ValidateBasicAuthFlags(args):
@@ -282,7 +283,6 @@ def ParseCreateOptionsBase(args):
       password=args.password,
       preemptible=args.preemptible,
       scopes=args.scopes,
-      security_group=args.security_group,
       service_account=args.service_account,
       services_ipv4_cidr=args.services_ipv4_cidr,
       services_secondary_range_name=args.services_secondary_range_name,
@@ -310,7 +310,9 @@ def ParseCreateOptionsBase(args):
       min_memory=args.min_memory,
       max_memory=args.max_memory,
       min_accelerator=args.min_accelerator,
-      max_accelerator=args.max_accelerator)
+      max_accelerator=args.max_accelerator,
+      shielded_secure_boot=args.shielded_secure_boot,
+      shielded_integrity_monitoring=args.shielded_integrity_monitoring)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -345,16 +347,14 @@ class Create(base.CreateCommand):
         parser, with_deprecated=False, with_alpha=False)
     flags.AddClusterVersionFlag(parser)
     flags.AddNodeVersionFlag(parser)
-    flags.AddEnableAutoUpgradeFlag(parser)
+    flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
     flags.AddResourceUsageExportFlags(parser)
-    flags.AddVerticalPodAutoscalingFlag(parser, hidden=True)
-    flags.AddAuthenticatorSecurityGroupFlags(parser)
+    flags.AddVerticalPodAutoscalingFlag(parser)
 
   def ParseCreateOptions(self, args):
-    flags.WarnGAForFutureAutoUpgradeChange()
     return ParseCreateOptionsBase(args)
 
   def Run(self, args):
@@ -504,7 +504,6 @@ class CreateBeta(Create):
     flags.AddWorkloadIdentityFlags(parser)
     flags.AddEnableShieldedNodesFlags(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
-    flags.AddShieldedInstanceFlags(parser)
     flags.AddSurgeUpgradeFlag(parser, default=1)
     flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
     _AddReleaseChannelGroup(parser)
@@ -524,8 +523,6 @@ class CreateBeta(Create):
     ops.identity_namespace = args.identity_namespace
     ops.enable_shielded_nodes = args.enable_shielded_nodes
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
-    ops.shielded_secure_boot = args.shielded_secure_boot
-    ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
     ops.release_channel = args.release_channel
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
@@ -585,7 +582,6 @@ class CreateAlpha(Create):
     flags.AddSurgeUpgradeFlag(parser, default=1)
     flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
     flags.AddLinuxSysctlFlags(parser)
-    flags.AddShieldedInstanceFlags(parser)
     flags.AddNodeConfigFlag(parser)
     flags.AddCostManagementConfigFlag(parser)
 
@@ -624,8 +620,6 @@ class CreateAlpha(Create):
     ops.linux_sysctls = args.linux_sysctls
     ops.disable_default_snat = args.disable_default_snat
 
-    ops.shielded_secure_boot = args.shielded_secure_boot
-    ops.shielded_integrity_monitoring = args.shielded_integrity_monitoring
     ops.node_config = args.node_config
 
     ops.enable_cost_management = args.enable_cost_management

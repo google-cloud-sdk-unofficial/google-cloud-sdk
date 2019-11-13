@@ -31,25 +31,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine persistent disk.
-
-  *{command}* updates a Google Compute Engine persistent disk.
-  For example:
-
-    $ {command} example-disk --zone us-central1-a \
-      --update-labels=k0=value1,k1=value2 --remove-labels=k3
-
-  will add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''.
-
-  Labels can be used to identify the disk and to filter them as in
-
-    $ {parent_command} list --filter='labels.k1:value2'
-
-  To list existing labels
-
-    $ {parent_command} describe example-disk --format='default(labels)'
-
-  """
+  r"""Update a Google Compute Engine persistent disk."""
 
   DISK_ARG = None
 
@@ -90,3 +72,25 @@ class Update(base.UpdateCommand):
         operation_poller, operation_ref,
         'Updating labels of disk [{0}]'.format(
             disk_ref.Name()))
+
+
+Update.detailed_help = {
+    'DESCRIPTION':
+        '*{command}* updates a Google Compute Engine persistent disk.',
+    'EXAMPLES':
+        """\
+        To update labels 'k0' and 'k1' and remove label 'k3' of a disk, run:
+
+            $ {command} example-disk --zone=us-central1-a --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+            ``k0'' and ``k1'' are added as new labels if not already present.
+
+        Labels can be used to identify the disk. To list disks with the 'k1:value2' label, run:
+
+            $ {parent_command} list --filter='labels.k1:value2'
+
+        To list only the labels when describing a resource, use --format to filter the result:
+
+            $ {parent_command} describe example-disk --format='default(labels)'
+        """,
+}

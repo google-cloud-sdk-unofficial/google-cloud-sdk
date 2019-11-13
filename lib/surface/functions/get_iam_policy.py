@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.functions import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a Google Cloud Function."""
 

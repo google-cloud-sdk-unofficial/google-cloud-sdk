@@ -28,18 +28,9 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateInstance(base.CreateCommand):
-  """Create a new virtual machine instance in a managed instance group with a defined name and optionally its stateful configuration: stateful disk, stateful metadata.
-
-  *{command}* creates a  virtual machine instance with a defined name and
-  optionally its stateful configuration: stateful disk and stateful metadata
-  key-values. Stateful configuration is stored in the corresponding newly
-  created per-instance config. An instance with a per-instance config will
-  preserve its given name, specified disks, and metadata key-values during
-  instance recreation, auto-healing, and updates and any other lifecycle
-  transitions of the instance.
-  """
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateInstanceBeta(base.CreateCommand):
+  """Create a new virtual machine instance in a managed instance group with a defined name and optionally its stateful configuration: stateful disk, stateful metadata."""
 
   @staticmethod
   def Args(parser):
@@ -111,6 +102,35 @@ class CreateInstance(base.CreateCommand):
     return create_result
 
 
+CreateInstanceBeta.detailed_help = {
+    'brief':
+        ('Create a new virtual machine instance in a managed instance group '
+         'with a defined name and optionally its stateful configuration.'),
+    'DESCRIPTION':
+        """\
+          *{command}* creates a  virtual machine instance with a defined name and
+          optionally its stateful configuration: stateful disk and stateful metadata
+          key-values. Stateful configuration is stored in the corresponding newly
+          created per-instance config. An instance with a per-instance config will
+          preserve its given name, specified disks, and metadata key-values during
+          instance recreation, auto-healing, and updates and any other lifecycle
+          transitions of the instance.
+        """,
+    'EXAMPLES':
+        """\
+        To create an instance `instance-1` in `my-group` (in region europe-west4)
+        with metadata `my-key: my-value` and a disk disk-1 attached to it as
+        the device `device-1`, run:
+
+            $ {command} \\
+                  my-group --region=europe-west4 \\
+                  --instance=instance-1 \\
+                  --stateful-disk='device-name=foo,source=https://compute.googleapis.com/compute/alpha/projects/my-project/zones/europe-west4/disks/disk-1,mode=rw,auto-delete=on-permanent-instance-deletion' \\
+                  --stateful-metadata='my-key=my-value'
+        """
+}
+
+
 class NonExistentDiskGetter(object):
   """Dummy class returning None."""
 
@@ -118,4 +138,4 @@ class NonExistentDiskGetter(object):
     self.instance_exists = False
 
   def get_disk(self, device_name):  # pylint: disable=unused-argument,g-bad-name
-    return None
+    return

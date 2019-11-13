@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
@@ -26,6 +28,16 @@ from googlecloudsdk.command_lib.spanner import flags
 
 class Create(base.CreateCommand):
   """Create a Cloud Spanner instance."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To create a Cloud Spanner instance, run:
+
+          $ {command} my-instance-id --config=regional-us-east1
+              --description=my-instance-display-name --nodes=3
+        """),
+  }
 
   @staticmethod
   def Args(parser):

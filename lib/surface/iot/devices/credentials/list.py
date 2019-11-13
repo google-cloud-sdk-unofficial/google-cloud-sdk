@@ -27,6 +27,15 @@ from googlecloudsdk.core.resource import resource_projector
 class List(base.ListCommand):
   """List credentials for a device."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list the credentials of a device in region 'us-central1', run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(

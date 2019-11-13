@@ -52,4 +52,3 @@ class SQL(base.Group):
 
   def Filter(self, context, args):
     del context, args
-    base.DisableUserProjectQuota()

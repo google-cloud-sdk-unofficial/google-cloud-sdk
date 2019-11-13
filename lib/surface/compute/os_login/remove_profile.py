@@ -73,10 +73,21 @@ class RemoveProfileAlpha(RemoveProfile):
 
 RemoveProfile.detailed_help = {
     'brief': 'Remove the posix account information for the current user.',
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
       *{command}* removes the posix account information for the current
       user where the account ID field is set to the current project ID.
       Posix account entries for G Suite users do not set the account ID
       field and can only be modified by a domain administrator.
+      """,
+    'EXAMPLES': """
+      To remove all POSIX accounts associated with the current user and
+      project, run:
+
+        $ {command}
+
+      To remove all POSIX accounts associated with the current user in the
+      project named `example-project`, run:
+
+        $ {command} --project=example-project
       """
 }

@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
@@ -25,6 +27,15 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 class Describe(base.ListCommand):
   """Describe the DDL for a Cloud Spanner database."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To describe the DDL for a given Cloud Spanner database, run:
+
+          $ {command} my-database-id --instance=my-instance-id
+        """),
+  }
 
   @staticmethod
   def Args(parser):

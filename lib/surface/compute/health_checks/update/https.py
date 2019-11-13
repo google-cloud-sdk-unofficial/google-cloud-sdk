@@ -40,7 +40,7 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, include_l7_internal_load_balancing):
+def _Args(parser, include_l7_internal_load_balancing, include_log_config):
   health_check_arg = flags.HealthCheckArgument(
       'HTTPS',
       include_l7_internal_load_balancing=include_l7_internal_load_balancing)
@@ -48,6 +48,8 @@ def _Args(parser, include_l7_internal_load_balancing):
   health_checks_utils.AddHttpRelatedUpdateArgs(parser)
   health_checks_utils.AddProtocolAgnosticUpdateArgs(parser, 'HTTPS')
   health_checks_utils.AddHttpRelatedResponseArg(parser)
+  if include_log_config:
+    health_checks_utils.AddHealthCheckLoggingRelatedArgs(parser)
 
 
 def _GetGetRequest(client, health_check_ref):
@@ -86,7 +88,7 @@ def _GetRegionalSetRequest(client, health_check_ref, replacement):
               region=health_check_ref.region))
 
 
-def _Modify(client, args, existing_check):
+def _Modify(client, args, existing_check, include_log_config):
   """Returns a modified HealthCheck message."""
   # We do not support using 'update https' with a health check of a
   # different protocol.
@@ -150,26 +152,34 @@ def _Modify(client, args, existing_check):
                           existing_check.unhealthyThreshold),
   )
 
+  if include_log_config:
+    new_health_check.logConfig = health_checks_utils.ModifyLogConfig(
+        client, args, existing_check.logConfig)
   return new_health_check
 
 
-def _ValidateArgs(args):
+def _ValidateArgs(args, include_log_config):
+  """Validates given args and raises exception if any args are invalid."""
   health_checks_utils.CheckProtocolAgnosticArgs(args)
 
   args_unset = not (args.port or args.request_path or args.check_interval or
                     args.timeout or args.healthy_threshold or
                     args.unhealthy_threshold or args.proxy_header or
                     args.use_serving_port)
+
+  if include_log_config:
+    args_unset = (args.enable_logging is None and args_unset)
+
   if (args.description is None and args.host is None and
       args.response is None and args.port_name is None and args_unset):
     raise exceptions.ToolException('At least one property must be modified.')
 
 
-def _Run(args, holder, include_l7_internal_load_balancing):
+def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   """Issues the requests necessary for updating the health check."""
   client = holder.client
 
-  _ValidateArgs(args)
+  _ValidateArgs(args, include_log_config)
   health_check_arg = flags.HealthCheckArgument(
       'HTTPS',
       include_l7_internal_load_balancing=include_l7_internal_load_balancing)
@@ -182,7 +192,7 @@ def _Run(args, holder, include_l7_internal_load_balancing):
 
   objects = client.MakeRequests([get_request])
 
-  new_object = _Modify(client, args, objects[0])
+  new_object = _Modify(client, args, objects[0], include_log_config)
 
   # If existing object is equal to the proposed object or if
   # _Modify() returns None, then there is no work to be done, so we
@@ -204,18 +214,21 @@ class Update(base.UpdateCommand):
   """Update a HTTPS health check."""
 
   _include_l7_internal_load_balancing = False
+  _include_log_config = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls._include_l7_internal_load_balancing)
+    _Args(parser, cls._include_l7_internal_load_balancing,
+          cls._include_log_config)
 
   def Run(self, args):
     if self.ReleaseTrack() == base.ReleaseTrack.GA:
       log.warning('The health-checks update https command will soon require '
                   'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_l7_internal_load_balancing)
+    return _Run(args, holder, self._include_l7_internal_load_balancing,
+                self._include_log_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -226,4 +239,5 @@ class UpdateBeta(Update):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
-  pass
+
+  _include_log_config = True

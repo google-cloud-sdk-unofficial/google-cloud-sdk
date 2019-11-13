@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
@@ -25,6 +27,16 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 class Delete(base.DeleteCommand):
   """Delete a Cloud Spanner session."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To delete a Cloud Spanner session, run:
+
+          $ {command} my-session-id --instance=my-instance-id
+              --database=my-database-id
+        """),
+  }
 
   @staticmethod
   def Args(parser):

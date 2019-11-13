@@ -3,6 +3,14 @@
   help_text:
     brief: Create a new device registry.
     description: Create a new device registry.
+    examples: |
+     To create a new device registry 'my-registry' in region 'us-central1', run:
+
+       $ {command} --region=us-central1 my-registry
+
+     The following command creates a new device registry 'my-registry' in region 'us-central1', enables MQTT and HTTP connections, and sets 'pubsub-topic-name' as the Cloud Pub/Sub topic for state notifications.
+
+       $ {command} my-registry --region=us-central1 --enable-http-config --enable-mqtt-config --state-pubsub-topic=pubsub-topic-name
 
   request:
     collection: cloudiot.projects.locations.registries

@@ -113,6 +113,14 @@ class Update(base.UpdateCommand):
         sink_data['bigqueryOptions'] = bigquery_options
         update_mask.append('bigquery_options.use_partitioned_tables')
 
+      if args.IsSpecified('description'):
+        sink_data['description'] = args.description
+        update_mask.append('description')
+
+      if args.IsSpecified('disabled'):
+        sink_data['disabled'] = args.disabled
+        update_mask.append('disabled')
+
       sink_data['exclusions'] = []
       if args.IsSpecified('clear_exclusions'):
         update_mask.append('exclusions')
@@ -243,6 +251,14 @@ class UpdateAlpha(Update):
               'to be excluded.\n\n'
               '*disabled*::: If this exclusion should be disabled and not '
               'exclude the log entries.'))
+
+    parser.add_argument(
+        '--description',
+        help='Description of the sink.')
+
+    parser.add_argument(
+        '--disabled', action='store_true',
+        help=('Disable the sink. Disabled sinks do not export logs.'))
 
   def Run(self, args):
     return self._Run(args, is_alpha=True)

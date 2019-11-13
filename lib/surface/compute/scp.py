@@ -49,7 +49,7 @@ Under the covers, *scp(1)* is used to facilitate the transfer.""",
 To copy a remote directory, `~/narnia`, from ``example-instance'' to the
 `~/wardrobe` directory of your local host, run:
 
-  $ {command} --recurse example-instance:~/narnia ~/wardrobe
+  $ {command} --recurse=example-instance:~/narnia ~/wardrobe
 
 Conversely, files from your local computer can be copied to a virtual machine:
 
@@ -58,20 +58,20 @@ Conversely, files from your local computer can be copied to a virtual machine:
 If the zone cannot be determined, you will be prompted for it.  Use the
 `--zone` flag to avoid being prompted:
 
-  $ {command} --recurse example-instance:~/narnia ~/wardrobe --zone us-central1-a
+  $ {command} --recurse=example-instance:~/narnia ~/wardrobe --zone=us-central1-a
 
 To specify the project, zone, and recurse all together, run:
 
-  $ {command} --project "my-gcp-project" --zone "us-east1-b" --recurse ~/foo-folder/ gcp-instance-name:~/
+  $ {command} --project="my-gcp-project" --zone="us-east1-b" --recurse=~/foo-folder/ gcp-instance-name:~/
 
 You can limit the allowed time to ssh. For example, to allow a key to be used
 through 2019:
 
-  $ {command} --recurse example-instance:~/narnia ~/wardrobe --ssh-key-expiration "2020-01-01T00:00:00:00Z"
+  $ {command} --recurse=example-instance:~/narnia ~/wardrobe --ssh-key-expiration="2020-01-01T00:00:00:00Z"
 
 Or alternatively, allow access for the next two minutes:
 
-  $ {command} --recurse example-instance:~/narnia ~/wardrobe --ssh-key-expire-after 2m
+  $ {command} --recurse=example-instance:~/narnia ~/wardrobe --ssh-key-expire-after=2m
 """,
 }
 

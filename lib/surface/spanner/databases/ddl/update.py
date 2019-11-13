@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.calliope import base
@@ -28,6 +30,16 @@ from googlecloudsdk.core import log
 
 class Update(base.UpdateCommand):
   """Update the DDL for a Cloud Spanner database."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To add a column to a table in the given Cloud Spanner database, run:
+
+          $ {command} my-database-id --instance=my-instance-id
+              --ddl='ALTER TABLE test_table ADD COLUMN a INT64'
+        """),
+  }
 
   @staticmethod
   def Args(parser):

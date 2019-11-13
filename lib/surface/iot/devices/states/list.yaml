@@ -6,6 +6,10 @@
       This command lists all available states in the history of the device.
       Up to 10 are kept; you may restrict the output to fewer via the `--limit`
       flag.
+    examples: |
+      To list states for the device 'my-device' in region 'us-central1' and in registry 'my-registry', run:
+
+        $ {command} --device=my-device --region=us-central1 --registry=my-registry
 
   request:
     collection: cloudiot.projects.locations.registries.devices.states

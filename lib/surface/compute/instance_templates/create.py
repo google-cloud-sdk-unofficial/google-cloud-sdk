@@ -80,6 +80,7 @@ def _CommonArgs(
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
+  instances_flags.AddPrivateNetworkIpArgs(parser)
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
@@ -320,6 +321,7 @@ def _RunCreate(compute_api,
             scope_lister=flags.GetDefaultScopeLister(client),
             messages=client.messages,
             network=args.network,
+            private_ip=args.private_network_ip,
             region=args.region,
             subnet=args.subnet,
             address=(instance_template_utils.EPHEMERAL_ADDRESS

@@ -26,6 +26,19 @@ from googlecloudsdk.calliope import base
 class Describe(base.DescribeCommand):
   """Describe an iOS model."""
 
+  detailed_help = {
+      'DESCRIPTION': 'Describe an iOS model.',
+      'EXAMPLES': """
+To describe an iOS model, run:
+
+  {command} iphone7
+
+To describe an iOS model in JSON format, run:
+
+  {command} iphone7 --format=json
+"""
+  }
+
   @staticmethod
   def Args(parser):
     """Method called by Calliope to register flags for this command.

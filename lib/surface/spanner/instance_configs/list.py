@@ -18,12 +18,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
   """List the available Cloud Spanner instance configs."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To list the Cloud Spanner instance configs that are availble for this
+        project, run:
+
+          $ {command}
+        """),
+  }
 
   @staticmethod
   def Args(parser):

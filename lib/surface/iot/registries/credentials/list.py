@@ -27,6 +27,15 @@ from googlecloudsdk.core.resource import resource_projector
 class List(base.ListCommand):
   """List credentials for a registry."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list the credentials of a registry, run:
+
+            $ {command} --region=us-central1 --registry=my-registry
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(

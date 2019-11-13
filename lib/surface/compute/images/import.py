@@ -185,14 +185,22 @@ class Import(base.CreateCommand):
 
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
-  def Run(self, args, support_storage_location=False):
+    parser.add_argument(
+        '--storage-location',
+        help="""\
+      Specifies a Cloud Storage location, either regional or multi-regional,
+      where image content is to be stored. If not specified, the multi-region
+      location closest to the source is chosen automatically.
+      """)
+
+  def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     # Fail early if the requested image name is invalid or already exists.
     _CheckImageName(args.image_name)
     _CheckForExistingImage(args.image_name, compute_holder)
 
-    stager = self._CreateImportStager(args, support_storage_location)
+    stager = self._CreateImportStager(args)
     import_metadata = stager.Stage()
 
     # TODO(b/79591894): Once we've cleaned up the Argo output, replace this
@@ -206,14 +214,14 @@ class Import(base.CreateCommand):
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER)
 
-  def _CreateImportStager(self, args, support_storage_location):
+  def _CreateImportStager(self, args):
     if args.source_image:
       return ImportFromImageStager(
-          self.storage_client, args, support_storage_location)
+          self.storage_client, args)
 
     if _IsLocalFile(args.source_file):
       return ImportFromLocalFileStager(
-          self.storage_client, args, support_storage_location)
+          self.storage_client, args)
 
     try:
       gcs_uri = daisy_utils.MakeGcsObjectOrPathUri(args.source_file)
@@ -223,7 +231,7 @@ class Import(base.CreateCommand):
           'must be a path to an object in Google Cloud Storage')
     else:
       return ImportFromGSFileStager(
-          self.storage_client, args, gcs_uri, support_storage_location)
+          self.storage_client, args, gcs_uri)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -235,10 +243,9 @@ class BaseImportStager(object):
   the appropriate location.
   """
 
-  def __init__(self, storage_client, args, support_storage_location):
+  def __init__(self, storage_client, args):
     self.storage_client = storage_client
     self.args = args
-    self.support_storage_location = support_storage_location
     self.daisy_bucket = self.GetAndCreateDaisyBucket()
 
   def Stage(self):
@@ -253,7 +260,7 @@ class BaseImportStager(object):
 
     daisy_utils.AppendArg(import_args, 'zone',
                           properties.VALUES.compute.zone.Get())
-    if self.support_storage_location and self.args.storage_location:
+    if self.args.storage_location:
       daisy_utils.AppendArg(import_args, 'storage_location',
                             self.args.storage_location)
     daisy_utils.AppendArg(import_args, 'scratch_bucket_gcs_path',
@@ -279,7 +286,7 @@ class BaseImportStager(object):
     return bucket_name
 
   def GetBucketLocation(self):
-    if self.support_storage_location and self.args.storage_location:
+    if self.args.storage_location:
       return self.args.storage_location
 
     return None
@@ -379,10 +386,10 @@ class ImportFromLocalFileStager(BaseImportFromFileStager):
 class ImportFromGSFileStager(BaseImportFromFileStager):
   """Image import stager from a file in Cloud Storage."""
 
-  def __init__(self, storage_client, args, gcs_uri, support_storage_location):
+  def __init__(self, storage_client, args, gcs_uri):
     self.source_file_gcs_uri = gcs_uri
     super(ImportFromGSFileStager, self).__init__(
-        storage_client, args, support_storage_location)
+        storage_client, args)
 
   def GetBucketLocation(self):
     return self.storage_client.GetBucketLocationForFile(
@@ -408,21 +415,10 @@ class ImportBeta(Import):
 
   _OS_CHOICES = os_choices.OS_CHOICES_IMAGE_IMPORT_BETA
 
-  def Run(self, args):
-    super(ImportBeta, self).Run(args, support_storage_location=True)
-
   @classmethod
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
-
-    parser.add_argument(
-        '--storage-location',
-        help="""\
-      Cloud Storage location, either regional or multi-regional, where
-      image content is to be stored. If absent, the multi-region location
-      closest to the source is chosen automatically.
-      """)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,

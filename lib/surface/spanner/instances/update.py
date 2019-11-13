@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
@@ -27,6 +29,19 @@ from googlecloudsdk.command_lib.spanner import flags
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update a Cloud Spanner instance."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+        To update the display name of a Cloud Spanner instance, run:
+
+          $ {command} my-instance-id --description=my-new-display-name
+
+        To update the node count of a Cloud Spanner instance, run:
+
+          $ {command} my-instance-id --nodes=1
+        """),
+  }
 
   @staticmethod
   def Args(parser):

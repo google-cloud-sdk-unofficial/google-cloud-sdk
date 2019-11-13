@@ -23,11 +23,15 @@ from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
+from googlecloudsdk.command_lib.run import service_printer
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.resource import resource_printer
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.Command):
   """Obtain details about a given service."""
 
@@ -39,22 +43,15 @@ class Describe(base.Command):
           To obtain details about a given service:
 
               $ {command} <service-name>
+
+          To get those details in the Knative yaml format:
+
+              $ {command} <service-name> --format=yaml
           """,
   }
 
   @staticmethod
   def CommonArgs(parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser([resource_args.CLUSTER_PRESENTATION
-                                  ]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(),
@@ -62,9 +59,6 @@ class Describe(base.Command):
         required=True,
         prefixes=False)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
-    flags.AddPlatformArg(parser)
-    parser.display_info.AddFormat(
-        'yaml(apiVersion, kind, metadata, spec, status)')
 
   @staticmethod
   def Args(parser):
@@ -72,6 +66,12 @@ class Describe(base.Command):
 
   def Run(self, args):
     """Obtain details about a given service."""
+    # TODO(b/143898356) Begin code that should be in Args
+    resource_printer.RegisterFormatter(
+        service_printer.SERVICE_PRINTER_FORMAT,
+        service_printer.ServicePrinter)
+    args.GetDisplayInfo().AddFormat('service')
+    # End code that should be in Args
     conn_context = connection_context.GetConnectionContext(
         args, self.ReleaseTrack())
     service_ref = flags.GetService(args)
@@ -81,14 +81,3 @@ class Describe(base.Command):
       raise flags.ArgumentError(
           'Cannot find service [{}]'.format(service_ref.servicesId))
     return serv
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDescribe(Describe):
-  """Obtain details about a given service."""
-
-  @staticmethod
-  def Args(parser):
-    Describe.CommonArgs(parser)
-
-AlphaDescribe.__doc__ = Describe.__doc__

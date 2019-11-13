@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.functions import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveIamPolicyBinding(base.Command):
   """Removes an IAM policy binding from a Google Cloud Function."""
 

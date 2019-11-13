@@ -17,26 +17,29 @@
 import enum
 
 
-BASE_URL = 'https://bio.googleapis.com/v1/'
-DOCS_URL = 'https://cloud.google.com/genomics/'
+BASE_URL = 'https://cloudidentity.googleapis.com/v1beta1/'
+DOCS_URL = 'https://cloud.google.com/identity/'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
-  PROJECTS = (
-      'projects',
-      'projects/{projectsId}',
-      {},
-      [u'projectsId'],
-      True
-  )
-  PROJECTS_OPERATIONS = (
-      'projects.operations',
+  GROUPS = (
+      'groups',
       '{+name}',
       {
           '':
-              'projects/{projectsId}/operations/{operationsId}',
+              'groups/{groupId}',
+      },
+      [u'name'],
+      True
+  )
+  GROUPS_MEMBERSHIPS = (
+      'groups.memberships',
+      '{+name}',
+      {
+          '':
+              'groups/{groupId}/memberships/{membershipId}',
       },
       [u'name'],
       True

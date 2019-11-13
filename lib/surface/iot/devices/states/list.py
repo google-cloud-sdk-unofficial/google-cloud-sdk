@@ -32,6 +32,17 @@ class List(base.ListCommand):
   flag.
   """
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To list states for the device 'my-device' in region 'us-central1' and in registry 'my-registry', run:
+
+          $ {command} --device=my-device --region=us-central1 --registry=my-registry
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat('table(updateTime)')

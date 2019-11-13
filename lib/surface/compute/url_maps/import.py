@@ -137,11 +137,11 @@ def _Run(args, holder, url_map_arg, release_track):
   return _SendPatchRequest(client, url_map_ref, url_map)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ImportBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Import(base.UpdateCommand):
   """Import a URL map."""
 
-  _include_l7_internal_load_balancing = True
+  _include_l7_internal_load_balancing = False
 
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
@@ -160,6 +160,11 @@ class ImportBeta(base.UpdateCommand):
     return _Run(args, holder, self.URL_MAP_ARG, self.ReleaseTrack())
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ImportBeta(Import):
+  _include_l7_internal_load_balancing = True
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ImportAlpha(ImportBeta):
+class ExportAlpha(ImportBeta):
   pass

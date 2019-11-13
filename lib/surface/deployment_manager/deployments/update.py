@@ -86,9 +86,9 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
 
             $ {command} my-deployment --config new_config.yaml --fingerprint deployment-fingerprint
 
-          Either the --config, --template, or --composite-type flag is required unless launching an already-previewed update to a deployment.
+          Either the --config, --template, or --composite-type flag is required unless launching an already-previewed update to a deployment. If you want to update a deployment's metadata, such as the labels or description, you must run a separate command with --update-labels, --remove-labels, or --description, as applicable.
 
-          More information is available at https://cloud.google.com/deployment-manager/docs/configuration/.
+          More information is available at https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments.
           """,
   }
 

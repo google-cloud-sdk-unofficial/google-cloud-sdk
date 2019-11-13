@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import functools
 import textwrap
 
 from googlecloudsdk.api_lib.container.binauthz import apis
@@ -28,6 +29,7 @@ from googlecloudsdk.api_lib.container.binauthz import kms
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
+from googlecloudsdk.command_lib.container.binauthz import validation
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -99,6 +101,15 @@ class SignAndCreate(base.CreateCommand):
 
           This parameter is only necessary if the `--public-key-id-override`
           flag was provided when this KMS key was added to the Attestor."""))
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--validate',
+          action='store_true',
+          default=False,
+          help=textwrap.dedent("""\
+            Whether to validate that the Attestation can be verified by the
+            provided Attestor.
+          """))
 
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
@@ -121,13 +132,17 @@ class SignAndCreate(base.CreateCommand):
         attestor.userOwnedDrydockNote.noteReference, {})
 
     key_id = args.public_key_id_override or kms.GetKeyUri(key_ref)
-    if key_id not in set(
-        pubkey.id for pubkey in attestor.userOwnedDrydockNote.publicKeys):
-      log.warning('No public key with ID [%s] found on attestor [%s]', key_id,
-                  attestor.name)
-      console_io.PromptContinue(
-          prompt_string='Create and upload Attestation anyway?',
-          cancel_on_no=True)
+
+    # TODO(b/138719072): Remove when validation is on by default
+    validation_enabled = 'validate' in args and args.validate
+    if not validation_enabled:
+      if key_id not in set(
+          pubkey.id for pubkey in attestor.userOwnedDrydockNote.publicKeys):
+        log.warning('No public key with ID [%s] found on attestor [%s]', key_id,
+                    attestor.name)
+        console_io.PromptContinue(
+            prompt_string='Create and upload Attestation anyway?',
+            cancel_on_no=True)
 
     payload = binauthz_command_util.MakeSignaturePayload(args.artifact_url)
 
@@ -137,6 +152,11 @@ class SignAndCreate(base.CreateCommand):
     sign_response = kms_client.AsymmetricSign(
         key_ref.RelativeName(),
         kms.GetAlgorithmDigestType(pubkey_response.algorithm), payload)
+
+    validation_callback = functools.partial(
+        validation.validate_attestation,
+        attestor_ref=attestor_ref,
+        api_version=api_version)
 
     ca_api_version = ca_apis.GetApiVersion(self.ReleaseTrack())
     # TODO(b/138859339): Remove when remainder of surface migrated to V1 API.
@@ -149,6 +169,8 @@ class SignAndCreate(base.CreateCommand):
               public_key_id=key_id,
               signature=sign_response.signature,
               plaintext=payload,
+              validation_callback=(validation_callback
+                                   if validation_enabled else None),
           )
     else:
       return containeranalysis.Client(

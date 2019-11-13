@@ -44,11 +44,11 @@ class Report(base.Command):
 
   To report an error, run:
 
-    $ {command} --service service-name --message error-message
+    $ {command} --service=SERVICE_NAME --message="Error message"
 
   or:
 
-    $ {command} --service service-name --message-file error-message.ext.
+    $ {command} --service=SERVICE_NAME --message-file=ERROR_MESSAGE.EXT
   """
 
   @staticmethod

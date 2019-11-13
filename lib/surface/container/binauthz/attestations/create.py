@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import functools
 import textwrap
 
 from googlecloudsdk.api_lib.container.binauthz import apis
@@ -27,6 +28,7 @@ from googlecloudsdk.api_lib.container.binauthz import containeranalysis_apis as 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
+from googlecloudsdk.command_lib.container.binauthz import validation
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
@@ -227,6 +229,16 @@ class CreateWithPkixSupport(base.CreateCommand):
           expressed as a 40 character hexadecimal string. See
           https://tools.ietf.org/html/rfc4880#section-12.2 for details."""))
 
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.add_argument(
+          '--validate',
+          action='store_true',
+          default=False,
+          help=textwrap.dedent("""\
+            Whether to validate that the Attestation can be verified by the
+            provided Attestor.
+          """))
+
   def Run(self, args):
     project_ref = resources.REGISTRY.Parse(
         properties.VALUES.core.project.Get(required=True),
@@ -249,6 +261,12 @@ class CreateWithPkixSupport(base.CreateCommand):
         'containeranalysis.projects.notes',
         attestor.userOwnedDrydockNote.noteReference, {})
 
+    validation_enabled = 'validate' in args and args.validate
+    validation_callback = functools.partial(
+        validation.validate_attestation,
+        attestor_ref=attestor_ref,
+        api_version=api_version)
+
     ca_api_version = ca_apis.GetApiVersion(self.ReleaseTrack())
     # TODO(b/138859339): Remove when remainder of surface migrated to V1 API.
     if ca_api_version == ca_apis.V1:
@@ -260,6 +278,8 @@ class CreateWithPkixSupport(base.CreateCommand):
               public_key_id=args.public_key_id,
               signature=signature,
               plaintext=payload,
+              validation_callback=(validation_callback
+                                   if validation_enabled else None),
           )
     else:
       return containeranalysis.Client(

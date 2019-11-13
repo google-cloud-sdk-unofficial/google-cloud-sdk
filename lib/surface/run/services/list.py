@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(commands.List):
   """List available services."""
 
@@ -48,18 +48,6 @@ class List(commands.List):
 
   @classmethod
   def CommonArgs(cls, parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    concept_parsers.ConceptParser([
-        resource_args.CLOUD_RUN_LOCATION_PRESENTATION
-    ]).AddToParser(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser(
-        [resource_args.CLUSTER_PRESENTATION]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
@@ -70,8 +58,7 @@ class List(commands.List):
         prefixes=False)
     concept_parsers.ConceptParser(
         [namespace_presentation]).AddToParser(cluster_group)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
+
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod
@@ -105,14 +92,13 @@ class List(commands.List):
   def Run(self, args):
     """List available services."""
     is_managed = flags.IsManaged(args)
-    if is_managed and not getattr(args, 'region', None):
+    if is_managed and not args.IsSpecified('region'):
       self._SetFormat(args, show_region=True)
       client = global_methods.GetServerlessClientInstance()
       self.SetPartialApiEndpoint(client.url)
       args.CONCEPTS.namespace.Parse()  # Error if no proj.
-      locations_ref = args.CONCEPTS.region.Parse()
-      return commands.SortByName(
-          global_methods.ListServices(client, locations_ref.RelativeName()))
+      # Don't consider region property here, we'll default to all regions
+      return commands.SortByName(global_methods.ListServices(client))
     else:
       conn_context = connection_context.GetConnectionContext(
           args, self.ReleaseTrack())
