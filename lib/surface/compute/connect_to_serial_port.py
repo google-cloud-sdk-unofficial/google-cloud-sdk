@@ -65,6 +65,12 @@ class ConnectToSerialPort(base.Command):
   command and also ensures that the user's public SSH key is present in
   the project's metadata. If the user does not have a public SSH key,
   one is generated using ssh-keygen.
+
+  ## EXAMPLES
+  To connect to the serial port of the instance 'my-instance' in zone
+  'us-central1-f', run:
+
+    $ {command} my-instance --zone=us-central1-f
   """
 
   category = base.TOOLS_CATEGORY

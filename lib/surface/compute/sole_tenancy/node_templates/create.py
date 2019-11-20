@@ -57,7 +57,16 @@ def _Run(args, track, enable_disk=False):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Creates a Google Compute Engine node template."""
+  """Create a Compute Engine node template."""
+
+  detailed_help = {
+      'brief': 'Create a Compute Engine node template.',
+      'EXAMPLES': """
+         To create a node template of type `n1-node-96-624`, run:
+
+           $ {command} my-node-template --node-type=n1-node-96-624
+       """
+  }
 
   @staticmethod
   def Args(parser):
@@ -69,7 +78,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Creates a Google Compute Engine node template."""
+  """Create a Compute Engine node template."""
 
   @staticmethod
   def Args(parser):
@@ -78,7 +87,7 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Creates a Google Compute Engine node template."""
+  """Create a Compute Engine node template."""
 
   @staticmethod
   def Args(parser):

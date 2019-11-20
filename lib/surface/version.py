@@ -28,11 +28,16 @@ from googlecloudsdk.core.updater import update_manager
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Version(base.Command):
-  """Print version information for Cloud SDK components.
+  """Print version information for Cloud SDK components."""
 
-  The {command} command prints version information for each installed Cloud SDK
-  components and prints a message if updates are available.
-  """
+  detailed_help = {
+      'EXAMPLES': """
+          To print the version information for each installed Cloud SDK
+          components and print a message if updates are available, run:
+
+            $ {command}
+          """,
+  }
 
   category = base.SDK_TOOLS_CATEGORY
 

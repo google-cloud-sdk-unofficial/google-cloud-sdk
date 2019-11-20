@@ -26,7 +26,8 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class CreateHttp(base.CreateCommand):
   """Create and add a task that targets a HTTP endpoint."""
   detailed_help = {

@@ -100,12 +100,30 @@ def _AddAptGroupArguments(parser):
       If specified, machines running Apt use the `apt-get dist-upgrade` command;
       otherwise the `apt-get upgrade` command is used.""",
   )
+  mutually_exclusive_group = apt_group.add_mutually_exclusive_group()
+  mutually_exclusive_group.add_argument(
+      '--apt-excludes',
+      metavar='APT_EXCLUDES',
+      type=arg_parsers.ArgList(),
+      help="""List of packages to exclude from update.""",
+  )
+  mutually_exclusive_group.add_argument(
+      '--apt-exclusive-packages',
+      metavar='APT_EXCLUSIVE_PACKAGES',
+      type=arg_parsers.ArgList(),
+      help="""\
+      An exclusive list of packages to be updated. These are the only packages
+      that will be updated. If these packages are not installed, they will be
+      ignored.""",
+  )
 
 
 def _AddWinGroupArguments(parser):
   """Add Windows setting flags."""
-  win_group = parser.add_group(help='Settings for machines running Windows:')
-  win_group.add_argument(
+  win_group = parser.add_mutually_exclusive_group(
+      help='Settings for machines running Windows:')
+  non_exclusive_group = win_group.add_group(help='Windows patch options')
+  non_exclusive_group.add_argument(
       '--windows-classifications',
       metavar='WINDOWS_CLASSIFICATIONS',
       type=arg_parsers.ArgList(choices=[
@@ -118,32 +136,42 @@ def _AddWinGroupArguments(parser):
       Windows update is performed. For more information on classifications,
       see: https://support.microsoft.com/en-us/help/824684""",
   )
-  win_group.add_argument(
+  non_exclusive_group.add_argument(
       '--windows-excludes',
       metavar='WINDOWS_EXCLUDES',
       type=arg_parsers.ArgList(),
       help="""Optional list of KBs to exclude from the update operation.""",
   )
+  win_group.add_argument(
+      '--windows-exclusive-patches',
+      metavar='WINDOWS_EXCLUSIVE_PATCHES',
+      type=arg_parsers.ArgList(),
+      help="""\
+      An exclusive list of KBs to be updated. These are the only patches that
+      will be updated.""",
+  )
 
 
 def _AddYumGroupArguments(parser):
   """Add Yum setting flags."""
-  yum_group = parser.add_group(help='Settings for machines running Yum:')
-  yum_group.add_argument(
+  yum_group = parser.add_mutually_exclusive_group(
+      help='Settings for machines running Yum:')
+  non_exclusive_group = yum_group.add_group(help='Yum patch options')
+  non_exclusive_group.add_argument(
       '--yum-security',
       action='store_true',
       help="""\
       If specified, machines running Yum append the `--security` flag to the
       patch command.""",
   )
-  yum_group.add_argument(
+  non_exclusive_group.add_argument(
       '--yum-minimal',
       action='store_true',
       help="""\
       If specified, machines running Yum use the command `yum update-minimal`;
       otherwise the patch uses `yum-update`.""",
   )
-  yum_group.add_argument(
+  non_exclusive_group.add_argument(
       '--yum-excludes',
       metavar='YUM_EXCLUDES',
       type=arg_parsers.ArgList(),
@@ -152,12 +180,23 @@ def _AddYumGroupArguments(parser):
       specified, machines running Yum exclude the given list of packages using
       the Yum `--exclude` flag.""",
   )
+  yum_group.add_argument(
+      '--yum-exclusive-packages',
+      metavar='YUM_EXCLUSIVE_PACKAGES',
+      type=arg_parsers.ArgList(),
+      help="""\
+      An exclusive list of packages to be updated. These are the only packages
+      that will be updated. If these packages are not installed, they will be
+      ignored.""",
+  )
 
 
 def _AddZypperGroupArguments(parser):
   """Add Zypper setting flags."""
-  zypper_group = parser.add_group(help='Settings for machines running Zypper:')
-  zypper_group.add_argument(
+  zypper_group = parser.add_mutually_exclusive_group(
+      help='Settings for machines running Zypper:')
+  non_exclusive_group = zypper_group.add_group('Zypper patch options')
+  non_exclusive_group.add_argument(
       '--zypper-categories',
       metavar='ZYPPER_CATEGORIES',
       type=arg_parsers.ArgList(),
@@ -166,7 +205,7 @@ def _AddZypperGroupArguments(parser):
       specified categories. Categories include security, recommended, and
       feature.""",
   )
-  zypper_group.add_argument(
+  non_exclusive_group.add_argument(
       '--zypper-severities',
       metavar='ZYPPER_SEVERITIES',
       type=arg_parsers.ArgList(),
@@ -175,19 +214,28 @@ def _AddZypperGroupArguments(parser):
       specified severities. Severities include critical, important, moderate,
       and low.""",
   )
-  zypper_group.add_argument(
+  non_exclusive_group.add_argument(
       '--zypper-with-optional',
       action='store_true',
       help="""\
       If specified, machines running Zypper add the `--with-optional` flag to
       `zypper patch`.""",
   )
-  zypper_group.add_argument(
+  non_exclusive_group.add_argument(
       '--zypper-with-update',
       action='store_true',
       help="""\
       If specified, machines running Zypper add the `--with-update` flag to
       `zypper patch`.""",
+  )
+  zypper_group.add_argument(
+      '--zypper-exclusive-patches',
+      metavar='ZYPPER_EXCLUSIVE_PATCHES',
+      type=arg_parsers.ArgList(),
+      help="""\
+      An exclusive list of patches to be updated. These are the only patches
+      that will be installed using the 'zypper patch patch:<patch_name>'
+      command.""",
   )
 
 
@@ -295,46 +343,70 @@ def _AddPrePostStepArguments(parser):
   )
 
 
+def _GetAptSettings(args, messages):
+  if not any([args.apt_dist, args.apt_excludes, args.apt_exclusive_packages]):
+    return None
+
+  return messages.AptSettings(
+      type=messages.AptSettings.TypeValueValuesEnum.DIST if args.apt_dist else
+      messages.AptSettings.TypeValueValuesEnum.TYPE_UNSPECIFIED,
+      excludes=args.apt_excludes if args.apt_excludes else [],
+      exclusivePackages=args.apt_exclusive_packages
+      if args.apt_exclusive_packages else [])
+
+
 def _GetWindowsUpdateSettings(args, messages):
   """Create WindowsUpdateSettings from input arguments."""
-  if args.windows_classifications or args.windows_excludes:
-    enums = messages.WindowsUpdateSettings.ClassificationsValueListEntryValuesEnum
-    classifications = [
-        arg_utils.ChoiceToEnum(c, enums) for c in args.windows_classifications
-    ] if args.windows_classifications else []
-    return messages.WindowsUpdateSettings(
-        classifications=classifications,
-        excludes=args.windows_excludes if args.windows_excludes else [],
-    )
-  else:
+  if not any([
+      args.windows_classifications, args.windows_excludes,
+      args.windows_exclusive_patches
+  ]):
     return None
+
+  enums = messages.WindowsUpdateSettings.ClassificationsValueListEntryValuesEnum
+  classifications = [
+      arg_utils.ChoiceToEnum(c, enums) for c in args.windows_classifications
+  ] if args.windows_classifications else []
+  return messages.WindowsUpdateSettings(
+      classifications=classifications,
+      excludes=args.windows_excludes if args.windows_excludes else [],
+      exclusivePatches=args.windows_exclusive_patches
+      if args.windows_exclusive_patches else [],
+  )
 
 
 def _GetYumSettings(args, messages):
-  if args.yum_excludes or args.yum_minimal or args.yum_security:
-    return messages.YumSettings(
-        excludes=args.yum_excludes if args.yum_excludes else [],
-        minimal=args.yum_minimal,
-        security=args.yum_security,
-    )
-  else:
+  if not any([
+      args.yum_excludes, args.yum_minimal, args.yum_security,
+      args.yum_exclusive_packages
+  ]):
     return None
+
+  return messages.YumSettings(
+      excludes=args.yum_excludes if args.yum_excludes else [],
+      minimal=args.yum_minimal,
+      security=args.yum_security,
+      exclusivePackages=args.yum_exclusive_packages
+      if args.yum_exclusive_packages else [],
+  )
 
 
 def _GetZypperSettings(args, messages):
   """Create ZypperSettings from input arguments."""
-  for arg in [
+  if not any([
       args.zypper_categories, args.zypper_severities, args.zypper_with_optional,
-      args.zypper_with_update
-  ]:
-    if arg:
-      return messages.ZypperSettings(
-          categories=args.zypper_categories if args.zypper_categories else [],
-          severities=args.zypper_severities if args.zypper_severities else [],
-          withOptional=args.zypper_with_optional,
-          withUpdate=args.zypper_with_update,
-      )
-  return None
+      args.zypper_with_update, args.zypper_exclusive_patches
+  ]):
+    return None
+
+  return messages.ZypperSettings(
+      categories=args.zypper_categories if args.zypper_categories else [],
+      severities=args.zypper_severities if args.zypper_severities else [],
+      withOptional=args.zypper_with_optional,
+      withUpdate=args.zypper_with_update,
+      exclusivePatches=args.zypper_exclusive_patches
+      if args.zypper_exclusive_patches else [],
+  )
 
 
 def _GetWindowsExecStepConfigInterpreter(messages, path):
@@ -541,6 +613,11 @@ class Execute(base.Command):
         $ {command} --instance-filter="name=my-instance" \
         --windows-classifications=SECURITY,CRITICAL
 
+  To update only 'KB4339284' on a Windows instance named 'my-instance', run:
+
+        $ {command} --instance-filter="name=my-instance" \
+        --windows-exclusive-patches=KB4339284
+
   To patch all instances in the current project and specify scripts to run
   pre-patch and post-patch, run:
 
@@ -572,18 +649,15 @@ class Execute(base.Command):
 
     duration = six.text_type(args.duration) + 's' if args.duration else None
     filter_arg = 'id=*' if not args.instance_filter else args.instance_filter
-    apt_settings = messages.AptSettings(
-        type=messages.AptSettings.TypeValueValuesEnum.DIST
-    ) if args.apt_dist else None
     reboot_config = getattr(
         messages.PatchConfig.RebootConfigValueValuesEnum,
         args.reboot_config.upper()) if args.reboot_config else None
     retry_strategy = messages.RetryStrategy(
         enabled=True) if args.retry else None
     patch_config = messages.PatchConfig(
-        apt=apt_settings,
         rebootConfig=reboot_config,
         retryStrategy=retry_strategy,
+        apt=_GetAptSettings(args, messages),
         windowsUpdate=_GetWindowsUpdateSettings(args, messages),
         yum=_GetYumSettings(args, messages),
         zypper=_GetZypperSettings(args, messages),

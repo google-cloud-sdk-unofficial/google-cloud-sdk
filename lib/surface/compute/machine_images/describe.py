@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.machine_images import flags
 
 
 class Describe(base.DescribeCommand):
-  """Display detailed information about a machine images."""
+  """Display detailed information about a machine image."""
 
   @staticmethod
   def Args(parser):

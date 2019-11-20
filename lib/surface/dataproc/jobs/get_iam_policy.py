@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
@@ -51,7 +50,7 @@ class GetIamPolicy(base.ListCommand):
     dataproc = dp.Dataproc(self.ReleaseTrack())
     msgs = dataproc.messages
 
-    job = util.ParseJob(args.job, dataproc)
+    job = args.CONCEPTS.job.Parse()
     request = msgs.DataprocProjectsRegionsJobsGetIamPolicyRequest(
         resource=job.RelativeName())
 

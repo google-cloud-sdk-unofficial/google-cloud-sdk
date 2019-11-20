@@ -55,14 +55,38 @@ class UnregisterCluster(base.DeleteCommand):
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     kube_client = hub_util.KubernetesClient(args)
+    uuid = hub_util.GetClusterUUID(kube_client)
+
+    # Delete membership from GKE Hub API.
+    try:
+      name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
+      hub_util.DeleteMembership(name)
+    except apitools_exceptions.HttpUnauthorizedError as e:
+      raise exceptions.Error(
+          'You are not authorized to unregister clusters from project [{}]. '
+          'Underlying error: {}'.format(project, e))
+    except apitools_exceptions.HttpNotFoundError as e:
+      log.status.Print(
+          'Membership for [{}] was not found. It may already have been '
+          'deleted, or it may never have existed. You can safely run the '
+          '`register-cluster` command again for this cluster.'.format(
+              args.context))
+
+    # Get namespace for the connect resource label.
+    selector = '{}={}'.format(hub_util.CONNECT_RESOURCE_LABEL, project)
+    namespaces = kube_client.NamespacesWithLabelSelector(selector)
+    if not namespaces:
+      raise exceptions.Error('There\'s no namespace for the label {}. '
+                             'If gke-connect is labeled with another project,'
+                             'You\'ll have to manually delete the namespace.'
+                             'You can find all namespaces by running:\n\n'
+                             '  `kubectl get ns -l {}`'.format(
+                                 hub_util.CONNECT_RESOURCE_LABEL,
+                                 hub_util.CONNECT_RESOURCE_LABEL))
+
     registered_project = hub_util.GetMembershipCROwnerID(kube_client)
-    authorized_projects = hub_util.UserAccessibleProjectIDSet()
     if registered_project:
-      if registered_project not in authorized_projects:
-        raise exceptions.Error(
-            'The cluster is already registered to [{}], which you are not '
-            'authorized to access.'.format(registered_project))
-      elif registered_project != project:
+      if registered_project != project:
         raise exceptions.Error(
             'This cluster is registered to another project [{}]. '
             'Please unregister this cluster from the correct project:\n\n'
@@ -71,50 +95,9 @@ class UnregisterCluster(base.DeleteCommand):
                     hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
                     registered_project, args.context))
 
-    if project not in authorized_projects:
-      raise exceptions.Error(
-          'The project you are attempting to register with [{}] either '
-          'doesn\'t exist or you are not authorized to access it.'.format(
-              project))
+    # Delete membership resources.
+    hub_util.DeleteMembershipResources(kube_client)
 
-    uuid = hub_util.GetClusterUUID(kube_client)
-    try:
-      registered_membership_project = hub_util.ProjectForClusterUUID(
-          uuid, [project, registered_project])
-    except apitools_exceptions.HttpNotFoundError as e:
-      raise exceptions.Error(
-          'Could not access Memberships API. Is your project whitelisted for '
-          'API access? Underlying error: {}'.format(e))
-
-    if registered_membership_project and project != registered_membership_project:
-      raise exceptions.Error(
-          'This cluster is registered to another project [{}]. '
-          'Please unregister this cluster from the appropriate project:\n\n'
-          '  gcloud {}container hub unregister-cluster --project {} --context {}'
-          .format(registered_membership_project,
-                  hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
-                  registered_membership_project, args.context))
-
-    if not registered_membership_project:
-      log.status.Print(
-          'Membership for [{}] was not found. It may already have been '
-          'deleted, or it may never have existed. You can safely run the '
-          '`register-cluster` command again for this cluster.'.format(
-              args.context))
-      # There is no Membership for this cluster, but there is a Membership CR.
-      # We can safely remove the Membership CR, so users can register to another
-      # hub without issue.
-      if registered_project:
-        hub_util.DeleteMembershipResources(kube_client)
-      return
+    # Delete the connect agent.
     hub_util.DeleteConnectNamespace(args)
-
-    try:
-      name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
-      hub_util.DeleteMembership(name)
-      hub_util.DeleteMembershipResources(kube_client)
-    except apitools_exceptions.HttpUnauthorizedError as e:
-      raise exceptions.Error(
-          'You are not authorized to unregister clusters from project [{}]. '
-          'Underlying error: {}'.format(project, e))
 # LINT.ThenChange(../memberships/unregister.py)

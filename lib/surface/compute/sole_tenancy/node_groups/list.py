@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine node groups."""
+  """List Compute Engine node groups."""
 
   @staticmethod
   def Args(parser):

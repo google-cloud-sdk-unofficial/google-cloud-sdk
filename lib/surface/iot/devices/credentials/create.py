@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""`gcloud iot credentials create` command."""
+"""`gcloud iot devices credentials create` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,6 +32,19 @@ class Create(base.CreateCommand):
 
   A device may have at most 3 credentials.
   """
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To add an RSA public key wrapped in an X.509v3 certificate to a device, run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device --path=/path/to/cert.pem --type=rsa-x509-pem
+
+          To add a public key for the ECDSA algorithm to a device, run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device --path=/path/to/ec_public.pem --type=es256-pem
+          """,
+  }
 
   @staticmethod
   def Args(parser):

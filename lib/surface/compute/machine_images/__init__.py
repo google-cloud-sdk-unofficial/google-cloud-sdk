@@ -24,4 +24,4 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class MachineImage(base.Group):
-  """Read and manage Google Compute Engine machine image resources."""
+  """Read and manage Compute Engine machine image resources."""

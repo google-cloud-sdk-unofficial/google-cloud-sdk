@@ -42,6 +42,15 @@ AUTO_DELETE_OVERRIDE_CHOICES = {
     'all': 'All disk types.',
 }
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+    To delete an instance called 'instance-1' in the zone 'us-central-2-a', run:
+
+      $ {command} instance-1 --zone=us-central2-a
+
+  """
+}
+
 
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine virtual machine instances.
@@ -207,3 +216,5 @@ class Delete(base.DeleteCommand):
                               request_protobuf))
 
     return client.MakeRequests(delete_requests)
+
+Delete.detailed_help = DETAILED_HELP

@@ -23,10 +23,23 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import presto
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To add a Presto job executing query 'QUERY' to a the workflow template
+      'my-workflow-template' in region 'us-central1' with step-id 'my-step-id'
+      , run:
+
+        $ {command} --step-id=my-step_id -e=QUERY --workflow-template=my-workflow-template --region=us-central1
+      """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Presto(presto.PrestoBase, base.Command):
   """Add a Presto job to the workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

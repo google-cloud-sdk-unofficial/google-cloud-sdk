@@ -195,30 +195,28 @@ class AlphaCreate(BetaCreate):
 
 Create.detailed_help = {
     'brief': 'Create a Google Compute Engine firewall rule.',
-    'DESCRIPTION':
-        """\
-        *{command}* is used to create firewall rules to allow/deny
-        incoming/outgoing traffic.
-        """,
-    'EXAMPLES':
-        """\
-      To create a firewall rule allowing incoming TCP traffic on port 8080, run:
+    'DESCRIPTION': """
+*{command}* is used to create firewall rules to allow/deny
+incoming/outgoing traffic.
+""",
+    'EXAMPLES': """
+To create a firewall rule allowing incoming TCP traffic on port 8080, run:
 
-        $ {command} FooService --allow tcp:8080 \
---description "Allow incoming traffic on TCP port 8080" --direction INGRESS
+  $ {command} FooService --allow=tcp:8080
+      --description="Allow incoming traffic on TCP port 8080" --direction=INGRESS
 
-      To create a firewall rule that allows TCP traffic through port 80 and
-      determines a list of specific IP address blocks that are allowed to make
-      inbound connections, run:
+To create a firewall rule that allows TCP traffic through port 80 and
+determines a list of specific IP address blocks that are allowed to make
+inbound connections, run:
 
-        $ {command} "tcp-rule" --allow tcp:80 \
---source-ranges="10.0.0.0/22,10.0.0.0/14" --description="Narrowing TCP traffic"
+  $ {command} "tcp-rule" --allow=tcp:80
+      --source-ranges="10.0.0.0/22,10.0.0.0/14" --description="Narrowing TCP traffic"
 
-      To list existing firewall rules, run:
+To list existing firewall rules, run:
 
-        $ gcloud compute firewall-rules list
+  $ gcloud compute firewall-rules list
 
-      For more detailed examples see
-      [](https://cloud.google.com/vpc/docs/using-firewalls)
-        """,
+For more detailed examples see
+[](https://cloud.google.com/vpc/docs/using-firewalls)
+  """,
 }

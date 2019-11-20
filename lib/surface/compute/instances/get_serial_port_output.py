@@ -39,6 +39,13 @@ class GetSerialPortOutput(base.Command):
   information can be useful for diagnostic purposes.
   """
 
+  detailed_help = {
+      'EXAMPLES': """
+  To get the output from instance's serial port, run:
+
+    $ {command} example-instance --zone=us-central1-b
+  """}
+
   @staticmethod
   def Args(parser):
     """Add expected arguments."""

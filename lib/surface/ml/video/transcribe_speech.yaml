@@ -4,6 +4,10 @@
     brief: Transcribe speech in a video.
     description: |
       Transcribe speech within a video.
+    examples: |
+      To transcribe speech in video file 'gs://my_bucket/input_file.mp4':
+
+        $ {command} gs://my_bucket/input_file.mp4
   request:
     _COMMON_: request
     static_fields:

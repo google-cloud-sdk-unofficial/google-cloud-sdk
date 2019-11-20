@@ -31,6 +31,17 @@ from googlecloudsdk.core import log
 class Update(base.UpdateCommand):
   """Update an existing device."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        The following command updates the device 'my-device' in device registry 'my-registry' in region 'us-central1'. It blocks the device and sets metadata values.
+
+          $ {command} my-device --region=us-central1 --registry=my-registry --blocked --metadata=key1=value1,key2=value2
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddDeviceResourceArg(parser, 'to update')
@@ -60,6 +71,17 @@ class Update(base.UpdateCommand):
                     base.ReleaseTrack.BETA)
 class UpdateAlpha(base.UpdateCommand):
   """Update an existing device."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+      The following command updates the device 'my-device' in device registry 'my-registry' in region 'us-central1'. It blocks the device and sets metadata values.
+
+        $ {command} my-device --region=us-central1 --registry=my-registry --blocked --metadata=key1=value1,key2=value2
+      """,
+  }
 
   @staticmethod
   def Args(parser):

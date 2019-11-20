@@ -319,6 +319,17 @@ def ParseCreateOptionsBase(args):
 class Create(base.CreateCommand):
   """Create a cluster for running containers."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To create a cluster with the default configuration, run:
+
+            $ {command} sample-cluster
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     _Args(parser)
@@ -336,7 +347,8 @@ class Create(base.CreateCommand):
     flags.AddIPAliasFlags(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDFlag(parser)
-    flags.AddMaintenanceWindowGroup(parser)
+    flags.AddMaintenanceWindowGroup(parser, hidden=False,
+                                    recurring_windows_hidden=True)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddNetworkPolicyFlags(parser)

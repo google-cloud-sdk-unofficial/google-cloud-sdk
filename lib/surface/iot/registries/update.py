@@ -64,6 +64,17 @@ def _Run(args,
 class Update(base.UpdateCommand):
   """Update a device registry."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        The following command updates the device registry 'my-registry' in region 'us-central1'. It enables MQTT and HTTP connections and sets 'pubsub-topic-name' as the Cloud Pub/Sub topic for state notifications.
+
+          $ {command} my-registry --region=us-central1 --enable-http-config --enable-mqtt-config --state-pubsub-topic=pubsub-topic-name
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddRegistryResourceArg(parser, 'to update')

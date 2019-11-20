@@ -26,7 +26,16 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes a Google Compute Engine node template."""
+  """Delete a Compute Engine node template."""
+
+  detailed_help = {
+      'brief': 'Delete a Google Compute Engine node template.',
+      'EXAMPLES': """
+         To delete a node template, run:
+
+           $ {command} my-node-template
+       """
+  }
 
   @staticmethod
   def Args(parser):

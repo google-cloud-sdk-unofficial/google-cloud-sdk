@@ -27,16 +27,27 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'brief': 'Stop a virtual machine instance.',
+    'DESCRIPTION':
+        """\
+        *{command}* is used to stop a Google Compute Engine virtual machine.
+        Stopping a VM performs a clean shutdown, much like invoking the shutdown
+        functionality of a workstation or laptop. Stopping a VM with a local SSD
+        is not supported and will result in an API error.
+        """,
+    'EXAMPLES':
+        """\
+        To stop an instance named ``test-instance'', run:
+
+          $ {command} test-instance
+      """
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Stop(base.SilentCommand):
-  """Stop a virtual machine instance.
-
-  *{command}* is used to stop a Google Compute Engine virtual machine.
-  Stopping a VM performs a clean shutdown, much like invoking the shutdown
-  functionality of a workstation or laptop. Stopping a VM with a local SSD
-  is not supported and will result in an API error.
-  """
+  """Stop a virtual machine instance."""
 
   @staticmethod
   def Args(parser):
@@ -95,13 +106,7 @@ class Stop(base.SilentCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StopAlpha(Stop):
-  """Stop a virtual machine instance.
-
-  *{command}* is used stop a Google Compute Engine virtual machine.
-  Stopping a VM performs a clean shutdown, much like invoking the shutdown
-  functionality of a workstation or laptop. Stopping a VM with a local SSD
-  is not supported and will result in an API error.
-  """
+  """Stop a virtual machine instance."""
 
   @staticmethod
   def Args(parser):
@@ -126,3 +131,7 @@ class StopAlpha(Stop):
              self._CreateStopRequest(client, instance_ref,
                                      args.discard_local_ssd))
             for instance_ref in instance_refs]
+
+
+Stop.detailed_help = DETAILED_HELP
+StopAlpha.detailed_help = DETAILED_HELP

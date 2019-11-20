@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -27,18 +28,22 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.Command):
-  """Describe domain mappings."""
+  """Describe domain mappings for Cloud Run for Anthos."""
 
   detailed_help = {
       'DESCRIPTION':
-          '{description}',
+          """\
+          {description}
+
+          For domain mapping support with fully managed Cloud Run, use
+          `gcloud beta run domain-mappings describe`.""",
       'EXAMPLES':
           """\
           To describe a Cloud Run domain mapping, run:
 
-              $ {command} --domain www.example.com
+              $ {command} --domain=www.example.com
           """,
   }
 
@@ -59,10 +64,17 @@ class Describe(base.Command):
   def Args(parser):
     Describe.CommonArgs(parser)
 
+  def _CheckPlatform(self, args):
+    if flags.IsManaged(args):
+      raise exceptions.PlatformError(
+          'This command is in beta for fully managed Cloud Run; '
+          'use `gcloud beta run domain-mappings describe`.')
+
   def Run(self, args):
     """Describe a domain mapping."""
+    self._CheckPlatform(args)
     conn_context = connection_context.GetConnectionContext(
-        args, self.ReleaseTrack())
+        args, product=connection_context.Product.RUN)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
       domain_mapping = client.GetDomainMapping(domain_mapping_ref)
@@ -73,12 +85,33 @@ class Describe(base.Command):
       return domain_mapping
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDescribe(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaDescribe(Describe):
   """Describe domain mappings."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To describe a Cloud Run domain mapping, run:
+
+              $ {command} --domain=www.example.com
+          """,
+  }
 
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
 
-AlphaDescribe.__doc__ = Describe.__doc__
+  def _CheckPlatform(self, args):
+    pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(BetaDescribe):
+  """Describe domain mappings."""
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)

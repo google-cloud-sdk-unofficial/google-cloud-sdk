@@ -38,6 +38,17 @@ table(
 class List(base.ListCommand):
   """List device registries."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To list all device registries in a project and region 'us-central1', run:
+
+          $ {command} --region=us-central1
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddRegionResourceArg(parser, 'to list registries for')

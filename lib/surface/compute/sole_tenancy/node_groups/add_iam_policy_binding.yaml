@@ -1,8 +1,8 @@
 release_tracks: [ALPHA, BETA, GA]
 help_text:
-  brief: Add IAM policy binding to a Google Compute Engine node group.
+  brief: Add IAM policy binding to a Compute Engine node group.
   description: |
-    Add an IAM policy binding to a Google Compute Engine node group.
+    Add an IAM policy binding to a Compute Engine node group.
 
   examples: |
     To add an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
@@ -42,9 +42,9 @@ arguments:
 
 ALPHA:
   help_text:
-    brief: Add IAM policy binding to a Google Compute Engine node group.
+    brief: Add IAM policy binding to a Compute Engine node group.
     description: |
-      Add an IAM policy binding to the IAM policy of a Google Compute Engine node group. One binding consists of a member,
+      Add an IAM policy binding to the IAM policy of a Compute Engine node group. One binding consists of a member,
       a role, and an optional condition.
 
     examples: |

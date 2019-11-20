@@ -24,7 +24,16 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine node templates."""
+  """List Compute Engine node templates."""
+
+  detailed_help = {
+      'brief': 'List Compute Engine node templates.',
+      'EXAMPLES': """
+         To list node templates, run:
+
+           $ {command}
+       """
+  }
 
   @staticmethod
   def Args(parser):

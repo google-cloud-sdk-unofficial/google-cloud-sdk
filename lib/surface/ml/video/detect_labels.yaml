@@ -6,6 +6,10 @@
       Detect general categories in videos, such as modes of transportation or
       animals. Use the --detection-mode flag to control whether labels are
       detected for shots, frames, or both.
+    examples: |
+      To detect labels in video file 'gs://my_bucket/input_file.mp4':
+
+        $ {command} gs://my_bucket/input_file.mp4
 
   request:
     _COMMON_: request

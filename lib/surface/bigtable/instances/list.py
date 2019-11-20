@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
@@ -31,6 +33,15 @@ def _GetUriFunction(resource):
 
 class ListInstances(base.ListCommand):
   """List existing Bigtable instances."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To list all instances, run:
+
+            $ {command}
+          """),
+  }
 
   @staticmethod
   def Args(parser):

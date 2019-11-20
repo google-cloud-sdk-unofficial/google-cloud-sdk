@@ -38,6 +38,20 @@ class SetDiskAutoDelete(base.UpdateCommand):
   instance it is attached to is deleted.
   """
 
+  detailed_help = {
+      'EXAMPLES': """
+          To enable auto-delete for a disk named 'my-disk' on an instance
+          named 'my-instance', run:
+
+            $ {command} my-instance --auto-delete --disk=my-disk
+
+          To enable auto-delete for a device named 'my-device' on an instance
+          named 'my-instance', run:
+
+            $ {command} my-instance --auto-delete --device-name=my-device
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(parser)

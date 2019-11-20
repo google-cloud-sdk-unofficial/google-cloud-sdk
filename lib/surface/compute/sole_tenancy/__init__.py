@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class SoleTenancy(base.Group):
-  """Read and manage Google Compute Engine sole-tenancy resources."""
+  """Read and manage Compute Engine sole-tenancy resources."""
 
 
 SoleTenancy.category = base.INSTANCES_CATEGORY

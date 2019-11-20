@@ -41,7 +41,12 @@ class TailSerialPortOutput(base.Command):
   from the instance will be printed to standard output. This
   information can be useful for diagnostic purposes.
   """
-  # pylint:enable=line-too-long
+  detailed_help = {
+      'EXAMPLES': """
+  To fetch new output from instance's serial port and display it, run:
+
+    $ {command} example-instance --zone=us-central1-b
+  """}
 
   POLL_SLEEP_SECS = 10
 

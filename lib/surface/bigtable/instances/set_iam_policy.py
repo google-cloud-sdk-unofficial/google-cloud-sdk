@@ -28,6 +28,9 @@ from googlecloudsdk.command_lib.iam import iam_util
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a Cloud Bigtable instance."""
 
+  detailed_help = iam_util.GetDetailedHelpForSetIamPolicy(
+      'instance', example_id='my-instance-id', use_an=True)
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

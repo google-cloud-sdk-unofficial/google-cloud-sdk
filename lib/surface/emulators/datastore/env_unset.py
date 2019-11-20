@@ -28,12 +28,12 @@ class EnvUnset(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To print the commands necessary to unset the env variables for
-          a datastore emulator, run:
+      'EXAMPLES': """
+To print the commands necessary to unset the env variables for
+a datastore emulator, run:
 
-            $ {command} --data-dir DATA-DIR
-          """,
+  $ {command} --data-dir=DATA-DIR
+""",
   }
 
   @staticmethod

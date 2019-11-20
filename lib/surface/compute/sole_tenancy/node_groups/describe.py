@@ -25,7 +25,16 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describes a Google Compute Engine node group."""
+  """Describe a Compute Engine node group."""
+
+  detailed_help = {
+      'brief': 'Describe a Compute Engine node group.',
+      'EXAMPLES': """
+         To describe a node group, run:
+
+           $ {command} my-node-group
+       """
+  }
 
   @staticmethod
   def Args(parser):

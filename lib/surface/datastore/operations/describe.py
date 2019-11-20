@@ -27,6 +27,19 @@ from googlecloudsdk.core import resources
 class Describe(base.DescribeCommand):
   """Retrieves information about a Cloud Datastore admin operation."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To see information on the operation with id `exampleId`, run:
+
+            $ {command} exampleId
+
+          or
+
+            $ {command} projects/your-project-id/operations/exampleId
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

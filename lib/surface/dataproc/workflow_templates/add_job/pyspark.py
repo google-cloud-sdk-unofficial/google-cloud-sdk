@@ -23,9 +23,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import pyspark
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To add a PySpark job with archives 'archive1.tgz' and 'archive2.zip' to a the
+      workflow template 'my-workflow-template' in region 'us-central1' with
+      step-id 'my-step-id', run:
+
+        $ {command} --step-id=my-step_id --archives="archive1.tgz,archive2.zip" --workflow-template=my-workflow-template --region=us-central1
+      """,
+}
+
 
 class PySpark(pyspark.PySparkBase, base.Command):
   """Add a PySpark job to the workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

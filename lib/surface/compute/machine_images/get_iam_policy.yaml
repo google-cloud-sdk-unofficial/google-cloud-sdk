@@ -3,10 +3,10 @@ release_tracks: [ALPHA]
 help_text:
   brief: Get the IAM policy for a Google Compute Engine machine image.
   description: |
-    *{command}* displays the IAM policy associated with a Google Compute Engine machine image in a
-    project. If formatted as JSON, the output can be edited and used as a policy file for
-    set-iam-policy. The output includes an "etag" field identifying the version emitted and allowing
-    detection of concurrent policy updates; see $ {parent} set-iam-policy for additional details.
+    *{command}* displays the IAM policy associated with a Compute Engine machine image in a
+    project. If formatted as JSON, the output can be edited and used as a policy file for {command}
+    set-iam-policy. The output includes an `etag` field that identifies the version emitted and
+    allows detection of concurrent policy updates; see $ {command} set-iam-policy for additional details.
   examples: |
     To print the IAM policy for a given machine image, run:
 

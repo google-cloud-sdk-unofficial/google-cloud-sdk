@@ -32,11 +32,11 @@ class Delete(base.DeleteCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To delete a waiter named "my-waiter" within a configuration named
           "my-config", run:
 
-            $ {command} my-waiter --config-name my-config
+            $ {command} my-waiter --config-name=my-config
           """,
   }
 

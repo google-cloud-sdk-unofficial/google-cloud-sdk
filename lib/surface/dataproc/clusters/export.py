@@ -36,6 +36,18 @@ class Export(base.DescribeCommand):
   command.
   """
 
+  detailed_help = {
+      'EXAMPLES': """
+To export a cluster to a YAML file, run:
+
+  $ {command} my_cluster --region=us-central1 --destination=cluster.yaml
+
+To export a cluster to standard output, run:
+
+  $ {command} my_cluster --region=us-central1
+"""
+  }
+
   @classmethod
   def GetApiVersion(cls):
     """Returns the API version based on the release track."""

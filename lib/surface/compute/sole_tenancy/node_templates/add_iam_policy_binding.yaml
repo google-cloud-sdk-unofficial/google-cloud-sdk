@@ -1,8 +1,8 @@
 release_tracks: [GA, BETA, ALPHA]
 help_text:
-  brief: Add IAM policy binding to a Google Compute Engine node template.
+  brief: Add IAM policy binding to a Compute Engine node template.
   description: |
-    Add an IAM policy binding to a Google Compute Engine node template.
+    Add an IAM policy binding to a Compute Engine node template.
 
   examples: |
     To add an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
@@ -42,9 +42,9 @@ arguments:
 
 ALPHA:
   help_text:
-    brief: Add IAM policy binding to a Google Compute Engine node template.
+    brief: Add IAM policy binding to a Compute Engine node template.
     description: |
-      Add an IAM policy binding to the IAM policy of a Google Compute Engine node template. One binding consists of a member,
+      Add an IAM policy binding to the IAM policy of a Compute Engine node template. One binding consists of a member,
       a role, and an optional condition.
 
     examples: |

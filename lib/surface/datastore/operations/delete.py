@@ -28,6 +28,19 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.DeleteCommand):
   """Delete a completed Cloud Datastore admin operation."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete the completed operation with id `exampleId`, run:
+
+            $ {command} exampleId
+
+          or
+
+            $ {command} projects/your-project-id/operations/exampleId
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

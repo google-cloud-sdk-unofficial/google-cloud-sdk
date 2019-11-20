@@ -25,11 +25,13 @@ from googlecloudsdk.command_lib.monitoring import resource_args
 from googlecloudsdk.command_lib.monitoring import util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Update a notification channel."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Updates a notification channel.
 
           If `--channel-content` or `--channel-content-from-file` are specified:
@@ -48,6 +50,13 @@ class Create(base.CreateCommand):
 
           *Note:* When specifying the Channel as a YAML/JSON, the use of
           `channelLabels` as an alternative name for `labels` is supported.
+
+          ## EXAMPLES
+          The following command updates an existing email notification channel to point from
+          its original email address to "newaddress@newdomain.tld":
+
+            $ {command} "projects/12345/notificationChannels/67890" \
+              --update-channel-labels=email_address=newaddress@newdomain.tld
        """
   }
 

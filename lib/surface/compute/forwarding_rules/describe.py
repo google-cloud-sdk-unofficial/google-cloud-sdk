@@ -64,7 +64,7 @@ class Describe(base.DescribeCommand):
 
   To get details about a regional forwarding rule, run:
 
-    $ {command} FORWARDING-RULE --region us-central1
+    $ {command} FORWARDING-RULE --region=us-central1
   """
 
   FORWARDING_RULE_ARG = None

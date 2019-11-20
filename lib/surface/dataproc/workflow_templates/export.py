@@ -25,6 +25,16 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To export version 1.0 of workflow template for 'my-workflow-template' in region
+      'us-central1' to template.yaml, run:
+
+        $ {command} my-workflow-template --region=us-central1 --destination=path/to/template.yaml --version=1.0
+      """,
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
@@ -34,6 +44,8 @@ class Describe(base.DescribeCommand):
   Exports a workflow template's configuration to a file.
   This configuration can be imported at a later time.
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def GetSchemaPath(api_version, for_help=False):

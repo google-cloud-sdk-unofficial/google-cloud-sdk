@@ -25,7 +25,16 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_templates import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describes a Google Compute Engine node template."""
+  """Describe a Compute Engine node template."""
+
+  detailed_help = {
+      'brief': 'Describe a Compute Engine node template.',
+      'EXAMPLES': """
+         To describe a node template, run:
+
+           $ {command} my-node-template
+       """
+  }
 
   @staticmethod
   def Args(parser):

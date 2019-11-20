@@ -31,6 +31,15 @@ class List(base.ListCommand):
   flag.
   """
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list the 3 latest configurations of a device in region 'us-central1', run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device --limit=3
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(

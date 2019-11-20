@@ -26,11 +26,11 @@ from googlecloudsdk.command_lib.compute.machine_images import flags
 
 
 class Delete(base.DeleteCommand):
-  """Delete Google Compute Engine machine images.
+  """Delete Compute Engine machine images.
 
-  *{command}* deletes one or more Google Compute Engine
+  *{command}* deletes one or more Compute Engine
   machine images. Machine images can be deleted only if they are not
-  being used to restore any virtual machine instances.
+  being used to restore virtual machine instances.
   """
 
   @staticmethod

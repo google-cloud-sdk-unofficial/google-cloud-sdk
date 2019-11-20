@@ -97,4 +97,11 @@ SimulateMaintenanceEvent.detailed_help = {
         *{command}* simulates a maintenance event on Google
         Compute Engine virtual machines.
         """,
+    'EXAMPLES':
+        """\
+        To simulate a maintenance event on an instance named ``{0}''
+        located in zone ``{1}'', run:
+
+          $ {2} {0} --zone={1}
+        """.format('test-instance', 'us-east1-d', '{command}')
 }

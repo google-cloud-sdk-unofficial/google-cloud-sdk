@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 
 
 class SoleTenancyNodeGroups(base.Group):
-  """Read Google Compute Engine sole-tenancy node groups."""
+  """Read Compute Engine sole-tenancy node groups."""

@@ -35,16 +35,16 @@ class List(base.ListCommand):
   DEFAULT_PAGE_SIZE = 100
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To list all waiters within the configuration named "my-config", run:
 
-            $ {command} --config-name my-config
+            $ {command} --config-name=my-config
 
           The --filter parameter can be used to filter results based on content.
           For example, to list all waiters with names that begin with 'foo',
           run:
 
-            $ {command} --config-name my-config --filter 'name=foo*'
+            $ {command} --config-name=my-config --filter='name=foo*'
           """,
   }
 

@@ -33,7 +33,7 @@ MODE_OPTIONS = {
 }
 
 DETAILED_HELP = {
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* is used to attach a disk to an instance. For example,
 
           $ gcloud compute instances attach-disk example-instance --disk DISK --zone us-central1-a
@@ -45,6 +45,17 @@ DETAILED_HELP = {
         [format and mount](https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting)
         the disk so that the operating system can use the available storage
         space.
+        """,
+    'EXAMPLES': """
+        To attach a disk named 'my-disk' as a boot disk to an instance named
+        'my-instance', run:
+
+          $ {command} my-instance --disk=my-disk --boot
+
+        To attach a device named 'my-device' for read-only access to an
+        instance named 'my-instance', run:
+
+          $ {command} my-instance --device-name=my-device --mode=ro
         """,
 }
 

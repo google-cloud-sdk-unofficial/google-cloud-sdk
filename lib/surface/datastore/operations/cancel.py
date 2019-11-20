@@ -28,6 +28,19 @@ from googlecloudsdk.core.console import console_io
 class Cancel(base.Command):
   """Cancel a currently-running Cloud Datastore admin operation."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To cancel the currently-running operation with id `exampleId`, run:
+
+            $ {command} exampleId
+
+          or
+
+            $ {command} projects/your-project-id/operations/exampleId
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

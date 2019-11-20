@@ -3,6 +3,10 @@
   help_text:
     brief: Show details about the latest configuration for a device.
     description: Show details about the latest configuration for a device.
+    examples: |
+     To show the details of the latest configuration for a device in region 'us-central1', run:
+
+       $ {command} --region=us-central1 --registry=my-registry --device=my-device
 
   request:
     collection: cloudiot.projects.locations.registries.devices

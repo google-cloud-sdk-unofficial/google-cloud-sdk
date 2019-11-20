@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
@@ -27,6 +29,16 @@ from googlecloudsdk.core import resources
 
 class DescribeInstance(base.DescribeCommand):
   """Describe an existing Bigtable instance."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To view an instance's description, run:
+
+            $ {command} my-instance-id
+
+          """),
+  }
 
   @staticmethod
   def Args(parser):

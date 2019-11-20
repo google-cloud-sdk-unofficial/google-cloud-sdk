@@ -124,7 +124,7 @@ ListInstances.detailed_help = {
         group `my-group`, including per-instance overrides, run:
 
             $ {command} \\
-                  my-group --format yaml
+                  my-group --format=yaml
         """
 }
 

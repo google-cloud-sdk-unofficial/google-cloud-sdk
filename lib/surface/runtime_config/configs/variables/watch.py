@@ -43,17 +43,17 @@ class Watch(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To wait for a variable to change or be deleted, run:
 
-            $ {command} my-var --config-name my-config
+            $ {command} my-var --config-name=my-config
 
           This command will return after the variable changes,
           is deleted, or a server-defined timeout elapses.
 
           To wait for user-specified period of 20 seconds, run:
 
-            $ {command} my-var --config-name my-config --max-wait 20
+            $ {command} my-var --config-name=my-config --max-wait=20
 
           If a watch command returns due to a timeout, the command's exit value
           will be 2. All other errors result in an exit value of 1. If the
@@ -65,7 +65,7 @@ class Watch(base.Command):
           variable has changed since the time passed to --newer-than, the
           command returns without waiting. For example:
 
-            $ {command} my-var --config-name my-config --newer-than "2016-04-05T12:00:00Z"
+            $ {command} my-var --config-name=my-config --newer-than="2016-04-05T12:00:00Z"
           """,
   }
 

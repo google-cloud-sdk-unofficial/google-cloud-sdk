@@ -10,6 +10,10 @@
       The response includes a bucketized likelihood value, from VERY_UNLIKELY to
       VERY_LIKELY. When Explicit Content Detection evaluates a video, it does so on
       a per-frame basis and considers visual content only (not audio).
+    examples: |
+      To detect explicit content in a video file named 'gs://my_bucket/input_file.mp4', run the following command.:
+
+        $ {command} gs://my_bucket/input_file.mp4
 
   request:
     _COMMON_: request

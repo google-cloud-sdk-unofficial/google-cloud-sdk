@@ -3,6 +3,14 @@
   help_text:
     brief: Sends a command to a device.
     description: Sends a command to a device.
+    examples: |
+     To send a simple command to a device in 'my-registry' and region 'us-central1' using a special command subfolder, run:
+
+       $ {command} --region=us-central1 --registry=my-registry --device=my-device --command-data="restart job" --subfolder="/jobs/metric_collector"
+
+     To send a command containing special characters to a device in 'my-registry' and region 'us-central1', run:
+
+       $ {command} --region=us-central1 --registry=my-registry --device=my-device --command-file=/path/to/command.file
 
   request:
     collection: cloudiot.projects.locations.registries.devices

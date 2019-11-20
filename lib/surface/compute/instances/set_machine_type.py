@@ -112,4 +112,10 @@ SetMachineType.detailed_help = {
         See [](https://cloud.google.com/compute/docs/machine-types) for more
         information on machine types.
         """,
+    'EXAMPLES': """
+      To change the machine type of a VM to `n1-standard-4`, run:
+
+        $ {command} example-instance --zone=us-central1-b --machine-type=n1-standard-4
+
+      """
 }

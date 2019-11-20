@@ -135,7 +135,7 @@ Update.detailed_help = {
 
         Change minimum default ports allocated per VM associated with NAT:
 
-          $ {command} nat1 --router=my-router --min-default-ports-per-vm=128
+          $ {command} nat1 --router=my-router --min-ports-per-vm=128
 
         Change connection timeouts associated with NAT:
 

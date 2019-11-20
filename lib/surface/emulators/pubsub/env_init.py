@@ -34,14 +34,14 @@ class EnvInit(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To print the env variables exports for a pubsub emulator, run:
+      'EXAMPLES': """
+To print the env variables exports for a pubsub emulator, run:
 
-            $ {command} --data-dir DATA-DIR
+  $ {command} --data-dir=DATA-DIR
 
-          For a detailed walkthrough of setting Pub/Sub emulator environment
-          variables, see https://cloud.google.com/pubsub/docs/emulator#env.
-          """,
+For a detailed walkthrough of setting Pub/Sub emulator environment
+variables, see https://cloud.google.com/pubsub/docs/emulator#env.
+""",
   }
 
   @staticmethod

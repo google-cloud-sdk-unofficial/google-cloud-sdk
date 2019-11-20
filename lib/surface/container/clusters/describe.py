@@ -27,6 +27,17 @@ from surface.container.clusters.upgrade import VersionVerifier
 class Describe(base.DescribeCommand):
   """Describe an existing cluster for running containers."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To describe an existing cluster, run:
+
+            $ {command} sample-cluster
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

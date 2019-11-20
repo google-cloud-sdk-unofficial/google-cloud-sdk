@@ -34,6 +34,13 @@ class SetSchedulingInstances(base.SilentCommand):
   Engine virtual machines.
   """
 
+  detailed_help = {
+      'EXAMPLES': """
+  To set instance to be terminated during maintenance, run:
+
+    $ {command} example-instance  --maintenance-policy=TERMINATE --zone=us-central1-b
+  """}
+
   @classmethod
   def Args(cls, parser):
     parser.add_argument(

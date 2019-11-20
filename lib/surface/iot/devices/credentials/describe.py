@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""`gcloud iot credentials describe` command."""
+"""`gcloud iot devices credentials describe` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,6 +28,15 @@ from googlecloudsdk.command_lib.iot import util
 
 class Describe(base.DescribeCommand):
   """Show details about a specific device credential."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To describe the first credential of a device in region 'us-central1', run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device 0
+          """,
+  }
 
   @staticmethod
   def Args(parser):

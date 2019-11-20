@@ -28,6 +28,15 @@ from googlecloudsdk.command_lib.util.args import labels_util
 class SetClusterSelector(base.UpdateCommand):
   """Set cluster selector for the workflow template."""
 
+  detailed_help = {
+      'EXAMPLES': """
+To set placement cluster selector labels on a workflow template, run:
+
+  $ {command} my_template --region=us-central1 \
+--cluster-labels=environment:production
+"""
+  }
+
   @classmethod
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())

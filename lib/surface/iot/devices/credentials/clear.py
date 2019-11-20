@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""`gcloud iot credentials delete` command."""
+"""`gcloud iot devices credentials clear` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,6 +28,15 @@ from googlecloudsdk.core.console import console_io
 
 class Clear(base.Command):
   """Delete all credentials from a device."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete all credentials from a device in region 'us-central1', run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device
+          """,
+  }
 
   @staticmethod
   def Args(parser):

@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
@@ -32,20 +34,21 @@ def _GetUriFunction(resource):
 
 
 class ListClusters(base.ListCommand):
-  """List existing Bigtable clusters.
+  """List existing Bigtable clusters."""
 
-  List existing Bigtable clusters.
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To list all clusters in an instance, run:
 
-  ## EXAMPLES
+            $ {command} --instances=my-instance-id
 
-  To list all clusters in an instance, run:
+          To list all clusters in multiple instances, run:
 
-    $ {command} --instances INSTANCE_NAME
+            $ {command} --instances=my-instance-id,my-other-instance-id
 
-  To list all clusters in any of several instances, run:
-
-    $ {command} --instances INSTANCE_NAME1,INSTANCE_NAME2
-  """
+          """),
+  }
 
   @staticmethod
   def Args(parser):

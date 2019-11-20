@@ -26,7 +26,6 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
-from googlecloudsdk.core import log
 
 
 def _DetailedHelp(include_l7_internal_load_balancing):
@@ -38,24 +37,22 @@ def _DetailedHelp(include_l7_internal_load_balancing):
   return {
       'brief':
           'Add a rule to a URL map to map hosts to a path matcher.',
-      'DESCRIPTION':
-          """\
-      *{command}* is used to add a mapping of hosts to a patch
-      matcher in a URL map. The mapping will match the host
-      component of HTTP requests to path matchers which in turn map
-      the request to a backend service. Before adding a host rule,
-      at least one path matcher must exist in the URL map to take
-      care of the path component of the requests.
-      `gcloud compute url-maps add-path-matcher` or
-      `gcloud compute url-maps edit` can be used to add path matchers.
-      """,
-      'EXAMPLES':
-          """\
-      To create a host rule mapping the ```*-foo.example.com``` and
-      ```example.com``` hosts to the ```www``` path matcher, run:
+      'DESCRIPTION': """
+*{command}* is used to add a mapping of hosts to a patch
+matcher in a URL map. The mapping will match the host
+component of HTTP requests to path matchers which in turn map
+the request to a backend service. Before adding a host rule,
+at least one path matcher must exist in the URL map to take
+care of the path component of the requests.
+`gcloud compute url-maps add-path-matcher` or
+`gcloud compute url-maps edit` can be used to add path matchers.
+""",
+      'EXAMPLES': """
+To create a host rule mapping the ```*-foo.example.com``` and
+```example.com``` hosts to the ```www``` path matcher, run:
 
-        $ {command} MY-URL-MAP --hosts '*-foo.example.com,example.com' --path-matcher-name www%s
-      """ % (global_arg,),
+  $ {command} MY-URL-MAP --hosts='*-foo.example.com,example.com' --path-matcher-name=www%s
+""" % (global_arg,),
   }
   # pylint:enable=line-too-long
 
@@ -183,9 +180,6 @@ class AddHostRule(base.UpdateCommand):
 
   def Run(self, args):
     """Issues requests necessary to add host rule to the Url Map."""
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      log.warning('The url-maps add-host-rule command will soon require '
-                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG)
 

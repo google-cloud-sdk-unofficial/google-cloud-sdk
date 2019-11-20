@@ -34,7 +34,7 @@ class Describe(base_commands.VariableRetrieverCommand):
       'EXAMPLES': """\
           To describe a variable named "my-var", run:
 
-            $ {command} --config-name my-config my-var
+            $ {command} --config-name=my-config my-var
           """,
   }
 

@@ -32,7 +32,6 @@ from googlecloudsdk.command_lib.compute.backend_services import (
     flags as backend_service_flags)
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 import six
 
@@ -46,31 +45,29 @@ def _DetailedHelp(include_l7_internal_load_balancing):
   return {
       'brief':
           'Add a path matcher to a URL map.',
-      'DESCRIPTION':
-          """\
-      *{command}* is used to add a path matcher to a URL map. A path
-      matcher maps HTTP request paths to backend services or backend
-      buckets. Each path matcher must be referenced by at least one
-      host rule. This command can create a new host rule through the
-      `--new-hosts` flag or it can reconfigure an existing host rule
-      to point to the newly added path matcher using `--existing-host`.
-      In the latter case, if a path matcher is orphaned as a result
-      of the operation, this command will fail unless
-      `--delete-orphaned-path-matcher` is provided.
-      """,
-      'EXAMPLES':
-          """\
-      To create a rule for mapping the path ```/search/*``` to the
-      hypothetical ```search-service```, ```/static/*``` to the
-      ```static-bucket``` backend bucket and ```/images/*``` to the
-      ```images-service``` under the hosts ```example.com``` and
-      ```*.example.com```, run:
+      'DESCRIPTION': """
+*{command}* is used to add a path matcher to a URL map. A path
+matcher maps HTTP request paths to backend services or backend
+buckets. Each path matcher must be referenced by at least one
+host rule. This command can create a new host rule through the
+`--new-hosts` flag or it can reconfigure an existing host rule
+to point to the newly added path matcher using `--existing-host`.
+In the latter case, if a path matcher is orphaned as a result
+of the operation, this command will fail unless
+`--delete-orphaned-path-matcher` is provided.
+""",
+      'EXAMPLES': """
+To create a rule for mapping the path ```/search/*``` to the
+hypothetical ```search-service```, ```/static/*``` to the
+```static-bucket``` backend bucket and ```/images/*``` to the
+```images-service``` under the hosts ```example.com``` and
+```*.example.com```, run:
 
-        $ {command} MY-URL-MAP --path-matcher-name MY-MATCHER --default-service MY-DEFAULT-SERVICE --backend-service-path-rules '/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules '/static/*=static-bucket' --new-hosts example.com '*.example.com'%s
+  $ {command} MY-URL-MAP --path-matcher-name=MY-MATCHER --default-service=MY-DEFAULT-SERVICE --backend-service-path-rules='/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules='/static/*=static-bucket' --new-hosts=example.com '*.example.com'%s
 
-      Note that a default service or default backend bucket must be
-      provided to handle paths for which there is no mapping.
-      """ % (global_arg,),
+Note that a default service or default backend bucket must be
+provided to handle paths for which there is no mapping.
+""" % (global_arg,),
   }
   # pylint:enable=line-too-long
 
@@ -380,9 +377,6 @@ class AddPathMatcher(base.UpdateCommand):
     _Args(parser)
 
   def Run(self, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      log.warning('The url-maps add-path-matcher command will soon require '
-                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG, self.BACKEND_SERVICE_ARG,
                 self.BACKEND_BUCKET_ARG)

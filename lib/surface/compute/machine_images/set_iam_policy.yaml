@@ -6,8 +6,8 @@ help_text:
     Sets the IAM policy for the given machine image as defined in a JSON or YAML file.
 
   examples: |
-    The following command will read am IAM policy defined in a JSON file
-    'policy.json' and set it for the machine image `my-image`:
+    The following command reads an IAM policy defined in a `policy.json` file
+     and sets the policy for the machine image `my-image`:
 
       $ {command} my-image policy.json
 

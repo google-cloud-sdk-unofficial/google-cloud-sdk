@@ -108,4 +108,11 @@ Rollback.detailed_help = {
 Rollback is a method used after a canceled or failed node-pool upgrade. It
 makes a best-effort attempt to revert the pool back to its original state.
 """,
+    'EXAMPLES':
+        """\
+        To roll back a canceled or failed upgrade in "node-pool-1" in the
+        cluster "sample-cluster", run:
+
+          $ {command} node-pool-1 --cluster=sample-cluster
+        """,
 }

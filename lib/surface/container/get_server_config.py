@@ -29,6 +29,17 @@ from googlecloudsdk.core import properties
 class GetServerConfig(base.Command):
   """Get Kubernetes Engine server config."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To get the Kubernetes Engine server configuration, run:
+
+            $ {command}
+          """,
+  }
+
   def __init__(self, *args, **kwargs):
     super(GetServerConfig, self).__init__(*args, **kwargs)
     self.location_get = container_command_util.GetZoneOrRegion

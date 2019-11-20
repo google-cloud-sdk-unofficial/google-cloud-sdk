@@ -31,6 +31,15 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.DeleteCommand):
   """Delete a credential from a registry."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete the first credential from a registry, run:
+
+            $ {command} --region=us-central1 --registry=my-registry 0
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddRegistryResourceArg(parser,

@@ -195,15 +195,15 @@ class DeprecateImages(base.SilentCommand):
 
 
 DeprecateImages.detailed_help = {
-    'EXAMPLES': """\
-        To deprecate an image called 'IMAGE' immediately, mark it as
-        obsolete in one day, and mark it as deleted in two days, use:
+    'EXAMPLES': """
+To deprecate an image called 'IMAGE' immediately, mark it as
+obsolete in one day, and mark it as deleted in two days, use:
 
-          $ {command} IMAGE --state DEPRECATED --obsolete-in 1d --delete-in 2d
+  $ {command} IMAGE --state=DEPRECATED --obsolete-in=1d --delete-in=2d
 
-        To un-deprecate an image called 'IMAGE' and clear times for deprecated,
-        obsoleted, and deleted, use:
+To un-deprecate an image called 'IMAGE' and clear times for deprecated,
+obsoleted, and deleted, use:
 
-          $ {command} IMAGE --state ACTIVE
-        """,
+  $ {command} IMAGE --state=ACTIVE
+""",
 }

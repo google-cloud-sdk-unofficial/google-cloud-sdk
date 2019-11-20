@@ -23,9 +23,21 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To create a workflow template named 'my-workflow-template' in region
+      'us-central1' with label params 'key1'='value1' and 'key2'='value2', run:
+
+        $ {command} my-workflow-template --region=us-central1 --labels="key1=value1,key2=value2"
+      """,
+}
+
 
 class Create(base.CreateCommand):
   """Create a workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

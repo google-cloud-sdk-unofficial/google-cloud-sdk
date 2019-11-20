@@ -31,6 +31,11 @@ class Delete(base.DeleteCommand):
 
   *{command}* deletes one or more Google Compute Engine virtual machine
   instance templates.
+
+  ## EXAMPLES
+  To delete the instance template named 'INSTANCE-TEMPLATE', run:
+
+    $ {command} INSTANCE-TEMPLATE
   """
 
   @staticmethod

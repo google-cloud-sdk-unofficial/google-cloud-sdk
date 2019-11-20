@@ -94,7 +94,6 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:preemptible
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:reserved
     - group:
-        mutex: true
         required: true
         params:
         - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:range

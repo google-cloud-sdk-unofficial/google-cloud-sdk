@@ -26,7 +26,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
-from googlecloudsdk.core import log
 
 
 def _DetailedHelp(include_l7_internal_load_balancing):
@@ -37,21 +36,19 @@ def _DetailedHelp(include_l7_internal_load_balancing):
   return {
       'brief':
           'Remove a host rule from a URL map.',
-      'DESCRIPTION':
-          """\
-      *{command}* is used to remove a host rule from a URL map. When
-      a host rule is removed, its path matcher is only removed if
-      it is not referenced by any other host rules and
-      `--delete-orphaned-path-matcher` is provided.
-      """,
-      'EXAMPLES':
-          """\
-      To remove a host rule that contains the host `example.com`
-      from the URL map named `MY-URL-MAP`, you can use this
-      command:
+      'DESCRIPTION': """
+*{command}* is used to remove a host rule from a URL map. When
+a host rule is removed, its path matcher is only removed if
+it is not referenced by any other host rules and
+`--delete-orphaned-path-matcher` is provided.
+""",
+      'EXAMPLES': """
+To remove a host rule that contains the host `example.com`
+from the URL map named `MY-URL-MAP`, you can use this
+command:
 
-        $ {command} MY-URL-MAP --host example.com%s
-      """ % (global_arg,),
+  $ {command} MY-URL-MAP --host=example.com%s
+""" % (global_arg,),
   }
 
 
@@ -165,9 +162,6 @@ class RemoveHostRule(base.UpdateCommand):
               'of failing.'))
 
   def Run(self, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      log.warning('The url-maps remove-host-rule command will soon require '
-                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG)
 

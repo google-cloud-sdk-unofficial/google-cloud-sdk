@@ -21,8 +21,31 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class DomainMappings(base.Group):
+  """View and manage your Cloud Run for Anthos domain mappings.
+
+  This set of commands can be used to view and manage your service's domain
+  mappings.
+
+  To view and manage fully managed Cloud Run domain mappings, use
+  `gcloud beta run domain-mappings`.
+  """
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To list your Cloud Run domain mappings, run:
+
+            $ {command} list
+      """,
+  }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DomainMappingsBeta(base.Group):
   """View and manage your Cloud Run domain mappings.
 
   This set of commands can be used to view and manage your service's domain

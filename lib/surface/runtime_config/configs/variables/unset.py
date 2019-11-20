@@ -37,15 +37,15 @@ class Unset(base.DeleteCommand):
       'EXAMPLES': """\
           To delete a variable named "my-var", run:
 
-            $ {command} --config-name my-config my-var
+            $ {command} --config-name=my-config my-var
 
           To delete a variable, but fail if it does not exist, run:
 
-            $ {command} --config-name my-config my-var --fail-if-absent
+            $ {command} --config-name=my-config my-var --fail-if-absent
 
           To recursively delete a parent variable and its children, run:
 
-            $ {command} --config-name my-config my-parent-var --recursive
+            $ {command} --config-name=my-config my-parent-var --recursive
           """,
   }
 

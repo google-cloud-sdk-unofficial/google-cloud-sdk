@@ -27,29 +27,39 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
 
+DETAILED_HELP = {
+    'brief':
+        'Add tags to Google Compute Engine virtual machine instances.',
+    'DESCRIPTION':
+        """\
+        *{command}* is used to add tags to Google Compute Engine virtual
+        machine instances.
+
+        Tags can be used to identify the instances when adding network
+        firewall rules. Tags can also be used to get firewall rules that
+        already exist to be applied to the instance. See
+        gcloud_compute_firewall-rules_create(1) for more details.
+
+        To list instances with their respective status and tags, run:
+
+          $ gcloud compute instances list --format='table(name,status,tags.list())'
+
+        To list instances tagged with a specific tag, `tag1`, run:
+
+          $ gcloud compute instances list --filter='tags:tag1'
+    """,
+    'EXAMPLES':
+        """\
+        To add tags ``tag-1'' and ``tag-2'' to an instance named
+        ``test-instance'', run:
+
+          $ {command} test-instance --tags=tag-1,tag-2
+    """
+}
+
+
 class InstancesAddTags(base.UpdateCommand):
-  """Add tags to Google Compute Engine virtual machine instances.
-
-    *{command}* is used to add tags to Google Compute Engine virtual
-  machine instances. For example, running:
-
-    $ {command} example-instance --tags tag-1,tag-2
-
-  will add tags ``tag-1'' and ``tag-2'' to 'example-instance'.
-
-  Tags can be used to identify the instances when adding network
-  firewall rules. Tags can also be used to get firewall rules that
-  already exist to be applied to the instance. See
-  gcloud_compute_firewall-rules_create(1) for more details.
-
-  To list instances with their respective status and tags, run:
-
-    $ gcloud compute instances list --format='table(name,status,tags.list())'
-
-  To list instances tagged with a specific tag, `tag1`, run:
-
-    $ gcloud compute instances list --filter='tags:tag1'
-  """
+  """Add tags to Google Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):
@@ -115,3 +125,6 @@ class InstancesAddTags(base.UpdateCommand):
 
     return client.MakeRequests(
         [self.GetSetRequest(client, instance_ref, new_object)])
+
+
+InstancesAddTags.detailed_help = DETAILED_HELP

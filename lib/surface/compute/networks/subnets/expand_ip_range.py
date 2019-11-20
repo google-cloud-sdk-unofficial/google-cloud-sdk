@@ -130,12 +130,12 @@ class ExpandIpRange(base.SilentCommand):
 
 ExpandIpRange.detailed_help = {
     'brief': 'Expand the IP range of a Google Compute Engine subnetwork',
-    'DESCRIPTION': """\
-        *{command}* is used to expand the IP range of a subnetwork.
-        """,
-    'EXAMPLES': """\
-        To expand the IP range of ``SUBNET'' to /16, run:
+    'DESCRIPTION': """
+*{command}* is used to expand the IP range of a subnetwork.
+""",
+    'EXAMPLES': """
+To expand the IP range of ``SUBNET'' to /16, run:
 
-          $ {command} SUBNET --region us-central1 --prefix-length 16
-        """,
+  $ {command} SUBNET --region=us-central1 --prefix-length=16
+""",
 }

@@ -3,6 +3,10 @@
   help_text:
     brief: Show details about a device.
     description: Show details about a device.
+    examples: |
+      To show details about a device, run:
+
+        $ {command} my-device --region=us-central1 --registry=my-registry
 
   request:
     collection: cloudiot.projects.locations.registries.devices

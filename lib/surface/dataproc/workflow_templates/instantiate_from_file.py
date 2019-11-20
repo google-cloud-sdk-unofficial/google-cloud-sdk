@@ -28,9 +28,21 @@ from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To instantiate a workflow template from a yaml file 'template.yaml' in
+      region 'us-central1', run:
+
+        $ {command} --file=template.yaml --region=us-central1
+      """,
+}
+
 
 class InstantiateFromFile(base.CreateCommand):
   """Instantiate a workflow template from a file."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

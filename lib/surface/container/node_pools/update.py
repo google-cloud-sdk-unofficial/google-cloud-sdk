@@ -37,7 +37,7 @@ DETAILED_HELP = {
         To turn on node auto repair in "node-pool-1" in the cluster
         "sample-cluster", run:
 
-          $ {command} node-pool-1 --cluster=example-cluster --enable-autoupgrade
+          $ {command} node-pool-1 --cluster=sample-cluster --enable-autoupgrade
         """,
 }
 

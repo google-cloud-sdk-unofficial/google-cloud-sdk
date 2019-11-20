@@ -27,11 +27,13 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new notification channel."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Creates a new notification channel. A channel can be specified as
           JSON/YAML passed in as a string through the `--channel-content` flag
           or as a file through the `--channel-content-from-file` flag.
@@ -42,6 +44,31 @@ class Create(base.CreateCommand):
 
           For information about the JSON/YAML format of a notification channel:
           https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.notificationChannels
+
+          Additional documentation can for this operation can be found at:
+          https://cloud.google.com/monitoring/alerts/using-channels-api
+
+          ## EXAMPLES
+          The following commands setup both email and SMS notification channels for the team lead. Note
+          that the display name and description focus on the purpose/semantics of the channel rather
+          than its destination. This is a best-practice that facilitates swapping/updating notification
+          channels in-place (such as when users change teams, projects, roles, companies, etc.) with
+          minimal impact to the alerting policies that reference the existing channels. It is also
+          a best practice to supply at least two channels of different types for a given person.
+
+            $ {command} \
+              --display-name="Foo Team Lead (Primary)" \
+              --description="Primary contact method for the Foo team lead" \
+              --type=email \
+              --user-labels=team=foo,role=lead,ord=1 \
+              --channel-labels=email_address=user@somedomain.tld
+
+            $ {command} \
+              --display-name="Foo Team Lead (Secondary)" \
+              --description="Secondary contact method for the Foo team lead" \
+              --type=sms \
+              --user-labels=team=foo,role=lead,ord=2 \
+              --channel-labels=number=123-456-7890
        """
   }
 

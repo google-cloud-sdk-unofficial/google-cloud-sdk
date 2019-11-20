@@ -33,11 +33,11 @@ class Start(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To start a local datastore emulator, run:
+      'EXAMPLES': """
+To start a local datastore emulator, run:
 
-            $ {command} --data-dir DATA-DIR
-          """,
+  $ {command} --data-dir=DATA-DIR
+""",
   }
 
   @staticmethod

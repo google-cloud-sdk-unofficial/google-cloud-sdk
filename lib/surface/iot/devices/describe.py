@@ -28,6 +28,17 @@ from googlecloudsdk.command_lib.iot import resource_args
 class Describe(base.DescribeCommand):
   """Show details about a device."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To show details about a device, run:
+
+          $ {command} my-device --region=us-central1 --registry=my-registry
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddDeviceResourceArg(parser, 'to describe')

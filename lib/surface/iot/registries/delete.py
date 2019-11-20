@@ -30,6 +30,17 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.DeleteCommand):
   """Delete a device registry."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To delete a device registry, run:
+
+          $ {command} my-registry --region=us-central1
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddRegistryResourceArg(parser, 'to delete')

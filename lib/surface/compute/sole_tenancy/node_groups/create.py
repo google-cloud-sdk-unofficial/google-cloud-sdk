@@ -28,7 +28,16 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import util
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  """Creates a Google Compute Engine node group."""
+  """Create a Compute Engine node group."""
+
+  detailed_help = {
+      'brief': 'Create a Compute Engine node group.',
+      'EXAMPLES': """
+         To create a node group, run:
+
+           $ {command} my-node-group --node-template=example-template --target-size=4
+       """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -76,12 +85,12 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  """Creates a Google Compute Engine node group."""
+  """Create a Compute Engine node group."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
-  """Creates a Google Compute Engine node group."""
+  """Create a Compute Engine node group."""
 
   @staticmethod
   def Args(parser):

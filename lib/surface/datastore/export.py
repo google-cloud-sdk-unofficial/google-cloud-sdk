@@ -38,6 +38,31 @@ class Export(base.Command):
   leave partial data behind in Google Cloud Storage.
   """
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To export all kinds in the `exampleNs` namespace in the `exampleProject`
+          project to the `exampleBucket`, run:
+
+            $ {command} gs://exampleBucket --namespaces='exampleNs' --project='exampleProject'
+
+          To export the `exampleKind` and `otherKind` kinds in the `exampleNs`
+          namespace in the `exampleProject` project to the `exampleBucket`, run:
+
+            $ {command} gs://exampleBucket --kinds='exampleKind','otherKind' --namespaces='exampleNs' --project='exampleProject'
+
+          To export all namespaces and kinds in the currently set project to the
+          `exampleBucket` without waiting for the operation to complete, run:
+
+            $ {command} gs://exampleBucket --async
+
+          To export the `exampleKind` in all namespaces in the currently set
+          project to the `exampleBucket`, and output the result in JSON, run:
+
+            $ {command} gs://exampleBucket --kinds='exampleKind' --format=json
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

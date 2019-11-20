@@ -28,9 +28,21 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To instantiate a workflow template 'my-template' in region 'us-central1'
+      with parameter set 'param1'='value1' and 'param2'='value2', run:
+
+        $ {command} my-template --region=us-central1 --parameters="param1=value1,param2=value2"
+      """,
+}
+
 
 class Instantiate(base.CreateCommand):
   """Instantiate a workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

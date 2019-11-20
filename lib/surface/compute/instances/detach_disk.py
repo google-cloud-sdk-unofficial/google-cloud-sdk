@@ -44,6 +44,20 @@ class DetachDisk(base.UpdateCommand):
       $ sudo umount /dev/disk/by-id/google-DEVICE_NAME
   """
 
+  detailed_help = {
+      'EXAMPLES': """
+          To detach a disk named 'my-disk' to an instance named 'my-instance',
+          run:
+
+            $ {command} my-instance --disk=my-disk
+
+          To detach a device named 'my-device' from an instance named
+          'my-instance', run:
+
+            $ {command} my-instance --device-name=my-device
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(parser)

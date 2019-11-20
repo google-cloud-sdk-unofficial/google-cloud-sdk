@@ -32,6 +32,14 @@ from googlecloudsdk.core.console import console_io
 class CreateFromFile(base.CreateCommand):
   """Create a cluster from a file."""
 
+  detailed_help = {
+      'EXAMPLES': """
+To create a cluster from a YAML file, run:
+
+  $ {command} --file=cluster.yaml
+"""
+  }
+
   @classmethod
   def Args(cls, parser):
     parser.add_argument(

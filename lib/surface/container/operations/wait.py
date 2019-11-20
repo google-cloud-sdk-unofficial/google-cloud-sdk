@@ -28,6 +28,17 @@ from googlecloudsdk.calliope import exceptions
 class Wait(base.Command):
   """Poll an operation for completion."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To poll an operation for completion, run:
+
+            $ {command} sample-operation-id
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

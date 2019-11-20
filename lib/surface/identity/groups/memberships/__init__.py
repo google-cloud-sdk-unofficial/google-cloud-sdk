@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class Memberships(base.Group):
-  """Manage Cloud Identity Groups.
+  """Manage Cloud Identity Groups Memberships.
 
   Commands for managing Cloud Identity Groups Memberships.
   """

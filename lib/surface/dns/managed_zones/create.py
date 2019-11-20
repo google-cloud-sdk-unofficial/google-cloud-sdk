@@ -86,7 +86,7 @@ class Create(base.CreateCommand):
           'If --visibility is set to public (default), setting networks is '
           'not allowed.')
     if args.visibility == 'private' and args.networks is None:
-      raise exceptions.RequiredArgumentException('--networks', ("""\
+      raise exceptions.RequiredArgumentException('--networks', ("""
            If --visibility is set to private, a list of networks must be
            provided.'
          NOTE: You can provide an empty value ("") for private zones that
@@ -168,8 +168,8 @@ class CreateBeta(base.CreateCommand):
 
   To create a managed-zone with DNSSEC, run:
 
-    $ {command} my_zone_2 --description "Signed Zone" \
-        --dns-name myzone.example \
+    $ {command} my_zone_2 --description "Signed Zone"
+        --dns-name myzone.example
         --dnssec-state=on
   """
 
@@ -179,6 +179,8 @@ class CreateBeta(base.CreateCommand):
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
     flags.GetDnsPeeringArgs().AddToParser(parser)
+    flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
+    flags.GetReverseLookupArg().AddToParser(parser)
 
   def Run(self, args):
     # We explicitly want to allow --networks='' as a valid option and we need
@@ -190,8 +192,7 @@ class CreateBeta(base.CreateCommand):
             'If --visibility is set to public (default), setting networks is '
             'not allowed.')
     if args.visibility == 'private' and args.networks is None:
-      raise exceptions.RequiredArgumentException(
-          '--networks', ("""\
+      raise exceptions.RequiredArgumentException('--networks', ("""
            If --visibility is set to private, a list of networks must be
            provided.'
          NOTE: You can provide an empty value ("") for private zones that
@@ -230,11 +231,13 @@ class CreateBeta(base.CreateCommand):
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
           networks=network_configs)
 
-    if args.forwarding_targets:
-      forward_config = command_util.ParseManagedZoneForwardingConfig(
-          args.forwarding_targets, messages)
+    if args.forwarding_targets or args.private_forwarding_targets:
+      forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
+          messages=messages,
+          server_list=args.forwarding_targets,
+          private_server_list=args.private_forwarding_targets)
     else:
-      forward_config = None
+      forwarding_config = None
 
     dnssec_config = _MakeDnssecConfig(args, messages)
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
@@ -247,6 +250,11 @@ class CreateBeta(base.CreateCommand):
       peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
           networkUrl=peering_network)
 
+    reverse_lookup_config = None
+    if args.IsSpecified(
+        'managed_reverse_lookup') and args.managed_reverse_lookup:
+      reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
+
     zone = messages.ManagedZone(
         name=zone_ref.managedZone,
         dnsName=util.AppendTrailingDot(args.dns_name),
@@ -254,9 +262,10 @@ class CreateBeta(base.CreateCommand):
         dnssecConfig=dnssec_config,
         labels=labels,
         visibility=visibility,
-        forwardingConfig=forward_config,
+        forwardingConfig=forwarding_config,
         privateVisibilityConfig=visibility_config,
-        peeringConfig=peering_config)
+        peeringConfig=peering_config,
+        reverseLookupConfig=reverse_lookup_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
@@ -290,3 +299,5 @@ class CreateAlpha(CreateBeta):
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
     flags.GetDnsPeeringArgs().AddToParser(parser)
+    flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
+    flags.GetReverseLookupArg().AddToParser(parser)

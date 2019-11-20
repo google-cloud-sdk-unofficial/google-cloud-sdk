@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from apitools.base.py.exceptions import HttpError
 from googlecloudsdk.api_lib.bigtable import app_profiles
 from googlecloudsdk.api_lib.bigtable import util
@@ -29,6 +31,16 @@ from googlecloudsdk.core.console import console_io
 
 class DeleteAppProfile(base.DeleteCommand):
   """Delete a Bigtable app profile."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To delete an app profile, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id
+
+          """),
+  }
 
   @staticmethod
   def Args(parser):

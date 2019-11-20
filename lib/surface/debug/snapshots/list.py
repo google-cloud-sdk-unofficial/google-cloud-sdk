@@ -28,16 +28,42 @@ from googlecloudsdk.command_lib.debug import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
 
+DETAILED_HELP = {
+    'brief':
+        """\
+        List the debug snapshots for a Cloud Debugger debug target (debuggee).
+    """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used to display the debug snapshots for a Cloud Debugger
+        debug target (debuggee). By default all active snapshots as well as any
+        recently completed snapshots are returned. To obtain older completed
+        snapshots specify the --include-inactive option.
+    """,
+    'EXAMPLES':
+        """\
+        To list the active and recently completed debug snapshots of the debug
+        target (debuggee), run:
+
+          $ {command} --target=<debuggee_id>
+
+        To list all (both active and inactive) snapshots of the debug target
+        (debuggee), run:
+
+          $ {command} --include-inactive=unlimited --target=<debuggee_id>
+
+        To list snapshots created by all users of the debug target (debuggee),
+        run:
+
+          $ {command} --all-users --target=<debuggee_id>
+    """
+}
+
 
 class List(base.ListCommand):
   """List debug snapshots."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command displays a list of the active debug snapshots for a
-          Cloud Debugger debug target.
-      """
-  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

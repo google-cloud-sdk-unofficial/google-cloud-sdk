@@ -26,22 +26,22 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 
 DETAILED_HELP = {
-    'DESCRIPTION': """\
-        *{command}* is used to create access configurations for network
-        interfaces of Google Compute Engine virtual machines. This allows you
-        to assign a public, external IP to a virtual machine.
-        """,
-    'EXAMPLES': """\
-        To assign an public, externally accessible IP to a virtual machine named
-        ``example-instance'' in zone ``us-central1-a'', run:
+    'DESCRIPTION': """
+*{command}* is used to create access configurations for network
+interfaces of Google Compute Engine virtual machines. This allows you
+to assign a public, external IP to a virtual machine.
+""",
+    'EXAMPLES': """
+To assign an public, externally accessible IP to a virtual machine named
+``example-instance'' in zone ``us-central1-a'', run:
 
-          $ {command} example-instance --zone us-central1-a
+  $ {command} example-instance --zone=us-central1-a
 
-        To assign the specific, reserved public IP address ``123.456.789.123''
-        to the virtual machine, run:
+To assign the specific, reserved public IP address ``123.456.789.123''
+to the virtual machine, run:
 
-          $ {command} example-instance --zone us-central1-a --address=123.456.789.123
-    """,
+  $ {command} example-instance --zone=us-central1-a --address=123.456.789.123
+""",
 }
 
 

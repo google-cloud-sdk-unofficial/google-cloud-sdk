@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""`gcloud iot configs describe` command."""
+"""`gcloud iot devices configs get-value` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,6 +27,15 @@ from googlecloudsdk.command_lib.iot import util
 
 class GetValue(base.Command):
   """Show the binary data of a device's latest configuration."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To show the binary data of the latest configuration of a device in region 'us-central1', run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device
+          """,
+  }
 
   @staticmethod
   def Args(parser):

@@ -61,18 +61,7 @@ CopyFiles.detailed_help = {
 
         To denote a remote file, prefix the file name with the virtual machine
         instance name (e.g., _example-instance_:~/_FILE_). To denote a local
-        file, do not add a prefix to the file name (e.g., ~/_FILE_). For
-        example, to copy a remote directory to your local host, run:
-
-          $ {command} example-instance:~/REMOTE-DIR ~/LOCAL-DIR --zone us-central1-a
-
-        In the above example, `~/REMOTE-DIR` from `example-instance` is copied
-        into the ~/_LOCAL-DIR_ directory.
-
-        Conversely, files from your local computer can be copied to a virtual
-        machine:
-
-          $ {command} ~/LOCAL-FILE-1 ~/LOCAL-FILE-2 example-instance:~/REMOTE-DIR --zone us-central1-a
+        file, do not add a prefix to the file name (e.g., ~/_FILE_).
 
         If a file contains a colon (``:''), you must specify it by either using
         an absolute path or a path that begins with
@@ -84,5 +73,17 @@ CopyFiles.detailed_help = {
         When the destination is local, all sources must be the same virtual
         machine instance. When the destination is remote, all sources must be
         local.
+        """,
+    'EXAMPLES':
+        """\
+          To copy a remote directory '~/REMOTE-DIR' on the instance of
+          'example-instance' to '~/LOCAL-DIR' on the local host, run:
+
+            $ {command} example-instance:~/REMOTE-DIR ~/LOCAL-DIR --zone=us-central1-a
+
+          To copy files from your local host to a virtual machine, run:
+
+            $ {command} ~/LOCAL-FILE-1 ~/LOCAL-FILE-2 example-instance:~/REMOTE-DIR --zone=us-central1-a
+
         """
 }

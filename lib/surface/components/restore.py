@@ -33,6 +33,11 @@ class Restore(base.SilentCommand):
   state is remembered, so it is impossible to restore the state that existed
   before the two most recent `update` commands, for example. A `restore` command
   does not undo a previous `restore` command.
+
+  ## EXAMPLES
+  To restore Cloud SDK installation to its previous state, run:
+
+    $ {command}
   """
 
   @staticmethod

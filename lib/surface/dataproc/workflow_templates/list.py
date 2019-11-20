@@ -26,9 +26,20 @@ from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To list all workflow-templates from region 'us-central1' run:
+
+        $ {command} --region=us-central1
+      """,
+}
+
 
 class List(base.ListCommand):
   """List workflow templates."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

@@ -74,7 +74,8 @@ class Describe(base.Command):
     Describe.CommonArgs(parser)
 
   def Run(self, args):
-    conn_context = connection_context.GetConnectionContext(args)
+    conn_context = connection_context.GetConnectionContext(
+        args, product=connection_context.Product.EVENTS)
     if conn_context.supports_one_platform:
       raise exceptions.UnsupportedArgumentError(
           'Events are only available with Cloud Run for Anthos.')

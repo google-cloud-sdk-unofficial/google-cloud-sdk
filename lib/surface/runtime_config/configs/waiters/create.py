@@ -34,11 +34,11 @@ class Create(base.CreateCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To create a waiter in "my-config" with success and failure paths
           nested under "/status", run:
 
-            $ {command} my-waiter --config-name my-config --timeout 15m --success-cardinality-path /status/success --success-cardinality-number 5 --failure-cardinality-path /status/failure --failure-cardinality-number 1
+            $ {command} my-waiter --config-name=my-config --timeout=15m --success-cardinality-path=/status/success --success-cardinality-number=5 --failure-cardinality-path=/status/failure --failure-cardinality-number=1
 
           This waiter will wait for at most 15 minutes for the first of two
           possible scenarios: 1) five or more variables are written to the
@@ -47,7 +47,7 @@ class Create(base.CreateCommand):
 
           To create a waiter without a failure path, run:
 
-            $ {command} my-waiter --config-name my-config --timeout 15m --success-cardinality-path /status/success --success-cardinality-number 5
+            $ {command} my-waiter --config-name=my-config --timeout=15m --success-cardinality-path=/status/success --success-cardinality-number=5
 
           This waiter will wait until 5 or more success variables are written,
           or the 15 minute timeout elapses.

@@ -106,21 +106,18 @@ class Move(base.SilentCommand):
 
 Move.detailed_help = {
     'brief': 'Move a disk between zones',
-    'DESCRIPTION': """\
-        *{command}* facilitates moving a Google Compute Engine disk volume from
-        one zone to another. You cannot move a disk if it is attached to a
-        running or stopped instance; use the gcloud compute instances move
-        command instead.
-
-        For example, running:
-
-           $ gcloud compute disks move example-disk-1 --zone us-central1-b --destination-zone us-central1-f
-
-        will move the disk called example-disk-1, currently running in
-        us-central1-b, to us-central1-f.
-
-        Please note that gcloud compute disks move does not yet support regional
-        persistent disks. Please see
-        https://cloud.google.com/compute/docs/disks/regional-persistent-disk for
-        more details.
-    """}
+    'DESCRIPTION': (
+        '*{command}* facilitates moving a Google Compute Engine disk volume '
+        'from one zone to another. You cannot move a disk if it is attached to '
+        'a running or stopped instance; use the gcloud compute instances move '
+        'command instead.\n\n'
+        'The `gcloud compute disks move` command does not support regional '
+        'persistent disks. See '
+        'https://cloud.google.com/compute/docs/disks/regional-persistent-disk '
+        'for more details.\n'),
+    'EXAMPLES': (
+        'To move the disk called example-disk-1 from us-central1-b to '
+        'us-central1-f, run:\n\n'
+        '  $ {command} example-disk-1 --zone=us-central1-b '
+        '--destination-zone=us-central1-f\n')
+}

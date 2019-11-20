@@ -23,7 +23,7 @@
           --with-initial-owner WITH_INITIAL_OWNER \
           --display-name "Engineer Discuss" \
           --description "Group for engineering discussions" \
-          --labels "system/groups/discussion_forum="
+          --labels "cloudidentity.googleapis.com/discussion_forum"
 
 
   arguments:
@@ -71,12 +71,12 @@
 
     - arg_name: labels
       api_field: group.labels
-      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
-      processor: googlecloudsdk.command_lib.identity.groups.hooks:ReformatLabels
       required: true
+      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      processor: googlecloudsdk.command_lib.identity.groups.hooks:ReformatLabels
       help_text: |
         Labels for group resource.
-        Example of labels "--labels system/groups/discussion_forum="
+        Example of labels "--labels cloudidentity.googleapis.com/discussion_forum"
 
   request:
     collection: cloudidentity.groups

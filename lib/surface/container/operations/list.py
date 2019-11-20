@@ -29,6 +29,17 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """List operations for container clusters."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To list operations, run:
+
+            $ {command}
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.bigtable import app_profiles
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
@@ -25,6 +27,16 @@ from googlecloudsdk.command_lib.bigtable import arguments
 
 class ListAppProfiles(base.ListCommand):
   """List Bigtable app profiles."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To list all app profiles for an instance, run:
+
+            $ {command} --instance=my-instance-id
+
+          """),
+  }
 
   @staticmethod
   def Args(parser):

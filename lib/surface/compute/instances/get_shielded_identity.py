@@ -32,6 +32,13 @@ class GetShieldedIdentity(base.DescribeCommand):
   Engine instance in a project.
   """
 
+  detailed_help = {
+      'EXAMPLES': """
+  To get the shielded identity for an instance, run:
+
+    $ {command} example-instance --zone=us-central1-b
+  """}
+
   @staticmethod
   def Args(parser):
     flags.INSTANCE_ARG.AddArgument(

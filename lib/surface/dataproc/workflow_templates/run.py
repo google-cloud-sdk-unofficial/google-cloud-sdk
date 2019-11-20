@@ -26,6 +26,16 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To run a workflow template 'my-workflow-template' in region 'us-central1'
+      , run:
+
+        $ {command} my-workflow-template --region=us-central1
+      """,
+}
+
 
 @base.Deprecate(is_removed=False,
                 warning='Workflow template run command is deprecated, please '
@@ -34,6 +44,8 @@ from googlecloudsdk.core import log
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Run(base.CreateCommand):
   """Run a workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

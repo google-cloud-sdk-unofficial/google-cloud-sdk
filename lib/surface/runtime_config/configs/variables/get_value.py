@@ -35,7 +35,7 @@ class GetValue(base_commands.VariableRetrieverCommand):
       'EXAMPLES': """\
           To print the value of a variable named "my-var", run:
 
-            $ {command} --config-name my-config my-var
+            $ {command} --config-name=my-config my-var
 
           Values will be automatically base64-decoded.
           """,

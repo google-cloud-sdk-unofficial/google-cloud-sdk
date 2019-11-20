@@ -25,7 +25,16 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_types import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describes a Google Compute Engine node type."""
+  """Describe a Compute Engine node type."""
+
+  detailed_help = {
+      'brief': 'Describe a Compute Engine node type.',
+      'EXAMPLES': """
+         To describe a node type, run:
+
+           $ {command} example-node-type
+       """
+  }
 
   @staticmethod
   def Args(parser):

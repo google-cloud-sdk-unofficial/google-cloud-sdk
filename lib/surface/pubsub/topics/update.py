@@ -22,9 +22,52 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.pubsub import topics
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
+
+_KMS_FLAG_OVERRIDES = {
+    'kms-key': '--topic-encryption-key',
+    'kms-keyring': '--topic-encryption-key-keyring',
+    'kms-location': '--topic-encryption-key-location',
+    'kms-project': '--topic-encryption-key-project'
+}
+
+_KMS_PERMISSION_INFO = """
+The specified Cloud KMS key should have purpose set to "ENCRYPT_DECRYPT".
+The service account,
+"service-${CONSUMER_PROJECT_NUMBER}@gcp-sa-pubsub.iam.gserviceaccount.com"
+requires the IAM cryptoKeyEncrypterDecrypter role for the given Cloud KMS key.
+CONSUMER_PROJECT_NUMBER is the project number of the project that is the parent
+of the topic being updated"""
+
+
+def _GetKmsKeyNameFromArgs(args):
+  """Parses the KMS key resource name from args.
+
+  Args:
+    args: an argparse namespace. All the arguments that were provided to this
+      command invocation.
+
+  Returns:
+    The KMS CryptoKey resource name for the key specified in args, or None.
+  """
+  kms_ref = args.CONCEPTS.kms_key.Parse()
+  if kms_ref:
+    return kms_ref.RelativeName()
+
+  # Check whether the user specified any topic-encryption-key flags.
+  for keyword in [
+      'topic-encryption-key', 'topic-encryption-key-project',
+      'topic-encryption-key-location', 'topic-encryption-key-keyring'
+  ]:
+    if args.IsSpecified(keyword.replace('-', '_')):
+      raise core_exceptions.Error(
+          '--topic-encryption-key was not fully specified.')
+
+  return None
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -47,6 +90,10 @@ class Update(base.UpdateCommand):
 
               $ {command} mytopic --remove-labels=KEY1,KEY2
 
+          To enable customer-managed encryption for a Cloud Pub/Sub topic by protecting message data with a Cloud KMS CryptoKey, run:
+
+              $ {command} mytopic --topic-encryption-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
+
           To update a Cloud Pub/Sub topic's message storage policy, run:
 
               $ {command} mytopic --message-storage-policy-allowed-regions=some-cloud-region1,some-cloud-region2
@@ -62,6 +109,12 @@ class Update(base.UpdateCommand):
     """Registers flags for this command."""
     resource_args.AddTopicResourceArg(parser, 'to update.')
     labels_util.AddUpdateLabelsFlags(parser)
+    resource_args.AddResourceArgs(parser, [
+        kms_resource_args.GetKmsKeyPresentationSpec(
+            'topic',
+            flag_overrides=_KMS_FLAG_OVERRIDES,
+            permission_info=_KMS_PERMISSION_INFO)
+    ])
 
     msp_group = parser.add_group(
         mutex=True, help='Message storage policy options.')
@@ -102,6 +155,7 @@ class Update(base.UpdateCommand):
     result = None
     try:
       result = client.Patch(topic_ref, labels_update.GetOrNone(),
+                            _GetKmsKeyNameFromArgs(args),
                             args.recompute_message_storage_policy,
                             args.message_storage_policy_allowed_regions)
     except topics.NoFieldsSpecifiedError:

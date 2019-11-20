@@ -286,8 +286,9 @@ class DeployGKE(base.Command):
         build_tags=([] if not args.app_name else [args.app_name]))
 
     client = cloudbuild_util.GetClientInstance()
-    self. _SubmitBuild(
-        client, messages, build_config, gcs_config_staging_path, args.async_)
+    self._SubmitBuild(
+        client, messages, build_config, gcs_config_staging_path,
+        args.config is None, args.async_)
 
   def _DetermineImageFromArgs(self, args):
     """Gets the image to use for the build, given the user args.
@@ -436,7 +437,8 @@ class DeployGKE(base.Command):
     return staged_source
 
   def _SubmitBuild(
-      self, client, messages, build_config, gcs_config_staging_path, async_):
+      self, client, messages, build_config, gcs_config_staging_path,
+      suggest_configs, async_):
     """Submits the build.
 
     Args:
@@ -446,6 +448,8 @@ class DeployGKE(base.Command):
       build_config: Build to submit.
       gcs_config_staging_path: A path to a GCS subdirectory where deployed
         configs will be saved to. This value will be printed to the user.
+      suggest_configs: If True, suggest YAML configs for the user to add to
+        their repo.
       async_: If true, exit immediately after submitting Build, rather than
         waiting for it to complete or fail.
 
@@ -485,13 +489,16 @@ class DeployGKE(base.Command):
       log.status.Print(
           '\nIf successful, you can find the configuration files of the deployed '
           'Kubernetes objects stored at gs://{expanded} or by visiting '
-          'https://console.cloud.google.com/storage/browser/{expanded}/.\n\n'
-          'You will also be able to find the suggested base Kubernetes '
-          'configuration files at gs://{suggested} or by visiting '
-          'https://console.cloud.google.com/storage/browser/{suggested}/.'
-          .format(
-              expanded=expanded_configs_path,
-              suggested=suggested_configs_path))
+          'https://console.cloud.google.com/storage/browser/{expanded}/.'
+
+          .format(expanded=expanded_configs_path))
+      if suggest_configs:
+        log.status.Print(
+            '\nYou will also be able to find the suggested base Kubernetes '
+            'configuration files at gs://{suggested} or by visiting '
+            'https://console.cloud.google.com/storage/browser/{suggested}/.'
+            .format(suggested=suggested_configs_path))
+
       # Return here, otherwise, logs are streamed from GCS.
       return
 
@@ -518,10 +525,12 @@ class DeployGKE(base.Command):
         'Successfully deployed to your Google Kubernetes Engine cluster.\n\n'
         'You can find the configuration files of the deployed Kubernetes '
         'objects stored at gs://{expanded} or by visiting '
-        'https://console.cloud.google.com/storage/browser/{expanded}/.\n\n'
-        'You can also find suggested base Kubernetes configuration files at '
-        'gs://{suggested} or by visiting '
-        'https://console.cloud.google.com/storage/browser/{suggested}/.'
-        .format(
-            expanded=expanded_configs_path,
-            suggested=suggested_configs_path))
+        'https://console.cloud.google.com/storage/browser/{expanded}/.'
+        .format(expanded=expanded_configs_path))
+    if suggest_configs:
+      log.status.Print(
+          '\nYou can also find suggested base Kubernetes configuration files at '
+          'gs://{suggested} or by visiting '
+          'https://console.cloud.google.com/storage/browser/{suggested}/.'
+          .format(suggested=suggested_configs_path))
+

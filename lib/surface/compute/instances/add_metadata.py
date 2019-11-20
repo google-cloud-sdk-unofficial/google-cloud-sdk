@@ -27,40 +27,53 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'DESCRIPTION':
+        """\
+          {command} can be used to add or update the metadata of a
+        virtual machine instance. Every instance has access to a
+        metadata server that can be used to query metadata that has
+        been set through this tool. For information on metadata, see
+        [](https://cloud.google.com/compute/docs/metadata)
+
+        Only metadata keys that are provided are mutated. Existing
+        metadata entries will remain unaffected.
+
+        In order to retrieve custom metadata, run:
+
+            $ gcloud compute instances describe example-instance --zone
+            us-central1-a --format='value(metadata)'
+
+        where example-instance is the name of the virtual machine instance
+        you're querying custom metadata from. For more information about
+        querying custom instance or project metadata through the Cloud Platform
+        Console or the API, see
+        [](https://cloud.google.com/compute/docs/storing-retrieving-metadata#querying_custom_metadata).
+
+
+        If you are using this command to manage SSH keys for your project, please note
+        the [risks](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys#risks)
+        of manual SSH key management as well as the required format for SSH key
+        metadata, available at [](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys).
+        """,
+    'EXAMPLES':
+        """\
+        To add metadata under key ``{0}'' to an instance
+        named ``{1}'', run:
+
+          $ {2} {1} --metadata={0}="{3}"
+
+        To add multiple key-value pairs at once, separate them with commas:
+
+          $ {2} {1} --metadata={0}="{3}",unimportant-data=zero
+
+        """.format('important-data', 'test-instance', '{command}',
+                   '2 plus 2 equals 4')
+}
+
 
 class InstancesAddMetadata(base.UpdateCommand):
-  # pylint: disable=line-too-long
-  """Add or update instance metadata.
-
-    {command} can be used to add or update the metadata of a
-  virtual machine instance. Every instance has access to a
-  metadata server that can be used to query metadata that has
-  been set through this tool. For information on metadata, see
-  [](https://cloud.google.com/compute/docs/metadata)
-
-  Only metadata keys that are provided are mutated. Existing
-  metadata entries will remain unaffected.
-
-  In order to retrieve custom metadata, run:
-
-      $ gcloud compute instances describe example-instance --zone
-      us-central1-a --format='value(metadata)'
-
-  where example-instance is the name of the virtual machine instance
-  you're querying custom metadata from. For more information about
-  querying custom instance or project metadata through the Cloud Platform
-  Console or the API, see
-  [](https://cloud.google.com/compute/docs/storing-retrieving-metadata#querying_custom_metadata)
-
-
-  If you are using this command to manage SSH keys for your project, please note
-  the
-  [risks](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys#risks)
-  of manual SSH key management as well as the required format for SSH key
-  metadata, available at
-  [](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys)
-  """
-  # pylint: enable=line-too-long
+  """Add or update instance metadata."""
 
   @staticmethod
   def Args(parser):
@@ -125,3 +138,6 @@ class InstancesAddMetadata(base.UpdateCommand):
 
     return client.MakeRequests(
         [self.GetSetRequest(client, project_ref, new_object)])
+
+
+InstancesAddMetadata.detailed_help = DETAILED_HELP

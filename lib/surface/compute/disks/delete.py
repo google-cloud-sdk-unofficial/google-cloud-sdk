@@ -97,3 +97,18 @@ class Delete(base.DeleteCommand):
         holder.client.apitools_client, disk_refs))
 
     return holder.client.MakeRequests(requests)
+
+Delete.detailed_help = {
+    'brief': 'Delete a Google Compute Engine disk',
+    'DESCRIPTION':
+        """\
+        *{command}* deletes a Google Compute Engine disk. A disk can be
+        deleted only if it is not attached to any virtual machine instances.
+        """,
+    'EXAMPLES':
+        """\
+        To delete the disk 'my-disk' in zone 'us-east1-a', run:
+
+            $ {command} my-disk --zone=us-east1-a
+        """,
+}

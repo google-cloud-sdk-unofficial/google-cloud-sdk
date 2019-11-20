@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.bigtable import clusters
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
@@ -27,6 +29,16 @@ from googlecloudsdk.core import log
 
 class UpdateCluster(base.UpdateCommand):
   """Update a Bigtable cluster's number of nodes."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To update a cluster to `10` nodes, run:
+
+            $ {command} my-cluster-id --instance=my-instance-id --num-nodes=10
+
+          """),
+  }
 
   @staticmethod
   def Args(parser):

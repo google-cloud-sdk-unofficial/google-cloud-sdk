@@ -31,7 +31,7 @@ class Describe(base.DescribeCommand):
       'EXAMPLES': """\
           To view the details of a cluster, run:
 
-            $ {command} my_cluster
+            $ {command} my_cluster --region=us-central1
           """,
   }
 

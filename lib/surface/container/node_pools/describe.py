@@ -33,6 +33,17 @@ class Describe(base.DescribeCommand):
   Google Kubernetes Engine cluster.
   """
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To describe a node pool of an existing cluster, run:
+
+            $ {command} node-pool-1 --cluster=sample-cluster
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

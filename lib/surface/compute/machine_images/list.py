@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.machine_images import flags
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine machine images."""
+  """List Compute Engine machine images."""
 
   @staticmethod
   def Args(parser):

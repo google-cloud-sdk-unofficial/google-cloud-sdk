@@ -1,8 +1,8 @@
 release_tracks: [ALPHA, BETA, GA]
 help_text:
-  brief: Remove IAM policy binding from a Google Compute Engine node group.
+  brief: Remove IAM policy binding from a Compute Engine node group.
   description: |
-    Remove an IAM policy binding from a Google Compute Engine node group.
+    Remove an IAM policy binding from a Compute Engine node group.
 
   examples: |
     To remove an IAM policy binding for the role of 'roles/compute.admin' for the user 'test-user@gmail.com'
@@ -42,9 +42,9 @@ arguments:
 
 ALPHA:
   help_text:
-    brief: Remove IAM policy binding from a Google Compute Engine node group.
+    brief: Remove IAM policy binding from a Compute Engine node group.
     description: |
-      Remove an IAM policy binding from the IAM policy of a Google Compute Engine node group. One binding consists of a member,
+      Remove an IAM policy binding from the IAM policy of a Compute Engine node group. One binding consists of a member,
       a role, and an optional condition.
 
     examples: |

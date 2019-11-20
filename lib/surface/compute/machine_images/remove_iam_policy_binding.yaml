@@ -1,10 +1,10 @@
 release_tracks: [ALPHA]
 
 help_text:
-  brief: Remove IAM policy binding from the IAM policy of a Google Compute Engine machine image.
+  brief: Remove IAM policy binding from the IAM policy of a Compute Engine machine image.
   description: |
-    Remove an IAM policy binding from the IAM policy of a Google Compute Engine machine image.
-    One binding consists of a member and a role.
+    Remove an IAM policy binding from the IAM policy of a Compute Engine machine image.
+    A policy binding consists of a member and a role.
 
   examples: |
     To remove an IAM policy binding for the role of 'roles/compute.admin' for the user
@@ -22,7 +22,7 @@ request:
 
 arguments:
   resource:
-    help_text: The machine image for which to remove IAM policy binding from.
+    help_text: The machine image from which to remove the IAM policy binding.
     spec: !REF googlecloudsdk.command_lib.compute.resources:machine_image
 
 iam:

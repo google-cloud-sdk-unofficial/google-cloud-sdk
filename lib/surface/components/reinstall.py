@@ -31,6 +31,11 @@ class Reinstall(base.SilentCommand):
   This will replace your existing installation with a fresh one.  The command is
   the equivalent of deleting your current installation, downloading a fresh
   copy of the SDK, and installing in the same location.
+
+  ## EXAMPLES
+  To reinstall all components you have installed, run:
+
+    $ {command}
   """
 
   @staticmethod

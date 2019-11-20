@@ -36,15 +36,15 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To display information about a manifest, run:
+      'EXAMPLES': """
+To display information about a manifest, run:
 
-            $ {command} --deployment my-deployment manifest-name
+  $ {command} --deployment=my-deployment manifest-name
 
-          To display information about the latest manifest, run:
+To display information about the latest manifest, run:
 
-            $ {command} --deployment my-deployment
-          """,
+  $ {command} --deployment=my-deployment
+""",
   }
 
   @staticmethod

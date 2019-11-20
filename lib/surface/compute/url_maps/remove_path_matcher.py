@@ -26,26 +26,23 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
-from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
   return {
       'brief':
           'Remove a path matcher from a URL map.',
-      'DESCRIPTION':
-          """\
-      *{command}* is used to remove a path matcher from a URL
-      map. When a path matcher is removed, all host rules that
-      refer to the path matcher are also removed.
-      """,
-      'EXAMPLES':
-          """\
-      To remove the path matcher named ``MY-MATCHER'' from the URL map named
-      ``MY-URL-MAP'', you can use this command:
+      'DESCRIPTION': """
+*{command}* is used to remove a path matcher from a URL
+map. When a path matcher is removed, all host rules that
+refer to the path matcher are also removed.
+""",
+      'EXAMPLES': """
+To remove the path matcher named ``MY-MATCHER'' from the URL map named
+``MY-URL-MAP'', you can use this command:
 
-        $ {command} MY-URL-MAP --path-matcher MY-MATCHER
-      """,
+  $ {command} MY-URL-MAP --path-matcher-name=MY-MATCHER
+""",
   }
 
 
@@ -156,9 +153,6 @@ class RemovePathMatcher(base.UpdateCommand):
         help='The name of the path matcher to remove.')
 
   def Run(self, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      log.warning('The url-maps remove-path-matcher command will soon require '
-                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG)
 

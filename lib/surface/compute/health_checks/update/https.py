@@ -223,9 +223,6 @@ class Update(base.UpdateCommand):
           cls._include_log_config)
 
   def Run(self, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      log.warning('The health-checks update https command will soon require '
-                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing,
                 self._include_log_config)

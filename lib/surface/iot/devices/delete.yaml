@@ -3,6 +3,10 @@
   help_text:
     brief: Delete a device.
     description: Delete a device.
+    examples: |
+     To delete a device from device registry 'my-registry', run:
+
+       $ {command} my-device --region=us-central1 --registry=my-registry
 
   request:
     collection: cloudiot.projects.locations.registries.devices

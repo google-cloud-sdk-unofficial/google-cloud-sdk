@@ -23,14 +23,34 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 
+DETAILED_HELP = {
+    'brief': 'Describe a virtual machine instance.',
+    'DESCRIPTION':
+        """\
+        *{command}* displays all data associated with a Google Compute
+        Engine virtual machine instance.
+
+        It's possible to limit the the scope of the description by using the
+        '--format' flag. For details, see
+        [Filtering and formatting fun with gcloud](https://cloud.google.com/blog/products/gcp/filtering-and-formatting-fun-with).
+        """,
+    'EXAMPLES':
+        """\
+        To describe an instance named ``{0}'', run:
+
+          $ {1} {0}
+
+        To output only a set of fields from the available information, specify
+        it  using the '--format' flag:
+
+          $ {1} {0} --format='yaml(name,status,disks)'
+        """.format('test-instance', '{command}'),
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describe a virtual machine instance.
-
-  *{command}* displays all data associated with a Google Compute
-  Engine virtual machine instance.
-  """
+  """Describe a virtual machine instance."""
 
   @staticmethod
   def Args(parser):
@@ -56,11 +76,7 @@ class Describe(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  """Describe a virtual machine instance.
-
-  *{command}* displays all data associated with a Google Compute
-  Engine virtual machine instance.
-  """
+  """Describe a virtual machine instance."""
 
   @staticmethod
   def Args(parser):
@@ -96,3 +112,6 @@ class DescribeAlpha(Describe):
           holder, instance_ref, args.guest_attributes)
     return self._GetInstance(holder, instance_ref)
 
+
+Describe.detailed_help = DETAILED_HELP
+DescribeAlpha.detailed_help = DETAILED_HELP

@@ -23,11 +23,23 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """List all network profiles available for testing.
+  """List all network profiles available for testing."""
 
-  Run `$ {parent_command} --help` for descriptions of the network profile
-  parameters.
-  """
+  detailed_help = {
+      'DESCRIPTION': """List all network profiles available for testing.
+
+Run `$ {parent_command} --help` for descriptions of the network profile
+parameters.
+""",
+      'EXAMPLES': """To list all network profiles, run:
+
+  {command}
+
+To list all GSM network profiles, run:
+
+  {command} --filter="id:GSM"
+"""
+  }
 
   @staticmethod
   def Args(parser):

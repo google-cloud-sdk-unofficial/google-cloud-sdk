@@ -39,12 +39,12 @@ class List(base.ListCommand):
       'EXAMPLES': """\
           To list all variables within the configuration named "my-config", run:
 
-            $ {command} --config-name my-config
+            $ {command} --config-name=my-config
 
           The --filter parameter can be used to filter results based on content.
           For example, to list all variables under the path 'status/', run:
 
-            $ {command} --config-name my-config --filter 'name=status/*'
+            $ {command} --config-name=my-config --filter='name=status/*'
           """,
   }
 

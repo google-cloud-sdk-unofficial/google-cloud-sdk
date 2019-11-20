@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.bigtable import instances
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
@@ -26,6 +28,16 @@ from googlecloudsdk.command_lib.bigtable import arguments
 
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a Cloud Bigtable instance."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To print the IAM policy for an instance, run:
+
+            $ {command} my-instance-id
+
+          """),
+  }
 
   @staticmethod
   def Args(parser):

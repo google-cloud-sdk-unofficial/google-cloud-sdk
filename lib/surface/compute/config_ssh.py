@@ -257,6 +257,15 @@ class ConfigSSH(base.Command):
   in the project's metadata. If the user does not have a public
   SSH key, one is generated using *ssh-keygen(1)* (if the `--quiet`
   flag is given, the generated key will have an empty passphrase).
+
+  ## EXAMPLES
+  To populate SSH config file with Host entries from each running instance, run:
+
+    $ {command}
+
+  To remove the change to the SSH config file by this command, run:
+
+    $ {command} --remove
   """
 
   category = base.TOOLS_CATEGORY

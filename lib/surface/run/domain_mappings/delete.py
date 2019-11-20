@@ -20,6 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -27,18 +29,23 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
-  """Delete domain mappings."""
+  """Delete domain mappings for Cloud Run for Anthos."""
 
   detailed_help = {
       'DESCRIPTION':
-          '{description}',
+          """\
+          {description}
+
+          For domain mapping support with fully managed Cloud Run, use
+          `gcloud beta run domain-mappings delete`.
+          """,
       'EXAMPLES':
           """\
           To delete a Cloud Run domain mapping, run:
 
-              $ {command} --domain www.example.com
+              $ {command} --domain=www.example.com
           """,
   }
 
@@ -53,14 +60,21 @@ class Delete(base.Command):
     concept_parsers.ConceptParser([
         domain_mapping_presentation]).AddToParser(parser)
 
+  def _CheckPlatform(self, args):
+    if flags.IsManaged(args):
+      raise exceptions.PlatformError(
+          'This command is in beta for fully managed Cloud Run; '
+          'use `gcloud beta run domain-mappings delete`.')
+
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
 
   def Run(self, args):
     """Delete domain mappings."""
+    self._CheckPlatform(args)
     conn_context = connection_context.GetConnectionContext(
-        args, self.ReleaseTrack())
+        args, product=connection_context.Product.RUN)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
       client.DeleteDomainMapping(domain_mapping_ref)
@@ -69,12 +83,32 @@ class Delete(base.Command):
       pretty_print.Success(msg)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDelete(Delete):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaDelete(Delete):
   """Delete domain mappings."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES':
+          """\
+          To delete a Cloud Run domain mapping, run:
+
+              $ {command} --domain=www.example.com
+          """,
+  }
+
+  def _CheckPlatform(self, args):
+    pass
 
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
 
-AlphaDelete.__doc__ = Delete.__doc__
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDelete(BetaDelete):
+  """Delete domain mappings."""
+
+  @staticmethod
+  def Args(parser):
+    Delete.CommonArgs(parser)

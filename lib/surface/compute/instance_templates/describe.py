@@ -49,9 +49,17 @@ class Describe(base.DescribeCommand):
 
 
 Describe.detailed_help = {
-    'brief': 'Describe a virtual machine instance template',
-    'DESCRIPTION': """\
+    'brief':
+        'Describe a virtual machine instance template',
+    'DESCRIPTION':
+        """\
         *{command}* displays all data associated with a Google Compute
         Engine virtual machine instance template.
         """,
+    'EXAMPLES':
+        """\
+        To describe the instance template named 'INSTANCE-TEMPLATE', run:
+
+          $ {command} INSTANCE-TEMPLATE
+        """
 }

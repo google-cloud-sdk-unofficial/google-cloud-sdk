@@ -96,7 +96,7 @@ class Update(base.Command):
           '`--memory`, `--concurrency`, `--timeout`, `--connectivity`?')
 
     conn_context = connection_context.GetConnectionContext(
-        args, self.ReleaseTrack())
+        args, product=connection_context.Product.RUN)
     service_ref = flags.GetService(args)
 
     with serverless_operations.Connect(conn_context) as client:
@@ -106,11 +106,7 @@ class Update(base.Command):
           deployment_stages,
           failure_message='Deployment failed',
           suppress_output=args.async_) as tracker:
-        client.ReleaseService(
-            service_ref,
-            changes,
-            tracker,
-            asyn=args.async_)
+        client.ReleaseService(service_ref, changes, tracker, asyn=args.async_)
       if args.async_:
         pretty_print.Success(
             'Deploying asynchronously.')
@@ -128,7 +124,7 @@ class Update(base.Command):
             serv=service_ref.servicesId,
             plural='s' if len(active_revs) > 1 else '',
             rev_msg=rev_msg,
-            url=service.domain)
+            url=service.domain if 'domain' in dir(service) else service.url)
 
         pretty_print.Success(msg)
 

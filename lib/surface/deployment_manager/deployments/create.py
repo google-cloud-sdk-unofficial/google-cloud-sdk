@@ -53,31 +53,31 @@ class Create(base.CreateCommand, dm_base.DmCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To create a new deployment from a top-level yaml file, run:
+      'EXAMPLES': """
+To create a new deployment from a top-level YAML file, run:
 
-            $ {command} my-deployment --config config.yaml --description "My deployment"
+  $ {command} my-deployment --config=config.yaml --description="My deployment"
 
-          To create a new deployment from a top-level template file, run:
+To create a new deployment from a top-level template file, run:
 
-            $ gcloud deployment-manager deployments create my-deployment \
-            --template template.{jinja|py} \
-            --properties "string-key:'string-value',integer-key:12345"
+  $ gcloud deployment-manager deployments create my-deployment \
+  --template=template.{jinja|py} \
+  --properties="string-key:'string-value',integer-key:12345"
 
-          To create a new deployment directly from a composite type, run:
+To create a new deployment directly from a composite type, run:
 
-            $ gcloud deployment-manager deployments create my-deployment \
-            --composite-type <project-id>/composite:<type-name> \
-            --properties "string-key:'string-value',integer-key:12345"
+  $ gcloud deployment-manager deployments create my-deployment \
+  --composite-type=<project-id>/composite:<type-name> \
+  --properties="string-key:'string-value',integer-key:12345"
 
-          To preview a deployment without actually creating resources, run:
+To preview a deployment without actually creating resources, run:
 
-            $ {command} my-new-deployment --config config.yaml --preview
+  $ {command} my-new-deployment --config=config.yaml --preview
 
-          To instantiate a deployment that has been previewed, issue an update command for that deployment without specifying a config file.
+To instantiate a deployment that has been previewed, issue an update command for that deployment without specifying a config file.
 
-          More information is available at https://cloud.google.com/deployment-manager/docs/configuration/.
-          """,
+More information is available at https://cloud.google.com/deployment-manager/docs/configuration/.
+""",
   }
 
   _create_policy_flag_map = arg_utils.ChoiceEnumMapper(

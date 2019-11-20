@@ -34,11 +34,11 @@ class Call(base.Command):
 
   ## EXAMPLES
 
-  To call a function giving it hello world in message field of its event
+  To call a function, giving it 'Hello World!' in the message field of its event
   argument (depending on your environment you might need to escape
-  characters in --data flag value differently):
+  characters in `--data` flag value differently), run:
 
-      $ {command} helloWorld --data '{"message": "Hello World!"}'
+      $ {command} helloWorld --data='{"message": "Hello World!"}'
 
   """
 

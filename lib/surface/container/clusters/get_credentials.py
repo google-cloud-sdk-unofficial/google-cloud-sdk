@@ -59,9 +59,9 @@ class GetCredentials(base.Command):
   detailed_help = {
       'EXAMPLES':
           """\
-          To switch to working on your cluster 'testcluster1', run:
+          To switch to working on your cluster 'sample-cluster', run:
 
-            $ {command} testcluster1 --zone=us-central1-f
+            $ {command} sample-cluster --zone=us-central1-f
       """,
   }
 

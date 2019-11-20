@@ -32,11 +32,11 @@ class Wait(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To wait for a waiter named "my-waiter" within a configuration named
           "my-config", run:
 
-            $ {command} my-waiter --config-name my-config
+            $ {command} my-waiter --config-name=my-config
           """,
   }
 

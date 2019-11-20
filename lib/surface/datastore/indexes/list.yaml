@@ -3,6 +3,10 @@
   help_text:
     brief: List Cloud Datastore indexes.
     description: List Cloud Datastore indexes.
+    examples: |
+      To list all composite indexes in the database, run:
+
+        $ {command}
 
   request:
     collection: datastore.projects.indexes

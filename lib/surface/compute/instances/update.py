@@ -27,23 +27,25 @@ from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 DETAILED_HELP = {
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* updates labels and requested CPU Platform for a Google
         Compute
-        Engine virtual machine.  For example:
+        Engine virtual machine.
+    """,
+    'EXAMPLES': """
+    To modify the instance 'example-instance' in 'us-central1-a' by adding
+    labels 'k0', with value 'value1' and label 'k1' with value 'value2' and
+    removing labels with key 'k3', run:
 
-          $ {command} example-instance --zone us-central1-a --update-labels=k0=value1,k1=value2 --remove-labels=k3
+      $ {command} example-instance --zone=us-central1-a --update-labels=k0=value1,k1=value2 --remove-labels=k3
 
-        will add/update labels ``k0'' and ``k1'' and remove labels with key
-        ``k3''.
+    Labels can be used to identify the disk. To list disks with the 'k1:value2' label, run:
 
-        Labels can be used to identify the instance and to filter them as in
+      $ {parent_command} list --filter='labels.k1:value2'
 
-          $ {parent_command} list --filter='labels.k1:value2'
+    To list only the labels when describing a resource, use --format to filter the result:
 
-        To list existing labels
-
-          $ {parent_command} describe example-instance --format='default(labels)'
+      $ {parent_command} describe example-disk --format='default(labels)'
   """
 }
 

@@ -39,7 +39,7 @@ class Create(base.CreateCommand):
       'EXAMPLES': """\
           To create a cluster, run:
 
-            $ {command} my_cluster
+            $ {command} my_cluster --region=us-central1
       """
   }
 

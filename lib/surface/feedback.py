@@ -139,6 +139,20 @@ class Feedback(base.Command):
   form fields on that page.
   """
 
+  detailed_help = {
+      'EXAMPLES': """
+          To send feedback, including the log file for the most recent command,
+          run:
+
+            $ {command}
+
+          To send feedback with a previously generated log file named
+          'my-logfile', run:
+
+            $ {command} --log-file=my-logfile
+          """,
+  }
+
   category = base.SDK_TOOLS_CATEGORY
 
   @staticmethod

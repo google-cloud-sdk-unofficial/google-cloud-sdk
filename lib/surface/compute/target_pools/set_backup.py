@@ -41,11 +41,11 @@ class SetBackup(base.SilentCommand):
   to `BACKUP-POOL` when more than half of the `TARGET-POOL`
   instances are unhealthy, run:
 
-    $ {command} TARGET-POOL --backup-pool BACKUP-POOL --failover-ratio 0.5 --region us-central1
+    $ {command} TARGET-POOL --backup-pool=BACKUP-POOL --failover-ratio=0.5 --region=us-central1
 
   To remove `BACKUP-POOL` as a backup to `TARGET-POOL`, run:
 
-    $ {command} TARGET-POOL --backup-pool '' --region us-central1
+    $ {command} TARGET-POOL --backup-pool='' --region=us-central1
   """
   # pylint: enable=line-too-long
 

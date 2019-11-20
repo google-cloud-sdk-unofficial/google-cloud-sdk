@@ -31,6 +31,11 @@ DETAILED_HELP = {
         *{command}* is used to update access configurations for network
         interfaces of Google Compute Engine virtual machines.
         """,
+    'EXAMPLES': """
+    To update network interface of an instance to 'nic0', run:
+
+      $ {command} example-instance  --network-interface=nic0 --zone=us-central1-b
+  """
 }
 
 

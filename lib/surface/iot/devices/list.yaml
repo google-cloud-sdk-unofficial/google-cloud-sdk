@@ -3,6 +3,10 @@
   help_text:
     brief: List devices.
     description: List devices.
+    examples: |
+      To list all devices in the device registry 'my-registry' and region 'us-central1', run:
+
+        $ {command} --region=us-central1 --registry=my-registry
 
   request:
     collection: cloudiot.projects.locations.registries.devices

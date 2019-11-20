@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class SoleTenancyNodeTypes(base.Group):
-  """Read Google Compute Engine sole-tenancy node types.
+  """Read Compute Engine sole-tenancy node types.
 
   Node types are the types of dedicated Compute Engine servers that
   are used for nodes in node groups. Node types will differ in

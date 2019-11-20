@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.bigtable import instances
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
@@ -28,6 +30,16 @@ from googlecloudsdk.core import resources
 
 class UpgradeInstance(base.UpdateCommand):
   """Upgrade an existing instance's type from development to production."""
+
+  detailed_help = {
+      'EXAMPLES':
+          textwrap.dedent("""\
+          To upgrade a `DEVELOPMENT` instance to `PRODUCTION`, run:
+
+            $ {command} my-instance-id
+
+          """),
+  }
 
   @staticmethod
   def Args(parser):

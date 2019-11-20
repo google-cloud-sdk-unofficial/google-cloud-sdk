@@ -56,6 +56,12 @@ class Login(base.Command):
 
   For more information on authorization and credential types, see:
   [](https://cloud.google.com/sdk/docs/authorizing).
+
+  ## EXAMPLES
+
+  To obtain access credentials for your user account, run:
+
+    $ {command}
   """
 
   @staticmethod

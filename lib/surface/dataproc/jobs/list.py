@@ -68,12 +68,13 @@ class List(base.ListCommand):
 
   To see the list of all jobs, run:
 
-    $ {command}
+    $ {command} --region=us-central1
 
   To see a list of all active jobs in cluster `my_cluster` with a label of
   `env=staging`, run:
 
-    $ {command} --filter='status.state = ACTIVE AND placement.clusterName = my_cluster AND labels.env = staging'
+    $ {command} --region=us-central1 --filter='status.state = ACTIVE AND
+        placement.clusterName = my_cluster AND labels.env = staging'
   """
 
   @staticmethod

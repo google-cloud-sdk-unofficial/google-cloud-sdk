@@ -56,6 +56,9 @@ else:
   # existence first.
   try:
     import tensorflow.contrib  # pylint: disable=unused-import
+    # TF 1.15 introduced lazy loading for tensorflow.contrib, but doing
+    # a dir forces it to load.
+    dir(tensorflow.contrib)
   except:  # pylint: disable=bare-except
     pass
 # pylint: enable=g-import-not-at-top

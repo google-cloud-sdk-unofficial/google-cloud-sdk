@@ -42,15 +42,9 @@ import six
 from six.moves import zip
 
 DETAILED_HELP = {
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* facilitates the creation of Google Compute Engine
-        virtual machines. For example, running:
-
-          $ {command} example-instance-1 example-instance-2 example-instance-3 --zone us-central1-a
-
-        will create three instances called `example-instance-1`,
-        `example-instance-2`, and `example-instance-3` in the
-        `us-central1-a` zone.
+        virtual machines.
 
         When an instance is in RUNNING state and the system begins to boot,
         the instance creation is considered finished, and the command returns
@@ -60,11 +54,16 @@ DETAILED_HELP = {
 
         For more examples, refer to the *EXAMPLES* section below.
         """,
-    'EXAMPLES': """\
-        To create an instance with the latest ``Red Hat Enterprise Linux
-        8'' image available, run:
+    'EXAMPLES': """
+        To create an instance with the latest 'Red Hat Enterprise Linux 8' image
+        available, run:
 
           $ {command} example-instance --image-family=rhel-8 --image-project=rhel-cloud --zone=us-central1-a
+
+        To create instances called 'example-instance-1', 'example-instance-2',
+        and 'example-instance-3' in the 'us-central1-a' zone, run:
+
+          $ {command} example-instance-1 example-instance-2 example-instance-3 --zone=us-central1-a
         """,
 }
 
@@ -161,6 +160,7 @@ class Create(base.CreateCommand):
   _support_source_snapshot_csek = False
   _support_image_csek = False
   _support_confidential_compute = False
+  _support_post_key_revocation_action_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -472,6 +472,13 @@ class Create(base.CreateCommand):
         args.IsSpecified('erase_windows_vss_signature'):
         instance.eraseWindowsVssSignature = args.erase_windows_vss_signature
 
+      if self._support_post_key_revocation_action_type and \
+        args.IsSpecified('post_key_revocation_action_type'):
+        instance.postKeyRevocationActionType = \
+            compute_client.messages.Instance \
+                .PostKeyRevocationActionTypeValueValuesEnum(
+                    args.post_key_revocation_action_type)
+
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
           project=instance_ref.project,
@@ -586,6 +593,7 @@ class CreateBeta(Create):
   _support_source_snapshot_csek = False
   _support_image_csek = False
   _support_confidential_compute = False
+  _support_post_key_revocation_action_type = False
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -622,6 +630,7 @@ class CreateAlpha(CreateBeta):
   _support_source_snapshot_csek = True
   _support_image_csek = True
   _support_confidential_compute = True
+  _support_post_key_revocation_action_type = False
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):
@@ -661,6 +670,7 @@ class CreateAlpha(CreateBeta):
                                        ' image')
     maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
     instances_flags.AddConfidentialComputeArgs(parser)
+    instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

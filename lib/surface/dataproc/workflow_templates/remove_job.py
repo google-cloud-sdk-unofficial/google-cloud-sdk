@@ -24,9 +24,21 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To remove a job with step ID 'step-id' from a workflow template
+      'workflow-template' in region 'us-central1', run:
+
+        $ {command} workflow-template --region=us-central1 --step-id=step-id
+      """,
+}
+
 
 class RemoveJob(base.UpdateCommand):
   """Remove a job from workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

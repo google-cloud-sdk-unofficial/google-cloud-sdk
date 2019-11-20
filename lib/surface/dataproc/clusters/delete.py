@@ -34,7 +34,7 @@ class Delete(base.DeleteCommand):
       'EXAMPLES': """\
           To delete a cluster, run:
 
-            $ {command} my_cluster
+            $ {command} my_cluster --region=us-central1
           """,
   }
 

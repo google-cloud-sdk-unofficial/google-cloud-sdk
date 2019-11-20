@@ -26,7 +26,16 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes a Google Compute Engine node group."""
+  """Delete a Compute Engine node group."""
+
+  detailed_help = {
+      'brief': 'Delete a Compute Engine node group.',
+      'EXAMPLES': """
+         To delete a node group, run:
+
+           $ {command} my-node-group
+       """
+  }
 
   @staticmethod
   def Args(parser):

@@ -230,18 +230,18 @@ Upgrade.detailed_help = {
     """,
     'EXAMPLES':
         """\
-      Upgrade the nodes of <cluster> to the Kubernetes version of the cluster's
-      master.
+      Upgrade the nodes of sample-cluster to the Kubernetes version of the
+      cluster's master.
 
-        $ {command} <cluster>
+        $ {command} sample-cluster
 
-      Upgrade the nodes of <cluster> to Kubernetes version x.y.z:
+      Upgrade the nodes of sample-cluster to Kubernetes version 1.14.7-gke.14:
 
-        $ {command} <cluster> --cluster-version "x.y.z"
+        $ {command} sample-cluster --cluster-version="1.14.7-gke.14"
 
-      Upgrade the master of <cluster> to the default cluster version:
+      Upgrade the master of sample-cluster to the default cluster version:
 
-        $ {command} <cluster> --master"
+        $ {command} sample-cluster --master
 """,
 }
 

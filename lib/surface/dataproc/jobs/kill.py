@@ -68,6 +68,7 @@ class Kill(base.Command):
     job = util.WaitForJobTermination(
         dataproc,
         job,
+        job_ref,
         message='Waiting for job cancellation',
         goal_state=dataproc.messages.JobStatus.StateValueValuesEnum.CANCELLED)
 

@@ -60,7 +60,7 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete a revision."""
     conn_context = connection_context.GetConnectionContext(
-        args, self.ReleaseTrack())
+        args, product=connection_context.Product.RUN)
     revision_ref = args.CONCEPTS.revision.Parse()
 
     console_io.PromptContinue(

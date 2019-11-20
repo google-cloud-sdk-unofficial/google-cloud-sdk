@@ -23,9 +23,20 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core.console import console_io
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To delete a workflow template 'my-workflow-template', run:
+
+        $ {command} my-workflow-template --region=us-central1
+      """,
+}
+
 
 class Delete(base.DeleteCommand):
   """Delete a workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

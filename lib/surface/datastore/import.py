@@ -37,6 +37,28 @@ class Import(base.Command):
   removed.
   """
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To import all data exported to the output URL
+          `gs://exampleBucket/exampleExport/exampleExport.overall_export_metadata`, run:
+
+            $ {command} gs://exampleBucket/exampleExport/exampleExport.overall_export_metadata
+
+          To import all data exported to the output URL
+          `gs://exampleBucket/exampleExport/exampleExport.overall_export_metadata`
+          without waiting for the operation to complete, run:
+
+            $ {command} gs://exampleBucket/exampleExport/exampleExport.overall_export_metadata --async
+
+          To import only the `exampleKind` from the data exported to the output
+          URL `gs://exampleBucket/exampleExport/exampleExport.overall_export_metadata`,
+          run:
+
+            $ {command} gs://exampleBucket/exampleExport/exampleExport.overall_export_metadata --kinds='exampleKind'
+      """
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command."""

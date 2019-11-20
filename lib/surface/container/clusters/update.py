@@ -69,7 +69,42 @@ def _AddCommonArgs(parser):
 
 def _AddMutuallyExclusiveArgs(mutex_group, release_track):
   """Add all arguments that need to be mutually exclusive from each other."""
-  if release_track in [base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA]:
+  if release_track == base.ReleaseTrack.ALPHA:
+    mutex_group.add_argument(
+        '--update-addons',
+        type=arg_parsers.ArgDict(
+            spec={
+                api_adapter.INGRESS: _ParseAddonDisabled,
+                api_adapter.HPA: _ParseAddonDisabled,
+                api_adapter.DASHBOARD: _ParseAddonDisabled,
+                api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+                api_adapter.ISTIO: _ParseAddonDisabled,
+                api_adapter.CLOUDRUN: _ParseAddonDisabled,
+                api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
+                api_adapter.CLOUDBUILD: _ParseAddonDisabled,
+            }),
+        dest='disable_addons',
+        metavar='ADDON=ENABLED|DISABLED',
+        help="""Cluster addons to enable or disable. Options are
+{hpa}=ENABLED|DISABLED
+{ingress}=ENABLED|DISABLED
+{dashboard}=ENABLED|DISABLED
+{istio}=ENABLED|DISABLED
+{application_manager}=ENABLED|DISABLED
+{network_policy}=ENABLED|DISABLED
+{cloudrun}=ENABLED|DISABLED
+{cloudbuild}=ENABLED|DISABLED""".format(
+    hpa=api_adapter.HPA,
+    ingress=api_adapter.INGRESS,
+    dashboard=api_adapter.DASHBOARD,
+    network_policy=api_adapter.NETWORK_POLICY,
+    istio=api_adapter.ISTIO,
+    application_manager=api_adapter.APPLICATIONMANAGER,
+    cloudrun=api_adapter.CLOUDRUN,
+    cloudbuild=api_adapter.CLOUDBUILD,
+    ))
+
+  elif release_track == base.ReleaseTrack.BETA:
     mutex_group.add_argument(
         '--update-addons',
         type=arg_parsers.ArgDict(
@@ -175,6 +210,17 @@ to the flag. For example:
 class Update(base.UpdateCommand):
   """Update cluster settings for an existing container cluster."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To enable autoscaling for an existing cluster, run:
+
+            $ {command} sample-cluster --enable-autoscaling
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.
@@ -207,7 +253,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(
-        group, hidden=False, is_update=True)
+        group, hidden=True, is_update=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)

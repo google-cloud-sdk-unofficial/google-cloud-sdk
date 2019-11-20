@@ -27,7 +27,16 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  """Updates a Google Compute Engine node group."""
+  """Update a Compute Engine node group."""
+
+  detailed_help = {
+      'brief': 'Update a Compute Engine node group.',
+      'EXAMPLES': """
+         To update a node group to have two more nodes, run:
+
+           $ {command} my-node-group --add-nodes=2
+       """
+  }
 
   @staticmethod
   def Args(parser):
@@ -56,12 +65,12 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
-  """Updates a Google Compute Engine node group."""
+  """Update a Compute Engine node group."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
-  """Updates a Google Compute Engine node group."""
+  """Update a Compute Engine node group."""
 
   @staticmethod
   def Args(parser):

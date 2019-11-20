@@ -41,11 +41,11 @@ class Update(base.UpdateCommand, dm_base.DmCommand):
   """Update a composite type."""
 
   detailed_help = {
-      'EXAMPLES': """\
-          To update a composite type, run:
+      'EXAMPLES': """
+To update a composite type, run:
 
-            $ {command} my-composite-type --status EXPERIMENTAL --description "My type."
-          """,
+  $ {command} my-composite-type --status=EXPERIMENTAL --description="My type."
+""",
   }
 
   @staticmethod

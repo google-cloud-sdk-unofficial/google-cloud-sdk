@@ -95,4 +95,10 @@ An example of "point of no-return" in the context of Upgrade operations would
 be if all the nodes have been upgraded but the operation hasn't been marked as
 complete.
 """,
+    'EXAMPLES':
+        """\
+        To cancel an operation, run:
+
+          $ {command} sample-operation-id
+        """,
 }

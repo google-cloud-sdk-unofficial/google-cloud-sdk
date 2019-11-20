@@ -36,6 +36,18 @@ class Import(base.UpdateCommand):
   this name already exists, an error will be thrown.
   """
 
+  detailed_help = {
+      'EXAMPLES': """
+To import a cluster from a YAML file, run:
+
+  $ {command} my_cluster --region=us-central1 --source=cluster.yaml
+
+To import a cluster from standard output, run:
+
+  $ {command} my_cluster --region=us-central1
+"""
+  }
+
   @classmethod
   def GetApiVersion(cls):
     """Returns the API version based on the release track."""

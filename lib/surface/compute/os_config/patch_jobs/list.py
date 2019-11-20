@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 _DEFAULT_LIMIT = 10
@@ -66,11 +65,11 @@ def _TransformNumInstances(resource):
   return num_instances
 
 
-def _MakeGetUriFunc():
+def _MakeGetUriFunc(registry):
   """Return a transformation function from a patch job resource to an URI."""
 
   def UriFunc(resource):
-    ref = resources.REGISTRY.Parse(
+    ref = registry.Parse(
         resource.name,
         params={
             'projects': properties.VALUES.core.project.GetOrFail,
@@ -114,7 +113,8 @@ class List(base.ListCommand):
         'state': _TransformState,
         'targeted_instances': _TransformNumInstances,
     })
-    parser.display_info.AddUriFunc(_MakeGetUriFunc())
+    registry = osconfig_api_utils.GetRegistry(base.ReleaseTrack.ALPHA)
+    parser.display_info.AddUriFunc(_MakeGetUriFunc(registry))
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()

@@ -118,8 +118,14 @@ DEFAULT_MAX_REDIRECTS = 5
 # Which headers are hop-by-hop headers by default
 HOP_BY_HOP = ['connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailers', 'transfer-encoding', 'upgrade']
 
-# Default CA certificates file bundled with httplib2.
-CA_CERTS = os.path.join(
+try:
+    # Users can optionally provide a module that tells us where the CA_CERTS
+    # are located.
+    from . import ca_certs_locater
+    CA_CERTS = ca_certs_locater.get()
+except ImportError:
+    # Default CA certificates file bundled with httplib2.
+    CA_CERTS = os.path.join(
         os.path.dirname(os.path.abspath(__file__ )), "cacerts.txt")
 
 # PROTOCOL_TLS is python 3.5.3+. PROTOCOL_SSLv23 is deprecated.

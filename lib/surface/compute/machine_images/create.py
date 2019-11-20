@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.compute.machine_images import flags as machine_i
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create Google Compute Engine machine images."""
+  """Create Compute Engine machine images."""
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
 
   @staticmethod
@@ -40,7 +40,7 @@ class Create(base.CreateCommand):
     Create.MACHINE_IMAGE_ARG.AddArgument(parser, operation_type='create')
     parser.add_argument(
         '--description',
-        help='Specifies a textual description of the machine image.')
+        help='Specifies a text description of the machine image.')
     csek_utils.AddCsekKeyArgs(parser, resource_type='machine image')
     flags.AddStorageLocationFlag(parser, "machine image's")
     flags.AddGuestFlushFlag(parser, 'machine image')

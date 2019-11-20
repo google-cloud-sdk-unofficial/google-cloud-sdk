@@ -27,7 +27,17 @@ from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
 class ListNodes(base.ListCommand):
-  """List Google Compute Engine sole-tenant nodes present in a node group."""
+  """List Compute Engine sole-tenant nodes present in a node group."""
+
+  detailed_help = {
+      'brief': 'List Compute Engine sole-tenant nodes present in a node'
+               'group.',
+      'EXAMPLES': """
+         To list sole-tenant nodes present in a node group, run:
+
+           $ {command} my-node-group
+       """
+  }
 
   @staticmethod
   def _Flags(parser):

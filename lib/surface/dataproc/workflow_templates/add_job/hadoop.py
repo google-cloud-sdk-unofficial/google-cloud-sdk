@@ -24,9 +24,23 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import workflow_templates
 from googlecloudsdk.command_lib.dataproc.jobs import hadoop
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To add a Hadoop job executing 'my-jar' jar driver with 'my-class'
+      containing the main method to a the workflow template
+      'my-workflow-template' in region 'us-central1' with step-id 'my-step-id'
+      , run:
+
+        $ {command} --step-id=my-step_id --class=my-class --jar=my-jar.jar --workflow-template=my-workflow-template --region=us-central1
+      """,
+}
+
 
 class Hadoop(hadoop.HadoopBase, base.Command):
   """Add a hadoop job to the workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

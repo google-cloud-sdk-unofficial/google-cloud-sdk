@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
 
 
 def _TransformGuestPolicyDescription(resource):
@@ -33,12 +32,12 @@ def _TransformGuestPolicyDescription(resource):
           '..') if len(description) > max_len else description
 
 
-def _MakeGetUriFunc():
+def _MakeGetUriFunc(registry):
   """Return a transformation function from a guest policy resource to an URI."""
 
   def UriFunc(resource):
     parent_type = resource.name.split('/')[0]
-    ref = resources.REGISTRY.Parse(
+    ref = registry.Parse(
         resource.name,
         collection='osconfig.{}.guestPolicies'.format(parent_type))
     return ref.SelfLink()
@@ -76,7 +75,8 @@ class List(base.ListCommand):
         """)
     parser.display_info.AddTransforms(
         {'description': _TransformGuestPolicyDescription})
-    parser.display_info.AddUriFunc(_MakeGetUriFunc())
+    registry = osconfig_api_utils.GetRegistry(base.ReleaseTrack.ALPHA)
+    parser.display_info.AddUriFunc(_MakeGetUriFunc(registry))
 
   def Run(self, args):
     release_track = self.ReleaseTrack()

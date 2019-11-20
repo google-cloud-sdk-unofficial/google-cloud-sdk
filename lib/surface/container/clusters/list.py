@@ -34,6 +34,17 @@ from surface.container.clusters.upgrade import VersionVerifier
 class List(base.ListCommand):
   """List existing clusters for running containers."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To list existing clusters in all locations, run:
+
+            $ {command}
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(util.CLUSTERS_FORMAT)

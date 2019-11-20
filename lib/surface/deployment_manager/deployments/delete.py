@@ -47,23 +47,23 @@ class Delete(base.DeleteCommand, dm_base.DmCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To delete a deployment, run:
+      'EXAMPLES': """
+To delete a deployment, run:
 
-            $ {command} my-deployment
+  $ {command} my-deployment
 
-          To issue a delete command without waiting for the operation to complete, run:
+To issue a delete command without waiting for the operation to complete, run:
 
-            $ {command} my-deployment --async
+  $ {command} my-deployment --async
 
-          To delete several deployments, run:
+To delete several deployments, run:
 
-            $ {command} my-deployment-one my-deployment-two my-deployment-three
+  $ {command} my-deployment-one my-deployment-two my-deployment-three
 
-          To disable the confirmation prompt on delete, run:
+To disable the confirmation prompt on delete, run:
 
-            $ {command} my-deployment -q
-          """,
+  $ {command} my-deployment -q
+""",
   }
 
   _delete_policy_flag_map = flags.GetDeleteFlagEnumMap(

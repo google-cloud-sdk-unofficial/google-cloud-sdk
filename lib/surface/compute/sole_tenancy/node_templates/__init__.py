@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class SoleTenancyNodeTemplates(base.Group):
-  """Read and manage Google Compute Engine sole-tenancy node templates.
+  """Read and manage Compute Engine sole-tenancy node templates.
 
   Node templates are used to create the nodes in node groups. Nodes are
   Compute Engine servers that are dedicated to your workload. Node templates

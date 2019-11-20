@@ -32,14 +32,14 @@ class Update(base.UpdateCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To update a runtime-config resource's description, run:
 
-            $ {command} --description "My new description" my-config
+            $ {command} --description="My new description" my-config
 
           To remove a runtime-config resource's description, run:
 
-            $ {command} --description "" my-config
+            $ {command} --description="" my-config
           """,
   }
 

@@ -34,19 +34,25 @@ def _RunDiagnostics(ignore_hidden_property_whitelist):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Info(base.Command):
-  """Display information about the current gcloud environment.
+  """Display information about the current gcloud environment."""
 
-     {command} displays information about the current gcloud environment.
+  detailed_help = {
+      'EXAMPLES': """
+          To display information about the current gcloud environment including
+          the Google Cloud Platform account, project and directory paths for
+          logs, run:
 
-     - {command} prints information about the current active configuration,
-       including the Google Cloud Platform account, project and directory paths
-       for logs.
+            $ {command}
 
-     - {command} --run-diagnostics checks network connectivity and hidden
-       properties.
+          To check network connectivity and hidden properties, run:
 
-     - {command} --show-log prints the contents of the most recent log file.
-  """
+            $ {command} --run-diagnostics
+
+          To print the contents of the most recent log file, run:
+
+            $ {command} --show-log
+          """,
+  }
 
   category = base.SDK_TOOLS_CATEGORY
 

@@ -45,14 +45,14 @@ DETAILED_HELP = {
         To create a new node pool "node-pool-1" with the default options in the
         cluster "sample-cluster", run:
 
-          $ {command} node-pool-1 --cluster=example-cluster
+          $ {command} node-pool-1 --cluster=sample-cluster
 
         The new node pool will show up in the cluster after all the nodes have
         been provisioned.
 
         To create a node pool with 5 nodes, run:
 
-          $ {command} node-pool-1 --cluster=example-cluster --num-nodes=5
+          $ {command} node-pool-1 --cluster=sample-cluster --num-nodes=5
         """,
 }
 

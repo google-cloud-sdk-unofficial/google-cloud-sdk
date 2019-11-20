@@ -35,11 +35,11 @@ class Describe(base.DescribeCommand, dm_base.DmCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To display information about a resource, run:
+      'EXAMPLES': """
+To display information about a resource, run:
 
-            $ {command} --deployment my-deployment my-resource-name
-          """,
+  $ {command} --deployment=my-deployment my-resource-name
+""",
   }
 
   @staticmethod

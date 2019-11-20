@@ -34,6 +34,14 @@ from googlecloudsdk.core.util import retry
 class Diagnose(base.Command):
   """Run a detailed diagnostic on a cluster."""
 
+  detailed_help = {
+      'EXAMPLES': """
+    To diagnose a cluster, run:
+
+      $ {command} my_cluster --region=us-central1
+"""
+  }
+
   @classmethod
   def Args(cls, parser):
     flags.AddTimeoutFlag(parser)

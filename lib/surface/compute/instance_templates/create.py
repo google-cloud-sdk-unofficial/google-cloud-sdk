@@ -628,3 +628,24 @@ class CreateAlpha(Create):
         support_kms=self._support_kms,
         support_min_node_cpus=self._support_min_node_cpus,
         support_confidential_compute=self._support_confidential_compute)
+
+
+DETAILED_HELP = {
+    'brief':
+        'Create a Compute Engine virtual machine instance template',
+    'DESCRIPTION':
+        '*{command}* facilitates the creation of Google Compute '
+        'Engine virtual machine instance templates. Instance '
+        'templates are global resources, and can be used to create '
+        'instances in any zone.',
+    'EXAMPLES':
+        """\
+        To create an instance template named 'INSTANCE-TEMPLATE' with the 'n2'
+        vm type, '9GB' memory, and 2 CPU cores, run:
+
+          $ {command} INSTANCE-TEMPLATE --custom-vm-type=n2 --custom-cpu=2 --custom-memory=9GB
+        """
+}
+
+
+Create.detailed_help = DETAILED_HELP

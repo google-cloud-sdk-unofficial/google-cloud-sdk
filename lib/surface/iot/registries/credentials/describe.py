@@ -29,6 +29,15 @@ from googlecloudsdk.command_lib.iot import util
 class Describe(base.DescribeCommand):
   """Show details about a specific registry credential."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To describe the first credential of a registry in region 'us-central1', run:
+
+            $ {command} --region=us-central1 --registry=my-registry 0
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddRegistryResourceArg(parser,

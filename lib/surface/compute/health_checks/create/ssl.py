@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.health_checks import flags
-from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
@@ -124,9 +123,6 @@ class Create(base.CreateCommand):
           cls._include_log_config)
 
   def Run(self, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      log.warning('The health-checks create ssl command will soon require '
-                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing,
                 self._include_log_config)

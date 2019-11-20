@@ -130,4 +130,10 @@ they will not be restarted.
 Note that when resizing down, instances running pods and instances without pods
 are not differentiated. Resize will pick instances to remove at random.
 """,
+    'EXAMPLES':
+        """\
+        To resize the default node pool of an existing cluster, run:
+
+          $ {command} sample-cluster --num-nodes=2
+        """,
 }

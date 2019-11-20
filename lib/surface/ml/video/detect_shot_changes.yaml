@@ -4,6 +4,10 @@
     brief: Detect shot changes in videos.
     description: |
       Detect when the shot changes in a video.
+    examples: |
+      To detect shot changes in a video file named 'gs://my_bucket/input_file.mp4', run the following command:
+
+        $ {command} gs://my_bucket/input_file.mp4
 
   request:
     _COMMON_: request

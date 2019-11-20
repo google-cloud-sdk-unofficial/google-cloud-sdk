@@ -45,11 +45,11 @@ class Create(base.CreateCommand, dm_base.DmCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To create a new composite type, run:
+      'EXAMPLES': """
+To create a new composite type, run:
 
-            $ {command} my-composite-type --template=my-template.jinja --status EXPERIMENTAL --description "My type."
-          """,
+  $ {command} my-composite-type --template=my-template.jinja --status=EXPERIMENTAL --description="My type."
+""",
   }
 
   @staticmethod

@@ -39,15 +39,14 @@ class Startup(base.TopicCommand):
       * python
       * python3
 
-  Currently `gcloud` requires Python version 2.7.x and there is experimental
-  support for 3.4 and up.
+  Currently `gcloud` requires Python version 2.7.x and there is beta support for
+  3.5 and up.
 
   Other Python tools shipped in the Cloud SDK do not yet support Python 3,
   including:
 
       * `dev_appserver`
       * `bq`
-      * `datalab`
 
   If you have multiple Python interpreters available or if you don't have one
   on your PATH, you can specify which interpreter to use by setting the
@@ -64,6 +63,9 @@ class Startup(base.TopicCommand):
   different interpreter (e.g. Python 3) for gsutil than for the other Python
   tools, you can set the desired interpreter by setting the
   CLOUDSDK_GSUTIL_PYTHON environment variable.
+
+  bq currently does not support Python 3; you can select a python interpreter
+  to use just for bq by setting the CLOUDSDK_BQ_PYTHON environment variable.
 
   # Configuring the Python Interpreter
 

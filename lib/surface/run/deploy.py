@@ -175,7 +175,7 @@ class Deploy(base.Command):
     image = args.image
 
     conn_context = connection_context.GetConnectionContext(
-        args, self.ReleaseTrack())
+        args, product=connection_context.Product.RUN)
     config_changes = flags.GetConfigurationChanges(args)
 
     service_ref = flags.GetService(args)

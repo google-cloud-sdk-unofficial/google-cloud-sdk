@@ -32,7 +32,7 @@ class Create(base.CreateCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To create a runtime-config resource named "my-config", run:
 
             $ {command} my-config
@@ -40,7 +40,7 @@ class Create(base.CreateCommand):
           To create a runtime-config resource named "my-config" with a
           description, run:
 
-            $ {command} --description "my new configuration" my-config
+            $ {command} --description="my new configuration" my-config
           """,
   }
 

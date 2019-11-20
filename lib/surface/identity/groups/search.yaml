@@ -6,7 +6,7 @@
       To Search groups.
 
       $ {command} --organization 5149234212
-          --label "system/groups/discussion_forum"
+          --labels "cloudidentity.googleapis.com/discussion_forum"
           --page-size 3 --page-token "ala9glealanal908"
 
   arguments:
@@ -16,10 +16,10 @@
       help_text: |
         The organization the Group being searched.
 
-    - arg_name: label
+    - arg_name: labels
       required: true
       help_text: |
-        Label of the group resource.
+        Labels of the group resource.
 
     - arg_name: view
       api_field: view

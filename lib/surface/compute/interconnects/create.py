@@ -38,7 +38,7 @@ DETAILED_HELP = {
         """\
         To create an interconnect of type DEDICATED, run:
 
-          $ {command} example-interconnect --customer-name "Example Customer Name" --interconnect-type DEDICATED --link-type LINK_TYPE_ETHERNET_10G_LR --location example-zone1-1 --requested-link-count 1 --noc-contact-email noc@example.com --description "Example interconnect"
+          $ {command} example-interconnect --customer-name="Example Customer Name" --interconnect-type=DEDICATED --link-type=LINK_TYPE_ETHERNET_10G_LR --location=example-zone1-1 --requested-link-count=1 --noc-contact-email=noc@example.com --description="Example interconnect"
         """,
     # pylint: enable=line-too-long
 }

@@ -49,6 +49,17 @@ class Delete(base.DeleteCommand):
   - Persistent disk volumes
   """
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To delete an existing cluster, run:
+
+            $ {command} sample-cluster
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

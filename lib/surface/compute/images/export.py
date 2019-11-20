@@ -157,15 +157,24 @@ class ExportAlpha(ExportBeta):
 
 
 Export.detailed_help = {
-    'brief': 'Export a Google Compute Engine image',
-    'DESCRIPTION': """\
-        *{command}* exports Virtual Disk images from Google Compute Engine.
+    'brief':
+        'Export a Compute Engine image',
+    'DESCRIPTION':
+        """\
+        *{command}* exports virtual disk images from Compute Engine.
 
-        By default, images are exported in the Google Compute Engine format,
-        which is a disk.raw file that has been tarred and gzipped.
+        By default, images are exported in the Compute Engine format,
+        which is a 'disk.raw' file that is tarred and gzipped.
 
-        The `--export-format` flag will export the image to a format supported
-        by QEMU using qemu-img. Valid formats include `vmdk`, `vhdx`, `vpc`,
-        `vdi`, and `qcow2`.
+        The `--export-format` flag exports the image to a format supported
+        by QEMU using qemu-img. Valid formats include 'vmdk', 'vhdx', 'vpc',
+        'vdi', and 'qcow2'.
         """,
+    'EXAMPLES':
+        """\
+        To export a VMDK file 'my-image' from a project 'my-project' to a
+        Cloud Storage bucket 'my-bucket', run:
+
+          $ {command} --image=my-image --destination-uri=gs://my-bucket/my-image.vmdk --image=my-image --format=vmdk --project=my-project
+    """
 }

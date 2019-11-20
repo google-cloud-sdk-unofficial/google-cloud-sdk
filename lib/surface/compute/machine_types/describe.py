@@ -29,6 +29,11 @@ class Describe(base.DescribeCommand):
 
   *{command}* displays all data associated with a Google Compute
   Engine machine type.
+
+  ## EXAMPLES
+  To describe a machine type 'MACHINE-TYPE' in zone 'us-central1-f', run:
+
+    $ {command} MACHINE-TYPE --zone=us-central1-f
   """
 
   @staticmethod

@@ -34,7 +34,7 @@ class List(base.ListCommand):
   DEFAULT_PAGE_SIZE = 100
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To list all runtime-config resources for the current project, run:
 
             $ {command}
@@ -43,7 +43,7 @@ class List(base.ListCommand):
           For example, to list all runtime-config resources with names that
           begin with 'foo', run:
 
-            $ {command} --filter 'name=foo*'
+            $ {command} --filter='name=foo*'
           """,
   }
 

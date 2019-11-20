@@ -65,6 +65,17 @@ class Init(base.Command):
   project-level default zone in the Cloud Platform Console.
 
   To sync the configuration, re-run {command}
+
+  ## EXAMPLES
+
+  To launch an interactive Getting Started workflow, run:
+
+    $ {command}
+
+  To launch an interactive Getting Started workflow without diagnostics, run:
+
+    $ {command} --skip-diagnostics
+
   """
 
   category = base.SDK_TOOLS_CATEGORY

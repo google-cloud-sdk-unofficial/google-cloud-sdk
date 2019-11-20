@@ -26,23 +26,26 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'brief':
+        'Remove tags from Google Compute Engine virtual machine instances.',
+    'DESCRIPTION':
+        """\
+        *{command}* is used to remove tags from Google Compute Engine virtual
+        machine instances.
+        """,
+    'EXAMPLES':
+        """\
+        To remove tags ``tag-1'' and ``tag-2'' from an instance named
+        ``test-instance'', run:
+
+          $ {command} test-instance --tags=tag-1,tag-2
+        """
+}
+
 
 class RemoveTags(base.UpdateCommand):
-  """Remove tags from Google Compute Engine virtual machine instances.
-
-    *{command}* is used to remove tags to Google Compute Engine virtual
-  machine instances.  For example:
-
-    $ {command} example-instance --tags tag-1,tag-2
-
-  will remove tags ``tag-1'' and ``tag-2'' from the existing tags of
-  'example-instance'.
-
-  Tags can be used to identify instances when adding network
-  firewall rules. Tags can also be used to get firewall rules that already
-  exist to be applied to the instance. See
-  gcloud_compute_firewall-rules_create(1) for more details.
-  """
+  """Remove tags from Google Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):
@@ -111,3 +114,6 @@ class RemoveTags(base.UpdateCommand):
 
     return client.MakeRequests(
         [self.GetSetRequest(client, instance_ref, new_object)])
+
+
+RemoveTags.detailed_help = DETAILED_HELP

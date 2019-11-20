@@ -43,13 +43,19 @@ class List(base.ListCommand):
   """List any Trusted Tester component repositories you have registered.
   """
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': """
           List all Trusted Tester component repositories that are registered
           with the component manager.  If you have additional repositories, the
           component manager will look at them to discover additional components
           to install, or different versions of existing components that are
           available.
       """,
+      'EXAMPLES': """
+          To list all Trusted Tester component repositories that are registered
+          with the component manager, run:
+
+            $ {command}
+      """
   }
 
   @staticmethod

@@ -41,18 +41,18 @@ class Create(base.Command):
   detailed_help = {
       'EXAMPLES':
           """
-          To create a binding between labelValue/123 and project with name
-          //cloudresourcemanager.googleapis.com/projects/1234 run:
+          To create a binding between 'labelValue/123' and Project with name
+          '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} labelValue/123 --resource='//cloudresourcemanager.googleapis.com/projects/1234'
 
-          To create a binding between LabelValue test under labelKeys/456 and
-          //cloudresourcemanager.googleapis.com/projects/1234 run:
+          To create a binding between LabelValue 'test' under 'labelKeys/456' and
+          Project '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} test --label-key='labelKeys/456' --resource='//cloudresourcemanager.googleapis.com/projects/1234'
 
-          To create a binding between LabelValue test under LabelKey env and
-          //cloudresourcemanager.googleapis.com/projects/1234 run:
+          To create a binding between LabelValue 'test' under LabelKey 'env' and
+          Project '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} test --label-key='env' --label-parent='organizations/789' --resource='//cloudresourcemanager.googleapis.com/projects/1234'
           """
@@ -72,21 +72,14 @@ class Create(base.Command):
         required=False,
         message=(' --label-parent is required when using display name instead '
                  'of numeric id for the --label-key.'))
-    arguments.AddResoruceArgToParser(parser)
+    arguments.AddResourceArgToParser(parser)
 
   def Run(self, args):
     labelbindings_service = labelmanager.LabelBindingsService()
     labelmanager_messages = labelmanager.LabelManagerMessages()
 
-    if args.IsSpecified('label_key'):
-      label_key = args.label_key
-      if args.IsSpecified('label_parent'):
-        label_key = utils.GetLabelKeyFromDisplayName(args.label_key,
-                                                     args.label_parent)
-      label_value = utils.GetLabelValueFromDisplayName(args.LABEL_VALUE_ID,
-                                                       label_key)
-    else:
-      label_value = args.LABEL_VALUE_ID
+    label_value = utils.GetLabelValueIfArgsAreValid(args)
+    label_value_id = utils.GetIdFromResourceName(label_value)
 
     binding = labelmanager_messages.LabelBinding(
         labelValue=label_value, resource=args.resource)
@@ -94,5 +87,5 @@ class Create(base.Command):
         labelBinding=binding)
 
     request = labelmanager_messages.LabelmanagerLabelValuesLabelBindingsCreateRequest(
-        createLabelBindingRequest=create_request, labelValuesId=label_value)
+        createLabelBindingRequest=create_request, labelValuesId=label_value_id)
     return labelbindings_service.Create(request)

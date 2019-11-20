@@ -1,6 +1,20 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+  help_text:
     brief: Delete a notification channel.
-    description: Delete a notification channel.
+    description: |
+      Delete a notification channel.
+
+      ## EXAMPLES
+      The following command will delete channel `projects/12345/notificationChannels/67890`, but
+      only if the channel is not actively referenced by existing alerting policies:
+
+        $ {command} "projects/12345/notificationChannels/67890"
+
+      The following command will delete channel `projects/12345/notificationChannels/67890`, even
+      if the channel is still actively referenced by alerting policies; if an existing policy
+      references the channel, it will be modified as a side-effect to remove the channel.
+
+        $ {command} "projects/12345/notificationChannels/67890" --force
 
   request:
     collection: monitoring.projects.notificationChannels

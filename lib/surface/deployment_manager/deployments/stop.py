@@ -42,19 +42,19 @@ class Stop(base.Command, dm_base.DmCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To stop a running operation on a deployment, run:
+      'EXAMPLES': """
+To stop a running operation on a deployment, run:
 
-            $ {command} my-deployment
+  $ {command} my-deployment
 
-          To issue a stop command without waiting for the operation to complete, run:
+To issue a stop command without waiting for the operation to complete, run:
 
-            $ {command} my-deployment --async
+  $ {command} my-deployment --async
 
-          To stop a running operation on a deployment providing a fingerprint, run:
+To stop a running operation on a deployment providing a fingerprint, run:
 
-            $ {command} my-deployment --fingerprint deployment-fingerprint
-          """,
+  $ {command} my-deployment --fingerprint=deployment-fingerprint
+""",
   }
 
   @staticmethod

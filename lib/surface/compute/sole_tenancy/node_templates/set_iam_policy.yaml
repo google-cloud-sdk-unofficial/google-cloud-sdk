@@ -1,7 +1,7 @@
 release_tracks: [ALPHA, BETA, GA]
 
 help_text:
-  brief: Set the IAM policy for a Google Compute Engine node template.
+  brief: Set the IAM policy for a Compute Engine node template.
   description: |
     Sets the IAM policy for the given node template as defined in a JSON or YAML file.
 

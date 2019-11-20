@@ -80,14 +80,14 @@ PredictionErrorType = collections.namedtuple(
     "PredictionErrorType", ("message", "code"))
 
 # Keys related to the explainability feature.
-METADATA_KEY = "metadata"
-METADATA_FILE_NAME = "metadata.json"
+METADATA_FILE_NAME = "explanation_metadata.json"
 EXPLANATION_CONFIG_KEY = "explanation_config"
 ABLATION_ATTRIBUTION_KEY = "ablation_attribution"
 INTEGRATED_GRADIENTS_KEY = "integrated_gradients_attribution"
 NUM_INTEGRAL_STEPS = "num_integral_steps"
 TREE_SHAP_ATTRIBUTION_KEY = "tree_shap_attribution"
 SAMPLING_SHAP_ATTRIBUTION_KEY = "sampling_shap_attribution"
+SAMPLED_SHAPLEY_ATTRIBUTION_KEY = "sampled_shapley_attribution"
 NUM_PATHS = "num_paths"
 SAABAS_ATTRIBUTION_KEY = "saabas_attribution"
 NUM_FEATURE_INTERACTIONS = "num_feature_interactions"
@@ -114,7 +114,7 @@ class PredictionError(Exception):
   INVALID_USER_CODE = PredictionErrorType(
       message="There was a problem processing the user code", code=4)
   FAILED_TO_LOAD_METADATA = PredictionErrorType(
-      message="Failed to load metadata.json", code=5)
+      message="Failed to load explanation_metadata.json", code=5)
   FAILED_TO_EXPLAIN_MODEL = PredictionErrorType(
       message="Failed to run model explainer", code=6)
   # When adding new exception, please update the ERROR_MESSAGE_ list as well as
@@ -640,18 +640,21 @@ def get_tensorflow_explanation_config(tf_configs_module):
   # ExplanationConfig, see //cloud/ml/beta/proto/explanation.proto.
   if ABLATION_ATTRIBUTION_KEY in config_request:
     logging.warning("Explanation strategy requested is Ablation (deprecated).")
-    return tf_configs_module.TFAblationConfig(
-        tf_configs_module.ModelType.CUSTOM,
-        tf_configs_module.InputType.FEED_DICT)
+    return tf_configs_module.TFAblationConfig()
   elif SAMPLING_SHAP_ATTRIBUTION_KEY in config_request:
     attribution_config = config_request.get(SAMPLING_SHAP_ATTRIBUTION_KEY)
     num_paths = attribution_config.get(NUM_PATHS)
-    config = tf_configs_module.TFSHAPConfig(
-        tf_configs_module.ModelType.CUSTOM,
-        tf_configs_module.InputType.FEED_DICT,
-        num_paths=num_paths)
+    config = tf_configs_module.TFSHAPConfig(num_paths=num_paths)
     logging.debug(
         "Explanation strategy requested is SamplingShap, "
+        "num_paths: %s", config.num_paths)
+    return config
+  elif SAMPLED_SHAPLEY_ATTRIBUTION_KEY in config_request:
+    attribution_config = config_request.get(SAMPLED_SHAPLEY_ATTRIBUTION_KEY)
+    num_paths = attribution_config.get(NUM_PATHS)
+    config = tf_configs_module.TFSHAPConfig(num_paths=num_paths)
+    logging.debug(
+        "Explanation strategy requested is SampledShapley, "
         "num_paths: %s", config.num_paths)
     return config
   elif IG_ATTRIBUTION_KEY in config_request:
@@ -660,16 +663,13 @@ def get_tensorflow_explanation_config(tf_configs_module):
     logging.debug(
         "Explanation strategy requested is integrated_gradients, "
         "num_integral_steps: %s", integral_steps)
-    return tf_configs_module.TFIGConfig(
-        tf_configs_module.ModelType.CUSTOM,  # model_type
-        tf_configs_module.InputType.FEED_DICT,  # input_type
-        integral_steps)  # integral_steps
+    return tf_configs_module.TFIGConfig(integral_steps)  # integral_steps
   raise ValueError("{} is not a supported explanation config for {}.".format(
       repr(config_request), TENSORFLOW_FRAMEWORK_NAME))
 
 
 def load_metadata(base_path):
-  """Loads metadata.json file from the same GCS bucket where the model locates.
+  """Loads explanation_metadata.json file from the same GCS bucket where the model locates.
 
   This method will only be called for TF explainers when the explainability
   feature is enabled.
@@ -686,7 +686,7 @@ def load_metadata(base_path):
   """
   if base_path.startswith("gs://"):
     # Example path: <base_path>/prepared_model/<model_version_stamp>/
-    # metadata.json
+    # explanation_metadata.json
     metadata_file_path = os.path.join(base_path,
                                       PREPARED_MODEL_SUBDIRECTORY,
                                       "*",
@@ -718,7 +718,7 @@ def load_metadata(base_path):
     # pylint: enable=g-import-not-at-top
     metadata = explain_metadata.ExplainMetadata.from_file(metadata_file_path)
   except IOError as e:
-    error_msg = "Failed to read metadata.json: {}.".format(str(e))
+    error_msg = "Failed to read explanation_metadata.json: {}.".format(str(e))
     logging.critical(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_METADATA, error_msg)
   return metadata

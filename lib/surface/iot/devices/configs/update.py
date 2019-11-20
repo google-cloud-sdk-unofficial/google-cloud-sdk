@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud iot configs update` command."""
+"""`gcloud iot devices configs update` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,6 +35,19 @@ class Update(base.UpdateCommand):
   `--version-to-update` is provided, the config at that version is used as a
   base.
   """
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update the latest configuration of a device in region 'us-central1', run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device --config-data="job_timeout:300"
+
+          To update the latest configuration of a device in region 'us-central1' only if the latest configuration version is 11, run:
+
+            $ {command} --region=us-central1 --registry=my-registry --device=my-device --config-file=/path/to/config.base64 --version-to-update=11
+          """,
+  }
 
   @staticmethod
   def Args(parser):

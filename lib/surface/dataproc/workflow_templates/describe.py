@@ -22,9 +22,20 @@ from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+      To describe a workflow template 'my-template' in region 'us-central1', run:
+
+        $ {command} workflow-template --region=us-central1
+      """,
+}
+
 
 class Describe(base.DescribeCommand):
   """Describe a workflow template."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):

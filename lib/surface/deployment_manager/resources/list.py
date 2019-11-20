@@ -35,15 +35,15 @@ class List(base.ListCommand, dm_base.DmCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
-          To print out a list of resources in the deployment with some summary information about each, run:
+      'EXAMPLES': """
+To print out a list of resources in the deployment with some summary information about each, run:
 
-            $ {command} --deployment my-deployment
+  $ {command} --deployment=my-deployment
 
-          To print only the name of each resource, run:
+To print only the name of each resource, run:
 
-            $ {command} --deployment my-deployment --simple-list
-          """,
+  $ {command} --deployment=my-deployment --simple-list
+""",
   }
 
   @staticmethod

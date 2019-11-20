@@ -23,33 +23,30 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
-from googlecloudsdk.core import log
 
 
 def _DetailedHelp():
   return {
       'brief':
           'Create a target HTTP proxy.',
-      'DESCRIPTION':
-          """\
-      *{command}* is used to create target HTTP proxies. A target
-      HTTP proxy is referenced by one or more forwarding rules which
-      specify the network traffic that the proxy is responsible for
-      routing. The target HTTP proxy points to a URL map that defines
-      the rules for routing the requests. The URL map's job is to map
-      URLs to backend services which handle the actual requests.
-      """,
-      'EXAMPLES':
-          """\
-      If there is an already-created URL map with the name URL_MAP, create a
-      target HTTP proxy pointing to this map by running:
+      'DESCRIPTION': """
+*{command}* is used to create target HTTP proxies. A target
+HTTP proxy is referenced by one or more forwarding rules which
+specify the network traffic that the proxy is responsible for
+routing. The target HTTP proxy points to a URL map that defines
+the rules for routing the requests. The URL map's job is to map
+URLs to backend services which handle the actual requests.
+""",
+      'EXAMPLES': """
+If there is an already-created URL map with the name URL_MAP, create a
+target HTTP proxy pointing to this map by running:
 
-        $ {command} PROXY_NAME --url-map URL_MAP
+  $ {command} PROXY_NAME --url-map=URL_MAP
 
-      To create a proxy with a textual description, run:
+To create a proxy with a textual description, run:
 
-        $ {command} PROXY_NAME --url-map URL_MAP --description "default proxy"
-      """,
+  $ {command} PROXY_NAME --url-map=URL_MAP --description="default proxy"
+""",
   }
 
 
@@ -126,9 +123,6 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Issue a Target HTTP Proxy Insert request."""
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
-      log.warning('The target-http-proxies create command will soon require '
-                  'either a --global or --region flag.')
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
         args, holder.resources)

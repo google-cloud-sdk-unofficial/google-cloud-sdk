@@ -21,14 +21,18 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Channels(base.Group):
   """Manage Stackdriver Monitoring notification channels."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           Manage Stackdriver Monitoring notification channels.
 
           More information can be found here:
           https://cloud.google.com/monitoring/api/v3/
+          https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.notificationChannels
+          https://cloud.google.com/monitoring/alerts/using-channels-api
       """
   }

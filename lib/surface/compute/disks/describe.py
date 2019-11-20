@@ -79,8 +79,15 @@ class DescribeAlpha(Describe):
 
 Describe.detailed_help = {
     'brief': 'Describe a Google Compute Engine disk',
-    'DESCRIPTION': """\
+    'DESCRIPTION':
+        """\
         *{command}* displays all data associated with a Google Compute
         Engine disk in a project.
+        """,
+    'EXAMPLES':
+        """\
+        To describe the disk 'my-disk' in zone 'us-east1-a', run:
+
+            $ {command} my-disk --zone=us-east1-a
         """,
 }
