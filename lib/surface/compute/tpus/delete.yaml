@@ -1,6 +1,10 @@
 - help_text:
     brief: Deletes a Cloud TPU.
     description: Deletes a Cloud TPU.
+    examples: |
+      The following command deletes a TPU with ID `my-tpu` in zone `us-central1-b`:
+
+        $ {command} my-tpu --zone=us-central1-b
 
   request:
     collection: tpu.projects.locations.nodes

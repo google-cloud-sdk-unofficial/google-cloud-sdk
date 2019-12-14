@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_buckets import (
     flags as backend_bucket_flags)
 from googlecloudsdk.command_lib.compute.backend_services import (
@@ -36,11 +37,7 @@ from googlecloudsdk.core import properties
 import six
 
 
-def _DetailedHelp(include_l7_internal_load_balancing):
-  if include_l7_internal_load_balancing:
-    global_arg = ' --global'
-  else:
-    global_arg = ''
+def _DetailedHelp():
   # pylint:disable=line-too-long
   return {
       'brief':
@@ -63,11 +60,11 @@ hypothetical ```search-service```, ```/static/*``` to the
 ```images-service``` under the hosts ```example.com``` and
 ```*.example.com```, run:
 
-  $ {command} MY-URL-MAP --path-matcher-name=MY-MATCHER --default-service=MY-DEFAULT-SERVICE --backend-service-path-rules='/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules='/static/*=static-bucket' --new-hosts=example.com '*.example.com'%s
+  $ {command} MY-URL-MAP --path-matcher-name=MY-MATCHER --default-service=MY-DEFAULT-SERVICE --backend-service-path-rules='/search/*=search_service,/images/*=images-service' --backend-bucket-path-rules='/static/*=static-bucket' --new-hosts=example.com '*.example.com'
 
 Note that a default service or default backend bucket must be
 provided to handle paths for which there is no mapping.
-""" % (global_arg,),
+""",
   }
   # pylint:enable=line-too-long
 
@@ -330,7 +327,8 @@ def _Run(args, holder, url_map_arg, backend_servie_arg, backend_bucket_arg):
   """Issues requests necessary to add path matcher to the Url Map."""
   client = holder.client
 
-  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
     get_request = _GetRegionalGetRequest(client, url_map_ref)
   else:
@@ -350,13 +348,15 @@ def _Run(args, holder, url_map_arg, backend_servie_arg, backend_bucket_arg):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class AddPathMatcher(base.UpdateCommand):
   """Add a path matcher to a URL map."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
-  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
+  detailed_help = _DetailedHelp()
   BACKEND_SERVICE_ARG = None
   BACKEND_BUCKET_ARG = None
   URL_MAP_ARG = None
@@ -380,16 +380,3 @@ class AddPathMatcher(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG, self.BACKEND_SERVICE_ARG,
                 self.BACKEND_BUCKET_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddPathMatcherBeta(AddPathMatcher):
-
-  _include_l7_internal_load_balancing = True
-
-  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddPathMatcherAlpha(AddPathMatcherBeta):
-  pass

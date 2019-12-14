@@ -37,10 +37,10 @@ class UpdatePerimetersAlpha(base.UpdateCommand):
   specified, in which case all dry run config values will be removed.
 
   For more information, see:
-  https://cloud.google.com/access-context-manager/docs/reference/rest/v1beta/accessPolicies.servicePerimeters
+  https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
   """
   _INCLUDE_UNRESTRICTED = False
-  _API_VERSION = 'v1beta'
+  _API_VERSION = 'v1alpha'
 
   @staticmethod
   def Args(parser):

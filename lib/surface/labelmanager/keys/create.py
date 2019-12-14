@@ -27,14 +27,15 @@ from googlecloudsdk.command_lib.labelmanager import operations
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
-  r"""Creates a label key resource under the specified label parent.
+  r"""Creates a LabelKey resource under the specified label parent.
 
   ## EXAMPLES
 
-  To create a label key with the name env under an organization run:
+  To create a LabelKey with the name env under 'organizations/123' with
+  description 'description', run:
 
-        $ gcloud alpha labelmanager keys create env \
-          --label_parent='organizations/123' --description='description'
+        $ {command} env --label_parent='organizations/123'
+        --description='description'
   """
 
   @staticmethod
@@ -62,7 +63,7 @@ class Create(base.Command):
     else:
       done_op = operations.WaitForOperation(
           op,
-          'Waiting for label [{}] to be created with [{}]'.format(
+          'Waiting for LabelKey [{}] to be created with [{}]'.format(
               display_name, op.name),
           service=labelkeys_service)
       return done_op

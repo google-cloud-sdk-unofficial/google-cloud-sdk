@@ -22,9 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Identity(base.Group):
   """Manage Cloud Identity Groups and Memberships resources.
 
   Commands for managing Cloud Identity Groups and Memberships resources.
   """
+  category = base.IDENTITY_CATEGORY

@@ -39,13 +39,17 @@ class Delete(base.DeleteCommand):
 
   *{command}* deletes one or more per instance configs from a Google Compute
   Engine managed instance group.
+
+  Changes are applied immediately to the corresponding instances, by performing
+  the necessary action (for example, REFRESH), unless overridden by providing
+  the `--no-update-instance` flag.
   """
 
   @staticmethod
   def Args(parser):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser, operation_type='delete')
-    instance_groups_flags.AddMigStatefulForceInstanceUpdateFlag(parser)
+    instance_groups_flags.AddMigStatefulUpdateInstanceFlag(parser)
     parser.add_argument(
         '--instances',
         metavar='INSTANCE',
@@ -126,7 +130,7 @@ class Delete(base.DeleteCommand):
     delete_result = waiter.WaitFor(operation_poller, operation_ref,
                                    'Deleting instance configs.')
 
-    if args.force_instance_update:
+    if args.update_instance:
       apply_operation_ref = (
           instance_configs_messages.CallApplyUpdatesToInstances)(
               holder=holder, igm_ref=igm_ref, instances=instances)

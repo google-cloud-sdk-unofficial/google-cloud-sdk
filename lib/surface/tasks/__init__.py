@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class Tasks(base.Group):
   """Manage Cloud Tasks queues and tasks."""
+  category = base.CI_CD_CATEGORY
 
   def Filter(self, context, args):
     del context, args

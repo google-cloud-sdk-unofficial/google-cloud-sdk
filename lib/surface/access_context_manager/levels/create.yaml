@@ -9,7 +9,7 @@
     BETA:
       api_version: v1beta
     ALPHA:
-      api_version: v1beta
+      api_version: v1alpha
     collection: accesscontextmanager.accessPolicies.accessLevels
     modify_request_hooks:
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=accessLevel.name
@@ -60,6 +60,6 @@
       repeated: false
       processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditions
       ALPHA:
-        processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditionsBeta
+        processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditionsAlpha
       BETA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditionsBeta

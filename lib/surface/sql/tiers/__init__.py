@@ -27,3 +27,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.ALPHA)
 class Tiers(base.Group):
   """Provide a command to list tiers."""
+  category = base.DATABASES_CATEGORY

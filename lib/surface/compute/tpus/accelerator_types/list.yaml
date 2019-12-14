@@ -1,6 +1,10 @@
 - help_text:
     brief: List available accelerator types for Cloud TPUs.
     description: List available accelerator types for for Cloud TPUs.
+    examples: |
+      The following command lists all of the accelerator types available in zone `us-central1-b`:
+
+        $ {command} --zone=us-central1-b
 
   request:
     collection: tpu.projects.locations.acceleratorTypes

@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
@@ -61,6 +62,7 @@ def _Run(holder, args, include_l7_internal_load_balancing):
   health_check_refs = health_check_arg.ResolveAsResource(
       args,
       holder.resources,
+      default_scope=compute_scope.ScopeEnum.GLOBAL,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   utils.PromptForDeletion(health_check_refs)
@@ -80,11 +82,12 @@ def _Run(holder, args, include_l7_internal_load_balancing):
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Ga/Beta health checks."""
 
-  _include_l7_internal_load_balancing = False
+  _include_l7_internal_load_balancing = True
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -94,14 +97,3 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(holder, args, self._include_l7_internal_load_balancing)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(Delete):
-
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  pass

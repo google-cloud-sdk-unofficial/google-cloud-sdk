@@ -11,7 +11,7 @@
     BETA:
       api_version: v1beta
     ALPHA:
-      api_version: v1beta
+      api_version: v1alpha
     static_fields:
       accessLevelFormat: AS_DEFINED
 

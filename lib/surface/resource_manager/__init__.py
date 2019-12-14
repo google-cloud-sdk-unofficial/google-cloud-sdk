@@ -28,6 +28,7 @@ class ResourceManager(base.Group):
 
   Commands to query and update your Cloud Organizations, Folders, and Projects.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   def Filter(self, context, args):
     del context, args

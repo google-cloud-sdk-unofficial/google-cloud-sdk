@@ -24,19 +24,39 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.debug import flags
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'brief':
+        """\
+        Describe the debug snapshots for a Cloud Debugger debug target
+        (debuggee).
+    """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used to describe the debug snapshots for a Cloud Debugger
+        debug target (debuggee). If the snapshot has completed, the output will
+        include details on the stack trace and local variables, stored in a
+        compact form which is primarily intended to be machine-readable rather
+        than human-readable.
+    """,
+    'EXAMPLES':
+        """\
+        To describe the debug snapshots for snapshots with IDs 'ID1' and 'ID2'
+        of the debug target (debuggee), run:
+
+          $ {command} ID1 ID2 --target=<debuggee_id>
+
+        To describe all active snapshots in file main.py of the debug target
+        (debuggee), run:
+
+          $ {command} --target=<debuggee_id> --location="main.py:.*"
+    """
+}
+
 
 class Describe(base.DescribeCommand):
   """Describe debug snapshots."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command describes debug snapshots for a Cloud Debugger debug
-          target. If the snapshot has been completed, the output will include
-          details on the stack trace and local variables, stored in a compact
-          form which is primarily intended to be machine-readable rather than
-          human-readable.
-      """
-  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

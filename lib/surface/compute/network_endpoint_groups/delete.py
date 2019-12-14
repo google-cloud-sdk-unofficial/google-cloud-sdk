@@ -26,17 +26,20 @@ from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+To delete a network endpoint group named ``my-neg'':
+
+  $ {command} my-neg --zone=us-central1-a
+""",
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
-  r"""Delete a Google Compute Engine network endpoint group.
+  """Delete a Google Compute Engine network endpoint group."""
 
-  ## EXAMPLES
-
-  To delete a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a
-  """
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -81,14 +84,7 @@ class Delete(base.DeleteCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(Delete):
-  r"""Delete a Google Compute Engine network endpoint group.
-
-  ## EXAMPLES
-
-  To delete a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a
-  """
+  """Delete a Google Compute Engine network endpoint group."""
 
   @staticmethod
   def Args(parser):

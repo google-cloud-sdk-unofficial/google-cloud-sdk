@@ -25,13 +25,13 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
-  """Cancel the given active OS patch job.
+  """Cancel a specific OS patch job which must currently be active.
 
   ## EXAMPLES
 
-  To cancel the patch job 'job1', run:
+  To cancel the patch job `job1`, run:
 
         $ {command} job1
 

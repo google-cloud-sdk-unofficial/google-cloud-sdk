@@ -118,6 +118,7 @@ class AdjustTraffic(base.Command):
 
     self._SetFormat(args)
 
+    is_managed = flags.GetPlatform() == flags.PLATFORM_MANAGED
     with serverless_operations.Connect(conn_context) as client:
       deployment_stages = stages.UpdateTrafficStages()
       try:
@@ -133,7 +134,7 @@ class AdjustTraffic(base.Command):
           resources = traffic.GetTrafficTargetPairs(
               serv.spec.traffic,
               serv.status.traffic,
-              flags.IsManaged(args),
+              is_managed,
               serv.status.latestReadyRevisionName)
           display.Displayer(
               self, args, resources,
@@ -147,6 +148,6 @@ class AdjustTraffic(base.Command):
       resources = traffic.GetTrafficTargetPairs(
           serv.spec.traffic,
           serv.status.traffic,
-          flags.IsManaged(args),
+          is_managed,
           serv.status.latestReadyRevisionName)
       return resources

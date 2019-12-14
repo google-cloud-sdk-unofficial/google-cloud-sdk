@@ -23,6 +23,14 @@ from googlecloudsdk.api_lib.firebase.test import exceptions
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+      To see the attributes of the android model 'my-model', run:
+
+        $ {command} my-model
+    """,
+}
+
 
 class Describe(base.DescribeCommand):
   """Describe an Android model."""
@@ -56,3 +64,6 @@ class Describe(base.DescribeCommand):
       if model.id == args.model_id:
         return model
     raise exceptions.ModelNotFoundError(args.model_id)
+
+
+Describe.detailed_help = DETAILED_HELP

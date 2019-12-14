@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.ALPHA)
 class Export(base.Group):
   """Provide commands to export Cloud SQL instances."""
+  category = base.DATABASES_CATEGORY

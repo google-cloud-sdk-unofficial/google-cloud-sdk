@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.command_lib.compute.instance_groups.flags import AutoDeleteFlag
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 import six
 
@@ -215,51 +214,71 @@ class UpdateAlpha(UpdateBeta):
 
   def _MakePreservedStateDiskEntry(self, client, stateful_disk_dict):
     """Create StatefulPolicyPreservedState from a list of device names."""
-    auto_delete = (stateful_disk_dict.get('auto-delete') or
-                   AutoDeleteFlag.NEVER).GetAutoDeleteEnumValue(
-                       client.messages.StatefulPolicyPreservedStateDiskDevice
-                       .AutoDeleteValueValuesEnum)
-    disk_device = client.messages.StatefulPolicyPreservedStateDiskDevice(
-        autoDelete=auto_delete)
+    disk_device = client.messages.StatefulPolicyPreservedStateDiskDevice()
+    if stateful_disk_dict.get('auto-delete'):
+      disk_device.autoDelete = (
+          stateful_disk_dict.get('auto-delete').GetAutoDeleteEnumValue(
+              client.messages.StatefulPolicyPreservedStateDiskDevice
+              .AutoDeleteValueValuesEnum))
     # Add all disk_devices to map
     return client.messages.StatefulPolicyPreservedState.DisksValue \
         .AdditionalProperty(
             key=stateful_disk_dict.get('device-name'), value=disk_device)
 
-  def _UpdateStatefulPolicy(self, client, current_stateful_policy, update_disks,
-                            remove_device_names):
-    """Create an updated stateful policy with the updated disk data and removed disks as specified."""
-    if not update_disks:
-      update_disks = []
-    if not remove_device_names:
-      remove_device_names = []
-    update_map = {
-        update_disk.get('device-name'): update_disk
-        for update_disk in update_disks
-    }
-    additional_properties = []
-    if current_stateful_policy and current_stateful_policy.preservedState \
-        and current_stateful_policy.preservedState.disks:
-      current_disks = current_stateful_policy\
-        .preservedState.disks.additionalProperties
-    else:
-      current_disks = []
-    for disk_entry in current_disks:
-      if disk_entry.key in remove_device_names:
-        continue
-      if disk_entry.key not in update_map:
-        additional_properties.append(disk_entry)
-    for _, stateful_disk in six.iteritems(update_map):
-      additional_properties.append(
-          self._MakePreservedStateDiskEntry(client, stateful_disk))
-    additional_properties.sort(key=lambda x: x.key)
-    if additional_properties:
+  def _MakeStatefulPolicyFromDisks(self, client, stateful_disks):
+    """Make stateful policy proto from a list of disk protos."""
+    if stateful_disks:
       return client.messages.StatefulPolicy(
           preservedState=client.messages.StatefulPolicyPreservedState(
               disks=client.messages.StatefulPolicyPreservedState.DisksValue(
-                  additionalProperties=additional_properties)))
+                  additionalProperties=stateful_disks)))
     else:
       return client.messages.StatefulPolicy()
+
+  def _PatchPreservedState(self, preserved_state, patch):
+    """Patch the preserved state proto."""
+    if patch.value.autoDelete:
+      preserved_state.value.autoDelete = patch.value.autoDelete
+
+  def _GetUpdatedStatefulPolicy(self,
+                                client,
+                                current_stateful_policy,
+                                update_disks=None,
+                                remove_device_names=None):
+    """Create an updated stateful policy with the updated disk data and removed disks as specified."""
+    # Extract disk protos from current stateful policy proto
+    if current_stateful_policy and current_stateful_policy.preservedState \
+        and current_stateful_policy.preservedState.disks:
+      current_disks = current_stateful_policy \
+        .preservedState.disks.additionalProperties
+    else:
+      current_disks = []
+    # Map of disks to have in the stateful policy, after updating and removing
+    # the disks specified by the update and remove flags.
+    final_disks_map = {
+        disk_entry.key: disk_entry for disk_entry in current_disks
+    }
+
+    # Update the disks specified in --update-stateful-disk
+    for update_disk in (update_disks or []):
+      device_name = update_disk.get('device-name')
+      updated_preserved_state = (
+          self._MakePreservedStateDiskEntry(client, update_disk))
+      # Patch semantics on the `--update-stateful-disk` flag
+      if device_name in final_disks_map:
+        self._PatchPreservedState(final_disks_map[device_name],
+                                  updated_preserved_state)
+      else:
+        final_disks_map[device_name] = updated_preserved_state
+
+    # Remove the disks specified in --remove-stateful-disks
+    for device_name in remove_device_names or []:
+      del final_disks_map[device_name]
+
+    stateful_disks = sorted(
+        [stateful_disk for _, stateful_disk in six.iteritems(final_disks_map)],
+        key=lambda x: x.key)
+    return self._MakeStatefulPolicyFromDisks(client, stateful_disks)
 
   def _MakeUpdateRequest(self, client, igm_ref, igm_updated_resource):
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
@@ -331,7 +350,7 @@ class UpdateAlpha(UpdateBeta):
     if not device_names:
       # TODO(b/70314588): Use Patch instead of manual Update.
       if igm_resource.statefulPolicy:
-        igm_resource.statefulPolicy = self._UpdateStatefulPolicy(
+        igm_resource.statefulPolicy = self._GetUpdatedStatefulPolicy(
             client, igm_resource.statefulPolicy, args.update_stateful_disk,
             args.remove_stateful_disks)
       igm_resource.updatePolicy = update_policy
@@ -339,7 +358,7 @@ class UpdateAlpha(UpdateBeta):
         igm_resource.autoHealingPolicies = auto_healing_policies
       return self._MakeUpdateRequest(client, igm_ref, igm_resource)
 
-    stateful_policy = self._UpdateStatefulPolicy(
+    stateful_policy = self._GetUpdatedStatefulPolicy(
         client, igm_resource.statefulPolicy, args.update_stateful_disk,
         args.remove_stateful_disks)
     igm_updated_resource = client.messages.InstanceGroupManager(

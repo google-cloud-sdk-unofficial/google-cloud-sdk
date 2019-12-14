@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class ResourcePolicies(base.Group):
   """Manage Google Compute Engine Resource Policies."""
+  category = base.COMPUTE_CATEGORY

@@ -71,7 +71,7 @@ class ConfigureGKEDeploy(base.Command):
 
   Configure automated build and deployment of a repository that can be triggered
   via a git branch or tag push. The image that will be built and deployed will
-  have the format 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA'.
+  have the format 'gcr.io/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA'.
   """
 
   @staticmethod
@@ -642,11 +642,9 @@ class ConfigureGKEDeploy(base.Command):
         tag_pattern=tag_pattern))
 
     if branch_pattern:
-      description = 'Build and deploy on push to branch pattern "{}"'.format(
-          branch_pattern)
+      description = 'Build and deploy on push to "{}"'.format(branch_pattern)
     elif tag_pattern:
-      description = 'Build and deploy on push to tag pattern "{}"'.format(
-          tag_pattern)
+      description = 'Build and deploy on "{}" tag'.format(tag_pattern)
 
     build_trigger = build_util.CreateGitPushBuildTrigger(
         cloudbuild_util.GetMessagesModule(),
@@ -678,7 +676,7 @@ class ConfigureGKEDeploy(base.Command):
     log.status.Print(
         '\nSuccessfully created the Cloud Build trigger to build and deploy '
         'your application.\n\n'
-        'Visit https://console.cloud.google.com/cloud-build/triggers/{trigger_id}?project={project} '
+        'Visit https://console.cloud.google.com/cloud-build/triggers/edit/{trigger_id}?project={project} '
         'to view the trigger.\n\n'
         'You can visit https://console.cloud.google.com/cloud-build/triggers?project={project} '
         'to view all Cloud Build triggers.'.format(
@@ -852,7 +850,7 @@ class ConfigureGKEDeploy(base.Command):
         full_repo_name=repo_owner + '-' + repo_name,
         branch_pattern=pull_request_pattern))
     description = \
-      'Build and deploy on PR create/update against branch pattern "{}"'.format(
+      'Build and deploy on PR create/update against "{}"'.format(
           pull_request_pattern)
 
     build_trigger = build_util.CreatePRPreviewBuildTrigger(
@@ -890,9 +888,9 @@ class ConfigureGKEDeploy(base.Command):
         repo_type='github',  # Only supports github for now.
         full_repo_name=repo_owner + '-' + repo_name,
         branch_pattern=pull_request_pattern))
-    description = ('Clean expired preview deployments for pull requests '
-                   'against branch pattern "{}"').format(
-                       pull_request_pattern)
+    description = \
+        'Clean expired preview deployments for PRs against "{}"'.format(
+            pull_request_pattern)
 
     build_trigger = build_util.CreateCleanPreviewBuildTrigger(
         messages=cloudbuild_util.GetMessagesModule(),
@@ -900,6 +898,7 @@ class ConfigureGKEDeploy(base.Command):
         description=description,
         github_repo_owner=repo_owner,
         github_repo_name=repo_name,
+        pr_pattern=pull_request_pattern,
         cluster=cluster,
         location=location,
         build_tags=[app_name],
@@ -931,7 +930,8 @@ class ConfigureGKEDeploy(base.Command):
     job = messages.Job(
         name=name,
         description='Every day, run trigger to clean expired preview '
-                    'deployments of {}/{}'.format(repo_owner, repo_name),
+                    'deployments for PRs against "{}" in {}/{}'.format(
+                        pull_request_pattern, repo_owner, repo_name),
         schedule=_CLEAN_PREVIEW_SCHEDULE,
         timeZone='UTC',
         httpTarget=messages.HttpTarget(
@@ -939,8 +939,10 @@ class ConfigureGKEDeploy(base.Command):
             .format(project, clean_preview_trigger_id),
             httpMethod=messages.HttpTarget.HttpMethodValueValuesEnum.POST,
             body=bytes(
-                '{{"projectId":"{}","repoName":"{}","branchName":"{}"}}'
-                .format(project, repo_name, pull_request_pattern)
+                # We don't actually use the branchName value but it has to be
+                # set to an existing branch, so set it to master.
+                '{{"projectId":"{}","repoName":"{}","branchName":"master"}}'
+                .format(project, repo_name)
                 .encode('utf-8')),
             oauthToken=messages.OAuthToken(
                 serviceAccountEmail=service_account_email

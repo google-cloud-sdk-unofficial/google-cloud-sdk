@@ -275,7 +275,13 @@ https://cloud.google.com/cloud-build/docs/api/build-requests#substitutions
                 messages.BuildStep(
                     name=properties.VALUES.builds.kaniko_image.Get(),
                     args=[
-                        '--destination', args.tag, '--cache', '--cache-ttl', ttl
+                        '--destination',
+                        args.tag,
+                        '--cache',
+                        '--cache-ttl',
+                        ttl,
+                        '--cache-dir',
+                        '',
                     ],
                 ),
             ],

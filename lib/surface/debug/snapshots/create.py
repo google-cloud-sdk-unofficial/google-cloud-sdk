@@ -24,29 +24,53 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'brief':
+        """\
+        Create debug snapshots for a Cloud Debugger debug target (debuggee).
+    """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used to create a debug snapshot on a Cloud Debugger debug
+        target. Snapshots allow you to capture stack traces and local variables
+        from your running service without interfering with normal operations.
+
+        When any instance of the target executes the snapshot location, the
+        optional condition expression is evaluated. If the result is true (or if
+        there is no condition), the instance captures the current thread state
+        and reports it back to Cloud Debugger. Once any instance captures a
+        snapshot, the snapshot is marked as completed, and it will not be
+        captured again.
+
+        You can view snapshot results in the developer console. It is also
+        possible to inspect snapshot results with the "snapshots describe"
+        command.
+    """,
+    'EXAMPLES':
+        """\
+        To create a snapshot with no conditions or expressions at line 41 of
+        file main.py of a debug target (debuggee), run:
+
+          $ {command} main.py:41 --target=<debuggee_id>
+
+        To create a snapshot at line 41 of file main.py on a debug target
+        (debuggee) that will only trigger if the variable name has the value of
+        'foo', run:
+
+          $ {command} main.py:41 --target=<debuggee_id> --condition="name == 'foo'"
+
+        To create a snapshot at line 41 of file main.py on a debug target
+        (debuggee) with the expressions name[0] and name[1], run:
+
+          $ {command} main.py:41 --target=<debuggee_id> --expression="name[0]" --expression="name[1]"
+    """
+}
+
 
 class Create(base.CreateCommand):
   """Create debug snapshots."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command creates a debug snapshot on a Cloud Debugger debug
-          target. Snapshots allow you to capture stack traces and local
-          variables from your running service without interfering with normal
-          operations.
-
-          When any instance of the target executes the snapshot location, the
-          optional condition expression is evaluated. If the result is true
-          (or if there is no condition), the instance captures the current
-          thread state and reports it back to Cloud Debugger. Once any instance
-          captures a snapshot, the snapshot is marked as completed, and it
-          will not be captured again.
-
-          You can most easily view snapshot results in the developer console. It
-          is also possible to inspect snapshot results with the "snapshots
-          describe" command.
-      """
-  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

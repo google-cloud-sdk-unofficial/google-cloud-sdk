@@ -27,3 +27,4 @@ from googlecloudsdk.calliope import base
 class Asset(base.Group):
   """Manage the Cloud Asset Inventory."""
 
+  category = base.SECURITY_CATEGORY

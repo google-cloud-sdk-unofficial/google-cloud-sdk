@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class RuntimeConfig(base.Group):
   """Manage runtime configuration resources."""
+  category = base.MANAGEMENT_TOOLS_CATEGORY
 
   @staticmethod
   def Args(parser):

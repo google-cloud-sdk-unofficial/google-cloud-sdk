@@ -24,6 +24,23 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+    To list all models which are available for testing, run:
+
+      $ {command}
+
+    To list all models made by Samsung, run:
+
+      $ {command} --filter=Samsung
+
+    To list all virtual device models, run:
+
+      $ {command} --filter=virtual
+    """,
+}
+
+
 class List(base.ListCommand):
   """List all Android models available for testing."""
 
@@ -72,3 +89,6 @@ class List(base.ListCommand):
 
     if self._epilog:
       log.warning(self._epilog)
+
+
+List.detailed_help = DETAILED_HELP

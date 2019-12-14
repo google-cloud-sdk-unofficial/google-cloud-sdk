@@ -26,6 +26,8 @@ from googlecloudsdk.calliope import base
 class ExternalVpnGateways(base.Group):
   """List, create, delete and update External VPN Gateways."""
 
+  category = base.NETWORKING_CATEGORY
+
   # Placeholder to indicate that a detailed_help field exists and should
   # be set outside the class definition.
   detailed_help = None

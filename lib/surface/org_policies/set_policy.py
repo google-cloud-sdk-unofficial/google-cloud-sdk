@@ -38,7 +38,7 @@ class SetPolicy(base.Command):
 
   ## EXAMPLES
 
-  To set the policy from the file on the path `./sample_path`, run:
+  To set the policy from the file on the path './sample_path', run:
 
     $ {command} ./sample_path
   """

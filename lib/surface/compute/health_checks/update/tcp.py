@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.health_checks import flags
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -178,7 +179,8 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   health_check_arg = flags.HealthCheckArgument(
       'TCP',
       include_l7_internal_load_balancing=include_l7_internal_load_balancing)
-  health_check_ref = health_check_arg.ResolveAsResource(args, holder.resources)
+  health_check_ref = health_check_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):
     get_request = _GetRegionalGetRequest(client, health_check_ref)
@@ -205,11 +207,11 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a TCP health check."""
 
-  _include_l7_internal_load_balancing = False
+  _include_l7_internal_load_balancing = True
   _include_log_config = False
   detailed_help = _DetailedHelp()
 
@@ -224,13 +226,7 @@ class Update(base.UpdateCommand):
                 self._include_log_config)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-
-  _include_l7_internal_load_balancing = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
+class UpdateAlpha(Update):
 
   _include_log_config = True

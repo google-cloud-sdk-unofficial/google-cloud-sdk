@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Bq(base.Group):
   """Interact with and manage resources in Google BigQuery."""
+  category = base.BIG_DATA_CATEGORY

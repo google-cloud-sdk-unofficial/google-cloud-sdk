@@ -24,15 +24,12 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 
 
-def _DetailedHelp(include_l7_internal_load_balancing):
-  if include_l7_internal_load_balancing:
-    global_arg = ' --global'
-  else:
-    global_arg = ''
+def _DetailedHelp():
   # pylint:disable=line-too-long
   return {
       'brief':
@@ -51,8 +48,8 @@ care of the path component of the requests.
 To create a host rule mapping the ```*-foo.example.com``` and
 ```example.com``` hosts to the ```www``` path matcher, run:
 
-  $ {command} MY-URL-MAP --hosts='*-foo.example.com,example.com' --path-matcher-name=www%s
-""" % (global_arg,),
+  $ {command} MY-URL-MAP --hosts='*-foo.example.com,example.com' --path-matcher-name=www
+"""
   }
   # pylint:enable=line-too-long
 
@@ -144,7 +141,8 @@ def _Run(
 
   client = holder.client
 
-  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
     get_request = _GetRegionalGetRequest(client, url_map_ref)
   else:
@@ -161,13 +159,15 @@ def _Run(
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class AddHostRule(base.UpdateCommand):
   """Add a rule to a URL map to map hosts to a path matcher."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
-  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
+  detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
@@ -182,16 +182,3 @@ class AddHostRule(base.UpdateCommand):
     """Issues requests necessary to add host rule to the Url Map."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddHostRuleBeta(AddHostRule):
-
-  _include_l7_internal_load_balancing = True
-
-  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddHostRuleAlpha(AddHostRuleBeta):
-  pass

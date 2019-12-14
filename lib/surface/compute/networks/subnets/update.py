@@ -29,8 +29,10 @@ class Update(base.UpdateCommand):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
   _include_alpha_logging = False
-  _include_l7_internal_load_balancing = False
-  _include_private_ipv6_access = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
+  _include_private_ipv6_access_alpha = False
+  _include_private_ipv6_access_beta = False
 
   @classmethod
   def Args(cls, parser):
@@ -44,7 +46,8 @@ class Update(base.UpdateCommand):
 
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
                         cls._include_l7_internal_load_balancing,
-                        cls._include_private_ipv6_access)
+                        cls._include_private_ipv6_access_alpha,
+                        cls._include_private_ipv6_access_beta)
 
   def Run(self, args):
     """Issues requests necessary to update Subnetworks."""
@@ -80,11 +83,13 @@ class Update(base.UpdateCommand):
     enable_private_ipv6_access = None
     private_ipv6_google_access_type = None
     private_ipv6_google_access_service_accounts = None
-    if self._include_private_ipv6_access:
+    if self._include_private_ipv6_access_alpha:
       enable_private_ipv6_access = args.enable_private_ipv6_access
       private_ipv6_google_access_type = args.private_ipv6_google_access_type
       private_ipv6_google_access_service_accounts = (
           args.private_ipv6_google_access_service_accounts)
+    elif self._include_private_ipv6_access_beta:
+      private_ipv6_google_access_type = args.private_ipv6_google_access_type
 
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
@@ -111,7 +116,7 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
-  _include_l7_internal_load_balancing = True
+  _include_private_ipv6_access_beta = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -119,4 +124,4 @@ class UpdateAlpha(UpdateBeta):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
   _include_alpha_logging = True
-  _include_private_ipv6_access = True
+  _include_private_ipv6_access_alpha = True

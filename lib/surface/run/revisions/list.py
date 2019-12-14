@@ -81,11 +81,11 @@ class List(commands.List):
     """List available revisions."""
     service_name = args.service
     conn_context = connection_context.GetConnectionContext(
-        args, self.ReleaseTrack(), product=connection_context.Product.RUN)
+        args, product=connection_context.Product.RUN)
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
-      if not flags.IsManaged(args):
+      if flags.GetPlatform() != flags.PLATFORM_MANAGED:
         location_msg = ' in [{}]'.format(conn_context.cluster_location)
         log.status.Print('For cluster [{cluster}]{zone}:'.format(
             cluster=conn_context.cluster_name,

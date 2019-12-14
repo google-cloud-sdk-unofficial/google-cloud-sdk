@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.command_lib.run import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -43,6 +45,16 @@ class DomainMappings(base.Group):
       """,
   }
 
+  def _CheckPlatform(self):
+    if flags.GetPlatform() == flags.PLATFORM_MANAGED:
+      raise exceptions.PlatformError(
+          'This command group is in beta for fully managed Cloud Run; '
+          'use `gcloud beta run domain-mappings`.')
+
+  def Filter(self, context, args):
+    self._CheckPlatform()
+    return context
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DomainMappingsBeta(base.Group):
@@ -62,3 +74,6 @@ class DomainMappingsBeta(base.Group):
             $ {command} list
       """,
   }
+
+  def _CheckPlatform(self):
+    pass

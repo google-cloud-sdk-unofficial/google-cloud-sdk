@@ -31,7 +31,9 @@ class Undelete(base.Command):
   """Undeletes the specified LabelValue resource.
 
     Undeletes the LabelValue resource given the LabelValue's display name
-    and parent or the LabelValue's numeric id.
+    and parent or the LabelValue's numeric id. The parent of the LabelValue is
+    always a LabelKey and the LabelKey's details can be passed as a numeric id
+    or the display name along with the label-parent.
   """
 
   detailed_help = {
@@ -42,12 +44,12 @@ class Undelete(base.Command):
             $ {command} labelValues/123
 
           To undelete a LabelValue with the name 'prod' that lives under
-          'labelKeys/456' run:
+          'labelKeys/456', run:
 
             $ {command} prod --label-key='labelKeys/456'
 
           To undelete a LabelValue with the name 'prod' under LabelKey 'env'
-          that lives under 'organizations/123' run:
+          that lives under 'organizations/123', run:
 
             $ {command} prod --label-key='env' --label-parent='orgainzations/123'
           """

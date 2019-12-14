@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""list endpoints command."""
+"""list network endpoints command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,17 +25,21 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+To list network endpoints of a network endpoint group named ``my-neg''
+in zone ``us-central1-a'':
+
+  $ {command} my-neg --zone=us-central1-a
+""",
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class ListEndpoints(base.ListCommand):
-  r"""List network endpoints in a network endpoint group.
+class ListNetworkEndpoints(base.ListCommand):
+  """List network endpoints in a network endpoint group."""
 
-  ## EXAMPLES
-
-  To list network endpoints of a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a
-  """
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -88,15 +92,8 @@ class ListEndpoints(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaListEndpoints(ListEndpoints):
-  r"""List network endpoints in a network endpoint group.
-
-  ## EXAMPLES
-
-  To list network endpoints of a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a
-  """
+class AlphaListNetworkEndpoints(ListNetworkEndpoints):
+  """List network endpoints in a network endpoint group."""
 
   @staticmethod
   def Args(parser):

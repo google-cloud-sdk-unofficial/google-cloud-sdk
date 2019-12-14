@@ -28,16 +28,42 @@ from googlecloudsdk.command_lib.debug import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import times
 
+DETAILED_HELP = {
+    'brief':
+        """\
+        List the debug logpoints for a Cloud Debugger debug target (debuggee).
+    """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used to display the debug logpoints for a Cloud Debugger
+        debug target (debuggee). By default all active logpoints are returned.
+        To obtain older, expired logoints, specify the --include-inactive
+        option.
+    """,
+    'EXAMPLES':
+        """\
+        To list the active and recently completed debug logpoints of the debug
+        target (debuggee), run:
+
+          $ {command} --target=<debuggee_id>
+
+        To list all (both active and inactive) logpoints of the debug target
+        (debuggee), run:
+
+          $ {command} --target=<debuggee_id> --include-inactive=unlimited
+
+        To list logpoints only created by the current user (by default all users
+        are returned) of the debug target (debuggee), run:
+
+          $ {command} --target=<debuggee_id> --no-all-users
+    """
+}
+
 
 class List(base.ListCommand):
   """List debug logpoints."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command displays a list of the active debug logpoints for a
-          Cloud Debugger debug target.
-      """
-  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

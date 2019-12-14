@@ -10,7 +10,7 @@
     BETA:
       api_version: v1beta
     ALPHA:
-      api_version: v1beta
+      api_version: v1alpha
     resource_method_params:
       parent: ''
 

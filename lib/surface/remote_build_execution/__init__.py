@@ -28,3 +28,4 @@ class RemoteBuildExecution(base.Group):
 
   Implementation for commands for Remote Build Execution Admin API integration.
   """
+  category = base.CI_CD_CATEGORY

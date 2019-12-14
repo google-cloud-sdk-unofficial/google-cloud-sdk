@@ -1,4 +1,6 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
+  GA:
+    hidden: true
   help_text:
     brief: |
       Mark a recommendation's state as SUCCEEDED. mark-succeeded can be applied to recommendations
@@ -8,12 +10,17 @@
       in ACTIVE, CLAIMED, SUCCEEDED, or FAILED state.
     ALPHA:
       examples: |
-        To mark a recommendation as ACTIVE:
+        To mark a recommendation as SUCCEEDED:
 
           $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender --etag=abc123 --state-metadata=key1=value1,key2=value2
     BETA:
       examples: |
-        To mark a recommendation as ACTIVE:
+        To mark a recommendation as SUCCEEDED:
+
+          $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.Recommender --etag=abc123 --state-metadata=key1=value1,key2=value2
+    GA:
+      examples: |
+        To mark a recommendation as SUCCEEDED:
 
           $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.Recommender --etag=abc123 --state-metadata=key1=value1,key2=value2
 
@@ -24,6 +31,8 @@
       api_version: v1alpha1
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:
@@ -35,6 +44,8 @@
         api_field: googleCloudRecommenderV1alpha1MarkSucceededRequest.etag
       BETA:
         api_field: googleCloudRecommenderV1beta1MarkRecommendationSucceededRequest.etag
+      GA:
+        api_field: googleCloudRecommenderV1MarkRecommendationSucceededRequest.etag
       help_text: The fingerprint of the recommendation.
       required: true
     - arg_name: state-metadata
@@ -43,6 +54,8 @@
         api_field: googleCloudRecommenderV1alpha1MarkSucceededRequest.stateMetadata.additionalProperties
       BETA:
         api_field: googleCloudRecommenderV1beta1MarkRecommendationSucceededRequest.stateMetadata.additionalProperties
+      GA:
+        api_field: googleCloudRecommenderV1MarkRecommendationSucceededRequest.stateMetadata.additionalProperties
       type:
         arg_dict:
           flatten: true

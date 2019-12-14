@@ -24,15 +24,12 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 
 
-def _DetailedHelp(include_l7_internal_load_balancing):
-  if include_l7_internal_load_balancing:
-    global_arg = ' --global'
-  else:
-    global_arg = ''
+def _DetailedHelp():
   return {
       'brief':
           'Remove a host rule from a URL map.',
@@ -47,8 +44,8 @@ To remove a host rule that contains the host `example.com`
 from the URL map named `MY-URL-MAP`, you can use this
 command:
 
-  $ {command} MY-URL-MAP --host=example.com%s
-""" % (global_arg,),
+  $ {command} MY-URL-MAP --host=example.com
+"""
   }
 
 
@@ -126,7 +123,8 @@ def _Modify(args, existing):
 def _Run(args, holder, url_map_arg):
   """Issues requests necessary to remove host rule on URL maps."""
   client = holder.client
-  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   get_request = _GetGetRequest(client, url_map_ref)
 
   objects = client.MakeRequests([get_request])
@@ -134,13 +132,15 @@ def _Run(args, holder, url_map_arg):
   return client.MakeRequests([_GetSetRequest(client, url_map_ref, new_object)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class RemoveHostRule(base.UpdateCommand):
   """Remove a host rule from a URL map."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
-  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
+  detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
 
   @classmethod
@@ -164,16 +164,3 @@ class RemoveHostRule(base.UpdateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RemoveHostRuleBeta(RemoveHostRule):
-
-  _include_l7_internal_load_balancing = True
-
-  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveHostRuleAlpha(RemoveHostRuleBeta):
-  pass

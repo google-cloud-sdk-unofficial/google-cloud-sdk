@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
 from googlecloudsdk.core.util import files
@@ -174,11 +175,12 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument()
+    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
+        include_l7_internal_load_balancing=True)
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
     _Args(
         parser,
-        include_l7_internal_load_balancing=False,
+        include_l7_internal_load_balancing=True,
         support_managed_certs=False)
 
   def Run(self, args):
@@ -187,20 +189,32 @@ class Create(base.CreateCommand):
     client = holder.client
 
     ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+
     certificate = files.ReadFileContents(args.certificate)
     private_key = files.ReadFileContents(args.private_key)
 
-    request = client.messages.ComputeSslCertificatesInsertRequest(
-        sslCertificate=client.messages.SslCertificate(
-            name=ssl_certificate_ref.Name(),
-            certificate=certificate,
-            privateKey=private_key,
-            description=args.description),
-        project=ssl_certificate_ref.project)
+    if ssl_certificates_utils.IsRegionalSslCertificatesRef(ssl_certificate_ref):
+      request = client.messages.ComputeRegionSslCertificatesInsertRequest(
+          sslCertificate=client.messages.SslCertificate(
+              name=ssl_certificate_ref.Name(),
+              certificate=certificate,
+              privateKey=private_key,
+              description=args.description),
+          region=ssl_certificate_ref.region,
+          project=ssl_certificate_ref.project)
+      collection = client.apitools_client.regionSslCertificates
+    else:
+      request = client.messages.ComputeSslCertificatesInsertRequest(
+          sslCertificate=client.messages.SslCertificate(
+              name=ssl_certificate_ref.Name(),
+              certificate=certificate,
+              privateKey=private_key,
+              description=args.description),
+          project=ssl_certificate_ref.project)
+      collection = client.apitools_client.sslCertificates
 
-    return client.MakeRequests([(client.apitools_client.sslCertificates,
-                                 'Insert', request)])
+    return client.MakeRequests([(collection, 'Insert', request)])
 
 
 @base.UnicodeIsSupported
@@ -237,7 +251,7 @@ class CreateBeta(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     return _Run(args, holder, ssl_certificate_ref)
 
 
@@ -275,6 +289,6 @@ class CreateAlpha(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     return _Run(args, holder, ssl_certificate_ref)

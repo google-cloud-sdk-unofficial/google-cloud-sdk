@@ -22,16 +22,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class PolicyTroubleshoot(base.Group):
-  """Troubleshoot Google Cloud Platform Policies.
+  """Troubleshoot Google Cloud Platform policies.
 
-     Policy Troubleshooter troubleshoots cloud
-     policies running on Google Cloud Platform. Policy Troubleshooter works by
-     evaluating the current access a user has on a cloud resource.
-
-     More information on Policy Troubleshooter can be found here:
-     https://cloud.google.com/iam
+     Policy Troubleshooter troubleshoots policies for
+     Google Cloud Platform resources. Policy Troubleshooter works by
+     evaluating the user's current access to a resource.
   """
 
   category = base.IDENTITY_AND_SECURITY_CATEGORY

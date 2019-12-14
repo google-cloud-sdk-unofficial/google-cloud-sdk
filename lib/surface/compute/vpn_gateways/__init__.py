@@ -29,6 +29,7 @@ class VpnGateways(base.Group):
   # Placeholder to indicate that a detailed_help field exists and should
   # be set outside the class definition.
   detailed_help = None
+  category = base.NETWORKING_CATEGORY
 
 
 VpnGateways.detailed_help = {

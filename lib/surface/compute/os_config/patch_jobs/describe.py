@@ -25,13 +25,13 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe the given OS patch job.
+  """Describe a specified OS patch job.
 
   ## EXAMPLES
 
-  To check the status of the patch job 'job1', run:
+  To check the status of the patch job `job1`, run:
 
         $ {command} job1
 

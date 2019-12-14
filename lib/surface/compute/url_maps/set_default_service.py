@@ -20,13 +20,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute.backend_buckets import (
-    flags as backend_bucket_flags)
-from googlecloudsdk.command_lib.compute.backend_services import (
-    flags as backend_service_flags)
+from googlecloudsdk.command_lib.compute import scope as compute_scope
+from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_bucket_flags
+from googlecloudsdk.command_lib.compute.backend_services import flags as backend_service_flags
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 from googlecloudsdk.core import log
@@ -113,7 +111,8 @@ def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
   """Issues requests necessary to set the default service of URL maps."""
   client = holder.client
 
-  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
     get_request = _GetRegionalGetRequest(client, url_map_ref)
   else:
@@ -141,11 +140,13 @@ def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class SetDefaultService(base.UpdateCommand):
   """Change the default service or default bucket of a URL map."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp()
   BACKEND_BUCKET_ARG = None
@@ -172,14 +173,3 @@ class SetDefaultService(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.BACKEND_BUCKET_ARG, self.BACKEND_SERVICE_ARG,
                 self.URL_MAP_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SetDefaultServiceBeta(SetDefaultService):
-
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetDefaultServiceAlpha(SetDefaultServiceBeta):
-  pass

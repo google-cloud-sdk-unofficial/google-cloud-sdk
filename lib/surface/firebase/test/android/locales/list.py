@@ -27,7 +27,7 @@ class List(base.ListCommand):
   """List all Android locales available for testing internationalized apps."""
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': """
           To list all available locales which can be used for testing
           internationalized Android applications, run:
 
@@ -35,7 +35,7 @@ class List(base.ListCommand):
 
           To filter the locales to see only Spanish-speaking regions, run:
 
-            $ {command} --filter Spanish
+            $ {command} --filter=Spanish
           """,
   }
 

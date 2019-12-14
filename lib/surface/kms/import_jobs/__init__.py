@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ImportJobs(base.Group):
   """Create and manage import jobs.
 

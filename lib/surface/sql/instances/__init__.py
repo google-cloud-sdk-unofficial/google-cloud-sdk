@@ -30,3 +30,4 @@ class Instances(base.Group):
   Provide commands for managing Cloud SQL instances including creating,
   configuring, restarting, and deleting instances.
   """
+  category = base.DATABASES_CATEGORY

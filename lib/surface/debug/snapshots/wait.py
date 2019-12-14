@@ -26,18 +26,43 @@ from googlecloudsdk.command_lib.debug import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'brief':
+        """\
+        Wait for debug snapshots on a Cloud Debugger debug target (debuggee) to
+        complete.
+    """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used to wait for one or more snapshots on a Cloud
+        Debugger debug target to complete. A snapshot is considered completed
+        either if there was an error setting the snapshot or if the snapshot was
+        hit on an instance of the debug target.
+    """,
+    'EXAMPLES':
+        """\
+        To wait for either of the snapshots with IDs of 'ID1' or 'ID2' of the
+        debug target (debuggee) to complete, run:
+
+          $ {command} ID1 ID2 --target=<debuggee_id>
+
+        To wait for both of the snapshots with IDs 'ID1' and 'ID2' of the debug
+        target (debuggee) to complete, run:
+
+          $ {command} ID1 ID2 --target=<debuggee_id> --all
+
+        To wait up to 30 seconds for the snapshot with ID 'ID1' of the debug
+        target (debuggee) to complete, run:
+
+          $ {command} ID1 --target=<debuggee_id> --timeout=30
+    """
+}
+
 
 class Wait(base.ListCommand):
   """Wait for debug snapshots to complete."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command waits for one or more snapshots on a Cloud Debugger debug
-          target to become completed. A snapshot is considered completed either
-          if there was an error setting the snapshot or if the snapshot was hit
-          on an instance of the debug target.
-      """
-  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

@@ -33,8 +33,8 @@ class Reset(interfaces.OrgPolicyGetAndUpdateCommand):
 
   ## EXAMPLES
 
-  To reset the policy associated with the constraint `gcp.resourceLocations` and
-  the project `foo-project`, run:
+  To reset the policy associated with the constraint 'gcp.resourceLocations' and
+  the Project 'foo-project', run:
 
     $ {command} gcp.resourceLocations --project=foo-project
   """

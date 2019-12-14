@@ -24,6 +24,7 @@ import itertools
 
 from googlecloudsdk.api_lib.orgpolicy import utils as org_policy_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.labelmanager import arguments as label_manager_arguments
 from googlecloudsdk.command_lib.org_policies import arguments
 from googlecloudsdk.command_lib.org_policies import exceptions
 from googlecloudsdk.command_lib.org_policies import interfaces
@@ -42,17 +43,25 @@ class Deny(interfaces.OrgPolicyGetAndUpdateCommand):
   and the policy does not exist, the policy will be created.
 
   ## EXAMPLES
-  To add `us-east1` and `us-west1` to the list of denied values on the policy
-  associated with the constraint `gcp.resourceLocations` and the project
-  `foo-project`, run:
+  To add 'us-east1' and 'us-west1' to the list of denied values on the policy
+  associated with the constraint 'gcp.resourceLocations' and the Project
+  'foo-project', run:
 
     $ {command} gcp.resourceLocations us-east1 us-west1 --project=foo-project
 
-  To only add the values for resources that have the label value `2222`
-  associated with the label key `1111`, run:
+  To only add the values for resources that have the LabelValue '2222'
+  associated with the LabelKey '1111', run:
 
     $ {command} gcp.resourceLocations us-east1 us-west1 --project=foo-project \
     --condition='resource.matchLabels("labelKeys/1111", "labelValues/2222")'
+
+  To deny the policy behavior for the Project 'foo-project' conditioned on
+  the LabelValue 'dev' under LabelKey 'env' that lives under
+  'organizations/123' run:
+
+    $ {command} gcp.resourceLocations us-east1 us-west1 --project=foo-project \
+    --condition='resource.matchLabels("env", "dev")' \
+    --label-parent='organizations/123'
   """
 
   @staticmethod
@@ -60,6 +69,12 @@ class Deny(interfaces.OrgPolicyGetAndUpdateCommand):
     super(Deny, Deny).Args(parser)
     arguments.AddValueArgToParser(parser)
     arguments.AddConditionFlagToParser(parser)
+    label_manager_arguments.AddLabelParentArgToParser(
+        parser, False,
+        ('This flag must be specified as the parent of the LabelKey when the '
+         'input for a condition expression is set as the LabelKey and '
+         'LabelValue display name.')
+    )
     parser.add_argument(
         '--remove',
         action='store_true',
@@ -79,6 +94,9 @@ class Deny(interfaces.OrgPolicyGetAndUpdateCommand):
 
     if args.remove:
       self.disable_create = True
+
+    if args.IsSpecified('condition') and args.IsSpecified('label_parent'):
+      utils.TransformLabelDisplayNameConditionToLabelNameCondition(args)
 
     return super(Deny, self).Run(args)
 

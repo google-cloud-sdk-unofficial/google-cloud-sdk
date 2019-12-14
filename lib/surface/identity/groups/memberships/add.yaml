@@ -11,28 +11,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Create a new membership in an existing group.
     description: Create a new membership in an existing group.
     examples: |
-      To create a new membership in a group for 6 months.
+      To create a new membership in a group:
 
-      $ {command} --group-email eng-discuss@foo.com --organization 5149234212
-          --member-email user@foo.com --expiration 6m
+        $ {command} --group-email="eng-discuss@foo.com"  \
+            --organization="5149234212"  \
+            --member-email="user@foo.com"
 
   request:
     collection: cloudidentity.groups.memberships
     disable_resource_check: true
-    api_version: v1alpha1
     method: create
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
-    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetExpiryDetail
+    ALPHA:
+      api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetExpiryDetail
+    BETA:
+      api_version: v1beta1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembership
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipParent
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetEntityKey
+      - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipRoles
+
 
   arguments:
     params:
@@ -55,6 +65,7 @@
         The organization the Group being created belongs to.
 
     - arg_name: expiration
+      release_tracks: [ALPHA]
       type: str
       help_text: |
         Optional time of expiration for the membership. This is given as a duration from now, for

@@ -25,4 +25,5 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.ALPHA)
 class Firestore(base.Group):
   """Manage your Cloud Firestore resources."""
-  pass
+  category = base.DATABASES_CATEGORY
+

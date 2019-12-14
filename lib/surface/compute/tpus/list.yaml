@@ -1,6 +1,10 @@
 - help_text:
     brief: List Cloud TPUs
     description: List Cloud TPUs
+    examples: |
+      The following command lists the status of TPUs in zone `us-central1-b`:
+
+        $ {command} --zone=us-central1-b
 
   request:
     collection: tpu.projects.locations.nodes

@@ -59,5 +59,11 @@ AlphaDescribe.detailed_help = {
     'DESCRIPTION':
         textwrap.dedent("""
         *{command}* is used to describe a NAT in a Google Compute Engine router.
-    """)
+    """),
+    'EXAMPLES':
+    """\
+    To describe NAT 'n1' in router 'r1', run:
+
+      $ {command} n1 --router=r1 --region=us-central1
+    """
 }

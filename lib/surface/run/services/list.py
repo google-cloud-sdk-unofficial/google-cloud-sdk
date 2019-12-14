@@ -91,7 +91,7 @@ class List(commands.List):
 
   def Run(self, args):
     """List available services."""
-    is_managed = flags.IsManaged(args)
+    is_managed = flags.GetPlatform() == flags.PLATFORM_MANAGED
     if is_managed and not args.IsSpecified('region'):
       self._SetFormat(args, show_region=True)
       client = global_methods.GetServerlessClientInstance()

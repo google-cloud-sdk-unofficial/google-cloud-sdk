@@ -56,10 +56,19 @@ class UpdateLevelsGA(base.UpdateCommand):
         basic_level_conditions=args.basic_level_spec)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateLevelsBeta(UpdateLevelsGA):
   _API_VERSION = 'v1beta'
 
   @staticmethod
   def Args(parser):
     UpdateLevelsGA.ArgsVersioned(parser, version='v1beta')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateLevelsAlpha(UpdateLevelsGA):
+  _API_VERSION = 'v1alpha'
+
+  @staticmethod
+  def Args(parser):
+    UpdateLevelsGA.ArgsVersioned(parser, version='v1alpha')

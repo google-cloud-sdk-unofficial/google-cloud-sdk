@@ -24,17 +24,20 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+To describe a network endpoint group:
+
+  $ {command} my-neg --zone=us-central1-a
+""",
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  r"""Describe a Google Compute Engine network endpoint group.
+  """Describe a Google Compute Engine network endpoint group."""
 
-  ## EXAMPLES
-
-  To describe a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a
-  """
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -72,14 +75,7 @@ class Describe(base.DescribeCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
-  r"""Describe a Google Compute Engine network endpoint group.
-
-  ## EXAMPLES
-
-  To describe a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a
-  """
+  """Describe a Google Compute Engine network endpoint group."""
 
   @staticmethod
   def Args(parser):

@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
+import json
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_template_utils
@@ -30,6 +32,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
+from googlecloudsdk.command_lib.compute.instance_templates import mesh_mode_aux_data
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
@@ -263,6 +266,45 @@ def BuildConfidentialInstanceConfigMessage(messages, args):
   return confidential_instance_config_message
 
 
+def AddMeshArgsToMetadata(args):
+  """Inserts the Mesh mode arguments provided by the user to the instance metadata.
+
+  Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+  """
+  if getattr(args, 'mesh', False):
+    instance_templates_flags.ValidateMeshModeFlags(args)
+
+    mesh_mode_config = collections.OrderedDict()
+
+    # add --mesh flag data to metadata.
+    mesh_mode_config['mode'] = args.mesh['mode']
+    if 'workload-ports' in args.mesh:
+      # convert list of strings to list of integers.
+      workload_ports = list(map(int, args.mesh['workload-ports'].split(';')))
+      # find unique ports by converting list of integers to set of integers.
+      unique_workload_ports = set(workload_ports)
+      # convert it back to list of integers.
+      # this is done to make it JSON serializable.
+      workload_ports = list(unique_workload_ports)
+      mesh_mode_config['service'] = {
+          'workload-ports': workload_ports,
+      }
+
+    if args.mesh['mode'] == mesh_mode_aux_data.MeshModes.ON:
+      if 'startup-script' not in args.metadata:
+        args.metadata['startup-script'] = mesh_mode_aux_data.startup_script
+      else:
+        args.metadata['startup-script'] = (
+            mesh_mode_aux_data.startup_script + '\n' +
+            args.metadata['startup-script'][mesh_mode_aux_data.shebang_len:])
+
+      args.metadata['enable-guest-attributes'] = 'TRUE'
+
+    args.metadata['mesh'] = json.dumps(mesh_mode_config)
+
+
 def _RunCreate(compute_api,
                args,
                support_source_instance,
@@ -299,6 +341,8 @@ def _RunCreate(compute_api,
   instance_template_ref = (
       Create.InstanceTemplateArg.ResolveAsResource(
           args, compute_api.resources))
+
+  AddMeshArgsToMetadata(args)
 
   metadata = metadata_utils.ConstructMetadataMessage(
       client.messages,
@@ -610,6 +654,7 @@ class CreateAlpha(Create):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
+    instance_templates_flags.AddMeshModeConfigArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.

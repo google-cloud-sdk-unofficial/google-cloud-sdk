@@ -32,3 +32,4 @@ class Operations(base.Group):
   listing and getting information about instance operations of a Cloud SQL
   instance.
   """
+  category = base.DATABASES_CATEGORY

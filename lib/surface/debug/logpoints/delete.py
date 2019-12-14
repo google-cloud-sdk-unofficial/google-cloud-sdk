@@ -29,14 +29,42 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
 
+DETAILED_HELP = {
+    'brief':
+        """\
+        Delete debug logpoints for a Cloud Debugger debug target (debuggee).
+    """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used to delete logpoints from a Cloud Debugger debug
+        target (debuggee). It will ask for confirmation before deleting any
+        logpoints. To suppress confirmation, use the global --quiet option.
+    """,
+    'EXAMPLES':
+        """\
+        To delete all active debug logpoints created by the current user of the
+        debug target (debuggee), without being prompted for confirmation, run:
+
+          $ {command} --target=<debuggee_id> --quiet
+
+        To delete all active and inactive debug logpoints created by all users
+        of the debug target (debuggee), run:
+
+          $ {command} --target=<debuggee_id> --include-inactive --all-users
+
+        To delete the debug logpoints with IDs 'ID1' and 'ID2' (where ID1 and
+        ID2 were each created by different users) of the debug target
+        (debuggee), run:
+
+          $ {command} ID1 ID2 --target=<debuggee_id> --all-users
+    """
+}
+
 
 class Delete(base.DeleteCommand):
-  """Delete debug logpoints.
+  """Delete debug logpoints."""
 
-  This command deletes logpoints from a Cloud Debugger debug target. It will
-  ask for confirmation before deleting any logpoints. To suppress confirmation,
-  use the global --quiet option.
-  """
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

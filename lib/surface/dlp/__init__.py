@@ -36,3 +36,4 @@ class DLP(base.Group):
   specify data stored on your Google Cloud Storage, BigQuery,
   or Cloud Datastore instances.
   """
+  category = base.SECURITY_CATEGORY

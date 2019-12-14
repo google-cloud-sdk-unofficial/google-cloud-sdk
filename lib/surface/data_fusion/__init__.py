@@ -43,6 +43,7 @@ class Datafusion(base.Group):
 
         $ {command} operations --help
   """
+  category = base.BIG_DATA_CATEGORY
 
   def Filter(self, context, args):
     del context, args

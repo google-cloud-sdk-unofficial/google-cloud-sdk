@@ -54,11 +54,13 @@ def _Run(args, holder, include_l7_internal_load_balancing):
   return lister.Invoke(request_data, list_implementation)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List URL maps."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
 
@@ -75,15 +77,3 @@ class List(base.ListCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self._include_l7_internal_load_balancing)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(List):
-  _include_l7_internal_load_balancing = True
-
-  detailed_help = _DetailedHelp(_include_l7_internal_load_balancing)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  pass

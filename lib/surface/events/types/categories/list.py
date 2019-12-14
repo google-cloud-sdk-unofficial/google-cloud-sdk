@@ -20,11 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
-from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run import resource_args
-from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 class List(base.ListCommand):
@@ -43,18 +39,6 @@ class List(base.ListCommand):
 
   @staticmethod
   def CommonArgs(parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser(
-        [resource_args.CLUSTER_PRESENTATION]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
     parser.display_info.AddFormat("""table(
         source_kind:label=CATEGORY:sort=1)""")
 
@@ -65,9 +49,6 @@ class List(base.ListCommand):
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(
         args, product=connection_context.Product.EVENTS)
-    if conn_context.supports_one_platform:
-      raise exceptions.UnsupportedArgumentError(
-          'Events are only available with Cloud Run for Anthos.')
 
     with eventflow_operations.Connect(conn_context) as client:
       source_crds = client.ListSourceCustomResourceDefinitions()

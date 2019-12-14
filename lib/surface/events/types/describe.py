@@ -21,12 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
 from googlecloudsdk.command_lib.events import exceptions
-from googlecloudsdk.command_lib.events import flags as events_flags
+from googlecloudsdk.command_lib.events import flags
 from googlecloudsdk.command_lib.events import util
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run import resource_args
-from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 class Describe(base.Command):
@@ -45,19 +42,7 @@ class Describe(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser(
-        [resource_args.CLUSTER_PRESENTATION]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
-    events_flags.AddEventTypePositionalArg(parser)
+    flags.AddEventTypePositionalArg(parser)
     parser.display_info.AddFormat("""multi[separator='\n'](
         details:format="yaml",
         crd.properties:format="table[title='Parameter(s) to create a trigger for this event type:'](

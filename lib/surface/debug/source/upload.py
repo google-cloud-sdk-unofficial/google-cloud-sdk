@@ -28,23 +28,47 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 from googlecloudsdk.third_party.appengine.tools import context_util
 
+DETAILED_HELP = {
+    'brief':
+        """Upload a directory tree.""",
+    'DESCRIPTION':
+        """\
+        *{{command}}* is used to upload a directory tree to a branch in the
+        repository 'google-source-captures' hosted on Cloud Source Repositories.
+
+        The files and branches can be managed with git like any other
+        repository.
+
+        When the upload is finished, this command can also produce a source
+        context json file named '{name}' describing it.
+
+        See https://cloud.google.com/debugger/docs/source-context for
+        information on where to deploy the '{name}' file so Cloud Debugger
+        automatically displays the uploaded files.
+
+        NOTE:
+        This command assumes that the 'google-source-captures' repository hosted
+        on Cloud Source Repositories already exists, if it does not, this
+        command will fail and the appropriate command to create it will be
+        provided in the error message.
+    """.format(name=context_util.CONTEXT_FILENAME),
+    'EXAMPLES':
+        """\
+        To upload the directory tree rooted with the current local directory to
+        branch 'my-branch-name' in the git repository 'google-source-captures'
+        hosted on Cloud Source Repositories under the project name 'my-project',
+        run:
+
+          $ {command} --project=my-project --branch=my-branch-name .
+    """
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Upload(base.CreateCommand):
-  """Upload a directory tree.
+  """Upload a directory tree."""
 
-  This command uploads a directory tree to a branch in the repository
-  'google-source-captures' hosted on Cloud Source Repositories.
-
-  The files and branches can be managed with git like any other repository.
-
-  When uploading is done, this command can also produce a source context json
-  file describing it.
-
-  See https://cloud.google.com/debugger/docs/source-context for details on where
-  to deploy the source context json file in order to enable Stackdriver tools to
-  display the uploaded files.
-  """
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

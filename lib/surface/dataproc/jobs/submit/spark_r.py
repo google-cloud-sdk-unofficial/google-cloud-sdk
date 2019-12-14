@@ -12,18 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Submit a SparkR job to a cluster."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc.jobs import spark_r
 from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SparkR(spark_r.SparkRBase, submitter.JobSubmitter):
   r"""Submit a SparkR job to a cluster.
 
@@ -33,11 +32,11 @@ class SparkR(spark_r.SparkRBase, submitter.JobSubmitter):
 
   To submit a SparkR job with a local script, run:
 
-    $ {command} --cluster my_cluster my_script.R
+    $ {command} --cluster=my_cluster my_script.R
 
   To submit a Spark job that runs a script already on the cluster, run:
 
-    $ {command} --cluster my_cluster file:///.../my_script.R \
+    $ {command} --cluster=my_cluster file:///.../my_script.R \
         -- gs://my_bucket/data.csv
   """
 

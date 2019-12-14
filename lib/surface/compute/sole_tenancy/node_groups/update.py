@@ -53,7 +53,9 @@ class Update(base.UpdateCommand):
         args, holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
-    autoscaling_policy = getattr(args, 'mode', None)
+    autoscaling_policy = (hasattr(args, 'autoscaler_mode') and args.IsSpecified('autoscaler_mode')) or \
+                         (hasattr(args, 'min_nodes') and args.IsSpecified('min_nodes')) or \
+                         (hasattr(args, 'max_nodes') and args.IsSpecified('max_nodes'))
 
     return groups_client.Update(
         node_group_ref,
@@ -67,13 +69,14 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Update a Compute Engine node group."""
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a Compute Engine node group."""
-
   @staticmethod
   def Args(parser):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddUpdateArgsToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Compute Engine node group."""
+

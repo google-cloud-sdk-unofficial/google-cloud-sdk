@@ -26,13 +26,13 @@ from googlecloudsdk.command_lib.labelmanager import arguments
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  r"""Lists label keys under the specified parent resource.
+  r"""Lists LabelKeys under the specified parent resource.
 
   ## EXAMPLES
 
-  To list all the label keys under an organization run:
+  To list all the LabelKeys under 'organizations/123', run:
 
-        $ gcloud alpha labelmanager keys list 'organizations/123'
+        $ {command} 'organizations/123'
   """
 
   @staticmethod

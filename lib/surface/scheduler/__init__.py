@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class Scheduler(base.Group):
   """Manage Cloud Scheduler jobs and schedules."""
+  category = base.CI_CD_CATEGORY

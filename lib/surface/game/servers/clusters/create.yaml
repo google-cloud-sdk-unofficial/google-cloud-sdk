@@ -6,6 +6,9 @@
 
   request:
     collection: gameservices.projects.locations.realms.gameServerClusters
+    method: previewCreate
+    modify_method_hook:
+      googlecloudsdk.command_lib.game.servers.clusters.update_hooks:ChooseCreateOrPreviewMethod
 
   arguments:
     resource:
@@ -28,8 +31,19 @@
       required: true
       help_text: |
         Namespace for Kubernetes API server endpoint.
+    - arg_name: dry-run
+      type: bool
+      required: true
+      help_text: |
+        Validate the creation, but do not execute it.
+    - arg_name: preview-time
+      api_field: previewTime
+      help_text: |
+        This attribute is only relevant for preview (--dry-run). It is used to validate
+        the state for a future time.
     labels:
       api_field: gameServerCluster.labels
 
-  async:
-    collection: gameservices.projects.locations.operations
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.game.servers.clusters.update_hooks:ConvertOutput

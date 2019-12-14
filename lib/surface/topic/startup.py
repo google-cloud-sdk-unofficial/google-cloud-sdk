@@ -67,6 +67,11 @@ class Startup(base.TopicCommand):
   bq currently does not support Python 3; you can select a python interpreter
   to use just for bq by setting the CLOUDSDK_BQ_PYTHON environment variable.
 
+  Some use cases of `gcloud app deploy` do not work with Python 3.
+
+  Some use cases of `gcloud beta container hub register-cluster` do not work
+  with Python 3.
+
   # Configuring the Python Interpreter
 
   While not typically necessary, you are able to pass interpreter level

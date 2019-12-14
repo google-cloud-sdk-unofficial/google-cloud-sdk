@@ -42,6 +42,7 @@ class List(base.ListCommand):
   def Args(parser):
     secrets_args.AddProject(parser)
     secrets_fmt.UseSecretTable(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
     project_ref = args.CONCEPTS.project.Parse()

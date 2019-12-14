@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.ALPHA)
 class Import(base.Group):
   """Provides commands to import Cloud SQL instances."""
+  category = base.DATABASES_CATEGORY

@@ -24,6 +24,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 
@@ -114,7 +115,8 @@ def _Run(args, holder, url_map_arg):
   """Issues requests necessary to remove path matcher on URL maps."""
   client = holder.client
 
-  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
     get_request = _GetRegionalGetRequest(client, url_map_ref)
   else:
@@ -131,11 +133,13 @@ def _Run(args, holder, url_map_arg):
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class RemovePathMatcher(base.UpdateCommand):
   """Remove a path matcher from a URL map."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
@@ -155,14 +159,3 @@ class RemovePathMatcher(base.UpdateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RemovePathMatcherBeta(RemovePathMatcher):
-
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemovePathMatcherAlpha(RemovePathMatcherBeta):
-  pass

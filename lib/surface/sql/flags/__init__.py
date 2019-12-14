@@ -27,3 +27,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.ALPHA)
 class Flags(base.Group):
   """Provide a command to list flags."""
+  category = base.DATABASES_CATEGORY

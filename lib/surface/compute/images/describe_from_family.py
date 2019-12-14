@@ -56,3 +56,22 @@ class DescribeFromFamily(base.DescribeCommand):
 
     return client.MakeRequests([(client.apitools_client.images, 'GetFromFamily',
                                  request)])[0]
+
+
+DescribeFromFamily.detailed_help = {
+    'brief':
+        'Describe the latest image from an image family.',
+    'DESCRIPTION':
+        """\
+        *{command}* looks up the latest image from an image family and runs a
+        describe on it. If the image is not in the default project, you need to
+        specify a value for `--project`.
+        """,
+    'EXAMPLES':
+        """\
+        To view the description for the latest ``debian-9'' image from the
+        ``debian-cloud'' project, run:
+
+          $ {command} debian-9 --project=debian-cloud
+        """,
+}

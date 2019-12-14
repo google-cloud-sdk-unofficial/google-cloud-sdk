@@ -42,13 +42,13 @@ def _PostProcessListResult(results):
   return results_json
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ListInstanceDetails(base.ListCommand):
   """List the instance details for an OS patch job.
 
   ## EXAMPLES
 
-  To list the instance details for each instance in the patch job 'job1', run:
+  To list the instance details for each instance in the patch job `job1`, run:
 
         $ {command} job1
 

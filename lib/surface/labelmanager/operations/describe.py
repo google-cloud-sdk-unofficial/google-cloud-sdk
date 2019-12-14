@@ -26,13 +26,14 @@ from googlecloudsdk.command_lib.labelmanager import arguments
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.Command):
-  r"""Describes a label manager long running operation.
+  r"""Describes a LabelManager long running operation.
 
   ## EXAMPLES
 
-  To get details about a label manager long running operation, run:
+  To get details about a LabelManager long running operation with name
+  'operations/clk.12345', run:
 
-        $ gcloud alpha labelmanager operations describe operations/clk.12345
+        $ {command} operations/clk.12345
   """
 
   @staticmethod

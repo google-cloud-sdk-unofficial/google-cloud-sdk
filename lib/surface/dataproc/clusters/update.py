@@ -40,11 +40,11 @@ class Update(base.UpdateCommand):
 
   To resize a cluster, run:
 
-    $ {command} my_cluster --region=us-central1 --num-workers 5
+    $ {command} my_cluster --region=us-central1 --num-workers=5
 
   To change the number preemptible workers in a cluster, run:
 
-    $ {command} my_cluster --region=us-central1 --num-preemptible-workers 5
+    $ {command} my_cluster --region=us-central1 --num-preemptible-workers=5
 
   To add the label 'customer=acme' to a cluster, run:
 
@@ -143,7 +143,7 @@ class Update(base.UpdateCommand):
         action='store_true',
         help="""\
         Disable autoscaling, if it is enabled. This is an alias for passing the
-        empty string to --autoscaling-policy',
+        empty string to --autoscaling-policy'.
         """)
 
   def Run(self, args):

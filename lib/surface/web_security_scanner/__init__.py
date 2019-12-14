@@ -28,3 +28,4 @@ class WebSecurityScanner(base.Group):
 
   Commands for managing Google Cloud Web Security Scanner resources.
   """
+  category = base.SECURITY_CATEGORY

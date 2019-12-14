@@ -27,20 +27,21 @@ from googlecloudsdk.command_lib.labelmanager import utils
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetIamPolicy(base.Command):
-  """Gets IAM policy for a LabelKey resource.
+  """Gets the IAM policy for a LabelKey resource.
 
     Returns the IAM policy for a LabelKey resource given the LabelKey's display
     name and parent or the LabelKey's numeric id.
   """
 
   detailed_help = {
-      'EXAMPLES': """
-          To get the iam policy for a label key with id 123 run:
+      'EXAMPLES':
+          """
+          To get the IAM policy for a LabelKey with id '123', run:
 
             $ {command} labelKeys/123
 
-          To get the iam policy for  a label key with the name env under
-          organization/456 run:
+          To get the IAM policy for a LabelKey with the name 'env' under
+          'organizations/456', run:
 
             $ {command} env --label_parent='organizations/456'
           """

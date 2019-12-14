@@ -49,7 +49,7 @@ def GetAllowUnauth(args, operations, service_ref, service_exists):
      None means to retain the current value for the service.
   """
   allow_unauth = None
-  if flags.IsManaged(args):
+  if flags.GetPlatform() == flags.PLATFORM_MANAGED:
     allow_unauth = flags.GetAllowUnauthenticated(
         args, operations, service_ref, not service_exists)
     # Avoid failure removing a policy binding for a service that

@@ -22,7 +22,6 @@ import base64
 import datetime
 import json
 import time
-import urllib
 
 from apitools.base.py.exceptions import HttpError
 
@@ -130,12 +129,7 @@ class ExportLogs(base_classes.BaseCommand):
     url = ('https://storage.googleapis.com/'
            '{0}/{1}?GoogleAccessId={2}&Expires={3}&Signature={4}')
 
-    # python3 moves quote_plus to the urllib.parse.quote_plus
-    url_suffix = ''
-    if hasattr(urllib, 'quote_plus'):
-      url_suffix = urllib.quote_plus(encoded_sig)
-    else:
-      url_suffix = urllib.parse.quote_plus(encoded_sig)
+    url_suffix = six.moves.urllib.parse.quote_plus(encoded_sig)
 
     return url.format(bucket, filepath, service_account, expiration, url_suffix)
 

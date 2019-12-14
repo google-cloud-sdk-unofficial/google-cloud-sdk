@@ -30,7 +30,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Import(base.Command):
   r"""Import a version into an existing crypto key.
 
@@ -45,6 +44,7 @@ class Import(base.Command):
   'google-symmetric-encryption'  within the 'frodo' crypto key, 'fellowship'
   keyring, and 'us-central1' location using import job 'strider' to unwrap the
   provided key material.
+
     $ {command} --location=global \
          --keyring=fellowship \
          --key=frodo \
@@ -93,6 +93,11 @@ class Import(base.Command):
 
   def _CkmRsaAesKeyWrap(self, public_key_bytes, target_key_bytes):
     try:
+      # TODO(b/141249289): Move imports to the top of the file. In the
+      # meantime, until we're sure that all Cloud SDK users have the
+      # cryptography module available, let's not error out if we can't load the
+      # module unless we're actually going down this code path.
+      # pylint: disable=g-import-not-at-top
       from cryptography.hazmat.primitives import serialization
       from cryptography.hazmat.backends import default_backend
       from cryptography.hazmat.primitives import keywrap

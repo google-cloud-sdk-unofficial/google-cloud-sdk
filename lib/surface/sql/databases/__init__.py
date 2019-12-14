@@ -31,3 +31,4 @@ class Databases(base.Group):
   including creating, deleting, listing, patching, updating, and getting
   information about databases.
   """
+  category = base.DATABASES_CATEGORY

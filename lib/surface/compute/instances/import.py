@@ -184,7 +184,8 @@ Import.detailed_help = {
         """,
     'EXAMPLES':
         """\
-        To import an OVF package from Google Could Storage into a VM named `my-instance`, run:
+        To import an OVF package from Cloud Storage into a VM named
+        `my-instance`, run:
 
           $ {command} my-instance --source-uri=gs://my-bucket/my-dir
         """,

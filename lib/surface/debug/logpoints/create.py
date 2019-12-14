@@ -24,23 +24,49 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'brief':
+        """\
+        Add debug logpoints to a Cloud Debugger debug target (debuggee).
+    """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used  to add a debug logpoint to a debug target
+        (debuggee).  Logpoints add logging to your running service without
+        changing your code or restarting your application. When you create a
+        logpoint, the message you specify will be added to your logs whenever
+        any instance of your service executes the specified line of code.
+
+        The default lifetime of a logpoint is 24 hours from creation, and the
+        output will go to the standard log for the programming language of the
+        target (``java.logging'' for Java, ``logging'' for Python, etc.)
+    """,
+    'EXAMPLES':
+        """\
+        To add a logpoint with no conditions that will print the value of the
+        variable 'name' at line 41 of file main.py of a debug target (debuggee),
+        run:
+
+          $ {command} main.py:41 "Variable name={name}" --target=<debuggee_id>
+
+        To add a logpoint that will print the value of the variable 'name' at
+        line 41 of file main.py on a debug target (debuggee) that will only
+        trigger if the length of 'name' is greater than 3, run:
+
+          $ {command} main.py:41 "Variable name={name}" --target=<debuggee_id> --condition="len(name) > 3"
+
+        To add a logpoint with a log level of error at line 35 of file main.py
+        on a debug target (debuggee), run:
+
+          $ {command} main.py:35 "Unexpected path" --target=<debuggee_id> --log-level=error
+    """
+}
+
 
 class Create(base.CreateCommand):
   """Create debug logpoints."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          This command adds a debug logpoint to a debug target. Logpoints add
-          logging to your running service without changing your code or
-          restarting your application. When you create a logpoint, the message
-          you specify will be added to your logs whenever any instance of your
-          service executes the specified line of code.
-
-          The default lifetime of a logpoint is 24 hours from creation, and the
-          output will go to the standard log for the programming language of the
-          target (``java.logging'' for Java, ``logging'' for Python, etc.)
-      """
-  }
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

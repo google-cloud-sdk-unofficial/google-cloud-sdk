@@ -38,13 +38,13 @@ class DisableEnforce(interfaces.OrgPolicyGetAndUpdateCommand):
 
   ## EXAMPLES
 
-  To disable enforcement of the constraint `iam.disableServiceAccountCreation`
-  on the project `foo-project`, run:
+  To disable enforcement of the constraint 'iam.disableServiceAccountCreation'
+  on the Project 'foo-project', run:
 
     $ {command} iam.disableServiceAccountCreation --project=foo-project
 
-  To only disable enforcement for resources that have the label value `2222`
-  associated with the label key `1111`, run:
+  To only disable enforcement for resources that have the LabelValue '2222'
+  associated with the LabelKey '1111', run:
 
     $ {command} iam.disableServiceAccountCreation --project=foo-project \
     --condition='resource.matchLabels("labelKeys/1111", "labelValues/2222")'

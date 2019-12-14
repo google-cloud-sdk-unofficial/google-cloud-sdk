@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
@@ -68,7 +69,8 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   health_check_ref = flags.HealthCheckArgument(
       'HTTPS',
       include_l7_internal_load_balancing=include_l7_internal_load_balancing
-  ).ResolveAsResource(args, holder.resources)
+  ).ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   proxy_header = messages.HTTPSHealthCheck.ProxyHeaderValueValuesEnum(
       args.proxy_header)
 
@@ -118,11 +120,11 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a HTTPS health check."""
 
-  _include_l7_internal_load_balancing = False
+  _include_l7_internal_load_balancing = True
   _include_log_config = False
   detailed_help = _DetailedHelp()
 
@@ -137,13 +139,7 @@ class Create(base.CreateCommand):
                 self._include_log_config)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-
-  _include_l7_internal_load_balancing = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
 
   _include_log_config = True

@@ -22,42 +22,13 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Display detailed information about a health check.
-
-  *{command}* displays all data associated with a Google Compute
-  Engine health check in a project.
-  """
-
-  HEALTH_CHECK_ARG = None
-
-  @staticmethod
-  def Args(parser):
-    Describe.HEALTH_CHECK_ARG = flags.HealthCheckArgument('')
-    Describe.HEALTH_CHECK_ARG.AddArgument(parser, operation_type='describe')
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    health_check_ref = Describe.HEALTH_CHECK_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    request = client.messages.ComputeHealthChecksGetRequest(
-        **health_check_ref.AsDict())
-
-    return client.MakeRequests([(client.apitools_client.healthChecks,
-                                 'Get', request)])[0]
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DescribeAlphaAndBeta(Describe):
   """Display detailed information about a health check.
 
   *{command}* displays all data associated with a Google Compute
@@ -79,6 +50,7 @@ class DescribeAlphaAndBeta(Describe):
     health_check_ref = self.HEALTH_CHECK_ARG.ResolveAsResource(
         args,
         holder.resources,
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):

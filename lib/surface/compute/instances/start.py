@@ -150,7 +150,7 @@ class Start(base.SilentCommand):
 
       log.status.Print('Instance internal IP is {0}'.format(
           GetInternalIPAddress(res)))
-      if GetExternalIPAddress(res):
+      if GetExternalIPAddress(res, no_raise=True):
         log.status.Print('Instance external IP is {0}'.format(
             GetExternalIPAddress(res)))
 

@@ -51,12 +51,11 @@
         https://github.com/googleforgames/agones/blob/master/pkg/apis/autoscaling/v1/fleetautoscaler.go
         for Fleet Autoscaler Spec definition. Scaling config file can also specifies schedules.
         Contents of a sample yaml file:
+
               ```
-                - fleetAutoScalerSpec: 'fleet-autoscaler-spec-0'
-                  priority: 200
                 - fleetAutoScalerSpec: 'fleet-autoscaler-spec-1'
-                  priority: 100
                   schedules: [{cronJobDuration: 3600s, cronSpec: '10 0 1-7 5,12 *'}]
+                - fleetAutoScalerSpec: 'fleet-autoscaler-spec-0'
               ```
     labels:
       api_field: gameServerConfig.labels

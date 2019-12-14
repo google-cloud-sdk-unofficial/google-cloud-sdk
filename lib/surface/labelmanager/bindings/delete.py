@@ -30,10 +30,8 @@ class Delete(base.Command):
   """Deletes a LabelBinding.
 
     Deletes a LabelBinding given the LabelValue and the resource that the
-    LabelValue should be bound to. For Organization,
-    Folder, and Project resources, it should be in the form "type/id", e.g.
-    "organizations/123". For other resource types, full resource name must be
-    used. See:
+    LabelValue is bound to. The resource must be given as the full resource
+    name. See:
     https://cloud.google.com/apis/design/resource_names#full_resource_name.
     The LabelValue can be represented with it's numeric id or with it's display
     name along with details on the parent LabelKey. The LabelKey's details
@@ -44,18 +42,18 @@ class Delete(base.Command):
   detailed_help = {
       'EXAMPLES':
           """
-          To delete a binding between 'labelValue/123' and Project with name
-          '//cloudresourcemanager.googleapis.com/projects/1234' run:
+          To delete a LabelBinding between 'labelValue/123' and Project with
+          name '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} labelValue/123 --resource='//cloudresourcemanager.googleapis.com/projects/1234'
 
-          To create a binding between LabelValue 'test' under 'labelKeys/456'
-          and Project '//cloudresourcemanager.googleapis.com/projects/1234' run:
+          To delete a LabelBinding between LabelValue 'test' under 'labelKeys/456'
+          and Project with name '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} test --label-key='labelKeys/456' --resource='//cloudresourcemanager.googleapis.com/projects/1234'
 
           To delete a binding between LabelValue test under LabelKey 'env' that
-          lives under 'organizations/789' and Project '//cloudresourcemanager.googleapis.com/projects/1234' run:
+          lives under 'organizations/789' and Project with name '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} test --label-key='env' --label-parent='organizations/789' --resource='//cloudresourcemanager.googleapis.com/projects/1234'
           """
@@ -78,21 +76,17 @@ class Delete(base.Command):
     arguments.AddResourceArgToParser(
         parser,
         required=True,
-        message=('Fully qualified name of the resource that the LabelValue is '
-                 'bound to.')
-    )
+        message=('Full resource name of the resource that the LabelValue is '
+                 'bound to.'))
 
   def Run(self, args):
     labelbindings_service = labelmanager.LabelBindingsService()
     labelmanager_messages = labelmanager.LabelManagerMessages()
 
     label_value = utils.GetLabelValueIfArgsAreValid(args)
-    label_value_id = utils.GetIdFromResourceName(label_value)
+    label_binding_name = utils.GetLabelBindingNameFromLabelValueAndResource(label_value, args.resource)
 
-    request = labelmanager_messages.LabelmanagerLabelValuesLabelBindingsDeleteRequest(
-        labelBinding_labelValue=label_value,
-        labelBinding_resource=args.resource,
-        labelValuesId=label_value_id,
-        labelBindingsId=args.resource)
+    request = labelmanager_messages.LabelmanagerLabelBindingsDeleteRequest(
+        name=label_binding_name)
 
     return labelbindings_service.Delete(request)

@@ -76,22 +76,15 @@ class Create(base.Command):
   def Args(parser):
     Create.CommonArgs(parser)
 
-  def _CheckPlatform(self, args):
-    if flags.IsManaged(args):
-      raise exceptions.PlatformError(
-          'This command is in beta for fully managed Cloud Run; '
-          'use `gcloud beta run domain-mappings create`.')
-
   def Run(self, args):
     """Create a domain mapping."""
-    self._CheckPlatform(args)
     conn_context = connection_context.GetConnectionContext(
         args, product=connection_context.Product.RUN)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
 
     # Check if the provided domain has already been verified
     # if mapping to a non-CRoGKE service
-    if flags.IsManaged(args):
+    if flags.GetPlatform() == flags.PLATFORM_MANAGED:
       client = global_methods.GetServerlessClientInstance()
       all_domains = global_methods.ListVerifiedDomains(
           client, flags.GetRegion(args))
@@ -130,9 +123,6 @@ class BetaCreate(Create):
               $ {command} --service=myapp --domain=www.example.com
           """,
   }
-
-  def _CheckPlatform(self, args):
-    pass
 
   @staticmethod
   def Args(parser):

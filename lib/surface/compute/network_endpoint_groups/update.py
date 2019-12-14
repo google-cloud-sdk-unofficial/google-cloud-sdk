@@ -25,24 +25,24 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+To add two endpoints to a network endpoint group:
+
+  $ {command} my-neg --zone=us-central1-a --add-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 --add-endpoint=instance=my-instance2
+
+To remove two endpoints from a network endpoint group:
+
+  $ {command} my-neg --zone=us-central1-a --remove-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 --remove-endpoint=instance=my-instance2
+"""
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine network endpoint group.
+  """Update a Google Compute Engine network endpoint group."""
 
-  ## EXAMPLES
-
-  To add two endpoints to a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a \
-      --add-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 \
-      --add-endpoint=instance=my-instance2
-
-  To remove two endpoints from a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a \
-      --remove-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 \
-      --remove-endpoint=instance=my-instance2
-  """
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -77,22 +77,7 @@ class Update(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
-  r"""Update a Google Compute Engine network endpoint group.
-
-  ## EXAMPLES
-
-  To add two endpoints to a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a \
-      --add-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 \
-      --add-endpoint=instance=my-instance2
-
-  To remove two endpoints from a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a \
-      --remove-endpoint=instance=my-instance1,ip=127.0.0.1,port=1234 \
-      --remove-endpoint=instance=my-instance2
-  """
+  """Update a Google Compute Engine network endpoint group."""
 
   @staticmethod
   def Args(parser):

@@ -22,6 +22,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+      To list all versions available for testing, run:
+
+        $ {command}
+    """,
+}
+
 
 class List(base.ListCommand):
   """List all Android OS versions available for testing."""
@@ -58,3 +66,6 @@ class List(base.ListCommand):
     """
     catalog = util.GetAndroidCatalog(self.context)
     return catalog.versions
+
+
+List.detailed_help = DETAILED_HELP

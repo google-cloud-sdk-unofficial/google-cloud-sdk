@@ -30,29 +30,30 @@ class Create(base.Command):
   """Creates a LabelBinding.
 
     Creates a LabelBinding given the LabelValue and the cloud resource the
-    LabelValue should be bound to. The LabelValue can be represented with it's
+    LabelValue will be bound to. The LabelValue can be represented with it's
     numeric id or with it's display name along with details on the parent of the
-    LabelValue. The LabelValaue is always a LabelKey and the LabelKey's details
-    can be passed as a numeric id or the display name along with the
-    label-parent. The resource should be represented with it's full qualified
-    name.
+    LabelValue. The parent of the LabelValue is always a LabelKey and the
+    LabelKey's details can be passed as a numeric id or the display name along
+    with the label-parent. The resource should be represented with it's full
+    resource name. See:
+    https://cloud.google.com/apis/design/resource_names#full_resource_name.
   """
 
   detailed_help = {
       'EXAMPLES':
           """
-          To create a binding between 'labelValue/123' and Project with name
+          To create a LabelBinding between 'labelValue/123' and Project with name
           '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} labelValue/123 --resource='//cloudresourcemanager.googleapis.com/projects/1234'
 
-          To create a binding between LabelValue 'test' under 'labelKeys/456' and
-          Project '//cloudresourcemanager.googleapis.com/projects/1234' run:
+          To create a LabelBinding between LabelValue 'test' under 'labelKeys/456' and
+          Project with name '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} test --label-key='labelKeys/456' --resource='//cloudresourcemanager.googleapis.com/projects/1234'
 
-          To create a binding between LabelValue 'test' under LabelKey 'env' and
-          Project '//cloudresourcemanager.googleapis.com/projects/1234' run:
+          To create a LabelBinding between LabelValue 'test' under LabelKey 'env' and
+          Project with name '//cloudresourcemanager.googleapis.com/projects/1234' run:
 
             $ {command} test --label-key='env' --label-parent='organizations/789' --resource='//cloudresourcemanager.googleapis.com/projects/1234'
           """
@@ -79,13 +80,8 @@ class Create(base.Command):
     labelmanager_messages = labelmanager.LabelManagerMessages()
 
     label_value = utils.GetLabelValueIfArgsAreValid(args)
-    label_value_id = utils.GetIdFromResourceName(label_value)
 
     binding = labelmanager_messages.LabelBinding(
         labelValue=label_value, resource=args.resource)
-    create_request = labelmanager_messages.CreateLabelBindingRequest(
-        labelBinding=binding)
 
-    request = labelmanager_messages.LabelmanagerLabelValuesLabelBindingsCreateRequest(
-        createLabelBindingRequest=create_request, labelValuesId=label_value_id)
-    return labelbindings_service.Create(request)
+    return labelbindings_service.Create(binding)

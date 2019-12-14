@@ -11,23 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Delete a membership from an existing group.
     description: Delete a membership from an existing group.
     examples: |
-      To delete a membership from a group
+      To delete a memberships from a group:
 
-      $ {command} --group-email eng-discuss@foo.com --member-email user@foo.com
+        $ {command} --group-email="eng-discuss@foo.com" --member-email="user@foo.com"
 
   request:
     collection: cloudidentity.groups.memberships
     disable_resource_check: true
-    api_version: v1alpha1
     method: delete
     modify_request_hooks:
     - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipResourceName
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
 
   arguments:
     params:
@@ -35,7 +38,7 @@
       type: str
       required: true
       help_text: |
-        The email address of the group that member-email is being removed from.
+        The email address of the group the new membership is being removed from.
 
     - arg_name: member-email
       type: str

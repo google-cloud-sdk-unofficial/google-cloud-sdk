@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 from googlecloudsdk.command_lib.export import util as export_util
@@ -100,6 +101,7 @@ def _Run(args, holder, url_map_arg, release_track):
   url_map_ref = url_map_arg.ResolveAsResource(
       args,
       holder.resources,
+      default_scope=compute_scope.ScopeEnum.GLOBAL,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
@@ -137,11 +139,12 @@ def _Run(args, holder, url_map_arg, release_track):
   return _SendPatchRequest(client, url_map_ref, url_map)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Import(base.UpdateCommand):
   """Import a URL map."""
 
-  _include_l7_internal_load_balancing = False
+  _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
@@ -158,13 +161,3 @@ class Import(base.UpdateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.URL_MAP_ARG, self.ReleaseTrack())
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ImportBeta(Import):
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ExportAlpha(ImportBeta):
-  pass

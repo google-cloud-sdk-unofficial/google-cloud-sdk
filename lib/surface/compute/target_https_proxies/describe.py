@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 
@@ -34,6 +35,16 @@ def _DetailedHelp():
       *{command}* displays all data associated with a target HTTPS proxy
       in a project.
       """,
+      'EXAMPLES':
+          """\
+      To describe a global target HTTPS proxy, run:
+
+        $ {command} PROXY_NAME
+
+      To describe a regional target HTTPS proxy, run:
+
+        $ {command} PROXY_NAME --region=REGION_NAME
+      """,
   }
 
 
@@ -44,6 +55,7 @@ def _Run(args, holder, target_https_proxy_arg):
   target_https_proxy_ref = target_https_proxy_arg.ResolveAsResource(
       args,
       holder.resources,
+      default_scope=compute_scope.ScopeEnum.GLOBAL,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(
@@ -59,11 +71,13 @@ def _Run(args, holder, target_https_proxy_arg):
   return client.MakeRequests([(collection, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Display detailed information about a target HTTPS proxy."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
   TARGET_HTTPS_PROXY_ARG = None
   detailed_help = _DetailedHelp()
@@ -78,14 +92,3 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.TARGET_HTTPS_PROXY_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DescribeBeta(Describe):
-
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(DescribeBeta):
-  pass

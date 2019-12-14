@@ -22,11 +22,13 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine SSL certificates.
 
@@ -39,9 +41,10 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    Delete.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(plural=True)
+    Delete.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
+        plural=True, include_l7_internal_load_balancing=True)
     Delete.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleter)
+    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterBeta)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -50,43 +53,7 @@ class Delete(base.DeleteCommand):
     ssl_certificate_refs = Delete.SSL_CERTIFICATE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    utils.PromptForDeletion(ssl_certificate_refs)
-
-    requests = []
-    for ssl_certificate_ref in ssl_certificate_refs:
-      requests.append((client.apitools_client.sslCertificates, 'Delete',
-                       client.messages.ComputeSslCertificatesDeleteRequest(
-                           **ssl_certificate_ref.AsDict())))
-
-    return client.MakeRequests(requests)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class DeleteBeta(Delete):
-  """Delete Google Compute Engine SSL certificates.
-
-  *{command}* deletes one or more Google Compute Engine SSL certificates.
-  SSL certificates can only be deleted when no other resources (e.g.,
-  target HTTPS proxies) refer to them.
-  """
-  SSL_CERTIFICATE_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
-        plural=True, include_l7_internal_load_balancing=True)
-    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterBeta)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    ssl_certificate_refs = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-        args,
-        holder.resources,
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
     utils.PromptForDeletion(ssl_certificate_refs)

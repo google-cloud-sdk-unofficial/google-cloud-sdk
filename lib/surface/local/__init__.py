@@ -28,6 +28,7 @@ class Local(base.Group):
   This set of commands can be used create or change a local development
   setup.
   """
+  category = base.SERVERLESS_CATEGORY
 
   detailed_help = {
       'EXAMPLES':

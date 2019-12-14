@@ -158,6 +158,9 @@ class Filters(base.TopicCommand):
           True if _key_ does not match the RE (regular expression)
           pattern _value_.
 
+          For more about regular expression syntax, see:
+          https://docs.python.org/3/library/re.html#re-syntax
+
           """)
           .format(description=resource_topics.ResourceDescription('filter')),
       'EXAMPLES':
@@ -171,8 +174,8 @@ class Filters(base.TopicCommand):
 
             $ gcloud compute instances list --filter="machineType:f1-micro"
 
-          List Compute Engine instance resources with zone prefix *us* and not
-          MachineType *f1-micro*:
+          List Compute Engine instance resources using a regular expression for
+          zone prefix *us* and not MachineType *f1-micro*:
 
             $ gcloud compute instances list --filter="zone ~ ^us AND -machineType:f1-micro"
 
@@ -234,9 +237,9 @@ class Filters(base.TopicCommand):
           xyz* | abcpdqxyz | False | False
           xyz | abcpdqxyz | False | True
           * | abcpdqxyz | True | True
-          * | <None> | False | False
-          * | <''> | False | False
-          * | <otherwise> | True | True
+          * | (None) | False | False
+          * | ('') | False | False
+          * | (otherwise) | True | True
           abc* | abc.pdq.xyz | True | True
           abc | abc.pdq.xyz | True | True
           abc.pdq | abc.pdq.xyz | True | True

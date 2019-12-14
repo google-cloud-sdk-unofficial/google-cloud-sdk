@@ -7,6 +7,11 @@
 
         $ {parent_command} list
 
+    examples: |
+      The following command describes the `v3-8` accelerator types running in zone `us-central1-b`:
+
+        $ {command} v3-8 --zone=us-central1-b
+
   request:
     collection: tpu.projects.locations.acceleratorTypes
     api_version: v1

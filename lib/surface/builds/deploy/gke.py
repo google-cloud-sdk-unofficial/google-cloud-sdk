@@ -93,7 +93,7 @@ class DeployGKE(base.Command):
         help="""
         Default tag to use with a 'docker build' image creation. Cloud Build
         runs a remote 'docker build -t $TAG .' command, where $TAG is the tag,
-        in the format 'gcr.io/$PROJECT_ID/<source directory>:$SHORT_SHA'.
+        in the format 'gcr.io/$PROJECT_ID/<source directory>:$COMMIT_SHA'.
 
         Your source must include a Dockerfile. For instructions on building
         using a Dockerfile see
@@ -217,9 +217,9 @@ class DeployGKE(base.Command):
     elif args.source:
       if git.IsGithubRepository(
           args.source) and not git.HasPendingChanges(args.source):
-        short_sha = git.GetShortGitHeadRevision(args.source)
-        if short_sha:
-          app_version = short_sha
+        commit_sha = git.GetGitHeadRevision(args.source)
+        if commit_sha:
+          app_version = commit_sha
 
     # Validate expose
     if args.expose and args.expose < 0:
@@ -314,7 +314,7 @@ class DeployGKE(base.Command):
         default_tag = args.app_version
       elif git.IsGithubRepository(
           args.source) and not git.HasPendingChanges(args.source):
-        default_tag = git.GetShortGitHeadRevision(args.source)
+        default_tag = git.GetGitHeadRevision(args.source)
         if not default_tag:
           raise c_exceptions.InvalidArgumentException(
               '--tag-default',

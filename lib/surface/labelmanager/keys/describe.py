@@ -34,12 +34,13 @@ class Describe(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """
-          To describe a label key with id 123 run:
+      'EXAMPLES':
+          """
+          To describe a LabelKey with id '123', run:
 
             $ {command} labelKeys/123
 
-          To describe a label key with the name env under the organization/123
+          To describe a LabelKey with the name 'env' under 'organizations/123',
           run:
 
             $ {command} env --label_parent='organizations/123'

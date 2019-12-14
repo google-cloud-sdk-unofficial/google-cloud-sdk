@@ -90,7 +90,27 @@ def _MakeGetUriFunc(registry):
   return UriFunc
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+def _Args(parser, release_track):
+  """Parses input flags and sets up output formats."""
+
+  parser.display_info.AddFormat("""
+          table(
+            name.basename(),
+            last_run(),
+            next_run(),
+            frequency()
+          )
+        """)
+  parser.display_info.AddTransforms({
+      'last_run': _TransformLastRun,
+      'next_run': _TransformNextRun,
+      'frequency': _TransformFrequency,
+  })
+  registry = osconfig_api_utils.GetRegistry(release_track)
+  parser.display_info.AddUriFunc(_MakeGetUriFunc(registry))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List patch deployments in a project."""
 
@@ -105,21 +125,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""
-          table(
-            name.basename(),
-            last_run(),
-            next_run(),
-            frequency()
-          )
-        """)
-    parser.display_info.AddTransforms({
-        'last_run': _TransformLastRun,
-        'next_run': _TransformNextRun,
-        'frequency': _TransformFrequency,
-    })
-    registry = osconfig_api_utils.GetRegistry(base.ReleaseTrack.ALPHA)
-    parser.display_info.AddUriFunc(_MakeGetUriFunc(registry))
+    _Args(parser, base.ReleaseTrack.BETA)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()
@@ -141,3 +147,21 @@ class List(base.ListCommand):
         field='patchDeployments',
         batch_size_attribute='pageSize',
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List patch deployments in a project."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+      To list all patch deployments in the current project, run:
+
+          $ {command}
+      """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, base.ReleaseTrack.ALPHA)

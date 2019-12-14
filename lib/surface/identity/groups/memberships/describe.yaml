@@ -11,23 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Describe a membership in a group.
     description: Describe a membership in a group.
     examples: |
-      To describe a membership in a group.
+      To describe a membership in a group:
 
-      $ {command} --group-email eng-discuss@foo.com --member-email user@foo.com
+        $ {command} --group-email="eng-discuss@foo.com" --member-email="user@foo.com"
 
   request:
     collection: cloudidentity.groups.memberships
     disable_resource_check: true
-    api_version: v1alpha1
     method: get
     modify_request_hooks:
     - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipResourceName
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
 
   arguments:
     params:

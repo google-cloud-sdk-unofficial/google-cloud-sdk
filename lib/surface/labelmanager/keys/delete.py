@@ -35,13 +35,14 @@ class Delete(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """
-          To delete a label key with id 123 run:
+      'EXAMPLES':
+          """
+          To delete a LabelKey with id '123', run:
 
             $ {command} labelKeys/123
 
-          To delete a label key with the name env under resource
-          organization/456 run:
+          To delete a LabelKey with the 'name' env under 'organization/456',
+          run:
 
             $ {command} env --label_parent='organizations/456'
           """
@@ -75,6 +76,6 @@ class Delete(base.Command):
       return op
     else:
       done_op = operations.WaitForOperation(
-          op, 'Waiting for label [{}] to be deleted with [{}]'.format(
+          op, 'Waiting for LabelKey [{}] to be deleted with [{}]'.format(
               args.LABEL_KEY_ID, op.name), labelkeys_service)
       return done_op

@@ -33,3 +33,4 @@ class BackupRuns(base.Group):
   including listing and getting information about backups for a Cloud SQL
   instance.
   """
+  category = base.DATABASES_CATEGORY

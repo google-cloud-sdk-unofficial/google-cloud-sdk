@@ -28,17 +28,20 @@ from googlecloudsdk.command_lib.labelmanager import utils
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """Lists LabelValues under the specified parent LabelKey.
+
+    The LabelKey's details can be passed as a numeric id
+    or the display name along with the label-parent.
   """
 
   detailed_help = {
       'EXAMPLES':
           """
-          To list LabelValues under 'labelKeys/123' run:
+          To list LabelValues under 'labelKeys/123', run:
 
             $ {command} --label-key='labelKeys/123'
 
           To list LabelValues under LabelKey 'env' that lives under
-          'organizations/456' run:
+          'organizations/456', run:
 
             $ {command} --label-key='env' --label-parent='organizations/456'
           """

@@ -32,14 +32,16 @@ class Pig(pig.PigBase, submitter.JobSubmitter):
 
   To submit a Pig job with a local script, run:
 
-    $ {command} --cluster my_cluster --file my_queries.pig
+    $ {command} --cluster=my_cluster --file=my_queries.pig
 
   To submit a Pig job with inline queries, run:
 
-    $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt'
-    AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word"
-    -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE
-    group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
+    $ {command} --cluster=my_cluster
+        -e="LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)"
+        -e="WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word"
+        -e="GROUPS = GROUP WORDS BY word"
+        -e="WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)"
+        -e="DUMP WORD_COUNTS"
   """
 
   @staticmethod
@@ -52,16 +54,3 @@ class Pig(pig.PigBase, submitter.JobSubmitter):
                              self.BuildLoggingConfig(
                                  messages, args.driver_log_levels), args)
     submitter.JobSubmitter.ConfigureJob(messages, job, args)
-
-
-Pig.detailed_help = {
-    'EXAMPLES': """\
-        To submit a Pig job with a local script, run:
-
-          $ {command} --cluster my_cluster --file my_queries.pig
-
-        To submit a Pig job with inline queries, run:
-
-          $ {command} --cluster my_cluster -e "LNS = LOAD 'gs://my_bucket/my_file.txt' AS (line)" -e "WORDS = FOREACH LNS GENERATE FLATTEN(TOKENIZE(line)) AS word" -e "GROUPS = GROUP WORDS BY word" -e "WORD_COUNTS = FOREACH GROUPS GENERATE group, COUNT(WORDS)" -e "DUMP WORD_COUNTS"
-        """,
-}

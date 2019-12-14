@@ -37,9 +37,10 @@ import six
 class Update(base.UpdateCommand):
   r"""Update per instance config of a managed instance group.
 
-  *{command}* updates per instance config of instance controlled by a Google
-  Compute Engine managed instance group. Command gives option to change the list
-  of preserved resources by the instance during restart or recreation.
+  *{command}* updates the per instance config of an instance controlled by a
+  Google Compute Engine managed instance group. The command lets you change the
+  list of instance-specific stateful resources, that is, the list of resources
+  that are preserved during instance restarts and recreations.
 
   For example:
 
@@ -48,10 +49,16 @@ class Update(base.UpdateCommand):
         source=projects/my-project/zones/us-central1-a/disks/my-disk-3 \
         --remove-stateful-disks=my-disk-1,my-disk-2
 
-  will update stateful disk `my-disk-3` to the new one pointed by `source` (or
-  add if `my-disk-3` did not exist in the instance config); it will also remove
-  `my-disk-1` and `my-disk-2` from the instance config overrides - they will not
-  be preserved anymore during next restart or recreation of the instance.
+  This command updates the stateful disk, `my-disk-3`, to the image provided by
+  `source`. If my-disk-3 did not exist previously in the per instance config,
+  and if it does not exist in the group's instance template, then the group adds
+  my-disk-3 to example-instance. The command also removes stateful configuration
+  for my-disk-1 and my-disk-2; if these disk are not defined in the group's
+  instance template, then they are detached.
+
+  Changes are applied immediately to the corresponding instances, by performing
+  the necessary action (for example, REFRESH), unless overridden by providing
+  the `--no-update-instance` flag.
   """
 
   @staticmethod
@@ -176,7 +183,7 @@ class Update(base.UpdateCommand):
             parser, operation_type='update per instance config for')
     instance_groups_flags.AddMigStatefulFlagsForInstanceConfigs(
         parser, for_update=True)
-    instance_groups_flags.AddMigStatefulForceInstanceUpdateFlag(parser)
+    instance_groups_flags.AddMigStatefulUpdateInstanceFlag(parser)
 
   def Run(self, args):
     instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
@@ -223,7 +230,7 @@ class Update(base.UpdateCommand):
     update_result = waiter.WaitFor(operation_poller, operation_ref,
                                    'Updating instance config.')
 
-    if args.force_instance_update:
+    if args.update_instance:
       apply_operation_ref = (
           instance_configs_messages.CallApplyUpdatesToInstances)(
               holder=holder,

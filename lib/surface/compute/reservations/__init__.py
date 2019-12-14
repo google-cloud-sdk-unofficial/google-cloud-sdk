@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 class Reservations(base.Group):
   """Manage Compute Engine reservations."""
-  pass
+  category = base.NETWORKING_CATEGORY

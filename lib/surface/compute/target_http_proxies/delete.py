@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_proxies_utils
 
@@ -33,6 +34,16 @@ def _DetailedHelp():
       'DESCRIPTION':
           """\
       *{command}* deletes one or more target HTTP proxies.
+      """,
+      'EXAMPLES':
+          """\
+      Delete a global target HTTP proxy by running:
+
+        $ {command} PROXY_NAME
+
+      Delete a regional target HTTP proxy by running:
+
+        $ {command} PROXY_NAME --region=REGION_NAME
       """,
   }
 
@@ -58,41 +69,25 @@ def _Run(holder, target_http_proxy_refs):
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete target HTTP proxies."""
-
-  _include_l7_internal_load_balancing = False
 
   TARGET_HTTP_PROXY_ARG = None
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument(
-        plural=True,
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument(plural=True)
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='delete')
-    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleterAlpha if
-                                        cls._include_l7_internal_load_balancing
-                                        else flags.TargetHttpProxiesCompleter)
+    parser.display_info.AddCacheUpdater(flags.TargetHttpProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_http_proxy_refs = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
         args,
         holder.resources,
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
     return _Run(holder, target_http_proxy_refs)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(Delete):
-
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  pass

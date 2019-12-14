@@ -82,6 +82,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                 api_adapter.CLOUDRUN: _ParseAddonDisabled,
                 api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
                 api_adapter.CLOUDBUILD: _ParseAddonDisabled,
+                api_adapter.NODELOCALDNS: _ParseAddonDisabled,
             }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -93,7 +94,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {application_manager}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
-{cloudbuild}=ENABLED|DISABLED""".format(
+{cloudbuild}=ENABLED|DISABLED
+{nodelocaldns}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -102,6 +104,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     application_manager=api_adapter.APPLICATIONMANAGER,
     cloudrun=api_adapter.CLOUDRUN,
     cloudbuild=api_adapter.CLOUDBUILD,
+    nodelocaldns=api_adapter.NODELOCALDNS,
     ))
 
   elif release_track == base.ReleaseTrack.BETA:
@@ -116,6 +119,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                 api_adapter.ISTIO: _ParseAddonDisabled,
                 api_adapter.CLOUDRUN: _ParseAddonDisabled,
                 api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
+                api_adapter.NODELOCALDNS: _ParseAddonDisabled,
             }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -126,7 +130,8 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {istio}=ENABLED|DISABLED
 {application_manager}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
-{cloudrun}=ENABLED|DISABLED""".format(
+{cloudrun}=ENABLED|DISABLED
+{nodelocaldns}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
@@ -134,6 +139,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     istio=api_adapter.ISTIO,
     application_manager=api_adapter.APPLICATIONMANAGER,
     cloudrun=api_adapter.CLOUDRUN,
+    nodelocaldns=api_adapter.NODELOCALDNS,
     ))
 
   else:
@@ -145,6 +151,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                 api_adapter.HPA: _ParseAddonDisabled,
                 api_adapter.DASHBOARD: _ParseAddonDisabled,
                 api_adapter.NETWORK_POLICY: _ParseAddonDisabled,
+                api_adapter.CLOUDRUN: _ParseAddonDisabled,
             }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -152,11 +159,13 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {hpa}=ENABLED|DISABLED
 {ingress}=ENABLED|DISABLED
 {dashboard}=ENABLED|DISABLED
-{network_policy}=ENABLED|DISABLED""".format(
+{network_policy}=ENABLED|DISABLED
+{cloudrun}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
     ingress=api_adapter.INGRESS,
     dashboard=api_adapter.DASHBOARD,
     network_policy=api_adapter.NETWORK_POLICY,
+    cloudrun=api_adapter.CLOUDRUN,
     ))
 
   mutex_group.add_argument(
@@ -258,7 +267,7 @@ class Update(base.UpdateCommand):
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddVerticalPodAutoscalingFlag(group)
-    flags.AddAutoprovisioningFlags(group)
+    flags.AddAutoprovisioningFlags(group, ga=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)

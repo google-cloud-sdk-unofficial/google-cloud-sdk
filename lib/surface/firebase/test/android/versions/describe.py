@@ -24,6 +24,15 @@ from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
 
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+    To see attributes of the Android OS version 'my-version', run:
+
+      $ {command} my-version
+    """,
+}
+
+
 class Describe(base.DescribeCommand):
   """Describe an Android OS version."""
 
@@ -69,3 +78,6 @@ run:
       if version.id == args.version_id:
         return version
     raise exceptions.VersionNotFoundError(args.version_id)
+
+
+Describe.detailed_help = DETAILED_HELP

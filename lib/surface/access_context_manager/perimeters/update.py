@@ -88,11 +88,11 @@ class UpdatePerimetersBeta(UpdatePerimetersGA):
 class UpdatePerimetersAlpha(UpdatePerimetersGA):
   """Update an existing access zone."""
   _INCLUDE_UNRESTRICTED = False
-  _API_VERSION = 'v1beta'
+  _API_VERSION = 'v1alpha'
 
   @staticmethod
   def Args(parser):
-    UpdatePerimetersGA.ArgsVersioned(parser, version='v1beta', track='ALPHA')
+    UpdatePerimetersGA.ArgsVersioned(parser, version='v1alpha', track='ALPHA')
 
   def Patch(self, client, args, perimeter_ref, result, description, title,
             perimeter_type, resources, restricted_services, levels):

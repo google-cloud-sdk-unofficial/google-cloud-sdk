@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Delete an existing group.
@@ -32,10 +32,13 @@
   request:
     collection: cloudidentity.groups
     disable_resource_check: true
-    api_version: v1alpha1
     method: delete
     modify_request_hooks:
     - googlecloudsdk.command_lib.identity.groups.hooks:SetResourceName
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
 
   response:
     result_attribute: response

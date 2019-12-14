@@ -33,8 +33,8 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Genomics(base.Group):
   """Manage Genomics resources."""
+  category = base.SOLUTIONS_CATEGORY
 
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()
-

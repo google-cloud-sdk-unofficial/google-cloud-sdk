@@ -27,6 +27,7 @@ class Scc(base.Group):
 
   Commands for managing Google Cloud SCC resources.
   """
+  category = base.SECURITY_CATEGORY
 
   def Filter(self, context, args):
     del context, args

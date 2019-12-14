@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.local import flags
+from googlecloudsdk.command_lib.local import local
 from googlecloudsdk.command_lib.local import local_files
 from googlecloudsdk.core.util import files
 import six
@@ -44,7 +45,8 @@ class Setup(base.Command):
         help='File containing yaml specifications for kubernetes resources.')
 
   def Run(self, args):
-    local_file_generator = local_files.LocalRuntimeFiles.FromArgs(args)
+    settings = local.Settings.FromArgs(args)
+    local_file_generator = local_files.LocalRuntimeFiles(settings)
 
     with files.FileWriter(args.kubernetes_file) as output:
       output.write(six.u(local_file_generator.KubernetesConfig()))

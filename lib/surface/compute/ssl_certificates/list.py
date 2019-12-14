@@ -31,31 +31,6 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    lister.AddBaseListerArgs(parser)
-    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleter)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
-
-    list_implementation = lister.GlobalLister(
-        client, client.apitools_client.sslCertificates)
-
-    return lister.Invoke(request_data, list_implementation)
-
-
-List.detailed_help = base_classes.GetGlobalListerHelp('SSL certificates')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
-  """List Google Compute Engine SSL certificates."""
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.BETA_LIST_FORMAT)
     lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
     parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterBeta)
 
@@ -73,12 +48,26 @@ class ListBeta(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
-ListBeta.detailed_help = base_classes.GetMultiScopeListerHelp(
+List.detailed_help = base_classes.GetMultiScopeListerHelp(
     'SSL certificates',
     scopes=[
         base_classes.ScopeType.global_scope,
         base_classes.ScopeType.regional_scope
     ])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List Google Compute Engine SSL certificates."""
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(flags.BETA_LIST_FORMAT)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
+    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterBeta)
+
+
+ListBeta.detailed_help = List.detailed_help
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

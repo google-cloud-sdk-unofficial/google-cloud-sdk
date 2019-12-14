@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_bucket_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags as backend_service_flags
 from googlecloudsdk.command_lib.compute.url_maps import flags
@@ -32,7 +33,7 @@ def _DetailedHelp():
       'brief':
           'Create a URL map.',
       'DESCRIPTION':
-          """\
+      """
       *{command}* is used to create URL maps which map HTTP and
       HTTPS request URLs to backend services and backend buckets.
       Mappings are done using a longest-match strategy.
@@ -51,6 +52,20 @@ def _DetailedHelp():
       after the map is created by using `gcloud compute url-maps edit`
       or by using `gcloud compute url-maps add-path-matcher`
       and `gcloud compute url-maps add-host-rule`.
+      """,
+      'EXAMPLES':
+      """
+        To create a global URL map with a default service, run:
+
+        $ {command} URL_MAP_NAME --default-service=BACKEND_SERVICE_NAME
+
+        To create a regional URL map with a default service, run:
+
+        $ {command} URL_MAP_NAME --default-service=BACKEND_SERVICE_NAME --region=REGION_NAME
+
+        To create a global URL map with a default backend bucket, run:
+
+        $ {command} URL_MAP_NAME --default-backend-bucket=BACKEND_BUCKET_NAME
       """,
   }
 
@@ -107,6 +122,7 @@ def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
   url_map_ref = url_map_arg.ResolveAsResource(
       args,
       holder.resources,
+      default_scope=compute_scope.ScopeEnum.GLOBAL,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   if args.default_service:
@@ -122,11 +138,13 @@ def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
     return _MakeRegionalRequest(args, url_map_ref, default_backend_uri, client)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a URL map."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp()
   BACKEND_BUCKET_ARG = None
@@ -156,14 +174,3 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return _Run(args, holder, self.BACKEND_BUCKET_ARG, self.BACKEND_SERVICE_ARG,
                 self.URL_MAP_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  pass

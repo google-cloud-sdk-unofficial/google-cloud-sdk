@@ -12,12 +12,11 @@
     - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevelsGA
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=servicePerimeter.name
     ALPHA:
-      api_version: v1beta
+      api_version: v1alpha
       modify_request_hooks:
       - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
-      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddImplicitUnrestrictedServiceWildcard
-      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevelsBeta
-      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddVpcServiceRestrictionBeta
+      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevelsAlpha
+      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddVpcServiceRestrictionAlpha
       - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=servicePerimeter.name
     BETA:
       api_version: v1beta

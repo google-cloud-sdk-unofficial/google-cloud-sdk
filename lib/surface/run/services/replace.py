@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
@@ -102,17 +103,19 @@ class Replace(base.Command):
           raise exceptions.ConfigurationError(
               'Namespace specified in file does not match passed flag.')
         namespace = new_service.metadata.namespace
-        project = properties.VALUES.core.project.Get()
-        if flags.IsManaged(args) and namespace != project:
-          raise exceptions.ConfigurationError(
-              'Namespace must be [{}] for Cloud Run (fully managed).'.format(
-                  project))
+        if flags.GetPlatform() == flags.PLATFORM_MANAGED:
+          project = properties.VALUES.core.project.Get()
+          project_number = projects_util.GetProjectNumber(project)
+          if namespace != project and namespace != str(project_number):
+            raise exceptions.ConfigurationError(
+                'Namespace must be project ID [{}] or quoted number [{}] for '
+                'Cloud Run (fully managed).'.format(project, project_number))
       new_service.metadata.namespace = namespace
 
       changes = [config_changes.ReplaceServiceChange(new_service)]
       service_ref = resources.REGISTRY.Parse(
           new_service.metadata.name,
-          params={'namespacesId': namespace},
+          params={'namespacesId': new_service.metadata.namespace},
           collection='run.namespaces.services')
       original_service = client.GetService(service_ref)
 

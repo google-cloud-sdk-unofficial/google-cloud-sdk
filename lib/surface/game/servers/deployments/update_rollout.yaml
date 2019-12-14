@@ -16,16 +16,16 @@
       Contents of gs-cfg-overrides.yaml:
 
         ```
-        - realmsSelector:
-            realms:
-            - realm1
-            - realm2
-          configVersion: version2
-        - realmsSelector:
-            realms:
-            - realm4
-          configVersion: version3
-       ```
+          - realmsSelector:
+              realms:
+              - realm1
+              - realm2
+            configVersion: version2
+          - realmsSelector:
+              realms:
+              - realm4
+            configVersion: version3
+        ```
   request:
     collection: gameservices.projects.locations.gameServerDeployments
     method: previewRollout
@@ -33,6 +33,7 @@
       googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ChooseUpdateOrPreviewMethod
     modify_request_hooks:
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:SetUpdateMask
+    - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ClearConfigOverrides
 
   arguments:
     resource:
@@ -49,25 +50,6 @@
         existing game server config that is a sub-resource to the given game server deployment. If
         not specified, there won't be a default config which means only the clusters specified in
         the config overrides will have configs applied.
-    - _REF_: googlecloudsdk.command_lib.game.servers.flags:config_overrides_file
-      api_field: gameServerDeploymentRollout.gameServerConfigOverrides
-      help_text: |
-        JSON/YAML file that specifies the Game Server Config overrides. This file can be used to
-        gradualy rollout new config version. The following sample file indicates that the version2
-        config is rolled out to realm1 and realm2 while the version3 config is deployed to realms.
-        The rest of the realms are deployed with the default config version (if one specified).
-        Contents of a sample yaml file:
-           ```
-           - realmsSelector:
-               realms:
-               - realm1
-               - realm2
-             configVersion: version2
-           - realmsSelector:
-               realms:
-               - realm4
-             configVersion: version3
-             ```
     - arg_name: dry-run
       type: bool
       required: true
@@ -78,7 +60,33 @@
       help_text: |
         This attribute is only relevant for preview (--dry-run). It is used to validate
         the state for a future time.
+    - group:
+        mutex: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.game.servers.flags:config_overrides_file
+          api_field: gameServerDeploymentRollout.gameServerConfigOverrides
+          help_text: |
+            JSON/YAML file that specifies the Game Server Config overrides. This file can be used to
+            gradualy rollout new config version. The following sample file indicates that the version2
+            config is rolled out to realm1 and realm2 while the version3 config is deployed to realms.
+            The rest of the realms are deployed with the default config version (if one specified).
+            Contents of a sample yaml file:
 
+              ```
+                 - realmsSelector:
+                     realms:
+                     - realm1
+                     - realm2
+                   configVersion: version2
+                 - realmsSelector:
+                     realms:
+                     - realm4
+                   configVersion: version3
+              ```
+        - arg_name: clear-config-overrides
+          type: bool
+          help_text: |
+            Clear the config overrides.
   response:
     modify_response_hooks:
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ConvertOutput

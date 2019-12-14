@@ -34,7 +34,7 @@ class EnableInherit(interfaces.OrgPolicyGetAndUpdateCommand):
   ## EXAMPLES
 
   To enable inheritance of policy behavior on the policy associated with the
-  constraint `gcp.resourceLocations` and the project `foo-project`, run:
+  constraint 'gcp.resourceLocations' and the Project 'foo-project', run:
 
     $ {command} gcp.resourceLocations --project=foo-project
   """

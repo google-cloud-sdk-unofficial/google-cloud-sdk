@@ -24,6 +24,15 @@ from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
 
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+    To see the attributes of the Android locale 'my-locale', run:
+
+      $ {command} my-locale
+    """,
+}
+
+
 class Describe(base.DescribeCommand):
   """Describe an Android locale."""
 
@@ -55,3 +64,6 @@ class Describe(base.DescribeCommand):
       if locale.id == args.locale:
         return locale
     raise exceptions.LocaleNotFoundError(args.locale)
+
+
+Describe.detailed_help = DETAILED_HELP

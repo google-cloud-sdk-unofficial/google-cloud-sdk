@@ -35,7 +35,6 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SparkR(spark_r.SparkRBase, base.Command):
   """Add a SparkR job to the workflow template."""
 

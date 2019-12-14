@@ -24,13 +24,13 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(base_classes.BaseLister):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class List(base_classes.MultiScopeLister):
   """List health checks in GA."""
 
   @staticmethod
   def Args(parser):
-    base_classes.BaseLister.Args(parser)
+    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
 
     parser.add_argument(
         '--protocol',
@@ -118,61 +118,6 @@ class List(base_classes.BaseLister):
   def resource_type(self):
     return 'healthChecks'
 
-  def GetResources(self, args, errors):
-    """Gets a list of global healthcheck resources."""
-    health_checks = lister.GetGlobalResourcesDicts(
-        service=self.service,
-        project=self.project,
-        filter_expr=self.GetFilterExpr(args),
-        http=self.http,
-        batch_url=self.batch_url,
-        errors=errors)
-
-    # If a protocol is specified, check that it is one we support, and convert
-    # it to a number.
-    protocol_value = None
-    if args.protocol is not None:
-      protocol_value = self._ConvertProtocolArgToValue(args)
-      if protocol_value not in self._ProtocolWhitelist():
-        raise exceptions.ToolException(
-            'Invalid health check protocol ' + args.protocol + '.')
-
-    for health_check in health_checks:
-      if (protocol_value is None or
-          health_check['type'] == args.protocol.upper()):
-        yield health_check
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base_classes.MultiScopeLister, List):
-  """List health checks in Beta."""
-
-  @staticmethod
-  def Args(parser):
-    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
-
-    parser.add_argument(
-        '--protocol',
-        help="""\
-        If protocol is specified, only health checks for that protocol are
-        listed, and protocol-specific columns are added to the output. By
-        default, health checks for all protocols are listed.
-        """)
-
-  def _ProtocolWhitelist(self):
-    # Returns a list of whitelisted protocols.
-    whitelist = super(ListBeta, self)._ProtocolWhitelist()
-    return whitelist
-
-  def _GetValidColumns(self, args):
-    """Returns a list of valid columns."""
-    columns = super(ListBeta, self)._GetValidColumns(args)
-    return columns
-
-  def _Format(self, args):
-    columns = self._GetValidColumns(args)
-    return 'table[]({columns})'.format(columns=','.join(columns))
-
   @property
   def global_service(self):
     """The service used to list global resources."""
@@ -194,7 +139,7 @@ class ListBeta(base_classes.MultiScopeLister, List):
     return self.compute.healthChecks
 
   def GetResources(self, args, errors):
-    health_checks = super(ListBeta, self).GetResources(args, errors)
+    health_checks = super(List, self).GetResources(args, errors)
 
     # If a protocol is specified, check that it is one we support, and convert
     # it to a number.
@@ -213,7 +158,7 @@ class ListBeta(base_classes.MultiScopeLister, List):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
+class ListAlpha(List):
   """List health checks in Alpha."""
 
   def _ProtocolWhitelist(self):
@@ -236,5 +181,4 @@ class ListAlpha(ListBeta):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('health checks')
-ListBeta.detailed_help = base_classes.GetGlobalListerHelp('health checks')
 ListAlpha.detailed_help = base_classes.GetGlobalListerHelp('health checks')

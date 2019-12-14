@@ -26,3 +26,5 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.ALPHA)
 class ActiveDirectory(base.Group):
   """Manage Managed Microsoft AD resources."""
+
+  category = base.IDENTITY_CATEGORY

@@ -22,13 +22,11 @@ from googlecloudsdk.api_lib.events import source
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
 from googlecloudsdk.command_lib.events import exceptions
-from googlecloudsdk.command_lib.events import flags as events_flags
-from googlecloudsdk.command_lib.events import resource_args as events_resource_args
+from googlecloudsdk.command_lib.events import flags
+from googlecloudsdk.command_lib.events import resource_args
 from googlecloudsdk.command_lib.events import stages
 from googlecloudsdk.command_lib.events import util
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
@@ -54,26 +52,14 @@ class Create(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRegionArg(managed_group)
-    # Flags specific to CRoGKE
-    gke_group = flags.GetGkeArgGroup(parser)
-    concept_parsers.ConceptParser(
-        [resource_args.CLUSTER_PRESENTATION]).AddToParser(gke_group)
-    # Flags specific to connecting to a Kubernetes cluster (kubeconfig)
-    kubernetes_group = flags.GetKubernetesArgGroup(parser)
-    flags.AddKubeconfigFlags(kubernetes_group)
-    # Flags not specific to any platform
-    flags.AddPlatformArg(parser)
-    events_flags.AddEventTypeFlagArg(parser)
-    events_flags.AddTargetServiceFlag(parser, required=True)
-    events_flags.AddBrokerFlag(parser)
-    events_flags.AddParametersFlags(parser)
-    events_flags.AddSecretsFlag(parser)
+    flags.AddEventTypeFlagArg(parser)
+    flags.AddTargetServiceFlag(parser, required=True)
+    flags.AddBrokerFlag(parser)
+    flags.AddParametersFlags(parser)
+    flags.AddSecretsFlag(parser)
     trigger_presentation = presentation_specs.ResourcePresentationSpec(
         'trigger',
-        events_resource_args.GetTriggerResourceSpec(),
+        resource_args.GetTriggerResourceSpec(),
         'Name of the trigger to create',
         required=True)
     concept_parsers.ConceptParser([trigger_presentation]).AddToParser(parser)
@@ -85,9 +71,6 @@ class Create(base.Command):
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(
         args, product=connection_context.Product.EVENTS)
-    if conn_context.supports_one_platform:
-      raise exceptions.UnsupportedArgumentError(
-          'Events are only available with Cloud Run for Anthos.')
 
     trigger_ref = args.CONCEPTS.trigger.Parse()
     namespace_ref = trigger_ref.Parent()
@@ -118,7 +101,7 @@ class Create(base.Command):
           raise exceptions.TriggerCreationError(
               'Trigger [{}] already exists.'.format(trigger_obj.name))
 
-      parameters = events_flags.GetAndValidateParameters(args, event_type)
+      parameters = flags.GetAndValidateParameters(args, event_type)
 
       # Create the trigger and source
       with progress_tracker.StagedProgressTracker(

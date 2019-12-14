@@ -1,6 +1,10 @@
 - help_text:
     brief: List available locations for Cloud TPUs.
     description: List available locations for Cloud TPUs.
+    examples: |
+      The following command lists all of the zones where TPUs are available:
+
+        $ {command}
 
   request:
     collection: tpu.projects.locations

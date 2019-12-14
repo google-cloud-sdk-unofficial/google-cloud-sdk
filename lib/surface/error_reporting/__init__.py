@@ -27,6 +27,7 @@ from googlecloudsdk.core import resources
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ErrorReporting(base.Group):
   """Manage Stackdriver Error Reporting."""
+  category = base.MONITORING_CATEGORY
 
   def Filter(self, context, args):
     """Modify the context that will be given to this group's commands when run.

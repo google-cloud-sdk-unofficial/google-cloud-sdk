@@ -29,8 +29,17 @@ _DEFAULT_LIMIT = 10
 
 
 def _TransformPatchJobDisplayName(resource):
+  """Returns the display name of a patch job."""
+
   max_len = 15  # Show only the first 15 characters if display name is long.
-  name = resource.get('displayName', '')
+
+  if resource.get('displayName', ''):
+    name = resource['displayName']
+  elif resource.get('patchDeployment', ''):
+    name = osconfig_command_utils.GetResourceName(resource['patchDeployment'])
+  else:
+    name = ''
+
   return (name[:max_len] + '..') if len(name) > max_len else name
 
 
@@ -54,19 +63,19 @@ def _TransformState(resource):
 
 
 def _TransformNumInstances(resource):
-  """Sum up number of instances in a patch job."""
+  """Sums up number of instances in a patch job."""
   if 'instanceDetailsSummary' not in resource:
     return None
 
   instance_details_summary = resource['instanceDetailsSummary']
   num_instances = 0
-  for status in osconfig_command_utils.INSTANCE_DETAILS_KEY_MAP.keys():
+  for status in instance_details_summary:
     num_instances += int(instance_details_summary.get(status, 0))
   return num_instances
 
 
 def _MakeGetUriFunc(registry):
-  """Return a transformation function from a patch job resource to an URI."""
+  """Returns a transformation function from a patch job resource to an URI."""
 
   def UriFunc(resource):
     ref = registry.Parse(
@@ -81,7 +90,32 @@ def _MakeGetUriFunc(registry):
   return UriFunc
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+def _Args(parser, release_track):
+  """Parses input flags and sets up output formats."""
+
+  base.LIMIT_FLAG.SetDefault(parser, _DEFAULT_LIMIT)
+  parser.display_info.AddFormat("""
+        table(
+          name.basename():label=ID,
+          display_name():label=NAME,
+          description(),
+          create_time,
+          update_time,
+          state(),
+          targeted_instances()
+        )
+      """)
+  parser.display_info.AddTransforms({
+      'display_name': _TransformPatchJobDisplayName,
+      'description': _TransformPatchJobDescription,
+      'state': _TransformState,
+      'targeted_instances': _TransformNumInstances,
+  })
+  registry = osconfig_api_utils.GetRegistry(release_track)
+  parser.display_info.AddUriFunc(_MakeGetUriFunc(registry))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List ongoing and completed patch jobs.
 
@@ -95,26 +129,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    base.LIMIT_FLAG.SetDefault(parser, _DEFAULT_LIMIT)
-    parser.display_info.AddFormat("""
-          table(
-            name.basename():label=ID,
-            display_name(),
-            description(),
-            create_time,
-            update_time,
-            state(),
-            targeted_instances()
-          )
-        """)
-    parser.display_info.AddTransforms({
-        'display_name': _TransformPatchJobDisplayName,
-        'description': _TransformPatchJobDescription,
-        'state': _TransformState,
-        'targeted_instances': _TransformNumInstances,
-    })
-    registry = osconfig_api_utils.GetRegistry(base.ReleaseTrack.ALPHA)
-    parser.display_info.AddUriFunc(_MakeGetUriFunc(registry))
+    _Args(parser, base.ReleaseTrack.BETA)
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
@@ -135,3 +150,20 @@ class List(base.ListCommand):
         field='patchJobs',
         batch_size_attribute='pageSize',
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List ongoing and completed patch jobs.
+
+  ## EXAMPLES
+
+  To list patch jobs in the current project, run:
+
+        $ {command}
+
+  """
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, base.ReleaseTrack.ALPHA)

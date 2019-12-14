@@ -1,6 +1,11 @@
 - help_text:
     brief: Reimages the OS on a Cloud TPU.
     description: Reimages the OS on a Cloud TPU.
+    examples: |
+      The following command reimages a TPU with ID `my-tpu` in zone `us-central1-b`
+      with TensorFlow version `1.15`:
+
+        $ {command} my-tpu --zone=us-central1-b --version=1.15
 
   request:
     collection: tpu.projects.locations.nodes

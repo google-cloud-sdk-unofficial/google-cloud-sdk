@@ -20,8 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
-from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -60,19 +58,12 @@ class Delete(base.Command):
     concept_parsers.ConceptParser([
         domain_mapping_presentation]).AddToParser(parser)
 
-  def _CheckPlatform(self, args):
-    if flags.IsManaged(args):
-      raise exceptions.PlatformError(
-          'This command is in beta for fully managed Cloud Run; '
-          'use `gcloud beta run domain-mappings delete`.')
-
   @staticmethod
   def Args(parser):
     Delete.CommonArgs(parser)
 
   def Run(self, args):
     """Delete domain mappings."""
-    self._CheckPlatform(args)
     conn_context = connection_context.GetConnectionContext(
         args, product=connection_context.Product.RUN)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
@@ -96,9 +87,6 @@ class BetaDelete(Delete):
               $ {command} --domain=www.example.com
           """,
   }
-
-  def _CheckPlatform(self, args):
-    pass
 
   @staticmethod
   def Args(parser):

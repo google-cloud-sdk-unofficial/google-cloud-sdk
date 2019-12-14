@@ -47,9 +47,7 @@ DETAILED_HELP = {
     base.ReleaseTrack.GA)
 class Serverless(base.Group):
   """Manage your Cloud Run resources."""
-
-  category = base.COMPUTE_CATEGORY
-
+  category = base.SERVERLESS_CATEGORY
   detailed_help = DETAILED_HELP
 
   @staticmethod
@@ -74,3 +72,9 @@ class Serverless(base.Group):
     kubernetes_group = flags.GetKubernetesArgGroup(platform_helpers_group)
     flags.AddKubeconfigFlags(kubernetes_group)
 
+  def Filter(self, context, args):
+    """Runs before command.Run and validates platform with passed args."""
+    # Ensures a platform is set on the run/platform property and
+    # all other passed args are valid for this platform and release track.
+    flags.GetAndValidatePlatform(args, self.ReleaseTrack())
+    return context

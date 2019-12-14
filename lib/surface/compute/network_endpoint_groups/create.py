@@ -27,6 +27,14 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.network_endpoint_groups import flags
 from googlecloudsdk.core import log
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+To create a network endpoint group:
+
+  $ {command} my-neg --zone=us-central1-a --network=my-network --subnet=my-subnetwork
+""",
+}
+
 
 def _Run(args,
          holder,
@@ -88,15 +96,9 @@ def _ValidateNEG(args, neg_ref, support_hybrid_neg, support_l4ilb_neg):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  r"""Create a Google Compute Engine network endpoint group.
+  """Create a Google Compute Engine network endpoint group."""
 
-  ## EXAMPLES
-
-  To create a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a --network=my-network \
-    --subnet=my-subnetwork
-  """
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser, support_neg_type=False):
@@ -110,15 +112,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  r"""Create a Google Compute Engine network endpoint group.
-
-  ## EXAMPLES
-
-  To create a network endpoint group:
-
-    $ {command} my-neg --zone=us-central1-a --network=my-network \
-    --subnet=my-subnetwork
-  """
+  """Create a Google Compute Engine network endpoint group."""
 
   @staticmethod
   def Args(parser):

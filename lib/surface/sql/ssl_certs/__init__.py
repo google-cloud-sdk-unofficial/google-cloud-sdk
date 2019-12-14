@@ -37,3 +37,4 @@ class SslCerts(base.Group):
   including creating, deleting, listing, and getting information about
   certificates.
   """
+  category = base.DATABASES_CATEGORY

@@ -26,3 +26,4 @@ from googlecloudsdk.calliope import base
 class Dialogflow(base.Group):
   """Interact with and manage Dialogflow agents, entities, and intents.
   """
+  category = base.AI_AND_MACHINE_LEARNING_CATEGORY

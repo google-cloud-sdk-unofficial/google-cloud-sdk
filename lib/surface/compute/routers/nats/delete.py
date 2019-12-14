@@ -98,4 +98,10 @@ AlphaDelete.detailed_help = {
         textwrap.dedent("""\
           *{command}* is used to delete a NAT on a Google Compute Engine router.
     """),
+    'EXAMPLES':
+    """\
+    To delete NAT 'n1' in router 'r1', run:
+
+      $ {command} n1 --router=r1 --region=us-central1
+    """
 }

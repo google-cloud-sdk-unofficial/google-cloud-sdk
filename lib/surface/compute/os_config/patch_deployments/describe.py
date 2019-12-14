@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implements command to describe a given patch deployment."""
+"""Implements command to describe the specified patch deployment."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,14 +25,14 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe the given patch deployment."""
+  """Describe the specified patch deployment."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-      To check the status of the patch deployment 'patch-deployment-1' in the
+      To check the status of the patch deployment `patch-deployment-1` in the
       current project, run:
 
           $ {command} patch-deployment-1

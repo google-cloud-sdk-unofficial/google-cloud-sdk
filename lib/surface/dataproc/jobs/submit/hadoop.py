@@ -33,17 +33,17 @@ class Hadoop(hadoop.HadoopBase, submitter.JobSubmitter):
 
   To submit a Hadoop job that runs the main class of a jar, run:
 
-    $ {command} --cluster my_cluster --jar my_jar.jar -- arg1 arg2
+    $ {command} --cluster=my_cluster --jar=my_jar.jar -- arg1 arg2
 
   To submit a Hadoop job that runs a specific class of a jar, run:
 
-    $ {command} --cluster my_cluster --class org.my.main.Class \
-        --jars my_jar1.jar,my_jar2.jar -- arg1 arg2
+    $ {command} --cluster=my_cluster --class=org.my.main.Class \
+        --jars=my_jar1.jar,my_jar2.jar -- arg1 arg2
 
   To submit a Hadoop job that runs a jar that is already on the cluster, run:
 
-    $ {command} --cluster my_cluster \
-        --jar file:///usr/lib/hadoop-op/hadoop-op-examples.jar \
+    $ {command} --cluster=my_cluster \
+        --jar=file:///usr/lib/hadoop-op/hadoop-op-examples.jar \
         -- wordcount gs://my_bucket/my_file.txt gs://my_bucket/output
   """
 

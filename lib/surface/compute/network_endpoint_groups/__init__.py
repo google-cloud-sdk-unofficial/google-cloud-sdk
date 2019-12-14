@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class NetworkEndpointGroups(base.Group):
   """Read and manipulate Google Compute Engine network endpoint groups."""
+  category = base.NETWORKING_CATEGORY

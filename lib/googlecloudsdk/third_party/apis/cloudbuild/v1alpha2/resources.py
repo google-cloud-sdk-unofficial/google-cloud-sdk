@@ -17,8 +17,8 @@
 import enum
 
 
-BASE_URL = 'https://secretmanager.googleapis.com/v1alpha/'
-DOCS_URL = 'https://cloud.google.com/solutions/secrets-management/'
+BASE_URL = 'https://cloudbuild.googleapis.com/v1alpha2/'
+DOCS_URL = 'https://cloud.google.com/cloud-build/docs/'
 
 
 class Collections(enum.Enum):
@@ -26,38 +26,17 @@ class Collections(enum.Enum):
 
   PROJECTS = (
       'projects',
-      'projects/{projectsId}',
+      'projects/{projectId}',
       {},
-      [u'projectsId'],
+      [u'projectId'],
       True
   )
-  PROJECTS_LOCATIONS = (
-      'projects.locations',
+  PROJECTS_WORKERPOOLS = (
+      'projects.workerPools',
       '{+name}',
       {
           '':
-              'projects/{projectsId}/locations/{locationsId}',
-      },
-      [u'name'],
-      True
-  )
-  PROJECTS_SECRETS = (
-      'projects.secrets',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/secrets/{secretsId}',
-      },
-      [u'name'],
-      True
-  )
-  PROJECTS_SECRETS_VERSIONS = (
-      'projects.secrets.versions',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/secrets/{secretsId}/versions/'
-              '{versionsId}',
+              'projects/{projectsId}/workerPools/{workerPoolsId}',
       },
       [u'name'],
       True

@@ -50,6 +50,12 @@ class Create(base.CreateCommand):
 
   The optional flag `labels` defines a user specified key/value pair for the
   given key.
+
+  The flag `--skip-initial-version-creation` creates a CryptoKey with no
+  versions. If you import into the CryptoKey, or create a new version in that
+  CryptoKey, there will be no primary version until one is set using the
+  `set-primary-version` command.
+
   ## EXAMPLES
 
   The following command creates a key named `frodo` with protection level
@@ -97,6 +103,7 @@ class Create(base.CreateCommand):
     $ {command} gimli \
         --location=us-east1 \
         --keyring=fellowship \
+        --purpose=encryption \
         --protection-level=hsm
   """
 
@@ -105,6 +112,7 @@ class Create(base.CreateCommand):
     flags.AddKeyResourceArgument(parser, 'to create')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
+    flags.AddSkipInitialVersionCreationFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
     parser.add_argument(
         '--purpose',
@@ -152,7 +160,8 @@ class Create(base.CreateCommand):
                 algorithm=maps.ALGORITHM_MAPPER.GetEnumForChoice(
                     args.default_algorithm)),
             labels=labels_util.ParseCreateArgs(args,
-                                               messages.CryptoKey.LabelsValue)))
+                                               messages.CryptoKey.LabelsValue)),
+        skipInitialVersionCreation=args.skip_initial_version_creation)
 
     flags.SetNextRotationTime(args, req.cryptoKey)
     flags.SetRotationPeriod(args, req.cryptoKey)
@@ -171,9 +180,9 @@ class CreateBeta(Create):
 
   Creates a new key within the given keyring.
 
-  The flag 'purpose' is always required when creating a key.
-  The flag 'default-algorithm' is required when creating an asymmetric key.
-  Algorithm and purpose should be compatible.
+  The flag `purpose` is always required when creating a key.
+  The flag `default-algorithm` is required when creating an asymmetric key,
+  or when creating an external key. Algorithm and purpose should be compatible.
 
   The optional flags `rotation-period` and `next-rotation-time` define a
   rotation schedule for the key. A schedule can also be defined
@@ -184,50 +193,78 @@ class CreateBeta(Create):
   can be one of seconds (s), minutes (m), hours (h) or days (d).
 
   The optional flag `protection-level` specifies the protection level of the
-  created key. The default is software; use "HSM" to create a hardware-backed
-  key.
+  created key. The default is software; use "hsm" to create a hardware-backed
+  key, or "external" to create an externally backed key.
+
+  The optional flag `labels` defines a user specified key/value pair for the
+  given key.
 
   The flag `--skip-initial-version-creation` creates a CryptoKey with no
-  version, and no primary. If you import into the CryptoKey, or create a new
-  version in that CryptoKey, you must set that first version to primary.
+  versions. If you import into the CryptoKey, or create a new version in that
+  CryptoKey, there will be no primary version until one is set using the
+  `set-primary-version` command.  When creating a CryptoKey with protection
+  level `external`, the initial version must always be skipped.
 
   ## EXAMPLES
 
-  The following command creates a key named `frodo` within the
-  keyring `fellowship` and location `us-east1`:
+  The following command creates a key named `frodo` with protection level
+  `software` within the keyring `fellowship` and location `us-east1`:
 
     $ {command} frodo \
         --location=us-east1 \
         --keyring=fellowship \
         --purpose=encryption
 
-  The following command creates a key named `strider` within the
-  keyring `rangers` and location `global` with a specified rotation
-  schedule:
+  The following command creates a key named `strider` with protection level
+  `software` within the keyring `rangers` and location `global` with a specified
+  rotation schedule:
 
     $ {command} strider \
-            --location=global --keyring=rangers \
-            --purpose=encryption \
+        --location=global --keyring=rangers \
+        --purpose=encryption \
         --rotation-period=30d \
         --next-rotation-time=2017-10-12T12:34:56.1234Z
 
-  The following command creates an asymmetric key named `samwise` with default
-  algorithm 'ec-sign-p256-sha256' within the keyring `fellowship` and location
-  `us-east1`:
+  The following command creates a key named `foo` with protection level
+  `software` within the keyring `fellowship` and location `us-east1` with two
+  specified labels:
+
+    $ {command} foo \
+        --location=us-east1 \
+        --keyring=fellowship \
+        --purpose=encryption \
+        --labels=env=prod,team=kms
+
+  The following command creates an asymmetric key named `samwise` with
+  protection level `software` and default algorithm `ec-sign-p256-sha256`
+  within the keyring `fellowship` and location `us-east1`:
 
     $ {command} samwise \
         --location=us-east1 \
         --keyring=fellowship \
         --purpose=asymmetric-signing \
         --default-algorithm=ec-sign-p256-sha256
+
+  The following command creates a key named `gimli` with protection level `hsm`
+  and default algorithm `google-symmetric-encryption` within the keyring
+  `fellowship` and location `us-east1`:
+
+    $ {command} gimli \
+        --location=us-east1 \
+        --keyring=fellowship \
+        --purpose=encryption \
+        --protection-level=hsm
+
+  The following command creates a key named `legolas` with protection level
+  `external` and default algorithm `external-symmetric-encryption` within the
+  keyring `fellowship` and location `us-central1`:
+
+    $ {command} legolas \
+        --location=us-central1 \
+        --keyring=fellowship \
+        --purpose=encryption \
+        --default-algorithm=external-symmetric-encryption \
+        --protection-level=external
+        --skip-initial-version-creation
   """
 
-  @staticmethod
-  def Args(parser):
-    super(CreateBeta, CreateBeta).Args(parser)
-    flags.AddSkipInitialVersionCreationFlag(parser)
-
-  def _CreateRequest(self, args):
-    req = super(CreateBeta, CreateBeta)._CreateRequest(self, args)
-    req.skipInitialVersionCreation = args.skip_initial_version_creation
-    return req

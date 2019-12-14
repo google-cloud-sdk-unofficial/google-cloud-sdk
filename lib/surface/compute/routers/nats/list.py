@@ -55,4 +55,10 @@ AlphaList.detailed_help = {
         textwrap.dedent("""\
         *{command}* is used to list the NATs on a Google Compute Engine router.
      """),
+    'EXAMPLES':
+    """\
+    To list all NATs in router ``r1'' in region ``us-central1'', run:
+
+        $ {command} --router=r1 --region=us-central1.
+    """
 }

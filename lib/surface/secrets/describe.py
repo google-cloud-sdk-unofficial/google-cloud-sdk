@@ -42,4 +42,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     secret_ref = args.CONCEPTS.secret.Parse()
-    return secrets_api.Secrets().Get(secret_ref)
+    secret = secrets_api.Secrets().Get(secret_ref)
+    return secret

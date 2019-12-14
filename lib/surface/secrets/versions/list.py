@@ -45,6 +45,7 @@ class List(base.ListCommand):
         positional=True,
         required=True)
     secrets_fmt.UseVersionTable(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
     secret_ref = args.CONCEPTS.secret.Parse()

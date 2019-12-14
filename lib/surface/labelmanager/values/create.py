@@ -31,22 +31,23 @@ class Create(base.Command):
   """Creates a LabelValue resource.
 
     Creates a LabelValue resource given the display name and description as
-    well as details on the parent of the LabelValue. The LabelValaue is always
-    a LabelKey and the LabelKey's details can be passed as a numeric id or
-    the display name along with the label-parent.
+    well as details on the parent of the LabelValue. The parent of the
+    LabelValue is always a LabelKey and the LabelKey's details can be passed as
+    a numeric id or the display name along with the label-parent.
   """
 
   detailed_help = {
       'EXAMPLES':
           """
-          To create a label value with the display name 'test' under a label key
-          with display name env and under organization 123 run:
+          To create a LabelValue with the display name 'test' and the
+          description 'description' under a LabelKey with display name 'env'
+          under 'organizations/123', run:
 
             $ {command} test --label-key='env'
                 --label-parent='organizations/123' --description='description'
 
-          To create a label value with the display name 'test' under label key
-          with id 456 run:
+          To create a LabelValue with the display name 'test' under LabelKey
+          with id '456', run:
 
             $ {command} test --label-key='labelKeys/456'
                 --description='description'
@@ -87,6 +88,6 @@ class Create(base.Command):
     else:
       return operations.WaitForOperation(
           op,
-          'Waiting for label value [{}] to be created with [{}]'.format(
+          'Waiting for LabelValue [{}] to be created with [{}]'.format(
               args.DISPLAY_NAME, op.name),
           service=labelvalues_service)

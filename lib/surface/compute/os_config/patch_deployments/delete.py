@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implements command to delete a given patch deployment."""
+"""Implements command to delete the specified patch deployment."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,14 +26,14 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete the given patch deployment."""
+  """Delete the specified patch deployment."""
 
   detailed_help = {
       'EXAMPLES':
           """\
-      To delete the patch deployment 'patch-deployment-1' in the current project,
+      To delete the patch deployment `patch-deployment-1` in the current project,
       run:
 
           $ {command} patch-deployment-1

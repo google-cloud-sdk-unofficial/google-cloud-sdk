@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class BuildArtifacts(base.Group):
   """Manage Cloud Build Artifacts resources."""
+  category = base.CI_CD_CATEGORY

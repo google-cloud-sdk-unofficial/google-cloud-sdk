@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
     flags as ssl_certificates_flags)
 from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
@@ -37,7 +38,7 @@ def _DetailedHelp():
       'brief':
           'Update a target HTTPS proxy.',
       'DESCRIPTION':
-          """\
+          """
       *{command}* is used to change the SSL certificate and/or URL map of
       existing target HTTPS proxies. A target HTTPS proxy is referenced by
       one or more forwarding rules which specify the network traffic that
@@ -47,6 +48,24 @@ def _DetailedHelp():
       the actual requests. The target HTTPS proxy also points to at most
       15 SSL certificates used for server-side authentication. The target
       HTTPS proxy can be associated with at most one SSL policy.
+      """,
+      'EXAMPLES':
+          """
+      Update the URL map of a global target HTTPS proxy by running:
+
+        $ {command} PROXY_NAME --url-map=URL_MAP
+
+      Update the SSL certificate of a global target HTTPS proxy by running:
+
+        $ {command} PROXY_NAME --ssl-certificates=SSL_CERTIFIFCATE
+
+      Update the URL map of a global target HTTPS proxy by running:
+
+        $ {command} PROXY_NAME --url-map=URL_MAP --region=REGION_NAME
+
+      Update the SSL certificate of a global target HTTPS proxy by running:
+
+        $ {command} PROXY_NAME --ssl-certificates=SSL_CERTIFIFCATE --region=REGION_NAME
       """,
   }
 
@@ -72,6 +91,7 @@ def _Run(args, holder, ssl_certificates_arg, target_https_proxy_arg,
   target_https_proxy_ref = target_https_proxy_arg.ResolveAsResource(
       args,
       holder.resources,
+      default_scope=compute_scope.ScopeEnum.GLOBAL,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   if args.ssl_certificates:
@@ -153,11 +173,13 @@ def _Run(args, holder, ssl_certificates_arg, target_https_proxy_arg,
   return client.MakeRequests(requests)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.SilentCommand):
   """Update a target HTTPS proxy."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
   SSL_CERTIFICATES_ARG = None
   TARGET_HTTPS_PROXY_ARG = None
@@ -203,14 +225,3 @@ class Update(base.SilentCommand):
     return _Run(args, holder, self.SSL_CERTIFICATES_ARG,
                 self.TARGET_HTTPS_PROXY_ARG, self.URL_MAP_ARG,
                 self.SSL_POLICY_ARG)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  pass

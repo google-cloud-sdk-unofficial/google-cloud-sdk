@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
@@ -74,15 +73,8 @@ class List(commands.List):
   def Args(cls, parser):
     cls.CommonArgs(parser)
 
-  def _CheckPlatform(self, args):
-    if flags.IsManaged(args):
-      raise exceptions.PlatformError(
-          'This command is in beta for fully managed Cloud Run; '
-          'use `gcloud beta run domain-mappings list`.')
-
   def Run(self, args):
     """List available domain mappings."""
-    self._CheckPlatform(args)
     conn_context = connection_context.GetConnectionContext(
         args, product=connection_context.Product.RUN)
     namespace_ref = args.CONCEPTS.namespace.Parse()
@@ -109,9 +101,6 @@ class BetaList(List):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-
-  def _CheckPlatform(self, args):
-    pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

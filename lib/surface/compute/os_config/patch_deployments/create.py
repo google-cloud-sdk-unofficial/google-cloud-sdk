@@ -24,22 +24,23 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create a patch deployment for a project."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-      *{command}* creates a patch deployment in a project from a given file. A
-      patch deployment triggers a patch job to run at specific time(s) according
-      to a schedule, and applies any instance filter and patch configurations to
-      the patch job at that run time. To run a patch job on-demand instead, see
-      *$ gcloud alpha* *compute os-config patch-jobs execute*.
+      *{command}* creates a patch deployment in a project from a specified file.
+      A patch deployment triggers a patch job to run at specific time(s)
+      according to a schedule, and applies instance filters and other patch
+      configurations to the patch job at run time. Alternatively, to run a patch
+      job on-demand, see *$ gcloud*
+      *beta compute os-config patch-jobs execute*.
         """,
       'EXAMPLES':
           """\
-      To create a patch deployment 'patch-deployment-1' in the current project,
+      To create a patch deployment `patch-deployment-1` in the current project,
       run:
 
           $ {command} patch-deployment-1 --file=path_to_config_file
@@ -82,3 +83,27 @@ class Create(base.Command):
     )
 
     return client.projects_patchDeployments.Create(request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a patch deployment for a project."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+      *{command}* creates a patch deployment in a project from a specified file.
+      A patch deployment triggers a patch job to run at specific time(s)
+      according to a schedule, and applies instance filters and other patch
+      configurations to the patch job at run time. Alternatively, to run a patch
+      job on-demand, see *$ gcloud*
+      *alpha compute os-config patch-jobs execute*.
+        """,
+      'EXAMPLES':
+          """\
+      To create a patch deployment `patch-deployment-1` in the current project,
+      run:
+
+          $ {command} patch-deployment-1 --file=path_to_config_file
+      """,
+  }

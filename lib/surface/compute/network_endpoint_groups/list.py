@@ -22,10 +22,20 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {
+    'EXAMPLES': """
+To list the network endpoints in zone ``us-central1-a'':
+
+  $ {command} --zone=us-central1-a
+""",
+}
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists Google Compute Engine network endpoint groups."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

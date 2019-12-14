@@ -27,6 +27,8 @@ from googlecloudsdk.calliope import base
 class Shell(base.Group):
   """Manage Google Cloud Shell."""
 
+  category = base.MANAGEMENT_TOOLS_CATEGORY
+
   detailed_help = {
       'DESCRIPTION':
           """\

@@ -30,3 +30,4 @@ class Ssl(base.Group):
   Provide commands for managing client certs and server CA certs of Cloud SQL
   instances.
   """
+  category = base.DATABASES_CATEGORY

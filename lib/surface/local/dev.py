@@ -18,6 +18,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import contextlib
+import os.path
 import signal
 import subprocess
 import sys
@@ -25,11 +27,14 @@ import tempfile
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.local import flags
+from googlecloudsdk.command_lib.local import kube_context
+from googlecloudsdk.command_lib.local import local
 from googlecloudsdk.command_lib.local import local_files
-from googlecloudsdk.command_lib.local import minikube
+from googlecloudsdk.core import config
+from googlecloudsdk.core.util import files as file_utils
 import six
 
-CLUSTER_NAME = 'gcloud-local-dev'
+DEFAULT_CLUSTER_NAME = 'gcloud-local-dev'
 
 
 def _EmptyHandler(unused_signum, unused_stack):
@@ -52,45 +57,104 @@ class _SigInterruptedHandler(object):
     signal.signal(signal.SIGINT, self._orig_handler)
 
 
+def _FindSkaffoldComponent():
+  if config.Paths().sdk_root:
+    return os.path.join(config.Paths().sdk_root, 'bin', 'skaffold')
+  return None
+
+
+def _FindSkaffold():
+  """Find the path to the skaffold executable."""
+  skaffold = (
+      file_utils.FindExecutableOnPath('skaffold') or _FindSkaffoldComponent())
+  if not skaffold:
+    raise EnvironmentError('Unable to locate skaffold.')
+  return skaffold
+
+
+@contextlib.contextmanager
+def Skaffold(skaffold_config, context_name=None):
+  """Run skaffold and catch keyboard interrupts to kill the process.
+
+  Args:
+    skaffold_config: Path to skaffold configuration yaml file.
+    context_name: Kubernetes context name.
+
+  Yields:
+    The skaffold process.
+  """
+  cmd = [_FindSkaffold(), 'dev', '-f', skaffold_config]
+  if context_name:
+    cmd += ['--kube-context', context_name]
+
+  # Supress the current Ctrl-C handler and pass the signal to the child
+  # process.
+  with _SigInterruptedHandler(_EmptyHandler):
+    try:
+      p = subprocess.Popen(cmd)
+      yield p
+    except KeyboardInterrupt:
+      p.terminate()
+      p.wait()
+
+  sys.stdout.flush()
+  sys.stderr.flush()
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Dev(base.Command):
-  """Run a service in a development environemnt."""
+  """Run a service in a development environemnt.
+
+  By default, this command runs the user's containers on minikube on the local
+  machine. To run on another kubernetes cluster, use the --kube-context flag.
+
+  When using minikube, if the minikube cluster is not running, this command
+  will start a new minikube cluster with that name.
+  """
 
   @classmethod
   def Args(cls, parser):
     flags.CommonFlags(parser)
 
+    group = parser.add_mutually_exclusive_group(required=False)
+
+    group.add_argument('--kube-context', help='Kubernetes context.')
+
+    group.add_argument('--minikube-profile', help='Minikube profile.')
+
+    parser.add_argument(
+        '--delete-minikube',
+        default=False,
+        action='store_true',
+        help='If running on minikube, delete the minikube profile at the end '
+        'of the session.')
+
   def Run(self, args):
-    local_file_generator = local_files.LocalRuntimeFiles.FromArgs(args)
+    settings = local.Settings.FromArgs(args)
+    local_file_generator = local_files.LocalRuntimeFiles(settings)
 
-    with tempfile.NamedTemporaryFile(mode='w+t') as kubernetes_config, \
-         tempfile.NamedTemporaryFile(mode='w+t') as skaffold_config:
-      kubernetes_config.write(six.u(local_file_generator.KubernetesConfig()))
-      kubernetes_config.flush()
-      skaffold_config.write(
-          six.u(local_file_generator.SkaffoldConfig(kubernetes_config.name)))
-      skaffold_config.flush()
+    with tempfile.NamedTemporaryFile(mode='w+t') as kubernetes_config:
+      with tempfile.NamedTemporaryFile(mode='w+t') as skaffold_config:
+        kubernetes_config.write(six.u(local_file_generator.KubernetesConfig()))
+        kubernetes_config.flush()
+        skaffold_config.write(
+            six.u(local_file_generator.SkaffoldConfig(kubernetes_config.name)))
+        skaffold_config.flush()
 
-      with minikube.Minikube(CLUSTER_NAME):
-        self._RunSkaffold(skaffold_config.name)
+        if args.IsSpecified('kube_context'):
+          kubernetes_context = kube_context.ExternalClusterContext(
+              args.kube_context)
+        else:
+          if args.IsSpecified('minikube_profile'):
+            cluster_name = args.minikube_profile
+          else:
+            cluster_name = DEFAULT_CLUSTER_NAME
 
-  def _RunSkaffold(self, skaffold_config):
-    # TODO(b/143302920): Point to the skaffold installed by gcloud when that
-    # is ready.
-    cmd = [
-        'skaffold', 'dev', '-f', skaffold_config, '--port-forward',
-        '--kube-context', CLUSTER_NAME
-    ]
+          kubernetes_context = kube_context.Minikube(cluster_name,
+                                                     args.delete_minikube)
 
-    # Supress the current Ctrl-C handler and pass the signal to the child
-    # process.
-    with _SigInterruptedHandler(_EmptyHandler):
-      try:
-        p = subprocess.Popen(cmd)
-        p.wait()
-      except KeyboardInterrupt:
-        p.terminate()
-        p.wait()
-
-    sys.stdout.flush()
-    sys.stderr.flush()
+        with kubernetes_context as context:
+          with Skaffold(skaffold_config.name, context.context_name) as skaffold:
+            print('%s url: %s' % (settings.service_name,
+                                  context.ServiceUrl(settings.service_name)))
+            skaffold.wait()

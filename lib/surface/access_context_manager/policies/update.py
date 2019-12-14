@@ -42,6 +42,11 @@ class UpdatePoliciesGA(base.UpdateCommand):
     return client.Patch(policy_ref, title=args.title)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdatePoliciesAlpha(UpdatePoliciesGA):
+  _API_VERSION = 'v1alpha'
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdatePoliciesBeta(UpdatePoliciesGA):
   _API_VERSION = 'v1beta'

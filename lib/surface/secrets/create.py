@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import properties
 
 
 class Create(base.CreateCommand):
@@ -36,19 +37,28 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  Create a secret without creating any versions:
+  Create a secret with an automatic replication policy without creating any
+  versions:
 
-    $ {command} my-secret --locations=us-central1
+    $ {command} my-secret --replication-policy=automatic
+
+  Create a new secret named 'my-secret' with an automatic replication policy
+  and data from a file:
+
+    $ {command} my-secret --data-file=/tmp/secret
+    --replication-policy=automatic
 
   Create a new secret named 'my-secret' in 'us-central1' with data from a file:
 
-    $ {command} my-secret --data-file=/tmp/secret --locations=us-central1
+    $ {command} my-secret --data-file=/tmp/secret
+    --replication-policy=user-managed \
+        --locations=us-central1
 
   Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
   the value "s3cr3t":
 
     $ echo "s3cr3t" | {command} my-secret --data-file=- \
-        --locations=us-central1,us-east1
+        --replication-policy=user-managed --locations=us-central1,us-east1
   """
 
   EMPTY_DATA_FILE_MESSAGE = (
@@ -57,12 +67,49 @@ class Create(base.CreateCommand):
       'the --data-file flag is not the empty string. If you are not providing '
       'secret data, omit the --data-file flag.')
 
+  MISSING_POLICY_MESSAGE = (
+      'The --replication-policy flag is required. Valid values are "automatic"'
+      ' and "user-managed".')
+
+  INVALID_POLICY_MESSAGE = (
+      'The value provided for --replication-policy is invalid. Valid values '
+      'are "automatic" and "user-managed".')
+
+  INVALID_POLICY_PROP_MESSAGE = (
+      'Cannot use the secrets/replication-policy property because its value is'
+      ' invalid. Please either set it to a valid value ("automatic" or '
+      '"user-managed") or override it for this command by using the '
+      '--replication-policy flag.')
+
+  MANAGED_BUT_NO_LOCATIONS_MESSAGE = (
+      'If --replication-policy is user-managed then --locations must also be '
+      'provided. Please set the desired storage regions in --locations or the '
+      'secrets/locations property. For an automatic replication policy, please'
+      ' set --replication-policy or the secrets/replication-policy property to'
+      ' "automatic".')
+
+  AUTOMATIC_AND_LOCATIONS_MESSAGE = (
+      'If --replication-policy is "automatic" then --locations are not '
+      'allowed. Please remove the --locations flag or set the '
+      '--replication-policy to "user-managed".')
+
+  AUTOMATIC_PROP_AND_LOCATIONS_MESSAGE = (
+      'The secrets/replication-policy property is "automatic" and not '
+      'overriden so --locations are not allowed. Please remove the --locations'
+      ' flag or set the replication-policy to "user-managed".')
+
+  AUTOMATIC_AND_LOCATIONS_PROP_MESSAGE = (
+      'Cannot create a secret with an "automatic" replication policy if the '
+      'secrets/locations property is set. Please either use a "user-managed" '
+      'replication policy or unset secrets/locations.')
+
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
         parser, purpose='to create', positional=True, required=True)
-    secrets_args.AddLocations(parser, resource='secret', required=True)
+    secrets_args.AddLocations(parser, resource='secret')
     secrets_args.AddDataFile(parser)
+    secrets_args.AddPolicy(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -70,19 +117,57 @@ class Create(base.CreateCommand):
     secret_ref = args.CONCEPTS.secret.Parse()
     data = secrets_util.ReadFileOrStdin(args.data_file)
     labels = labels_util.ParseCreateArgs(args, messages.Secret.LabelsValue)
+    replication_policy = args.replication_policy
+    if not replication_policy:
+      replication_policy = properties.VALUES.secrets.replication_policy.Get()
+
+    if not replication_policy:
+      raise exceptions.RequiredArgumentException('replication-policy',
+                                                 self.MISSING_POLICY_MESSAGE)
+    if replication_policy not in {'user-managed', 'automatic'}:
+      if args.replication_policy:
+        raise exceptions.InvalidArgumentException('replication-policy',
+                                                  self.INVALID_POLICY_MESSAGE)
+      raise exceptions.InvalidArgumentException(
+          'replication-policy', self.INVALID_POLICY_PROP_MESSAGE)
+
+    locations = args.locations
+    if not locations:
+      # if locations weren't given, try to get them from properties
+      locations = properties.VALUES.secrets.locations.Get()
+      if locations:
+        locations = locations.split(',')
+    if replication_policy == 'user-managed' and not locations:
+      raise exceptions.RequiredArgumentException(
+          'locations', self.MANAGED_BUT_NO_LOCATIONS_MESSAGE)
+    if replication_policy == 'automatic':
+      if args.locations:
+        # check args.locations separately from locations because we have
+        # different error messages depending on whether the user used the
+        # --locations flag or the secrets/locations property
+        if args.replication_policy:
+          raise exceptions.InvalidArgumentException(
+              'locations', self.AUTOMATIC_AND_LOCATIONS_MESSAGE)
+        raise exceptions.InvalidArgumentException(
+            'locations', self.AUTOMATIC_PROP_AND_LOCATIONS_MESSAGE)
+      if locations:
+        raise exceptions.InvalidArgumentException(
+            'replication-policy', self.AUTOMATIC_AND_LOCATIONS_PROP_MESSAGE)
+      locations = []
 
     # Differentiate between the flag being provided with an empty value and the
     # flag being omitted. See b/138796299 for info.
     if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
-      raise exceptions.ToolException(self.EMPTY_DATA_FILE_MESSAGE)
-
+      raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
     # Create the secret
     response = secrets_api.Secrets().Create(
-        secret_ref, labels=labels, locations=args.locations)
+        secret_ref,
+        labels=labels,
+        locations=locations,
+        policy=replication_policy)
 
-    # Create the version if data was given
     if data:
-      version = secrets_api.Secrets().SetData(secret_ref, data)
+      version = secrets_api.Secrets().AddVersion(secret_ref, data)
       version_ref = secrets_args.ParseVersionRef(version.name)
       secrets_log.Versions().Created(version_ref)
     else:

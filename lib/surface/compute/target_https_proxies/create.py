@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_certificates import (
     flags as ssl_certificates_flags)
 from googlecloudsdk.command_lib.compute.ssl_policies import (flags as
@@ -35,7 +36,7 @@ def _DetailedHelp():
       'brief':
           'Create a target HTTPS proxy.',
       'DESCRIPTION':
-          """\
+          """
       *{command}* is used to create target HTTPS proxies. A target
       HTTPS proxy is referenced by one or more forwarding rules which
       specify the network traffic that the proxy is responsible for
@@ -45,6 +46,18 @@ def _DetailedHelp():
       target HTTPS proxy also points to at most 15 SSL certificates
       used for server-side authentication. The target HTTPS proxy can
       be associated with at most one SSL policy.
+      """,
+      'EXAMPLES':
+          """
+      If there is an already-created URL map with the name URL_MAP
+      and a SSL certificate named SSL_CERTIFICATE, create a
+      global target HTTPS proxy pointing to this map by running:
+
+        $ {command} PROXY_NAME --url-map=URL_MAP --ssl-certificates=SSL_CERTIFIFCATE
+
+      Create a regional target HTTPS proxy by running:
+
+        $ {command} PROXY_NAME --url-map=URL_MAP --ssl-certificates=SSL_CERTIFIFCATE --region=REGION_NAME
       """,
   }
 
@@ -110,11 +123,12 @@ def _Run(args, holder, target_https_proxy_ref, url_map_ref, ssl_cert_refs,
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a target HTTPS proxy."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
   _traffic_director_security = False
 
   SSL_CERTIFICATES_ARG = None
@@ -160,7 +174,7 @@ class Create(base.CreateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     target_https_proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     url_map_ref = target_https_proxies_utils.ResolveTargetHttpsProxyUrlMap(
         args, self.URL_MAP_ARG, target_https_proxy_ref, holder.resources)
     ssl_cert_refs = target_https_proxies_utils.ResolveSslCertificates(
@@ -172,12 +186,6 @@ class Create(base.CreateCommand):
                 ssl_cert_refs, ssl_policy_ref, self._traffic_director_security)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-
-  _include_l7_internal_load_balancing = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   _traffic_director_security = True

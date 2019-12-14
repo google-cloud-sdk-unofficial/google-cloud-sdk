@@ -26,3 +26,9 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.BETA)
 class Recommendations(base.Group):
   """Manage Cloud resource recommendations."""
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RecommendationsGA(base.Group):
+  """Manage Cloud resource recommendations."""

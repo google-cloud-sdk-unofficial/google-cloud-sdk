@@ -100,7 +100,7 @@ class List(commands.List):
 
   def Run(self, args):
     """List available configurations."""
-    is_managed = flags.IsManaged(args)
+    is_managed = flags.GetPlatform() == flags.PLATFORM_MANAGED
     conn_context = connection_context.GetConnectionContext(
         args, product=connection_context.Product.RUN)
     self._SetFormat(

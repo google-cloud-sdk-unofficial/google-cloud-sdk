@@ -21,24 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AccessContextManagerAlpha(base.Group):
-  """Manage Access Context Manager resources.
-
-  Policy API for configuring context aware access features and access zones.
-  """
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AccessContextManagerBeta(base.Group):
-  """Manage Access Context Manager resources.
-
-  Policy API for configuring context aware access features and access zones.
-  """
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class AccessContextManagerGA(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
+class AccessContextManager(base.Group):
   """Manage Access Context Manager resources.
 
   Policy API for configuring context aware access features and access zones.

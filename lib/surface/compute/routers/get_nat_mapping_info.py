@@ -82,5 +82,12 @@ GetNatMappingInfo.detailed_help = {
 
         shows a mapping of IP:port-ranges
         allocated to each VM's interface that is configured to use NAT via the
-        specified router."""
+        specified router.""",
+    'EXAMPLES':
+        """\
+        To show NAT mappings from all NATs in router 'r1' in region
+        'us-central1', run:
+
+            $ {command} r1 --region=us-central1
+        """
 }

@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Emulators(base.Group):
   """Set up your local development environment using emulators."""
+  category = base.SDK_TOOLS_CATEGORY
 
   def Filter(self, context, args):
     del context, args

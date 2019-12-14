@@ -30,6 +30,7 @@ class Resources(base.Group):
   that you have access to. Currently, only a limited subset of Cloud resource
   types are supported.
   """
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
 
   def Filter(self, context, args):
     del context, args

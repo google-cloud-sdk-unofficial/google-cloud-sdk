@@ -23,12 +23,18 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListPreconfiguredExpressionSets(base.ListCommand):
   """List all available preconfigured expression sets.
 
   *{command}* lists all available preconfigured expression sets that can be used
   with the Cloud Armor rules language.
+
+  ## EXAMPLES
+
+  To list all current preconfigured expressions sets run this:
+
+    $ {command}
   """
 
   @staticmethod

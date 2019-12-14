@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 class Monitoring(base.Group):
   # pylint: disable=line-too-long
   """Manage Stackdriver Monitoring alerting policies and notification channels."""
+  category = base.MONITORING_CATEGORY
 
   detailed_help = {
       'DESCRIPTION':
@@ -33,8 +34,8 @@ class Monitoring(base.Group):
           channels.
 
           More information can be found here:
-          https://cloud.google.com/monitoring/api/v3/
-          https://cloud.google.com/monitoring/alerts/using-alerting-api
-          https://cloud.google.com/monitoring/alerts/using-channels-api
+              * https://cloud.google.com/monitoring/api/v3/
+              * https://cloud.google.com/monitoring/alerts/using-alerting-api
+              * https://cloud.google.com/monitoring/alerts/using-channels-api
       """
   }

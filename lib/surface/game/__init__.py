@@ -25,3 +25,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Gameservices(base.Group):
   """Managed Cloud Game Services."""
+  category = base.SOLUTIONS_CATEGORY

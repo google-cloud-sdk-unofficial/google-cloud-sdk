@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Create a new import job.
 
@@ -33,10 +32,10 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  The following command creates a new import job within the 'fellowship'
-  keyring, and 'us-central1' location:
+  The following command creates a new import job named 'strider' within the
+  'fellowship' keyring, and 'us-central1' location:
 
-    $ {command} --location=us-central1 \
+    $ {command} strider --location=us-central1 \
         --keyring=fellowship --import-method=rsa-oaep-3072-sha1-aes-256 \
         --protection-level=hsm
   """

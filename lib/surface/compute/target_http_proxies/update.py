@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
@@ -39,6 +40,17 @@ def _DetailedHelp():
       map that defines the rules for routing the requests. The URL map's
       job is to map URLs to backend services which handle the actual
       requests.
+      """,
+      'EXAMPLES':
+          """\
+      If there is an already-created URL map with the name URL_MAP, update a
+      global target HTTP proxy pointing to this map by running:
+
+        $ {command} PROXY_NAME --url-map=URL_MAP
+
+      Update a regional target HTTP proxy by running:
+
+        $ {command} PROXY_NAME --url-map=URL_MAP --region=REGION_NAME
       """,
   }
 
@@ -66,11 +78,13 @@ def _Run(holder, target_http_proxy_ref, url_map_ref):
   return client.MakeRequests([(collection, 'SetUrlMap', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.SilentCommand):
   """Update a target HTTP proxy."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
   TARGET_HTTP_PROXY_ARG = None
   URL_MAP_ARG = None
@@ -78,9 +92,7 @@ class Update(base.SilentCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument(
-        include_l7_internal_load_balancing=cls
-        ._include_l7_internal_load_balancing)
+    cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='update')
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
         include_l7_internal_load_balancing=cls
@@ -92,19 +104,9 @@ class Update(base.SilentCommand):
     target_http_proxy_ref = self.TARGET_HTTP_PROXY_ARG.ResolveAsResource(
         args,
         holder.resources,
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
     url_map_ref = target_http_proxies_utils.ResolveTargetHttpProxyUrlMap(
         args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources)
 
     return _Run(holder, target_http_proxy_ref, url_map_ref)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-
-  _include_l7_internal_load_balancing = True
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  pass

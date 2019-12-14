@@ -39,6 +39,8 @@ class Billing(base.Group):
     $ {command} projects link my-project --billing-account 0X0X0X-0X0X0X-0X0X0X
   """
 
+  category = base.BILLING_CATEGORY
+
   def Filter(self, context, args):
     del context, args
     base.DisableUserProjectQuota()

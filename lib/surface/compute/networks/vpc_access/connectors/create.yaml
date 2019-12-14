@@ -62,4 +62,4 @@
       required: false
       help_text: |
         Maximum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
-      default: 1000
+      default: 300

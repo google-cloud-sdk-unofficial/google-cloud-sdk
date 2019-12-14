@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.url_maps import flags
 from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 from googlecloudsdk.core import resources
@@ -54,7 +55,7 @@ def _DetailedHelp():
 
 
 def _ProcessEditedResource(holder, url_map_ref, file_contents, original_object,
-                           original_record, modifiable_record, args, track):
+                           original_record, modifiable_record, args):
   """Returns an updated resource that was edited by the user."""
 
   # It's very important that we replace the characters of comment
@@ -73,7 +74,7 @@ def _ProcessEditedResource(holder, url_map_ref, file_contents, original_object,
       non_comment_lines, args.format or Edit.DEFAULT_FORMAT)
 
   reference_normalizer = property_selector.PropertySelector(
-      transformations=_GetReferenceNormalizers(holder.resources, track))
+      transformations=_GetReferenceNormalizers(holder.resources))
   modified_record = reference_normalizer.Apply(modified_record)
 
   if modifiable_record == modified_record:
@@ -123,7 +124,7 @@ def _EditResource(args, client, holder, original_object, url_map_ref, track):
     try:
       resource_list = _ProcessEditedResource(holder, url_map_ref, file_contents,
                                              original_object, original_record,
-                                             modifiable_record, args, track)
+                                             modifiable_record, args)
       break
     except (ValueError, yaml.YAMLParseError, messages.ValidationError,
             exceptions.ToolException) as e:
@@ -233,7 +234,7 @@ def _GetExampleResource(client, track):
       ])
 
 
-def _GetReferenceNormalizers(resource_registry, track):
+def _GetReferenceNormalizers(resource_registry):
   """Gets normalizers that translate short names to URIs."""
 
   def MakeReferenceNormalizer(field_name, allowed_collections):
@@ -256,10 +257,10 @@ def _GetReferenceNormalizers(resource_registry, track):
 
     return NormalizeReference
 
-  allowed_collections = ['compute.backendServices', 'compute.backendBuckets']
-  # TODO(b/134702371): condition on class feature variable instead of track.
-  if track == 'alpha' or track == 'beta':
-    allowed_collections += ['compute.regionBackendServices']
+  allowed_collections = [
+      'compute.backendServices', 'compute.backendBuckets',
+      'compute.regionBackendServices'
+  ]
   return [
       ('defaultService',
        MakeReferenceNormalizer('defaultService', allowed_collections)),
@@ -301,7 +302,8 @@ def _GetSetRequest(client, url_map_ref, replacement):
 def _Run(args, holder, track, url_map_arg):
   """Issues requests necessary to edit URL maps."""
   client = holder.client
-  url_map_ref = url_map_arg.ResolveAsResource(args, holder.resources)
+  url_map_ref = url_map_arg.ResolveAsResource(
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   get_request = _GetGetRequest(client, url_map_ref)
   objects = client.MakeRequests([get_request])
   resource_list = _EditResource(args, client, holder, objects[0], url_map_ref,
@@ -321,7 +323,8 @@ class InvalidResourceError(exceptions.ToolException):
 class Edit(base.Command):
   """Modify URL maps."""
 
-  _include_l7_internal_load_balancing = False
+  # TODO(b/144022508): Remove _include_l7_internal_load_balancing
+  _include_l7_internal_load_balancing = True
 
   detailed_help = _DetailedHelp()
   DEFAULT_FORMAT = 'yaml'
@@ -342,8 +345,6 @@ class Edit(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class EditBeta(Edit):
-
-  _include_l7_internal_load_balancing = True
 
   TRACK = 'beta'
 

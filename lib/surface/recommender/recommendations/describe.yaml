@@ -1,4 +1,6 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
+  GA:
+    hidden: true
   help_text:
     brief: |
       Describe a recommendation for a Cloud project.
@@ -12,7 +14,12 @@
   request:
     collection: recommender.projects.locations.recommenders.recommendations
     method: get
-    api_version: v1beta1
+    ALPHA:
+      api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

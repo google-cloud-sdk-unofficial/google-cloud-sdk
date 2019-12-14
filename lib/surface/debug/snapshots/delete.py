@@ -29,14 +29,42 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
 
+DETAILED_HELP = {
+    'brief':
+        """\
+        Delete debug snapshots for a Cloud Debugger debug target (debuggee).
+    """,
+    'DESCRIPTION':
+        """\
+        *{command}* is used to delete snapshots from a Cloud Debugger debug
+        target (debuggee). It will ask for confirmation before deleting any
+        snapshots. To suppress confirmation, use the global --quiet option.
+    """,
+    'EXAMPLES':
+        """\
+        To delete all active snapshots created by the current user of the debug
+        target (debuggee), without being prompted for confirmation, run:
+
+          $ {command} --target=<debuggee_id> --quiet
+
+        To delete all active and inactive snapshots created by all users of the
+        debug target (debuggee), run:
+
+          $ {command} --target=<debuggee_id> --all-users --include-inactive
+
+        To delete the debug snapshots with IDs 'ID1' and 'ID2' (where ID1 and
+        ID2 were each created by different users) of the debug target
+        (debuggee), run:
+
+          $ {command} ID1 ID2 --target=<debuggee_id> --all-users
+    """
+}
+
 
 class Delete(base.DeleteCommand):
-  """Delete debug snapshots.
+  """Delete debug snapshots."""
 
-  This command deletes snapshots from a Cloud Debugger debug target. It will
-  ask for confirmation before deleting any snapshots. To suppress confirmation,
-  use the global --quiet option.
-  """
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

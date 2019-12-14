@@ -29,3 +29,4 @@ class Users(base.Group):
   Provide commands for managing Cloud SQL users including creating,
   listing, and deleting users.
   """
+  category = base.DATABASES_CATEGORY

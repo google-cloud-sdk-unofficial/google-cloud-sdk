@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
-from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -64,15 +63,8 @@ class Describe(base.Command):
   def Args(parser):
     Describe.CommonArgs(parser)
 
-  def _CheckPlatform(self, args):
-    if flags.IsManaged(args):
-      raise exceptions.PlatformError(
-          'This command is in beta for fully managed Cloud Run; '
-          'use `gcloud beta run domain-mappings describe`.')
-
   def Run(self, args):
     """Describe a domain mapping."""
-    self._CheckPlatform(args)
     conn_context = connection_context.GetConnectionContext(
         args, product=connection_context.Product.RUN)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
@@ -103,9 +95,6 @@ class BetaDescribe(Describe):
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
-
-  def _CheckPlatform(self, args):
-    pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
