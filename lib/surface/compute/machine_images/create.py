@@ -28,10 +28,21 @@ from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource
 from googlecloudsdk.command_lib.compute.machine_images import flags as machine_image_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create Compute Engine machine images."""
+  """Create a Compute Engine machine image."""
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
+
+  detailed_help = {
+      'brief':
+          'Create a Compute Engine machine image.',
+      'EXAMPLES':
+          """
+         To create a machine image, run:
+
+           $ {command} my-machine-image --source-instance=example-source --source-instance-zone=us-central1-a
+       """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -72,8 +83,8 @@ class Create(base.CreateCommand):
         args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
     if csek_keys:
       machine_image.machineImageEncryptionKey = csek_utils.MaybeToMessage(
-          csek_keys.LookupKey(machine_image_ref,
-                              raise_if_missing=args.require_csek_key_create),
+          csek_keys.LookupKey(
+              machine_image_ref, raise_if_missing=args.require_csek_key_create),
           client.apitools_client)
     machine_image.machineImageEncryptionKey = kms_utils.MaybeGetKmsKey(
         args, client.messages, machine_image.machineImageEncryptionKey)
@@ -92,27 +103,24 @@ class Create(base.CreateCommand):
       for key in source_csek_keys:
         disk_url = key.get('disk')
         disk_ref = holder.resources.Parse(
-            disk_url, collection='compute.disks',
+            disk_url,
+            collection='compute.disks',
             params={
                 'project': source_instance.project,
                 'zone': source_instance.project
             })
         key_store = csek_utils.CsekKeyStore.FromFile(
-            key.get('csek-key-file'),
-            self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
+            key.get('csek-key-file'), self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
 
         disk_key = csek_utils.MaybeToMessage(
-            key_store.LookupKey(disk_ref),
-            client.apitools_client)
+            key_store.LookupKey(disk_ref), client.apitools_client)
         disk_keys[disk_url] = disk_key
 
     source_disk_messages = []
     if disk_keys:
       for disk, key in disk_keys.items():
         source_disk_message = client.messages.SourceDiskEncryptionKey(
-            sourceDisk=disk,
-            diskEncryptionKey=key
-        )
+            sourceDisk=disk, diskEncryptionKey=key)
         source_disk_messages.append(source_disk_message)
 
     if source_disk_messages:

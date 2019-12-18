@@ -35,7 +35,17 @@ import six
 
 @base.UnicodeIsSupported
 class Import(base.SilentCommand):
-  """Import security policy configs into your project."""
+  """Import security policy configs into your project.
+
+  *{command}* imports a security policy. The command does not support updating
+  rules for the policy.
+
+  ## EXAMPLES
+
+  To import a security policy from a YAML file run this:
+
+    $ {command} --file-name=myFile
+  """
 
   SECURITY_POLICY_ARG = None
 

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Transport - HTTP client library support.
 
 :mod:`google.auth` is designed to work with various HTTP client libraries such
@@ -30,7 +31,6 @@ from six.moves import http_client
 
 DEFAULT_REFRESH_STATUS_CODES = (http_client.UNAUTHORIZED,)
 """Sequence[int]:  Which HTTP status code indicate that credentials should be
-
 refreshed and a request should be retried.
 """
 
@@ -40,27 +40,27 @@ DEFAULT_MAX_REFRESH_ATTEMPTS = 2
 
 @six.add_metaclass(abc.ABCMeta)
 class Response(object):
-  """HTTP Response data."""
+    """HTTP Response data."""
 
-  @abc.abstractproperty
-  def status(self):
-    """int: The HTTP status code."""
-    raise NotImplementedError('status must be implemented.')
+    @abc.abstractproperty
+    def status(self):
+        """int: The HTTP status code."""
+        raise NotImplementedError("status must be implemented.")
 
-  @abc.abstractproperty
-  def headers(self):
-    """Mapping[str, str]: The HTTP response headers."""
-    raise NotImplementedError('headers must be implemented.')
+    @abc.abstractproperty
+    def headers(self):
+        """Mapping[str, str]: The HTTP response headers."""
+        raise NotImplementedError("headers must be implemented.")
 
-  @abc.abstractproperty
-  def data(self):
-    """bytes: The response body."""
-    raise NotImplementedError('data must be implemented.')
+    @abc.abstractproperty
+    def data(self):
+        """bytes: The response body."""
+        raise NotImplementedError("data must be implemented.")
 
 
 @six.add_metaclass(abc.ABCMeta)
 class Request(object):
-  """Interface for a callable that makes HTTP requests.
+    """Interface for a callable that makes HTTP requests.
 
     Specific transport implementations should provide an implementation of
     this that adapts their specific request / response API.
@@ -68,27 +68,23 @@ class Request(object):
     .. automethod:: __call__
     """
 
-  @abc.abstractmethod
-  def __call__(self,
-               url,
-               method='GET',
-               body=None,
-               headers=None,
-               timeout=None,
-               **kwargs):
-    """Make an HTTP request.
+    @abc.abstractmethod
+    def __call__(
+        self, url, method="GET", body=None, headers=None, timeout=None, **kwargs
+    ):
+        """Make an HTTP request.
 
         Args:
             url (str): The URI to be requested.
-            method (str): The HTTP method to use for the request. Defaults to
-              'GET'.
+            method (str): The HTTP method to use for the request. Defaults
+                to 'GET'.
             body (bytes): The payload / body in HTTP request.
             headers (Mapping[str, str]): Request headers.
             timeout (Optional[int]): The number of seconds to wait for a
-              response from the server. If not specified or if None, the
-              transport-specific default timeout will be used.
-            kwargs: Additionally arguments passed on to the transport's request
-              method.
+                response from the server. If not specified or if None, the
+                transport-specific default timeout will be used.
+            kwargs: Additionally arguments passed on to the transport's
+                request method.
 
         Returns:
             Response: The HTTP response.
@@ -96,6 +92,6 @@ class Request(object):
         Raises:
             google.auth.exceptions.TransportError: If any exception occurred.
         """
-    # pylint: disable=redundant-returns-doc, missing-raises-doc
-    # (pylint doesn't play well with abstract docstrings.)
-    raise NotImplementedError('__call__ must be implemented.')
+        # pylint: disable=redundant-returns-doc, missing-raises-doc
+        # (pylint doesn't play well with abstract docstrings.)
+        raise NotImplementedError("__call__ must be implemented.")

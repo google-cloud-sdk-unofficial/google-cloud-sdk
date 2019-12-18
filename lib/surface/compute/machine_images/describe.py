@@ -24,8 +24,25 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.machine_images import flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Display detailed information about a machine image."""
+  """Describe a Compute Engine machine image."""
+
+  detailed_help = {
+      'brief':
+          'Describe a Compute Engine machine image.',
+      'description': """
+        *{command}* deletes one or more Compute Engine
+        machine images. Machine images can be deleted only if they are not
+        being used to restore virtual machine instances.
+      """,
+      'EXAMPLES':
+          """
+         To describe a machine image, run:
+
+           $ {command} my-machine-image
+       """,
+  }
 
   @staticmethod
   def Args(parser):

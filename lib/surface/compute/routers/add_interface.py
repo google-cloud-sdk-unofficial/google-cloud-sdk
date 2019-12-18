@@ -50,13 +50,16 @@ class AddInterface(base.UpdateCommand):
     link_parser = parser.add_mutually_exclusive_group(
         required=True)
 
+    vpn_tunnel_group = link_parser.add_argument_group('VPN Tunnel')
     cls.VPN_TUNNEL_ARG = vpn_tunnel_flags.VpnTunnelArgumentForRouter(
         required=False)
-    cls.VPN_TUNNEL_ARG.AddArgument(link_parser)
+    cls.VPN_TUNNEL_ARG.AddArgument(vpn_tunnel_group)
 
+    interconnect_attachment_group = link_parser.add_argument_group(
+        'Interconnect Attachment')
     cls.INTERCONNECT_ATTACHMENT_ARG = (
         attachment_flags.InterconnectAttachmentArgumentForRouter())
-    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(link_parser)
+    cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(interconnect_attachment_group)
 
     router_flags.AddInterfaceArgs(parser)
 

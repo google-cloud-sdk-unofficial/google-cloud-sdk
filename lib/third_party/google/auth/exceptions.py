@@ -11,23 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Exceptions used in the google.auth package."""
 
 
 class GoogleAuthError(Exception):
-  """Base class for all google.auth errors."""
+    """Base class for all google.auth errors."""
 
 
 class TransportError(GoogleAuthError):
-  """Used to indicate an error occurred during an HTTP request."""
+    """Used to indicate an error occurred during an HTTP request."""
 
 
 class RefreshError(GoogleAuthError):
-  """Used to indicate that an refreshing the credentials' access token
-
-    failed.
-  """
+    """Used to indicate that an refreshing the credentials' access token
+    failed."""
 
 
 class DefaultCredentialsError(GoogleAuthError):
-  """Used to indicate that acquiring default credentials failed."""
+    """Used to indicate that acquiring default credentials failed."""

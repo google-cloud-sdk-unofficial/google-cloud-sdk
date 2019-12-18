@@ -47,7 +47,8 @@ class Remove(base.Command):
     """See ssh_utils.BaseSSHCLICommand.Run."""
     key = flags.GetKeyFromArgs(args)
     oslogin_client = client.OsloginClient(self.ReleaseTrack())
-    user_email = properties.VALUES.core.account.Get()
+    user_email = (properties.VALUES.auth.impersonate_service_account.Get()
+                  or properties.VALUES.core.account.Get())
 
     keys = oslogin_utils.GetKeyDictionaryFromProfile(user_email, oslogin_client)
     fingerprint = oslogin_utils.FindKeyInKeyList(key, keys)

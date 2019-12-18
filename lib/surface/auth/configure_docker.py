@@ -50,6 +50,9 @@ class ConfigureDocker(base.Command):
 
   For more details on Docker credential helpers, see
   [](https://docs.docker.com/engine/reference/commandline/login/#credential-helpers).
+
+  For more details on the Google Container Registry's Docker credential helper,
+  see [](https://github.com/GoogleCloudPlatform/docker-credential-gcr).
   """
   # pylint: enable=line-too-long
 

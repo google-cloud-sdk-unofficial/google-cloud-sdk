@@ -20,6 +20,10 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.hub import agent_util
+from googlecloudsdk.command_lib.container.hub import api_util
+from googlecloudsdk.command_lib.container.hub import exclusivity_util
+from googlecloudsdk.command_lib.container.hub import kube_util
 from googlecloudsdk.command_lib.container.hub import util as hub_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
@@ -53,14 +57,13 @@ class Unregister(base.DeleteCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    kube_client = hub_util.KubernetesClient(args)
-
-    uuid = hub_util.GetClusterUUID(kube_client)
+    kube_client = kube_util.KubernetesClient(args)
+    uuid = kube_util.GetClusterUUID(kube_client)
 
     # Delete membership from GKE Hub API.
     try:
       name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
-      hub_util.DeleteMembership(name)
+      api_util.DeleteMembership(name)
     except apitools_exceptions.HttpUnauthorizedError as e:
       raise exceptions.Error(
           'You are not authorized to unregister clusters from project [{}]. '
@@ -72,7 +75,7 @@ class Unregister(base.DeleteCommand):
               args.context))
 
     # Get namespace for the connect resource label.
-    selector = '{}={}'.format(hub_util.CONNECT_RESOURCE_LABEL, project)
+    selector = '{}={}'.format(agent_util.CONNECT_RESOURCE_LABEL, project)
     namespaces = kube_client.NamespacesWithLabelSelector(selector)
     if not namespaces:
       raise exceptions.Error('There\'s no namespace for the label {}. '
@@ -83,7 +86,7 @@ class Unregister(base.DeleteCommand):
                                  hub_util.CONNECT_RESOURCE_LABEL,
                                  hub_util.CONNECT_RESOURCE_LABEL))
 
-    registered_project = hub_util.GetMembershipCROwnerID(kube_client)
+    registered_project = exclusivity_util.GetMembershipCROwnerID(kube_client)
     if registered_project:
       if registered_project != project:
         raise exceptions.Error(
@@ -95,8 +98,8 @@ class Unregister(base.DeleteCommand):
                     registered_project, args.context))
 
     # Delete membership resources.
-    hub_util.DeleteMembershipResources(kube_client)
+    exclusivity_util.DeleteMembershipResources(kube_client)
 
     # Delete the connect agent.
-    hub_util.DeleteConnectNamespace(args)
+    agent_util.DeleteConnectNamespace(args)
 # LINT.ThenChange(../hub/unregister_cluster.py)

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Helper functions for commonly used utilities."""
 
 import base64
@@ -20,12 +21,13 @@ import datetime
 import six
 from six.moves import urllib
 
+
 CLOCK_SKEW_SECS = 300  # 5 minutes in seconds
 CLOCK_SKEW = datetime.timedelta(seconds=CLOCK_SKEW_SECS)
 
 
 def copy_docstring(source_class):
-  """Decorator that copies a method's docstring from another class.
+    """Decorator that copies a method's docstring from another class.
 
     Args:
         source_class (type): The class that has the documented method.
@@ -35,8 +37,8 @@ def copy_docstring(source_class):
             named method in the source class to the decorated method.
     """
 
-  def decorator(method):
-    """Decorator implementation.
+    def decorator(method):
+        """Decorator implementation.
 
         Args:
             method (Callable): The method to copy the docstring to.
@@ -47,28 +49,28 @@ def copy_docstring(source_class):
         Raises:
             ValueError: if the method already has a docstring.
         """
-    if method.__doc__:
-      raise ValueError('Method already has a docstring.')
+        if method.__doc__:
+            raise ValueError("Method already has a docstring.")
 
-    source_method = getattr(source_class, method.__name__)
-    method.__doc__ = source_method.__doc__
+        source_method = getattr(source_class, method.__name__)
+        method.__doc__ = source_method.__doc__
 
-    return method
+        return method
 
-  return decorator
+    return decorator
 
 
 def utcnow():
-  """Returns the current UTC datetime.
+    """Returns the current UTC datetime.
 
     Returns:
         datetime: The current time in UTC.
     """
-  return datetime.datetime.utcnow()
+    return datetime.datetime.utcnow()
 
 
 def datetime_to_secs(value):
-  """Convert a datetime object to the number of seconds since the UNIX epoch.
+    """Convert a datetime object to the number of seconds since the UNIX epoch.
 
     Args:
         value (datetime): The datetime to convert.
@@ -76,11 +78,11 @@ def datetime_to_secs(value):
     Returns:
         int: The number of seconds since the UNIX epoch.
     """
-  return calendar.timegm(value.utctimetuple())
+    return calendar.timegm(value.utctimetuple())
 
 
-def to_bytes(value, encoding='utf-8'):
-  """Converts a string value to bytes, if necessary.
+def to_bytes(value, encoding="utf-8"):
+    """Converts a string value to bytes, if necessary.
 
     Unfortunately, ``six.b`` is insufficient for this task since in
     Python 2 because it does not modify ``unicode`` objects.
@@ -88,7 +90,7 @@ def to_bytes(value, encoding='utf-8'):
     Args:
         value (Union[str, bytes]): The value to be converted.
         encoding (str): The encoding to use to convert unicode to bytes.
-          Defaults to "utf-8".
+            Defaults to "utf-8".
 
     Returns:
         bytes: The original value converted to bytes (if unicode) or as
@@ -97,16 +99,15 @@ def to_bytes(value, encoding='utf-8'):
     Raises:
         ValueError: If the value could not be converted to bytes.
     """
-  result = (
-      value.encode(encoding) if isinstance(value, six.text_type) else value)
-  if isinstance(result, six.binary_type):
-    return result
-  else:
-    raise ValueError('{0!r} could not be converted to bytes'.format(value))
+    result = value.encode(encoding) if isinstance(value, six.text_type) else value
+    if isinstance(result, six.binary_type):
+        return result
+    else:
+        raise ValueError("{0!r} could not be converted to bytes".format(value))
 
 
 def from_bytes(value):
-  """Converts bytes to a string value, if necessary.
+    """Converts bytes to a string value, if necessary.
 
     Args:
         value (Union[str, bytes]): The value to be converted.
@@ -118,22 +119,22 @@ def from_bytes(value):
     Raises:
         ValueError: If the value could not be converted to unicode.
     """
-  result = (
-      value.decode('utf-8') if isinstance(value, six.binary_type) else value)
-  if isinstance(result, six.text_type):
-    return result
-  else:
-    raise ValueError('{0!r} could not be converted to unicode'.format(value))
+    result = value.decode("utf-8") if isinstance(value, six.binary_type) else value
+    if isinstance(result, six.text_type):
+        return result
+    else:
+        raise ValueError("{0!r} could not be converted to unicode".format(value))
 
 
 def update_query(url, params, remove=None):
-  """Updates a URL's query parameters.
+    """Updates a URL's query parameters.
 
     Replaces any current values if they are already present in the URL.
 
     Args:
         url (str): The URL to update.
-        params (Mapping[str, str]): A mapping of query parameter keys to values.
+        params (Mapping[str, str]): A mapping of query parameter
+            keys to values.
         remove (Sequence[str]): Parameters to remove from the query string.
 
     Returns:
@@ -150,31 +151,28 @@ def update_query(url, params, remove=None):
         http://example.com?b=3
 
     """
-  if remove is None:
-    remove = []
+    if remove is None:
+        remove = []
 
-  # Split the URL into parts.
-  parts = urllib.parse.urlparse(url)
-  # Parse the query string.
-  query_params = urllib.parse.parse_qs(parts.query)
-  # Update the query parameters with the new parameters.
-  query_params.update(params)
-  # Remove any values specified in remove.
-  query_params = {
-      key: value
-      for key, value in six.iteritems(query_params)
-      if key not in remove
-  }
-  # Re-encoded the query string.
-  new_query = urllib.parse.urlencode(query_params, doseq=True)
-  # Unsplit the url.
-  new_parts = parts._replace(query=new_query)
-  return urllib.parse.urlunparse(new_parts)
+    # Split the URL into parts.
+    parts = urllib.parse.urlparse(url)
+    # Parse the query string.
+    query_params = urllib.parse.parse_qs(parts.query)
+    # Update the query parameters with the new parameters.
+    query_params.update(params)
+    # Remove any values specified in remove.
+    query_params = {
+        key: value for key, value in six.iteritems(query_params) if key not in remove
+    }
+    # Re-encoded the query string.
+    new_query = urllib.parse.urlencode(query_params, doseq=True)
+    # Unsplit the url.
+    new_parts = parts._replace(query=new_query)
+    return urllib.parse.urlunparse(new_parts)
 
 
 def scopes_to_string(scopes):
-  """Converts scope value to a string suitable for sending to OAuth 2.0
-
+    """Converts scope value to a string suitable for sending to OAuth 2.0
     authorization servers.
 
     Args:
@@ -183,27 +181,26 @@ def scopes_to_string(scopes):
     Returns:
         str: The scopes formatted as a single string.
     """
-  return ' '.join(scopes)
+    return " ".join(scopes)
 
 
 def string_to_scopes(scopes):
-  """Converts stringifed scopes value to a list.
+    """Converts stringifed scopes value to a list.
 
     Args:
-        scopes (Union[Sequence, str]): The string of space-separated scopes to
-          convert.
-
+        scopes (Union[Sequence, str]): The string of space-separated scopes
+            to convert.
     Returns:
         Sequence(str): The separated scopes.
     """
-  if not scopes:
-    return []
+    if not scopes:
+        return []
 
-  return scopes.split(' ')
+    return scopes.split(" ")
 
 
 def padded_urlsafe_b64decode(value):
-  """Decodes base64 strings lacking padding characters.
+    """Decodes base64 strings lacking padding characters.
 
     Google infrastructure tends to omit the base64 padding characters.
 
@@ -213,13 +210,13 @@ def padded_urlsafe_b64decode(value):
     Returns:
         bytes: The decoded value
     """
-  b64string = to_bytes(value)
-  padded = b64string + b'=' * (-len(b64string) % 4)
-  return base64.urlsafe_b64decode(padded)
+    b64string = to_bytes(value)
+    padded = b64string + b"=" * (-len(b64string) % 4)
+    return base64.urlsafe_b64decode(padded)
 
 
 def unpadded_urlsafe_b64encode(value):
-  """Encodes base64 strings removing any padding characters.
+    """Encodes base64 strings removing any padding characters.
 
     `rfc 7515`_ defines Base64url to NOT include any padding
     characters, but the stdlib doesn't do that by default.
@@ -232,4 +229,4 @@ def unpadded_urlsafe_b64encode(value):
     Returns:
         Union[str|bytes]: The encoded value
     """
-  return base64.urlsafe_b64encode(value).rstrip(b'=')
+    return base64.urlsafe_b64encode(value).rstrip(b"=")

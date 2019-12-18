@@ -27,14 +27,14 @@ from googlecloudsdk.core.resource import resource_projector
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Lookup(base.Command):
-  """Display the combination of guest policies that apply to a given instance.
+  """Display the guest policies that are applied to an instance.
 
   ## EXAMPLES
 
-    To display all effective guest policies of an instance named my-instance,
-    run:
+    To view all guest policies that are applied to an instance named
+    `my-instance`, run:
 
           $ {command} my-instance
 
@@ -83,8 +83,24 @@ class Lookup(base.Command):
 
     return os_info
 
+  def _CreateRequest(self, messages, instance_name, os_architecture,
+                     os_shortname, os_version):
+    return messages.OsconfigProjectsZonesInstancesLookupEffectiveGuestPolicyRequest(
+        instance=instance_name,
+        lookupEffectiveGuestPolicyRequest=messages
+        .LookupEffectiveGuestPolicyRequest(
+            osArchitecture=os_architecture,
+            osShortName=os_shortname,
+            osVersion=os_version,
+        ),
+    )
+
+  def _GetResponse(self, service, request):
+    return service.LookupEffectiveGuestPolicy(request)
+
   @staticmethod
   def Args(parser):
+    """See base class."""
     flags.INSTANCE_ARG.AddArgument(
         parser, operation_type='look up guest policies for')
     parser.display_info.AddFormat("""
@@ -120,6 +136,7 @@ class Lookup(base.Command):
     """)
 
   def Run(self, args):
+    """See base class."""
     release_track = self.ReleaseTrack()
 
     holder = base_classes.ComputeApiHolder(release_track)
@@ -134,8 +151,37 @@ class Lookup(base.Command):
     client = osconfig_api_utils.GetClientInstance(release_track)
     messages = osconfig_api_utils.GetClientMessages(release_track)
 
-    request = messages.OsconfigProjectsZonesInstancesLookupGuestPoliciesRequest(
-        instance=instance_ref.RelativeName(),
+    request = self._CreateRequest(messages, instance_ref.RelativeName(),
+                                  os_architecture, os_shortname, os_version)
+    response = self._GetResponse(client.projects_zones_instances, request)
+
+    if not any([
+        response.packages, response.packageRepositories,
+        response.softwareRecipes
+    ]):
+      log.status.Print('No effective guest policy found for [{}].'.format(
+          instance_ref.RelativeName()))
+
+    return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class LookupAlpha(Lookup):
+  """Display the guest policies that are applied to an instance.
+
+  ## EXAMPLES
+
+    To view all guest policies that are applied to an instance named
+    `my-instance`, run:
+
+          $ {command} my-instance
+
+  """
+
+  def _CreateRequest(self, messages, instance_name, os_architecture,
+                     os_shortname, os_version):
+    return messages.OsconfigProjectsZonesInstancesLookupGuestPoliciesRequest(
+        instance=instance_name,
         lookupEffectiveGuestPoliciesRequest=messages
         .LookupEffectiveGuestPoliciesRequest(
             osArchitecture=os_architecture,
@@ -143,13 +189,6 @@ class Lookup(base.Command):
             osVersion=os_version,
         ),
     )
-    service = client.projects_zones_instances
 
-    response = service.LookupGuestPolicies(request)
-    if not any([
-        response.packages, response.packageRepositories,
-        response.softwareRecipes
-    ]):
-      log.status.Print('No effective guest policy found for [{}].'.format(
-          instance_ref.RelativeName()))
-    return response
+  def _GetResponse(self, service, request):
+    return service.LookupGuestPolicies(request)

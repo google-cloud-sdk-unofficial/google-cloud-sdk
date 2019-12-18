@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: Add IAM policy binding to the IAM policy of a Google Compute Engine machine image.
@@ -18,7 +18,9 @@ help_text:
 request:
   collection: compute.machineImages
   use_relative_name: false
-  api_version: alpha
+  api_version: beta
+  ALPHA:
+    api_version: alpha
 
 arguments:
   resource:

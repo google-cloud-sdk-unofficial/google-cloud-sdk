@@ -102,7 +102,7 @@ def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
         'Use --instance-redistribution-type=NONE')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create Google Compute Engine managed instance groups."""
 
@@ -114,6 +114,7 @@ class CreateGA(base.CreateCommand):
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
+    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
   def CreateGroupReference(self, args, client, resources):
     if args.zones:
@@ -139,7 +140,14 @@ class CreateGA(base.CreateCommand):
       zonal_resource_fetcher.WarnForZonalCreation([group_ref])
     return group_ref
 
-  def _CreateDistributionPolicy(self, zones, resources, messages):
+  def _CreateDistributionPolicy(self,
+                                zones,
+                                resources,
+                                messages,
+                                target_distribution_shape=None):
+    if not zones and target_distribution_shape is None:
+      return None
+    distribution_policy = messages.DistributionPolicy()
     if zones:
       policy_zones = []
       for zone in zones:
@@ -150,7 +158,12 @@ class CreateGA(base.CreateCommand):
         policy_zones.append(
             messages.DistributionPolicyZoneConfiguration(
                 zone=zone_ref.SelfLink()))
-      return messages.DistributionPolicy(zones=policy_zones)
+      distribution_policy.zones = policy_zones
+    if target_distribution_shape:
+      distribution_policy.targetShape = (
+          messages.DistributionPolicy.TargetShapeValueValuesEnum)(
+              target_distribution_shape)
+    return distribution_policy
 
   def GetRegionForGroup(self, group_ref):
     if _IsZonalGroup(group_ref):
@@ -216,6 +229,13 @@ class CreateGA(base.CreateCommand):
             client.messages, health_check, args.initial_delay))
     managed_instance_groups_utils.ValidateAutohealingPolicies(
         auto_healing_policies)
+    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
+        args.GetValue('instance_redistribution_type'), group_ref)
+    update_policy = (managed_instance_groups_utils
+                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                         client, args.GetValue('instance_redistribution_type'),
+                         None)
+
     return client.messages.InstanceGroupManager(
         name=group_ref.Name(),
         description=args.description,
@@ -228,6 +248,7 @@ class CreateGA(base.CreateCommand):
         autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
             args.zones, holder.resources, client.messages),
+        updatePolicy=update_policy,
     )
 
   def Run(self, args):
@@ -264,58 +285,15 @@ class CreateGA(base.CreateCommand):
     return augmented_migs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(CreateGA):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateGA):
   """Create Google Compute Engine managed instance groups."""
 
   @classmethod
   def Args(cls, parser):
     CreateGA.Args(parser)
-    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
-
-  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
-                                  holder):
-    """Create parts of Instance Group Manager shared for the track."""
-    instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
-        args, holder.resources)
-    health_check = managed_instance_groups_utils.GetHealthCheckUri(
-        holder.resources, args)
-    auto_healing_policies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(
-            client.messages, health_check, args.initial_delay))
-    managed_instance_groups_utils.ValidateAutohealingPolicies(
-        auto_healing_policies)
-    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
-        args.GetValue('instance_redistribution_type'), group_ref)
-    update_policy = (managed_instance_groups_utils
-                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                         client, args.GetValue('instance_redistribution_type'),
-                         None)
-
-    return client.messages.InstanceGroupManager(
-        name=group_ref.Name(),
-        description=args.description,
-        instanceTemplate=template_ref.SelfLink(),
-        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
-            args.base_instance_name, group_ref),
-        targetPools=self._GetInstanceGroupManagerTargetPools(
-            args.target_pool, group_ref, holder),
-        targetSize=int(args.size),
-        autoHealingPolicies=auto_healing_policies,
-        distributionPolicy=self._CreateDistributionPolicy(
-            args.zones, holder.resources, client.messages),
-        updatePolicy=update_policy,
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create Google Compute Engine managed instance groups."""
-
-  @classmethod
-  def Args(cls, parser):
-    CreateBeta.Args(parser)
     instance_groups_flags.AddMigCreateStatefulFlags(parser)
+    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
 
   @staticmethod
   def _MakePreservedStateWithDisks(client, stateful_disks):
@@ -361,6 +339,9 @@ class CreateAlpha(CreateBeta):
     instance_redistribution_type = args.GetValue('instance_redistribution_type')
     instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
         instance_redistribution_type, group_ref)
+    target_distribution_shape = args.GetValue('target_distribution_shape')
+    instance_groups_flags.ValidateMigDistributionPolicyTargetShapeFlag(
+        target_distribution_shape, group_ref)
     stateful_policy = self._CreateStatefulPolicy(args, client)
     update_policy = (managed_instance_groups_utils
                      .ApplyInstanceRedistributionTypeToUpdatePolicy)(
@@ -379,7 +360,10 @@ class CreateAlpha(CreateBeta):
         targetSize=int(args.size),
         autoHealingPolicies=auto_healing_policies,
         distributionPolicy=self._CreateDistributionPolicy(
-            args.zones, holder.resources, client.messages),
+            args.zones,
+            holder.resources,
+            client.messages,
+            target_distribution_shape=target_distribution_shape),
         statefulPolicy=stateful_policy,
         updatePolicy=update_policy,
     )

@@ -23,6 +23,10 @@ import textwrap
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import exceptions as core_api_exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.hub import agent_util
+from googlecloudsdk.command_lib.container.hub import api_util
+from googlecloudsdk.command_lib.container.hub import exclusivity_util
+from googlecloudsdk.command_lib.container.hub import kube_util
 from googlecloudsdk.command_lib.container.hub import util as hub_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
@@ -139,8 +143,8 @@ class RegisterCluster(base.CreateCommand):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
 
     # This incidentally verifies that the kubeconfig and context args are valid.
-    kube_client = hub_util.KubernetesClient(args)
-    uuid = hub_util.GetClusterUUID(kube_client)
+    kube_client = kube_util.KubernetesClient(args)
+    uuid = kube_util.GetClusterUUID(kube_client)
 
     self._VerifyClusterExclusivity(kube_client, project, args.context, uuid)
 
@@ -162,15 +166,15 @@ class RegisterCluster(base.CreateCommand):
         raise exceptions.Error('Could not process {}: {}'.format(
             DOCKER_CREDENTIAL_FILE_FLAG, e))
 
-    gke_cluster_self_link = hub_util.GKEClusterSelfLink(args)
+    gke_cluster_self_link = api_util.GKEClusterSelfLink(args)
 
     # The full resource name of the membership for this registration flow.
     name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
     # Attempt to create a membership.
     already_exists = False
     try:
-      hub_util.ApplyMembershipResources(kube_client, project)
-      obj = hub_util.CreateMembership(project, uuid, args.CLUSTER_NAME,
+      exclusivity_util.ApplyMembershipResources(kube_client, project)
+      obj = api_util.CreateMembership(project, uuid, args.CLUSTER_NAME,
                                       gke_cluster_self_link)
     except apitools_exceptions.HttpConflictError as e:
       # If the error is not due to the object already existing, re-raise.
@@ -186,7 +190,7 @@ class RegisterCluster(base.CreateCommand):
       # Connect agent in a cluster that is different from the one that they
       # expect, and is not required for the proper functioning of the agent or
       # the Hub.
-      obj = hub_util.GetMembership(name)
+      obj = api_util.GetMembership(name)
       if obj.description != args.CLUSTER_NAME:
         # A membership exists, but does not have the same description. This is
         # possible if two different users attempt to register the same
@@ -211,19 +215,19 @@ class RegisterCluster(base.CreateCommand):
     # A membership exists. Attempt to update the existing agent deployment, or
     # install a new agent if necessary.
     if already_exists:
-      obj = hub_util.GetMembership(name)
-      hub_util.DeployConnectAgent(
+      obj = api_util.GetMembership(name)
+      agent_util.DeployConnectAgent(
           args, service_account_key_data, docker_credential_data, name)
       return obj
 
     # No membership exists. Attempt to create a new one, and install a new
     # agent.
     try:
-      hub_util.DeployConnectAgent(
+      agent_util.DeployConnectAgent(
           args, service_account_key_data, docker_credential_data, name)
     except:
-      hub_util.DeleteMembership(name)
-      hub_util.DeleteMembershipResources(kube_client)
+      api_util.DeleteMembership(name)
+      exclusivity_util.DeleteMembershipResources(kube_client)
       raise
     return obj
 
@@ -244,7 +248,7 @@ class RegisterCluster(base.CreateCommand):
         not authorized to register to the cluster.
     """
     authorized_projects = hub_util.UserAccessibleProjectIDSet()
-    registered_project = hub_util.GetMembershipCROwnerID(kube_client)
+    registered_project = exclusivity_util.GetMembershipCROwnerID(kube_client)
 
     if registered_project:
       if registered_project not in authorized_projects:
@@ -267,7 +271,7 @@ class RegisterCluster(base.CreateCommand):
               project))
 
     try:
-      registered_membership_project = hub_util.ProjectForClusterUUID(
+      registered_membership_project = api_util.ProjectForClusterUUID(
           uuid, [project, registered_project])
     except apitools_exceptions.HttpNotFoundError as e:
       raise exceptions.Error(

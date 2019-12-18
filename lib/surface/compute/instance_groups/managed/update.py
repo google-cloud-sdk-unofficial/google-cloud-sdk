@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
+from googlecloudsdk.api_lib.compute.instance_groups.managed import stateful_policy_utils as policy_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
@@ -212,34 +213,6 @@ class UpdateAlpha(UpdateBeta):
     UpdateBeta.Args(parser)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
 
-  def _MakePreservedStateDiskEntry(self, client, stateful_disk_dict):
-    """Create StatefulPolicyPreservedState from a list of device names."""
-    disk_device = client.messages.StatefulPolicyPreservedStateDiskDevice()
-    if stateful_disk_dict.get('auto-delete'):
-      disk_device.autoDelete = (
-          stateful_disk_dict.get('auto-delete').GetAutoDeleteEnumValue(
-              client.messages.StatefulPolicyPreservedStateDiskDevice
-              .AutoDeleteValueValuesEnum))
-    # Add all disk_devices to map
-    return client.messages.StatefulPolicyPreservedState.DisksValue \
-        .AdditionalProperty(
-            key=stateful_disk_dict.get('device-name'), value=disk_device)
-
-  def _MakeStatefulPolicyFromDisks(self, client, stateful_disks):
-    """Make stateful policy proto from a list of disk protos."""
-    if stateful_disks:
-      return client.messages.StatefulPolicy(
-          preservedState=client.messages.StatefulPolicyPreservedState(
-              disks=client.messages.StatefulPolicyPreservedState.DisksValue(
-                  additionalProperties=stateful_disks)))
-    else:
-      return client.messages.StatefulPolicy()
-
-  def _PatchPreservedState(self, preserved_state, patch):
-    """Patch the preserved state proto."""
-    if patch.value.autoDelete:
-      preserved_state.value.autoDelete = patch.value.autoDelete
-
   def _GetUpdatedStatefulPolicy(self,
                                 client,
                                 current_stateful_policy,
@@ -262,14 +235,15 @@ class UpdateAlpha(UpdateBeta):
     # Update the disks specified in --update-stateful-disk
     for update_disk in (update_disks or []):
       device_name = update_disk.get('device-name')
-      updated_preserved_state = (
-          self._MakePreservedStateDiskEntry(client, update_disk))
+      updated_preserved_state_disk = (
+          policy_utils.MakeStatefulPolicyPreservedStateDiskEntry(
+              client.messages, update_disk))
       # Patch semantics on the `--update-stateful-disk` flag
       if device_name in final_disks_map:
-        self._PatchPreservedState(final_disks_map[device_name],
-                                  updated_preserved_state)
+        policy_utils.PatchStatefulPolicyDisk(final_disks_map[device_name],
+                                             updated_preserved_state_disk)
       else:
-        final_disks_map[device_name] = updated_preserved_state
+        final_disks_map[device_name] = updated_preserved_state_disk
 
     # Remove the disks specified in --remove-stateful-disks
     for device_name in remove_device_names or []:
@@ -278,7 +252,7 @@ class UpdateAlpha(UpdateBeta):
     stateful_disks = sorted(
         [stateful_disk for _, stateful_disk in six.iteritems(final_disks_map)],
         key=lambda x: x.key)
-    return self._MakeStatefulPolicyFromDisks(client, stateful_disks)
+    return policy_utils.MakeStatefulPolicy(client.messages, stateful_disks)
 
   def _MakeUpdateRequest(self, client, igm_ref, igm_updated_resource):
     if igm_ref.Collection() == 'compute.instanceGroupManagers':

@@ -146,7 +146,6 @@ class Deploy(base.Command):
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
-    flags.AddCpuFlag(cluster_group)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -169,6 +168,9 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddCpuFlag(cluster_group)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -236,5 +238,6 @@ class AlphaDeploy(Deploy):
     flags.AddArgsFlag(parser)
     flags.AddNoTrafficFlag(parser)
     flags.AddPortFlag(parser)
+    flags.AddCpuFlag(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

@@ -2,8 +2,8 @@
 """A library of functions to handle bq flags consistently."""
 
 import os
-from google.apputils import app
-import gflags as flags
+from absl import app
+from absl import flags
 
 FLAGS = flags.FLAGS
 
@@ -66,10 +66,10 @@ def ProcessBigqueryrcSection(section_name, flag_values):
             'Unknown flag %s found in bigqueryrc file in section %s' %
             (flag, section_name if section_name else 'global'))
       if not flag_values[flag].present:
-        flag_values[flag].Parse(value)
+        flag_values[flag].parse(value)
       else:
-        flag_type = flag_values[flag].Type()
+        flag_type = flag_values[flag].flag_type()
         if flag_type.startswith('multi'):
           old_value = getattr(flag_values, flag)
-          flag_values[flag].Parse(value)
+          flag_values[flag].parse(value)
           setattr(flag_values, flag, old_value + getattr(flag_values, flag))

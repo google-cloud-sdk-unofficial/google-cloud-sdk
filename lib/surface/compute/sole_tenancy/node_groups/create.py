@@ -94,16 +94,10 @@ class CreateBeta(Create):
   def Args(parser):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddCreateArgsToParser(parser)
+    flags.AddMaintenancePolicyArgToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine node group."""
-
-  @staticmethod
-  def Args(parser):
-    flags.MakeNodeGroupArg().AddArgument(parser)
-    flags.AddCreateArgsToParser(parser)
-    flags.AddMaintenancePolicyArgToParser(parser)
-    flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)

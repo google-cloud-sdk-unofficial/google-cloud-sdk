@@ -39,14 +39,13 @@ class Startup(base.TopicCommand):
       * python
       * python3
 
-  Currently `gcloud` requires Python version 2.7.x and there is beta support for
-  3.5 and up.
+  Currently `gcloud` requires Python version 2.7.x or 3.5 and up.
 
   Other Python tools shipped in the Cloud SDK do not yet support Python 3,
   including:
 
       * `dev_appserver`
-      * `bq`
+      * `endpointscfg`
 
   If you have multiple Python interpreters available or if you don't have one
   on your PATH, you can specify which interpreter to use by setting the
@@ -59,18 +58,14 @@ class Startup(base.TopicCommand):
     # Use a python you have installed in a special location
     $ export CLOUDSDK_PYTHON=/usr/local/my-custom-python-install/python
 
-  Gsutil now supports Python 3.5+ in addition to Python 2.7.x. To use a
-  different interpreter (e.g. Python 3) for gsutil than for the other Python
-  tools, you can set the desired interpreter by setting the
-  CLOUDSDK_GSUTIL_PYTHON environment variable.
+  gsutil now supports Python 3.5 and up in addition to Python 2.7.x. To use a
+  different interpreter for gsutil than for the other Python tools, you can set
+  the desired interpreter by setting the CLOUDSDK_GSUTIL_PYTHON environment
+  variable.
 
-  bq currently does not support Python 3; you can select a python interpreter
-  to use just for bq by setting the CLOUDSDK_BQ_PYTHON environment variable.
-
-  Some use cases of `gcloud app deploy` do not work with Python 3.
-
-  Some use cases of `gcloud beta container hub register-cluster` do not work
-  with Python 3.
+  bq now supports Python 3.5 and up in addition to Python 2.7.x. To use a
+  different interpreter for bq than for the other Python tools, you can set the
+  desired interpreter by setting the CLOUDSDK_BQ_PYTHON environment variable.
 
   # Configuring the Python Interpreter
 

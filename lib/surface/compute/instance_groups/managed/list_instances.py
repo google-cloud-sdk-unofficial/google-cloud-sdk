@@ -37,17 +37,7 @@ class ListInstances(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""\
-        table(instance.basename():label=NAME,
-              instance.scope().segment(0):label=ZONE,
-              instanceStatus:label=STATUS,
-              currentAction:label=ACTION,
-              version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
-              version.name:label=VERSION_NAME,
-              lastAttempt.errors.errors.map().format(
-                "Error {0}: {1}", code, message).list(separator=", ")
-                :label=LAST_ERROR
-        )""")
+    instance_groups_flags.AddListInstancesOutputFormat(parser)
     parser.display_info.AddUriFunc(
         instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
@@ -129,24 +119,14 @@ ListInstances.detailed_help = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListInstancesBeta(ListInstances):
   """List Google Compute Engine instances present in managed instance group."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""\
-        table(instance.basename():label=NAME,
-              instance.scope().segment(0):label=ZONE,
-              instanceStatus:label=STATUS,
-              instanceHealth[0].detailedHealthState:label=HEALTH_STATE,
-              currentAction:label=ACTION,
-              version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
-              version.name:label=VERSION_NAME,
-              lastAttempt.errors.errors.map().format(
-                "Error {0}: {1}", code, message).list(separator=", ")
-                :label=LAST_ERROR
-        )""")
+    instance_groups_flags.AddListInstancesOutputFormat(
+        parser, release_track=base.ReleaseTrack.BETA)
     parser.display_info.AddUriFunc(
         instance_groups_utils.UriFuncForListInstanceRelatedObjects)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
@@ -154,3 +134,20 @@ class ListInstancesBeta(ListInstances):
 
 
 ListInstancesBeta.detailed_help = ListInstances.detailed_help
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListInstancesAlpha(ListInstances):
+  """List Google Compute Engine instances present in managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_flags.AddListInstancesOutputFormat(
+        parser, release_track=base.ReleaseTrack.ALPHA)
+    parser.display_info.AddUriFunc(
+        instance_groups_utils.UriFuncForListInstanceRelatedObjects)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
+
+
+ListInstancesAlpha.detailed_help = ListInstancesBeta.detailed_help

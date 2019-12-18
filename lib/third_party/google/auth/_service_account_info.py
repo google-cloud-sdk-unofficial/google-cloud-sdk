@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Helper functions for loading data from a Google service account file."""
 
 import io
@@ -22,7 +23,7 @@ from google.auth import crypt
 
 
 def from_dict(data, require=None):
-  """Validates a dictionary containing Google service account data.
+    """Validates a dictionary containing Google service account data.
 
     Creates and returns a :class:`google.auth.crypt.Signer` instance from the
     private key specified in the data.
@@ -30,7 +31,7 @@ def from_dict(data, require=None):
     Args:
         data (Mapping[str, str]): The service account data
         require (Sequence[str]): List of keys required to be present in the
-          info.
+            info.
 
     Returns:
         google.auth.crypt.Signer: A signer created from the private key in the
@@ -40,33 +41,34 @@ def from_dict(data, require=None):
         ValueError: if the data was in the wrong format, or if one of the
             required keys is missing.
     """
-  keys_needed = set(require if require is not None else [])
+    keys_needed = set(require if require is not None else [])
 
-  missing = keys_needed.difference(six.iterkeys(data))
+    missing = keys_needed.difference(six.iterkeys(data))
 
-  if missing:
-    raise ValueError(
-        'Service account info was not in the expected format, missing '
-        'fields {}.'.format(', '.join(missing)))
+    if missing:
+        raise ValueError(
+            "Service account info was not in the expected format, missing "
+            "fields {}.".format(", ".join(missing))
+        )
 
-  # Create a signer.
-  signer = crypt.RSASigner.from_service_account_info(data)
+    # Create a signer.
+    signer = crypt.RSASigner.from_service_account_info(data)
 
-  return signer
+    return signer
 
 
 def from_filename(filename, require=None):
-  """Reads a Google service account JSON file and returns its parsed info.
+    """Reads a Google service account JSON file and returns its parsed info.
 
     Args:
         filename (str): The path to the service account .json file.
         require (Sequence[str]): List of keys required to be present in the
-          info.
+            info.
 
     Returns:
         Tuple[ Mapping[str, str], google.auth.crypt.Signer ]: The verified
             info and a signer instance.
     """
-  with io.open(filename, 'r', encoding='utf-8') as json_file:
-    data = json.load(json_file)
-    return data, from_dict(data, require=require)
+    with io.open(filename, "r", encoding="utf-8") as json_file:
+        data = json.load(json_file)
+        return data, from_dict(data, require=require)

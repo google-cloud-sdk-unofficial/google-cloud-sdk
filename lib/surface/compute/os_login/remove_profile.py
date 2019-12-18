@@ -33,7 +33,8 @@ class RemoveProfile(base.Command):
 
   def Run(self, args):
     oslogin_client = client.OsloginClient(self.ReleaseTrack())
-    account = properties.VALUES.core.account.GetOrFail()
+    account = (properties.VALUES.auth.impersonate_service_account.Get()
+               or properties.VALUES.core.account.GetOrFail())
     project = properties.VALUES.core.project.Get(required=True)
     project_ref = resources.REGISTRY.Parse(project, params={'user': account},
                                            collection='oslogin.users.projects')

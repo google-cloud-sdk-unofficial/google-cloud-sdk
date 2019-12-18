@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implements command to describe a given guest policy."""
+"""Implements command to describe a specified guest policy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,17 +24,50 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describe the given guest policy.
+  """Describe the specified guest policy.
 
   ## EXAMPLES
 
-    To describe the guest policy 'policy1' in the current project, run:
+    To describe the guest policy `policy1` in the current project, run:
 
           $ {command} policy1
 
-    To describe the guest policy 'policy1' in the organization '12345', run:
+  """
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    parser.add_argument(
+        'POLICY_ID', type=str, help='ID of the guest policy to describe.')
+
+  def Run(self, args):
+    """See base class."""
+    release_track = self.ReleaseTrack()
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
+
+    project = properties.VALUES.core.project.GetOrFail()
+    request = messages.OsconfigProjectsGuestPoliciesGetRequest(
+        name=osconfig_command_utils.GetGuestPolicyUriPath(
+            'projects', project, args.POLICY_ID))
+    service = client.projects_guestPolicies
+
+    return service.Get(request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describe the specified guest policy.
+
+  ## EXAMPLES
+
+    To describe the guest policy `policy1` in the current project, run:
+
+          $ {command} policy1
+
+    To describe the guest policy `policy1` in the organization `12345`, run:
 
           $ {command} policy1 --organization=12345
 
@@ -42,12 +75,14 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
+    """See base class."""
     parser.add_argument(
         'POLICY_ID', type=str, help='ID of the guest policy to describe.')
     osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
                                                  'to describe')
 
   def Run(self, args):
+    """See base class."""
     release_track = self.ReleaseTrack()
     client = osconfig_api_utils.GetClientInstance(release_track)
     messages = osconfig_api_utils.GetClientMessages(release_track)

@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
 from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.cloudbuild import workerpool_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -34,8 +33,6 @@ class Update(base.UpdateCommand):
 
   Update a worker pool used by Google Cloud Build.
   """
-
-  _region_choice_to_enum = cloudbuild_util.GenerateRegionChoiceToEnum()
 
   @staticmethod
   def Args(parser):
@@ -50,7 +47,7 @@ class Update(base.UpdateCommand):
           table(
             name,
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
-            status
+            state
           )
         """)
 
@@ -77,80 +74,37 @@ class Update(base.UpdateCommand):
           args.config_from_file, messages)
     else:
       wp.name = args.WORKER_POOL
-      if args.worker_count is not None:
-        try:
-          wp.workerCount = int(args.worker_count)
-        except ValueError as e:
-          raise c_exceptions.InvalidArgumentException('--worker-count', e)
-      if args.remove_regions is not None:
-        regions_to_remove = set()
-        for region_str in args.remove_regions:
-          region = Update._region_choice_to_enum[region_str]
-          regions_to_remove.add(region)
-        new_regions = []
-        for region in wp.regions:
-          if region not in regions_to_remove:
-            new_regions.append(region)
-        wp.regions[:] = new_regions
-      if args.clear_regions:
-        wp.regions[:] = []
-      if args.add_regions is not None:
-        for region_str in args.add_regions:
-          region = Update._region_choice_to_enum[region_str]
-          wp.regions.append(region)
+      if args.region is not None:
+        wp.region = args.region
+      if args.peered_network is not None:
+        network_config = messages.NetworkConfig()
+        network_config.peeredNetwork = args.peered_network
+        wp.networkConfig = network_config
       worker_config = messages.WorkerConfig()
       if args.worker_machine_type is not None:
         worker_config.machineType = args.worker_machine_type
       if args.worker_disk_size is not None:
         worker_config.diskSizeGb = compute_utils.BytesToGb(
             args.worker_disk_size)
-      if any([
-          args.worker_network_project is not None,
-          args.worker_network_name is not None,
-          args.worker_network_subnet is not None
-      ]):
-        if not all([
-            args.worker_network_project is not None,
-            args.worker_network_name is not None,
-            args.worker_network_subnet is not None
-        ]):
-          raise c_exceptions.RequiredArgumentException(
-              '--worker_network_*',
-              'The flags --worker_network_project, --worker_network_name, and '
-              '--worker_network_subnet must all be set if any of them are set.')
-        # At this point all network flags are set, but not necessarily truthy
-        network = messages.Network()
-        if args.worker_network_project:
-          network.projectId = args.worker_network_project
-        else:
-          network.projectId = parent
-        if args.worker_network_name:
-          network.network = args.worker_network_name
-        else:
-          network.network = 'default'
-        if args.worker_network_subnet:
-          network.subnetwork = args.worker_network_subnet
-        else:
-          network.subnetwork = 'default'
-        worker_config.network = network
-      if args.worker_tag is not None:
-        worker_config.tag = args.worker_tag
       wp.workerConfig = worker_config
 
     # Get the workerpool ref
     wp_resource = resources.REGISTRY.Parse(
         None,
         collection='cloudbuild.projects.workerPools',
-        api_version='v1alpha1',
+        api_version='v1alpha2',
         params={
             'projectsId': parent,
             'workerPoolsId': wp.name,
         })
 
+    update_mask = cloudbuild_util.MessageToFieldPaths(wp)
+    req = messages.CloudbuildProjectsWorkerPoolsPatchRequest(
+        name=wp_resource.RelativeName(),
+        workerPool=wp,
+        updateMask=','.join(update_mask))
     # Send the Update request
-    updated_wp = client.projects_workerPools.Patch(
-        messages.CloudbuildProjectsWorkerPoolsPatchRequest(
-            name=wp_resource.RelativeName(), workerPool=wp))
+    updated_wp = client.projects_workerPools.Patch(req)
 
     log.UpdatedResource(wp_resource)
 

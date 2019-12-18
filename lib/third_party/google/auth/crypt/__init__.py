@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Cryptography helpers for verifying and signing messages.
 
 The simplest way to verify signatures is using :func:`verify_signature`::
@@ -37,12 +38,8 @@ import six
 from google.auth.crypt import base
 from google.auth.crypt import rsa
 
-__all__ = [
-    'RSASigner',
-    'RSAVerifier',
-    'Signer',
-    'Verifier',
-]
+
+__all__ = ["RSASigner", "RSAVerifier", "Signer", "Verifier"]
 
 # Aliases to maintain the v1.0.0 interface, as the crypt module was split
 # into submodules.
@@ -53,7 +50,7 @@ RSAVerifier = rsa.RSAVerifier
 
 
 def verify_signature(message, signature, certs):
-  """Verify an RSA cryptographic signature.
+    """Verify an RSA cryptographic signature.
 
     Checks that the provided ``signature`` was generated from ``bytes`` using
     the private key associated with the ``cert``.
@@ -61,17 +58,17 @@ def verify_signature(message, signature, certs):
     Args:
         message (Union[str, bytes]): The plaintext message.
         signature (Union[str, bytes]): The cryptographic signature to check.
-        certs (Union[Sequence, str, bytes]): The certificate or certificates to
-          use to check the signature.
+        certs (Union[Sequence, str, bytes]): The certificate or certificates
+            to use to check the signature.
 
     Returns:
         bool: True if the signature is valid, otherwise False.
     """
-  if isinstance(certs, (six.text_type, six.binary_type)):
-    certs = [certs]
+    if isinstance(certs, (six.text_type, six.binary_type)):
+        certs = [certs]
 
-  for cert in certs:
-    verifier = rsa.RSAVerifier.from_string(cert)
-    if verifier.verify(message, signature):
-      return True
-  return False
+    for cert in certs:
+        verifier = rsa.RSAVerifier.from_string(cert)
+        if verifier.verify(message, signature):
+            return True
+    return False

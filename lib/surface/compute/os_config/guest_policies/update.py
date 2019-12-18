@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implements command to update a given guest policy."""
+"""Implements command to update a specified guest policy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,24 +24,70 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.Command):
-  r"""Update the given guest policy for a project, a folder, or an organization.
+  r"""Update the specified guest policy for a project.
 
   ## EXAMPLES
 
-    To update the description of guest policy 'policy1' in the current project,
-    run:
-
-          $ {command} policy1 \
-          --description='new description'
-
-    To update the guest policy 'policy1' in the project 'project1', run:
+    To update the guest policy `policy1` in the project `project1`, run:
 
           $ {command} policy1 \
           --file=path_to_config_file --project=project1
 
-    To update the guest policy 'policy1' in the organization '12345', run:
+  """
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    parser.add_argument(
+        'POLICY_ID', type=str, help='ID of the guest policy to update.')
+    parser.add_argument(
+        '--file',
+        required=True,
+        help="""\
+        The JSON or YAML file with the updated guest policy.
+
+        If this file specifies an etag value, the update succeeds only if
+        the policy that is already in place has a matching etag value. If no
+        etag value is specified, the specifications in the updated policy file
+        replaces the existing policy.
+        """)
+
+  def Run(self, args):
+    """See base class."""
+    release_track = self.ReleaseTrack()
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
+
+    (guest_policy,
+     _) = osconfig_command_utils.GetResourceAndUpdateFieldsFromFile(
+         args.file, messages.GuestPolicy)
+
+    project = properties.VALUES.core.project.GetOrFail()
+    request = messages.OsconfigProjectsGuestPoliciesPatchRequest(
+        guestPolicy=guest_policy,
+        name=osconfig_command_utils.GetGuestPolicyUriPath(
+            'projects', project, args.POLICY_ID),
+        updateMask=None,
+    )
+    service = client.projects_guestPolicies
+
+    return service.Patch(request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(base.Command):
+  r"""Update the specified guest policy for a project, a folder, or an organization.
+
+  ## EXAMPLES
+
+    To update the guest policy `policy1` in the project `project1`, run:
+
+          $ {command} policy1 \
+          --file=path_to_config_file --project=project1
+
+    To update the guest policy `policy1` in the organization `12345`, run:
 
           $ {command} policy1 \
           --file=path_to_config_file --organization=12345
@@ -50,69 +96,39 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
+    """See base class."""
     parser.add_argument(
         'POLICY_ID', type=str, help='ID of the guest policy to update.')
-    osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
-                                                 'to update')
-
-    update_group = parser.add_group(help='The update component.', required=True)
-    update_group.add_argument(
+    parser.add_argument(
         '--file',
+        required=True,
         help="""\
         The JSON or YAML file with the updated guest policy.
 
-        If this file specifies an "etag" value, the update will succeed only if
-        the policy already in place matches that etag. A policy in a file that
-        does not contain an etag value will simply replace the existing policy.
+        If this file specifies an etag value, the update succeeds only if
+        the policy that is already in place has a matching etag value. If no
+        etag value is specified, the specifications in the updated policy file
+        replaces the existing policy.
         """)
-    update_group.add_argument(
-        '--description',
-        type=str,
-        help="""\
-        Description of the guest policy to update. Length of the description is
-        limited to 1024 characters.
-
-        If specified, it will override any description provided in the file.""")
-    parser.add_argument(
-        '--etag',
-        type=str,
-        help="""\
-        The etag value of the guest policy to update.
-
-        If specified, it will override any etag provided in the file, and the
-        update will succeed only if the policy already in place matches this
-        etag.""")
+    osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
+                                                 'to update')
 
   def Run(self, args):
+    """See base class."""
     release_track = self.ReleaseTrack()
     client = osconfig_api_utils.GetClientInstance(release_track)
     messages = osconfig_api_utils.GetClientMessages(release_track)
 
-    update_fields = []
-    if args.file:
-      (guest_policy,
-       _) = osconfig_command_utils.GetResourceAndUpdateFieldsFromFile(
-           args.file, messages.GuestPolicy)
-    else:
-      guest_policy = messages.GuestPolicy()
-
-    if args.description:
-      guest_policy.description = args.description
-      if not args.file:
-        update_fields.append('description')
-    if args.etag:
-      guest_policy.etag = args.etag
-      if not args.file:
-        update_fields.append('etag')
-    update_mask = (','.join(sorted(list(update_fields)))
-                   if update_fields else None)
+    (guest_policy,
+     _) = osconfig_command_utils.GetResourceAndUpdateFieldsFromFile(
+         args.file, messages.GuestPolicy)
 
     if args.organization:
       request = messages.OsconfigOrganizationsGuestPoliciesPatchRequest(
           guestPolicy=guest_policy,
           name=osconfig_command_utils.GetGuestPolicyUriPath(
               'organizations', args.organization, args.POLICY_ID),
-          updateMask=update_mask,
+          updateMask=None,
       )
       service = client.organizations_guestPolicies
     elif args.folder:
@@ -120,7 +136,7 @@ class Update(base.Command):
           guestPolicy=guest_policy,
           name=osconfig_command_utils.GetGuestPolicyUriPath(
               'folders', args.folder, args.POLICY_ID),
-          updateMask=update_mask,
+          updateMask=None,
       )
       service = client.folders_guestPolicies
     else:
@@ -129,7 +145,7 @@ class Update(base.Command):
           guestPolicy=guest_policy,
           name=osconfig_command_utils.GetGuestPolicyUriPath(
               'projects', project, args.POLICY_ID),
-          updateMask=update_mask,
+          updateMask=None,
       )
       service = client.projects_guestPolicies
 

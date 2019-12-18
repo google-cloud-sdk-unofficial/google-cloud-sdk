@@ -25,13 +25,35 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.machine_images import flags
 
 
-class Delete(base.DeleteCommand):
-  """Delete Compute Engine machine images.
+def construct_requests(client, machine_image_refs):
+  requests = []
+  for machine_image_ref in machine_image_refs:
+    delete_request = (client.apitools_client.machineImages, 'Delete',
+                      client.messages.ComputeMachineImagesDeleteRequest(
+                          **machine_image_ref.AsDict()))
+    requests.append(delete_request)
+  return requests
 
-  *{command}* deletes one or more Compute Engine
-  machine images. Machine images can be deleted only if they are not
-  being used to restore virtual machine instances.
-  """
+
+class Delete(base.DeleteCommand):
+  """Delete a Compute Engine machine image."""
+
+  detailed_help = {
+      'brief':
+          'Delete a Compute Engine machine image.',
+      'description':
+          """
+        *{command}* deletes one or more Compute Engine
+        machine images. Machine images can be deleted only if they are not
+        being used to restore virtual machine instances.
+      """,
+      'EXAMPLES':
+          """
+         To delete a machine image, run:
+
+           $ {command} my-machine-image
+       """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -49,9 +71,6 @@ class Delete(base.DeleteCommand):
 
     utils.PromptForDeletion(machine_image_refs)
 
-    requests = [(client.apitools_client.machineImages, 'Delete',
-                 client.messages.ComputeMachineImagesDeleteRequest(
-                     **machine_image_ref.AsDict()))
-                for machine_image_ref in machine_image_refs]
+    requests = construct_requests(client, machine_image_refs)
 
     return client.MakeRequests(requests)

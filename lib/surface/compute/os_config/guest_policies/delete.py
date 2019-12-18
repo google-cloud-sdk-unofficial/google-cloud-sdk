@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implements command to delete a given guest policy."""
+"""Implements command to delete a specified guest policy."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,17 +25,53 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Delete the given guest policy.
+  """Delete the specified guest policy.
 
   ## EXAMPLES
 
-    To delete the guest policy named 'policy1' in the current project, run:
+    To delete the guest policy named `policy1` in the current project, run:
 
           $ {command} policy1
 
-    To delete the guest policy named 'policy1' in the organization '12345', run:
+  """
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    parser.add_argument(
+        'POLICY_ID', type=str, help='ID of the guest policy to delete.')
+
+  def Run(self, args):
+    """See base class."""
+    release_track = self.ReleaseTrack()
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
+
+    project = properties.VALUES.core.project.GetOrFail()
+    guest_policy_name = osconfig_command_utils.GetGuestPolicyUriPath(
+        'projects', project, args.POLICY_ID)
+    request = messages.OsconfigProjectsGuestPoliciesDeleteRequest(
+        name=guest_policy_name)
+    service = client.projects_guestPolicies
+
+    response = service.Delete(request)
+    log.DeletedResource(guest_policy_name)
+    return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(base.DeleteCommand):
+  """Delete the specified guest policy.
+
+  ## EXAMPLES
+
+    To delete the guest policy named `policy1` in the current project, run:
+
+          $ {command} policy1
+
+    To delete the guest policy named `policy1` in the organization `12345`, run:
 
           $ {command} policy1 --organization=12345
 
@@ -43,12 +79,14 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
+    """See base class."""
     parser.add_argument(
         'POLICY_ID', type=str, help='ID of the guest policy to delete.')
     osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
                                                  'to delete')
 
   def Run(self, args):
+    """See base class."""
     release_track = self.ReleaseTrack()
     client = osconfig_api_utils.GetClientInstance(release_track)
     messages = osconfig_api_utils.GetClientMessages(release_track)

@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Google Auth Library for Python."""
 
 import logging
 
 from google.auth._default import default
 
-__all__ = [
-    'default',
-]
+
+__all__ = ["default"]
+
 
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(logging.NullHandler())

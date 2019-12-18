@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Helpers for transitioning from oauth2client to google-auth.
 
 .. warning::
@@ -29,112 +30,113 @@ import google.oauth2.credentials
 import google.oauth2.service_account
 
 try:
-  import oauth2client.client
-  import oauth2client.contrib.gce
-  import oauth2client.service_account
+    import oauth2client.client
+    import oauth2client.contrib.gce
+    import oauth2client.service_account
 except ImportError as caught_exc:
-  six.raise_from(ImportError('oauth2client is not installed.'), caught_exc)
+    six.raise_from(ImportError("oauth2client is not installed."), caught_exc)
 
 try:
-  import oauth2client.contrib.appengine  # pytype: disable=import-error
-  _HAS_APPENGINE = True
-except ImportError:
-  _HAS_APPENGINE = False
+    import oauth2client.contrib.appengine  # pytype: disable=import-error
 
-_CONVERT_ERROR_TMPL = (
-    'Unable to convert {} to a google-auth credentials class.')
+    _HAS_APPENGINE = True
+except ImportError:
+    _HAS_APPENGINE = False
+
+
+_CONVERT_ERROR_TMPL = "Unable to convert {} to a google-auth credentials class."
 
 
 def _convert_oauth2_credentials(credentials):
-  """Converts to :class:`google.oauth2.credentials.Credentials`.
+    """Converts to :class:`google.oauth2.credentials.Credentials`.
 
-    Args: credentials (Union[oauth2client.client.OAuth2Credentials,
-            oauth2client.client.GoogleCredentials]): The credentials to convert.
+    Args:
+        credentials (Union[oauth2client.client.OAuth2Credentials,
+            oauth2client.client.GoogleCredentials]): The credentials to
+            convert.
 
     Returns:
         google.oauth2.credentials.Credentials: The converted credentials.
     """
-  new_credentials = google.oauth2.credentials.Credentials(
-      token=credentials.access_token,
-      refresh_token=credentials.refresh_token,
-      token_uri=credentials.token_uri,
-      client_id=credentials.client_id,
-      client_secret=credentials.client_secret,
-      scopes=credentials.scopes)
+    new_credentials = google.oauth2.credentials.Credentials(
+        token=credentials.access_token,
+        refresh_token=credentials.refresh_token,
+        token_uri=credentials.token_uri,
+        client_id=credentials.client_id,
+        client_secret=credentials.client_secret,
+        scopes=credentials.scopes,
+    )
 
-  new_credentials._expires = credentials.token_expiry
+    new_credentials._expires = credentials.token_expiry
 
-  return new_credentials
+    return new_credentials
 
 
 def _convert_service_account_credentials(credentials):
-  """Converts to :class:`google.oauth2.service_account.Credentials`.
+    """Converts to :class:`google.oauth2.service_account.Credentials`.
 
-    Args: credentials (Union[
-    oauth2client.service_account.ServiceAccountCredentials,
+    Args:
+        credentials (Union[
+            oauth2client.service_account.ServiceAccountCredentials,
             oauth2client.service_account._JWTAccessCredentials]): The
             credentials to convert.
 
     Returns:
         google.oauth2.service_account.Credentials: The converted credentials.
     """
-  info = credentials.serialization_data.copy()
-  info['token_uri'] = credentials.token_uri
-  return google.oauth2.service_account.Credentials.from_service_account_info(
-      info)
+    info = credentials.serialization_data.copy()
+    info["token_uri"] = credentials.token_uri
+    return google.oauth2.service_account.Credentials.from_service_account_info(info)
 
 
 def _convert_gce_app_assertion_credentials(credentials):
-  """Converts to :class:`google.auth.compute_engine.Credentials`.
+    """Converts to :class:`google.auth.compute_engine.Credentials`.
 
     Args:
         credentials (oauth2client.contrib.gce.AppAssertionCredentials): The
-          credentials to convert.
+            credentials to convert.
 
     Returns:
         google.oauth2.service_account.Credentials: The converted credentials.
     """
-  return google.auth.compute_engine.Credentials(
-      service_account_email=credentials.service_account_email)
+    return google.auth.compute_engine.Credentials(
+        service_account_email=credentials.service_account_email
+    )
 
 
 def _convert_appengine_app_assertion_credentials(credentials):
-  """Converts to :class:`google.auth.app_engine.Credentials`.
+    """Converts to :class:`google.auth.app_engine.Credentials`.
 
     Args:
         credentials (oauth2client.contrib.app_engine.AppAssertionCredentials):
-          The credentials to convert.
+            The credentials to convert.
 
     Returns:
         google.oauth2.service_account.Credentials: The converted credentials.
     """
-  # pylint: disable=invalid-name
-  return google.auth.app_engine.Credentials(
-      scopes=_helpers.string_to_scopes(credentials.scope),
-      service_account_id=credentials.service_account_id)
+    # pylint: disable=invalid-name
+    return google.auth.app_engine.Credentials(
+        scopes=_helpers.string_to_scopes(credentials.scope),
+        service_account_id=credentials.service_account_id,
+    )
 
 
 _CLASS_CONVERSION_MAP = {
-    oauth2client.client.OAuth2Credentials:
-        _convert_oauth2_credentials,
-    oauth2client.client.GoogleCredentials:
-        _convert_oauth2_credentials,
-    oauth2client.service_account.ServiceAccountCredentials:
-        _convert_service_account_credentials,
-    oauth2client.service_account._JWTAccessCredentials:
-        _convert_service_account_credentials,
-    oauth2client.contrib.gce.AppAssertionCredentials:
-        _convert_gce_app_assertion_credentials,
+    oauth2client.client.OAuth2Credentials: _convert_oauth2_credentials,
+    oauth2client.client.GoogleCredentials: _convert_oauth2_credentials,
+    oauth2client.service_account.ServiceAccountCredentials: _convert_service_account_credentials,
+    oauth2client.service_account._JWTAccessCredentials: _convert_service_account_credentials,
+    oauth2client.contrib.gce.AppAssertionCredentials: _convert_gce_app_assertion_credentials,
 }
 
 if _HAS_APPENGINE:
-  _CLASS_CONVERSION_MAP[
-      oauth2client.contrib.appengine.AppAssertionCredentials] = (
-          _convert_appengine_app_assertion_credentials)
+    _CLASS_CONVERSION_MAP[
+        oauth2client.contrib.appengine.AppAssertionCredentials
+    ] = _convert_appengine_app_assertion_credentials
 
 
 def convert(credentials):
-  """Convert oauth2client credentials to google-auth credentials.
+    """Convert oauth2client credentials to google-auth credentials.
 
     This class converts:
 
@@ -158,10 +160,10 @@ def convert(credentials):
         ValueError: If the credentials could not be converted.
     """
 
-  credentials_class = type(credentials)
+    credentials_class = type(credentials)
 
-  try:
-    return _CLASS_CONVERSION_MAP[credentials_class](credentials)
-  except KeyError as caught_exc:
-    new_exc = ValueError(_CONVERT_ERROR_TMPL.format(credentials_class))
-    six.raise_from(new_exc, caught_exc)
+    try:
+        return _CLASS_CONVERSION_MAP[credentials_class](credentials)
+    except KeyError as caught_exc:
+        new_exc = ValueError(_CONVERT_ERROR_TMPL.format(credentials_class))
+        six.raise_from(new_exc, caught_exc)

@@ -45,6 +45,14 @@ if 'google' in sys.modules:
     import imp
     imp.reload(google)
 
+from absl import app
+from absl import flags
+
+import bigquery_client
+import bq_auth_flags
+import bq_flags
+import bq_utils
+
 from google_reauth.reauth_creds import Oauth2WithReauthCredentials
 
 import googleapiclient
@@ -57,6 +65,8 @@ import oauth2client_4_0.file
 import oauth2client_4_0.service_account
 import oauth2client_4_0.tools
 
+from pyglib import appcommands
+
 import six
 from six.moves import input
 from six.moves import map
@@ -64,6 +74,7 @@ from six.moves import range
 from six.moves import zip
 import six.moves.http_client
 
+import table_formatter
 import yaml
 
 
@@ -71,18 +82,9 @@ import yaml
 # google.apputils package.
 if sys.path and sys.path[0] != _THIRD_PARTY_DIR:
   sys.path.insert(0, _THIRD_PARTY_DIR)
-from google.apputils import app
-from google.apputils import appcommands
-import gflags as flags
-
-import table_formatter
-import bigquery_client
-import bq_auth_flags
-import bq_flags
-import bq_utils
 
 
-flags.ADOPT_module_key_flags(bq_flags)
+flags.adopt_module_key_flags(bq_flags)
 
 FLAGS = flags.FLAGS
 # These are long names.
@@ -107,10 +109,6 @@ JobIdGeneratorIncrementing = bigquery_client.JobIdGeneratorIncrementing
 JobIdGeneratorRandom = bigquery_client.JobIdGeneratorRandom
 JobIdGeneratorFingerprint = bigquery_client.JobIdGeneratorFingerprint
 ReservationReference = bigquery_client.ApiClientHelper.ReservationReference
-V1Beta1ReservationReference = bigquery_client.ApiClientHelper.V1Beta1ReservationReference
-V1Alpha2ReservationReference = bigquery_client.ApiClientHelper.V1Alpha2ReservationReference
-SlotPoolReference = bigquery_client.ApiClientHelper.SlotPoolReference
-ReservationGrantReference = bigquery_client.ApiClientHelper.ReservationGrantReference  # pylint: disable=line-too-long
 CapacityCommitmentReference = bigquery_client.ApiClientHelper.CapacityCommitmentReference  # pylint: disable=line-too-long
 ReservationAssignmentReference = bigquery_client.ApiClientHelper.ReservationAssignmentReference  # pylint: disable=line-too-long
 ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
@@ -505,10 +503,16 @@ def _GetCredentialsFromFlags():
 
 
   if type(credentials) == oauth2client_4_0.client.OAuth2Credentials:  # pylint: disable=unidiomatic-typecheck
-    credentials = Oauth2WithReauthCredentials.from_OAuth2Credentials(
-        credentials)
+    credentials = _GetReauthCredentials(credentials)
 
   return credentials
+
+
+def _GetReauthCredentials(oauth2_creds):
+  reauth_creds = Oauth2WithReauthCredentials.from_OAuth2Credentials(
+      oauth2_creds)
+  reauth_creds.store = oauth2_creds.store
+  return reauth_creds
 
 
 def _GetFormatterFromFlags(secondary_format='sparse'):
@@ -1096,7 +1100,7 @@ class BigqueryCmd(NewCmd):
 
     if FLAGS.debug_mode:
       cmd_flags = [
-          FLAGS[f].Serialize().strip() for f in FLAGS if FLAGS[f].present
+          FLAGS[f].serialize().strip() for f in FLAGS if FLAGS[f].present
       ]
       print(' '.join(sorted(set(f for f in cmd_flags if f))))
 
@@ -1176,7 +1180,7 @@ class BigqueryCmd(NewCmd):
     elif (isinstance(e, SyntaxError) or
           isinstance(e, bigquery_client.BigquerySchemaError)):
       response.append('Invalid input: %s' % (message,))
-    elif isinstance(e, flags.FlagsError):
+    elif isinstance(e, flags.Error):
       response.append('Error parsing command: %s' % (message,))
     elif isinstance(e, KeyboardInterrupt):
       response.append('')
@@ -1214,7 +1218,7 @@ class BigqueryCmd(NewCmd):
       message = message_prefix + ' ' + contact_us_msg
       wrap_error_message = True
       if wrap_error_message:
-        message = flags.TextWrap(message)
+        message = flags.text_wrap(message)
       print(message)
       print(error_details)
       response.append(
@@ -1223,7 +1227,7 @@ class BigqueryCmd(NewCmd):
     response_message = '\n'.join(response)
     wrap_error_message = True
     if wrap_error_message:
-      response_message = flags.TextWrap(response_message)
+      response_message = flags.text_wrap(response_message)
     print(response_message)
     return retcode
 
@@ -1330,7 +1334,7 @@ class _Load(BigqueryCmd):
         'Enable auto detection of schema and options for formats that are not '
         'self describing like CSV and JSON.',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'schema_update_option',
         None,
         'Can be specified when append to a table, or replace a table partition.'
@@ -1520,39 +1524,36 @@ class _Load(BigqueryCmd):
       self.PrintJobStartInfo(job)
 
 
-def _CreateExternalTableDefinition(
-    source_format,
-    source_uris,
-    schema,
-    autodetect,
-    ignore_unknown_values=False,
-    hive_partitioning_mode=None,
-    hive_partitioning_source_uri_prefix=None):
+def _CreateExternalTableDefinition(source_format,
+                                   source_uris,
+                                   schema,
+                                   autodetect,
+                                   connection_id=None,
+                                   ignore_unknown_values=False,
+                                   hive_partitioning_mode=None,
+                                   hive_partitioning_source_uri_prefix=None):
   """Create an external table definition with the given URIs and the schema.
 
   Arguments:
-    source_format: Format of source data.
-      For CSV files, specify 'CSV'.
-      For Google spreadsheet files, specify 'GOOGLE_SHEETS'.
-      For newline-delimited JSON, specify 'NEWLINE_DELIMITED_JSON'.
-      For Cloud Datastore backup, specify 'DATASTORE_BACKUP'.
-      For Avro files, specify 'AVRO'.
+    source_format: Format of source data. For CSV files, specify 'CSV'. For
+      Google spreadsheet files, specify 'GOOGLE_SHEETS'. For newline-delimited
+      JSON, specify 'NEWLINE_DELIMITED_JSON'. For Cloud Datastore backup,
+      specify 'DATASTORE_BACKUP'. For Avro files, specify 'AVRO'.
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
     autodetect: Indicates if format options, compression mode and schema be auto
       detected from the source data. True - means that autodetect is on,
-      False means that it is off. None means format specific default:
-        - For CSV it means autodetect is OFF
-        - For JSON it means that autodetect is ON.
-      For JSON, defaulting to autodetection is safer because the only option
-      autodetected is compression. If a schema is passed, then the user-supplied
-      schema is used.
+      False means that it is off. None means format specific default: - For CSV
+        it means autodetect is OFF - For JSON it means that autodetect is ON.
+        For JSON, defaulting to autodetection is safer because the only option
+        autodetected is compression. If a schema is passed, then the
+        user-supplied schema is used.
     ignore_unknown_values:  Indicates if BigQuery should allow extra values that
       are not represented in the table schema. If true, the extra values are
       ignored. If false, records with extra columns are treated as bad records,
       and if there are too many bad records, an invalid error is returned in the
-      job result. The default value is false.
-      The sourceFormat property determines what BigQuery treats as an
+      job result. The default value is false. The sourceFormat property
+      determines what BigQuery treats as an
       extra value:
          - CSV: Trailing columns
          - JSON: Named values that don't match any column names.
@@ -1627,6 +1628,10 @@ def _CreateExternalTableDefinition(
       fields = BigqueryClient.ReadSchema(schema)
       external_table_def['schema'] = {'fields': fields}
 
+    if connection_id:
+      print('Connection Id: %s' % (connection_id,))
+      external_table_def['connectionId'] = connection_id
+
     external_table_def['sourceUris'] = source_uris.split(',')
     return external_table_def
   except ValueError as e:
@@ -1665,17 +1670,10 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'source_format',
-        'CSV',
-        [
-            'CSV',
-            'GOOGLE_SHEETS',
-            'NEWLINE_DELIMITED_JSON',
-            'DATASTORE_BACKUP',
-            'ORC',
-            'PARQUET',
-            'AVRO'
-        ],
-        'Format of source data. Options include:'
+        'CSV', [
+            'CSV', 'GOOGLE_SHEETS', 'NEWLINE_DELIMITED_JSON',
+            'DATASTORE_BACKUP', 'ORC', 'PARQUET', 'AVRO'
+        ], 'Format of source data. Options include:'
         '\n CSV'
         '\n GOOGLE_SHEETS'
         '\n NEWLINE_DELIMITED_JSON'
@@ -1684,10 +1682,15 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         '\n PARQUET (experimental)'
         '\n AVRO',
         flag_values=fv)
+    flags.DEFINE_string(
+        'connection_id',
+        None,
+        '[Experimental] Specifies a connection for accessing an external table',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, source_uris, schema=None):
-    """Emits a definition in JSON for a GCS backed table.
+    """Emits a definition in JSON for an external table, such as GCS.
 
     The output of this command can be redirected to a file and used for the
     external_table_definition flag with the "bq query" and "bq mk" commands.
@@ -1703,21 +1706,18 @@ class _MakeExternalTableDefinition(BigqueryCmd):
     Arguments:
       source_uris: a comma-separated list of uris.
       schema: The <schema> argument should be either the name of a JSON file or
-        a text schema.
-
-        In the case that the schema is provided in text form, it should be a
+        a text schema.  In the case that the schema is provided in text form, it
+        should be a
         comma-separated list of entries of the form name[:type], where type will
-        default to string if not specified.
-
-        In the case that <schema> is a filename, it should contain a
-        single array object, each entry of which should be an object with
-        properties 'name', 'type', and (optionally) 'mode'. See the online
+          default to string if not specified.  In the case that <schema> is a
+          filename, it should contain a single array object, each entry of which
+          should be an object with properties 'name', 'type', and (optionally)
+          'mode'. See the online
         documentation for more detail:
           https://developers.google.com/bigquery/preparing-data-for-bigquery
-
         Note: the case of a single-entry schema with no type specified is
-        ambiguous; one can use name:string to force interpretation as a
-        text schema.
+        ambiguous; one can use name:string to force interpretation as a text
+          schema.
     """
     json.dump(
         _CreateExternalTableDefinition(
@@ -1725,6 +1725,7 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             source_uris=source_uris,
             schema=schema,
             autodetect=self.autodetect,
+            connection_id=self.connection_id,
             ignore_unknown_values=self.ignore_unknown_values,
             hive_partitioning_mode=self.hive_partitioning_mode,
             hive_partitioning_source_uri_prefix=self
@@ -1818,22 +1819,21 @@ class _Query(BigqueryCmd):
         'for legacy SQL queries. '
         'If not set, the default behavior is to flatten.',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'external_table_definition',
-        None,
-        'Specifies a table name and either an inline table definition '
+        None, 'Specifies a table name and either an inline table definition '
         'or a path to a file containing a JSON table definition to use in the '
         'query. The format is "table_name::path_to_file_with_json_def" or '
-        '"table_name::schema@format=uri".'
+        '"table_name::schema@format=uri@connection". Note using connection is '
+        'an experimental feature and is still under development.'
         'For example, '
         '"--external_table_definition=Example::/tmp/example_table_def.txt" '
         'will define a table named "Example" using the URIs and schema '
         'encoded in example_table_def.txt.',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'udf_resource',
-        None,
-        'The URI or local filesystem path of a code file to load and '
+        None, 'The URI or local filesystem path of a code file to load and '
         'evaluate immediately as a User-Defined Function resource.',
         flag_values=fv)
     flags.DEFINE_integer(
@@ -1852,7 +1852,7 @@ class _Query(BigqueryCmd):
         ('Whether to use Legacy SQL for the query. If not set, the default '
          'value is true.'),
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'schema_update_option',
         None,
         'Can be specified when append to a table, or replace a table partition.'
@@ -1862,12 +1862,12 @@ class _Query(BigqueryCmd):
         '\n ALLOW_FIELD_ADDITION: allow new fields to be added'
         '\n ALLOW_FIELD_RELAXATION: allow relaxing required fields to nullable',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'label',
         None,
         'A label to set on a query job. The format is "key:value"',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'parameter',
         None,
         ('Either a file containing a JSON list of query parameters, or a query '
@@ -2259,6 +2259,7 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
   else:
     source_format = 'CSV'
     schema = None
+    connection_id = None
     error_msg = ('Error decoding external_table_definition. '
                  'external_table_definition should either be the name of a '
                  'JSON file or the text representation of an external table '
@@ -2267,12 +2268,27 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
 
     parts = file_path_or_simple_spec.split('@')
     if len(parts) == 1:
-      # Schema is not specified.
+      # Schema and connection are not specified.
       format_and_uri = parts[0]
     elif len(parts) == 2:
-      # Schema is specified.
+      # when there are 2 components, it can be:
+      # 1. format=uri@connection_id.e.g csv=gs://bucket/file@us.conn1
+      # 2. schema@format=uri        e.g.col1::INTEGER@csv=gs://bucket/file
+      # if the first element is format=uri, then second element is connnection.
+      # Else, the first is schema, second is format=uri.
+      if parts[0].find('://') >= 0:
+        # format=uri and connection specified.
+        format_and_uri = parts[0]
+        connection_id = parts[1]
+      else:
+        # Schema and format=uri are specified.
+        schema = parts[0]
+        format_and_uri = parts[1]
+    elif len(parts) == 3:
+      # Schema and connection both are specified
       schema = parts[0]
       format_and_uri = parts[1]
+      connection_id = parts[2]
     else:
       raise app.UsageError(error_msg)
 
@@ -2288,8 +2304,8 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
       raise app.UsageError(error_msg)
     # When using short notation for external table definition
     # autodetect is always performed.
-    return _CreateExternalTableDefinition(
-        source_format, uri, schema, autodetect=True)
+    return _CreateExternalTableDefinition(source_format, uri, schema, True,
+                                          connection_id)
 
 
 class _Extract(BigqueryCmd):
@@ -2642,20 +2658,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         'List all reservations for the given project and location.',
         flag_values=fv)
     flags.DEFINE_boolean(
-        'slot_pool',
-        None,
-        'List all slot pools for the given reservation.',
-        flag_values=fv)
-    flags.DEFINE_boolean(
         'capacity_commitment',
         None,
         'Lists all capacity commitments (e.g. slots) for the given project and '
         'location.',
-        flag_values=fv)
-    flags.DEFINE_boolean(
-        'reservation_grant',
-        None, 'List all reservation grants for given project/location or '
-        'reservation.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'reservation_assignment',
@@ -2674,11 +2680,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         flag_values=fv)
     flags.DEFINE_enum(
         'reservation_version',
-        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
-        'Type of grantees for the reservation grant. Options include:'
-        '\n V1ALPHA2'
+        'V1BETA1', ['V1BETA1'],
+        'API version for reservation service. Options include:'
         '\n V1BETA1'
-        'Used in conjuction with --reservation.',
+        '\n Used in conjunction with --reservation.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -2706,12 +2711,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
           --run_attempt='LATEST' projects/p/locations/l/transferConfigs/c
       bq ls --transfer_log --message_type='messageTypes:INFO,ERROR'
           projects/p/locations/l/transferConfigs/c/runs/r
-      bq ls --reservation_grant --project_id=proj --location='us'
-      bq ls --reservation_grant --project_id=proj --location='us' --reservation
-          <reservation_ref>
       bq ls --capacity_commitment --project_id=proj --location='us'
       bq ls --reservation --project_id=proj --location='us'
-          --reservation_version='V1BETA1'
       bq ls --reservation_assignment --project_id=proj --location='us'
       bq ls --reservation_assignment --project_id=proj --location='us'
           <reservation_id>
@@ -2807,29 +2808,10 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         results = response['routines']
       if 'nextPageToken' in response:
         _PrintPageToken(response)
-    elif self.reservation_grant:
-      try:
-        object_type = ReservationGrantReference
-        reference = client.GetReservationGrantReference(
-            identifier=identifier,
-            default_location=FLAGS.location,
-            default_reservation_grant_id=' ')
-        response = client.ListReservationGrants(reference, self.max_results,
-                                                self.page_token)
-        if 'reservationGrants' in response:
-          results = response['reservationGrants']
-        else:
-          print('No reservation grants found.')
-        if 'nextPageToken' in response:
-          _PrintPageToken(response)
-      except BaseException as e:
-        raise bigquery_client.BigqueryError(
-            "Failed to list reservation grants '%s': %s" % (identifier, e))
     elif self.reservation_assignment:
       try:
         object_type = ReservationAssignmentReference
         reference = client.GetReservationReference(
-            version='V1BETA1',
             identifier=identifier if identifier else '-',
             default_location=FLAGS.location,
             default_reservation_id=' ')
@@ -2864,61 +2846,38 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
         raise bigquery_client.BigqueryError(
             "Failed to list capacity commitments '%s': %s" % (identifier, e))
     elif self.reservation:
-      if self.slot_pool:
-        object_type = SlotPoolReference
-        reference = client.GetReservationReference(
-            version='V1ALPHA2',
-            identifier=identifier,
-            default_location=FLAGS.location)
-        try:
-          response = client.ListSlotPools(
-              reference, self.max_results, self.page_token)
-        except BaseException as e:
-          raise bigquery_client.BigqueryError(
-              "Failed to list slots pools in '%s': %s" % (identifier, e))
-        if 'slotPools' in response:
-          results = response['slotPools']
-        else:
-          print('No slot pools found.')
-          results = None
-      else:
-        bi_response = None
-        response = []
-        if self.reservation_version == 'V1ALPHA2':
-          object_type = V1Alpha2ReservationReference
-        else:
-          object_type = V1Beta1ReservationReference
-        reference = client.GetReservationReference(
-            version=self.reservation_version,
-            identifier=identifier,
-            default_location=FLAGS.location,
-            default_reservation_id=' ')
-        try:
-          bi_response = client.ListBiReservations(reference)
-          if 'size' in bi_response:
-            size_in_bytes = int(bi_response['size'])
-            size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
-            print('BI Engine reservation: %sGB' % size_in_gbytes)
-        except BaseException as e:
-          if 'was not found' not in e.message and (
-              'is disabled' not in e.message):
-            print("Failed to list BI reservations '%s': %s" % (identifier, e))
+      bi_response = None
+      response = []
+      object_type = ReservationReference
+      reference = client.GetReservationReference(
+          identifier=identifier,
+          default_location=FLAGS.location,
+          default_reservation_id=' ')
+      try:
+        bi_response = client.ListBiReservations(reference)
+        if 'size' in bi_response:
+          size_in_bytes = int(bi_response['size'])
+          size_in_gbytes = size_in_bytes / (1024 * 1024 * 1024)
+          print('BI Engine reservation: %sGB' % size_in_gbytes)
+      except BaseException as e:
+        if 'was not found' not in e.message and (
+            'is disabled' not in e.message):
+          print("Failed to list BI reservations '%s': %s" % (identifier, e))
 
-        try:
-          response = client.ListReservations(
-              reference=reference,
-              page_size=self.max_results,
-              page_token=self.page_token,
-              version=self.reservation_version)
-        except BaseException as e:
-          if 'is disabled' not in e.message:
-            raise bigquery_client.BigqueryError(
-                "Failed to list reservations '%s': %s" % (identifier, e))
-        if 'reservations' in response:
-          results = response['reservations']
-        else:
-          if bi_response is None:
-            print('No reservations found.')
+      try:
+        response = client.ListReservations(
+            reference=reference,
+            page_size=self.max_results,
+            page_token=self.page_token)
+      except BaseException as e:
+        if 'is disabled' not in e.message:
+          raise bigquery_client.BigqueryError(
+              "Failed to list reservations '%s': %s" % (identifier, e))
+      if 'reservations' in response:
+        results = response['reservations']
+      else:
+        if bi_response is None:
+          print('No reservations found.')
       if 'nextPageToken' in response:
         _PrintPageToken(response)
     elif self.transfer_config:
@@ -3068,17 +3027,9 @@ class _Delete(BigqueryCmd):
         'Deletes the reservation described by this identifier.',
         flag_values=fv)
     flags.DEFINE_boolean(
-        'slot_pool',
-        None,
-        'Deletes the slot pool described by this identifier.',
-        flag_values=fv)
-    flags.DEFINE_boolean(
         'capacity_commitment',
         None,
         'Deletes the capacity commitment described by this identifier.',
-        flag_values=fv)
-    flags.DEFINE_boolean(
-        'reservation_grant', None, 'Delete a reservation grant.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'reservation_assignment',
@@ -3099,18 +3050,10 @@ class _Delete(BigqueryCmd):
     flags.DEFINE_boolean(
         'connection', None, 'Delete a connection.',
         flag_values=fv)
-    flags.DEFINE_enum(
-        'reservation_version',
-        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
-        'Type of grantees for the reservation grant. Options include:'
-        '\n V1ALPHA2'
-        '\n V1BETA1'
-        'Used in conjuction with --reservation.',
-        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier):
-    """Delete the dataset, table, transfer config, or slot pool described by identifier.
+    """Delete the dataset, table, transfer config, or reservation described by identifier.
 
     Always requires an identifier, unlike the show and ls commands.
     By default, also requires confirmation before deleting. Supports
@@ -3125,11 +3068,9 @@ class _Delete(BigqueryCmd):
       bq rm --routine ds.routine (requires whitelisting)
       bq rm -r -f old_dataset
       bq rm --transfer_config=projects/p/locations/l/transferConfigs/c
-      bq rm --reservation_grant --project_id=proj --location=us query_proj_dev
       bq rm --connection --project_id=proj --location=us con
       bq rm --capacity_commitment proj:US.capacity_commitment_id
-      bq rm --reservation --project_id=proj --location=us
-          --reservation_version='V1BETA1' reservation_name
+      bq rm --reservation --project_id=proj --location=us reservation_name
       bq rm --reservation_assignment --project_id=proj --location=us
           assignment_name
     """
@@ -3155,36 +3096,14 @@ class _Delete(BigqueryCmd):
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier)
     elif self.reservation:
-      if self.slot_pool:
-        try:
-          reference = client.GetSlotPoolReference(
-              identifier=identifier, default_location=FLAGS.location)
-          client.DeleteSlotPool(reference, self.force)
-          print("Slot pool '%s' successfully deleted." % identifier)
-        except BaseException as e:
-          raise bigquery_client.BigqueryError(
-              "Failed to delete slot pool in '%s': %s" % (identifier, e))
-      else:
-        try:
-          reference = client.GetReservationReference(
-              version=self.reservation_version,
-              identifier=identifier,
-              default_location=FLAGS.location)
-          client.DeleteReservation(reference, self.force,
-                                   self.reservation_version)
-          print("Reservation '%s' successfully deleted." % identifier)
-        except BaseException as e:
-          raise bigquery_client.BigqueryError(
-              "Failed to delete reservation '%s': %s" % (identifier, e))
-    elif self.reservation_grant:
       try:
-        reference = client.GetReservationGrantReference(
+        reference = client.GetReservationReference(
             identifier=identifier, default_location=FLAGS.location)
-        client.DeleteReservationGrant(reference)
-        print("Reservation grant '%s' successfully deleted." % identifier)
+        client.DeleteReservation(reference)
+        print("Reservation '%s' successfully deleted." % identifier)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
-            "Failed to delete reservation grant '%s': %s" % (identifier, e))
+            "Failed to delete reservation '%s': %s" % (identifier, e))
     elif self.reservation_assignment:
       try:
         reference = client.GetReservationAssignmentReference(
@@ -3199,7 +3118,7 @@ class _Delete(BigqueryCmd):
       try:
         reference = client.GetCapacityCommitmentReference(
             identifier=identifier, default_location=FLAGS.location)
-        client.DeleteCapacityCommitment(reference)
+        client.DeleteCapacityCommitment(reference, self.force)
         print("Capacity commitment '%s' successfully deleted." % identifier)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -3489,7 +3408,7 @@ class _Make(BigqueryCmd):
     flags.DEFINE_string(
         'display_name',
         '',
-        'Display name for the created transfer configuration.',
+        'Display name for the created transfer configuration or connection.',
         flag_values=fv)
     flags.DEFINE_string(
         'data_source',
@@ -3507,6 +3426,11 @@ class _Make(BigqueryCmd):
         'Parameters for the created transfer configuration in JSON format. '
         'For example: --params=\'{\"param\":\"param_value\"}\'',
         short_name='p',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'service_account_name',
+        '',
+        'Service account used as the credential on the transfer config.',
         flag_values=fv)
     flags.DEFINE_bool(
         'transfer_run',
@@ -3581,7 +3505,7 @@ class _Make(BigqueryCmd):
     flags.DEFINE_string(
         'description',
         None,
-        'Description of the dataset or table.',
+        'Description of the dataset, table or connection.',
         flag_values=fv)
     flags.DEFINE_string(
         'data_location',
@@ -3616,16 +3540,16 @@ class _Make(BigqueryCmd):
         'Specifies a table definition to use to create an external table. '
         'The value can be either an inline table definition or a path to a '
         'file containing a JSON table definition. '
-        'The format of inline definition is "schema@format=uri", '
-        'where "schema@" and "format=" are optional and "format" has the '
-        'default value of "CSV" if not specified.',
+        'The format of inline definition is "schema@format=uri@connection", '
+        'where "schema@", "format=", and "connection" are optional and "format"'
+        'has the default value of "CSV" if not specified. Note using '
+        'connection is an experimental feature and is still under development.',
         flag_values=fv)
     flags.DEFINE_string(
         'view', '', 'Create view with this SQL query.', flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'view_udf_resource',
-        None,
-        'The URI or local filesystem path of a code file to load and '
+        None, 'The URI or local filesystem path of a code file to load and '
         'evaluate immediately as a User-Defined Function resource used '
         'by the view.',
         flag_values=fv)
@@ -3680,7 +3604,7 @@ class _Make(BigqueryCmd):
         None,
         'Cloud KMS key for encryption of the destination table data.',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'label',
         None,
         'A label to set on the table or dataset. The format is "key:value"',
@@ -3709,9 +3633,7 @@ class _Make(BigqueryCmd):
     flags.DEFINE_boolean(
         'reservation',
         None,
-        'Creates a reservation described by this identifier. Reservation '
-        'hierarchies can be specified by separating reservations with a slash.'
-        'For example foo/bar/baz.',
+        'Creates a reservation described by this identifier. ',
         flag_values=fv)
     flags.DEFINE_integer(
         'slots',
@@ -3720,21 +3642,10 @@ class _Make(BigqueryCmd):
         'this reservation node.',
         flag_values=fv)
     flags.DEFINE_boolean(
-        'use_parent',
-        True,
-        'If true, any query using this reservation will also be submitted to '
-        'the parent reservation.',
-        flag_values=fv)
-    flags.DEFINE_boolean(
         'use_idle_slots',
         True,
         'If true, any query running in this reservation will be able to use '
         'idle slots from other reservations.',
-        flag_values=fv)
-    flags.DEFINE_boolean(
-        'reservation_grant',
-        None,
-        'Create a reservation grant.',
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
@@ -3751,21 +3662,6 @@ class _Make(BigqueryCmd):
         None, 'Reservation ID used to create reservation assignment for. '
         'Used in conjuction with --reservation_assignment.',
         flag_values=fv)
-    flags.DEFINE_enum(
-        'grantee_type',
-        None, ['PROJECT', 'FOLDER', 'ORGANIZATION'],
-        'Type of grantees for the reservation grant. Options include:'
-        '\n PROJECT'
-        '\n FOLDER'
-        '\n ORGANIZATION'
-        'Used in conjuction with --reservation_grant.',
-        flag_values=fv)
-    flags.DEFINE_string(
-        'grantee_id',
-        None,
-        'Project/folder/organization ID, to which the reservation is granted. '
-        'Used in conjuction with --reservation_grant.',
-        flag_values=fv)
     flags.DEFINE_boolean(
         'reservation_assignment',
         None,
@@ -3778,7 +3674,7 @@ class _Make(BigqueryCmd):
         '\n PROJECT'
         '\n FOLDER'
         '\n ORGANIZATION'
-        'Used in conjuction with --reservation_assignment.',
+        '\n Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_string(
         'assignee_id',
@@ -3794,9 +3690,9 @@ class _Make(BigqueryCmd):
     flags.DEFINE_enum(
         'connection_type',
         None,
-        ['CLOUD_SQL'],
-        'Connection type. Valid values:'
-        '\n CLOUD_SQL',
+        bigquery_client.CONNECTION_TYPES,
+        'Connection type. Valid values:\n ' + \
+        '\n '.join(bigquery_client.CONNECTION_TYPES),
         flag_values=fv)
     flags.DEFINE_string(
         'properties',
@@ -3813,14 +3709,6 @@ class _Make(BigqueryCmd):
         None,
         'Defines default KMS key name for all newly objects created in the '
         'dataset. Table/Model creation request can override this default.',
-        flag_values=fv)
-    flags.DEFINE_enum(
-        'reservation_version',
-        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
-        'Type of grantees for the reservation grant. Options include:'
-        '\n V1ALPHA2'
-        '\n V1BETA1'
-        'Used in conjuction with --reservation.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -3848,14 +3736,7 @@ class _Make(BigqueryCmd):
           projects/p/locations/l/transferConfigs/c
       bq mk --transfer_run --run_time={run_time}
           projects/p/locations/l/transferConfigs/c
-      bq mk --reservation --project_id=project --location=us
-          --reservation_version='V1BETA1' reservation_name
-      bq mk --reservation_grant --location=us
-          --reservation_id=project:us.dev --job_type=QUERY
-          --grantee_type=PROJECT grantee_id=myproject
-      bq mk --reservation_grant --location=us
-          --reservation_id=project:us.dev --job_type=QUERY
-          --grantee_type=FOLDER grantee_id=123
+      bq mk --reservation --project_id=project --location=us reservation_name
       bq mk --reservation_assignment --reservation_id=project:us.dev
           --job_type=QUERY --assignee_type=PROJECT --assignee_id=myproject
       bq mk --reservation_assignment --reservation_id=project:us.dev
@@ -3866,7 +3747,7 @@ class _Make(BigqueryCmd):
         --properties='{"instanceId" : "instance",
         "database" : "db", "type" : "MYSQL" }'
         --connection_credential='{"username":"u", "password":"p"}'
-        --project_id=proj --location=us new_connection
+        --project_id=proj --location=us --display_name=name new_connection
     """
 
     client = Client.Get()
@@ -3885,43 +3766,21 @@ class _Make(BigqueryCmd):
       reference = client.GetTableReference(identifier)
     elif self.reservation:
       object_info = None
-      if True:
-        reference = client.GetReservationReference(
-            version=self.reservation_version,
-            identifier=identifier,
-            default_location=FLAGS.location)
-        try:
-          object_info = client.CreateReservation(
-              reference=reference,
-              slots=self.slots,
-              use_idle_slots=self.use_idle_slots,
-              use_parent=self.use_parent,
-              version=self.reservation_version)
-        except BaseException as e:
-          raise bigquery_client.BigqueryError(
-              "Failed to create reservation '%s': %s" % (identifier, e))
-      if object_info is not None:
-        _PrintObjectInfo(object_info, reference, custom_format='show')
-    elif self.reservation_grant:
+      reference = client.GetReservationReference(
+          identifier=identifier, default_location=FLAGS.location)
       try:
-        reference = client.GetReservationGrantReference(
-            identifier=identifier, default_location=FLAGS.location,
-            default_reservation_grant_id=' ')
-        object_info = client.CreateReservationGrant(reference,
-                                                    self.reservation_id,
-                                                    self.job_type,
-                                                    self.grantee_type,
-                                                    self.grantee_id)
-        reference = client.GetReservationGrantReference(
-            path=object_info['name'])
-        _PrintObjectInfo(object_info, reference, custom_format='show')
+        object_info = client.CreateReservation(
+            reference=reference,
+            slots=self.slots,
+            use_idle_slots=self.use_idle_slots)
       except BaseException as e:
         raise bigquery_client.BigqueryError(
-            "Failed to create reservation grant '%s': %s" % (identifier, e))
+            "Failed to create reservation '%s': %s" % (identifier, e))
+      if object_info is not None:
+        _PrintObjectInfo(object_info, reference, custom_format='show')
     elif self.reservation_assignment:
       try:
         reference = client.GetReservationReference(
-            version='V1BETA1',
             default_location=FLAGS.location,
             identifier=self.reservation_id)
         object_info = client.CreateReservationAssignment(
@@ -3948,16 +3807,20 @@ class _Make(BigqueryCmd):
               name=data_sources_reference).execute()
         except:
           raise bigquery_client.BigqueryNotFoundError(
-              'Unknown data source %r. Please make sure BQ Data Transfer API is enabled in Cloud Console, and the data source is enrolled in Cloud Marketplace.'
-              % (self.data_source), {'reason': 'notFound'}, [])
+              'Unknown data source %r. Please make sure BQ Data Transfer API '
+              'is enabled in Cloud Console, and the data source is enrolled in '
+              'Cloud Marketplace.' % (self.data_source), {'reason': 'notFound'},
+              [])
         credentials = transfer_client.projects().dataSources().checkValidCreds(
             name=data_sources_reference, body={}).execute()
       else:
         raise bigquery_client.BigqueryError('A data source must be provided.')
       authorization_code = ''
-      if not credentials and self.data_source != 'loadtesting':
-        authorization_code = RetrieveAuthorizationCode(
-            reference, self.data_source, transfer_client)
+      if (not credentials and self.data_source != 'loadtesting' and
+          not self.service_account_name):
+        authorization_code = RetrieveAuthorizationCode(reference,
+                                                       self.data_source,
+                                                       transfer_client)
       schedule_args = bigquery_client.TransferScheduleArgs(
           schedule=self.schedule,
           start_time=self.schedule_start_time,
@@ -3971,6 +3834,7 @@ class _Make(BigqueryCmd):
           refresh_window_days=self.refresh_window_days,
           params=self.params,
           authorization_code=authorization_code,
+          service_account_name=self.service_account_name,
           schedule_args=schedule_args)
       print(('Transfer configuration \'%s\' successfully created.' %
              transfer_name))
@@ -4008,11 +3872,14 @@ class _Make(BigqueryCmd):
         raise app.UsageError('Need to specify --connection_type.')
       if not self.properties:
         raise app.UsageError('Need to specify --properties')
-      created_connection = client.CreateConnection(FLAGS.project_id,
-                                                   FLAGS.location,
-                                                   self.connection_type,
-                                                   self.properties,
-                                                   identifier)
+      created_connection = client.CreateConnection(
+          project_id=FLAGS.project_id,
+          location=FLAGS.location,
+          connection_type=self.connection_type,
+          properties=self.properties,
+          display_name=self.display_name,
+          description=self.description,
+          connection_id=identifier)
       if created_connection:
         path = created_connection['name']
         reference = client.GetConnectionReference(path=path)
@@ -4174,12 +4041,12 @@ class _Update(BigqueryCmd):
         'reservation_assignment',
         None,
         'Updates a reservation assignment and so that the assignee will use a '
-        'new reservation.'
+        'new reservation. '
         'Used in conjuction with --destination_reservation_id',
         flag_values=fv)
     flags.DEFINE_string(
         'destination_reservation_id',
-        None, 'Destination reservation ID'
+        None, 'Destination reservation ID. '
         'Used in conjuction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_string(
@@ -4187,12 +4054,6 @@ class _Update(BigqueryCmd):
         None, 'BI reservation size. Can be specified in bytes '
         '(--reservation_size=2147483648) or in GB (--reservation_size=2G). '
         'Minimum 2GB. Use 0 to remove reservation.',
-        flag_values=fv)
-    flags.DEFINE_boolean(
-        'use_parent',
-        None,
-        'If true, any query using this reservation will also be submitted to '
-        'the parent reservation.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'use_idle_slots',
@@ -4213,7 +4074,7 @@ class _Update(BigqueryCmd):
     flags.DEFINE_string(
         'display_name',
         '',
-        'Updated display name for the updated transfer configuration.',
+        'Updated display name for the transfer configuration or connection.',
         flag_values=fv)
     flags.DEFINE_integer(
         'refresh_window_days',
@@ -4270,22 +4131,26 @@ class _Update(BigqueryCmd):
         'configuration.',
         flag_values=fv)
     flags.DEFINE_string(
-        'schema',
+        'service_account_name',
         '',
-        'Either a filename or a comma-separated list of fields in the form '
+        'Service account used as the credential on the transfer config.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'schema',
+        '', 'Either a filename or a comma-separated list of fields in the form '
         'name[:type].',
         flag_values=fv)
     flags.DEFINE_string(
         'description',
         None,
-        'Description of the dataset, table or view.',
+        'Description of the dataset, table, view or connection.',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'set_label',
         None,
         'A label to set on a dataset or a table. The format is "key:value"',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'clear_label',
         None,
         'A label key to remove from a dataset or a table.',
@@ -4343,12 +4208,13 @@ class _Update(BigqueryCmd):
         'Specifies a table definition to use to update an external table. '
         'The value can be either an inline table definition or a path to a '
         'file containing a JSON table definition.'
-        'The format of inline definition is "schema@format=uri".',
+        'The format of inline definition is "schema@format=uri@connection". '
+        'Note using connection is an experiment feature and is still under '
+        'development.',
         flag_values=fv)
-    flags.DEFINE_multistring(
+    flags.DEFINE_multi_string(
         'view_udf_resource',
-        None,
-        'The URI or local filesystem path of a code file to load and '
+        None, 'The URI or local filesystem path of a code file to load and '
         'evaluate immediately as a User-Defined Function resource used '
         'by the view.',
         flag_values=fv)
@@ -4410,9 +4276,9 @@ class _Update(BigqueryCmd):
     flags.DEFINE_enum(
         'connection_type',
         None,
-        ['CLOUD_SQL'],
-        'Connection type. Valid values:'
-        '\n CLOUD_SQL',
+        bigquery_client.CONNECTION_TYPES,
+        'Connection type. Valid values:\n ' + \
+        '\n '.join(bigquery_client.CONNECTION_TYPES),
         flag_values=fv)
     flags.DEFINE_string(
         'properties',
@@ -4437,14 +4303,6 @@ class _Update(BigqueryCmd):
         None,
         'Defines default KMS key name for all newly objects created in the '
         'dataset. Table/Model creation request can override this default.',
-        flag_values=fv)
-    flags.DEFINE_enum(
-        'reservation_version',
-        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
-        'Type of grantees for the reservation grant. Options include:'
-        '\n V1ALPHA2'
-        '\n V1BETA1'
-        'Used in conjuction with --reservation.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4498,15 +4356,12 @@ class _Update(BigqueryCmd):
           print(object_info)
         else:
           reference = client.GetReservationReference(
-              version=self.reservation_version,
               identifier=identifier,
               default_location=FLAGS.location)
           object_info = client.UpdateReservation(
               reference=reference,
               slots=self.slots,
-              use_parent=self.use_parent,
-              use_idle_slots=self.use_idle_slots,
-              version=self.reservation_version)
+              use_idle_slots=self.use_idle_slots)
           _PrintObjectInfo(object_info, reference, custom_format='show')
       except BaseException as e:
         raise bigquery_client.BigqueryError(
@@ -4544,8 +4399,13 @@ class _Update(BigqueryCmd):
     elif self.connection:
       reference = client.GetConnectionReference(
           identifier=identifier, default_location=FLAGS.location)
-      client.UpdateConnection(reference, self.connection_type,
-                              self.properties)
+      if self.properties or self.display_name or self.description:
+        client.UpdateConnection(
+            reference=reference,
+            display_name=self.display_name,
+            description=self.description,
+            connection_type=self.connection_type,
+            properties=self.properties)
       if self.connection_credential:
         client.UpdateConnectionCredential(reference, self.connection_type,
                                           self.connection_credential)
@@ -4553,9 +4413,9 @@ class _Update(BigqueryCmd):
       reference = client.GetConnectionReference(identifier=identifier,
                                                 default_location=FLAGS.location)
       connection = client.GetConnection(reference)
-      if 'cloudSql' in connection:
-        client.UpdateConnectionCredential(reference,
-                                          'CLOUD_SQL',
+      connection_type = BigqueryClient.GetConnectionType(connection)
+      if connection_type:
+        client.UpdateConnectionCredential(reference, connection_type,
                                           self.connection_credential)
     else:
       reference = client.GetReference(identifier)
@@ -4679,13 +4539,17 @@ class _Update(BigqueryCmd):
     elif isinstance(reference, TransferConfigReference):
       if client.TransferExists(reference):
         authorization_code = ''
+        service_account_name = ''
         if self.update_credentials:
-          transfer_config_name = _FormatDataTransferIdentifiers(
-              client, reference.transferConfigName)
-          current_config = client.GetTransferConfig(transfer_config_name)
-          authorization_code = RetrieveAuthorizationCode(
-              'projects/' + client.GetProjectReference().projectId,
-              current_config['dataSourceId'], client.GetTransferV1ApiClient())
+          if self.service_account_name:
+            service_account_name = self.service_account_name
+          else:
+            transfer_config_name = _FormatDataTransferIdentifiers(
+                client, reference.transferConfigName)
+            current_config = client.GetTransferConfig(transfer_config_name)
+            authorization_code = RetrieveAuthorizationCode(
+                'projects/' + client.GetProjectReference().projectId,
+                current_config['dataSourceId'], client.GetTransferV1ApiClient())
         schedule_args = bigquery_client.TransferScheduleArgs(
             schedule=self.schedule,
             start_time=self.schedule_start_time,
@@ -4698,6 +4562,7 @@ class _Update(BigqueryCmd):
             refresh_window_days=self.refresh_window_days,
             params=self.params,
             authorization_code=authorization_code,
+            service_account_name=service_account_name,
             schedule_args=schedule_args)
         print("Transfer configuration '%s' successfully updated." %
               (reference,))
@@ -4880,11 +4745,6 @@ class _Show(BigqueryCmd):
         'Shows details for the reservation described by this identifier.',
         flag_values=fv)
     flags.DEFINE_boolean(
-        'slot_pool',
-        None,
-        'Shows details for the slot pool described by this identifier.',
-        flag_values=fv)
-    flags.DEFINE_boolean(
         'capacity_commitment',
         None, 'Shows details for the capacity commitment described by this '
         'identifier.',
@@ -4894,8 +4754,8 @@ class _Show(BigqueryCmd):
         None, 'Looks up reservation assignments for a specified '
         'project/folder/organization. Explicit reservation assignments will be '
         'returned if exist. Otherwise implicit reservation assignments from '
-        'parents will be returned.'
-        'Used in conjuction with --job_type, --assignee_type and'
+        'parents will be returned. '
+        'Used in conjunction with --job_type, --assignee_type and '
         '--assignee_id.',
         flag_values=fv)
     flags.DEFINE_enum(
@@ -4904,7 +4764,7 @@ class _Show(BigqueryCmd):
         'Type of jobs to search reservation assignment for. Options include:'
         '\n QUERY'
         '\n PIPELINE'
-        'Used in conjuction with --reservation_assignment.',
+        '\n Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_enum(
         'assignee_type',
@@ -4913,7 +4773,7 @@ class _Show(BigqueryCmd):
         '\n PROJECT'
         '\n FOLDER'
         '\n ORGANIZATION'
-        'Used in conjuction with --reservation_assignment.',
+        '\n Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_string(
         'assignee_id',
@@ -4925,14 +4785,6 @@ class _Show(BigqueryCmd):
         'connection',
         None,
         'Shows details for the connection described by this identifier.',
-        flag_values=fv)
-    flags.DEFINE_enum(
-        'reservation_version',
-        'V1ALPHA2', ['V1ALPHA2', 'V1BETA1'],
-        'Type of grantees for the reservation grant. Options include:'
-        '\n V1ALPHA2'
-        '\n V1BETA1'
-        'Used in conjuction with --reservation.',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -4952,8 +4804,7 @@ class _Show(BigqueryCmd):
       bq show --encryption_service_account
       bq show --connection --project_id=project --location=us connection
       bq show --capacity_commitment project:US.capacity_commitment_id
-      bq show --reservation --location=US --project_id=project
-          --reservation_version='V1BETA1' reservation_name
+      bq show --reservation --location=US --project_id=project reservation_name
       bq show --reservation_assignment --project_id=project --location=US
           --assignee_type=PROJECT --assignee_id=myproject --job_type=QUERY
       bq show --reservation_assignment --project_id=project --location=US
@@ -4996,16 +4847,9 @@ class _Show(BigqueryCmd):
     elif self.routine:
       reference = client.GetRoutineReference(identifier)
     elif self.reservation:
-      if self.slot_pool:
-        reference = client.GetSlotPoolReference(
-            identifier=identifier, default_location=FLAGS.location)
-        object_info = client.GetSlotPool(reference)
-      else:
-        reference = client.GetReservationReference(
-            version=self.reservation_version,
-            identifier=identifier,
-            default_location=FLAGS.location)
-        object_info = client.GetReservation(reference, self.reservation_version)
+      reference = client.GetReservationReference(
+          identifier=identifier, default_location=FLAGS.location)
+      object_info = client.GetReservation(reference)
     elif self.reservation_assignment:
       object_info = client.SearchReservationAssignments(
           location=FLAGS.location,
@@ -5786,7 +5630,7 @@ class CommandLoop(cmd.Cmd):
       indent_size = appcommands.GetMaxCommandLength() + 3
       if len(command_names) > 1:
         indent = ' ' * indent_size
-        command_help = flags.TextWrap(
+        command_help = flags.text_wrap(
             command.CommandGetHelp('', cmd_names=command_names),
             indent=indent,
             firstline_indent='')
@@ -5795,7 +5639,7 @@ class CommandLoop(cmd.Cmd):
         return '\n'.join((first_line, rest))
       else:
         default_indent = '  '
-        return '\n' + flags.TextWrap(
+        return '\n' + flags.text_wrap(
             command.CommandGetHelp('', cmd_names=command_names),
             indent=default_indent,
             firstline_indent=default_indent) + '\n'
@@ -6029,8 +5873,18 @@ def _ParseParameters(parameters):
   return results
 
 
+def _SplitParam(param_string):
+  split = param_string.split(':', 1)
+  if len(split) != 2:
+    raise app.UsageError('Query parameters must be of the form: '
+                         '"name:type:value", ":type:value", or "name::value". '
+                         'An empty name produces a positional parameter. '
+                         'An empty type produces a STRING parameter.')
+  return split
+
+
 def _ParseParameter(param_string):
-  name, param_string = param_string.split(':', 1)
+  name, param_string = _SplitParam(param_string)
   type_dict, value_dict = _ParseParameterTypeAndValue(param_string)
   result = {'parameterType': type_dict, 'parameterValue': value_dict}
   if name:
@@ -6040,7 +5894,7 @@ def _ParseParameter(param_string):
 
 def _ParseParameterTypeAndValue(param_string):
   """Parse a string of the form <recursive_type>:<value> into each part."""
-  type_string, value_string = param_string.split(':', 1)
+  type_string, value_string = _SplitParam(param_string)
   if not type_string:
     type_string = 'STRING'
   type_dict = _ParseParameterType(type_string)
@@ -6194,12 +6048,10 @@ def run_main():
   # for them.
   new_name = sys.argv[0]
   sys.modules[new_name] = sys.modules['__main__']
-  # pylint: disable=protected-access
-  for flag in FLAGS.FlagsByModuleDict().get(__name__, []):
-    FLAGS._RegisterFlagByModule(new_name, flag)
-    for key_flag in FLAGS.KeyFlagsByModuleDict().get(__name__, []):
-      FLAGS._RegisterKeyFlagForModule(new_name, key_flag)
-  # pylint: enable=protected-access
+  for flag in FLAGS.flags_by_module_dict().get(__name__, []):
+    FLAGS.register_flag_by_module(new_name, flag)
+    for key_flag in FLAGS.key_flags_by_module_dict().get(__name__, []):
+      FLAGS.register_key_flag_for_module(new_name, key_flag)
 
   # Now set __main__ appropriately so that appcommands will be
   # happy.

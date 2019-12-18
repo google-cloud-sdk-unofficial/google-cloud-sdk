@@ -8,8 +8,15 @@
         * An instance with the same name already exists.
         * The active account does not have permission to create snapshots.
     examples: |
-      To create a snapshot with the name 'my-snapshot' in 'us-central1' from an instance called
-      'my-instance' in 'us-central1-c' and the source file share called 'my-fs', run:
+      To create a snapshot with the name 'my-snapshot' from an instance called 'my-instance' in
+      'us-central1-c' and the source file share called 'my-fs', run:
+
+        $ {command} my-snapshot --instance=my-instance --file-share=my-fs
+            --instance-zone=us-central1-c
+
+      To create a snapshot with the name 'my-snapshot' in a particular region like 'us-central1'
+      from an instance called 'my-instance' in 'us-central1-c' and the source file share called
+      'my-fs', run:
 
         $ {command} my-snapshot --instance=my-instance --file-share=my-fs
             --instance-zone=us-central1-c --region=us-central1
@@ -31,25 +38,14 @@
       required: true
       help_text: |
         Zone of the Filestore instance.
+    - arg_name: region
+      help_text: |
+        Region (e.g. us-central1) for the regional snapshot.
     - api_field: snapshot.sourceFileShare
       arg_name: file-share
       required: true
       help_text: |
         File share name on the Filestore instance to snapshot.
-    - group:
-        mutex: true
-        required: true
-        params:
-        - api_field: snapshot.local
-          arg_name: local
-          hidden: true
-          type: bool
-          help_text: |
-            Create a local snapshot in the zone specified by the 'instance-zone' flag.
-        - arg_name: region
-          help_text: |
-            Region (e.g. us-central1) for the regional snapshot.
-
     - api_field: snapshot.labels.additionalProperties
       arg_name: labels
       metavar: KEY=VALUE

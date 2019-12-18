@@ -5,7 +5,7 @@
 import os
 
 
-import gflags as flags
+from absl import flags
 
 
 FLAGS = flags.FLAGS
@@ -111,7 +111,7 @@ flags.DEFINE_enum(
     '\nThe first three are intended to be human-readable, and the latter '
     'three are for passing to another program. If no format is selected, '
     'one will be chosen based on the command run.')
-flags.DEFINE_multistring(
+flags.DEFINE_multi_string(
     'job_property', None,
     'Additional key-value pairs to include in the properties field of '
     'the job configuration')  # No period: Multistring adds flagspec suffix.
@@ -122,4 +122,3 @@ flags.DEFINE_boolean(
     'enable_gdrive', None,
     'When set to true, requests new OAuth token with GDrive scope. '
     'When set to false, requests new OAuth token without GDrive scope.')
-

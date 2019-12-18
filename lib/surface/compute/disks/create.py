@@ -92,9 +92,7 @@ def _SourceArgs(parser, source_disk_enabled=False):
         """
     return template
 
-  source_group.add_argument(
-      '--image',
-      help=AddImageHelp)
+  source_group.add_argument('--image', help=AddImageHelp)
 
   image_utils.AddImageProjectFlag(source_parent_group)
 
@@ -108,8 +106,7 @@ def _SourceArgs(parser, source_disk_enabled=False):
         the latest non-deprecated image associated with that family is
         used. It is best practice to use --image-family when the latest
         version of an image is needed.
-        """
-  )
+        """)
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
   if source_disk_enabled:
     source_disk = source_group.add_group('Source disk options')
@@ -252,8 +249,8 @@ class Create(base.Command):
   def GetDiskSizeGb(self, args, from_image):
     size_gb = utils.BytesToGb(args.size)
 
-    if (not size_gb and not args.source_snapshot and not from_image
-        and not self.GetFromSourceDisk(args)):
+    if (not size_gb and not args.source_snapshot and not from_image and
+        not self.GetFromSourceDisk(args)):
       if args.type and 'pd-ssd' in args.type:
         size_gb = constants.DEFAULT_SSD_DISK_SIZE_GB
       else:
@@ -261,12 +258,12 @@ class Create(base.Command):
     utils.WarnIfDiskSizeIsTooSmall(size_gb, args.type)
     return size_gb
 
-  def GetProjectToSourceImageDict(
-      self, args, disk_refs, compute_holder, from_image):
+  def GetProjectToSourceImageDict(self, args, disk_refs, compute_holder,
+                                  from_image):
     project_to_source_image = {}
 
-    image_expander = image_utils.ImageExpander(
-        compute_holder.client, compute_holder.resources)
+    image_expander = image_utils.ImageExpander(compute_holder.client,
+                                               compute_holder.resources)
 
     for disk_ref in disk_refs:
       if from_image:
@@ -315,21 +312,24 @@ class Create(base.Command):
       labels = client.messages.Disk.LabelsValue(additionalProperties=[
           client.messages.Disk.LabelsValue.AdditionalProperty(
               key=key, value=value)
-          for key, value in sorted(six.iteritems(args.labels))])
+          for key, value in sorted(six.iteritems(args.labels))
+      ])
     return labels
 
   def GetDiskTypeUri(self, args, disk_ref, compute_holder):
     if args.type:
       if disk_ref.Collection() == 'compute.disks':
         type_ref = compute_holder.resources.Parse(
-            args.type, collection='compute.diskTypes',
+            args.type,
+            collection='compute.diskTypes',
             params={
                 'project': disk_ref.project,
                 'zone': disk_ref.zone
             })
       elif disk_ref.Collection() == 'compute.regionDisks':
         type_ref = compute_holder.resources.Parse(
-            args.type, collection='compute.regionDiskTypes',
+            args.type,
+            collection='compute.regionDiskTypes',
             params={
                 'project': disk_ref.project,
                 'region': disk_ref.region
@@ -343,17 +343,19 @@ class Create(base.Command):
       zone_ref = compute_holder.resources.Parse(
           zone,
           collection='compute.zones',
-          params={
-              'project': disk_ref.project
-          })
+          params={'project': disk_ref.project})
       result.append(zone_ref.SelfLink())
     return result
 
   def Run(self, args):
     return self._Run(args, supports_kms_keys=True)
 
-  def _Run(self, args, supports_kms_keys=False, supports_physical_block=False,
-           support_shared_disk=False, support_vss_erase=False):
+  def _Run(self,
+           args,
+           supports_kms_keys=False,
+           supports_physical_block=False,
+           support_shared_disk=False,
+           support_vss_erase=False):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = compute_holder.client
 
@@ -376,8 +378,9 @@ class Create(base.Command):
     # code supporting them only in alpha and beta versions of the command.
     labels = self.GetLabels(args, client)
 
-    allow_rsa_encrypted = self.ReleaseTrack() in [base.ReleaseTrack.ALPHA,
-                                                  base.ReleaseTrack.BETA]
+    allow_rsa_encrypted = self.ReleaseTrack() in [
+        base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+    ]
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
 
     for project in project_to_source_image:
@@ -401,8 +404,8 @@ class Create(base.Command):
       # TODO(b/65161039): Stop checking release path in the middle of GA code.
       kwargs = {}
       if csek_keys:
-        disk_key_or_none = csek_keys.LookupKey(
-            disk_ref, args.require_csek_key_create)
+        disk_key_or_none = csek_keys.LookupKey(disk_ref,
+                                               args.require_csek_key_create)
         disk_key_message_or_none = csek_utils.MaybeToMessage(
             disk_key_or_none, client.apitools_client)
         kwargs['diskEncryptionKey'] = disk_key_message_or_none
@@ -451,10 +454,12 @@ class Create(base.Command):
       if self.source_disk_enabled:
         source_disk_ref = self.GetSourceDiskUri(args, compute_holder)
         disk.sourceDisk = source_disk_ref
-      if (support_shared_disk and disk_ref.Collection() == 'compute.regionDisks'
-          and args.IsSpecified('multi_writer')):
-        raise exceptions.InvalidArgumentException('--multi-writer', (
-            '--multi-writer can be used only with --zone flag'))
+      if (support_shared_disk and
+          disk_ref.Collection() == 'compute.regionDisks' and
+          args.IsSpecified('multi_writer')):
+        raise exceptions.InvalidArgumentException(
+            '--multi-writer',
+            ('--multi-writer can be used only with --zone flag'))
 
       if (support_shared_disk and disk_ref.Collection() == 'compute.disks' and
           args.IsSpecified('multi_writer')):
@@ -514,14 +519,19 @@ class CreateBeta(Create):
 
     _CommonArgs(
         parser,
-        include_physical_block_size_support=True)
+        include_physical_block_size_support=True,
+        vss_erase_enabled=True)
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
 
   def Run(self, args):
-    return self._Run(args, supports_kms_keys=True, supports_physical_block=True)
+    return self._Run(
+        args,
+        supports_kms_keys=True,
+        supports_physical_block=True,
+        support_vss_erase=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -553,8 +563,12 @@ class CreateAlpha(Create):
               'resize and snapshot operations.'))
 
   def Run(self, args):
-    return self._Run(args, supports_kms_keys=True, supports_physical_block=True,
-                     support_shared_disk=True, support_vss_erase=True)
+    return self._Run(
+        args,
+        supports_kms_keys=True,
+        supports_physical_block=True,
+        support_shared_disk=True,
+        support_vss_erase=True)
 
 
 def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):
@@ -574,9 +588,9 @@ def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):
         '--replica-zones',
         '--replica-zones is required for regional disk creation')
   if args.replica_zones is not None:
-    return create.ParseRegionDisksResources(
-        compute_holder.resources, args.DISK_NAME, args.replica_zones,
-        args.project, args.region)
+    return create.ParseRegionDisksResources(compute_holder.resources,
+                                            args.DISK_NAME, args.replica_zones,
+                                            args.project, args.region)
 
   disk_refs = Create.disks_arg.ResolveAsResource(
       args,
@@ -589,8 +603,8 @@ def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):
     if disk_ref.Collection() == 'compute.regionDisks':
       raise exceptions.RequiredArgumentException(
           '--replica-zones',
-          '--replica-zones is required for regional disk creation [{}]'.
-          format(disk_ref.SelfLink()))
+          '--replica-zones is required for regional disk creation [{}]'.format(
+              disk_ref.SelfLink()))
 
   return disk_refs
 

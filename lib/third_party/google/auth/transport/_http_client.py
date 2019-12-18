@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Transport adapter for http.client, for internal use only."""
 
 import logging
@@ -27,53 +28,49 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class Response(transport.Response):
-  """http.client transport response adapter.
+    """http.client transport response adapter.
 
     Args:
         response (http.client.HTTPResponse): The raw http client response.
-  """
+    """
 
-  def __init__(self, response):
-    self._status = response.status
-    self._headers = {key.lower(): value for key, value in response.getheaders()}
-    self._data = response.read()
+    def __init__(self, response):
+        self._status = response.status
+        self._headers = {key.lower(): value for key, value in response.getheaders()}
+        self._data = response.read()
 
-  @property
-  def status(self):
-    return self._status
+    @property
+    def status(self):
+        return self._status
 
-  @property
-  def headers(self):
-    return self._headers
+    @property
+    def headers(self):
+        return self._headers
 
-  @property
-  def data(self):
-    return self._data
+    @property
+    def data(self):
+        return self._data
 
 
 class Request(transport.Request):
-  """http.client transport request adapter."""
+    """http.client transport request adapter."""
 
-  def __call__(self,
-               url,
-               method='GET',
-               body=None,
-               headers=None,
-               timeout=None,
-               **kwargs):
-    """Make an HTTP request using http.client.
+    def __call__(
+        self, url, method="GET", body=None, headers=None, timeout=None, **kwargs
+    ):
+        """Make an HTTP request using http.client.
 
         Args:
             url (str): The URI to be requested.
-            method (str): The HTTP method to use for the request. Defaults to
-              'GET'.
+            method (str): The HTTP method to use for the request. Defaults
+                to 'GET'.
             body (bytes): The payload / body in HTTP request.
             headers (Mapping): Request headers.
             timeout (Optional(int)): The number of seconds to wait for a
-              response from the server. If not specified or if None, the socket
-              global default timeout will be used.
+                response from the server. If not specified or if None, the
+                socket global default timeout will be used.
             kwargs: Additional arguments passed throught to the underlying
-              :meth:`~http.client.HTTPConnection.request` method.
+                :meth:`~http.client.HTTPConnection.request` method.
 
         Returns:
             Response: The HTTP response.
@@ -81,36 +78,38 @@ class Request(transport.Request):
         Raises:
             google.auth.exceptions.TransportError: If any exception occurred.
         """
-    # socket._GLOBAL_DEFAULT_TIMEOUT is the default in http.client.
-    if timeout is None:
-      timeout = socket._GLOBAL_DEFAULT_TIMEOUT
+        # socket._GLOBAL_DEFAULT_TIMEOUT is the default in http.client.
+        if timeout is None:
+            timeout = socket._GLOBAL_DEFAULT_TIMEOUT
 
-    # http.client doesn't allow None as the headers argument.
-    if headers is None:
-      headers = {}
+        # http.client doesn't allow None as the headers argument.
+        if headers is None:
+            headers = {}
 
-    # http.client needs the host and path parts specified separately.
-    parts = urllib.parse.urlsplit(url)
-    path = urllib.parse.urlunsplit(
-        ('', '', parts.path, parts.query, parts.fragment))
+        # http.client needs the host and path parts specified separately.
+        parts = urllib.parse.urlsplit(url)
+        path = urllib.parse.urlunsplit(
+            ("", "", parts.path, parts.query, parts.fragment)
+        )
 
-    if parts.scheme != 'http':
-      raise exceptions.TransportError(
-          'http.client transport only supports the http scheme, {}'
-          'was specified'.format(parts.scheme))
+        if parts.scheme != "http":
+            raise exceptions.TransportError(
+                "http.client transport only supports the http scheme, {}"
+                "was specified".format(parts.scheme)
+            )
 
-    connection = http_client.HTTPConnection(parts.netloc, timeout=timeout)
+        connection = http_client.HTTPConnection(parts.netloc, timeout=timeout)
 
-    try:
-      _LOGGER.debug('Making request: %s %s', method, url)
+        try:
+            _LOGGER.debug("Making request: %s %s", method, url)
 
-      connection.request(method, path, body=body, headers=headers, **kwargs)
-      response = connection.getresponse()
-      return Response(response)
+            connection.request(method, path, body=body, headers=headers, **kwargs)
+            response = connection.getresponse()
+            return Response(response)
 
-    except (http_client.HTTPException, socket.error) as caught_exc:
-      new_exc = exceptions.TransportError(caught_exc)
-      six.raise_from(new_exc, caught_exc)
+        except (http_client.HTTPException, socket.error) as caught_exc:
+            new_exc = exceptions.TransportError(caught_exc)
+            six.raise_from(new_exc, caught_exc)
 
-    finally:
-      connection.close()
+        finally:
+            connection.close()

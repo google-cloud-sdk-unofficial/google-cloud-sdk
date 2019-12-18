@@ -43,7 +43,7 @@ class List(base.ListCommand):
           table(
             name,
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
-            status
+            state
           )
         """)
 

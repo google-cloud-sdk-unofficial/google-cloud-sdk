@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
 """Interfaces for credentials."""
 
 import abc
@@ -22,7 +24,7 @@ from google.auth import _helpers
 
 @six.add_metaclass(abc.ABCMeta)
 class Credentials(object):
-  """Base class for all credentials.
+    """Base class for all credentials.
 
     All credentials have a :attr:`token` that is used for authentication and
     may also optionally set an :attr:`expiry` to indicate when the token will
@@ -40,134 +42,129 @@ class Credentials(object):
     with modifications such as :meth:`ScopedCredentials.with_scopes`.
     """
 
-  def __init__(self):
-    self.token = None
-    """str: The bearer token that can be used in HTTP headers to make
+    def __init__(self):
+        self.token = None
+        """str: The bearer token that can be used in HTTP headers to make
+        authenticated requests."""
+        self.expiry = None
+        """Optional[datetime]: When the token expires and is no longer valid.
+        If this is None, the token is assumed to never expire."""
 
-        authenticated requests.
-    """
-    self.expiry = None
-    """Optional[datetime]: When the token expires and is no longer valid.
-
-        If this is None, the token is assumed to never expire.
-    """
-
-  @property
-  def expired(self):
-    """Checks if the credentials are expired.
+    @property
+    def expired(self):
+        """Checks if the credentials are expired.
 
         Note that credentials can be invalid but not expired because
         Credentials with :attr:`expiry` set to None is considered to never
         expire.
         """
-    if not self.expiry:
-      return False
+        if not self.expiry:
+            return False
 
-    # Remove 5 minutes from expiry to err on the side of reporting
-    # expiration early so that we avoid the 401-refresh-retry loop.
-    skewed_expiry = self.expiry - _helpers.CLOCK_SKEW
-    return _helpers.utcnow() >= skewed_expiry
+        # Remove 5 minutes from expiry to err on the side of reporting
+        # expiration early so that we avoid the 401-refresh-retry loop.
+        skewed_expiry = self.expiry - _helpers.CLOCK_SKEW
+        return _helpers.utcnow() >= skewed_expiry
 
-  @property
-  def valid(self):
-    """Checks the validity of the credentials.
+    @property
+    def valid(self):
+        """Checks the validity of the credentials.
 
         This is True if the credentials have a :attr:`token` and the token
         is not :attr:`expired`.
         """
-    return self.token is not None and not self.expired
+        return self.token is not None and not self.expired
 
-  @abc.abstractmethod
-  def refresh(self, request):
-    """Refreshes the access token.
+    @abc.abstractmethod
+    def refresh(self, request):
+        """Refreshes the access token.
 
         Args:
             request (google.auth.transport.Request): The object used to make
-              HTTP requests.
+                HTTP requests.
 
         Raises:
             google.auth.exceptions.RefreshError: If the credentials could
                 not be refreshed.
         """
-    # pylint: disable=missing-raises-doc
-    # (pylint doesn't recognize that this is abstract)
-    raise NotImplementedError('Refresh must be implemented')
+        # pylint: disable=missing-raises-doc
+        # (pylint doesn't recognize that this is abstract)
+        raise NotImplementedError("Refresh must be implemented")
 
-  def apply(self, headers, token=None):
-    """Apply the token to the authentication header.
+    def apply(self, headers, token=None):
+        """Apply the token to the authentication header.
 
         Args:
             headers (Mapping): The HTTP request headers.
             token (Optional[str]): If specified, overrides the current access
-              token.
-    """
-    headers['authorization'] = 'Bearer {}'.format(
-        _helpers.from_bytes(token or self.token))
+                token.
+        """
+        headers["authorization"] = "Bearer {}".format(
+            _helpers.from_bytes(token or self.token)
+        )
 
-  def before_request(self, request, method, url, headers):
-    """Performs credential-specific before request logic.
+    def before_request(self, request, method, url, headers):
+        """Performs credential-specific before request logic.
 
         Refreshes the credentials if necessary, then calls :meth:`apply` to
         apply the token to the authentication header.
 
         Args:
             request (google.auth.transport.Request): The object used to make
-              HTTP requests.
+                HTTP requests.
             method (str): The request's HTTP method or the RPC method being
-              invoked.
+                invoked.
             url (str): The request's URI or the RPC service's URI.
             headers (Mapping): The request's headers.
-    """
-    # pylint: disable=unused-argument
-    # (Subclasses may use these arguments to ascertain information about
-    # the http request.)
-    if not self.valid:
-      self.refresh(request)
-    self.apply(headers)
+        """
+        # pylint: disable=unused-argument
+        # (Subclasses may use these arguments to ascertain information about
+        # the http request.)
+        if not self.valid:
+            self.refresh(request)
+        self.apply(headers)
 
 
 class AnonymousCredentials(Credentials):
-  """Credentials that do not provide any authentication information.
+    """Credentials that do not provide any authentication information.
 
     These are useful in the case of services that support anonymous access or
     local service emulators that do not use credentials.
     """
 
-  @property
-  def expired(self):
-    """Returns `False`, anonymous credentials never expire."""
-    return False
+    @property
+    def expired(self):
+        """Returns `False`, anonymous credentials never expire."""
+        return False
 
-  @property
-  def valid(self):
-    """Returns `True`, anonymous credentials are always valid."""
-    return True
+    @property
+    def valid(self):
+        """Returns `True`, anonymous credentials are always valid."""
+        return True
 
-  def refresh(self, request):
-    """Raises :class:`ValueError``, anonymous credentials cannot be
+    def refresh(self, request):
+        """Raises :class:`ValueError``, anonymous credentials cannot be
+        refreshed."""
+        raise ValueError("Anonymous credentials cannot be refreshed.")
 
-        refreshed.
-    """
-    raise ValueError('Anonymous credentials cannot be refreshed.')
-
-  def apply(self, headers, token=None):
-    """Anonymous credentials do nothing to the request.
+    def apply(self, headers, token=None):
+        """Anonymous credentials do nothing to the request.
 
         The optional ``token`` argument is not supported.
 
         Raises:
             ValueError: If a token was specified.
         """
-    if token is not None:
-      raise ValueError("Anonymous credentials don't support tokens.")
+        if token is not None:
+            raise ValueError("Anonymous credentials don't support tokens.")
 
-  def before_request(self, request, method, url, headers):
-    """Anonymous credentials do nothing to the request."""
+    def before_request(self, request, method, url, headers):
+        """Anonymous credentials do nothing to the request."""
 
 
 @six.add_metaclass(abc.ABCMeta)
 class ReadOnlyScoped(object):
-  """Interface for credentials whose scopes can be queried.
+    """Interface for credentials whose scopes can be queried.
 
     OAuth 2.0-based credentials allow limiting access using scopes as described
     in `RFC6749 Section 3.3`_.
@@ -195,22 +192,23 @@ class ReadOnlyScoped(object):
     .. _RFC6749 Section 3.3: https://tools.ietf.org/html/rfc6749#section-3.3
     """
 
-  def __init__(self):
-    super(ReadOnlyScoped, self).__init__()
-    self._scopes = None
+    def __init__(self):
+        super(ReadOnlyScoped, self).__init__()
+        self._scopes = None
 
-  @property
-  def scopes(self):
-    """Sequence[str]: the credentials' current set of scopes."""
-    return self._scopes
+    @property
+    def scopes(self):
+        """Sequence[str]: the credentials' current set of scopes."""
+        return self._scopes
 
-  @abc.abstractproperty
-  def requires_scopes(self):
-    """True if these credentials require scopes to obtain an access token."""
-    return False
+    @abc.abstractproperty
+    def requires_scopes(self):
+        """True if these credentials require scopes to obtain an access token.
+        """
+        return False
 
-  def has_scopes(self, scopes):
-    """Checks if the credentials have the given scopes.
+    def has_scopes(self, scopes):
+        """Checks if the credentials have the given scopes.
 
         .. warning: This method is not guaranteed to be accurate if the
             credentials are :attr:`~Credentials.invalid`.
@@ -221,11 +219,11 @@ class ReadOnlyScoped(object):
         Returns:
             bool: True if the credentials have the given scopes.
         """
-    return set(scopes).issubset(set(self._scopes or []))
+        return set(scopes).issubset(set(self._scopes or []))
 
 
 class Scoped(ReadOnlyScoped):
-  """Interface for credentials whose scopes can be replaced while copying.
+    """Interface for credentials whose scopes can be replaced while copying.
 
     OAuth 2.0-based credentials allow limiting access using scopes as described
     in `RFC6749 Section 3.3`_.
@@ -253,24 +251,24 @@ class Scoped(ReadOnlyScoped):
     .. _RFC6749 Section 3.3: https://tools.ietf.org/html/rfc6749#section-3.3
     """
 
-  @abc.abstractmethod
-  def with_scopes(self, scopes):
-    """Create a copy of these credentials with the specified scopes.
+    @abc.abstractmethod
+    def with_scopes(self, scopes):
+        """Create a copy of these credentials with the specified scopes.
 
         Args:
-            scopes (Sequence[str]): The list of scopes to attach to the current
-              credentials.
+            scopes (Sequence[str]): The list of scopes to attach to the
+                current credentials.
 
         Raises:
             NotImplementedError: If the credentials' scopes can not be changed.
                 This can be avoided by checking :attr:`requires_scopes` before
                 calling this method.
         """
-    raise NotImplementedError('This class does not require scoping.')
+        raise NotImplementedError("This class does not require scoping.")
 
 
 def with_scopes_if_required(credentials, scopes):
-  """Creates a copy of the credentials with scopes if scoping is required.
+    """Creates a copy of the credentials with scopes if scoping is required.
 
     This helper function is useful when you do not know (or care to know) the
     specific type of credentials you are using (such as when you use
@@ -281,7 +279,7 @@ def with_scopes_if_required(credentials, scopes):
 
     Args:
         credentials (google.auth.credentials.Credentials): The credentials to
-          scope if necessary.
+            scope if necessary.
         scopes (Sequence[str]): The list of scopes to use.
 
     Returns:
@@ -289,19 +287,19 @@ def with_scopes_if_required(credentials, scopes):
             credentials, or the passed in credentials instance if no scoping
             was required.
     """
-  if isinstance(credentials, Scoped) and credentials.requires_scopes:
-    return credentials.with_scopes(scopes)
-  else:
-    return credentials
+    if isinstance(credentials, Scoped) and credentials.requires_scopes:
+        return credentials.with_scopes(scopes)
+    else:
+        return credentials
 
 
 @six.add_metaclass(abc.ABCMeta)
 class Signing(object):
-  """Interface for credentials that can cryptographically sign messages."""
+    """Interface for credentials that can cryptographically sign messages."""
 
-  @abc.abstractmethod
-  def sign_bytes(self, message):
-    """Signs the given message.
+    @abc.abstractmethod
+    def sign_bytes(self, message):
+        """Signs the given message.
 
         Args:
             message (bytes): The message to sign.
@@ -309,20 +307,20 @@ class Signing(object):
         Returns:
             bytes: The message's cryptographic signature.
         """
-    # pylint: disable=missing-raises-doc,redundant-returns-doc
-    # (pylint doesn't recognize that this is abstract)
-    raise NotImplementedError('Sign bytes must be implemented.')
+        # pylint: disable=missing-raises-doc,redundant-returns-doc
+        # (pylint doesn't recognize that this is abstract)
+        raise NotImplementedError("Sign bytes must be implemented.")
 
-  @abc.abstractproperty
-  def signer_email(self):
-    """Optional[str]: An email address that identifies the signer."""
-    # pylint: disable=missing-raises-doc
-    # (pylint doesn't recognize that this is abstract)
-    raise NotImplementedError('Signer email must be implemented.')
+    @abc.abstractproperty
+    def signer_email(self):
+        """Optional[str]: An email address that identifies the signer."""
+        # pylint: disable=missing-raises-doc
+        # (pylint doesn't recognize that this is abstract)
+        raise NotImplementedError("Signer email must be implemented.")
 
-  @abc.abstractproperty
-  def signer(self):
-    """google.auth.crypt.Signer: The signer used to sign bytes."""
-    # pylint: disable=missing-raises-doc
-    # (pylint doesn't recognize that this is abstract)
-    raise NotImplementedError('Signer must be implemented.')
+    @abc.abstractproperty
+    def signer(self):
+        """google.auth.crypt.Signer: The signer used to sign bytes."""
+        # pylint: disable=missing-raises-doc
+        # (pylint doesn't recognize that this is abstract)
+        raise NotImplementedError("Signer must be implemented.")

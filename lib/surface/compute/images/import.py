@@ -140,11 +140,10 @@ class Import(base.CreateCommand):
     workflow.add_argument(
         '--custom-workflow',
         help=("""\
-              Specifies a custom workflow to use for image translation.
-              Workflow should be relative to the image_import directory here:
-              []({0}). For example: ``{1}''""".format(
-                  _WORKFLOWS_URL,
-                  os_choices.OS_CHOICES_MAP[sorted(cls._OS_CHOICES)[0]])),
+              Specifies a custom workflow to use for image translation. Workflow
+              should be relative to the image_import directory here: []({0}).
+              For example: `debian/translate_debian_9.wf.json'""".format(
+                  _WORKFLOWS_URL)),
         hidden=True
     )
 

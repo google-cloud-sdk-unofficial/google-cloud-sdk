@@ -79,21 +79,6 @@ LOCAL_MODEL_PATH = "/tmp/model"
 PredictionErrorType = collections.namedtuple(
     "PredictionErrorType", ("message", "code"))
 
-# Keys related to the explainability feature.
-METADATA_FILE_NAME = "explanation_metadata.json"
-EXPLANATION_CONFIG_KEY = "explanation_config"
-ABLATION_ATTRIBUTION_KEY = "ablation_attribution"
-INTEGRATED_GRADIENTS_KEY = "integrated_gradients_attribution"
-NUM_INTEGRAL_STEPS = "num_integral_steps"
-TREE_SHAP_ATTRIBUTION_KEY = "tree_shap_attribution"
-SAMPLING_SHAP_ATTRIBUTION_KEY = "sampling_shap_attribution"
-SAMPLED_SHAPLEY_ATTRIBUTION_KEY = "sampled_shapley_attribution"
-NUM_PATHS = "num_paths"
-SAABAS_ATTRIBUTION_KEY = "saabas_attribution"
-NUM_FEATURE_INTERACTIONS = "num_feature_interactions"
-IG_ATTRIBUTION_KEY = "integrated_gradients_attribution"
-NUM_INTEGRAL_STEPS = "num_integral_steps"
-
 # Keys related to requests and responses to prediction server.
 PREDICTIONS_KEY = "predictions"
 OUTPUTS_KEY = "outputs"
@@ -113,10 +98,6 @@ class PredictionError(Exception):
       message="There was a problem processing the outputs", code=3)
   INVALID_USER_CODE = PredictionErrorType(
       message="There was a problem processing the user code", code=4)
-  FAILED_TO_LOAD_METADATA = PredictionErrorType(
-      message="Failed to load explanation_metadata.json", code=5)
-  FAILED_TO_EXPLAIN_MODEL = PredictionErrorType(
-      message="Failed to run model explainer", code=6)
   # When adding new exception, please update the ERROR_MESSAGE_ list as well as
   # unittest.
 
@@ -277,17 +258,6 @@ class BaseModel(Model):
       postprocessed = self.postprocess(
           predicted_outputs, original_input=instances, stats=stats, **kwargs)
     return postprocessed
-
-  def explain(self, instances):
-    """Runs model explanation on the instances.
-
-    Args:
-      instances: list of instances that will be explained.
-
-    Returns:
-      A json format of feature attributions.
-    """
-    return self._client.explain(instances)
 
   def _validate_kwargs(self, kwargs):
     """Validates and sets defaults for extra predict keyword arguments.
@@ -588,140 +558,6 @@ def get_field_in_version_json(field_name):
   logging.info("Found value: %s, for field: %s from create_version_request",
                version.get(field_name), field_name)
   return version.get(field_name)
-
-
-# TODO(user): Move this config loading logic to config_factory.
-def get_xgboost_explanation_config(xgboost_factory_module):
-  """Returns an ExplanationConfig for XGBoost model.
-
-  Args:
-    xgboost_factory_module: The xgboost module within the explainers library.
-
-  Returns:
-    The appropriate ExplanationConfig to use for explanations of XgBoost models.
-
-  Raises:
-    ValueError if the config is malformed.
-  """
-  config_request = get_field_in_version_json(EXPLANATION_CONFIG_KEY)
-  if config_request is None:
-    return None
-  if TREE_SHAP_ATTRIBUTION_KEY in config_request:
-    return xgboost_factory_module.XGBoostSHAPConfig()
-  elif SAABAS_ATTRIBUTION_KEY in config_request:
-    return xgboost_factory_module.XGBoostSaabasConfig()
-  elif ABLATION_ATTRIBUTION_KEY in config_request:
-    ablation_attribution = config_request.get(ABLATION_ATTRIBUTION_KEY)
-    num_feature_interactions = ablation_attribution.get(
-        NUM_FEATURE_INTERACTIONS, 1)
-    return xgboost_factory_module.XGBoostAblationConfig(
-        num_feature_interactions)
-  raise ValueError("{} is not a supported explanation config for {}.".format(
-      repr(config_request), XGBOOST_FRAMEWORK_NAME))
-
-
-# TODO(user): Move this config loading logic to config_factory.
-def get_tensorflow_explanation_config(tf_configs_module):
-  """Returns an ExplanationConfig for TensorFlow model.
-
-  Args:
-    tf_configs_module: The tf.configs module within the explainers library.
-
-  Returns:
-    The appropriate ExplanationConfig to use for explanations of TF models.
-
-  Raises:
-    ValueError if the config is malformed.
-  """
-  config_request = get_field_in_version_json(EXPLANATION_CONFIG_KEY)
-  if config_request is None:
-    return None
-  # config_request is a json representation of the proto message
-  # ExplanationConfig, see //cloud/ml/beta/proto/explanation.proto.
-  if ABLATION_ATTRIBUTION_KEY in config_request:
-    logging.warning("Explanation strategy requested is Ablation (deprecated).")
-    return tf_configs_module.TFAblationConfig()
-  elif SAMPLING_SHAP_ATTRIBUTION_KEY in config_request:
-    attribution_config = config_request.get(SAMPLING_SHAP_ATTRIBUTION_KEY)
-    num_paths = attribution_config.get(NUM_PATHS)
-    config = tf_configs_module.TFSHAPConfig(num_paths=num_paths)
-    logging.debug(
-        "Explanation strategy requested is SamplingShap, "
-        "num_paths: %s", config.num_paths)
-    return config
-  elif SAMPLED_SHAPLEY_ATTRIBUTION_KEY in config_request:
-    attribution_config = config_request.get(SAMPLED_SHAPLEY_ATTRIBUTION_KEY)
-    num_paths = attribution_config.get(NUM_PATHS)
-    config = tf_configs_module.TFSHAPConfig(num_paths=num_paths)
-    logging.debug(
-        "Explanation strategy requested is SampledShapley, "
-        "num_paths: %s", config.num_paths)
-    return config
-  elif IG_ATTRIBUTION_KEY in config_request:
-    ig_attribution = config_request.get(IG_ATTRIBUTION_KEY)
-    integral_steps = ig_attribution.get(NUM_INTEGRAL_STEPS, 50)
-    logging.debug(
-        "Explanation strategy requested is integrated_gradients, "
-        "num_integral_steps: %s", integral_steps)
-    return tf_configs_module.TFIGConfig(integral_steps)  # integral_steps
-  raise ValueError("{} is not a supported explanation config for {}.".format(
-      repr(config_request), TENSORFLOW_FRAMEWORK_NAME))
-
-
-def load_metadata(base_path):
-  """Loads explanation_metadata.json file from the same GCS bucket where the model locates.
-
-  This method will only be called for TF explainers when the explainability
-  feature is enabled.
-
-  Args:
-      base_path: path to the directory containing the TF model.
-      This path can be either a local path or a GCS path.
-
-  Returns:
-    The metadata with the model at base_path loaded.
-
-  Raises:
-    PredictionError: If there is a problem while loading the file.
-  """
-  if base_path.startswith("gs://"):
-    # Example path: <base_path>/prepared_model/<model_version_stamp>/
-    # explanation_metadata.json
-    metadata_file_path = os.path.join(base_path,
-                                      PREPARED_MODEL_SUBDIRECTORY,
-                                      "*",
-                                      METADATA_FILE_NAME)
-    logging.debug("Starting to copy %s to %s", metadata_file_path,
-                  LOCAL_MODEL_PATH)
-    if not os.path.exists(LOCAL_MODEL_PATH):
-      os.makedirs(LOCAL_MODEL_PATH)
-    try:
-      subprocess.check_call(
-          ["gsutil", "cp", metadata_file_path, LOCAL_MODEL_PATH],
-          stdin=subprocess.PIPE)
-    except subprocess.CalledProcessError as e:
-      logging.error(str(e))
-      raise
-    base_path = LOCAL_MODEL_PATH
-
-  metadata_file_path = os.path.join(base_path, METADATA_FILE_NAME)
-  if not os.path.exists(metadata_file_path):
-    error_msg = "Missing {}, but required for explainability.".format(
-        metadata_file_path)
-    logging.critical(error_msg)
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_METADATA, error_msg)
-
-  metadata = None
-  try:
-    # pylint: disable=g-import-not-at-top
-    from explainers.common import explain_metadata
-    # pylint: enable=g-import-not-at-top
-    metadata = explain_metadata.ExplainMetadata.from_file(metadata_file_path)
-  except IOError as e:
-    error_msg = "Failed to read explanation_metadata.json: {}.".format(str(e))
-    logging.critical(error_msg)
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_METADATA, error_msg)
-  return metadata
 
 
 def parse_predictions(response_json):

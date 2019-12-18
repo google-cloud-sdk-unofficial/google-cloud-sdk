@@ -66,8 +66,7 @@ class Delete(base.DeleteCommand):
     # We can't be more specific than "limited period" because the API says
     # "at an unspecified time".
     log.status.Print(
-        """\nYou can undo this operation for a limited period by running '
-        commands below. {0}
-         $ gcloud projects undelete {1}"""
+        '\nYou can undo this operation for a limited period by running'
+        ' the commands below.\n    $ gcloud projects undelete {1}\n\n{0}'
         .format(flags.SHUT_DOWN_PROJECTS, args.id))
     return result

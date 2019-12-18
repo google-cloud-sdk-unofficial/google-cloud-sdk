@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class MachineImage(base.Group):
   """Read and manage Google Compute Engine machine image resources."""
   category = base.COMPUTE_CATEGORY

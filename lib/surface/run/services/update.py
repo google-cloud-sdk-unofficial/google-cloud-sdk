@@ -58,7 +58,6 @@ class Update(base.Command):
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
-    flags.AddCpuFlag(cluster_group)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -79,6 +78,9 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
+
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddCpuFlag(cluster_group)
 
   def Run(self, args):
     """Update configuration information about the service.
@@ -154,5 +156,6 @@ class AlphaUpdate(Update):
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
     flags.AddPortFlag(parser)
+    flags.AddCpuFlag(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

@@ -38,6 +38,8 @@ from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenanc
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
+import six
+
 _INSTANTIATE_FROM_VALUES = [
     'attach-read-only',
     'blank',
@@ -55,7 +57,7 @@ def _CommonArgs(
     support_local_ssd_size=False,
     support_kms=False,
     support_resource_policy=False,
-    support_min_node_cpus=False
+    support_min_node_cpu=False
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -87,8 +89,8 @@ def _CommonArgs(
 
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
-  if support_min_node_cpus:
-    sole_tenancy_flags.AddMinNodeCpusArg(parser)
+  if support_min_node_cpu:
+    instances_flags.AddMinNodeCpuArg(parser)
 
   flags.AddRegionFlag(
       parser,
@@ -266,6 +268,30 @@ def BuildConfidentialInstanceConfigMessage(messages, args):
   return confidential_instance_config_message
 
 
+def PackageLabels(labels_cls, labels):
+  # Sorted for test stability
+  return labels_cls(additionalProperties=[
+      labels_cls.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(six.iteritems(labels))])
+
+
+# Function copied from labels_util.
+# Temporary fix for adoption tracking of Managed Envoy.
+# TODO(b/146051298) Remove this fix when structured metadata is available.
+def ParseCreateArgsWithMeshMode(args, labels_cls, labels_dest='labels'):
+  """Initializes labels based on args and the given class."""
+  labels = getattr(args, labels_dest)
+  if getattr(args, 'mesh',
+             False) and args.mesh['mode'] == mesh_mode_aux_data.MeshModes.ON:
+    if labels is None:
+      labels = collections.OrderedDict()
+    labels['mesh-mode'] = 'on'
+
+  if labels is None:
+    return None
+  return PackageLabels(labels_cls, labels)
+
+
 def AddMeshArgsToMetadata(args):
   """Inserts the Mesh mode arguments provided by the user to the instance metadata.
 
@@ -292,6 +318,17 @@ def AddMeshArgsToMetadata(args):
           'workload-ports': workload_ports,
       }
 
+    # add --mesh_labels flag to metadata as described by go/gce-envoy-gcloud
+    if getattr(args, 'mesh_labels', False):
+      mesh_mode_config['labels'] = args.mesh_labels
+
+    # add --mesh-proxy-config flag to metadata
+    # as described by go/gce-envoy-gcloud
+    if getattr(args, 'mesh_proxy_config', False):
+      mesh_mode_config['proxy-spec'] = {
+          'trafficdirector-config': args.mesh_proxy_config
+      }
+
     if args.mesh['mode'] == mesh_mode_aux_data.MeshModes.ON:
       if 'startup-script' not in args.metadata:
         args.metadata['startup-script'] = mesh_mode_aux_data.startup_script
@@ -302,14 +339,14 @@ def AddMeshArgsToMetadata(args):
 
       args.metadata['enable-guest-attributes'] = 'TRUE'
 
-    args.metadata['mesh'] = json.dumps(mesh_mode_config)
+    args.metadata['gce-mesh'] = json.dumps(mesh_mode_config)
 
 
 def _RunCreate(compute_api,
                args,
                support_source_instance,
                support_kms=False,
-               support_min_node_cpus=False,
+               support_min_node_cpu=False,
                support_confidential_compute=False):
   """Common routine for creating instance template.
 
@@ -321,7 +358,7 @@ def _RunCreate(compute_api,
         arguments specified in the .Args() method.
       support_source_instance: indicates whether source instance is supported.
       support_kms: Indicate whether KMS is integrated or not.
-      support_min_node_cpus: Indicate whether the --min-node-cpus flag for
+      support_min_node_cpu: Indicate whether the --min-node-cpu flag for
         sole tenancy overcommit is supported.
       support_confidential_compute: Indicate whether confidential compute is
         supported.
@@ -386,9 +423,9 @@ def _RunCreate(compute_api,
   node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
       args, client.messages)
 
-  min_node_cpus = None
-  if support_min_node_cpus and args.IsSpecified('min_node_cpus'):
-    min_node_cpus = args.min_node_cpus
+  min_node_cpu = None
+  if support_min_node_cpu and args.IsSpecified('min_node_cpu'):
+    min_node_cpu = args.min_node_cpu
 
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
@@ -396,7 +433,7 @@ def _RunCreate(compute_api,
       preemptible=args.preemptible,
       restart_on_failure=args.restart_on_failure,
       node_affinities=node_affinities,
-      min_node_cpus=min_node_cpus)
+      min_node_cpu=min_node_cpu)
 
   if args.no_service_account:
     service_account = None
@@ -519,7 +556,7 @@ def _RunCreate(compute_api,
       instanceTemplate=instance_template,
       project=instance_template_ref.project)
 
-  request.instanceTemplate.properties.labels = labels_util.ParseCreateArgs(
+  request.instanceTemplate.properties.labels = ParseCreateArgsWithMeshMode(
       args, client.messages.InstanceProperties.LabelsValue)
 
   _AddSourceInstanceToTemplate(
@@ -545,6 +582,7 @@ class Create(base.CreateCommand):
   """
   _support_source_instance = True
   _support_kms = True
+  _support_min_node_cpu = False
 
   @classmethod
   def Args(cls, parser):
@@ -552,7 +590,8 @@ class Create(base.CreateCommand):
         parser,
         release_track=base.ReleaseTrack.GA,
         support_source_instance=cls._support_source_instance,
-        support_kms=cls._support_kms
+        support_kms=cls._support_kms,
+        support_min_node_cpu=cls._support_min_node_cpu
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
 
@@ -570,7 +609,8 @@ class Create(base.CreateCommand):
         base_classes.ComputeApiHolder(base.ReleaseTrack.GA),
         args,
         support_source_instance=self._support_source_instance,
-        support_kms=self._support_kms
+        support_kms=self._support_kms,
+        support_min_node_cpu=self._support_min_node_cpu
     )
 
 
@@ -591,6 +631,7 @@ class CreateBeta(Create):
   _support_source_instance = True
   _support_kms = True
   _support_resource_policy = True
+  _support_min_node_cpu = True
 
   @classmethod
   def Args(cls, parser):
@@ -600,7 +641,8 @@ class CreateBeta(Create):
         support_local_ssd_size=False,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_resource_policy=cls._support_resource_policy
+        support_resource_policy=cls._support_resource_policy,
+        support_min_node_cpu=cls._support_min_node_cpu
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -618,7 +660,8 @@ class CreateBeta(Create):
         base_classes.ComputeApiHolder(base.ReleaseTrack.BETA),
         args=args,
         support_source_instance=self._support_source_instance,
-        support_kms=self._support_kms)
+        support_kms=self._support_kms,
+        support_min_node_cpu=self._support_min_node_cpu)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -638,7 +681,7 @@ class CreateAlpha(Create):
   _support_source_instance = True
   _support_kms = True
   _support_resource_policy = True
-  _support_min_node_cpus = True
+  _support_min_node_cpu = True
   _support_confidential_compute = True
 
   @classmethod
@@ -650,7 +693,7 @@ class CreateAlpha(Create):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_resource_policy=cls._support_resource_policy,
-        support_min_node_cpus=cls._support_min_node_cpus)
+        support_min_node_cpu=cls._support_min_node_cpu)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
@@ -671,7 +714,7 @@ class CreateAlpha(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_min_node_cpus=self._support_min_node_cpus,
+        support_min_node_cpu=self._support_min_node_cpu,
         support_confidential_compute=self._support_confidential_compute)
 
 

@@ -180,12 +180,7 @@ class Run(base.ListCommand):
     self.exit_code = exit_code.ExitCodeFromRollupOutcome(
         summary_fetcher.FetchMatrixRollupOutcome(),
         tr_messages.Outcome.SummaryValueValuesEnum)
-    if args.num_flaky_test_attempts > 0:
-      if not args.IsSpecified('format'):
-        args.format = util.FLAKY_ATTEMPTS_OUTCOMES_FORMAT
-      return summary_fetcher.CreateFlakyAttemptsMatrixOutcomeSummary()
-    else:
-      return summary_fetcher.CreateMatrixOutcomeSummary()
+    return summary_fetcher.CreateMatrixOutcomeSummaryUsingEnvironments()
 
 
 def PickHistoryName(args):

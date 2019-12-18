@@ -36,8 +36,8 @@ class GcloudignoreHelp(base.TopicCommand):
 
   The following `gcloud` commands respect the `.gcloudignore` file:
 
-  * `gcloud beta app deploy`
-  * `gcloud beta functions deploy`
+  * `gcloud app deploy`
+  * `gcloud functions deploy`
   * `gcloud builds submit`
   * `gcloud composer environments storage {dags, data, plugins} import`
   * `gcloud container builds submit`

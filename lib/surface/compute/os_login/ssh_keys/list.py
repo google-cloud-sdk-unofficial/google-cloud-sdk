@@ -59,7 +59,8 @@ class List(base.ListCommand):
     """See ssh_utils.BaseSSHCLICommand.Run."""
 
     oslogin_client = client.OsloginClient(self.ReleaseTrack())
-    user_email = properties.VALUES.core.account.Get()
+    user_email = (properties.VALUES.auth.impersonate_service_account.Get()
+                  or properties.VALUES.core.account.Get())
 
     keys = oslogin_utils.GetKeysFromProfile(user_email, oslogin_client)
     return keys

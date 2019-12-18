@@ -3,7 +3,7 @@ app-engine-grpc: google-cloud-sdk-app-engine-grpc
 app-engine-java: google-cloud-sdk-app-engine-java
 app-engine-php: unavailable
 app-engine-python: google-cloud-sdk-app-engine-python
-app-engine-python-extras: unavailable
+app-engine-python-extras: google-cloud-sdk-app-engine-python-extras
 alpha: google-cloud-sdk
 appctl: unavailable
 beta: google-cloud-sdk

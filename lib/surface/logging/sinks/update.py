@@ -121,16 +121,33 @@ class Update(base.UpdateCommand):
         sink_data['disabled'] = args.disabled
         update_mask.append('disabled')
 
-      sink_data['exclusions'] = []
-      if args.IsSpecified('clear_exclusions'):
+      if (args.IsSpecified('clear_exclusions') or
+          args.IsSpecified('remove_exclusions') or
+          args.IsSpecified('add_exclusion') or
+          args.IsSpecified('update_exclusion')):
+        sink_data['exclusions'] = []
         update_mask.append('exclusions')
-      elif args.IsSpecified('remove_exclusions'):
-        update_mask.append('exclusions')
-        exclusions_to_remove = args.remove_exclusions
+        exclusions_to_remove = (args.remove_exclusions
+                                if args.IsSpecified('remove_exclusions')
+                                else [])
+        exclusions_to_update = (args.update_exclusion
+                                if args.IsSpecified('update_exclusion')
+                                else [])
         for exclusion in sink.exclusions:
           if exclusion.name in exclusions_to_remove:
             exclusions_to_remove.remove(exclusion.name)
           else:
+            for i in range(len(exclusions_to_update)):
+              if exclusion.name == exclusions_to_update[i]['name']:
+                for key, value in exclusions_to_update[i].items():
+                  if key == 'description':
+                    exclusion.description = value
+                  if key == 'filter':
+                    exclusion.filter = value
+                  if key == 'disabled':
+                    exclusion.disabled = value
+                exclusions_to_update.pop(i)
+                break
             sink_data['exclusions'].append(exclusion)
 
         if exclusions_to_remove:
@@ -138,12 +155,19 @@ class Update(base.UpdateCommand):
               '--remove-exclusions',
               'Exclusions {0} do not exist'.format(
                   ','.join(exclusions_to_remove)))
-      elif args.IsSpecified('add_exclusions'):
-        update_mask.append('exclusions')
-        sink_data['exclusions'] = sink.exclusions
 
-      if args.IsSpecified('add_exclusions'):
-        sink_data['exclusions'] += args.add_exclusions
+        if exclusions_to_update:
+          raise calliope_exceptions.InvalidArgumentException(
+              '--update-exclusion',
+              'Exclusions {0} do not exist'.format(
+                  ','.join([exclusion['name']
+                            for exclusion in exclusions_to_update])))
+
+        if args.IsSpecified('clear_exclusions'):
+          sink_data['exclusions'] = []
+
+        if args.IsSpecified('add_exclusion'):
+          sink_data['exclusions'] += args.add_exclusion
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
@@ -229,7 +253,7 @@ class UpdateAlpha(Update):
         metavar='EXCLUSION ID',
         help=('Specify the name of the Logging exclusion(s) to delete.'))
     parser.add_argument(
-        '--add-exclusions', action='append',
+        '--add-exclusion', action='append',
         type=arg_parsers.ArgDict(
             spec={
                 'name': str,
@@ -241,9 +265,33 @@ class UpdateAlpha(Update):
         ),
         help=('Add an exclusion filter for a log entry that is not to be '
               'exported. This flag can be repeated.\n\n'
-              'The `name` and `filter` attributes are required. The following '
-              'keys are accepted:\n\n'
-              '*name*::: An identifier, such as "load-balancer-exclusion". '
+              'The ``name'' and ``filter'' attributes are required. The '
+              'following keys are accepted:\n\n'
+              '*name*::: An identifier, such as ``load-balancer-exclusion''. '
+              'Identifiers are limited to 100 characters and can include only '
+              'letters, digits, underscores, hyphens, and periods.\n\n'
+              '*description*::: A description of this exclusion.\n\n'
+              '*filter*::: An advanced log filter that matches the log entries '
+              'to be excluded.\n\n'
+              '*disabled*::: If this exclusion should be disabled and not '
+              'exclude the log entries.'))
+
+    parser.add_argument(
+        '--update-exclusion', action='append',
+        type=arg_parsers.ArgDict(
+            spec={
+                'name': str,
+                'description': str,
+                'filter': str,
+                'disabled': bool
+            },
+            required_keys=['name']
+        ),
+        help=('Update an exclusion filter for a log entry that is not to be '
+              'exported. This flag can be repeated.\n\n'
+              'The ``name'' and ``filter'' attributes are required. '
+              'following keys are accepted:\n\n'
+              'name*::: An identifier, such as ``load-balancer-exclusion''. '
               'Identifiers are limited to 100 characters and can include only '
               'letters, digits, underscores, hyphens, and periods.\n\n'
               '*description*::: A description of this exclusion.\n\n'

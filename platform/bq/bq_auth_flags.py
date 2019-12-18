@@ -5,7 +5,7 @@
 import os
 
 
-import gflags as flags
+from absl import flags
 
 FLAGS = flags.FLAGS
 

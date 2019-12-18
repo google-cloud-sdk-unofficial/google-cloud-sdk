@@ -33,7 +33,8 @@ class DescribeProfile(base.Command):
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
     oslogin_client = client.OsloginClient(self.ReleaseTrack())
-    user_email = properties.VALUES.core.account.Get()
+    user_email = (properties.VALUES.auth.impersonate_service_account.Get()
+                  or properties.VALUES.core.account.Get())
     return oslogin_client.GetLoginProfile(user_email)
 
 

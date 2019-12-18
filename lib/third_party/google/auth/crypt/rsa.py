@@ -11,18 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """RSA cryptography signer and verifier."""
 
+
 try:
-  # Prefer cryptograph-based RSA implementation.
-  from google.auth.crypt import _cryptography_rsa
+    # Prefer cryptograph-based RSA implementation.
+    from google.auth.crypt import _cryptography_rsa
 
-  RSASigner = _cryptography_rsa.RSASigner
-  RSAVerifier = _cryptography_rsa.RSAVerifier
+    RSASigner = _cryptography_rsa.RSASigner
+    RSAVerifier = _cryptography_rsa.RSAVerifier
 except ImportError:  # pragma: NO COVER
-  # Fallback to pure-python RSA implementation if cryptography is
-  # unavailable.
-  from google.auth.crypt import _python_rsa
+    # Fallback to pure-python RSA implementation if cryptography is
+    # unavailable.
+    from google.auth.crypt import _python_rsa
 
-  RSASigner = _python_rsa.RSASigner
-  RSAVerifier = _python_rsa.RSAVerifier
+    RSASigner = _python_rsa.RSASigner
+    RSAVerifier = _python_rsa.RSAVerifier

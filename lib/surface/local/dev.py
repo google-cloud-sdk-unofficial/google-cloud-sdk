@@ -83,7 +83,7 @@ def Skaffold(skaffold_config, context_name=None):
   Yields:
     The skaffold process.
   """
-  cmd = [_FindSkaffold(), 'dev', '-f', skaffold_config]
+  cmd = [_FindSkaffold(), 'dev', '-f', skaffold_config, '--port-forward']
   if context_name:
     cmd += ['--kube-context', context_name]
 
@@ -129,6 +129,11 @@ class Dev(base.Command):
         help='If running on minikube, delete the minikube profile at the end '
         'of the session.')
 
+    parser.add_argument(
+        '--minikube-vm-driver',
+        default='kvm2',
+        help='If running on minikube, use this vm driver.')
+
   def Run(self, args):
     settings = local.Settings.FromArgs(args)
     local_file_generator = local_files.LocalRuntimeFiles(settings)
@@ -151,10 +156,9 @@ class Dev(base.Command):
             cluster_name = DEFAULT_CLUSTER_NAME
 
           kubernetes_context = kube_context.Minikube(cluster_name,
-                                                     args.delete_minikube)
+                                                     args.delete_minikube,
+                                                     args.minikube_vm_driver)
 
         with kubernetes_context as context:
           with Skaffold(skaffold_config.name, context.context_name) as skaffold:
-            print('%s url: %s' % (settings.service_name,
-                                  context.ServiceUrl(settings.service_name)))
             skaffold.wait()

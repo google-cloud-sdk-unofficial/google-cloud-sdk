@@ -558,7 +558,7 @@ class UpdateBeta(Update):
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
-    flags.AddReleaseChannelFlag(group, is_update=True)
+    flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -630,7 +630,7 @@ class UpdateAlpha(Update):
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
-    flags.AddReleaseChannelFlag(group, is_update=True)
+    flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)

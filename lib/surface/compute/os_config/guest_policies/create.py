@@ -24,17 +24,71 @@ from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_comma
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.Command):
+  r"""Create a guest policy for a project.
+
+  ## EXAMPLES
+
+    To create a guest policy `policy1` in the current project, run:
+
+          $ {command} policy1 --file=path_to_config_file
+
+  """
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    parser.add_argument(
+        'POLICY_ID',
+        type=str,
+        help="""\
+        ID of the guest policy to create.
+
+        This ID must contain only lowercase letters, numbers, and hyphens, start
+        with a letter, end with a number or a letter, be between 1-63
+        characters, and unique within the project.""",
+    )
+    parser.add_argument(
+        '--file',
+        required=True,
+        help='The JSON or YAML file with the guest policy to create.',
+    )
+
+  def Run(self, args):
+    """See base class."""
+
+    release_track = self.ReleaseTrack()
+    client = osconfig_api_utils.GetClientInstance(release_track)
+    messages = osconfig_api_utils.GetClientMessages(release_track)
+
+    (guest_policy,
+     _) = osconfig_command_utils.GetResourceAndUpdateFieldsFromFile(
+         args.file, messages.GuestPolicy)
+
+    project = properties.VALUES.core.project.GetOrFail()
+    parent_path = osconfig_command_utils.GetProjectUriPath(project)
+    request = messages.OsconfigProjectsGuestPoliciesCreateRequest(
+        guestPolicy=guest_policy,
+        guestPolicyId=args.POLICY_ID,
+        parent=parent_path,
+    )
+    service = client.projects_guestPolicies
+
+    return service.Create(request)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(base.Command):
   r"""Create a guest policy for a project, a folder, or an organization.
 
   ## EXAMPLES
 
-    To create a guest policy 'policy1' in the current project, run:
+    To create a guest policy `policy1` in the current project, run:
 
           $ {command} policy1 --file=path_to_config_file
 
-    To create a guest policy 'policy1' in the organization '12345', run:
+    To create a guest policy `policy1` in the organization `12345`, run:
 
           $ {command} policy1 --file=path_to_config_file \
           --organization=12345
@@ -43,6 +97,7 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
+    """See base class."""
     parser.add_argument(
         'POLICY_ID',
         type=str,
@@ -58,19 +113,11 @@ class Create(base.Command):
         required=True,
         help='The JSON or YAML file with the guest policy to create.',
     )
-    parser.add_argument(
-        '--description',
-        type=str,
-        help="""\
-        Description of the guest policy to create. Length of the description is
-        limited to 1024 characters.
-
-        If specified, it will override any description provided in the file.""",
-    )
     osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
                                                  'to create')
 
   def Run(self, args):
+    """See base class."""
     release_track = self.ReleaseTrack()
     client = osconfig_api_utils.GetClientInstance(release_track)
     messages = osconfig_api_utils.GetClientMessages(release_track)

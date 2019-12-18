@@ -79,7 +79,11 @@ def _CommonArgs(parser):
           {command} my-disk-1 my-disk-2 my-disk-3 --snapshot-names snapshot-1,snapshot-2,snapshot-3
 
       will result in `my-disk-1` being snapshotted as
-      `snapshot-1`, `my-disk-2` as `snapshot-2`, and so on.
+      `snapshot-1`, `my-disk-2` as `snapshot-2`, and so on. The name must match
+      the `(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?)` regular expression, which
+      means it must start with an alphabetic character followed by one or more
+      alphanumeric characters or dashes. The name must not exceed 63 characters
+      and must not contain special symbols. All characters must be lowercase.
       """)
   flags.AddGuestFlushFlag(parser, 'snapshot')
   flags.AddStorageLocationFlag(parser, 'snapshot')

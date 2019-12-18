@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """RSA verifier and signer that use the ``cryptography`` library.
 
 This is a much faster implementation than the default (in
@@ -30,51 +31,52 @@ from google.auth import _helpers
 from google.auth.crypt import base
 
 _IMPORT_ERROR_MSG = (
-    'cryptography>=1.4.0 is required to use cryptography-based RSA '
-    'implementation.')
+    "cryptography>=1.4.0 is required to use cryptography-based RSA " "implementation."
+)
 
 try:  # pragma: NO COVER
-  release = pkg_resources.get_distribution('cryptography').parsed_version
-  if release < pkg_resources.parse_version('1.4.0'):
-    raise ImportError(_IMPORT_ERROR_MSG)
+    release = pkg_resources.get_distribution("cryptography").parsed_version
+    if release < pkg_resources.parse_version("1.4.0"):
+        raise ImportError(_IMPORT_ERROR_MSG)
 except pkg_resources.DistributionNotFound:  # pragma: NO COVER
-  raise ImportError(_IMPORT_ERROR_MSG)
+    raise ImportError(_IMPORT_ERROR_MSG)
 
-_CERTIFICATE_MARKER = b'-----BEGIN CERTIFICATE-----'
+
+_CERTIFICATE_MARKER = b"-----BEGIN CERTIFICATE-----"
 _BACKEND = backends.default_backend()
 _PADDING = padding.PKCS1v15()
 _SHA256 = hashes.SHA256()
 
 
 class RSAVerifier(base.Verifier):
-  """Verifies RSA cryptographic signatures using public keys.
+    """Verifies RSA cryptographic signatures using public keys.
 
-    Args: public_key (
-                cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey): The
-                public key used to verify signatures.
-  """
+    Args:
+        public_key (
+                cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey):
+            The public key used to verify signatures.
+    """
 
-  def __init__(self, public_key):
-    self._pubkey = public_key
+    def __init__(self, public_key):
+        self._pubkey = public_key
 
-  @_helpers.copy_docstring(base.Verifier)
-  def verify(self, message, signature):
-    message = _helpers.to_bytes(message)
-    try:
-      self._pubkey.verify(signature, message, _PADDING, _SHA256)
-      return True
-    except (ValueError, cryptography.exceptions.InvalidSignature):
-      return False
+    @_helpers.copy_docstring(base.Verifier)
+    def verify(self, message, signature):
+        message = _helpers.to_bytes(message)
+        try:
+            self._pubkey.verify(signature, message, _PADDING, _SHA256)
+            return True
+        except (ValueError, cryptography.exceptions.InvalidSignature):
+            return False
 
-  @classmethod
-  def from_string(cls, public_key):
-    """Construct an Verifier instance from a public key or public
-
+    @classmethod
+    def from_string(cls, public_key):
+        """Construct an Verifier instance from a public key or public
         certificate string.
 
         Args:
             public_key (Union[str, bytes]): The public key in PEM format or the
-              x509 public key certificate.
+                x509 public key certificate.
 
         Returns:
             Verifier: The constructed verifier.
@@ -82,47 +84,49 @@ class RSAVerifier(base.Verifier):
         Raises:
             ValueError: If the public key can't be parsed.
         """
-    public_key_data = _helpers.to_bytes(public_key)
+        public_key_data = _helpers.to_bytes(public_key)
 
-    if _CERTIFICATE_MARKER in public_key_data:
-      cert = cryptography.x509.load_pem_x509_certificate(
-          public_key_data, _BACKEND)
-      pubkey = cert.public_key()
+        if _CERTIFICATE_MARKER in public_key_data:
+            cert = cryptography.x509.load_pem_x509_certificate(
+                public_key_data, _BACKEND
+            )
+            pubkey = cert.public_key()
 
-    else:
-      pubkey = serialization.load_pem_public_key(public_key_data, _BACKEND)
+        else:
+            pubkey = serialization.load_pem_public_key(public_key_data, _BACKEND)
 
-    return cls(pubkey)
+        return cls(pubkey)
 
 
 class RSASigner(base.Signer, base.FromServiceAccountMixin):
-  """Signs messages with an RSA private key.
+    """Signs messages with an RSA private key.
 
-    Args: private_key (
+    Args:
+        private_key (
                 cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey):
-                The private key to sign with.
+            The private key to sign with.
         key_id (str): Optional key ID used to identify this private key. This
-        can be useful to associate the private key with its associated public
-        key or certificate.
-  """
+            can be useful to associate the private key with its associated
+            public key or certificate.
+    """
 
-  def __init__(self, private_key, key_id=None):
-    self._key = private_key
-    self._key_id = key_id
+    def __init__(self, private_key, key_id=None):
+        self._key = private_key
+        self._key_id = key_id
 
-  @property
-  @_helpers.copy_docstring(base.Signer)
-  def key_id(self):
-    return self._key_id
+    @property
+    @_helpers.copy_docstring(base.Signer)
+    def key_id(self):
+        return self._key_id
 
-  @_helpers.copy_docstring(base.Signer)
-  def sign(self, message):
-    message = _helpers.to_bytes(message)
-    return self._key.sign(message, _PADDING, _SHA256)
+    @_helpers.copy_docstring(base.Signer)
+    def sign(self, message):
+        message = _helpers.to_bytes(message)
+        return self._key.sign(message, _PADDING, _SHA256)
 
-  @classmethod
-  def from_string(cls, key, key_id=None):
-    """Construct a RSASigner from a private key in PEM format.
+    @classmethod
+    def from_string(cls, key, key_id=None):
+        """Construct a RSASigner from a private key in PEM format.
 
         Args:
             key (Union[bytes, str]): Private key in PEM format.
@@ -138,7 +142,8 @@ class RSASigner(base.Signer, base.FromServiceAccountMixin):
                 into a UTF-8 ``str``.
             ValueError: If ``cryptography`` "Could not deserialize key data."
         """
-    key = _helpers.to_bytes(key)
-    private_key = serialization.load_pem_private_key(
-        key, password=None, backend=_BACKEND)
-    return cls(private_key, key_id=key_id)
+        key = _helpers.to_bytes(key)
+        private_key = serialization.load_pem_private_key(
+            key, password=None, backend=_BACKEND
+        )
+        return cls(private_key, key_id=key_id)

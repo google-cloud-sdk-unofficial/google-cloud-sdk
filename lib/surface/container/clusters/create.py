@@ -316,7 +316,9 @@ def ParseCreateOptionsBase(args):
       min_accelerator=args.min_accelerator,
       max_accelerator=args.max_accelerator,
       shielded_secure_boot=args.shielded_secure_boot,
-      shielded_integrity_monitoring=args.shielded_integrity_monitoring)
+      shielded_integrity_monitoring=args.shielded_integrity_monitoring,
+      reservation_affinity=getattr(args, 'reservation_affinity', None),
+      reservation=getattr(args, 'reservation', None),)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -370,6 +372,7 @@ class Create(base.CreateCommand):
                                    ga=True)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
+    flags.AddReservationAffinityFlags(parser)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
@@ -489,6 +492,7 @@ class CreateBeta(Create):
     _AddAdditionalZonesFlag(group, deprecated=True)
     flags.AddNodeLocationsFlag(group)
     flags.AddBetaAddonsFlags(parser)
+    flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
@@ -523,12 +527,14 @@ class CreateBeta(Create):
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddSurgeUpgradeFlag(parser, default=1)
     flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
+    flags.AddReservationAffinityFlags(parser)
     _AddReleaseChannelGroup(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
@@ -557,6 +563,7 @@ class CreateAlpha(Create):
     _AddAdditionalZonesFlag(group, deprecated=True)
     flags.AddNodeLocationsFlag(group)
     flags.AddAlphaAddonsFlags(parser)
+    flags.AddBootDiskKmsKeyFlag(parser)
     flags.AddClusterAutoscalingFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
@@ -601,11 +608,13 @@ class CreateAlpha(Create):
     flags.AddLinuxSysctlFlags(parser)
     flags.AddNodeConfigFlag(parser)
     flags.AddCostManagementConfigFlag(parser)
+    flags.AddReservationAffinityFlags(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.autoscaling_profile = args.autoscaling_profile
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.workload_metadata_from_node = args.workload_metadata_from_node
@@ -640,7 +649,6 @@ class CreateAlpha(Create):
     ops.node_config = args.node_config
 
     ops.enable_cost_management = args.enable_cost_management
-
     return ops
 
 

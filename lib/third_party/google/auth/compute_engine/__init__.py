@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Google Compute Engine authentication."""
 
 from google.auth.compute_engine.credentials import Credentials
 from google.auth.compute_engine.credentials import IDTokenCredentials
 
-__all__ = [
-    'Credentials',
-    'IDTokenCredentials',
-]
+
+__all__ = ["Credentials", "IDTokenCredentials"]

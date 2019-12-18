@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
 from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.cloudbuild import workerpool_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -34,8 +33,6 @@ class Create(base.CreateCommand):
 
   Create a worker pool for use by Google Cloud Build.
   """
-
-  _region_choice_to_enum = cloudbuild_util.GenerateRegionChoiceToEnum()
 
   @staticmethod
   def Args(parser):
@@ -50,7 +47,7 @@ class Create(base.CreateCommand):
           table(
             name,
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
-            status
+            state
           )
         """)
 
@@ -77,44 +74,18 @@ class Create(base.CreateCommand):
           args.config_from_file, messages)
     else:
       wp.name = args.WORKER_POOL
-      if args.worker_count is not None:
-        try:
-          wp.workerCount = int(args.worker_count)
-        except ValueError as e:
-          raise c_exceptions.InvalidArgumentException('--worker-count', e)
-      if args.regions is not None:
-        for region_str in args.regions:
-          region = Create._region_choice_to_enum[region_str]
-          wp.regions.append(region)
+      if args.region is not None:
+        wp.region = args.region
+      if args.peered_network is not None:
+        network_config = messages.NetworkConfig()
+        network_config.peeredNetwork = args.peered_network
+        wp.networkConfig = network_config
       worker_config = messages.WorkerConfig()
       if args.worker_machine_type is not None:
         worker_config.machineType = args.worker_machine_type
       if args.worker_disk_size is not None:
         worker_config.diskSizeGb = compute_utils.BytesToGb(
             args.worker_disk_size)
-      if any([
-          args.worker_network_project is not None,
-          args.worker_network_name is not None,
-          args.worker_network_subnet is not None
-      ]):
-        if not all([
-            args.worker_network_project is not None,
-            args.worker_network_name is not None,
-            args.worker_network_subnet is not None
-        ]):
-          raise c_exceptions.RequiredArgumentException(
-              '--worker_network_*',
-              'The flags --worker_network_project, --worker_network_name, and '
-              '--worker_network_subnet must all be set if any of them are set.')
-        # At this point all network flags are set, but possibly empty string.
-        # The API handles default values.
-        network = messages.Network()
-        network.projectId = args.worker_network_project
-        network.network = args.worker_network_name
-        network.subnetwork = args.worker_network_subnet
-        worker_config.network = network
-      if args.worker_tag is not None:
-        worker_config.tag = args.worker_tag
       wp.workerConfig = worker_config
 
     # Get the parent project ref
@@ -124,16 +95,18 @@ class Create(base.CreateCommand):
     # Send the Create request
     created_wp = client.projects_workerPools.Create(
         messages.CloudbuildProjectsWorkerPoolsCreateRequest(
-            workerPool=wp, parent=parent_resource.RelativeName()))
+            workerPool=wp,
+            parent=parent_resource.RelativeName(),
+            workerPoolId=wp.name))
 
     # Get the workerpool ref
     wp_resource = resources.REGISTRY.Parse(
         None,
         collection='cloudbuild.projects.workerPools',
-        api_version='v1alpha1',
+        api_version='v1alpha2',
         params={
             'projectsId': parent,
-            'workerPoolsId': wp.name,
+            'workerPoolsId': created_wp.name,
         })
     log.CreatedResource(wp_resource)
 
