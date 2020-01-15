@@ -248,8 +248,8 @@ _COPY_IN_CLOUD_TEXT = """
     gsutil cp gs://bucket1/obj gs://bucket2
 
   will cause only the single live version of gs://bucket1/obj to be copied to
-  gs://bucket2, even if there are archived versions of gs://bucket1/obj. To also
-  copy archived versions, use the -A flag:
+  gs://bucket2, even if there are noncurrent versions of gs://bucket1/obj. To
+  also copy noncurrent versions, use the -A flag:
 
     gsutil cp -A gs://bucket1/obj gs://bucket2
 
@@ -442,9 +442,14 @@ _PARALLEL_COMPOSITE_UPLOADS_TEXT = """
   distributions to get crcmod included with the stock distribution. Once that is
   done we will re-enable parallel composite uploads by default in gsutil.
 
-  Warning: Parallel composite uploads should not be used with NEARLINE or
-  COLDLINE storage class buckets, because doing so incurs an early deletion
-  charge for each component object.
+  Warning: Parallel composite uploads should not be used with NEARLINE,
+  COLDLINE, or ARCHIVE storage class buckets, because doing so incurs an early
+  deletion charge for each component object.
+  
+  Warning: Parallel composite uploads should not be used in buckets that have a
+  `retention policy <https://cloud.google.com/storage/docs/bucket-lock>`_,
+  because the component pieces cannot be deleted until each has met the
+  bucket's minimum retention period.
 
   To try parallel composite uploads you can run the command:
 

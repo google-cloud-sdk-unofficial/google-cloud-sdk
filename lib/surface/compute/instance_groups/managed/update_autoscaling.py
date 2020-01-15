@@ -36,8 +36,8 @@ class NoMatchingAutoscalerFoundError(exceptions.Error):
   pass
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateAutoscalingBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateAutoscaling(base.Command):
   """Update autoscaling parameters of a managed instance group."""
 
   scale_down = False
@@ -76,6 +76,13 @@ class UpdateAutoscalingBeta(base.Command):
     return autoscalers_client.Patch(igm_ref, new_autoscaler)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateAutoscalingBeta(UpdateAutoscaling):
+  """Update autoscaling parameters of a managed instance group."""
+
+  scale_down = False
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
   """Update autoscaling parameters of a managed instance group."""
@@ -87,7 +94,7 @@ class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
     _CommonArgs(parser)
     mig_utils.AddScaleDownControlFlag(parser)
 
-UpdateAutoscalingBeta.detailed_help = {
+UpdateAutoscaling.detailed_help = {
     'brief': 'Update autoscaling parameters of a managed instance group',
     'EXAMPLES':
         """\
@@ -112,4 +119,5 @@ would change the *mode* field of the autoscaler policy, but leave the rest of
 the settings intact.
         """,
 }
-UpdateAutoscalingAlpha.detailed_help = UpdateAutoscalingBeta.detailed_help
+UpdateAutoscalingAlpha.detailed_help = UpdateAutoscaling.detailed_help
+UpdateAutoscalingBeta.detailed_help = UpdateAutoscaling.detailed_help

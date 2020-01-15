@@ -130,7 +130,6 @@ class CreateAlpha(Create):
     network_utils.AddCreateBaseArgs(parser)
     network_utils.AddCreateSubnetModeArg(parser)
     network_utils.AddCreateBgpRoutingModeArg(parser)
-    network_utils.AddMulticastModeArg(parser)
     network_utils.AddMtuArg(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)

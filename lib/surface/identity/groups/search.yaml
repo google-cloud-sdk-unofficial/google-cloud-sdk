@@ -19,7 +19,7 @@
       To Search groups:
 
         $ {command} --organization="5149234212"  \
-            --labels="cloudidentity.googleapis.com/discussion_forum"  \
+            --labels="cloudidentity.googleapis.com/groups.discussion_forum"  \
             --page-size=3  \
             --page-token="ala9glealanal908"
 

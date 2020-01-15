@@ -34,6 +34,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:SetUpdateMask
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ClearConfigOverrides
+    - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ClearDefaultConfig
 
   arguments:
     resource:
@@ -43,13 +44,20 @@
       spec: !REF googlecloudsdk.command_lib.game.resources:deployment
 
     params:
-    - arg_name: default-config
-      api_field: gameServerDeploymentRollout.defaultGameServerConfig
-      help_text: |
-        Game Server config to be deployed to all clusters. The value of this field must match an
-        existing game server config that is a sub-resource to the given game server deployment. If
-        not specified, there won't be a default config which means only the clusters specified in
-        the config overrides will have configs applied.
+    - group:
+        mutex: true
+        params:
+        - arg_name: default-config
+          api_field: gameServerDeploymentRollout.defaultGameServerConfig
+          help_text: |
+            Game Server config to be deployed to all clusters. The value of this field must match an
+            existing game server config that is a sub-resource to the given game server deployment. If
+            not specified, there won't be a default config which means only the clusters specified in
+            the config overrides will have configs applied.
+        - arg_name: clear-default-config
+          type: bool
+          help_text: |
+            Clear the default config.
     - arg_name: dry-run
       type: bool
       required: true

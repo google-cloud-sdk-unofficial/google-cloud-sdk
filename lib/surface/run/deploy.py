@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import connection_context
@@ -191,13 +192,16 @@ class Deploy(base.Command):
       changes = [image_change]
       if config_changes:
         changes.extend(config_changes)
-      exists = operations.GetService(service_ref)
-      allow_unauth = GetAllowUnauth(args, operations, service_ref, exists)
+      service = operations.GetService(service_ref)
+      allow_unauth = GetAllowUnauth(args, operations, service_ref, service)
 
       pretty_print.Info(GetStartDeployMessage(conn_context, service_ref))
-
-      deployment_stages = stages.ServiceStages(allow_unauth is not None)
-      header = 'Deploying...' if exists else 'Deploying new service...'
+      has_latest = (service is None or
+                    traffic.LATEST_REVISION_KEY in service.traffic)
+      deployment_stages = stages.ServiceStages(
+          include_iam_policy_set=allow_unauth is not None,
+          include_route=has_latest)
+      header = 'Deploying...' if service else 'Deploying new service...'
       with progress_tracker.StagedProgressTracker(
           header,
           deployment_stages,
@@ -208,7 +212,8 @@ class Deploy(base.Command):
             changes,
             tracker,
             asyn=args.async_,
-            allow_unauthenticated=allow_unauth)
+            allow_unauthenticated=allow_unauth,
+            prefetch=service)
       if args.async_:
         pretty_print.Success(
             'Service [{{bold}}{serv}{{reset}}] is deploying '

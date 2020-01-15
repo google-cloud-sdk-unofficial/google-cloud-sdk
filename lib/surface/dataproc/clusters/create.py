@@ -79,6 +79,8 @@ class Create(base.CreateCommand):
           '--single-node to deploy single node clusters' %
           constants.ALLOW_ZERO_WORKERS_PROPERTY)
 
+    clusters.ValidateReservationAffinityGroup(args)
+
   def Run(self, args):
     self.ValidateArgs(args)
 

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import settings_util
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -30,7 +31,7 @@ class Gradle(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetRepoFlag().AddToParser(parser)
-    parser.display_info.AddFormat('value(gradle)')
+    parser.display_info.AddFormat("value(gradle)")
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -43,5 +44,6 @@ class Gradle(base.Command):
       A maven gradle snippet.
     """
 
-    return {'gradle': settings_util.GetGradleSnippet(args)}
+    log.status.Print("Note: Language package support is in Alpha.\n")
+    return {"gradle": settings_util.GetGradleSnippet(args)}
 

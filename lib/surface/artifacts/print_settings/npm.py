@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import settings_util
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -35,7 +36,7 @@ class Npm(base.Command):
   def Args(parser):
     flags.GetRepoFlag().AddToParser(parser)
     flags.GetScopeFlag().AddToParser(parser)
-    parser.display_info.AddFormat('value(npm)')
+    parser.display_info.AddFormat("value(npm)")
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -48,4 +49,5 @@ class Npm(base.Command):
       An npm settings snippet.
     """
 
-    return {'npm': settings_util.GetNpmSettingsSnippet(args)}
+    log.status.Print("Note: Language package support is in Alpha.\n")
+    return {"npm": settings_util.GetNpmSettingsSnippet(args)}

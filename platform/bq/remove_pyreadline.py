@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import os
 import platform
 import remove_pyreadline
@@ -78,37 +79,37 @@ def y_or_n_p(prompt):
 def delete_pyreadline():
   pkg = locate_package('pyreadline')
   if pkg is None:
-    print "pyreadline not found, exiting."
+    print('pyreadline not found, exiting.')
     return
 
   consumers = find_package_consumers('pyreadline')
   if consumers:
-    print 'pyreadline is a dependency of all the following packages:'
+    print('pyreadline is a dependency of all the following packages:')
     for p in consumers:
-      print '  %s' % (p,)
-    print
+      print('  %s' % (p,))
+    print()
   else:
-    print 'pyreadline is not a dependency of any installed packages.'
-    print
+    print('pyreadline is not a dependency of any installed packages.')
+    print()
   response = y_or_n_p('Continue and uninstall pyreadline?')
   if response == 'n':
-    print 'Aborting uninstall of pyreadline.'
+    print('Aborting uninstall of pyreadline.')
     return
   remove_package(pkg)
-  print 'pyreadline successfully uninstalled!'
+  print('pyreadline successfully uninstalled!')
 
 
 def run_main():
-  print 'This script will attempt to remove pyreadline from your system.'
-  print
+  print('This script will attempt to remove pyreadline from your system.')
+  print()
   if platform.system() == 'Windows':
-    print
-    print '*** WARNING ***'
-    print 'This is a Windows system, and removal of pyreadline on a Windows'
-    print 'system is NOT recommended.'
+    print()
+    print('*** WARNING ***')
+    print('This is a Windows system, and removal of pyreadline on a Windows')
+    print('system is NOT recommended.')
     response = y_or_n_p('Are you SURE you want to proceed?')
     if response == 'n':
-      print 'Exiting.'
+      print('Exiting.')
       exit(0)
   delete_pyreadline()
 

@@ -378,8 +378,8 @@ def copy_model_to_local(gcs_path, dest_path):
     # gVisor (b/37269226).
     subprocess.check_call([
         "gsutil", "cp", "-R", gcs_path, dest_path], stdin=subprocess.PIPE)
-  except subprocess.CalledProcessError as e:
-    logging.error(str(e))
+  except subprocess.CalledProcessError:
+    logging.exception("Could not copy model using gsutil.")
     raise
   logging.debug("Files copied from %s to %s: took %f seconds", gcs_path,
                 dest_path, time.time() - copy_start_time)
@@ -418,9 +418,9 @@ def load_joblib_or_pickle_model(model_path):
         # Load joblib only when needed. If we put this at the top, we need to
         # add a dependency to sklearn anywhere that prediction_lib is called.
         from sklearn.externals import joblib  # pylint: disable=g-import-not-at-top
-      except Exception as e:
+      except Exception as e:  # pylint: disable=broad-except
         error_msg = "Could not import sklearn module."
-        logging.critical(error_msg)
+        logging.exception(error_msg)
         raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
 
       logging.info("Loading model %s using joblib.", model_file_name)
@@ -434,7 +434,7 @@ def load_joblib_or_pickle_model(model_path):
 
     return None
 
-  except Exception as e:
+  except Exception as e:  # pylint: disable=broad-except
     raw_error_msg = str(e)
     if "unsupported pickle protocol" in raw_error_msg:
       error_msg = (
@@ -445,7 +445,7 @@ def load_joblib_or_pickle_model(model_path):
     else:
       error_msg = "Could not load the model: {}. {}.".format(
           model_file_name, raw_error_msg)
-    logging.critical(error_msg)
+    logging.exception(error_msg)
     raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
 
 

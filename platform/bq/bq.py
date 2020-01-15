@@ -48,11 +48,6 @@ if 'google' in sys.modules:
 from absl import app
 from absl import flags
 
-import bigquery_client
-import bq_auth_flags
-import bq_flags
-import bq_utils
-
 from google_reauth.reauth_creds import Oauth2WithReauthCredentials
 
 import googleapiclient
@@ -74,7 +69,6 @@ from six.moves import range
 from six.moves import zip
 import six.moves.http_client
 
-import table_formatter
 import yaml
 
 
@@ -82,6 +76,12 @@ import yaml
 # google.apputils package.
 if sys.path and sys.path[0] != _THIRD_PARTY_DIR:
   sys.path.insert(0, _THIRD_PARTY_DIR)
+
+import table_formatter
+import bigquery_client
+import bq_auth_flags
+import bq_flags
+import bq_utils
 
 
 flags.adopt_module_key_flags(bq_flags)
@@ -638,17 +638,19 @@ def _NormalizeFieldDelimiter(field_delimiter):
   # no field delimiter specified by the user.
   if field_delimiter is None:
     return field_delimiter
-  try:
-    # We check the field delimiter flag specifically, since a
-    # mis-entered Thorn character generates a difficult to
-    # understand error during request serialization time.
-    _ = field_delimiter.decode(sys.stdin.encoding or 'utf8')
-  except UnicodeDecodeError:
-    raise app.UsageError(
-        'The field delimiter flag is not valid. Flags must be '
-        'specified in your default locale. For example, '
-        'the Latin 1 representation of Thorn is byte code FE, '
-        'which in the UTF-8 locale would be expressed as C3 BE.')
+
+  if six.PY2:
+    try:
+      # We check the field delimiter flag specifically, since a
+      # mis-entered Thorn character generates a difficult to
+      # understand error during request serialization time.
+      _ = field_delimiter.decode(sys.stdin.encoding or 'utf8')
+    except UnicodeDecodeError:
+      raise app.UsageError(
+          'The field delimiter flag is not valid. Flags must be '
+          'specified in your default locale. For example, '
+          'the Latin 1 representation of Thorn is byte code FE, '
+          'which in the UTF-8 locale would be expressed as C3 BE.')
 
   # Allow TAB and \\t substitution.
   key = field_delimiter.lower()
@@ -1524,36 +1526,41 @@ class _Load(BigqueryCmd):
       self.PrintJobStartInfo(job)
 
 
-def _CreateExternalTableDefinition(source_format,
-                                   source_uris,
-                                   schema,
-                                   autodetect,
-                                   connection_id=None,
-                                   ignore_unknown_values=False,
-                                   hive_partitioning_mode=None,
-                                   hive_partitioning_source_uri_prefix=None):
+def _CreateExternalTableDefinition(
+    source_format,
+    source_uris,
+    schema,
+    autodetect,
+    connection_id=None,
+    ignore_unknown_values=False,
+    hive_partitioning_mode=None,
+    hive_partitioning_source_uri_prefix=None
+):
   """Create an external table definition with the given URIs and the schema.
 
   Arguments:
-    source_format: Format of source data. For CSV files, specify 'CSV'. For
-      Google spreadsheet files, specify 'GOOGLE_SHEETS'. For newline-delimited
-      JSON, specify 'NEWLINE_DELIMITED_JSON'. For Cloud Datastore backup,
-      specify 'DATASTORE_BACKUP'. For Avro files, specify 'AVRO'.
+    source_format: Format of source data.
+      For CSV files, specify 'CSV'.
+      For Google spreadsheet files, specify 'GOOGLE_SHEETS'.
+      For newline-delimited JSON, specify 'NEWLINE_DELIMITED_JSON'.
+      For Cloud Datastore backup, specify 'DATASTORE_BACKUP'.
+      For Avro files, specify 'AVRO'.
     source_uris: Comma separated list of URIs that contain data for this table.
     schema: Either an inline schema or path to a schema file.
     autodetect: Indicates if format options, compression mode and schema be auto
       detected from the source data. True - means that autodetect is on,
-      False means that it is off. None means format specific default: - For CSV
-        it means autodetect is OFF - For JSON it means that autodetect is ON.
-        For JSON, defaulting to autodetection is safer because the only option
-        autodetected is compression. If a schema is passed, then the
-        user-supplied schema is used.
+      False means that it is off. None means format specific default:
+        - For CSV it means autodetect is OFF
+        - For JSON it means that autodetect is ON.
+      For JSON, defaulting to autodetection is safer because the only option
+      autodetected is compression. If a schema is passed, then the user-supplied
+      schema is used.
     ignore_unknown_values:  Indicates if BigQuery should allow extra values that
       are not represented in the table schema. If true, the extra values are
       ignored. If false, records with extra columns are treated as bad records,
       and if there are too many bad records, an invalid error is returned in the
-      job result. The default value is false. The sourceFormat property
-      determines what BigQuery treats as an
+      job result. The default value is false.
+      The sourceFormat property determines what BigQuery treats as an
       extra value:
          - CSV: Trailing columns
          - JSON: Named values that don't match any column names.
@@ -1670,10 +1677,17 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'source_format',
-        'CSV', [
-            'CSV', 'GOOGLE_SHEETS', 'NEWLINE_DELIMITED_JSON',
-            'DATASTORE_BACKUP', 'ORC', 'PARQUET', 'AVRO'
-        ], 'Format of source data. Options include:'
+        'CSV',
+        [
+            'CSV',
+            'GOOGLE_SHEETS',
+            'NEWLINE_DELIMITED_JSON',
+            'DATASTORE_BACKUP',
+            'ORC',
+            'PARQUET',
+            'AVRO'
+        ],
+        'Format of source data. Options include:'
         '\n CSV'
         '\n GOOGLE_SHEETS'
         '\n NEWLINE_DELIMITED_JSON'
@@ -1706,19 +1720,23 @@ class _MakeExternalTableDefinition(BigqueryCmd):
     Arguments:
       source_uris: a comma-separated list of uris.
       schema: The <schema> argument should be either the name of a JSON file or
-        a text schema.  In the case that the schema is provided in text form, it
-        should be a
+        a text schema.
+
+        In the case that the schema is provided in text form, it should be a
         comma-separated list of entries of the form name[:type], where type will
-          default to string if not specified.  In the case that <schema> is a
-          filename, it should contain a single array object, each entry of which
-          should be an object with properties 'name', 'type', and (optionally)
-          'mode'. See the online
+        default to string if not specified.
+
+        In the case that <schema> is a filename, it should contain a
+        single array object, each entry of which should be an object with
+        properties 'name', 'type', and (optionally) 'mode'. See the online
         documentation for more detail:
           https://developers.google.com/bigquery/preparing-data-for-bigquery
+
         Note: the case of a single-entry schema with no type specified is
-        ambiguous; one can use name:string to force interpretation as a text
-          schema.
+        ambiguous; one can use name:string to force interpretation as a
+        text schema.
     """
+    # pylint: disable=line-too-long
     json.dump(
         _CreateExternalTableDefinition(
             source_format=self.source_format,
@@ -1728,11 +1746,12 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             connection_id=self.connection_id,
             ignore_unknown_values=self.ignore_unknown_values,
             hive_partitioning_mode=self.hive_partitioning_mode,
-            hive_partitioning_source_uri_prefix=self
-            .hive_partitioning_source_uri_prefix),
+            hive_partitioning_source_uri_prefix=self.hive_partitioning_source_uri_prefix
+        ),
         sys.stdout,
         sort_keys=True,
         indent=2)
+    # pylint: enable=line-too-long
 
 
 class _Query(BigqueryCmd):
@@ -2142,80 +2161,107 @@ class _Query(BigqueryCmd):
           BigqueryClient.ReadSchema(self.destination_schema))
 
   def _PrintQueryJobResults(self, client, job):
+    """Prints the results of a successful query job.
+
+    This function is invoked only for successful jobs.  Output is printed to
+    stdout.  Depending on flags, the output is printed in either free-form or
+    json style.
+
+    Args:
+      client: Bigquery client object
+      job: json of the job, expressed as a dictionary
+    """
     if job['statistics']['query']['statementType'] == 'SCRIPT':
-      # Fetch one more child job than the maximum, so we can tell if some of the
-      # child jobs are missing.
-      child_jobs = list(
-          client.ListJobs(
-              reference=bigquery_client.ApiClientHelper.ProjectReference.Create(
-                  projectId=job['jobReference']['projectId']),
-              max_results=self.max_child_jobs + 1,
-              all_users=False,
-              min_creation_time=None,
-              max_creation_time=None,
-              page_token=None,
-              parent_job_id=job['jobReference']['jobId']))
-      child_jobs.sort(key=lambda job: job['statistics']['creationTime'])
-      if len(child_jobs) == self.max_child_jobs + 1:
-        # The number of child jobs exceeds the maximum number to fetch.  There
-        # is no way to tell which child jobs are missing, so just display the
-        # final result of the script.
-        sys.stderr.write(
-            'Showing only the final result because the number of child jobs '
-            'exceeds --max_child_jobs (%s).\n' % self.max_child_jobs)
-        self.PrintNonScriptQueryJobResults(client, job)
-        return
-      # To reduce verbosity, only show the results for statements, not
-      # expressions.
-      statement_child_jobs = [job for job in child_jobs if job
-                              .get('statistics', {}).get('scriptStatistics', {})
-                              .get('evaluationKind', '') == 'STATEMENT']
-      is_raw_json = FLAGS.format == 'json'
-      is_json = is_raw_json or FLAGS.format == 'prettyjson'
-      if is_json:
-        sys.stdout.write('[')
-      statements_printed = 0
-      for (i, child_job_info) in enumerate(statement_child_jobs):
-        if (is_json and BigqueryClient.IsFailedJob(child_job_info) and
-            not BigqueryClient.IsFailedJob(job)):
-          # Skip failed jobs in json mode if the overall script job succeeds,
-          # so we can conform to the schema where we show only results, not
-          # error messages.
-          continue
-        if statements_printed >= self.max_statement_results:
-          if not is_json:
-            sys.stdout.write('Maximum statement results limit reached. '
-                             'Specify --max_statement_results to increase this '
-                             'limit.\n')
-          break
-        if is_json:
-          if i > 0:
-            if is_raw_json:
-              sys.stdout.write(',')
-            else:
-              sys.stdout.write(',\n')
-        else:
-          stack_frames = (
-              child_job_info.get('statistics',
-                                 {}).get('scriptStatistics',
-                                         {}).get('stackFrames', []))
-          if len(stack_frames) <= 0:
-            break
-          sys.stdout.write('%s; ' % stack_frames[0].get('text', ''))
-          if len(stack_frames) >= 2:
-            sys.stdout.write('\n')
-          # Print stack traces
-          for stack_frame in stack_frames:
-            sys.stdout.write(
-                '-- at %s[%d:%d]\n' %
-                (stack_frame.get('procedureId', ''), stack_frame['startLine'],
-                 stack_frame['startColumn']))
-        self.PrintNonScriptQueryJobResults(client, child_job_info)
-        statements_printed = statements_printed + 1
-      if is_json:
-        sys.stdout.write(']\n')
+      self._PrintScriptJobResults(client, job)
     else:
       self.PrintNonScriptQueryJobResults(client, job)
+
+  def _PrintScriptJobResults(self, client, job):
+    """Prints the results of a successful script job.
+
+    This function is invoked only for successful script jobs.  Prints the output
+    of each successful child job representing a statement to stdout.
+
+    Child jobs representing expression evaluations are not printed, as are child
+    jobs which failed, but whose error was handled elsewhere in the script.
+
+    Depending on flags, the output is printed in either free-form or
+    json style.
+
+    Args:
+      client: Bigquery client object
+      job: json of the script job, expressed as a dictionary
+    """
+    # Fetch one more child job than the maximum, so we can tell if some of the
+    # child jobs are missing.
+    child_jobs = list(
+        client.ListJobs(
+            reference=bigquery_client.ApiClientHelper.ProjectReference.Create(
+                projectId=job['jobReference']['projectId']),
+            max_results=self.max_child_jobs + 1,
+            all_users=False,
+            min_creation_time=None,
+            max_creation_time=None,
+            page_token=None,
+            parent_job_id=job['jobReference']['jobId']))
+    child_jobs.sort(key=lambda job: job['statistics']['creationTime'])
+    if len(child_jobs) == self.max_child_jobs + 1:
+      # The number of child jobs exceeds the maximum number to fetch.  There
+      # is no way to tell which child jobs are missing, so just display the
+      # final result of the script.
+      sys.stderr.write(
+          'Showing only the final result because the number of child jobs '
+          'exceeds --max_child_jobs (%s).\n' % self.max_child_jobs)
+      self.PrintNonScriptQueryJobResults(client, job)
+      return
+    # To reduce verbosity, only show the results for statements, not
+    # expressions.
+    statement_child_jobs = [
+        job for job in child_jobs if job.get('statistics', {}).get(
+            'scriptStatistics', {}).get('evaluationKind', '') == 'STATEMENT'
+    ]
+    is_raw_json = FLAGS.format == 'json'
+    is_json = is_raw_json or FLAGS.format == 'prettyjson'
+    if is_json:
+      sys.stdout.write('[')
+    statements_printed = 0
+    for (i, child_job_info) in enumerate(statement_child_jobs):
+      if BigqueryClient.IsFailedJob(child_job_info):
+        # Skip failed jobs; if the error was handled, we want to ignore it;
+        # if it wasn't handled, we'll see it soon enough when we print the
+        # failure for the overall script.
+        continue
+      if statements_printed >= self.max_statement_results:
+        if not is_json:
+          sys.stdout.write('Maximum statement results limit reached. '
+                           'Specify --max_statement_results to increase this '
+                           'limit.\n')
+        break
+      if is_json:
+        if i > 0:
+          if is_raw_json:
+            sys.stdout.write(',')
+          else:
+            sys.stdout.write(',\n')
+      else:
+        stack_frames = (
+            child_job_info.get('statistics', {}).get('scriptStatistics',
+                                                     {}).get('stackFrames', []))
+        if len(stack_frames) <= 0:
+          break
+        sys.stdout.write('%s; ' % stack_frames[0].get('text', ''))
+        if len(stack_frames) >= 2:
+          sys.stdout.write('\n')
+        # Print stack traces
+        for stack_frame in stack_frames:
+          sys.stdout.write(
+              '-- at %s[%d:%d]\n' %
+              (stack_frame.get('procedureId', ''), stack_frame['startLine'],
+               stack_frame['startColumn']))
+      self.PrintNonScriptQueryJobResults(client, child_job_info)
+      statements_printed = statements_printed + 1
+    if is_json:
+      sys.stdout.write(']\n')
 
   def PrintNonScriptQueryJobResults(self, client, job):
     printable_job_info = client.FormatJobInfo(job)
@@ -2304,8 +2350,8 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
       raise app.UsageError(error_msg)
     # When using short notation for external table definition
     # autodetect is always performed.
-    return _CreateExternalTableDefinition(source_format, uri, schema, True,
-                                          connection_id)
+    return _CreateExternalTableDefinition(
+        source_format, uri, schema, True, connection_id)
 
 
 class _Extract(BigqueryCmd):
@@ -3816,8 +3862,9 @@ class _Make(BigqueryCmd):
       else:
         raise bigquery_client.BigqueryError('A data source must be provided.')
       authorization_code = ''
-      if (not credentials and self.data_source != 'loadtesting' and
-          not self.service_account_name):
+      if (not credentials
+          and self.data_source != 'loadtesting'
+          and not self.service_account_name):
         authorization_code = RetrieveAuthorizationCode(reference,
                                                        self.data_source,
                                                        transfer_client)
@@ -4137,7 +4184,8 @@ class _Update(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_string(
         'schema',
-        '', 'Either a filename or a comma-separated list of fields in the form '
+        '',
+        'Either a filename or a comma-separated list of fields in the form '
         'name[:type].',
         flag_values=fv)
     flags.DEFINE_string(

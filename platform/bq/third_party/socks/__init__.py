@@ -172,9 +172,13 @@ def set_default_proxy(proxy_type=None, addr=None, port=None, rdns=True,
 
     All further socksocket objects will use the default unless explicitly
     changed. All parameters are as for socket.set_proxy()."""
+    if hasattr(username, "encode"):
+      username = username.encode()
+    if hasattr(password, "encode"):
+      password = password.encode()
     socksocket.default_proxy = (proxy_type, addr, port, rdns,
-                                username.encode() if username else None,
-                                password.encode() if password else None)
+                                username if username else None,
+                                password if password else None)
 
 
 def setdefaultproxy(*args, **kwargs):
@@ -368,9 +372,13 @@ class socksocket(_BaseSocket):
                        The default is no authentication.
         password -    Password to authenticate with to the server.
                        Only relevant when username is also provided."""
+        if hasattr(username, "encode"):
+          username = username.encode()
+        if hasattr(password, "encode"):
+          password = password.encode()
         self.proxy = (proxy_type, addr, port, rdns,
-                      username.encode() if username else None,
-                      password.encode() if password else None)
+                      username if username else None,
+                      password if password else None)
 
     def setproxy(self, *args, **kwargs):
         if "proxytype" in kwargs:

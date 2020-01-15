@@ -104,7 +104,7 @@ def Skaffold(skaffold_config, context_name=None):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Dev(base.Command):
-  """Run a service in a development environemnt.
+  """Run a service in a development environment.
 
   By default, this command runs the user's containers on minikube on the local
   machine. To run on another kubernetes cluster, use the --kube-context flag.

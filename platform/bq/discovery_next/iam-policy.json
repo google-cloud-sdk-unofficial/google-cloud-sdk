@@ -1761,6 +1761,11 @@
         "sourceUriPrefix": {
           "description": "Optional. [Experimental] When hive partition detection is requested,\na common for all source uris must be required.  The prefix must end\nimmediately before the partition key encoding begins.\nFor example, consider files following this data layout.\ngs:\/\/bucket\/path_to_table\/dt=2019-06-01\/country=USA\/id=7\/file.avro\ngs:\/\/bucket\/path_to_table\/dt=2019-05-31\/country=CA\/id=3\/file.avro\nWhen hive partitioning is requested with either AUTO or STRINGS detection,\nthe common prefix can be either of gs:\/\/bucket\/path_to_table or\ngs:\/\/bucket\/path_to_table\/.",
           "type": "string"
+        },
+        "requirePartitionFilter": {
+          "description": "Optional. [Experimental]  If set to true, queries over this table require\na partition filter that can be used for partition elimination to be\nspecified. Note that this field should only be true when creating\na permanent external table or querying a temporary external table.\nHive-partitioned loads with require_partition_filter explicitly set to\ntrue will fail.",
+          "default": "false",
+          "type": "boolean"
         }
       }
     },

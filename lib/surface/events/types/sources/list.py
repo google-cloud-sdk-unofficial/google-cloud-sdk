@@ -24,14 +24,14 @@ from googlecloudsdk.command_lib.run import connection_context
 
 
 class List(base.ListCommand):
-  """List available event sources."""
+  """List available event source kinds."""
 
   detailed_help = {
       'DESCRIPTION': """\
           {description}
           """,
       'EXAMPLES': """\
-          To list available event sources:
+          To list available event source kinds:
 
               $ {command}
           """,

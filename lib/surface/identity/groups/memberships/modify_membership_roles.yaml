@@ -29,6 +29,7 @@
     method: modifyMembershipRoles
     modify_request_hooks:
     - googlecloudsdk.command_lib.identity.groups.memberships.hooks:SetMembershipResourceName
+    - googlecloudsdk.command_lib.identity.groups.memberships.hooks:UpdateRoles
     ALPHA:
       api_version: v1alpha1
     BETA:
@@ -63,9 +64,7 @@
         - group:
             params:
             - arg_name: add-roles
-              api_field: modifyMembershipRolesRequest.addRoles
-              processor: googlecloudsdk.command_lib.identity.groups.memberships.hooks:UpdateRolesToAdd
-              type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+              type: str
               help_text: |
                 Membership roles to be added.
                 Currently supported MembershipRole: 'MEMBER', 'OWNER', 'MANAGER'.

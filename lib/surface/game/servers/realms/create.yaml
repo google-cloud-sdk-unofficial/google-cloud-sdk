@@ -13,6 +13,10 @@
       spec: !REF googlecloudsdk.command_lib.game.resources:realm
 
     params:
+    - arg_name: description
+      api_field: realm.description
+      help_text: |
+        Game server realm description.
     - arg_name: time-zone
       api_field: realm.timeZone
       help_text: |

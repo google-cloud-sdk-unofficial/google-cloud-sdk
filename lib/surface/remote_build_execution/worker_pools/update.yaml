@@ -42,6 +42,20 @@
       required: false
       help_text: |
         Size of the disk, in Gb, for each worker.  Defaults to 200Gb.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.diskType
+      arg_name: disk-type
+      required: false
+      choices:
+      - arg_value: pd-standard
+        enum_value: pd-standard
+        help_text: |
+          Standard persistent disk.
+      - arg_value: pd-ssd
+        enum_value: pd-ssd
+        help_text: |
+          SSD persistent disk.
+      help_text: |
+        Type of persistent disk the worker VMs will use. Default is pd-standard.
     - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.machineType
       arg_name: machine-type
       required: false

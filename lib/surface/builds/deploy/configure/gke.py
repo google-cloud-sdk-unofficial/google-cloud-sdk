@@ -30,7 +30,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.builds import staging_bucket_util
 from googlecloudsdk.command_lib.builds.deploy import build_util
-from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -72,6 +71,11 @@ class ConfigureGKEDeploy(base.Command):
   Configure automated build and deployment of a repository that can be triggered
   via a git branch or tag push. The image that will be built and deployed will
   have the format 'gcr.io/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA'.
+
+  Your Cloud Build Service Agent account must have the Kubernetes Engine
+  (``container.developer'') role enabled. This allows Cloud Build to deploy to
+  your cluster. Enable the role at
+  https://console.cloud.google.com/cloud-build/settings.
   """
 
   @staticmethod
@@ -171,6 +175,17 @@ class ConfigureGKEDeploy(base.Command):
         action='store_true',
         required=True
     )
+    pr_preview.add_argument(
+        '--scheduler-service-account',
+        help='''
+        Service account that the Cloud Scheduler job will use. This service
+        account must be in your project and must have the Cloud Build Editor
+        (``cloudbuild.builds.editor'') role enabled.
+
+        Create a new service account and assign the role at
+        https://console.cloud.google.com/iam-admin/serviceaccounts.
+        ''',
+        required=True)
     pr_preview.add_argument(
         '--preview-expiry',
         type=int,
@@ -370,21 +385,6 @@ class ConfigureGKEDeploy(base.Command):
     else:
       gcs_config_staging_path = gcs_config_staging_dir_bucket
 
-    project = properties.VALUES.core.project.Get(required=True)
-    project_number = projects_util.GetProjectNumber(project)
-    cloudbuild_service_account = '{}@cloudbuild.gserviceaccount.com'.format(
-        project_number)
-    log.status.Print(
-        'Add the roles/container.developer role to your Cloud Build '
-        'service agent account, if you have not already done so. This allows '
-        'the account to deploy to your cluster:\n\n'
-        'gcloud projects add-iam-policy-binding {project} '
-        '--member=serviceAccount:{service_account_email} '
-        '--role=roles/container.developer --project={project}\n'.format(
-            project=project,
-            service_account_email=cloudbuild_service_account
-        ))
-
     if args.pull_request_preview:
       self._ConfigurePRPreview(
           repo_owner=github_repo_owner,
@@ -398,7 +398,8 @@ class ConfigureGKEDeploy(base.Command):
           expose_port=args.expose,
           gcs_config_staging_path=gcs_config_staging_path,
           cluster=args.cluster,
-          location=args.location)
+          location=args.location,
+          scheduler_service_account_email=args.scheduler_service_account)
     else:
       self._ConfigureGitPushBuildTrigger(
           repo_type=args.repo_type,
@@ -686,7 +687,8 @@ class ConfigureGKEDeploy(base.Command):
   def _ConfigurePRPreview(
       self, repo_owner, repo_name, pull_request_pattern, preview_expiry,
       comment_control, dockerfile_path, app_name, config_path, expose_port,
-      gcs_config_staging_path, cluster, location):
+      gcs_config_staging_path, cluster, location,
+      scheduler_service_account_email):
     """Configures previewing the application for each pull request.
 
     PR previewing is only supported for GitHub repos.
@@ -717,6 +719,8 @@ class ConfigureGKEDeploy(base.Command):
         configs to.
       cluster: Name of target cluster to deploy to.
       location: Zone/region of target cluster to deploy to.
+      scheduler_service_account_email: Service account that the Cloud Scheduler
+        job will run as.
     """
     pr_preview_trigger = self._ConfigurePRPreviewBuildTrigger(
         repo_owner=repo_owner,
@@ -746,7 +750,8 @@ class ConfigureGKEDeploy(base.Command):
         repo_owner=repo_owner,
         repo_name=repo_name,
         pull_request_pattern=pull_request_pattern,
-        clean_preview_trigger_id=clean_preview_trigger.id)
+        clean_preview_trigger_id=clean_preview_trigger.id,
+        client_service_account_email=scheduler_service_account_email)
 
     # We add scheduler job location and name as tags to the clean preview
     # trigger to track it as created by us.
@@ -758,10 +763,10 @@ class ConfigureGKEDeploy(base.Command):
     log.status.Print(
         '\nSuccessfully created resources for previewing pull requests of your '
         'application.\n\n'
-        'Visit https://console.cloud.google.com/cloud-build/triggers/{pr_preview_trigger_id}?project={project} '
+        'Visit https://console.cloud.google.com/cloud-build/triggers/edit/{pr_preview_trigger_id}?project={project} '
         'to view the Cloud Build trigger that deploys your application on pull '
         'request open/update.\n\n'
-        'Visit https://console.cloud.google.com/cloud-build/triggers/{clean_preview_trigger_id}?project={project} '
+        'Visit https://console.cloud.google.com/cloud-build/triggers/edit/{clean_preview_trigger_id}?project={project} '
         'to view the Cloud Build trigger that cleans up expired preview '
         'deployments.\n\n'
         'Visit https://console.cloud.google.com/cloudscheduler/jobs/edit/{location}/{job}?project={project} '
@@ -911,7 +916,7 @@ class ConfigureGKEDeploy(base.Command):
 
   def _ConfigureCleanPreviewSchedulerJob(
       self, repo_owner, repo_name, pull_request_pattern,
-      clean_preview_trigger_id):
+      clean_preview_trigger_id, client_service_account_email):
 
     # Generate deterministic scheduler job name (id)
     job_id = self._FixSchedulerName(self._GenerateResourceName(
@@ -924,9 +929,7 @@ class ConfigureGKEDeploy(base.Command):
     name = 'projects/{}/locations/{}/jobs/{}'.format(
         project, _CLEAN_PREVIEW_SCHEDULER_LOCATION, job_id)
 
-    # AppEngine service account has Editor permission by default.
     messages = apis.GetMessagesModule('cloudscheduler', 'v1')
-    service_account_email = project + '@appspot.gserviceaccount.com'
     job = messages.Job(
         name=name,
         description='Every day, run trigger to clean expired preview '
@@ -945,7 +948,7 @@ class ConfigureGKEDeploy(base.Command):
                 .format(project, repo_name)
                 .encode('utf-8')),
             oauthToken=messages.OAuthToken(
-                serviceAccountEmail=service_account_email
+                serviceAccountEmail=client_service_account_email
             )
         )
     )

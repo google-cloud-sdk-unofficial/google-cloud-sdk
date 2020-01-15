@@ -132,8 +132,8 @@ def fix_method_name(name):
     name: string, method name.
 
   Returns:
-    The name with '_' appended if the name is a reserved word and '$'
-    replaced with '_'.
+    The name with '_' appended if the name is a reserved word and '$' 
+    replaced with '_'. 
   """
   name = name.replace('$', '_')
   if keyword.iskeyword(name) or name in RESERVED_WORDS:
@@ -339,11 +339,11 @@ def build_from_document(
 
   if  'rootUrl' not in service and (isinstance(http, (HttpMock,
                                                       HttpMockSequence))):
-    logger.error("You are using HttpMock or HttpMockSequence without" +
-                 "having the service discovery doc in cache. Try calling " +
-                 "build() without mocking once first to populate the " +
-                 "cache.")
-    raise InvalidJsonError()
+      logger.error("You are using HttpMock or HttpMockSequence without" +
+                   "having the service discovery doc in cache. Try calling " +
+                   "build() without mocking once first to populate the " +
+                   "cache.")
+      raise InvalidJsonError()
 
   base = urljoin(service['rootUrl'], service['servicePath'])
   schema = Schemas(service)
@@ -970,17 +970,17 @@ Returns:
     request = copy.copy(previous_request)
 
     if isPageTokenParameter:
-      # Replace pageToken value in URI
-      request.uri = _add_query_parameter(
-          request.uri, pageTokenName, nextPageToken)
-      logger.info('Next page request URL: %s %s' % (methodName, request.uri))
+        # Replace pageToken value in URI
+        request.uri = _add_query_parameter(
+            request.uri, pageTokenName, nextPageToken)
+        logger.info('Next page request URL: %s %s' % (methodName, request.uri))
     else:
-      # Replace pageToken value in request body
-      model = self._model
-      body = model.deserialize(request.body)
-      body[pageTokenName] = nextPageToken
-      request.body = model.serialize(body)
-      logger.info('Next page request body: %s %s' % (methodName, body))
+        # Replace pageToken value in request body
+        model = self._model
+        body = model.deserialize(request.body)
+        body[pageTokenName] = nextPageToken
+        request.body = model.serialize(body)
+        logger.info('Next page request body: %s %s' % (methodName, body))
 
     return request
 

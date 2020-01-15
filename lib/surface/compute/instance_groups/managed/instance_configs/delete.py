@@ -33,17 +33,9 @@ from googlecloudsdk.core import properties
 from six.moves import map
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Delete per instance configs from managed instance group.
-
-  *{command}* deletes one or more per instance configs from a Google Compute
-  Engine managed instance group.
-
-  Changes are applied immediately to the corresponding instances, by performing
-  the necessary action (for example, REFRESH), unless overridden by providing
-  the `--no-update-instance` flag.
-  """
+  """Delete per instance configs from managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -137,3 +129,28 @@ class Delete(base.DeleteCommand):
       return waiter.WaitFor(operation_poller, apply_operation_ref,
                             'Applying updates to instances.')
     return delete_result
+
+
+Delete.detailed_help = {
+    'brief':
+        'Delete per instance configs from managed instance group.',
+    'DESCRIPTION':
+        """\
+        *{command}* deletes one or more per instance configs from a Google
+        Compute Engine managed instance group.
+
+        Changes are applied immediately to the corresponding instances, by
+        performing the necessary action (for example, REFRESH), unless
+        overridden by providing the ``--no-update-instance'' flag.
+        """,
+    'EXAMPLES':
+        """\
+        To delete the per-instance config from ``my-instance'', run:
+
+          $ {command} my-group --region=europe-west4 --instance=my-instance
+
+        This will remove all metadata and detach all disks that were defined in
+        per-instance config (unless also defined in the instance template, in
+        which case it remains attached).
+        """
+}

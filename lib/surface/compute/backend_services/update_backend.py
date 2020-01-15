@@ -97,7 +97,7 @@ class UpdateBackend(base.UpdateCommand):
           resources,
           scope_lister=compute_flags.GetDefaultScopeLister(client))
     if args.network_endpoint_group:
-      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
+      return flags.GetNetworkEndpointGroupArg().ResolveAsResource(
           args,
           resources,
           scope_lister=compute_flags.GetDefaultScopeLister(client))

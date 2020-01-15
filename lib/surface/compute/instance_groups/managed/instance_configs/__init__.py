@@ -22,6 +22,6 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ManagedInstanceGroupsInstanceConfigs(base.Group):
   """Manage instance-specific settings of managed instance group."""

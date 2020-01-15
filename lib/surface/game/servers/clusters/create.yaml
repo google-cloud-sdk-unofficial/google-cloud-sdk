@@ -26,6 +26,10 @@
         Example: 'projects/my-project/locations/us-central1/clusters/test'. If project and location
         are not specified, the project and location of the Game Server Cluster resource are used to
         generate the full name of the GKE cluster.
+    - arg_name: description
+      api_field: gameServerCluster.description
+      help_text: |
+        Game server cluster description.
     - arg_name: namespace
       api_field: gameServerCluster.connectionInfo.namespace
       required: true

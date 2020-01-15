@@ -151,7 +151,7 @@ class Http(httplib2.Http):
         host = conn.host
 
         # Reformat IPv6 hosts.
-        if not _is_ipv4(host):
+        if _is_ipv6(host):
             host = '[{}]'.format(host)
 
         port = ''
@@ -197,14 +197,22 @@ class Http(httplib2.Http):
         self.pool = self._make_pool(proxy_info=self.proxy_info())
 
 
-def _is_ipv4(addr):
-    """Checks if a given address is an IPv4 address."""
+def _is_ipv6(addr):
+    """Checks if a given address is an IPv6 address."""
+    try:
+        # From https://docs.python.org/2/library/socket.html#socket.getaddrinfo
+        # AI_NUMERICHOST will disable domain name resolution and will raise
+        # an error if host is a domain name.
+        socket.getaddrinfo(addr, None, 0, 0, 0, socket.AI_NUMERICHOST)
+    except socket.gaierror:
+        # addr is a domain name.
+        return False
     try:
         socket.inet_aton(addr)
-        return True
-    except socket.error:
+        # addr is an ipv4 address.
         return False
-
+    except socket.error:
+        return True
 
 def _map_response(response, decode=False):
     """Maps a urllib3 response to a httplib/httplib2 Response."""

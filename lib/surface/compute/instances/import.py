@@ -37,8 +37,7 @@ from googlecloudsdk.core import resources
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.CreateCommand):
   """Import an instance into Google Compute Engine from OVF."""
 
@@ -106,21 +105,25 @@ class Import(base.CreateCommand):
                    project=properties.VALUES.core.project.GetOrFail(),
                    zone=zone))
     errors = []
-    client.MakeRequests([request], errors_to_collect=errors)
-    if not errors:
+    instances = client.MakeRequests([request], errors_to_collect=errors)
+    if not errors and instances:
       message = ('The instance [{instance_name}] already exists in zone '
                  '[{zone}].').format(
                      instance_name=instance_name, zone=zone)
       raise exceptions.InvalidArgumentException('INSTANCE_NAME', message)
 
-  def Run(self, args):
-    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-
+  def _ValidateArgs(self, args, compute_client):
     self._ValidateInstanceName(args)
-    self._CheckForExistingInstances(args.instance_name, compute_holder.client)
+    self._CheckForExistingInstances(args.instance_name, compute_client)
 
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateNetworkTierArgs(args)
+
+  def Run(self, args):
+    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    compute_client = compute_holder.client
+
+    self._ValidateArgs(args, compute_client)
 
     log.warning('Importing OVF. This may take 40 minutes for smaller OVFs '
                 'and up to a couple of hours for larger OVFs.')
@@ -165,6 +168,15 @@ class Import(base.CreateCommand):
         compute_release_track=
         self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class ImportBeta(Import):
+  """Import an instance into Google Compute Engine from OVF."""
+
+  def _ValidateArgs(self, args, compute_client):
+    super(ImportBeta, self)._ValidateArgs(args, compute_client)
+    daisy_utils.ValidateZone(args, compute_client)
 
 
 Import.detailed_help = {

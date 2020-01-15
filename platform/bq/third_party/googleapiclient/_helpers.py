@@ -40,7 +40,7 @@ _MISSING_FILE_MESSAGE = 'Cannot access {0}: No such file or directory'
 
 
 def positional(max_positional_args):
-    """A decorator to declare that only the first N arguments my be positional.
+    """A decorator to declare that only the first N arguments may be positional.
 
     This decorator makes it easy to support Python 3 style keyword-only
     parameters. For example, in Python 3 it is possible to write::
@@ -96,9 +96,9 @@ def positional(max_positional_args):
     nothing, respectively, if a declaration is violated.
 
     Args:
-        max_positional_arguments: Maximum number of positional arguments. All
-                                  parameters after the this index must be
-                                  keyword only.
+        max_positional_args: Maximum number of positional arguments. All
+                             parameters after the this index must be
+                             keyword only.
 
     Returns:
         A decorator that prevents using arguments after max_positional_args

@@ -27,14 +27,9 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List per instance configs of a managed instance group.
-
-  Lists per instance configs for each instance with preserved instance name
-  and/or resources (like disks). List is presented by default in form of a tree
-  (YAML) due to a potential for having multiple resources by single per instance
-  config.
-  """
+  """List per instance configs of a managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -89,3 +84,23 @@ class List(base.ListCommand):
       utils.RaiseToolException(errors)
 
     return instance_groups_utils.UnwrapResponse(results, 'items')
+
+
+List.detailed_help = {
+    'brief':
+        'List per instance configs of a managed instance group.',
+    'DESCRIPTION':
+        """\
+        *{command}* lists per instance configs for each instance with preserved
+        resources (like disks). List is presented by default in form of a tree
+        (YAML) due to a potential for having multiple resources by single per
+        instance config.
+        """,
+    'EXAMPLES':
+        """\
+        To list all the per-instance configs for the managed instance group
+        ``my-group'', run:
+
+          $ {command} my-group --region=europe-west4
+        """
+}

@@ -51,14 +51,33 @@ class AddBackend(base.UpdateCommand):
   `gcloud compute backend-services edit`.
   """
 
-  @staticmethod
-  def Args(parser):
+  support_global_neg = False
+  support_region_neg = False
+  support_failover = False
+
+  @classmethod
+  def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     backend_flags.AddDescription(parser)
-    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'add to')
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser)
-    backend_flags.AddCapacityScalar(parser)
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(
+        parser,
+        'add to',
+        support_global_neg=cls.support_global_neg,
+        support_region_neg=cls.support_region_neg)
+    backend_flags.AddBalancingMode(
+        parser,
+        support_global_neg=cls.support_global_neg,
+        support_region_neg=cls.support_region_neg)
+    backend_flags.AddCapacityLimits(
+        parser,
+        support_global_neg=cls.support_global_neg,
+        support_region_neg=cls.support_region_neg)
+    backend_flags.AddCapacityScalar(
+        parser,
+        support_global_neg=cls.support_global_neg,
+        support_region_neg=cls.support_region_neg)
+    if cls.support_failover:
+      backend_flags.AddFailover(parser, default=None)
 
   def _GetGetRequest(self, client, backend_service_ref):
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -97,12 +116,12 @@ class AddBackend(base.UpdateCommand):
           resources,
           scope_lister=compute_flags.GetDefaultScopeLister(client))
     if args.network_endpoint_group:
-      return (flags.GLOBAL_NETWORK_ENDPOINT_GROUP_ARG
-              if self._IsGlobalNegScopeEnabled() else
-              flags.NETWORK_ENDPOINT_GROUP_ARG).ResolveAsResource(
-                  args,
-                  resources,
-                  scope_lister=compute_flags.GetDefaultScopeLister(client))
+      return flags.GetNetworkEndpointGroupArg(
+          support_global_neg=self.support_global_neg,
+          support_region_neg=self.support_region_neg).ResolveAsResource(
+              args,
+              resources,
+              scope_lister=compute_flags.GetDefaultScopeLister(client))
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
     """Create a backend message.
@@ -162,16 +181,8 @@ class AddBackend(base.UpdateCommand):
     backend = self._CreateBackendMessage(client.messages, group_uri,
                                          balancing_mode, args)
 
-    # global network endpoint groups aren't compatible with health checking.
-    if (self._IsGlobalNegScopeEnabled() and
-        group_ref.Collection() == 'compute.globalNetworkEndpointGroups'):
-      replacement.healthChecks = []
-
     replacement.backends.append(backend)
     return replacement
-
-  def _IsGlobalNegScopeEnabled(self):
-    return False
 
   def Run(self, args):
     """Issues requests necessary to add backend to the Backend Service."""
@@ -215,15 +226,7 @@ class AddBackendBeta(AddBackend):
   `gcloud compute backend-services edit`.
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'add to')
-    backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser)
-    backend_flags.AddCapacityScalar(parser)
-    backend_flags.AddFailover(parser, default=None)
+  support_failover = True
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
     """Overrides."""
@@ -265,34 +268,5 @@ class AddBackendAlpha(AddBackendBeta):
   `gcloud compute backend-services edit`.
   """
 
-  @staticmethod
-  def Args(parser):
-    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(
-        parser, 'add to', support_global_neg=True)
-    backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser, support_global_neg=True)
-    backend_flags.AddCapacityScalar(parser, support_global_neg=True)
-    backend_flags.AddFailover(parser, default=None)
-
-  def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
-    """Overrides."""
-
-    backend_services_utils.ValidateBalancingModeArgs(messages, args)
-    return messages.Backend(
-        balancingMode=balancing_mode,
-        capacityScaler=args.capacity_scaler,
-        description=args.description,
-        group=group_uri,
-        maxRate=args.max_rate,
-        maxRatePerInstance=args.max_rate_per_instance,
-        maxRatePerEndpoint=args.max_rate_per_endpoint,
-        maxUtilization=args.max_utilization,
-        maxConnections=args.max_connections,
-        maxConnectionsPerInstance=args.max_connections_per_instance,
-        maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
-        failover=args.failover)
-
-  def _IsGlobalNegScopeEnabled(self):
-    return True
+  support_global_neg = True
+  support_region_neg = True

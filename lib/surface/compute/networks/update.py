@@ -101,17 +101,12 @@ class Update(base.UpdateCommand):
       network_resource.mtu = args.mtu
       should_patch = True
 
-    if args.bgp_routing_mode or getattr(args, 'multicast_mode', None):
+    if args.bgp_routing_mode:
       should_patch = True
-      if args.bgp_routing_mode:
-        network_resource.routingConfig = messages.NetworkRoutingConfig()
-        network_resource.routingConfig.routingMode = (
-            messages.NetworkRoutingConfig.RoutingModeValueValuesEnum(
-                args.bgp_routing_mode.upper()))
-      if getattr(args, 'multicast_mode', None):
-        network_resource.multicastMode = (
-            messages.Network.MulticastModeValueValuesEnum(
-                args.multicast_mode.upper()))
+      network_resource.routingConfig = messages.NetworkRoutingConfig()
+      network_resource.routingConfig.routingMode = (
+          messages.NetworkRoutingConfig.RoutingModeValueValuesEnum(
+              args.bgp_routing_mode.upper()))
 
     if should_patch:
       resource = service.Patch(

@@ -24,7 +24,7 @@
             --with-initial-owner=WITH_INITIAL_OWNER  \
             --display-name="Engineer Discuss"  \
             --description="Group for engineering discussions"  \
-            --labels="cloudidentity.googleapis.com/discussion_forum"
+            --labels="cloudidentity.googleapis.com/groups.discussion_forum"
 
 
   arguments:
@@ -72,10 +72,8 @@
         --dynamic-user-query="user.organizations.exists(org,org.title=='SWE')"
 
     - arg_name: labels
-      api_field: group.labels
       required: true
-      type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
-      processor: googlecloudsdk.command_lib.identity.groups.hooks:ReformatLabels
+      type: str
       help_text: |
         Labels for group resource.
         Example of labels "--labels cloudidentity.googleapis.com/groups.discussion_forum"
@@ -87,6 +85,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.identity.groups.hooks:SetParent
     - googlecloudsdk.command_lib.identity.groups.hooks:SetEntityKey
+    - googlecloudsdk.command_lib.identity.groups.hooks:SetLabels
     ALPHA:
       api_version: v1alpha1
     BETA:

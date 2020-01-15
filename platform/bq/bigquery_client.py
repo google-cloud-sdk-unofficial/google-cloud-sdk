@@ -70,6 +70,7 @@ CONNECTION_PROPERTY_TO_TYPE_MAP = {
 CONNECTION_TYPES = CONNECTION_TYPE_TO_PROPERTY_MAP.keys()
 
 
+
 def _Typecheck(obj, types, message=None, method=None):
   if not isinstance(obj, types):
     if not message:
@@ -2057,14 +2058,9 @@ class BigqueryClient(object):
     return client.projects().locations().connections().get(
         name=reference.path()).execute()
 
-  def CreateConnection(self,
-                       project_id,
-                       location,
-                       connection_type,
-                       properties,
-                       display_name=None,
-                       description=None,
-                       connection_id=None):
+  def CreateConnection(self, project_id, location,
+                       connection_type, properties, display_name=None,
+                       description=None, connection_id=None):
     """Create a connection with the given connection reference.
 
     Arguments:
@@ -2099,12 +2095,8 @@ class BigqueryClient(object):
     return client.projects().locations().connections().create(
         parent=parent, connectionId=connection_id, body=connection).execute()
 
-  def UpdateConnection(self,
-                       reference,
-                       connection_type,
-                       properties,
-                       display_name=None,
-                       description=None):
+  def UpdateConnection(self, reference, connection_type, properties,
+                       display_name=None, description=None):
     """Update connection with the given connection reference.
 
     Arguments:
@@ -2379,7 +2371,8 @@ class BigqueryClient(object):
       formatter.AddColumns(('name', 'jobType', 'assignee'))
     elif reference_type == ApiClientHelper.ConnectionReference:
       formatter.AddColumns(('name', 'friendlyName', 'description',
-                            'Last modified', 'type', 'properties'))
+                            'Last modified', 'type', 'hasCredential',
+                            'properties'))
     else:
       raise ValueError('Unknown reference type: %s' % (
           reference_type.__name__,))
@@ -3011,6 +3004,7 @@ class BigqueryClient(object):
         result['properties'] = json.dumps(value)
       else:
         result[key] = value
+    result['hasCredential'] = connection.get('hasCredential', False)
     return result
 
   @staticmethod

@@ -265,9 +265,9 @@ class UpdateAlpha(Update):
         ),
         help=('Add an exclusion filter for a log entry that is not to be '
               'exported. This flag can be repeated.\n\n'
-              'The ``name'' and ``filter'' attributes are required. The '
+              'The ``name\'\' and ``filter\'\' attributes are required. The '
               'following keys are accepted:\n\n'
-              '*name*::: An identifier, such as ``load-balancer-exclusion''. '
+              '*name*::: An identifier, such as ``load-balancer-exclusion\'\'. '
               'Identifiers are limited to 100 characters and can include only '
               'letters, digits, underscores, hyphens, and periods.\n\n'
               '*description*::: A description of this exclusion.\n\n'
@@ -289,9 +289,9 @@ class UpdateAlpha(Update):
         ),
         help=('Update an exclusion filter for a log entry that is not to be '
               'exported. This flag can be repeated.\n\n'
-              'The ``name'' and ``filter'' attributes are required. '
+              'The ``name\'\' and ``filter\'\' attributes are required. '
               'following keys are accepted:\n\n'
-              'name*::: An identifier, such as ``load-balancer-exclusion''. '
+              'name*::: An identifier, such as ``load-balancer-exclusion\'\'. '
               'Identifiers are limited to 100 characters and can include only '
               'letters, digits, underscores, hyphens, and periods.\n\n'
               '*description*::: A description of this exclusion.\n\n'

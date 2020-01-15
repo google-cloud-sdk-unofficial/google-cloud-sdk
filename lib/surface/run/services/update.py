@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
@@ -106,13 +107,19 @@ class Update(base.Command):
     service_ref = flags.GetService(args)
 
     with serverless_operations.Connect(conn_context) as client:
-      deployment_stages = stages.ServiceStages()
+      service = client.GetService(service_ref)
+      has_latest = (service is None or
+                    traffic.LATEST_REVISION_KEY in service.traffic)
+      deployment_stages = stages.ServiceStages(
+          include_iam_policy_set=False,
+          include_route=has_latest)
       with progress_tracker.StagedProgressTracker(
           'Deploying...',
           deployment_stages,
           failure_message='Deployment failed',
           suppress_output=args.async_) as tracker:
-        client.ReleaseService(service_ref, changes, tracker, asyn=args.async_)
+        client.ReleaseService(service_ref, changes, tracker, asyn=args.async_,
+                              prefetch=service)
       if args.async_:
         pretty_print.Success(
             'Deploying asynchronously.')

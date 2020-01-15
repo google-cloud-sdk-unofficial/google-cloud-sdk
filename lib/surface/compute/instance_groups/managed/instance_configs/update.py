@@ -33,33 +33,9 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  r"""Update per instance config of a managed instance group.
-
-  *{command}* updates the per instance config of an instance controlled by a
-  Google Compute Engine managed instance group. The command lets you change the
-  list of instance-specific stateful resources, that is, the list of resources
-  that are preserved during instance restarts and recreations.
-
-  For example:
-
-    $ {command} example-group --instance=example-instance \
-        --update-stateful-disk=device-name=my-disk-3,\
-        source=projects/my-project/zones/us-central1-a/disks/my-disk-3 \
-        --remove-stateful-disks=my-disk-1,my-disk-2
-
-  This command updates the stateful disk, `my-disk-3`, to the image provided by
-  `source`. If my-disk-3 did not exist previously in the per instance config,
-  and if it does not exist in the group's instance template, then the group adds
-  my-disk-3 to example-instance. The command also removes stateful configuration
-  for my-disk-1 and my-disk-2; if these disk are not defined in the group's
-  instance template, then they are detached.
-
-  Changes are applied immediately to the corresponding instances, by performing
-  the necessary action (for example, REFRESH), unless overridden by providing
-  the `--no-update-instance` flag.
-  """
+  """Update per instance config of a managed instance group."""
 
   @staticmethod
   def _CombinePerInstanceConfigMessage(
@@ -240,3 +216,37 @@ class Update(base.UpdateCommand):
                             'Applying updates to instances.')
 
     return update_result
+
+
+Update.detailed_help = {
+    'brief':
+        'Update per instance config of a managed instance group.',
+    'DESCRIPTION':
+        """\
+        *{command}* updates the per instance config of an instance controlled by
+        a Google Compute Engine managed instance group. The command lets you
+        change the list of instance-specific stateful resources, that is, the
+        list of resources that are preserved during instance restarts and
+        recreations.
+
+        Changes are applied immediately to the corresponding instances, by
+        performing the necessary action (for example, REFRESH), unless
+        overridden by providing the ``--no-update-instance'' flag.
+        """,
+    'EXAMPLES':
+        """\
+        To updates the stateful disk ``my-disk-3'' to the image provided by
+        ``source'', and clear ``my-disk1'' and ``my-disk2'' as stateful
+        disks, and to add stateful metadata ``my-key'': ``my-value'', on
+        instance ``my-instance'', run:
+
+          $ {command} my-group --region=europe-west4 --instance=my-instance --update-stateful-disk=device-name=my-disk-3,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --remove-stateful-disks=my-disk-1,my-disk-2 --update-stateful-metadata='my-key=my-value'
+
+        If ``my-disk-3'' did not exist previously in the per instance config,
+        and if it does not exist in the group's instance template, then the
+        command adds ``my-disk-3'' to ``my-instance''. The command also removes
+        stateful configuration for ``my-disk-1'' and ``my-disk-2''; if these
+        disk are not defined in the group's instance template, then they are
+        detached.
+        """
+}

@@ -32,19 +32,9 @@ import six
 
 
 # TODO(b/70321546): rewrite help
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create per instance config for an instance in a managed instance group.
-
-  *{command}* creates a per instance config for an instance controlled by a
-  Google Compute Engine managed instance group. An instance with a per instance
-  config preserves the specified metadata and/or disks during instance
-  recreation and deletion.
-
-  Once created, the config is applied immediately to the corresponding instance,
-  by performing the necessary action (for example, REFRESH), unless overridden
-  by providing the `--no-update-instance` flag.
-  """
+  """Create per instance config for an instance in a managed instance group."""
 
   @staticmethod
   def Args(parser):
@@ -122,3 +112,33 @@ class Create(base.CreateCommand):
                             'Applying updates to instances.')
 
     return create_result
+
+
+Create.detailed_help = {
+    'brief':
+        'Create per instance config for an instance in a '
+        'managed instance group.',
+    'DESCRIPTION':
+        """\
+        *{command}* creates a per instance config for an instance controlled by
+        a Google Compute Engine managed instance group. An instance with a per
+        instance config preserves the specified metadata and/or disks during
+        instance recreation and deletion.
+
+        Once created, the config is applied immediately to the corresponding
+        instance, by performing the necessary action (for example, REFRESH),
+        unless overridden by providing the ``--no-update-instance'' flag.
+        """,
+    'EXAMPLES':
+        """\
+        To create a per-instance config with a stateful disk ``my-disk'' and to
+        add stateful metadata ``my-key'': ``my-value'', on instance
+        ``my-instance'', run:
+
+          $ {command} my-group --region=europe-west4 --instance=my-instance --stateful-disk=device-name=my-disk,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --stateful-metadata='my-key=my-value'
+
+        If my-disk did not exist previously in the per instance config,
+        and if it does not exist in the group's instance template, then the
+        command adds my-disk to my-instance.
+        """
+}

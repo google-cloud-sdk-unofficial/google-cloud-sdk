@@ -52,7 +52,7 @@ class SklearnClient(PredictionClient):
     with stats.time(prediction_utils.SESSION_RUN_TIME):
       try:
         return self._predictor.predict(inputs, **kwargs)
-      except Exception as e:
+      except Exception as e:  # pylint: disable=broad-except
         logging.exception("Exception while predicting with sklearn model.")
         raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
                               "Exception during sklearn prediction: " + str(e))
@@ -79,8 +79,8 @@ class XgboostClient(PredictionClient):
     xgb_explainer = factory.get_explainer(self._booster, explanation_config)
     try:
       return xgb_explainer.explain(np.array(inputs))
-    except Exception as e:
-      logging.exception("Exception during explanation with xgboost model: ")
+    except Exception as e:  # pylint: disable=broad-except
+      logging.exception("Exception during explanation with xgboost model.")
       raise PredictionError(
           PredictionError.FAILED_TO_EXPLAIN_MODEL,
           "Exception during xgboost model explanation: " + str(e))
@@ -96,15 +96,15 @@ class XgboostClient(PredictionClient):
     import xgboost as xgb  # pylint: disable=g-import-not-at-top
     try:
       inputs_dmatrix = xgb.DMatrix(inputs)
-    except Exception as e:
-      logging.exception("Could not initialize DMatrix from inputs: ")
+    except Exception as e:  # pylint: disable=broad-except
+      logging.exception("Could not initialize DMatrix from inputs.")
       raise PredictionError(
           PredictionError.FAILED_TO_RUN_MODEL,
           "Could not initialize DMatrix from inputs: " + str(e))
     with stats.time(prediction_utils.SESSION_RUN_TIME):
       try:
         return self._booster.predict(inputs_dmatrix, **kwargs)
-      except Exception as e:
+      except Exception as e:  # pylint: disable=broad-except
         logging.exception("Exception during predicting with xgboost model: ")
         raise PredictionError(PredictionError.FAILED_TO_RUN_MODEL,
                               "Exception during xgboost prediction: " + str(e))
@@ -120,8 +120,7 @@ class SklearnModel(prediction_utils.BaseModel):
     return super(SklearnModel, self).predict(instances, stats, **kwargs)
 
   def preprocess(self, instances, stats=None, **kwargs):
-    # TODO(b/67383676) Consider changing this to a more generic type.
-    return np.array(instances)
+    return instances
 
   def postprocess(self,
                   predicted_outputs,
@@ -141,6 +140,9 @@ class SklearnModel(prediction_utils.BaseModel):
 
 class XGBoostModel(SklearnModel):
   """The implementation of XGboost Model."""
+
+  def preprocess(self, instances, stats=None, **kwargs):
+    return np.array(instances)
 
 
 def create_sklearn_client(model_path, **unused_kwargs):
@@ -226,10 +228,11 @@ def _load_xgboost_model(model_path):
   try:
     return xgb.Booster(model_file=model_file)
   except xgb.core.XGBoostError as e:
-    error_msg = "Could not load the model: {}. {}.".format(
-        os.path.join(model_path, MODEL_FILE_NAME_BST), str(e))
-    logging.critical(error_msg)
-    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL, error_msg)
+    error_msg = "Could not load the model: {}.".format(
+        os.path.join(model_path, MODEL_FILE_NAME_BST))
+    logging.exception(error_msg)
+    raise PredictionError(PredictionError.FAILED_TO_LOAD_MODEL,
+                          "{}. {}.".format(error_msg, str(e)))
 
 
 def create_xgboost_model(model_path, unused_flags):

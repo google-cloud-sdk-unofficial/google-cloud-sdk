@@ -31,7 +31,7 @@
     - arg_name: description
       api_field: gameServerConfig.description
       help_text: |
-        Game server config specification.
+        Game server config description.
     - _REF_: googlecloudsdk.command_lib.game.servers.flags:fleet_configs_file
       api_field: gameServerConfig.fleetConfigs
       help_text: |
