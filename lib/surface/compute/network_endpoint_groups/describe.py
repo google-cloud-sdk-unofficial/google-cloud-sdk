@@ -38,17 +38,22 @@ class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
+  support_global_scope = False
+  support_regional_scope = False
 
-  @staticmethod
-  def Args(parser):
-    flags.MakeNetworkEndpointGroupsArg().AddArgument(parser)
+  @classmethod
+  def Args(cls, parser):
+    flags.MakeNetworkEndpointGroupsArg(
+        support_global_scope=cls.support_global_scope,
+        support_regional_scope=cls.support_regional_scope).AddArgument(parser)
 
-  def _Run(self, args, support_global_scope=False):
+  def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=support_global_scope).ResolveAsResource(
+        support_global_scope=self.support_global_scope,
+        support_regional_scope=self.support_regional_scope).ResolveAsResource(
             args,
             holder.resources,
             default_scope=compute_scope.ScopeEnum.ZONE,
@@ -60,8 +65,13 @@ class Describe(base.DescribeCommand):
           networkEndpointGroup=neg_ref.Name(),
           project=neg_ref.project,
           zone=neg_ref.zone)
-
       service = holder.client.apitools_client.networkEndpointGroups
+    elif hasattr(neg_ref, 'region'):
+      request = messages.ComputeRegionNetworkEndpointGroupsGetRequest(
+          networkEndpointGroup=neg_ref.Name(),
+          project=neg_ref.project,
+          region=neg_ref.region)
+      service = holder.client.apitools_client.regionNetworkEndpointGroups
     else:
       request = messages.ComputeGlobalNetworkEndpointGroupsGetRequest(
           networkEndpointGroup=neg_ref.Name(), project=neg_ref.project)
@@ -69,18 +79,10 @@ class Describe(base.DescribeCommand):
 
     return client.MakeRequests([(service, 'Get', request)])[0]
 
-  def Run(self, args):
-    return self._Run(args)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
   """Describe a Google Compute Engine network endpoint group."""
 
-  @staticmethod
-  def Args(parser):
-    flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=True).AddArgument(parser)
-
-  def Run(self, args):
-    return self._Run(args, support_global_scope=True)
+  support_global_scope = True
+  support_regional_scope = True

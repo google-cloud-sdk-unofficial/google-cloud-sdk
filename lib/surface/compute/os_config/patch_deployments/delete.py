@@ -21,9 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.os_config import resource_args
-from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -45,10 +43,8 @@ class Delete(base.DeleteCommand):
     resource_args.AddPatchDeploymentResourceArg(parser, 'to delete.')
 
   def Run(self, args):
-    project = properties.VALUES.core.project.GetOrFail()
     patch_deployment_ref = args.CONCEPTS.patch_deployment.Parse()
-    patch_deployment_name = osconfig_command_utils.GetPatchDeploymentUriPath(
-        project, patch_deployment_ref.Name())
+    patch_deployment_name = patch_deployment_ref.RelativeName()
 
     release_track = self.ReleaseTrack()
     client = osconfig_api_utils.GetClientInstance(release_track)

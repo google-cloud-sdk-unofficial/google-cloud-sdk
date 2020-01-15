@@ -32,8 +32,8 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine SSL certificate.
 
-    *{command}* displays all data associated with Google Compute
-  Engine SSL certificate in a project.
+    *{command}* displays all data (except private keys) associated with
+    Google Compute Engine SSL certificate in a project.
   """
 
   SSL_CERTIFICATE_ARG = None

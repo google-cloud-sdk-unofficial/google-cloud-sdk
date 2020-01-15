@@ -34,7 +34,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
-# LINT.IfChange
 SERVICE_ACCOUNT_KEY_FILE_FLAG = '--service-account-key-file'
 DOCKER_CREDENTIAL_FILE_FLAG = '--docker-credential-file'
 
@@ -285,4 +284,3 @@ class Register(base.CreateCommand):
           .format(registered_membership_project,
                   hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
                   registered_membership_project, context))
-# LINT.ThenChange(../hub/register_cluster.py)

@@ -81,6 +81,7 @@ class UpdateHelper(object):
     cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
+    flags.AddNoHealthChecks(parser)
     cls.SECURITY_POLICY_ARG = (
         security_policy_flags.SecurityPolicyArgumentForTargetResource(
             resource='backend service'))
@@ -133,7 +134,7 @@ class UpdateHelper(object):
       replacement.description = args.description
 
     health_checks = flags.GetHealthCheckUris(args, self, resources)
-    if health_checks:
+    if health_checks or args.IsSpecified('no_health_checks'):
       replacement.healthChecks = health_checks
 
     if args.timeout:
@@ -220,6 +221,7 @@ class UpdateHelper(object):
         if self._support_logging else False,
         args.IsSpecified('health_checks'),
         args.IsSpecified('https_health_checks'),
+        args.IsSpecified('no_health_checks')
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 

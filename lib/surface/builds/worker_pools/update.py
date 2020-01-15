@@ -108,4 +108,10 @@ class Update(base.UpdateCommand):
 
     log.UpdatedResource(wp_resource)
 
+    # Format the workerpool name for display
+    try:
+      updated_wp.name = cloudbuild_util.WorkerPoolShortName(updated_wp.name)
+    except ValueError:
+      pass  # Must be an old version.
+
     return updated_wp

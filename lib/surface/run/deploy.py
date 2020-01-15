@@ -142,6 +142,7 @@ class Deploy(base.Command):
     flags.AddAllowUnauthenticatedFlag(managed_group)
     flags.AddServiceAccountFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
+    flags.AddRevisionSuffixArg(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -163,6 +164,9 @@ class Deploy(base.Command):
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
     flags.AddMaxInstancesFlag(parser)
+    flags.AddCommandFlag(parser)
+    flags.AddArgsFlag(parser)
+    flags.AddPortFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -222,10 +226,6 @@ class AlphaDeploy(Deploy):
   def Args(parser):
     Deploy.CommonArgs(parser)
 
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddRevisionSuffixArg(managed_group)
-
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddSecretsFlags(cluster_group)
@@ -234,10 +234,7 @@ class AlphaDeploy(Deploy):
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
-    flags.AddCommandFlag(parser)
-    flags.AddArgsFlag(parser)
     flags.AddNoTrafficFlag(parser)
-    flags.AddPortFlag(parser)
     flags.AddCpuFlag(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

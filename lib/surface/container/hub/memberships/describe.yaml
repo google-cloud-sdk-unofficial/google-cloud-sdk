@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Describe a membership.
+    description: Describe a membership in Hub.
+    examples: |
+      Describe a membership in Hub:
+
+        $ {command} a-membership
+
+  request:
+    collection: gkehub.projects.locations.memberships
+
+  arguments:
+    resource:
+      help_text: membership resource representing a cluster in Hub.
+      spec: !REF googlecloudsdk.command_lib.container.hub.memberships.resources:membership

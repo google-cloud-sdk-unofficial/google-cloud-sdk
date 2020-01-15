@@ -76,7 +76,8 @@ class ListAlpha(base.ListCommand):
             size
         )
         """)
-    lister.AddMultiScopeListerFlags(parser, zonal=True, global_=True)
+    lister.AddMultiScopeListerFlags(
+        parser, zonal=True, regional=True, global_=True)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -86,6 +87,7 @@ class ListAlpha(base.ListCommand):
     list_implementation = lister.MultiScopeLister(
         client,
         zonal_service=client.apitools_client.networkEndpointGroups,
+        regional_service=client.apitools_client.regionNetworkEndpointGroups,
         global_service=client.apitools_client.globalNetworkEndpointGroups,
         aggregation_service=client.apitools_client.networkEndpointGroups)
 
@@ -93,5 +95,8 @@ class ListAlpha(base.ListCommand):
 
 
 ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
-    'network endpoint groups',
-    [base_classes.ScopeType.zonal_scope, base_classes.ScopeType.global_scope])
+    'network endpoint groups', [
+        base_classes.ScopeType.zonal_scope,
+        base_classes.ScopeType.regional_scope,
+        base_classes.ScopeType.global_scope
+    ])

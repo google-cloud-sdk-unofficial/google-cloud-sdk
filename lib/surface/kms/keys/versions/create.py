@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -39,6 +40,16 @@ class Create(base.CreateCommand):
         --keyring=fellowship \
         --key=frodo --primary
   """
+
+  GOOGLE_SYMMETRIC_ENCRYPTION = cloudkms_base.GetMessagesModule() \
+      .CryptoKeyVersion.AlgorithmValueValuesEnum.GOOGLE_SYMMETRIC_ENCRYPTION
+
+  SYMMETRIC_NEW_PRIMARY_MESSAGE = (
+      'Successfully created key version [{version}] and set it as the primary '
+      'version. Future encryption requests will use [{version}] until the next '
+      'key rotation. Data that was encrypted with an older key version can '
+      'still be decrypted, and Cloud KMS will automatically choose the correct '
+      'key for decryption based on the ciphertext.')
 
   @staticmethod
   def Args(parser):
@@ -72,6 +83,10 @@ class Create(base.CreateCommand):
               messages.UpdateCryptoKeyPrimaryVersionRequest(
                   cryptoKeyVersionId=version_id)))
       client.projects_locations_keyRings_cryptoKeys.UpdatePrimaryVersion(req)
+
+      if new_ckv.algorithm == self.GOOGLE_SYMMETRIC_ENCRYPTION:
+        log.err.Print(self.SYMMETRIC_NEW_PRIMARY_MESSAGE.format(version=version_id))
+
     return new_ckv
 
 

@@ -70,6 +70,12 @@ class Describe(base.DescribeCommand):
             InstalledPackages.rpm:format=
               "table[box,title='Installed Packages (RPM)']
                 (Name:sort=1,Arch,Version)",
+            InstalledPackages.Zypper_patches:format=
+              "table[box,title='Installed Patches (Zypper)'](
+                Name:sort=1,
+                Category,
+                Severity,
+                Summary:wrap=14)",
             InstalledPackages.wua:format=
               "table[all-box,title='Installed Packages (Windows Update Agent)'](
                 Title:sort=1:wrap,
@@ -95,6 +101,12 @@ class Describe(base.DescribeCommand):
             PackageUpdates.yum:format=
               "table[box,title='Package Updates Available (Yum)']
                 (Name:sort=1,Arch,Version)",
+            PackageUpdates.Zypper_patches:format=
+              "table[box,title='Patches Available (Zypper)'](
+                Name:sort=1,
+                Category,
+                Severity,
+                Summary:wrap=14)",
             PackageUpdates.wua:format=
               "table[all-box,title='Package Updates Available (Windows Update Agent)'](
                 Title:sort=1:wrap,

@@ -67,6 +67,6 @@ class Delete(base.DeleteCommand):
     # "at an unspecified time".
     log.status.Print(
         '\nYou can undo this operation for a limited period by running'
-        ' the commands below.\n    $ gcloud projects undelete {1}\n\n{0}'
-        .format(flags.SHUT_DOWN_PROJECTS, args.id))
+        ' the command below.\n    $ gcloud projects undelete {1}\n\n{0}'.format(
+            flags.SHUT_DOWN_PROJECTS, args.id))
     return result

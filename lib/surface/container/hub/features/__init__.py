@@ -24,5 +24,14 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Features(base.Group):
-  """Manage Hub Features."""
+  """Manage features on all Hub memberships(registered clusters).
+
+  Manage features on all Hub memberships(registered clusters)
+
+  ## EXAMPLES
+
+  Manage features on all Hub memberships(registered clusters):
+
+    $ {command} a-feature --help
+  """
   pass

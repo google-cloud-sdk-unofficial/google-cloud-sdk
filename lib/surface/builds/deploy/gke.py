@@ -66,14 +66,31 @@ class DeployGKE(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    parser.add_argument(
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument(
         'source',
         nargs='?',
-        help='Location of the source and configs to build and deploy. The '
-        '`--config` option, if provided, is a relative path in the source '
-        'directory. The location can be a directory on a local disk or a '
+        default='.',  # By default, the current directory is used.
+        help='Location of the source and configs to build and deploy. '
+        'The location can be a directory on a local disk or a '
         'gzipped archive file (.tar.gz) in Google Cloud Storage.')
-    docker = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument(
+        '--no-source',
+        action='store_true',
+        help='Specify that no source should be uploaded with this build.')
+
+    docker = parser.add_mutually_exclusive_group(
+        help="""
+        Image to use to build and/or deploy.
+
+        To build an image with a default tag, omit these flags. The resulting
+        tag will be in the format 'gcr.io/[PROJECT_ID]/[IMAGE]/[TAG], where
+        [PROJECT_ID] is your project ID, [IMAGE] is the value provided by
+        `--app-name`, if provided, else it is the name of the provided source
+        directory, and [TAG] is the value provided by `--app-version`, if
+        provided, else it is the commit SHA of your provided source.
+
+        """)
     docker.add_argument(
         '--tag',
         help="""
@@ -83,27 +100,13 @@ class DeployGKE(base.Command):
         If you specify a tag in this command, your source must include a
         Dockerfile. For instructions on building using a Dockerfile see
         https://cloud.google.com/cloud-build/docs/quickstart-docker.
-
-        If you would like a default tag to build with, supply the flag
-         `--tag-default`.
-        """)
-    docker.add_argument(
-        '--tag-default',
-        action='store_true',
-        help="""
-        Default tag to use with a 'docker build' image creation. Cloud Build
-        runs a remote 'docker build -t $TAG .' command, where $TAG is the tag,
-        in the format 'gcr.io/$PROJECT_ID/<source directory>:$COMMIT_SHA'.
-
-        Your source must include a Dockerfile. For instructions on building
-        using a Dockerfile see
-        https://cloud.google.com/cloud-build/docs/quickstart-docker.
         """)
     docker.add_argument(
         '--image',
         help='Existing container image to deploy. If set, Cloud Build deploys '
         'the container image to the target Kubernetes cluster. The image must '
         'be in the gcr.io/* or *.gcr.io/* namespaces.')
+
     parser.add_argument(
         '--gcs-staging-dir',
         help="""
@@ -113,8 +116,8 @@ class DeployGKE(base.Command):
         doesn't exist, Cloud Build creates it.
 
         If this field is not set, the source and configs are written to
-        'gs://[PROJECT_ID]_cloudbuild/deploy', where source is written to the
-        'source' sub-directory and configs are written to the 'config'
+        ```gs://[PROJECT_ID]_cloudbuild/deploy```, where source is written to
+        the 'source' sub-directory and configs are written to the 'config'
         sub-directory.
         """)
     parser.add_argument(
@@ -147,8 +150,8 @@ class DeployGKE(base.Command):
         help="""
         Path to the Kubernetes YAML, or directory containing multiple
         Kubernetes YAML files, used to deploy the container image. The path is
-        relative to the repository root. The files must reference the provided
-        container image or tag.
+        relative to the repository root provided by [SOURCE]. The files must
+        reference the provided container image or tag.
 
         If this field is not set, a default Deployment config and Horizontal
         Pod Autoscaler config are used to deploy the image.
@@ -183,21 +186,25 @@ class DeployGKE(base.Command):
       FailedDeployException: If the build is completed and not 'SUCCESS'.
     """
 
-    if args.source is None:
-      if args.tag or args.tag_default:
+    if not args.source and not args.no_source:
+      raise c_exceptions.InvalidArgumentException(
+          '--no-source', 'To omit source, use the --no-source flag.')
+
+    if args.no_source:
+      if args.tag:
         raise c_exceptions.RequiredArgumentException(
             'SOURCE',
-            'required to build container image provided by --tag or --tag-default.'
+            'Source is required to build container image.'
         )
       if args.config:
         raise c_exceptions.RequiredArgumentException(
-            'SOURCE', 'required because --config is a relative path in the '
-            'source directory.')
+            'SOURCE',
+            'Source is required when specifying --config because it is a '
+            'relative path in the source directory.')
 
-    if args.source and args.image and not args.config:
-      raise c_exceptions.InvalidArgumentException(
-          'SOURCE', 'Source must not be provided when no Kubernetes '
-          'configs and no docker builds are required.')
+    do_build_and_push = args.image is None
+    if not do_build_and_push and not args.config:
+      args.no_source = True
 
     image = self._DetermineImageFromArgs(args)
 
@@ -261,7 +268,7 @@ class DeployGKE(base.Command):
     else:
       gcs_config_staging_path = gcs_staging_dir_bucket
 
-    if args.source:
+    if not args.no_source:
       staged_source = self._StageSource(args.source, gcs_staging_dir_bucket,
                                         gcs_staging_dir_object)
     else:
@@ -271,7 +278,7 @@ class DeployGKE(base.Command):
     build_config = build_util.CreateBuild(
         messages,
         build_timeout=properties.VALUES.builds.timeout.Get(),
-        build_and_push=(args.tag_default or args.tag),
+        build_and_push=do_build_and_push,
         staged_source=staged_source,
         image=image,
         dockerfile_path='Dockerfile',
@@ -299,37 +306,6 @@ class DeployGKE(base.Command):
     Returns:
       Full image string representation.
     """
-    if args.tag_default:
-      if args.app_name:
-        default_name = args.app_name
-      elif os.path.isdir(args.source):
-        default_name = os.path.basename(os.path.abspath(args.source))
-      else:
-        raise c_exceptions.InvalidArgumentException(
-            '--tag-default',
-            'No default container image name available. Provide an '
-            'app name with --app-name, or provide a valid --tag.')
-
-      if args.app_version:
-        default_tag = args.app_version
-      elif git.IsGithubRepository(
-          args.source) and not git.HasPendingChanges(args.source):
-        default_tag = git.GetGitHeadRevision(args.source)
-        if not default_tag:
-          raise c_exceptions.InvalidArgumentException(
-              '--tag-default',
-              'No default tag available, no commit sha at HEAD of source '
-              'repository available for tag. Provide an app version '
-              'with --app-version, or provide a valid --tag.')
-      else:
-        raise c_exceptions.InvalidArgumentException(
-            '--tag-default',
-            'No default container image tag available. Provide an app '
-            'version with --app-version, or provide a valid --tag.')
-
-      return 'gcr.io/$PROJECT_ID/{name}:{tag}'.format(
-          name=default_name, tag=default_tag)
-
     if args.tag:
       if (properties.VALUES.builds.check_tag.GetBool() and
           'gcr.io/' not in args.tag):
@@ -338,13 +314,46 @@ class DeployGKE(base.Command):
             'Tag value must be in the gcr.io/* or *.gcr.io/* namespace.')
       return args.tag
 
-    if args.image:
+    elif args.image:
       if (properties.VALUES.builds.check_tag.GetBool() and
           'gcr.io/' not in args.image):
         raise c_exceptions.InvalidArgumentException(
             '--image',
             'Image value must be in the gcr.io/* or *.gcr.io/* namespace.')
       return args.image
+
+    else:  # Default tag
+      if args.app_name:
+        default_name = args.app_name
+      elif os.path.isdir(args.source):  # I.e., the source is not a tarball
+        default_name = os.path.basename(os.path.abspath(args.source))
+      else:
+        raise c_exceptions.OneOfArgumentsRequiredException(
+            ['--app-name', '--tag'],
+            'Cannot resolve default container image. Provide an app name with '
+            '--app-name to use as the container image, or provide a full '
+            'tag using --tag.')
+
+      if args.app_version:
+        default_tag = args.app_version
+      elif git.IsGithubRepository(
+          args.source) and not git.HasPendingChanges(args.source):
+        default_tag = git.GetGitHeadRevision(args.source)
+        if not default_tag:
+          raise c_exceptions.OneOfArgumentsRequiredException(
+              ['--app-version', '--tag'],
+              'Cannot resolve default container tag using the Git commit SHA. '
+              'Provide an app version with --app-version to use as the '
+              'container tag, or provide a full tag using --tag.')
+      else:
+        raise c_exceptions.OneOfArgumentsRequiredException(
+            ['--app-version', '--tag'],
+            'Cannot resolve default container tag. '
+            'Provide an app version with --app-version to use as the '
+            'container tag, or provide a full tag using --tag.')
+
+      return 'gcr.io/$PROJECT_ID/{name}:{tag}'.format(
+          name=default_name, tag=default_tag)
 
   def _ImageName(self, image):
     """Given a full image string, return just the name of the image.

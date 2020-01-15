@@ -52,7 +52,7 @@ class AccessToken(base.Command):
   def Run(self, args):
     """Run the helper command."""
 
-    cred = c_store.Load(args.account)
+    cred = c_store.Load(args.account, allow_account_impersonation=True)
     c_store.Refresh(cred)
     if not cred.access_token:
       raise auth_exceptions.InvalidCredentialsError(

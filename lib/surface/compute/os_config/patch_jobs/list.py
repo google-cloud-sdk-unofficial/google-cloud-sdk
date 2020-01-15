@@ -146,7 +146,7 @@ class List(base.ListCommand):
         client.projects_patchJobs,
         request,
         limit=args.limit,
-        batch_size=args.page_size,
+        batch_size=osconfig_command_utils.GetListBatchSize(args),
         field='patchJobs',
         batch_size_attribute='pageSize',
     )

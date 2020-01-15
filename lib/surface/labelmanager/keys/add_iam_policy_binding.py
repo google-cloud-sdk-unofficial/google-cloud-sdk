@@ -83,7 +83,7 @@ class AddIamPolicyBinding(base.Command):
 
     get_iam_policy_req = (
         labelmanager_messages.LabelmanagerLabelKeysGetIamPolicyRequest(
-            options_requestedPolicyVersion=3, resource=label_key))
+            resource=label_key))
     policy = labelkeys_service.GetIamPolicy(get_iam_policy_req)
     condition = iam_util.ValidateAndExtractConditionMutexRole(args)
     iam_util.AddBindingToIamPolicyWithCondition(labelmanager_messages.Binding,

@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.local import local
 from googlecloudsdk.command_lib.local import local_files
 from googlecloudsdk.core import config
 from googlecloudsdk.core.util import files as file_utils
+from googlecloudsdk.core.util import platforms
 import six
 
 DEFAULT_CLUSTER_NAME = 'gcloud-local-dev'
@@ -122,12 +123,14 @@ class Dev(base.Command):
 
     group.add_argument('--minikube-profile', help='Minikube profile.')
 
+    group.add_argument('--kind-cluster', help='Kind cluster.')
+
     parser.add_argument(
-        '--delete-minikube',
+        '--delete-cluster',
         default=False,
         action='store_true',
-        help='If running on minikube, delete the minikube profile at the end '
-        'of the session.')
+        help='If running on minikube or kind, delete the minkube profile or '
+        'kind cluster at the end of the session.')
 
     parser.add_argument(
         '--minikube-vm-driver',
@@ -146,19 +149,47 @@ class Dev(base.Command):
             six.u(local_file_generator.SkaffoldConfig(kubernetes_config.name)))
         skaffold_config.flush()
 
-        if args.IsSpecified('kube_context'):
-          kubernetes_context = kube_context.ExternalClusterContext(
-              args.kube_context)
-        else:
-          if args.IsSpecified('minikube_profile'):
-            cluster_name = args.minikube_profile
-          else:
-            cluster_name = DEFAULT_CLUSTER_NAME
-
-          kubernetes_context = kube_context.Minikube(cluster_name,
-                                                     args.delete_minikube,
-                                                     args.minikube_vm_driver)
-
-        with kubernetes_context as context:
+        with self._GetKubernetesEngine(args) as context:
           with Skaffold(skaffold_config.name, context.context_name) as skaffold:
             skaffold.wait()
+
+  @classmethod
+  def _GetKubernetesEngine(cls, args):
+    """Get the appropriate kubernetes implementation from the args.
+
+    Args:
+      args: The namespace containing the args.
+
+    Returns:
+      The context manager for the appropriate kubernetes implementation.
+    """
+
+    def External():
+      return kube_context.ExternalClusterContext(args.kube_context)
+
+    def Kind():
+      if args.IsSpecified('kind_cluster'):
+        cluster_name = args.kind_cluster
+      else:
+        cluster_name = DEFAULT_CLUSTER_NAME
+      return kube_context.KindClusterContext(cluster_name, args.delete_cluster)
+
+    def Minikube():
+      if args.IsSpecified('minikube_profile'):
+        cluster_name = args.minikube_profile
+      else:
+        cluster_name = DEFAULT_CLUSTER_NAME
+
+      return kube_context.Minikube(cluster_name, args.delete_cluster,
+                                   args.minikube_vm_driver)
+
+    if args.IsSpecified('kube_context'):
+      return External()
+    elif args.IsSpecified('kind_cluster'):
+      return Kind()
+    elif args.IsSpecified('minikube_profile'):
+      return Minikube()
+    elif platforms.OperatingSystem.Current() == platforms.OperatingSystem.LINUX:
+      return Kind()
+    else:
+      return Minikube()

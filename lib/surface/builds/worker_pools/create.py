@@ -110,4 +110,10 @@ class Create(base.CreateCommand):
         })
     log.CreatedResource(wp_resource)
 
+    # Format the workerpool name for display
+    try:
+      created_wp.name = cloudbuild_util.WorkerPoolShortName(created_wp.name)
+    except ValueError:
+      pass  # Must be an old version.
+
     return created_wp

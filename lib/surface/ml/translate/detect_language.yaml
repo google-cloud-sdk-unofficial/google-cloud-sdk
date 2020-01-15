@@ -11,7 +11,10 @@
   request:
     collection: translate.projects.locations
     method: detectLanguage
-    api_version: v3beta1
+    BETA:
+      api_version: v3
+    ALPHA:
+      api_version: v3beta1
     modify_request_hooks:
     - googlecloudsdk.command_lib.ml.translate.hooks:UpdateRequestLangDetection
 

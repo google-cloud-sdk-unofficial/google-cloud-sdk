@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 
 import os
 
-from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
@@ -50,7 +50,7 @@ class Revoke(base.SilentCommand):
   def Run(self, args):
     """Revoke Application Default Credentials."""
 
-    cred_file = auth_util.ADCFilePath()
+    cred_file = config.ADCFilePath()
     if not os.path.isfile(cred_file):
       log.status.Print('Application Default Credentials have not been set up, '
                        'nothing to revoke.')

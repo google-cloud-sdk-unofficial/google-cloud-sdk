@@ -212,7 +212,7 @@ class ConfigureGKEDeploy(base.Command):
         exist, Cloud Build creates it.
 
         If this field is not set, the configs are written to
-        'gs://[PROJECT_ID]_cloudbuild/deploy/config'.
+        ```gs://[PROJECT_ID]_cloudbuild/deploy/config```.
         """)
     parser.add_argument(
         '--app-name',

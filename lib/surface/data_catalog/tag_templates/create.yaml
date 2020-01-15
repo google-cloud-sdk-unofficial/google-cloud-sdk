@@ -5,20 +5,20 @@
     description: Create a Cloud Data Catalog tag template.
 
     examples: |
-      Create a string tag template with a string field:
+      Create a string tag template with a required string field:
 
-        $ {command} TEMPLATE --field=id=ID,display_name=DISPLAY,type=string
+        $ {command} TEMPLATE --field=id=ID,display-name=DISPLAY,type=string,required=TRUE
 
-      Create an enum tag template with a enum field with values 'A' and 'B':
+      Create an enum tag template with an optional enum field with values 'A' and 'B':
 
-        $ {command} TEMPLATE --field=id=ID,display_name=DISPLAY,type=enum(A|B)
+        $ {command} TEMPLATE --field=id=ID,display-name=DISPLAY,type='enum(A|B)'
 
-      Create a tag template with a string field and an enum field with
+      Create a tag template with a optional string field and a required enum field with
       values 'A' and 'B':
 
         $ {command} TEMPLATE \
-            --field=id=ID1,display_name=DISPLAY1,type=string \
-            --field=id=ID2,display_name=DISPLAY2,type=enum(A|B)
+            --field=id=ID1,display-name=DISPLAY1,type=string \
+            --field=id=ID2,display-name=DISPLAY2,type='enum(A|B)',required=TRUE
 
   request:
     collection: datacatalog.projects.locations.tagTemplates

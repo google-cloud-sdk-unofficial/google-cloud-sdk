@@ -31,15 +31,15 @@ CONFIG_MEMBERSHIP_FLAG = '--config-membership'
 
 
 class Enable(base.EnableCommand):
-  r"""Enable MultiClusterIngress Feature.
+  """Enable MultiClusterIngress Feature.
 
   This command enables MultiClusterIngress Feature in Hub.
 
   ## Examples
 
-  Enable MultiClusterIngress Feature
+  Enable MultiClusterIngress Feature:
 
-      $ {command} --config-membership=CONFIG_MEMBERSHIP
+    $ {command} --config-membership=CONFIG_MEMBERSHIP
   """
 
   FEATURE_NAME = 'multiclusteringress'
@@ -50,7 +50,7 @@ class Enable(base.EnableCommand):
         CONFIG_MEMBERSHIP_FLAG,
         type=str,
         help=textwrap.dedent("""\
-            Membership resource representing the Kubernetes cluster which hosts
+            Membership resource representing the cluster which hosts
             the MultiClusterIngress and MultiClusterService CustomResourceDefinitions.
             """),
     )
@@ -60,7 +60,7 @@ class Enable(base.EnableCommand):
     if not args.config_membership:
       memberships = base.ListMemberships(project)
       if not memberships:
-        raise exceptions.Error('No Memberships available in GKE Hub.')
+        raise exceptions.Error('No Memberships available in Hub.')
       index = console_io.PromptChoice(
           options=memberships,
           message='Please specify a config membership:\n')

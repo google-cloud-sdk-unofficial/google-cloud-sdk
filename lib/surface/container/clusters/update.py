@@ -261,8 +261,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableBinAuthzFlag(group)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddRecurringMaintenanceWindowFlags(
-        group, hidden=True, is_update=True)
+    flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
@@ -544,8 +543,7 @@ class UpdateBeta(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddRecurringMaintenanceWindowFlags(
-        group, hidden=False, is_update=True)
+    flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
@@ -613,8 +611,7 @@ class UpdateAlpha(Update):
     flags.AddAutoprovisioningFlags(group, hidden=False)
     flags.AddAutoscalingProfilesFlag(group, hidden=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddRecurringMaintenanceWindowFlags(
-        group, hidden=False, is_update=True)
+    flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddResourceUsageExportFlags(group, is_update=True)

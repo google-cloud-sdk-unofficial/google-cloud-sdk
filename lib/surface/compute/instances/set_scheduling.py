@@ -72,11 +72,14 @@ class SetSchedulingInstances(base.SilentCommand):
 
     scheduling_options.automaticRestart = args.restart_on_failure
 
+    cleared_fields = []
+
     if support_min_node_cpu:
       if args.IsSpecified('min_node_cpu'):
         scheduling_options.minNodeCpus = int(args.min_node_cpu)
       elif args.IsSpecified('clear_min_node_cpu'):
         scheduling_options.minNodeCpus = None
+        cleared_fields.append('minNodeCpus')
 
     if args.IsSpecified('maintenance_policy'):
       scheduling_options.onHostMaintenance = (
@@ -90,15 +93,17 @@ class SetSchedulingInstances(base.SilentCommand):
       scheduling_options.nodeAffinities = affinities
     elif args.IsSpecified('clear_node_affinities'):
       scheduling_options.nodeAffinities = []
+      cleared_fields.append('nodeAffinities')
 
-    request = client.messages.ComputeInstancesSetSchedulingRequest(
-        instance=instance_ref.Name(),
-        project=instance_ref.project,
-        scheduling=scheduling_options,
-        zone=instance_ref.zone)
+    with holder.client.apitools_client.IncludeFields(cleared_fields):
+      request = client.messages.ComputeInstancesSetSchedulingRequest(
+          instance=instance_ref.Name(),
+          project=instance_ref.project,
+          scheduling=scheduling_options,
+          zone=instance_ref.zone)
 
-    return client.MakeRequests([(client.apitools_client.instances,
-                                 'SetScheduling', request)])
+      return client.MakeRequests([(client.apitools_client.instances,
+                                   'SetScheduling', request)])
 
   def Run(self, args):
     return self._Run(args)

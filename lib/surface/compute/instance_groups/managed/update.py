@@ -31,7 +31,7 @@ import six
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
-  r"""Update Google Compute Engine managed instance groups.
+  r"""Update Google Compute Engine  managed instance groups.
 
   *{command}* allows you to specify or modify AutoHealingPolicy for an existing
   managed instance group.
@@ -93,6 +93,16 @@ class UpdateGA(base.UpdateCommand):
           region=igm_ref.region)
     return client.MakeRequests([(service, 'Patch', request)])
 
+  def _CreateInstanceGroupManagerPatch(self, args, igm_resource, client,
+                                       holder):
+    """Create IGM resource patch."""
+    patch_instance_group_manager = client.messages.InstanceGroupManager()
+    auto_healing_policies = self._GetValidatedAutohealingPolicies(
+        holder, client, args, igm_resource)
+    if auto_healing_policies is not None:
+      patch_instance_group_manager.autoHealingPolicies = auto_healing_policies
+    return patch_instance_group_manager
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -112,79 +122,13 @@ class UpdateGA(base.UpdateCommand):
     igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
         igm_ref, client)
 
-    auto_healing_policies = self._GetValidatedAutohealingPolicies(
-        holder, client, args, igm_resource)
-
-    if auto_healing_policies is not None:
-      return self._MakePatchRequest(
-          client, igm_ref,
-          client.messages.InstanceGroupManager(
-              autoHealingPolicies=auto_healing_policies))
+    patch_instance_group_manager = self._CreateInstanceGroupManagerPatch(
+        args, igm_resource, client, holder)
+    return self._MakePatchRequest(client, igm_ref, patch_instance_group_manager)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(UpdateGA):
-  r"""Update Google Compute Engine managed instance groups.
-
-  *{command}* allows you to specify or modify AutoHealingPolicy for an existing
-  managed instance group.
-
-  When updating the AutoHealingPolicy, you may specify the health check, initial
-  delay, or both. If the field is unspecified, its value won't be modified. If
-  `--health-check` is specified, the health check will be used to monitor the
-  health of your application. Whenever the health check signal for the instance
-  becomes `UNHEALTHY`, the autohealing action (`RECREATE`) on an instance will
-  be performed.
-
-  If no health check is specified, the instance autohealing will be triggered by
-  the instance status only (i.e. the autohealing action (`RECREATE`) on an
-  instance will be performed if `instance.status` is not `RUNNING`).
-  """
-
-  @staticmethod
-  def Args(parser):
-    UpdateGA.Args(parser)
-    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
-               .ResolveAsResource)(
-                   args,
-                   holder.resources,
-                   default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(client))
-
-    if igm_ref.Collection() not in [
-        'compute.instanceGroupManagers', 'compute.regionInstanceGroupManagers'
-    ]:
-      raise ValueError('Unknown reference type {0}'.format(
-          igm_ref.Collection()))
-
-    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
-        args.GetValue('instance_redistribution_type'), igm_ref)
-
-    igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, client)
-
-    update_policy = (managed_instance_groups_utils
-                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                         client, args.GetValue('instance_redistribution_type'),
-                         igm_resource.updatePolicy)
-
-    auto_healing_policies = self._GetValidatedAutohealingPolicies(
-        holder, client, args, igm_resource)
-
-    igm_updated_resource = client.messages.InstanceGroupManager(
-        updatePolicy=update_policy)
-    if auto_healing_policies is not None:
-      igm_updated_resource.autoHealingPolicies = auto_healing_policies
-    return self._MakePatchRequest(client, igm_ref, igm_updated_resource)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
   r"""Update Google Compute Engine managed instance groups.
 
   *{command}* allows you to specify or modify the StatefulPolicy and
@@ -210,7 +154,8 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    UpdateBeta.Args(parser)
+    UpdateGA.Args(parser)
+    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
 
   def _GetUpdatedStatefulPolicy(self,
@@ -254,90 +199,56 @@ class UpdateAlpha(UpdateBeta):
         key=lambda x: x.key)
     return policy_utils.MakeStatefulPolicy(client.messages, stateful_disks)
 
-  def _MakeUpdateRequest(self, client, igm_ref, igm_updated_resource):
-    if igm_ref.Collection() == 'compute.instanceGroupManagers':
-      service = client.apitools_client.instanceGroupManagers
-      request = client.messages.ComputeInstanceGroupManagersUpdateRequest(
-          instanceGroupManager=igm_ref.Name(),
-          instanceGroupManagerResource=igm_updated_resource,
-          project=igm_ref.project,
-          zone=igm_ref.zone)
-    else:
-      service = client.apitools_client.regionInstanceGroupManagers
-      request = client.messages.ComputeRegionInstanceGroupManagersUpdateRequest(
-          instanceGroupManager=igm_ref.Name(),
-          instanceGroupManagerResource=igm_updated_resource,
-          project=igm_ref.project,
-          region=igm_ref.region)
-    return client.MakeRequests([(service, 'Update', request)])
-
-  def _StatefulArgsSet(self, args):
+  @staticmethod
+  def _StatefulArgsSet(args):
     return (args.IsSpecified('update_stateful_disk') or
             args.IsSpecified('remove_stateful_disks'))
 
-  def _StatefulnessIntroduced(self, args):
+  @staticmethod
+  def _StatefulnessIntroduced(args):
     return args.IsSpecified('update_stateful_disk')
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
+  def _PatchStatefulPolicy(self, igm_patch, args, igm_resource, client, holder):
+    """Patch the stateful policy specified in args, to igm_patch."""
+    # If we're potentially introducing statefulness to the MIG, we should
+    # validate if this MIG is allowed to be stateful
+    if self._StatefulnessIntroduced(args):
+      managed_instance_groups_utils.ValidateIgmReadyForStatefulness(
+          igm_resource, client)
+    instance_groups_flags.ValidateUpdateStatefulPolicyParams(
+        args, igm_resource.statefulPolicy)
+
+    igm_patch.statefulPolicy = self._GetUpdatedStatefulPolicy(
+        client, igm_resource.statefulPolicy, args.update_stateful_disk,
+        args.remove_stateful_disks)
+    return igm_patch
+
+  def _PatchRedistributionType(self, igm_patch, args, igm_resource, client,
+                               holder):
     igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
                .ResolveAsResource)(
                    args,
                    holder.resources,
                    default_scope=compute_scope.ScopeEnum.ZONE,
                    scope_lister=flags.GetDefaultScopeLister(client))
-
-    if igm_ref.Collection() not in [
-        'compute.instanceGroupManagers', 'compute.regionInstanceGroupManagers'
-    ]:
-      raise ValueError('Unknown reference type {0}'.format(
-          igm_ref.Collection()))
-
     instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
         args.GetValue('instance_redistribution_type'), igm_ref)
+    igm_patch.updatePolicy = (managed_instance_groups_utils
+                              .ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                                  client,
+                                  args.GetValue('instance_redistribution_type'),
+                                  igm_resource.updatePolicy)
 
-    igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
-        igm_ref, client)
-    if self._StatefulnessIntroduced(args):
-      managed_instance_groups_utils.ValidateIgmReadyForStatefulness(
-          igm_resource, client)
+  def _CreateInstanceGroupManagerPatch(self, args, igm_resource, client,
+                                       holder):
+    igm_patch = super(UpdateBeta, self)._CreateInstanceGroupManagerPatch(
+        args, igm_resource, client, holder)
 
-    device_names = instance_groups_flags.ValidateUpdateStatefulPolicyParams(
-        args, igm_resource.statefulPolicy)
+    if args.IsSpecified('instance_redistribution_type'):
+      self._PatchRedistributionType(igm_patch, args, igm_resource, client,
+                                    holder)
 
-    update_policy = (managed_instance_groups_utils
-                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                         client, args.GetValue('instance_redistribution_type'),
-                         igm_resource.updatePolicy)
-
-    auto_healing_policies = self._GetValidatedAutohealingPolicies(
-        holder, client, args, igm_resource)
-
-    if not self._StatefulArgsSet(args):
-      igm_updated_resource = client.messages.InstanceGroupManager(
-          updatePolicy=update_policy)
-      if auto_healing_policies is not None:
-        igm_updated_resource.autoHealingPolicies = auto_healing_policies
-      return self._MakePatchRequest(client, igm_ref, igm_updated_resource)
-
-    if not device_names:
-      # TODO(b/70314588): Use Patch instead of manual Update.
-      if igm_resource.statefulPolicy:
-        igm_resource.statefulPolicy = self._GetUpdatedStatefulPolicy(
-            client, igm_resource.statefulPolicy, args.update_stateful_disk,
-            args.remove_stateful_disks)
-      igm_resource.updatePolicy = update_policy
-      if auto_healing_policies is not None:
-        igm_resource.autoHealingPolicies = auto_healing_policies
-      return self._MakeUpdateRequest(client, igm_ref, igm_resource)
-
-    stateful_policy = self._GetUpdatedStatefulPolicy(
-        client, igm_resource.statefulPolicy, args.update_stateful_disk,
-        args.remove_stateful_disks)
-    igm_updated_resource = client.messages.InstanceGroupManager(
-        statefulPolicy=stateful_policy, updatePolicy=update_policy)
-    if auto_healing_policies is not None:
-      igm_updated_resource.autoHealingPolicies = auto_healing_policies
-
-    return self._MakePatchRequest(client, igm_ref, igm_updated_resource)
+    if self._StatefulArgsSet(args):
+      igm_patch = self._PatchStatefulPolicy(igm_patch, args, igm_resource,
+                                            client, holder)
+    return igm_patch

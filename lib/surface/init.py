@@ -46,25 +46,28 @@ import six
 class Init(base.Command):
   """Initialize or reinitialize gcloud.
 
-  {command} launches an interactive Getting Started workflow for gcloud.
+  {command} launches an interactive Getting Started workflow for the gcloud
+  command-line tool.
   It performs the following setup steps:
 
   - Authorizes gcloud and other SDK tools to access Google Cloud Platform using
-    your user account credentials, or lets you select from accounts whose
+    your user account credentials, or from an account of your choosing whose
     credentials are already available.
-  - Sets properties in a gcloud configuration, including the current project and
-    the default Google Compute Engine region and zone.
+  - Sets up a new or existing configuration.
+  - Sets properties in that configuration, including the current project and
+    optionally, the default Google Compute Engine region and zone you'd like to
+    use.
 
   {command} can be used for initial setup of gcloud and to create new or
-  reinitialize gcloud configurations. More information can be found by
-  running `gcloud topic configurations`.
+  reinitialize gcloud configurations. More information about configurations can
+  be found by running `gcloud topic configurations`.
 
   Properties set by {command} are local and persistent, and are not affected by
   remote changes to the project. For example, the default Compute Engine zone in
   your configuration remains stable, even if you or another user changes the
   project-level default zone in the Cloud Platform Console.
 
-  To sync the configuration, re-run {command}
+  To sync the configuration, re-run `{command}`.
 
   ## EXAMPLES
 

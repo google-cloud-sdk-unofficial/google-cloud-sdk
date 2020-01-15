@@ -40,28 +40,28 @@ class ListNetworkEndpoints(base.ListCommand):
   """List network endpoints in a network endpoint group."""
 
   detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat("""\
+  display_info_format = """\
         table(
           networkEndpoint.instance,
           networkEndpoint.ipAddress,
           networkEndpoint.port
-        )""")
+        )"""
+  support_global_scope = False
+
+  @classmethod
+  def Args(cls, parser):
+    parser.display_info.AddFormat(cls.display_info_format)
     base.URI_FLAG.RemoveFromParser(parser)
-    flags.MakeNetworkEndpointGroupsArg().AddArgument(parser)
+    flags.MakeNetworkEndpointGroupsArg(
+        support_global_scope=cls.support_global_scope).AddArgument(parser)
 
   def Run(self, args):
-    return self._Run(args)
-
-  def _Run(self, args, support_global_scope=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = client.messages
 
     neg_ref = flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=support_global_scope).ResolveAsResource(
+        support_global_scope=self.support_global_scope).ResolveAsResource(
             args,
             holder.resources,
             scope_lister=compute_flags.GetDefaultScopeLister(client))
@@ -95,18 +95,11 @@ class ListNetworkEndpoints(base.ListCommand):
 class AlphaListNetworkEndpoints(ListNetworkEndpoints):
   """List network endpoints in a network endpoint group."""
 
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat("""\
+  display_info_format = """\
         table(
           networkEndpoint.instance,
           networkEndpoint.ipAddress,
           networkEndpoint.port,
           networkEndpoint.fqdn
-        )""")
-    base.URI_FLAG.RemoveFromParser(parser)
-    flags.MakeNetworkEndpointGroupsArg(
-        support_global_scope=True).AddArgument(parser)
-
-  def Run(self, args):
-    return self._Run(args, support_global_scope=True)
+        )"""
+  support_global_scope = True

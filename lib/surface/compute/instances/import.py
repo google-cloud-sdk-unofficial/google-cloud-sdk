@@ -23,7 +23,6 @@ import re
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import daisy_utils
 from googlecloudsdk.api_lib.compute import instance_utils
-from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
@@ -33,6 +32,7 @@ from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenanc
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
@@ -99,15 +99,18 @@ class Import(base.CreateCommand):
   def _CheckForExistingInstances(self, instance_name, client):
     """Check that the destination instances do not already exist."""
 
+    zone = properties.VALUES.compute.zone.GetOrFail()
     request = (client.apitools_client.instances, 'Get',
                client.messages.ComputeInstancesGetRequest(
                    instance=instance_name,
                    project=properties.VALUES.core.project.GetOrFail(),
-                   zone=properties.VALUES.compute.zone.GetOrFail()))
+                   zone=zone))
     errors = []
     client.MakeRequests([request], errors_to_collect=errors)
     if not errors:
-      message = 'The instance [{0}] already exists.'.format(instance_name)
+      message = ('The instance [{instance_name}] already exists in zone '
+                 '[{zone}].').format(
+                     instance_name=instance_name, zone=zone)
       raise exceptions.InvalidArgumentException('INSTANCE_NAME', message)
 
   def Run(self, args):
@@ -132,8 +135,8 @@ class Import(base.CreateCommand):
           vm_type=getattr(args, 'custom_vm_type', None))
 
     try:
-      source_uri = daisy_utils.MakeGcsObjectOrPathUri(args.source_uri)
-    except storage_util.InvalidObjectNameError:
+      source_uri = daisy_utils.MakeGcsUri(args.source_uri)
+    except resources.UnknownCollectionException:
       raise exceptions.InvalidArgumentException(
           'source-uri',
           'must be a path to an object or a directory in Google Cloud Storage')

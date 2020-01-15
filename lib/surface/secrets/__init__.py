@@ -32,11 +32,11 @@ class CloudSecrets(base.Group):
 
   To learn more about Google Secret Manager, visit:
 
-      https://cloud.google.com/secrets/
+      https://cloud.google.com/secret-manager/
 
   To read API and usage documentation, visit:
 
-      https://cloud.google.com/secrets/docs/
+      https://cloud.google.com/secret-manager/docs/
 
   """
 

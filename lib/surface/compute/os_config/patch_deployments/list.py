@@ -143,7 +143,7 @@ class List(base.ListCommand):
         service,
         request,
         limit=args.limit,
-        batch_size=args.page_size,
+        batch_size=osconfig_command_utils.GetListBatchSize(args),
         field='patchDeployments',
         batch_size_attribute='pageSize',
     )

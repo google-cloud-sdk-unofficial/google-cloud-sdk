@@ -176,7 +176,7 @@ class AnalyzeIamPolicy(base.Command):
           specified service account, run:
 
           $ {command} --organization=YOUR_ORG_ID
-          --full-resource-name='//iam.googleapis.com/projects/YOUR_PROJ_ID/serviceAccounts/YOUR_SERVICE_ACCOUNT'
+          --full-resource-name='//iam.googleapis.com/projects/YOUR_PROJ_ID/serviceAccounts/YOUR_SERVICE_ACCOUNT_UNIQUE_ID'
           --permissions='iam.serviceAccounts.actAs'
           --output-partial-result-before-timeout
 

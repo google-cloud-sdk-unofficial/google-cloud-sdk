@@ -353,8 +353,7 @@ class Create(base.CreateCommand):
     flags.AddIPAliasFlags(parser)
     flags.AddLabelsFlag(parser)
     flags.AddLocalSSDFlag(parser)
-    flags.AddMaintenanceWindowGroup(parser, hidden=False,
-                                    recurring_windows_hidden=True)
+    flags.AddMaintenanceWindowGroup(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
@@ -590,7 +589,6 @@ class CreateAlpha(Create):
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
-    flags.AddManagedPodIdentityFlags(parser)
     flags.AddWorkloadIdentityFlags(parser)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
@@ -626,9 +624,7 @@ class CreateAlpha(Create):
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.enable_tpu_service_networking = args.enable_tpu_service_networking
     ops.istio_config = args.istio_config
-    ops.enable_managed_pod_identity = args.enable_managed_pod_identity
     ops.identity_namespace = args.identity_namespace
-    ops.federating_service_account = args.federating_service_account
     ops.security_group = args.security_group
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling

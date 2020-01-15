@@ -30,7 +30,6 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
-# LINT.IfChange
 class Unregister(base.DeleteCommand):
   r"""Unregisters a cluster from Google Cloud Platform.
 
@@ -102,4 +101,3 @@ class Unregister(base.DeleteCommand):
 
     # Delete the connect agent.
     agent_util.DeleteConnectNamespace(args)
-# LINT.ThenChange(../hub/unregister_cluster.py)

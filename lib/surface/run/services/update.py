@@ -54,6 +54,7 @@ class Update(base.Command):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddServiceAccountFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
+    flags.AddRevisionSuffixArg(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -73,6 +74,9 @@ class Update(base.Command):
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
     flags.AddMaxInstancesFlag(parser)
+    flags.AddCommandFlag(parser)
+    flags.AddArgsFlag(parser)
+    flags.AddPortFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -143,7 +147,6 @@ class AlphaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcConnectorArg(managed_group)
-    flags.AddRevisionSuffixArg(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -153,9 +156,6 @@ class AlphaUpdate(Update):
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
-    flags.AddCommandFlag(parser)
-    flags.AddArgsFlag(parser)
-    flags.AddPortFlag(parser)
     flags.AddCpuFlag(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

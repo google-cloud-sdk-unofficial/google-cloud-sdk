@@ -63,7 +63,7 @@ class Cancel(base.Command):
     try:
       op = adapter.GetOperation(op_ref)
     except apitools_exceptions.HttpError as error:
-      raise exceptions.HttpException(util.GetError(error))
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
     console_io.PromptContinue(
         message='Are you sure you want to cancel operation {0}?'.format(

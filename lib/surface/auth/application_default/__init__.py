@@ -39,6 +39,12 @@ class ApplicationDefault(base.Group):
 
   ## EXAMPLES
 
+  To use your own user credentials for your application to access an API, run:
+
+    $ {command} login
+
+  This will take you through a web flow to acquire new user credentials.
+
   To create a service account and have your application use it for API access,
   run:
 
@@ -47,10 +53,4 @@ class ApplicationDefault(base.Group):
       --iam-account=my-account@my-project.iam.gserviceaccount.com
     $ export GOOGLE_APPLICATION_CREDENTIALS=key.json
     $ ./my_application.sh
-
-  To temporarily use your own user credentials, run:
-
-    $ {command} login
-
-  This will take you through a web flow to acquire new user credentials.
   """

@@ -68,6 +68,15 @@ class List(base.ListCommand):
         collection='cloudbuild.projects', projectId=parent)
 
     # Send the List request
-    return client.projects_workerPools.List(
+    wp_list = client.projects_workerPools.List(
         messages.CloudbuildProjectsWorkerPoolsListRequest(
             parent=parent_resource.RelativeName())).workerPools
+
+    # Format the workerpool names for display
+    for wp in wp_list:
+      try:
+        wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
+      except ValueError:
+        pass  # Must be an old version.
+
+    return wp_list

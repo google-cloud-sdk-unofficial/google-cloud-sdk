@@ -118,5 +118,5 @@ Move.detailed_help = {
     'EXAMPLES': """
     To move 'instance-1' from 'us-central-a' to 'europe-west1-d', run:
 
-      $ {command} move instance-1 --zone=us-central1-a --destination-zone=europe-west1-d
+      $ {command} instance-1 --zone=us-central1-a --destination-zone=europe-west1-d
     """}

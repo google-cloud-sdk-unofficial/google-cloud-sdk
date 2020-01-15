@@ -6,7 +6,9 @@
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments.configs
-    method: list
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.game.servers.hooks:AddDefaultLocationAndDeploymentToListRequest
+
 
   response:
     id_field: name
@@ -14,13 +16,14 @@
   arguments:
     resource:
       help_text: Cloud Game Server Deployment of the Game Server Configs to list.
-      spec: !REF googlecloudsdk.command_lib.game.resources:deployment
+      spec: !REF googlecloudsdk.command_lib.game.resources:default_deployment
 
   output:
     format: |
       table(
          name.basename():label=NAME,
          name.scope("locations").segment(0):label=LOCATION,
+         name.scope("gameServerDeployments").segment(0):label=DEPLOYMENT,
          description:label=DESCRIPTION,
          createTime,
          updateTime,

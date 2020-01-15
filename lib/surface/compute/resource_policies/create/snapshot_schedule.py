@@ -36,7 +36,7 @@ def _CommonArgs(parser, api_version):
       parser,
       flag_suffix='schedule',
       start_time_help="""\
-Start time for the disk snapshot schedule. See $ gcloud topic datetimes for information on time formats.
+Start time for the disk snapshot schedule in UTC. For example, `--start-time="15:00"`.
 """,
       cadence_help='Snapshot schedule',
       supports_weekly=True,
@@ -99,8 +99,8 @@ Create a Google Compute Engine Snapshot Schedule Resource Policy.
 """,
     'EXAMPLES':
         """\
-The following command creates a Google Compute Engine Snapshot Schedule Resource Policy with a daily snapshot and a one day snapshot retention policy.
+The following command creates a Google Compute Engine Snapshot Schedule Resource Policy with a daily snapshot taken at 13:00Z and a one day snapshot retention policy.
 
-  $ {command} my-resource-policy --region=REGION --start-time=04:00Z --daily-schedule --max-retention-days=1
+  $ {command} my-resource-policy --region=REGION --start-time=13:00 --daily-schedule --max-retention-days=1
 """
 }

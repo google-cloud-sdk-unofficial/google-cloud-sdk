@@ -23,29 +23,24 @@ from googlecloudsdk.calliope import base
 
 
 class Datastore(base.Group):
-  """Manage your Cloud Datastore indexes.
+  """Manage your Cloud Datastore resources.
 
-  The gcloud datastore command group lets you create and delete Google Cloud
-  Datastore indexes.
+    Cloud Datastore is a highly-scalable NoSQL database for your applications.
+    Cloud Datastore automatically handles sharding and replication, providing
+    you with a highly available and durable database that scales automatically
+    to handle your applications' load.
 
-  Cloud Datastore is a highly-scalable NoSQL database for your applications.
-  Cloud Datastore automatically handles sharding and replication, providing you
-  with a highly available and durable database that scales automatically to
-  handle your applications' load.
+    More information on Cloud Datastore can be found here:
+    https://cloud.google.com/datastore and detailed documentation can be
+    found here: https://cloud.google.com/datastore/docs
 
-  More information on Cloud Datastore can be found here:
-  https://cloud.google.com/datastore and detailed documentation can be
-  found here: https://cloud.google.com/datastore/docs
+    export -- Export data to Google Cloud Storage
 
-  ## EXAMPLES
+    import -- Import data from Google Cloud Storage
 
-  To create new indexes from a file, run:
+    indexes -- Manage your Cloud Firestore indexes.
 
-    $ {command} indexes create index.yaml
-
-  To clean up unused indexes from a file, run:
-
-    $ {command} indexes cleanup index.yaml
+    operations -- Manage Long Running Operations for Cloud Firestore.
   """
 
   category = base.DATABASES_CATEGORY

@@ -37,6 +37,7 @@ def _CommonArgs(parser, messages):
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
   base.ASYNC_FLAG.AddToParser(parser)
   flags.GetForwardingTargetsArg().AddToParser(parser)
+  flags.GetDnsPeeringArgs().AddToParser(parser)
 
 
 def _Update(zones_client,
@@ -100,6 +101,14 @@ class UpdateGA(base.UpdateCommand):
       forwarding_config = command_util.ParseManagedZoneForwardingConfig(
           args.forwarding_targets, messages)
 
+    peering_config = None
+    if args.target_project and args.target_network:
+      peering_network = 'https://www.googleapis.com/compute/v1/projects/{}/global/networks/{}'.format(
+          args.target_project, args.target_network)
+      peering_config = messages.ManagedZonePeeringConfig()
+      peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
+          networkUrl=peering_network)
+
     visibility_config = None
     if args.networks:
       networks = args.networks if args.networks != [''] else []
@@ -122,7 +131,8 @@ class UpdateGA(base.UpdateCommand):
 
     return _Update(zones_client, args,
                    private_visibility_config=visibility_config,
-                   forwarding_config=forwarding_config)
+                   forwarding_config=forwarding_config,
+                   peering_config=peering_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -143,7 +153,6 @@ class UpdateBeta(base.UpdateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
-    flags.GetDnsPeeringArgs().AddToParser(parser)
     flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
     flags.GetReverseLookupArg().AddToParser(parser)
 
@@ -221,6 +230,5 @@ class UpdateAlpha(UpdateBeta):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _CommonArgs(parser, messages)
-    flags.GetDnsPeeringArgs().AddToParser(parser)
     flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
     flags.GetReverseLookupArg().AddToParser(parser)

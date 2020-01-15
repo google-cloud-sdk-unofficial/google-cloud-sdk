@@ -241,9 +241,6 @@ class CreateHelper(object):
 
   def _CreateBackendService(self, holder, args, backend_services_ref):
     health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
-    if not health_checks:
-      raise exceptions.ToolException('At least one health check required.')
-
     enable_cdn = True if args.enable_cdn else None
 
     return holder.client.messages.BackendService(
@@ -259,9 +256,6 @@ class CreateHelper(object):
     """Creates a regional backend service."""
 
     health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
-    if not health_checks:
-      raise exceptions.ToolException('At least one health check required.')
-
     messages = holder.client.messages
 
     return messages.BackendService(

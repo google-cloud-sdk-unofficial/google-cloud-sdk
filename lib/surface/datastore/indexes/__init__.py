@@ -22,4 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 class Indexes(base.Group):
-  """Manage Cloud Datastore indexes."""
+  """Manage your Cloud Datastore indexes.
+
+    The gcloud datastore command group lets you create and delete Google Cloud
+    Datastore indexes.
+  """

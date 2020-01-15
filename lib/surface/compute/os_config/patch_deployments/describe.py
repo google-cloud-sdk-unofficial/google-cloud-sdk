@@ -21,8 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.os_config import resource_args
-from googlecloudsdk.command_lib.compute.os_config import utils as osconfig_command_utils
-from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
@@ -44,15 +42,12 @@ class Describe(base.DescribeCommand):
     resource_args.AddPatchDeploymentResourceArg(parser, 'to describe.')
 
   def Run(self, args):
-    project = properties.VALUES.core.project.GetOrFail()
     patch_deployment_ref = args.CONCEPTS.patch_deployment.Parse()
-    patch_deployment_name = osconfig_command_utils.GetPatchDeploymentUriPath(
-        project, patch_deployment_ref.Name())
 
     release_track = self.ReleaseTrack()
     client = osconfig_api_utils.GetClientInstance(release_track)
     messages = osconfig_api_utils.GetClientMessages(release_track)
     request = messages.OsconfigProjectsPatchDeploymentsGetRequest(
-        name=patch_deployment_name)
+        name=patch_deployment_ref.RelativeName())
 
     return client.projects_patchDeployments.Get(request)

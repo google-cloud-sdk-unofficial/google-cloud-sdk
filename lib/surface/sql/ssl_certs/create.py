@@ -68,7 +68,8 @@ class _BaseAddCert(object):
     # First check if args.out_file is writeable. If not, abort and don't create
     # the useless cert.
     try:
-      files.WriteFileContents(args.cert_file, 'placeholder\n', private=True)
+      files.WriteFileContents(
+          args.cert_file, 'placeholder\n', private=True, create_path=False)
     except (files.Error, OSError) as e:
       raise exceptions.ArgumentError('unable to write [{path}]: {error}'.format(
           path=args.cert_file, error=six.text_type(e)))

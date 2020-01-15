@@ -40,7 +40,7 @@ from googlecloudsdk.core.console import progress_tracker
 from surface.run import deploy
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Replace(base.Command):
   """Creates or replaces a service from a YAML Service specification."""
 

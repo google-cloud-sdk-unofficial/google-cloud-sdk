@@ -19,22 +19,24 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import sys
-from apitools.base.py import encoding
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
+from googlecloudsdk.api_lib.compute.instance_groups.managed import stateful_policy_utils as policy_utils
+from googlecloudsdk.api_lib.compute.managed_instance_groups_utils import ValueOrNone
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
-from googlecloudsdk.command_lib.compute.instance_groups.flags import AutoDeleteFlag
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
+
 
 # API allows up to 58 characters but asked us to send only 54 (unless user
 # explicitly asks us for more).
@@ -102,7 +104,7 @@ def ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
         'Use --instance-redistribution-type=NONE')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create Google Compute Engine managed instance groups."""
 
@@ -140,12 +142,8 @@ class CreateGA(base.CreateCommand):
       zonal_resource_fetcher.WarnForZonalCreation([group_ref])
     return group_ref
 
-  def _CreateDistributionPolicy(self,
-                                zones,
-                                resources,
-                                messages,
-                                target_distribution_shape=None):
-    if not zones and target_distribution_shape is None:
+  def _CreateDistributionPolicy(self, zones, resources, messages):
+    if not zones:
       return None
     distribution_policy = messages.DistributionPolicy()
     if zones:
@@ -159,10 +157,6 @@ class CreateGA(base.CreateCommand):
             messages.DistributionPolicyZoneConfiguration(
                 zone=zone_ref.SelfLink()))
       distribution_policy.zones = policy_zones
-    if target_distribution_shape:
-      distribution_policy.targetShape = (
-          messages.DistributionPolicy.TargetShapeValueValuesEnum)(
-              target_distribution_shape)
     return distribution_policy
 
   def GetRegionForGroup(self, group_ref):
@@ -285,93 +279,11 @@ class CreateGA(base.CreateCommand):
     return augmented_migs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateGA):
-  """Create Google Compute Engine managed instance groups."""
-
-  @classmethod
-  def Args(cls, parser):
-    CreateGA.Args(parser)
-    instance_groups_flags.AddMigCreateStatefulFlags(parser)
-    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
-
-  @staticmethod
-  def _MakePreservedStateWithDisks(client, stateful_disks):
-    """Create StatefulPolicyPreservedState from a list of device names."""
-    # Add all disk_devices to preserved state
-    additional_properties = []
-    for stateful_disk in stateful_disks:
-      auto_delete = (stateful_disk.get('auto-delete') or
-                     AutoDeleteFlag.NEVER).GetAutoDeleteEnumValue(
-                         client.messages.StatefulPolicyPreservedStateDiskDevice
-                         .AutoDeleteValueValuesEnum)
-      disk_device = client.messages.StatefulPolicyPreservedStateDiskDevice(
-          autoDelete=auto_delete)
-      disk_value = client.messages.StatefulPolicyPreservedState.DisksValue \
-        .AdditionalProperty(
-            key=stateful_disk.get('device-name'), value=disk_device)
-      additional_properties.append(disk_value)
-    return client.messages.StatefulPolicyPreservedState(
-        disks=client.messages.StatefulPolicyPreservedState.DisksValue(
-            additionalProperties=additional_properties))
-
-  @staticmethod
-  def _CreateStatefulPolicy(args, client):
-    if args.stateful_disk:
-      return client.messages.StatefulPolicy(
-          preservedState=CreateAlpha._MakePreservedStateWithDisks(
-              client, args.stateful_disk))
-    return None
-
-  def _CreateInstanceGroupManager(
-      self, args, group_ref, template_ref, client, holder):
-    """Create parts of Instance Group Manager shared for the track."""
-    instance_groups_flags.ValidateManagedInstanceGroupScopeArgs(
-        args, holder.resources)
-    instance_groups_flags.ValidateManagedInstanceGroupStatefulProperties(args)
-    health_check = managed_instance_groups_utils.GetHealthCheckUri(
-        holder.resources, args)
-    auto_healing_policies = (
-        managed_instance_groups_utils.CreateAutohealingPolicies(
-            client.messages, health_check, args.initial_delay))
-    managed_instance_groups_utils.ValidateAutohealingPolicies(
-        auto_healing_policies)
-    instance_redistribution_type = args.GetValue('instance_redistribution_type')
-    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
-        instance_redistribution_type, group_ref)
-    target_distribution_shape = args.GetValue('target_distribution_shape')
-    instance_groups_flags.ValidateMigDistributionPolicyTargetShapeFlag(
-        target_distribution_shape, group_ref)
-    stateful_policy = self._CreateStatefulPolicy(args, client)
-    update_policy = (managed_instance_groups_utils
-                     .ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                         client, instance_redistribution_type, None)
-    ValidateAndFixUpdatePolicyAgainstStateful(update_policy, group_ref,
-                                              stateful_policy, client)
-
-    return client.messages.InstanceGroupManager(
-        name=group_ref.Name(),
-        description=args.description,
-        instanceTemplate=template_ref.SelfLink(),
-        baseInstanceName=self._GetInstanceGroupManagerBaseInstanceName(
-            args.base_instance_name, group_ref),
-        targetPools=self._GetInstanceGroupManagerTargetPools(
-            args.target_pool, group_ref, holder),
-        targetSize=int(args.size),
-        autoHealingPolicies=auto_healing_policies,
-        distributionPolicy=self._CreateDistributionPolicy(
-            args.zones,
-            holder.resources,
-            client.messages,
-            target_distribution_shape=target_distribution_shape),
-        statefulPolicy=stateful_policy,
-        updatePolicy=update_policy,
-    )
-
-
-DETAILED_HELP = {
-    'brief': 'Create a Compute Engine managed instance group',
-    'DESCRIPTION': """\
+CreateGA.detailed_help = {
+    'brief':
+        'Create a Compute Engine managed instance group',
+    'DESCRIPTION':
+        """\
         *{command}* creates a Google Compute Engine managed instance group.
 
 For example, running:
@@ -382,4 +294,93 @@ will create one managed instance group called 'example-managed-instance-group'
 in the ``us-central1-a'' zone.
 """,
 }
-CreateGA.detailed_help = DETAILED_HELP
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateGA):
+  """Create Google Compute Engine managed instance groups."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateGA.Args(parser)
+    instance_groups_flags.AddMigCreateStatefulFlags(parser)
+
+  @staticmethod
+  def _CreateStatefulPolicy(args, client):
+    """Create stateful policy from disks of args --stateful-disk."""
+    stateful_disks = []
+    for stateful_disk_dict in (args.stateful_disk or []):
+      stateful_disks.append(
+          policy_utils.MakeStatefulPolicyPreservedStateDiskEntry(
+              client.messages, stateful_disk_dict))
+    stateful_disks.sort(key=lambda x: x.key)
+    return policy_utils.MakeStatefulPolicy(client.messages, stateful_disks)
+
+  def _CreateInstanceGroupManager(
+      self, args, group_ref, template_ref, client, holder):
+    """Create parts of Instance Group Manager shared for the track."""
+    instance_group_manager = (
+        super(CreateBeta,
+              self)._CreateInstanceGroupManager(args, group_ref, template_ref,
+                                                client, holder))
+
+    # Handle stateful args
+    instance_groups_flags.ValidateManagedInstanceGroupStatefulProperties(args)
+    if args.stateful_disk:
+      instance_group_manager.statefulPolicy = (
+          self._CreateStatefulPolicy(args, client))
+
+    # Validate updatePolicy + statefulPolicy combination
+    ValidateAndFixUpdatePolicyAgainstStateful(
+        instance_group_manager.updatePolicy, group_ref,
+        instance_group_manager.statefulPolicy, client)
+
+    return instance_group_manager
+
+
+CreateBeta.detailed_help = CreateGA.detailed_help
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create Google Compute Engine managed instance groups."""
+
+  @classmethod
+  def Args(cls, parser):
+    CreateBeta.Args(parser)
+    instance_groups_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+
+  def _CreateDistributionPolicy(self,
+                                zones,
+                                resources,
+                                messages,
+                                target_distribution_shape=None):
+    distribution_policy = super(CreateAlpha, self)._CreateDistributionPolicy(
+        zones, resources, messages) or messages.DistributionPolicy()
+    if target_distribution_shape:
+      distribution_policy.targetShape = (
+          messages.DistributionPolicy.TargetShapeValueValuesEnum)(
+              target_distribution_shape)
+    return ValueOrNone(distribution_policy)
+
+  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
+                                  holder):
+    instance_group_manager = (
+        super(CreateAlpha,
+              self)._CreateInstanceGroupManager(args, group_ref, template_ref,
+                                                client, holder))
+
+    # Handle target shape args
+    target_distribution_shape = args.GetValue('target_distribution_shape')
+    instance_groups_flags.ValidateMigDistributionPolicyTargetShapeFlag(
+        target_distribution_shape, group_ref)
+    instance_group_manager.distributionPolicy = (
+        self._CreateDistributionPolicy(
+            args.zones,
+            holder.resources,
+            client.messages,
+            target_distribution_shape=target_distribution_shape))
+    return instance_group_manager
+
+
+CreateAlpha.detailed_help = CreateBeta.detailed_help

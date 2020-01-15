@@ -70,7 +70,7 @@ class CreateVmMaintenanceMaintenanceWindow(base.CreateCommand):
 CreateVmMaintenanceMaintenanceWindow.detailed_help = {
     'DESCRIPTION':
     """\
-Create a Google Compute Engine VM Maintenance Resource Policy that,
+Create a Google Compute Engine VM Maintenance Resource Policy that
 contains time window in which maintenance should start.
 """,
     'EXAMPLES':
@@ -78,6 +78,6 @@ contains time window in which maintenance should start.
   The following command creates a Google Compute Engine VM Maintenance Resource
   Policy with a daily maintenance activity window that starts at 04:00Z.
 
-    $ {command} my-resource-policy --region=REGION --start-time=04:00Z --daily-window
+    $ {command} my-resource-policy --region=REGION --start-time=04:00 --daily-window
 """
 }

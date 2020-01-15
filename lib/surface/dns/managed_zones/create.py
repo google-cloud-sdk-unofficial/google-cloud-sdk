@@ -30,6 +30,7 @@ from googlecloudsdk.core import properties
 
 
 def _AddArgsCommon(parser, messages):
+  """Adds the common arguments for all versions."""
   flags.GetDnsZoneArg(
       'The name of the managed-zone to be created.').AddToParser(parser)
   flags.GetManagedZonesDnsNameArg().AddToParser(parser)
@@ -39,6 +40,7 @@ def _AddArgsCommon(parser, messages):
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
   flags.GetManagedZoneVisibilityArg().AddToParser(parser)
   flags.GetForwardingTargetsArg().AddToParser(parser)
+  flags.GetDnsPeeringArgs().AddToParser(parser)
 
 
 def _MakeDnssecConfig(args, messages):
@@ -137,6 +139,14 @@ class Create(base.CreateCommand):
 
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
 
+    peering_config = None
+    if args.target_project and args.target_network:
+      peering_network = 'https://www.googleapis.com/compute/v1/projects/{}/global/networks/{}'.format(
+          args.target_project, args.target_network)
+      peering_config = messages.ManagedZonePeeringConfig()
+      peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
+          networkUrl=peering_network)
+
     zone = messages.ManagedZone(
         name=zone_ref.managedZone,
         dnsName=util.AppendTrailingDot(args.dns_name),
@@ -145,7 +155,8 @@ class Create(base.CreateCommand):
         labels=labels,
         visibility=visibility,
         forwardingConfig=forward_config,
-        privateVisibilityConfig=visibility_config)
+        privateVisibilityConfig=visibility_config,
+        peeringConfig=peering_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
@@ -178,7 +189,6 @@ class CreateBeta(base.CreateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetDnsPeeringArgs().AddToParser(parser)
     flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
     flags.GetReverseLookupArg().AddToParser(parser)
 
@@ -298,6 +308,5 @@ class CreateAlpha(CreateBeta):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetDnsPeeringArgs().AddToParser(parser)
     flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
     flags.GetReverseLookupArg().AddToParser(parser)

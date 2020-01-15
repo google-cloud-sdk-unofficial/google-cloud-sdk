@@ -278,7 +278,7 @@ class Edit(base.Command):
          MakeReferenceNormalizer(
              'healthChecks',
              ('compute.httpHealthChecks', 'compute.httpsHealthChecks',
-              'compute.healthChecks'))),
+              'compute.healthChecks', 'compute.regionHealthChecks'))),
         ('backends[].group',
          MakeReferenceNormalizer(
              'group',

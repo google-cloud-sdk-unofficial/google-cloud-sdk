@@ -73,4 +73,10 @@ class Describe(base.DescribeCommand):
         messages.CloudbuildProjectsWorkerPoolsGetRequest(
             name=wp_resource.RelativeName()))
 
+    # Format the workerpool name for display
+    try:
+      wp.name = cloudbuild_util.WorkerPoolShortName(wp.name)
+    except ValueError:
+      pass  # Must be an old version.
+
     return wp

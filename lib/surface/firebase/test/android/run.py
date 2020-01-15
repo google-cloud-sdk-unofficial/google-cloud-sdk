@@ -70,8 +70,8 @@ class _BaseRun(object):
           and/or within an argument file. Run *$ gcloud topic arg-files* for
           more information about argument files.
           """,
-
-      'EXAMPLES': """
+      'EXAMPLES':
+          """
           To invoke a robo test lasting 100 seconds against the default device
           environment, run:
 
@@ -204,10 +204,11 @@ class _BaseRun(object):
     additional_apks = getattr(args, 'additional_apks', None) or []
     for additional_apk in additional_apks:
       bucket_ops.UploadFileToGcs(additional_apk)
-    # TODO(b/137674653): add a unit test that would have caught the typo fixed
-    #  by CL/249286171.
-    for other_files in getattr(args, 'other_files', None) or {}:
-      bucket_ops.UploadFileToGcs(other_files)
+    other_files = getattr(args, 'other_files', None) or {}
+    for device_path, file_to_upload in six.iteritems(other_files):
+      bucket_ops.UploadFileToGcs(
+          file_to_upload,
+          destination_object=util.GetRelativeDevicePath(device_path))
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(

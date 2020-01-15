@@ -40,11 +40,11 @@ class List(base.ListCommand):
 
   @staticmethod
   def CommonArgs(parser):
-    flags.AddCategoryFlag(parser)
+    flags.AddSourceFlag(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat("""table(
         details.type:sort=2,
-        crd.source_kind:label=CATEGORY:sort=1,
+        crd.source_kind:label=SOURCE:sort=1,
         details.description:wrap)""")
 
   @staticmethod
@@ -59,6 +59,6 @@ class List(base.ListCommand):
       source_crds = client.ListSourceCustomResourceDefinitions()
       event_types = []
       for crd in source_crds:
-        if not args.category or args.category == crd.source_kind:
+        if not args.IsSpecified('source') or args.source == crd.source_kind:
           event_types.extend(crd.event_types)
       return event_types

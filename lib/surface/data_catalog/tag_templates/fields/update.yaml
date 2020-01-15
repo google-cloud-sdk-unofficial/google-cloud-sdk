@@ -13,6 +13,10 @@
 
         $ {command} FIELD --add-enum-values=A,B
 
+      Set a tag template field to be optional:
+
+        $ {command} FIELD --no-required
+
   request:
     collection: datacatalog.projects.locations.tagTemplates.fields
     modify_request_hooks:
@@ -31,3 +35,7 @@
       type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
       help_text: |
         Comma-separated list of enum values to add to the tag template field.
+    - api_field: googleCloudDatacatalogV1beta1TagTemplateField.isRequired
+      arg_name: required
+      help_text: |
+        Indicates if the tag template field is required. Updating from FALSE (optional) to TRUE (required) is NOT allowed.

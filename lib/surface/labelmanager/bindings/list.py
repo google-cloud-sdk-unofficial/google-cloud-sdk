@@ -64,6 +64,9 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    # Does nothing for us, included in base.ListCommand
+    base.URI_FLAG.RemoveFromParser(parser)
+
     mutex_group = parser.add_argument_group(
         'ListLabelBindings.', required=True, mutex=True)
     label_group = mutex_group.add_argument_group('LabelValue.', required=False)
@@ -82,8 +85,7 @@ class List(base.ListCommand):
         mutex_group,
         required=False,
         message=('Full resource name of the resource that the LabelValue is '
-                 'bound to.')
-    )
+                 'bound to.'))
 
   def Run(self, args):
     labelbindings_service = labelmanager.LabelBindingsService()

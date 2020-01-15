@@ -211,7 +211,8 @@ class Import(base.CreateCommand):
     return self._RunImageImport(args, import_metadata, tags, _OUTPUT_FILTER)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
-    return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER)
+    return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,
+                                      'ga')
 
   def _CreateImportStager(self, args):
     if args.source_image:
@@ -223,7 +224,7 @@ class Import(base.CreateCommand):
           self.storage_client, args)
 
     try:
-      gcs_uri = daisy_utils.MakeGcsObjectOrPathUri(args.source_file)
+      gcs_uri = daisy_utils.MakeGcsObjectUri(args.source_file)
     except storage_util.InvalidObjectNameError:
       raise exceptions.InvalidArgumentException(
           'source-file',
@@ -421,7 +422,7 @@ class ImportBeta(Import):
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,
-                                      args.docker_image_tag)
+                                      'beta', args.docker_image_tag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -433,7 +434,7 @@ class ImportAlpha(ImportBeta):
 
 Import.detailed_help = {
     'brief': 'Import an image into Compute Engine',
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         *{command}* imports Virtual Disk images, such as VMWare VMDK files
         and VHD files, into Compute Engine.
 
@@ -455,7 +456,7 @@ Import.detailed_help = {
         charges. See [](https://cloud.google.com/compute/docs/images/importing-virtual-disks#resource_cleanup).
         """,
 
-    'EXAMPLES': """\
+    'EXAMPLES': """
         To import a centos-7 VMDK file, run:
 
           $ {command} myimage-name --os=centos-7 --source-file=mysourcefile

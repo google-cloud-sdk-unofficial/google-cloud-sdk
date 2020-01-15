@@ -20,6 +20,7 @@ docker-credential-gcr: unavailable
 emulator-reverse-proxy: unavailable
 gcloud: google-cloud-sdk
 gsutil: google-cloud-sdk
+kind: unavailable
 kubectl: kubectl
 minikube: unavailable
 pubsub-emulator: google-cloud-sdk-pubsub-emulator
