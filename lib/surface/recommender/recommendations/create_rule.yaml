@@ -7,7 +7,7 @@
     examples: |
       To create a rule from a recommendation:
 
-        $ {command} abcd-1234 --project=project-name --location=global --recommender=google.iam.policy.RoleRecommender --target-state=succeeded
+        $ {command} abcd-1234 --project=project-name --location=global --recommender=google.compute.instance.MachineTypeRecommender --target-state=succeeded
 
   request:
     collection: recommender.projects.locations.recommenders.recommendations

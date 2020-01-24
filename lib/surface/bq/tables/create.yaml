@@ -28,7 +28,7 @@
       The following command creates a view with ID `my-view` in dataset `my-other-dataset`:
 
         $ {command}  my-view --dataset my-other-dataset \
-          --view 'SELECT field1, field3 FROM `my-project.my-other-dataset.my-table`'
+          --view 'SELECT field1, field3 FROM my-project.my-other-dataset.my-table'
 
   request:
     collection: bigquery.tables

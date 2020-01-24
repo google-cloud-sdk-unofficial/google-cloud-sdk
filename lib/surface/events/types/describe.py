@@ -43,6 +43,7 @@ class Describe(base.Command):
   @staticmethod
   def CommonArgs(parser):
     flags.AddEventTypePositionalArg(parser)
+    flags.AddSourceFlag(parser)
     parser.display_info.AddFormat("""multi[separator='\n'](
         details:format="yaml",
         crd.properties:format="table[title='Parameter(s) to create a trigger for this event type:'](
@@ -67,4 +68,5 @@ class Describe(base.Command):
 
     with eventflow_operations.Connect(conn_context) as client:
       source_crds = client.ListSourceCustomResourceDefinitions()
-      return util.EventTypeFromTypeString(source_crds, args.event_type)
+      return util.EventTypeFromTypeString(
+          source_crds, args.event_type, args.source)

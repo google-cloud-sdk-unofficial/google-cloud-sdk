@@ -95,7 +95,6 @@ class Login(base.Command):
     parser.add_argument(
         '--update-adc',
         action='store_true',
-        hidden=True,
         help='Write the obtained credentials to the well-known location for '
         'Application Default Credentials (ADC). Running '
         '$gcloud auth application-default --help to learn more about ADC. '

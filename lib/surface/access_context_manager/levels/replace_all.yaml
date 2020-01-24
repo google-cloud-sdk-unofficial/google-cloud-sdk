@@ -8,12 +8,12 @@
       Replace all existing access level in specified access policy with access levels specified in a
       file.
   request:
-    api_version: v1beta
+    api_version: v1alpha
     method: replaceAll
     collection: accesscontextmanager.accessPolicies.accessLevels
   response:
     modify_response_hooks:
-    - googlecloudsdk.command_lib.accesscontextmanager.levels:ParseReplaceAccessLevelsResponseBeta
+    - googlecloudsdk.command_lib.accesscontextmanager.levels:ParseReplaceAccessLevelsResponseAlpha
 
   arguments:
     resource:
@@ -22,6 +22,13 @@
       override_resource_collection: true
 
     params:
+    - api_field: replaceAccessLevelsRequest.etag
+      arg_name: etag
+      required: false
+      help_text: |
+        An etag which specifies the version of the Access Policy. Only etags
+        that represent the latest version of the Access Policy will be accepted.
+      repeated: false
     - api_field: replaceAccessLevelsRequest.accessLevels
       arg_name: source-file
       required: true
@@ -58,6 +65,6 @@
         ```
 
         For more information, see:
-        https://cloud.google.com/access-context-manager/docs/reference/rest/v1beta/accessPolicies.accessLevels
+        https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.accessLevels
       repeated: false
-      processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicAccessLevelsBeta
+      processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicAccessLevelsAlpha

@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import textwrap
-
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.hub import agent_util
@@ -35,10 +33,10 @@ from googlecloudsdk.core import log
 class Unregister(base.DeleteCommand):
   r"""Unregister a cluster from Hub.
 
-  This command deletes the membership resoruce of a registered cluster on the
+  This command deletes the membership resource of a registered cluster on the
   Hub and removes the connect-agent that was installed on the registered
   cluster during registration. To delete only the membership of a registered
-  cluster on the Hub, consider using `delete` command.
+  cluster on the Hub, consider using `{parent_command} delete` command.
 
 
   ## EXAMPLES
@@ -62,28 +60,7 @@ class Unregister(base.DeleteCommand):
 
   @classmethod
   def Args(cls, parser):
-    hub_util.AddCommonArgs(parser)
-    parser.add_argument(
-        '--gke-uri',
-        type=str,
-        help=textwrap.dedent("""\
-            The URI of the GKE cluster that needs to be registered; for example,
-            'https://container.googleapis.com/projects/my-project/locations/us-central1-a/clusters/my-cluster'
-            The URI can obtain by calling:
-                gcloud container clusters list --uri
-            This is only valid if the represented cluster is a GKE cluster. The
-            provided URI will be validated to confirm that it maps to the valid
-            GKE cluster.
-          """),
-    )
-    parser.add_argument(
-        '--gke-cluster',
-        type=str,
-        help=textwrap.dedent("""\
-            The location/name of the GKE cluster that needs to be registered.
-            The location can be a zone or a region for e.g `us-central1-a/my-cluster`.
-         """),
-    )
+    hub_util.AddUnRegisterCommonArgs(parser)
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)

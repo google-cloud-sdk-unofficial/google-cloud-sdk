@@ -54,7 +54,7 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ExportLogs(base_classes.BaseCommand):
   """Triggers instance to gather logs and upload them to a Cloud Storage Bucket.
 

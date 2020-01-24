@@ -90,6 +90,7 @@ class Patch(base.Command):
             instance=instance_ref.instance))
 
     patch_database = sql_messages.Database(
+        kind='sql#database',
         project=instance_ref.project,
         instance=instance_ref.instance,
         name=args.database)

@@ -54,21 +54,26 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  To see the list of all operations, run:
+  To see the list of all operations in Dataproc's 'us-central1' region, run:
 
-    $ {command}
+    $ {command} --region='us-central1'
 
-  To see the list of all create cluster operations, run:
+  To see the list of all create cluster operations in Dataproc's 'global'
+  region, run:
 
-    $ {command} --filter='operationType = CREATE'
+    $ {command} --region='global' --filter='operationType = CREATE'
 
-  To see the list of all active operations in a cluster named mycluster, run:
+  To see the list of all active operations in a cluster named 'mycluster'
+  located in Dataproc's 'global' region, run:
 
-    $ {command} --filter='status.state = RUNNING AND clusterName = mycluster'
+    $ {command} --region='global' --filter='status.state = RUNNING AND
+      clusterName = mycluster'
 
-  To see a list of all pending operations the label `env=staging` on cluster `mycluster`, run:
+  To see a list of all pending operations with the label `env=staging` on
+  cluster `mycluster` located in Dataproc's 'us-central1' region, run:
 
-    $ {command} --filter='status.state = PENDING  AND labels.env = staging AND clusterName = mycluster'
+    $ {command} --region='us-central1' --filter='status.state = PENDING
+      AND labels.env = staging AND clusterName = mycluster'
   """
 
   @staticmethod
@@ -96,7 +101,7 @@ class List(base.ListCommand):
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
-    region_callback = lambda: util.ResolveRegion(self.ReleaseTrack())
+    region_callback = util.ResolveRegion
     # Parse Operations endpoint.
     project_callback = properties.VALUES.core.project.GetOrFail
     operation_list_ref = dataproc.resources.Parse(

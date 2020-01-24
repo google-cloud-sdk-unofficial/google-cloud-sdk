@@ -20,8 +20,11 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
+from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.events import resource_args
+from googlecloudsdk.command_lib.events import util
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
@@ -68,5 +71,24 @@ class Delete(base.Command):
         cancel_on_no=True)
 
     with eventflow_operations.Connect(conn_context) as client:
+      # TODO(b/147308604): Don't delete source when Odin supports ownerRefs
+      if serverless_flags.GetPlatform() == serverless_flags.PLATFORM_MANAGED:
+        trigger_obj = client.GetTrigger(trigger_ref)
+        if trigger_obj is not None:
+          source_crds = client.ListSourceCustomResourceDefinitions()
+          source_ref, source_crd = util.GetSourceRefAndCrdForTrigger(
+              trigger_obj, source_crds)
+          if source_ref and source_crd:
+            # Delete the source before the trigger because we need the trigger
+            # to exist to be able to find the source. Otherwise, we could end up
+            # losing a reference to the source if trigger deletion succeeds but
+            # source deletion fails.
+            try:
+              client.DeleteSource(source_ref, source_crd)
+            except exceptions.SourceNotFound:
+              # Source could have been deleted but trigger deletion failed
+              # and this command was re-run, which is fine.
+              pass
       client.DeleteTrigger(trigger_ref)
+
     log.DeletedResource(trigger_ref.Name(), 'trigger')

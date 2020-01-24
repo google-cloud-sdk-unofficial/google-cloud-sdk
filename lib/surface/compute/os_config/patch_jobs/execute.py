@@ -736,12 +736,13 @@ def _CreateExecuteRequestBeta(messages, project, description, dry_run, duration,
                               filter_group_labels, filter_zones, filter_names,
                               filter_name_prefixes):
   """Creates an ExecuteRequest message for the Beta track."""
-  patch_instance_filter = messages.PatchInstanceFilter(
-      all=filter_all,
-      groupLabels=filter_group_labels,
-      zones=filter_zones,
-      instances=filter_names,
-      instanceNamePrefixes=filter_name_prefixes,
+  patch_instance_filter = _CreatePatchInstanceFilter(
+      messages,
+      filter_all,
+      filter_group_labels,
+      filter_zones,
+      filter_names,
+      filter_name_prefixes,
   )
 
   return messages.OsconfigProjectsPatchJobsExecuteRequest(

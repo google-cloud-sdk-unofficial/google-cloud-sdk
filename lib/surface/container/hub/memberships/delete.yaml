@@ -3,10 +3,10 @@
   help_text:
     brief: Delete a membership.
     description: |
-      This command deletes the membership resoruce of a registered cluster on the Hub.
+      This command deletes the membership resource of a registered cluster on the Hub.
       It will not remove the connect-agent that was installed on the cluster during cluster
       registration. To delete the membership of a registered cluster and remove the connect-agent,
-      consider using `unregister` command.
+      consider using the `{parent_command} unregister` command.
     examples: |
       Delete a membership from Hub:
 

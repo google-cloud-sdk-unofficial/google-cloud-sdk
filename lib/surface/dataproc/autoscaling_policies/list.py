@@ -32,9 +32,10 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  The following command lists all autoscaling policies in the project:
+  The following command lists all autoscaling policies in Dataproc's
+  'us-central1' region:
 
-    $ {command}
+    $ {command} --region=us-central1
   """
 
   @staticmethod

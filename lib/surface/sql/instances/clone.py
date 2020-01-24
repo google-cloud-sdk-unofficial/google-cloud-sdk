@@ -159,6 +159,7 @@ class Clone(base.CreateCommand):
         instance=source_instance_ref.instance,
         instancesCloneRequest=sql_messages.InstancesCloneRequest(
             cloneContext=sql_messages.CloneContext(
+                kind='sql#cloneContext',
                 destinationInstanceName=destination_instance_ref.instance)))
 
     self._UpdateRequestFromArgs(request, args, sql_messages)
@@ -195,6 +196,7 @@ class Clone(base.CreateCommand):
         sql_messages.SqlInstancesGetRequest(
             project=destination_instance_ref.project,
             instance=destination_instance_ref.instance))
+    rsource.kind = None
     return rsource
 
 

@@ -77,14 +77,11 @@ class Describe(base.Command):
       source_obj = None
       if trigger_obj is not None:
         source_crds = client.ListSourceCustomResourceDefinitions()
-        source_obj_ref = trigger_obj.dependency
-        source_crd = next(
-            (s for s in source_crds if s.source_kind == source_obj_ref.kind),
-            None)
-        if source_crd is not None:
-          source_ref = util.GetSourceRef(source_obj_ref.name,
-                                         source_obj_ref.namespace, source_crd)
+        source_ref, source_crd = util.GetSourceRefAndCrdForTrigger(
+            trigger_obj, source_crds)
+        if source_ref and source_crd:
           source_obj = client.GetSource(source_ref, source_crd)
+
     if not trigger_obj:
       raise exceptions.TriggerNotFound(
           'Trigger [{}] not found.'.format(trigger_ref.Name()))

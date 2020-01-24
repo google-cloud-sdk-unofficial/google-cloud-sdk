@@ -72,8 +72,8 @@ class ListOperations(base.ListCommand):
           table(
              name():label=NAME,
              done,
-             metadata.firstof(startTime, requestTime).date():label=START_TIME:sort=1:reverse,
-             metadata.firstof(endTime, finishTime).date():label=END_TIME
+             metadata.firstof(startTime, requestTime, progress.start_time).date():label=START_TIME:sort=1:reverse,
+             metadata.firstof(endTime, finishTime, progress.end_time).date():label=END_TIME
            )
         """)
     parser.display_info.AddUriFunc(_GetUriFunction)

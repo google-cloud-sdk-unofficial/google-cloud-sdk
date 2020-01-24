@@ -8,12 +8,12 @@
       Replace all existing service perimeter in specified access policy with service perimeters
       specified in a file.
   request:
-    api_version: v1beta
+    api_version: v1alpha
     method: replaceAll
     collection: accesscontextmanager.accessPolicies.servicePerimeters
   response:
     modify_response_hooks:
-    - googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseReplaceServicePerimetersResponseBeta
+    - googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseReplaceServicePerimetersResponseAlpha
 
   arguments:
     resource:
@@ -22,6 +22,13 @@
       override_resource_collection: true
 
     params:
+    - api_field: replaceServicePerimetersRequest.etag
+      arg_name: etag
+      required: false
+      help_text: |
+        An etag which specifies the version of the Access Policy. Only etags
+        that represent the latest version of the Access Policy will be accepted.
+      repeated: false
     - api_field: replaceServicePerimetersRequest.servicePerimeters
       arg_name: source-file
       required: true
@@ -42,13 +49,11 @@
             - projects/0123456789
             accessLevels:
             - accessPolicies/my_policy/accessLevels/my_level
-            unrestrictedServices:
-            - "*"
             restrictedServices:
             - storage.googleapis.com
         ```
 
         For more information, see:
-        https://cloud.google.com/access-context-manager/docs/reference/rest/v1beta/accessPolicies.servicePerimeters
+        https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
       repeated: false
-      processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseServicePerimetersBeta
+      processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseServicePerimetersAlpha

@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-
   help_text:
     brief: Update a Key.
     description: Update a reCAPTCHA Key.
@@ -19,6 +18,18 @@
       api_field: googleCloudRecaptchaenterpriseV1Key.displayName
       help_text: |
         A human-readable name for the key. Typically a site or app name.
+    - api_field: googleCloudRecaptchaenterpriseV1Key.labels.additionalProperties
+      arg_name: labels
+      metavar: KEY=VALUE
+      required: false
+      help_text: |
+          List of label KEY=VALUE pairs to add.
+      type:
+          arg_dict:
+              flatten: true
+              spec:
+              - api_field: key
+              - api_field: value
     - group:
         mutex: true
         params:

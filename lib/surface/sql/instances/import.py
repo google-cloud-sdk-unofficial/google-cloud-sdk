@@ -105,9 +105,12 @@ class Import(base.Command):
         project=instance_ref.project,
         instancesImportRequest=sql_messages.InstancesImportRequest(
             importContext=sql_messages.ImportContext(
+                kind='sql#importContext',
                 uri=args.uri,
                 database=args.database,
-                fileType='SQL',),),)
+                fileType=sql_messages.ImportContext.FileTypeValueValuesEnum.SQL,
+            ),),
+    )
 
     result_operation = sql_client.instances.Import(import_request)
 

@@ -166,13 +166,28 @@ class Import(base.CreateCommand):
         project=args.project,
         output_filter=_OUTPUT_FILTER,
         compute_release_track=
-        self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None
+        self.ReleaseTrack().id.lower() if self.ReleaseTrack() else None,
+        hostname=getattr(args, 'hostname', None)
     )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ImportBeta(Import):
   """Import an instance into Google Compute Engine from OVF."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(ImportBeta, cls).Args(parser)
+
+    parser.add_argument(
+        '--hostname',
+        help="""\
+      Specify the hostname of the instance to be imported. The specified
+      hostname must be RFC1035 compliant. If hostname is not specified, the
+      default hostname is [INSTANCE_NAME].c.[PROJECT_ID].internal when using
+      the global DNS, and [INSTANCE_NAME].[ZONE].c.[PROJECT_ID].internal
+      when using zonal DNS.
+      """)
 
   def _ValidateArgs(self, args, compute_client):
     super(ImportBeta, self)._ValidateArgs(args, compute_client)

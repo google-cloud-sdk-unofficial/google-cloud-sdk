@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Creates or updates a Google Cloud Function."""
 
 from __future__ import absolute_import
@@ -50,9 +49,8 @@ def _ApplyEnvVarsArgsToFunction(function, args):
 
 
 def _CreateBindPolicyCommand(function_name, region):
-  template = (
-      'gcloud alpha functions add-iam-policy-binding %s %s'
-      '--member=allUsers --role=roles/cloudfunctions.invoker')
+  template = ('gcloud alpha functions add-iam-policy-binding %s %s'
+              '--member=allUsers --role=roles/cloudfunctions.invoker')
   region_flag = '--region=%s ' % region if region else ''
   return template % (function_name, region_flag)
 
@@ -64,19 +62,22 @@ def _GetProject(args):
 def _Run(args,
          track=None,
          enable_runtime=True,
-         enable_traffic_control=False):
+         enable_traffic_control=False,
+         enable_build_worker_pool=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
   labels_util.CheckNoDeploymentLabels('--remove-labels', args.remove_labels)
   labels_util.CheckNoDeploymentLabels('--update-labels', args.update_labels)
 
   # Check that exactly one trigger type is specified properly.
-  trigger_util.ValidateTriggerArgs(
-      args.trigger_event, args.trigger_resource,
-      args.IsSpecified('retry'), args.IsSpecified('trigger_http'))
-  trigger_params = trigger_util.GetTriggerEventParams(
-      args.trigger_http, args.trigger_bucket, args.trigger_topic,
-      args.trigger_event, args.trigger_resource)
+  trigger_util.ValidateTriggerArgs(args.trigger_event, args.trigger_resource,
+                                   args.IsSpecified('retry'),
+                                   args.IsSpecified('trigger_http'))
+  trigger_params = trigger_util.GetTriggerEventParams(args.trigger_http,
+                                                      args.trigger_bucket,
+                                                      args.trigger_topic,
+                                                      args.trigger_event,
+                                                      args.trigger_resource)
 
   function_ref = args.CONCEPTS.name.Parse()
   function_url = function_ref.RelativeName()
@@ -161,6 +162,11 @@ def _Run(args,
               args.ingress_settings)
       function.ingressSettings = ingress_settings_enum
       updated_fields.append('ingressSettings')
+  if enable_build_worker_pool:
+    if args.build_worker_pool or args.clear_build_worker_pool:
+      function.buildWorkerPool = ('' if args.clear_build_worker_pool else
+                                  args.build_worker_pool)
+      updated_fields.append('buildWorkerPool')
   # Populate trigger properties of function based on trigger args.
   if args.trigger_http:
     function.httpsTrigger = messages.HttpsTrigger()
@@ -186,9 +192,9 @@ def _Run(args,
   # used local source.
   if (args.source or args.stage_bucket or is_new_function or
       function.sourceUploadUrl):
-    updated_fields.extend(source_util.SetFunctionSourceProps(
-        function, function_ref, args.source, args.stage_bucket,
-        args.ignore_file))
+    updated_fields.extend(
+        source_util.SetFunctionSourceProps(function, function_ref, args.source,
+                                           args.stage_bucket, args.ignore_file))
 
   # Apply label args to function
   if labels_util.SetFunctionLabels(function, args.update_labels,
@@ -202,9 +208,8 @@ def _Run(args,
   deny_all_users_invoke = flags.ShouldDenyAllUsersInvoke(args)
 
   if is_new_function:
-    if (not ensure_all_users_invoke
-        and not deny_all_users_invoke
-        and api_util.CanAddFunctionIamPolicyBinding(_GetProject(args))):
+    if (not ensure_all_users_invoke and not deny_all_users_invoke and
+        api_util.CanAddFunctionIamPolicyBinding(_GetProject(args))):
       ensure_all_users_invoke = console_io.PromptContinue(
           prompt_string=(
               'Allow unauthenticated invocations of new function [{}]?'.format(
@@ -212,11 +217,9 @@ def _Run(args,
           default=False)
 
     op = api_util.CreateFunction(function, function_ref.Parent().RelativeName())
-    if (not ensure_all_users_invoke
-        and not deny_all_users_invoke):
-      template = (
-          'Function created with limited-access IAM policy. '
-          'To enable unauthorized access consider "%s"')
+    if (not ensure_all_users_invoke and not deny_all_users_invoke):
+      template = ('Function created with limited-access IAM policy. '
+                  'To enable unauthorized access consider "%s"')
       log.warning(template % _CreateBindPolicyCommand(args.NAME, args.region))
       deny_all_users_invoke = True
 
@@ -254,9 +257,8 @@ def _Run(args,
             api_util.RemoveFunctionIamPolicyBindingIfFound(function.name))
     except exceptions.HttpException:
       stop_trying_perm_set[0] = True
-      log.warning(
-          'Setting IAM policy failed, try "%s"' % _CreateBindPolicyCommand(
-              args.NAME, args.region))
+      log.warning('Setting IAM policy failed, try "%s"' %
+                  _CreateBindPolicyCommand(args.NAME, args.region))
 
   if op:
     api_util.WaitForFunctionUpdateOperation(
@@ -319,10 +321,7 @@ class DeployBeta(base.Command):
     flags.AddIngressSettingsFlag(parser)
 
   def Run(self, args):
-    return _Run(
-        args,
-        track=self.ReleaseTrack(),
-        enable_traffic_control=True)
+    return _Run(args, track=self.ReleaseTrack(), enable_traffic_control=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -335,9 +334,11 @@ class DeployAlpha(base.Command):
     Deploy.Args(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddIngressSettingsFlag(parser)
+    flags.AddBuildWorkerPoolMutexGroup(parser)
 
   def Run(self, args):
     return _Run(
         args,
         track=self.ReleaseTrack(),
-        enable_traffic_control=True)
+        enable_traffic_control=True,
+        enable_build_worker_pool=True)

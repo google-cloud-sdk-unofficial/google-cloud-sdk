@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import collections
 import json
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_template_utils
 from googlecloudsdk.api_lib.compute import instance_utils
@@ -292,6 +293,18 @@ def ParseCreateArgsWithMeshMode(args, labels_cls, labels_dest='labels'):
   return PackageLabels(labels_cls, labels)
 
 
+def AddScopesForMeshMode(args):
+
+  if getattr(args, 'mesh', False) and args.mesh[
+      'mode'] == mesh_mode_aux_data.MeshModes.ON:
+
+    if args.scopes is None:
+      args.scopes = constants.DEFAULT_SCOPES[:]
+
+    if 'cloud-platform' not in args.scopes and 'https://www.googleapis.com/auth/cloud-platform' not in args.scopes:
+      args.scopes.append('cloud-platform')
+
+
 def AddMeshArgsToMetadata(args):
   """Inserts the Mesh mode arguments provided by the user to the instance metadata.
 
@@ -300,7 +313,6 @@ def AddMeshArgsToMetadata(args):
         arguments specified in the .Args() method.
   """
   if getattr(args, 'mesh', False):
-    instance_templates_flags.ValidateMeshModeFlags(args)
 
     mesh_mode_config = collections.OrderedDict()
 
@@ -370,6 +382,8 @@ def _RunCreate(compute_api,
       args, support_kms=support_kms)
   instances_flags.ValidateNetworkTierArgs(args)
 
+  instance_templates_flags.ValidateMeshModeFlags(args)
+
   client = compute_api.client
 
   boot_disk_size_gb = utils.BytesToGb(args.boot_disk_size)
@@ -379,6 +393,7 @@ def _RunCreate(compute_api,
       Create.InstanceTemplateArg.ResolveAsResource(
           args, compute_api.resources))
 
+  AddScopesForMeshMode(args)
   AddMeshArgsToMetadata(args)
 
   metadata = metadata_utils.ConstructMetadataMessage(

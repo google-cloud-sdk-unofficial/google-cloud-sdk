@@ -147,7 +147,7 @@ Delete.detailed_help = {
         """\
         To delete the per-instance config from ``my-instance'', run:
 
-          $ {command} my-group --region=europe-west4 --instance=my-instance
+          $ {command} my-group --region=europe-west4 --instances=my-instance
 
         This will remove all metadata and detach all disks that were defined in
         per-instance config (unless also defined in the instance template, in

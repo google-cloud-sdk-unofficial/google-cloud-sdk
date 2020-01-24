@@ -63,6 +63,7 @@ class UpdateGA(base.UpdateCommand):
         """)
     autohealing_params_group = autohealing_group.add_group()
     auto_healing_utils.AddAutohealingArgs(autohealing_params_group)
+    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
 
   def _GetValidatedAutohealingPolicies(self, holder, client, args,
                                        igm_resource):
@@ -75,6 +76,22 @@ class UpdateGA(base.UpdateCommand):
     managed_instance_groups_utils.ValidateAutohealingPolicies(
         auto_healing_policies)
     return auto_healing_policies
+
+  def _PatchRedistributionType(self, igm_patch, args, igm_resource, client,
+                               holder):
+    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+               .ResolveAsResource)(
+                   args,
+                   holder.resources,
+                   default_scope=compute_scope.ScopeEnum.ZONE,
+                   scope_lister=flags.GetDefaultScopeLister(client))
+    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
+        args.GetValue('instance_redistribution_type'), igm_ref)
+    igm_patch.updatePolicy = (managed_instance_groups_utils
+                              .ApplyInstanceRedistributionTypeToUpdatePolicy)(
+                                  client,
+                                  args.GetValue('instance_redistribution_type'),
+                                  igm_resource.updatePolicy)
 
   def _MakePatchRequest(self, client, igm_ref, igm_updated_resource):
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
@@ -101,6 +118,9 @@ class UpdateGA(base.UpdateCommand):
         holder, client, args, igm_resource)
     if auto_healing_policies is not None:
       patch_instance_group_manager.autoHealingPolicies = auto_healing_policies
+    if args.IsSpecified('instance_redistribution_type'):
+      self._PatchRedistributionType(patch_instance_group_manager, args,
+                                    igm_resource, client, holder)
     return patch_instance_group_manager
 
   def Run(self, args):
@@ -155,7 +175,6 @@ class UpdateBeta(UpdateGA):
   @staticmethod
   def Args(parser):
     UpdateGA.Args(parser)
-    instance_groups_flags.AddMigInstanceRedistributionTypeFlag(parser)
     instance_groups_flags.AddMigUpdateStatefulFlags(parser)
 
   def _GetUpdatedStatefulPolicy(self,
@@ -223,30 +242,10 @@ class UpdateBeta(UpdateGA):
         args.remove_stateful_disks)
     return igm_patch
 
-  def _PatchRedistributionType(self, igm_patch, args, igm_resource, client,
-                               holder):
-    igm_ref = (instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
-               .ResolveAsResource)(
-                   args,
-                   holder.resources,
-                   default_scope=compute_scope.ScopeEnum.ZONE,
-                   scope_lister=flags.GetDefaultScopeLister(client))
-    instance_groups_flags.ValidateMigInstanceRedistributionTypeFlag(
-        args.GetValue('instance_redistribution_type'), igm_ref)
-    igm_patch.updatePolicy = (managed_instance_groups_utils
-                              .ApplyInstanceRedistributionTypeToUpdatePolicy)(
-                                  client,
-                                  args.GetValue('instance_redistribution_type'),
-                                  igm_resource.updatePolicy)
-
   def _CreateInstanceGroupManagerPatch(self, args, igm_resource, client,
                                        holder):
     igm_patch = super(UpdateBeta, self)._CreateInstanceGroupManagerPatch(
         args, igm_resource, client, holder)
-
-    if args.IsSpecified('instance_redistribution_type'):
-      self._PatchRedistributionType(igm_patch, args, igm_resource, client,
-                                    holder)
 
     if self._StatefulArgsSet(args):
       igm_patch = self._PatchStatefulPolicy(igm_patch, args, igm_resource,

@@ -50,22 +50,26 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  To see the list of all clusters, run:
+  To see the list of all clusters in Dataproc's 'us-central1' region, run:
 
-    $ {command}
+    $ {command} --region='us=central1'
 
-  To show a cluster whose name is `mycluster`, run:
+  To show a cluster in Dataproc's 'global' region with the name 'mycluster',
+  run:
 
-    $ {command} --filter='clusterName = mycluster'
+    $ {command} --region='global' --filter='clusterName = mycluster'
 
-  To see the list of all clusters with particular labels, run:
+  To see the list of all clusters in Dataproc's 'global' region with specified
+  labels, run:
 
-    $ {command} --filter='labels.env = staging AND labels.starred = *'
+    $ {command} --region='global' --filter='labels.env = staging AND
+      labels.starred = *'
 
-  To see a list of all active clusters with particular labels, run:
+  To see a list of all active clusters in Dataproc's 'europe-west1' region with
+  specified labels, run:
 
-    $ {command} --filter='status.state = ACTIVE labels.env = staging AND
-     labels.starred = *'
+    $ {command} --region='europe-west1' --filter='status.state = ACTIVE AND
+      labels.env = staging AND labels.starred = *'
   """
 
   @staticmethod
@@ -88,7 +92,7 @@ class List(base.ListCommand):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
     project = properties.VALUES.core.project.GetOrFail()
-    region = util.ResolveRegion(self.ReleaseTrack())
+    region = util.ResolveRegion()
 
     request = self.GetRequest(dataproc.messages, project, region, args)
 

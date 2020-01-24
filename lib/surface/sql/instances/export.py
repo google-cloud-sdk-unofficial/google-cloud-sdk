@@ -104,12 +104,15 @@ class Export(base.Command):
         project=instance_ref.project,
         instancesExportRequest=sql_messages.InstancesExportRequest(
             exportContext=sql_messages.ExportContext(
+                kind='sql#exportContext',
                 uri=args.uri,
                 databases=args.database or [],
-                fileType='SQL',
+                fileType=sql_messages.ExportContext.FileTypeValueValuesEnum.SQL,
                 sqlExportOptions=(
                     sql_messages.ExportContext.SqlExportOptionsValue(
-                        tables=args.table or [],)),),),)
+                        tables=args.table or [],)),
+            ),),
+    )
 
     result_operation = sql_client.instances.Export(export_request)
 

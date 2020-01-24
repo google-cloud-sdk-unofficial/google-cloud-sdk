@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-
   help_text:
     brief: Create a Key.
     description: Create a reCAPTCHA Key.
@@ -15,6 +14,7 @@
       is_parent_resource: true
       help_text: |
         The reCAPTCHA Key to create
+
     params:
     - arg_name: display-name
       required: true
@@ -91,3 +91,5 @@
 
                 Examples of valid package names:
                    'com.companyname.appname'
+    labels:
+      api_field: googleCloudRecaptchaenterpriseV1Key.labels

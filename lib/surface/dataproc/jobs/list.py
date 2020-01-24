@@ -66,15 +66,15 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  To see the list of all jobs, run:
+  To see the list of all jobs in Dataproc's 'us-central1' region, run:
 
     $ {command} --region=us-central1
 
-  To see a list of all active jobs in cluster `my_cluster` with a label of
-  `env=staging`, run:
+  To see a list of all active jobs in cluster 'mycluster' with a label
+  `env=staging` located in 'us-central1', run:
 
     $ {command} --region=us-central1 --filter='status.state = ACTIVE AND
-        placement.clusterName = my_cluster AND labels.env = staging'
+        placement.clusterName = 'mycluster' AND labels.env = staging'
   """
 
   @staticmethod
@@ -103,7 +103,7 @@ class List(base.ListCommand):
     dataproc = dp.Dataproc(self.ReleaseTrack())
 
     project = properties.VALUES.core.project.GetOrFail()
-    region = util.ResolveRegion(self.ReleaseTrack())
+    region = util.ResolveRegion()
 
     request = self.GetRequest(dataproc.messages, project, region, args)
 

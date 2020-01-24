@@ -52,15 +52,6 @@ class Get(base.Command):
           To set the IAP setting for a backend service within a project, run:
             $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
 
-          To set the IAP setting for all ssh tunnels within a project, run:
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=iap_tunnel
-
-          To set the IAP setting for a ssh tunnel zone within a project, run:
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=iap_tunnel --zone=ZONE_ID
-
-          To set the IAP setting for a ssh tunnel zone instance within a project, run:
-            $ {command} SETTING_FILE --project=PROJECT_ID --resource-type=iap_tunnel --zone=ZONE_ID
-                --instance=INSTANCE_ID
           """,
   }
 

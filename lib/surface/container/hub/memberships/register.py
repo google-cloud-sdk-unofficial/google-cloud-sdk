@@ -44,11 +44,11 @@ class Register(base.CreateCommand):
   It also installs the Connect agent into this cluster, or updates the Connect
   agent in a previously-registered cluster.
 
-  To authenticate the in-cluster Connect agent to Google, requires either
-  Workload Identity on GKE clusters or a service account key file. Running this
-  command more than once has the effect of re-registering the cluster with new
-  parameters but the service account key will be preserved if it was provided
-  as part of a previous registration.
+  To authenticate the in-cluster Connect agent to Google, requires a Google
+  Cloud service account key file. Running this command more than once has the
+  effect of re-registering the cluster with new parameters but the service
+  account key will be preserved if it was provided as part of a previous
+  registration.
 
   ## EXAMPLES
 
@@ -59,11 +59,12 @@ class Register(base.CreateCommand):
         --context=my-cluster-context \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a cluster referenced from the default kubeconfig file and
-    service-account, and installing the Connect agent:
+    Register a cluster referenced from the default kubeconfig file, and
+    installing the Connect agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context
+        --service-account-key-file=/tmp/keyfile.json
 
     Upgrade the Connect agent in a cluster:
 
@@ -110,40 +111,21 @@ class Register(base.CreateCommand):
             represent the cluster membership name in Hub.
          """),
     )
-    hub_util.AddCommonArgs(parser)
+    hub_util.AddUnRegisterCommonArgs(parser)
     parser.add_argument(
         SERVICE_ACCOUNT_KEY_FILE_FLAG,
         type=str,
+        required=True,
         help=textwrap.dedent("""\
-            The JSON file of a Google Cloud service account private key. Defaults
-            to using ``creds-gcp'' named secret json keyfile in gke-connect
-            namespace. To create or update the ``creds-gcp'' secret keyfile in
-            gke-connect namespace with your service account key file, run the
-            following commad:
+            The JSON file of a Google Cloud service account private key. This
+            service account key is stored as a secret named ``creds-gcp'' in
+            gke-connect namespace. To update the ``creds-gcp'' secret in
+            gke-connect namespace with a new service account key file, run the
+            following command:
 
             kubectl delete secret creds-gcp -n gke-connect
+
             kubectl create secret generic creds-gcp -n gke-connect --from-file=creds-gcp.json=/path/to/file
-         """),
-    )
-    parser.add_argument(
-        '--gke-uri',
-        type=str,
-        help=textwrap.dedent("""\
-            The URI of the GKE cluster that needs to be registered; for example,
-            'https://container.googleapis.com/projects/my-project/locations/us-central1-a/clusters/my-cluster'
-            The URI can obtain by calling:
-                gcloud container clusters list --uri
-            This is only valid if the represented cluster is a GKE cluster. The
-            provided URI will be validated to confirm that it maps to the valid
-            GKE cluster.
-          """),
-    )
-    parser.add_argument(
-        '--gke-cluster',
-        type=str,
-        help=textwrap.dedent("""\
-            The location/name of the GKE cluster that needs to be registered.
-            The location can be a zone or a region for e.g `us-central1-a/my-cluster`.
          """),
     )
     parser.add_argument(

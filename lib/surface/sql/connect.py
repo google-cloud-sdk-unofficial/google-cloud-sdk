@@ -85,6 +85,7 @@ def _WhitelistClientIP(instance_ref,
 
   acl_name = 'sql connect at time {0}'.format(time_of_connection)
   user_acl = sql_messages.AclEntry(
+      kind='sql#aclEntry',
       name=acl_name,
       expirationTime=iso_duration.Duration(
           minutes=minutes).GetRelativeDateTime(time_of_connection)
@@ -92,7 +93,7 @@ def _WhitelistClientIP(instance_ref,
       # Setting the microseconds component to 10 milliseconds. This complies
       # with backend formatting restrictions, since backend requires a microsecs
       # component and anything less than 1 milli will get truncated.
-      .replace(microsecond=10000),
+      .replace(microsecond=10000).isoformat(),
       value='CLIENT_IP')
 
   try:
@@ -219,7 +220,7 @@ def RunConnectCommand(args, supports_database=False):
                                  'not reply with the whitelisted IP.')
 
   # Check for the mysql or psql executable based on the db version.
-  db_type = instance_info.databaseVersion.split('_')[0]
+  db_type = instance_info.databaseVersion.name.split('_')[0]
   exe_name = constants.DB_EXE.get(db_type, 'mysql')
   exe = files.FindExecutableOnPath(exe_name)
   if not exe:
@@ -290,7 +291,7 @@ def RunProxyConnectCommand(args,
       sql_messages.SqlInstancesGetRequest(
           project=instance_ref.project, instance=instance_ref.instance))
 
-  if not instances_api_util.IsInstanceV2(instance_info):
+  if not instances_api_util.IsInstanceV2(sql_messages, instance_info):
     # The Cloud SQL Proxy does not support V1 instances.
     return RunConnectCommand(args, supports_database)
 
@@ -298,7 +299,7 @@ def RunProxyConnectCommand(args,
   util.EnsureComponentIsInstalled('cloud_sql_proxy', '`sql connect` command')
 
   # Check for the executable based on the db version.
-  db_type = instance_info.databaseVersion.split('_')[0]
+  db_type = instance_info.databaseVersion.name.split('_')[0]
   exe_name = constants.DB_EXE.get(db_type, 'mysql')
   exe = files.FindExecutableOnPath(exe_name)
   if not exe:

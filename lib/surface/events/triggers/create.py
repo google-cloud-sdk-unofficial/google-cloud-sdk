@@ -53,6 +53,7 @@ class Create(base.Command):
   @staticmethod
   def CommonArgs(parser):
     flags.AddEventTypeFlagArg(parser)
+    flags.AddSourceFlag(parser)
     flags.AddTargetServiceFlag(parser, required=True)
     flags.AddBrokerFlag(parser)
     flags.AddParametersFlags(parser)
@@ -76,7 +77,8 @@ class Create(base.Command):
     namespace_ref = trigger_ref.Parent()
     with eventflow_operations.Connect(conn_context) as client:
       source_crds = client.ListSourceCustomResourceDefinitions()
-      event_type = util.EventTypeFromTypeString(source_crds, args.type)
+      event_type = util.EventTypeFromTypeString(
+          source_crds, args.type, args.source)
       source_obj = source.Source.New(client.client, namespace_ref.Name(),
                                      event_type.crd.source_kind,
                                      event_type.crd.source_api_category)

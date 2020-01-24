@@ -31,11 +31,14 @@
       api_version: alpha
 
   async:
-    api_version: beta
+    api_version: v1
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha
+    method: wait
     collection: compute.zoneOperations
     response_name_field: selfLink
     state:
       field: status
       success_values: ['DONE']
-    ALPHA:
-      api_version: alpha

@@ -70,15 +70,21 @@ class AddDatabase(base.Command):
         collection='sql.instances')
 
     new_database = sql_messages.Database(
+        kind='sql#database',
         project=instance_ref.project,
         instance=instance_ref.instance,
         name=args.database,
         charset=args.charset,
         collation=args.collation)
 
+    request = sql_messages.SqlDatabasesInsertRequest(
+        project=new_database.project,
+        instance=new_database.instance,
+        database=new_database)
+
     # TODO(b/36052521): Move this API call logic per b/35386183.
 
-    result_operation = sql_client.databases.Insert(new_database)
+    result_operation = sql_client.databases.Insert(request)
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',
@@ -100,6 +106,7 @@ class AddDatabase(base.Command):
         # TODO(b/36051979): Refactor when b/35156765 is resolved.
         raise
       result = new_database
+      result.kind = None
 
     log.CreatedResource(args.database, kind='database', is_async=args.async_)
 

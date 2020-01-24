@@ -24,12 +24,35 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import instances as instance_api_util
 from googlecloudsdk.api_lib.sql import validate
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import instances as instance_command_util
 from googlecloudsdk.core import properties
+import six
 import six.moves.http_client
+
+messages = apis.GetMessagesModule('sql', 'v1beta4')
+
+
+class DatabaseInstancePresentation(object):
+  """Represents a DatabaseInstance message that is modified for user visibility."""
+
+  def __init__(self, orig):
+    for field in orig.all_fields():
+      if field.name == 'state':
+        if orig.settings and orig.settings.activationPolicy == messages.Settings.ActivationPolicyValueValuesEnum.NEVER:
+          self.state = 'STOPPED'
+        else:
+          self.state = orig.state
+      else:
+        value = getattr(orig, field.name)
+        if value is not None and not (isinstance(value, list) and not value):
+          if field.name in ['currentDiskSize', 'maxDiskSize']:
+            setattr(self, field.name, six.text_type(value))
+          else:
+            setattr(self, field.name, value)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -48,16 +71,15 @@ class Get(base.DescribeCommand):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use it to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use it to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     parser.add_argument(
         'instance',
         completer=flags.InstanceCompleter,
         help='Cloud SQL instance ID.')
-    parser.display_info.AddFormat(
-        '{0} default'.format(flags.INSTANCES_USERLABELS_FORMAT))
+    parser.display_info.AddFormat('{0} default'.format(
+        flags.INSTANCES_USERLABELS_FORMAT))
 
   def Run(self, args):
     """Displays configuration and metadata about a Cloud SQL instance.
@@ -67,7 +89,7 @@ class Get(base.DescribeCommand):
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Returns:
       A dict object representing the instance resource if fetching the instance
@@ -91,11 +113,10 @@ class Get(base.DescribeCommand):
       instance = sql_client.instances.Get(
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project, instance=instance_ref.instance))
-      instance.state = instance_api_util.GetInstanceState(instance)
       # TODO(b/122660263): Remove when V1 instances are no longer supported.
-      if instance_api_util.IsInstanceV1(instance):
+      if instance_api_util.IsInstanceV1(sql_messages, instance):
         instance_command_util.ShowV1DeprecationWarning()
-      return instance
+      return DatabaseInstancePresentation(instance)
     except apitools_exceptions.HttpError as error:
       if error.status_code == six.moves.http_client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(

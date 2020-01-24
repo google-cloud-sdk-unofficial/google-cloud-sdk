@@ -197,7 +197,7 @@ def RunBaseCreateCommand(args, release_track):
     if not args.IsSpecified('region'):
       args.region = master_instance_resource.region
     if not args.IsSpecified('database_version'):
-      args.database_version = master_instance_resource.databaseVersion
+      args.database_version = master_instance_resource.databaseVersion.name
     if not args.IsSpecified('tier') and master_instance_resource.settings:
       args.tier = master_instance_resource.settings.tier
     # Check for CMEK usage; warn the user about replica inheriting the setting.
@@ -220,7 +220,7 @@ def RunBaseCreateCommand(args, release_track):
 
   # TODO(b/122660263): Remove when V1 instances are no longer supported.
   # V1 instances are deprecated. Prompt to continue if one is being created.
-  if api_util.IsInstanceV1(instance_resource):
+  if api_util.IsInstanceV1(sql_messages, instance_resource):
     log.warning(
         'First Generation instances will be automatically upgraded '
         'to Second Generation starting March 4th, 2020, and First Generation '
@@ -236,7 +236,10 @@ def RunBaseCreateCommand(args, release_track):
 
   operation_ref = None
   try:
-    result_operation = sql_client.instances.Insert(instance_resource)
+    request = sql_messages.SqlInstancesInsertRequest(
+        project=instance_resource.project, databaseInstance=instance_resource)
+
+    result_operation = sql_client.instances.Insert(request)
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',

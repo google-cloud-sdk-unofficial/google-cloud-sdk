@@ -169,24 +169,16 @@ class StartUpdate(base.Command):
     return service, 'Patch', request
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StartUpdateBeta(StartUpdate):
   """Start update instances of managed instance group."""
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser=parser, supports_min_ready=True)
-    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
-        parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class StartUpdateAlpha(StartUpdate):
-  """Start update instances of managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser, supports_min_ready=True, supports_replacement_method=True)
+    _AddArgs(
+        parser=parser,
+        supports_min_ready=True,
+        supports_replacement_method=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 

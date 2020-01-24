@@ -116,11 +116,11 @@ You can find the list of allowed versions for upgrades by running:
       ' supported on Kubernetes Engine. Nodes cannot be upgraded at the same'
       ' time as the master.',
       action='store_true')
-  # Timeout in seconds for the operation, default 2700 seconds (45 minutes)
+  # Timeout in seconds for the operation, default 3600 seconds (60 minutes)
   parser.add_argument(
       '--timeout',
       type=int,
-      default=2700,
+      default=3600,
       hidden=True,
       help='Timeout (seconds) for waiting on the operation to complete.')
   flags.AddAsyncFlag(parser)
