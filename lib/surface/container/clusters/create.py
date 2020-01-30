@@ -517,6 +517,7 @@ class CreateBeta(Create):
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
+    flags.AddAutoscalingProfilesFlag(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
@@ -548,6 +549,7 @@ class CreateBeta(Create):
     ops.release_channel = args.release_channel
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
+    ops.autoscaling_profile = args.autoscaling_profile
     return ops
 
 
@@ -580,7 +582,7 @@ class CreateAlpha(Create):
     flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
     flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
-    flags.AddAutoscalingProfilesFlag(parser, hidden=True)
+    flags.AddAutoscalingProfilesFlag(parser)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser)

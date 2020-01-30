@@ -34,6 +34,8 @@ from googlecloudsdk.core import properties
 
 def _Run(args, enable_labels=False, legacy_output=False):
   """Creates one or more subscriptions."""
+  flags.ValidateDeadLetterPolicy(args)
+
   client = subscriptions.SubscriptionsClient()
 
   topic_ref = args.CONCEPTS.topic.Parse()
@@ -159,10 +161,9 @@ class CreateAlpha(CreateBeta):
     subscription = resource_args.CreateSubscriptionResourceArg(
         'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(
-        parser, support_message_ordering=True, support_dead_letter_queues=True)
+    flags.AddSubscriptionSettingsFlags(parser, support_message_ordering=True)
     labels_util.AddCreateLabelsFlags(parser)
 
+  @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
-    flags.ValidateDeadLetterPolicy(args)
     return super(CreateAlpha, self).Run(args)

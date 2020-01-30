@@ -56,6 +56,8 @@ class Update(base.UpdateCommand):
       An HttpException if there was a problem calling the
       API subscriptions.Patch command.
     """
+    flags.ValidateDeadLetterPolicy(args)
+
     client = subscriptions.SubscriptionsClient()
     subscription_ref = args.CONCEPTS.subscription.Parse()
     dead_letter_topic = getattr(args, 'dead_letter_topic', None)
@@ -108,11 +110,9 @@ class UpdateAlpha(Update):
   @classmethod
   def Args(cls, parser):
     resource_args.AddSubscriptionResourceArg(parser, 'to update.')
-    flags.AddSubscriptionSettingsFlags(
-        parser, is_update=True, support_dead_letter_queues=True)
+    flags.AddSubscriptionSettingsFlags(parser, is_update=True)
     labels_util.AddUpdateLabelsFlags(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
-    flags.ValidateDeadLetterPolicy(args)
     return super(UpdateAlpha, self).Run(args)

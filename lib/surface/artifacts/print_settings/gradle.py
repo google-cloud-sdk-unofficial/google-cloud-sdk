@@ -28,22 +28,6 @@ from googlecloudsdk.core import log
 class Gradle(base.Command):
   """Print a snippet to add a repository to the Gradle build.gradle file."""
 
-  detailed_help = {
-      "DESCRIPTION":
-          "{description}",
-      "EXAMPLES":
-          """\
-    To print a snippet for the repository set in the `artifacts/repository`
-    property in the default location:
-
-      $ {command}
-
-    To print a snippet for repository `my-repository` in the default location:
-
-      $ {command} --repository="my-repository"
-  """,
-  }
-
   @staticmethod
   def Args(parser):
     flags.GetRepoFlag().AddToParser(parser)
@@ -62,3 +46,4 @@ class Gradle(base.Command):
 
     log.status.Print("Note: Language package support is in Alpha.\n")
     return {"gradle": settings_util.GetGradleSnippet(args)}
+

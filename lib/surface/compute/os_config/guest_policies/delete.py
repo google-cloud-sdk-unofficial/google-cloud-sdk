@@ -41,7 +41,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     """See base class."""
     parser.add_argument(
-        'POLICY_ID', type=str, help='ID of the guest policy to delete.')
+        'POLICY_ID', type=str, help='Name of the guest policy to delete.')
 
   def Run(self, args):
     """See base class."""
@@ -81,7 +81,7 @@ class DeleteAlpha(base.DeleteCommand):
   def Args(parser):
     """See base class."""
     parser.add_argument(
-        'POLICY_ID', type=str, help='ID of the guest policy to delete.')
+        'POLICY_ID', type=str, help='Name of the guest policy to delete.')
     osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
                                                  'to delete')
 

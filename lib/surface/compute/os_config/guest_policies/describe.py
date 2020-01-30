@@ -40,7 +40,7 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     """See base class."""
     parser.add_argument(
-        'POLICY_ID', type=str, help='ID of the guest policy to describe.')
+        'POLICY_ID', type=str, help='Name of the guest policy to describe.')
 
   def Run(self, args):
     """See base class."""
@@ -77,7 +77,7 @@ class DescribeAlpha(base.DescribeCommand):
   def Args(parser):
     """See base class."""
     parser.add_argument(
-        'POLICY_ID', type=str, help='ID of the guest policy to describe.')
+        'POLICY_ID', type=str, help='Name of the guest policy to describe.')
     osconfig_command_utils.AddResourceParentArgs(parser, 'guest policy',
                                                  'to describe')
 

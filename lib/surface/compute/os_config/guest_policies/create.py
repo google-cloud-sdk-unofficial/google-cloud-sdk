@@ -43,10 +43,10 @@ class Create(base.Command):
         'POLICY_ID',
         type=str,
         help="""\
-        ID of the guest policy to create.
+        Name of the guest policy to create.
 
-        This ID must contain only lowercase letters, numbers, and hyphens, start
-        with a letter, end with a number or a letter, be between 1-63
+        This name must contain only lowercase letters, numbers, and hyphens,
+        start with a letter, end with a number or a letter, be between 1-63
         characters, and unique within the project.""",
     )
     parser.add_argument(
@@ -102,10 +102,10 @@ class CreateAlpha(base.Command):
         'POLICY_ID',
         type=str,
         help="""\
-        ID of the guest policy to create.
+        Name of the guest policy to create.
 
-        This ID must contain only lowercase letters, numbers, and hyphens, start
-        with a letter, end with a number or a letter, be between 1-63
+        This name must contain only lowercase letters, numbers, and hyphens,
+        start with a letter, end with a number or a letter, be between 1-63
         characters, and unique within the project, folder, or organization.""",
     )
     parser.add_argument(

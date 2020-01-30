@@ -70,9 +70,3 @@ class Events(base.Group):
     # Add --kubeconfig and --context
     kubernetes_group = flags.GetKubernetesArgGroup(platform_helpers_group)
     flags.AddKubeconfigFlags(kubernetes_group)
-
-  def Filter(self, context, args):
-    if flags.GetPlatform() == flags.PLATFORM_MANAGED:
-      raise exceptions.UnsupportedArgumentError(
-          'Events are only available with Cloud Run for Anthos.')
-    return context

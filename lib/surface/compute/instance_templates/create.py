@@ -342,13 +342,22 @@ def AddMeshArgsToMetadata(args):
       }
 
     if args.mesh['mode'] == mesh_mode_aux_data.MeshModes.ON:
-      if 'startup-script' not in args.metadata:
-        args.metadata['startup-script'] = mesh_mode_aux_data.startup_script
-      else:
-        args.metadata['startup-script'] = (
-            mesh_mode_aux_data.startup_script + '\n' +
-            args.metadata['startup-script'][mesh_mode_aux_data.shebang_len:])
+      args.metadata['os-config-enabled-prerelease-features'] = 'ospackage'
+      gce_software_declaration = collections.OrderedDict()
+      mesh_agent_recipe = collections.OrderedDict()
 
+      mesh_agent_recipe['name'] = 'install-gce-mesh-agent'
+      mesh_agent_recipe['desired_state'] = 'INSTALLED'
+      mesh_agent_recipe['installSteps'] = [{
+          'scriptRun': {
+              'script': mesh_mode_aux_data.startup_script
+          }
+      }]
+
+      gce_software_declaration['softwareRecipes'] = [mesh_agent_recipe]
+
+      args.metadata['gce-software-declaration'] = json.dumps(
+          gce_software_declaration)
       args.metadata['enable-guest-attributes'] = 'TRUE'
 
     args.metadata['gce-mesh'] = json.dumps(mesh_mode_config)

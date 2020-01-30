@@ -211,8 +211,7 @@ class Import(base.CreateCommand):
     return self._RunImageImport(args, import_metadata, tags, _OUTPUT_FILTER)
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
-    return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,
-                                      'ga')
+    return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER)
 
   def _CreateImportStager(self, args):
     if args.source_image:
@@ -422,7 +421,7 @@ class ImportBeta(Import):
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,
-                                      'beta', args.docker_image_tag)
+                                      args.docker_image_tag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

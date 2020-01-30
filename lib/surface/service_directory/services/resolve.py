@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 
 
 @base.Hidden
-class Resolve(base.CreateCommand):
+class Resolve(base.Command):
   """Resolve a service."""
 
   @staticmethod

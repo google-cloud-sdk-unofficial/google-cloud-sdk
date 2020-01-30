@@ -28,10 +28,11 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 
 def _AddArgs(parser):
   """Adds args."""
-  parser.add_argument('--timeout',
-                      type=int,
-                      help='Waiting time in seconds for group '
-                      'to reach desired state.')
+  parser.add_argument(
+      '--timeout',
+      type=int,
+      help='Waiting time in seconds for the group '
+      'to reach the desired state.')
 
   event_type = parser.add_mutually_exclusive_group(required=True)
   event_type.add_argument('--version-target-reached',
@@ -46,9 +47,10 @@ def _AddArgs(parser):
       parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class WaitUntil(base.Command):
-  """Wait until managed instance group reaches desired state."""
+  """Wait until the managed instance group reaches the desired state."""
 
   @staticmethod
   def Args(parser):
@@ -71,3 +73,16 @@ class WaitUntil(base.Command):
     igm_state = (wait_utils.IgmState.STABLE if args.stable
                  else wait_utils.IgmState.VERSION_TARGET_REACHED)
     wait_utils.WaitForIgmState(client, group_ref, igm_state, args.timeout)
+
+
+WaitUntil.detailed_help = {
+    'brief':
+        'Wait until the managed instance group reaches the desired state.',
+    'EXAMPLES':
+        """\
+        To wait until the managed instance group ``instance-group-1'' is stable,
+        run:
+
+          $ {command} --stable instance-group-1
+        """,
+}

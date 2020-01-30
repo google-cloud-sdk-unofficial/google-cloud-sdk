@@ -25,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import kube_context
@@ -61,7 +62,7 @@ class _SigInterruptedHandler(object):
 
 def _FindOrInstallSkaffoldComponent():
   if (config.Paths().sdk_root or
-      update_manager.EnsureInstalledAndRestart(['skaffold'])):
+      update_manager.UpdateManager.EnsureInstalledAndRestart(['skaffold'])):
     return os.path.join(config.Paths().sdk_root, 'bin', 'skaffold')
   return None
 
@@ -77,12 +78,13 @@ def _FindSkaffold():
 
 
 @contextlib.contextmanager
-def Skaffold(skaffold_config, context_name=None):
+def Skaffold(skaffold_config, context_name=None, additional_flags=None):
   """Run skaffold and catch keyboard interrupts to kill the process.
 
   Args:
     skaffold_config: Path to skaffold configuration yaml file.
     context_name: Kubernetes context name.
+    additional_flags: Extra skaffold flags.
 
   Yields:
     The skaffold process.
@@ -90,6 +92,8 @@ def Skaffold(skaffold_config, context_name=None):
   cmd = [_FindSkaffold(), 'dev', '-f', skaffold_config, '--port-forward']
   if context_name:
     cmd += ['--kube-context', context_name]
+  if additional_flags:
+    cmd += additional_flags
 
   # Supress the current Ctrl-C handler and pass the signal to the child
   # process.
@@ -129,16 +133,23 @@ class Dev(base.Command):
     group.add_argument('--kind-cluster', help='Kind cluster.')
 
     parser.add_argument(
-        '--delete-cluster',
+        '--stop-cluster',
         default=False,
         action='store_true',
-        help='If running on minikube or kind, delete the minkube profile or '
+        help='If running on minikube or kind, stop the minkube profile or '
         'kind cluster at the end of the session.')
 
     parser.add_argument(
         '--minikube-vm-driver',
-        default='kvm2',
         help='If running on minikube, use this vm driver.')
+
+    # For testing only
+    parser.add_argument(
+        '--additional-skaffold-flags',
+        type=arg_parsers.ArgList(),
+        metavar='FLAG',
+        hidden=True,
+        help='Additional flags with which to run skaffold.')
 
   def Run(self, args):
     settings = local.Settings.FromArgs(args)
@@ -153,7 +164,8 @@ class Dev(base.Command):
         skaffold_config.flush()
 
         with self._GetKubernetesEngine(args) as context:
-          with Skaffold(skaffold_config.name, context.context_name) as skaffold:
+          with Skaffold(skaffold_config.name, context.context_name,
+                        args.additional_skaffold_flags) as skaffold:
             skaffold.wait()
 
   @classmethod
@@ -175,7 +187,7 @@ class Dev(base.Command):
         cluster_name = args.kind_cluster
       else:
         cluster_name = DEFAULT_CLUSTER_NAME
-      return kube_context.KindClusterContext(cluster_name, args.delete_cluster)
+      return kube_context.KindClusterContext(cluster_name, args.stop_cluster)
 
     def Minikube():
       if args.IsSpecified('minikube_profile'):
@@ -183,7 +195,7 @@ class Dev(base.Command):
       else:
         cluster_name = DEFAULT_CLUSTER_NAME
 
-      return kube_context.Minikube(cluster_name, args.delete_cluster,
+      return kube_context.Minikube(cluster_name, args.stop_cluster,
                                    args.minikube_vm_driver)
 
     if args.IsSpecified('kube_context'):

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 
 
 @base.Hidden
-class Describe(base.CreateCommand):
+class Describe(base.DescribeCommand):
   """Describe an endpoint."""
 
   @staticmethod

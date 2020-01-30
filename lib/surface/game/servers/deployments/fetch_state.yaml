@@ -1,0 +1,14 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Fetches the state of a Deployment.
+    description: Fetches a Cloud Game Server Deployment State from all clusters.
+
+  request:
+    collection: gameservices.projects.locations.gameServerDeployments
+    method: fetchDeploymentState
+
+  arguments:
+    resource:
+      help_text: Cloud Game Server Deployment State to fetch.
+      spec: !REF googlecloudsdk.command_lib.game.resources:deployment

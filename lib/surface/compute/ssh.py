@@ -75,7 +75,8 @@ def AddSSHArgs(parser):
       Specifies the instance to SSH into.
 
       ``USER'' specifies the username with which to SSH. If omitted,
-      the user login name is used.
+      the user login name is used. If using OS Login, USER will be replaced
+      by the OS Login user.
 
       ``INSTANCE'' specifies the name of the virtual machine instance to SSH
       into.
@@ -174,9 +175,12 @@ class Ssh(base.Command):
       use_oslogin = False
     else:
       public_key = ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
+      # If there is an '@' symbol in the user_host arg, the user is requesting
+      # to connect as a specific user. This may get overridden by OS Login.
+      username_requested = '@' in args.user_host
       user, use_oslogin = ssh.CheckForOsloginAndGetUser(
           instance, project, user, public_key, expiration_micros,
-          self.ReleaseTrack())
+          self.ReleaseTrack(), username_requested=username_requested)
 
     iap_tunnel_args = iap_tunnel.SshTunnelArgs.FromArgs(
         args, self.ReleaseTrack(), instance_ref,

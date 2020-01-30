@@ -47,7 +47,7 @@ DETAILED_HELP = {
     base.ReleaseTrack.GA)
 class Serverless(base.Group):
   """Manage your Cloud Run resources."""
-  category = base.SERVERLESS_CATEGORY
+  category = base.COMPUTE_CATEGORY
   detailed_help = DETAILED_HELP
 
   @staticmethod

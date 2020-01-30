@@ -28,16 +28,21 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs import instance_configs_messages
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateInstanceBeta(base.CreateCommand):
-  """Create a new virtual machine instance in a managed instance group with a defined name and optionally its stateful configuration: stateful disk, stateful metadata."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateInstanceGA(base.CreateCommand):
+  """Create a new virtual machine instance in a managed instance group."""
 
   @staticmethod
   def Args(parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
             parser, operation_type='create instance in')
-    instance_groups_flags.AddCreateInstancesFlags(parser)
+    instance_groups_flags.AddCreateInstancesFlags(
+        parser, add_stateful_args=False)
+
+  @classmethod
+  def ShouldSetStatefulConfig(cls):
+    return False
 
   @staticmethod
   def _CreateNewInstanceReference(holder, igm_ref, instance_name):
@@ -67,8 +72,9 @@ class CreateInstanceBeta(base.CreateCommand):
     return instance_ref
 
   def Run(self, args):
-    instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
-        args, need_disk_source=True)
+    if self.ShouldSetStatefulConfig():
+      instance_groups_flags.ValidateMigStatefulFlagsForInstanceConfigs(
+          args, need_disk_source=True)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -83,13 +89,18 @@ class CreateInstanceBeta(base.CreateCommand):
     instance_ref = self._CreateNewInstanceReference(
         holder=holder, igm_ref=igm_ref, instance_name=args.instance)
 
+    stateful_disks = (
+        args.stateful_disk if self.ShouldSetStatefulConfig() else [])
+    stateful_metadata = (
+        args.stateful_metadata if self.ShouldSetStatefulConfig() else {})
     per_instance_config_message = (
         instance_configs_messages.CreatePerInstanceConfigMessage)(
             holder,
             instance_ref,
-            args.stateful_disk,
-            args.stateful_metadata,
-            disk_getter=NonExistentDiskGetter())
+            stateful_disks,
+            stateful_metadata,
+            disk_getter=NonExistentDiskGetter(),
+            set_preserved_state=self.ShouldSetStatefulConfig())
 
     operation_ref, service = instance_configs_messages.CallCreateInstances(
         holder=holder,
@@ -102,25 +113,59 @@ class CreateInstanceBeta(base.CreateCommand):
     return create_result
 
 
+CreateInstanceGA.detailed_help = {
+    'brief':
+        ('Create a new virtual machine instance in a managed instance group '
+         'with a defined name.'),
+    'DESCRIPTION':
+        '*{command}* creates a  virtual machine instance with a defined name.',
+    'EXAMPLES':
+        """\
+        To create an instance `instance-1` in `my-group`
+        (in region europe-west4), run:
+
+            $ {command} \\
+                  my-group --region=europe-west4 --instance=instance-1
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class CreateInstanceBeta(CreateInstanceGA):
+  """Create a new virtual machine instance in a managed instance group."""
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_flags.GetInstanceGroupManagerArg(
+        region_flag=True).AddArgument(
+            parser, operation_type='create instance in')
+    instance_groups_flags.AddCreateInstancesFlags(
+        parser, add_stateful_args=True)
+
+  @classmethod
+  def ShouldSetStatefulConfig(cls):
+    return True
+
+
 CreateInstanceBeta.detailed_help = {
     'brief':
         ('Create a new virtual machine instance in a managed instance group '
          'with a defined name and optionally its stateful configuration.'),
     'DESCRIPTION':
         """\
-          *{command}* creates a  virtual machine instance with a defined name and
-          optionally its stateful configuration: stateful disk and stateful metadata
-          key-values. Stateful configuration is stored in the corresponding newly
-          created per-instance config. An instance with a per-instance config will
-          preserve its given name, specified disks, and metadata key-values during
-          instance recreation, auto-healing, and updates and any other lifecycle
-          transitions of the instance.
+        *{command}* creates a  virtual machine instance with a defined name and
+        optionally its stateful configuration: stateful disk and stateful
+        metadata key-values. Stateful configuration is stored in the
+        corresponding newly created per-instance config. An instance with a
+        per-instance config will preserve its given name, specified disks, and
+        specified metadata key-values during instance recreation, auto-healing,
+        and updates and any other lifecycle transitions of the instance.
         """,
     'EXAMPLES':
         """\
-        To create an instance `instance-1` in `my-group` (in region europe-west4)
-        with metadata `my-key: my-value` and a disk disk-1 attached to it as
-        the device `device-1`, run:
+        To create an instance `instance-1` in `my-group`
+        (in region europe-west4) with metadata `my-key: my-value` and a disk
+        disk-1 attached to it as the device `device-1`, run:
 
             $ {command} \\
                   my-group --region=europe-west4 \\

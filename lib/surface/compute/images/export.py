@@ -112,8 +112,7 @@ class Export(base.CreateCommand):
     return self._RunImageExport(args, export_args, tags, _OUTPUT_FILTER)
 
   def _RunImageExport(self, args, export_args, tags, output_filter):
-    return daisy_utils.RunImageExport(args, export_args, tags, _OUTPUT_FILTER,
-                                      'ga')
+    return daisy_utils.RunImageExport(args, export_args, tags, _OUTPUT_FILTER)
 
   def _GetSourceImage(self, image, image_family, image_project):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -149,7 +148,7 @@ class ExportBeta(Export):
 
   def _RunImageExport(self, args, export_args, tags, output_filter):
     return daisy_utils.RunImageExport(args, export_args, tags, _OUTPUT_FILTER,
-                                      'beta', args.docker_image_tag)
+                                      args.docker_image_tag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

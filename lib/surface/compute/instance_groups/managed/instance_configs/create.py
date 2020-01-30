@@ -116,11 +116,11 @@ class Create(base.CreateCommand):
 
 Create.detailed_help = {
     'brief':
-        'Create per instance config for an instance in a '
+        'Create a per-instance config for an instance in a '
         'managed instance group.',
     'DESCRIPTION':
         """\
-        *{command}* creates a per instance config for an instance controlled by
+        *{command}* creates a per-instance config for an instance controlled by
         a Google Compute Engine managed instance group. An instance with a per
         instance config preserves the specified metadata and/or disks during
         instance recreation and deletion.
@@ -132,13 +132,13 @@ Create.detailed_help = {
     'EXAMPLES':
         """\
         To create a per-instance config with a stateful disk ``my-disk'' and to
-        add stateful metadata ``my-key'': ``my-value'', on instance
+        add stateful metadata ``my-key:my-value'', on instance
         ``my-instance'', run:
 
-          $ {command} my-group --region=europe-west4 --instance=my-instance --stateful-disk=device-name=my-disk,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --stateful-metadata='my-key=my-value'
+          $ {command} my-group --region=europe-west4 --instance=my-instance --stateful-disk=device-name=my-disk,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --stateful-metadata="my-key=my-value"
 
-        If my-disk did not exist previously in the per instance config,
+        If ``my-disk'' did not exist previously in the per instance config,
         and if it does not exist in the group's instance template, then the
-        command adds my-disk to my-instance.
+        command adds ``my-disk'' to my-instance.
         """
 }

@@ -31,8 +31,8 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListInstancesAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListErrors(base.ListCommand):
   """List errors produced by managed instances in a managed instance group."""
 
   @staticmethod
@@ -93,7 +93,7 @@ class ListInstancesAlpha(base.ListCommand):
     return results
 
 
-ListInstancesAlpha.detailed_help = {
+ListErrors.detailed_help = {
     'brief':
         'List errors produced by managed instances in a managed instance group.',
     'DESCRIPTION':
@@ -121,4 +121,11 @@ ListInstancesAlpha.detailed_help = {
         instance groups, refer to Compute Engine's access control guide :
         https://cloud.google.com/compute/docs/access/iam-permissions#instancegroupmanagers_collection.
       """,
+    'EXAMPLES':
+        """\
+        To list errors on managed instance group 'my-group', run:
+
+            $ {command} \\
+                  my-group --format=yaml
+        """
 }

@@ -113,26 +113,28 @@ def _CommonRun(args, support_beta_features=False):
     network = args.network
     subnetwork = args.subnetwork
     dataflow_kms_key = args.dataflow_kms_key
-
-  job = apis.Templates.Create(
+  arguments = apis.TemplateArguments(
       project_id=properties.VALUES.core.project.Get(required=True),
       region_id=dataflow_util.GetRegion(args),
-      gcs_location=args.gcs_location,
-      staging_location=args.staging_location,
       job_name=args.job_name,
-      parameters=args.parameters,
-      service_account_email=args.service_account_email,
+      gcs_location=args.gcs_location,
       zone=args.zone,
       max_workers=args.max_workers,
       num_workers=num_workers,
-      worker_machine_type=worker_machine_type,
       network=network,
       subnetwork=subnetwork,
-      dataflow_kms_key=dataflow_kms_key,
+      worker_machine_type=worker_machine_type,
+      staging_location=args.staging_location,
+      kms_key_name=dataflow_kms_key,
       disable_public_ips=properties.VALUES.dataflow.disable_public_ips.GetBool(
-      ))
-
-  return job
+      ),
+      parameters=args.parameters,
+      service_account_email=args.service_account_email)
+  flex_template = properties.VALUES.dataflow.flex_template.GetBool()
+  if flex_template:
+    return apis.Templates.CreateJobFromFlexTemplate(arguments)
+  else:
+    return apis.Templates.Create(arguments)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -176,6 +178,13 @@ class RunBeta(Run):
     parser.add_argument(
         '--dataflow-kms-key',
         help='The Cloud KMS key to protect the job resources.')
+
+    parser.add_argument(
+        '--flex-template',
+        action=actions.StoreBooleanProperty(
+            properties.VALUES.dataflow.flex_template),
+        help='The job template to run is a flex template.'
+    )
 
   def Run(self, args):
     return _CommonRun(args, True)

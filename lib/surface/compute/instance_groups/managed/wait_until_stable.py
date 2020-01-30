@@ -36,11 +36,14 @@ def _AddArgs(parser):
       parser)
 
 _DEPRECATION_WARNING = (
-    '`gcloud wait-until-stable` is deprecated. '
-    'Please use `gcloud wait-until --stable` instead.')
+    '`gcloud compute instance-groups managed wait-until-stable` is deprecated. '
+    'Please use `gcloud compute instance-groups managed wait-until --stable` '
+    'instead.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class WaitUntilStable(base.Command):
   """Waits until state of managed instance group is stable."""
 
@@ -66,10 +69,3 @@ class WaitUntilStable(base.Command):
 
     wait_utils.WaitForIgmState(
         client, group_ref, wait_utils.IgmState.STABLE, args.timeout)
-
-
-@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class WaitUntilStableAlpha(WaitUntilStable):
-  """Waits until state of managed instance group is stable."""
-  pass

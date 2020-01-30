@@ -50,5 +50,6 @@ class Describe(base.BinaryBackedCommand):
     command_executor = anthoscli_backend.AnthosCliWrapper()
     response = command_executor(command='desc',
                                 local_dir=args.LOCAL_DIR,
+                                env=anthoscli_backend.GetEnvArgsForCommand(),
                                 show_exec_error=args.show_exec_error)
     return self._DefaultOperationResponseHandler(response)

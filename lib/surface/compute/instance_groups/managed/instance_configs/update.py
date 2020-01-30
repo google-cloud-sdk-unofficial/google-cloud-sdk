@@ -33,8 +33,8 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed.instance_configs
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateBeta(base.UpdateCommand):
   """Update per instance config of a managed instance group."""
 
   @staticmethod
@@ -49,7 +49,7 @@ class Update(base.UpdateCommand):
         igm_ref=igm_ref, instance_ref=instance_ref)
     remove_stateful_disks_set = set(remove_stateful_disks or [])
     removed_stateful_disks_set = set()
-    update_stateful_disks_dict = Update._UpdateStatefulDisksToDict(
+    update_stateful_disks_dict = UpdateBeta._UpdateStatefulDisksToDict(
         update_stateful_disks)
     new_stateful_disks = []
     existing_disks = []
@@ -70,7 +70,7 @@ class Update(base.UpdateCommand):
         auto_delete = update_disk_data.get('auto-delete')
         if not (source or mode):
           raise exceptions.InvalidArgumentException(
-              parameter_name='--update-stateful-disk',
+              parameter_name='--stateful-disk',
               message=('[source] or [mode] is required when updating'
                        ' [device-name] already existing in instance config'))
         preserved_disk = current_stateful_disk.value
@@ -157,8 +157,7 @@ class Update(base.UpdateCommand):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
             parser, operation_type='update per instance config for')
-    instance_groups_flags.AddMigStatefulFlagsForInstanceConfigs(
-        parser, for_update=True)
+    instance_groups_flags.AddMigStatefulFlagsForUpdateInstanceConfigs(parser)
     instance_groups_flags.AddMigStatefulUpdateInstanceFlag(parser)
 
   def Run(self, args):
@@ -185,9 +184,9 @@ class Update(base.UpdateCommand):
         igm_ref=igm_ref, instance_ref=instance_ref, should_exist=True)
 
     per_instance_config_message = self._CombinePerInstanceConfigMessage(
-        holder, configs_getter, igm_ref, instance_ref,
-        args.update_stateful_disk, args.remove_stateful_disks,
-        args.update_stateful_metadata, args.remove_stateful_metadata)
+        holder, configs_getter, igm_ref, instance_ref, args.stateful_disk,
+        args.remove_stateful_disks, args.stateful_metadata,
+        args.remove_stateful_metadata)
 
     operation_ref = instance_configs_messages.CallPerInstanceConfigUpdate(
         holder=holder,
@@ -218,7 +217,7 @@ class Update(base.UpdateCommand):
     return update_result
 
 
-Update.detailed_help = {
+UpdateBeta.detailed_help = {
     'brief':
         'Update per instance config of a managed instance group.',
     'DESCRIPTION':
@@ -240,7 +239,7 @@ Update.detailed_help = {
         disks, and to add stateful metadata ``my-key'': ``my-value'', on
         instance ``my-instance'', run:
 
-          $ {command} my-group --region=europe-west4 --instance=my-instance --update-stateful-disk=device-name=my-disk-3,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --remove-stateful-disks=my-disk-1,my-disk-2 --update-stateful-metadata='my-key=my-value'
+          $ {command} my-group --region=europe-west4 --instance=my-instance --stateful-disk=device-name=my-disk-3,source=projects/my-project/zones/us-central1-a/disks/my-disk-3 --remove-stateful-disks=my-disk-1,my-disk-2 --stateful-metadata='my-key=my-value'
 
         If ``my-disk-3'' did not exist previously in the per instance config,
         and if it does not exist in the group's instance template, then the

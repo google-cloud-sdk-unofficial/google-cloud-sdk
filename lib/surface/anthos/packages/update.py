@@ -76,5 +76,6 @@ class Update(base.BinaryBackedCommand):
                                 dry_run=args.dry_run,
                                 verbose=is_verbose,
                                 show_exec_error=args.show_exec_error,
+                                env=anthoscli_backend.GetEnvArgsForCommand(),
                                 execution_dir=work_dir)
     return self._DefaultOperationResponseHandler(response)

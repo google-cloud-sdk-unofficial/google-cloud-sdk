@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Read(base.Command):
   """Read log entries."""
 
@@ -57,16 +58,7 @@ class Read(base.Command):
         default='1d')
     util.AddParentArgs(parser, 'Read log entries')
 
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The list of log entries.
-    """
+  def _Run(self, args, is_alpha=False):
     # Take into account freshness only if all requirements are met.
     if (args.freshness and args.order == 'desc' and
         (not args.log_filter or 'timestamp' not in args.log_filter)):
@@ -82,11 +74,28 @@ class Read(base.Command):
     else:
       log_filter = args.log_filter
 
+    parent = util.GetParentFromArgs(args)
+    if is_alpha and args.IsSpecified('location'):
+      parent = util.CreateResourceName(
+          util.CreateResourceName(
+              util.CreateResourceName(parent, 'locations', args.location),
+              'buckets', args.bucket),
+          'views', args.view)
     return common.FetchLogs(log_filter,
                             order_by=args.order,
                             limit=args.limit,
-                            parent=util.GetParentFromArgs(args))
+                            parent=parent)
 
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+    Returns:
+      The list of log entries.
+    """
+    return self._Run(args)
 
 Read.detailed_help = {
     'DESCRIPTION': """\
@@ -122,3 +131,31 @@ Read.detailed_help = {
         [](https://cloud.google.com/logging/docs/view/advanced_filters)
     """,
 }
+
+
+# pylint: disable=missing-docstring
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ReadAlpha(Read):
+  __doc__ = Read.__doc__
+
+  @staticmethod
+  def Args(parser):
+    Read.Args(parser)
+    view_group = parser.add_argument_group(
+        help='These arguments are used in conjunction with the parent to '
+        'construct a view resource.')
+    view_group.add_argument(
+        '--location', required=True, metavar='LOCATION',
+        help='Location of the bucket. If this argument is provided then '
+        '`--bucket` and `--view` must also be specified.')
+    view_group.add_argument(
+        '--bucket', required=True,
+        help='Id of the bucket. If this argument is provided then '
+        '`--location` and `--view` must also be specified.')
+    view_group.add_argument(
+        '--view', required=True,
+        help='Id of the view. If this argument is provided then '
+        '`--location` and `--bucket` must also be specified.')
+
+  def Run(self, args):
+    return self._Run(args, is_alpha=True)

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import util
 
+
 DEFAULT_LIST_FORMAT = """\
     table(
       name:label=LOCATIONS
@@ -31,17 +32,6 @@ DEFAULT_LIST_FORMAT = """\
 class List(base.ListCommand):
   """List all Artifact Registry supported locations."""
 
-  detailed_help = {
-      "DESCRIPTION":
-          "{description}",
-      "EXAMPLES":
-          """\
-    To list all supported locations:
-
-        $ {command}
-""",
-  }
-
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(DEFAULT_LIST_FORMAT)
@@ -51,8 +41,8 @@ class List(base.ListCommand):
     """This is what gets called when the user runs this command.
 
     Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
+      args: an argparse namespace. All the arguments that were provided
+        to this command invocation.
 
     Returns:
       A list of all supported locations.

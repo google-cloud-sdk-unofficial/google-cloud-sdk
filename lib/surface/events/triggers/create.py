@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.events import resource_args
 from googlecloudsdk.command_lib.events import stages
 from googlecloudsdk.command_lib.events import util
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
@@ -43,19 +44,23 @@ class Create(base.Command):
           {description}
           """,
       'EXAMPLES': """\
-          To create a trigger for a given event type:
+          To create a trigger for a PubSub event type:
 
-              $ {command} TRIGGER --type=google.pubsub.topic.publish
+              $ {command} TRIGGER --type=com.google.cloud.pubsub.topic.publish
                   --parameters="topic=my-topic" --target-service=my-service
           """,
   }
 
   @staticmethod
   def CommonArgs(parser):
+    # Flags specific to connecting to a cluster
+    cluster_group = serverless_flags.GetClusterArgGroup(parser)
+    flags.AddBrokerFlag(cluster_group)
+
+    # Flags not specific to any platform
     flags.AddEventTypeFlagArg(parser)
     flags.AddSourceFlag(parser)
     flags.AddTargetServiceFlag(parser, required=True)
-    flags.AddBrokerFlag(parser)
     flags.AddParametersFlags(parser)
     flags.AddSecretsFlag(parser)
     trigger_presentation = presentation_specs.ResourcePresentationSpec(

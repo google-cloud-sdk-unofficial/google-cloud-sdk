@@ -145,7 +145,8 @@ def ParseCreateNodePoolOptionsBase(args):
       shielded_secure_boot=args.shielded_secure_boot,
       shielded_integrity_monitoring=args.shielded_integrity_monitoring,
       reservation_affinity=args.reservation_affinity,
-      reservation=args.reservation)
+      reservation=args.reservation,
+      sandbox=args.sandbox)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -166,6 +167,7 @@ class Create(base.CreateCommand):
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
+    flags.AddSandboxFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     return ParseCreateNodePoolOptionsBase(args)

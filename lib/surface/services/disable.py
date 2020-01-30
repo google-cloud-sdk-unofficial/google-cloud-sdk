@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.services import arg_parsers
 from googlecloudsdk.command_lib.services import common_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
+
 
 OP_BASE_CMD = 'gcloud beta services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
@@ -89,6 +91,16 @@ class Disable(base.SilentCommand):
     project = properties.VALUES.core.project.Get(required=True)
     for service_name in args.service:
       service_name = arg_parsers.GetServiceNameFromArg(service_name)
+
+      protected_msg = serviceusage.GetProtectedServiceWarning(service_name)
+      if protected_msg:
+        if args.IsSpecified('quiet'):
+          raise console_io.RequiredPromptError()
+        do_disable = console_io.PromptContinue(protected_msg, default=False,
+                                               throw_if_unattended=True)
+        if not do_disable:
+          continue
+
       op = serviceusage.DisableApiCall(project, service_name, args.force)
       if op.done:
         return

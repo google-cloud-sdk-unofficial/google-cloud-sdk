@@ -149,28 +149,7 @@ class UpdateGA(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(UpdateGA):
-  r"""Update Google Compute Engine managed instance groups.
-
-  *{command}* allows you to specify or modify the StatefulPolicy and
-  AutoHealingPolicy for an existing managed instance group.
-
-  Stateful Policy defines what stateful resources should be preserved for the
-  group. When instances in the group are removed or recreated, those stateful
-  properties are always applied to them. This command allows you to change the
-  preserved resources by adding more disks or removing existing disks and allows
-  you to turn on and off preserving instance names.
-
-  When updating the AutoHealingPolicy, you may specify the health check, initial
-  delay, or both. If the field is unspecified, its value won't be modified. If
-  `--health-check` is specified, the health check will be used to monitor the
-  health of your application. Whenever the health check signal for the instance
-  becomes `UNHEALTHY`, the autohealing action (`RECREATE`) on an instance will
-  be performed.
-
-  If no health check is specified, the instance autohealing will be triggered by
-  the instance status only (i.e. the autohealing action (`RECREATE`) on an
-  instance will be performed if `instance.status` is not `RUNNING`).
-  """
+  r"""Update Google Compute Engine managed instance groups."""
 
   @staticmethod
   def Args(parser):
@@ -196,13 +175,13 @@ class UpdateBeta(UpdateGA):
         disk_entry.key: disk_entry for disk_entry in current_disks
     }
 
-    # Update the disks specified in --update-stateful-disk
+    # Update the disks specified in --stateful-disk
     for update_disk in (update_disks or []):
       device_name = update_disk.get('device-name')
       updated_preserved_state_disk = (
           policy_utils.MakeStatefulPolicyPreservedStateDiskEntry(
               client.messages, update_disk))
-      # Patch semantics on the `--update-stateful-disk` flag
+      # Patch semantics on the `--stateful-disk` flag
       if device_name in final_disks_map:
         policy_utils.PatchStatefulPolicyDisk(final_disks_map[device_name],
                                              updated_preserved_state_disk)
@@ -220,12 +199,12 @@ class UpdateBeta(UpdateGA):
 
   @staticmethod
   def _StatefulArgsSet(args):
-    return (args.IsSpecified('update_stateful_disk') or
+    return (args.IsSpecified('stateful_disk') or
             args.IsSpecified('remove_stateful_disks'))
 
   @staticmethod
   def _StatefulnessIntroduced(args):
-    return args.IsSpecified('update_stateful_disk')
+    return args.IsSpecified('stateful_disk')
 
   def _PatchStatefulPolicy(self, igm_patch, args, igm_resource, client, holder):
     """Patch the stateful policy specified in args, to igm_patch."""
@@ -238,7 +217,7 @@ class UpdateBeta(UpdateGA):
         args, igm_resource.statefulPolicy)
 
     igm_patch.statefulPolicy = self._GetUpdatedStatefulPolicy(
-        client, igm_resource.statefulPolicy, args.update_stateful_disk,
+        client, igm_resource.statefulPolicy, args.stateful_disk,
         args.remove_stateful_disks)
     return igm_patch
 
@@ -251,3 +230,35 @@ class UpdateBeta(UpdateGA):
       igm_patch = self._PatchStatefulPolicy(igm_patch, args, igm_resource,
                                             client, holder)
     return igm_patch
+
+
+UpdateBeta.detailed_help = {
+    'brief':
+        'Update Google Compute Engine managed instance groups.',
+    'DESCRIPTION':
+        """\
+        Update Google Compute Engine managed instance groups.
+
+        *{command}* allows you to specify or modify the StatefulPolicy and
+        AutoHealingPolicy for an existing managed instance group.
+
+        Stateful Policy defines what stateful resources should be preserved for
+        the group. When instances in the group are removed or recreated, those
+        stateful properties are always applied to them. This command allows you
+        to change the preserved resources by adding more disks or removing
+        existing disks and allows you to turn on and off preserving instance
+        names.
+
+        When updating the AutoHealingPolicy, you may specify the health check,
+        initial delay, or both. If the field is unspecified, its value won't be
+        modified. If `--health-check` is specified, the health check will be
+        used to monitor the health of your application. Whenever the health
+        check signal for the instance becomes `UNHEALTHY`, the autohealing
+        action (`RECREATE`) on an instance will be performed.
+
+        If no health check is specified, the instance autohealing will be
+        triggered by the instance status only (i.e. the autohealing action
+        (`RECREATE`) on an instance will be performed if `instance.status`
+        is not `RUNNING`).
+        """
+}

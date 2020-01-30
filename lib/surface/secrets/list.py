@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
 
@@ -46,5 +47,10 @@ class List(base.ListCommand):
 
   def Run(self, args):
     project_ref = args.CONCEPTS.project.Parse()
+    if not project_ref:
+      raise exceptions.RequiredArgumentException(
+          'project',
+          'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
+      )
     return secrets_api.Secrets().ListWithPager(
         project_ref=project_ref, limit=args.limit)

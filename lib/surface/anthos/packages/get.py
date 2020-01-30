@@ -51,6 +51,7 @@ class Get(base.BinaryBackedCommand):
     response = command_executor(command='get',
                                 repo_uri=args.REPO_URI,
                                 local_dest=args.LOCAL_DIR,
+                                env=anthoscli_backend.GetEnvArgsForCommand(),
                                 show_exec_error=args.show_exec_error,
                                 file_pattern=args.PATTERN)
     return self._DefaultOperationResponseHandler(response)

@@ -41,7 +41,7 @@ class Update(base.Command):
   def Args(parser):
     """See base class."""
     parser.add_argument(
-        'POLICY_ID', type=str, help='ID of the guest policy to update.')
+        'POLICY_ID', type=str, help='Name of the guest policy to update.')
     parser.add_argument(
         '--file',
         required=True,
@@ -98,7 +98,7 @@ class UpdateAlpha(base.Command):
   def Args(parser):
     """See base class."""
     parser.add_argument(
-        'POLICY_ID', type=str, help='ID of the guest policy to update.')
+        'POLICY_ID', type=str, help='Name of the guest policy to update.')
     parser.add_argument(
         '--file',
         required=True,

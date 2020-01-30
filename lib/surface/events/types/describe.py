@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.events import eventflow_operations
-from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.events import flags
 from googlecloudsdk.command_lib.events import util
 from googlecloudsdk.command_lib.run import connection_context
@@ -62,9 +61,6 @@ class Describe(base.Command):
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(
         args, product=connection_context.Product.EVENTS)
-    if conn_context.supports_one_platform:
-      raise exceptions.UnsupportedArgumentError(
-          'Events are only available with Cloud Run for Anthos.')
 
     with eventflow_operations.Connect(conn_context) as client:
       source_crds = client.ListSourceCustomResourceDefinitions()

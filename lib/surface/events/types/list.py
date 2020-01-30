@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.run import connection_context
 
 
 class List(base.ListCommand):
-  """List avilable event types."""
+  """List available event types."""
 
   detailed_help = {
       'DESCRIPTION': """\

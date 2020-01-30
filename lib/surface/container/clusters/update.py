@@ -547,6 +547,7 @@ class UpdateBeta(Update):
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddEnableBinAuthzFlag(group)
     flags.AddAutoprovisioningFlags(group)
+    flags.AddAutoscalingProfilesFlag(group)
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddIstioConfigFlag(parser)
@@ -569,8 +570,19 @@ class UpdateBeta(Update):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+    if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
+      # NodeLocalDNS is being enabled or disabled
+      console_io.PromptContinue(
+          message='Enabling/Disabling NodeLocal DNSCache causes a re-creation '
+          'of all cluster nodes at versions 1.15 or above. '
+          'This operation is long-running and will block other '
+          'operations on the cluster (including delete) until it has run '
+          'to completion.',
+          cancel_on_no=True)
+
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.release_channel = args.release_channel
+    opts.autoscaling_profile = args.autoscaling_profile
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.
@@ -609,7 +621,7 @@ class UpdateAlpha(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
     flags.AddAutoprovisioningFlags(group, hidden=False)
-    flags.AddAutoscalingProfilesFlag(group, hidden=True)
+    flags.AddAutoscalingProfilesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
@@ -642,6 +654,15 @@ class UpdateAlpha(Update):
     opts.enable_network_egress_metering = args.enable_network_egress_metering
     opts.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     flags.ValidateIstioConfigUpdateArgs(args.istio_config, args.disable_addons)
+    if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
+      # NodeLocalDNS is being enabled or disabled
+      console_io.PromptContinue(
+          message='Enabling/Disabling NodeLocal DNSCache causes a re-creation '
+          'of all cluster nodes at versions 1.15 or above. '
+          'This operation is long-running and will block other '
+          'operations on the cluster (including delete) until it has run '
+          'to completion.',
+          cancel_on_no=True)
     opts.enable_peering_route_sharing = args.enable_peering_route_sharing
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.release_channel = args.release_channel
