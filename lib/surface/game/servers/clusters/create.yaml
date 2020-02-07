@@ -1,14 +1,34 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Create a Game Server Cluster.
-    description: Create a Cloud Game Server Cluster.
+    description: |
+      Create a Cloud Game Server Cluster.
+
+      ## EXAMPLES
+
+      To create Game Server Cluster 'my-cluster' in project 'my-project', realm 'my-realm', and location in 'my-location' run:
+
+        $ {command} my-cluster --project=my-project --realm=my-realm --location=my-location \
+            --gke-cluster=projects/my-project/locations/my-location/clusters/my-gke-cluster \
+            --namespace=default --labels=a=x,b=y --no-dry-run
+
+      To preview Game Server Cluster creation for 'my-cluster' in project 'my-project', realm 'my-realm', and location in 'my-location' run:
+
+        $ {command} my-cluster --project=my-project --realm=my-realm --location=my-location \
+            --gke-cluster=projects/my-project/locations/my-location/clusters/my-gke-cluster \
+            --namespace=default --labels=a=x,b=y --dry-run
+
 
   request:
     collection: gameservices.projects.locations.realms.gameServerClusters
     method: previewCreate
     modify_method_hook:
       googlecloudsdk.command_lib.game.servers.clusters.update_hooks:ChooseCreateOrPreviewMethod
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
 
   arguments:
     resource:

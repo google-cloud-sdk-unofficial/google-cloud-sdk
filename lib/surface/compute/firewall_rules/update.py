@@ -241,8 +241,12 @@ class UpdateFirewall(base.UpdateCommand):
 class BetaUpdateFirewall(UpdateFirewall):
   """Update a firewall rule."""
 
+  support_logging_metadata = True
+
   @classmethod
   def Args(cls, parser):
+    messages = apis.GetMessagesModule('compute',
+                                      compute_api.COMPUTE_BETA_API_VERSION)
     cls.FIREWALL_RULE_ARG = flags.FirewallRuleArgument()
     cls.FIREWALL_RULE_ARG.AddArgument(parser, operation_type='update')
     firewalls_utils.AddCommonArgs(
@@ -252,13 +256,29 @@ class BetaUpdateFirewall(UpdateFirewall):
         with_service_account=cls.with_service_account)
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
     flags.AddEnableLogging(parser, default=None)
+    flags.AddLoggingMetadata(parser, messages)
+
+  def Modify(self, client, args, existing, cleared_fields):
+    new_firewall = super(BetaUpdateFirewall, self).Modify(
+        client, args, existing, cleared_fields)
+
+    if args.IsSpecified('logging_metadata'):
+      log_config = encoding.CopyProtoMessage(existing.logConfig)
+      if log_config is None or not log_config.enable:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--logging-metadata',
+            'cannot toggle logging metadata if logging is not enabled.')
+
+      log_config.metadata = flags.GetLoggingMetadataArg(
+          client.messages).GetEnumForChoice(args.logging_metadata)
+      new_firewall.logConfig = log_config
+
+    return new_firewall
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdateFirewall(BetaUpdateFirewall):
   """Update a firewall rule."""
-
-  support_logging_metadata = True
 
   @classmethod
   def Args(cls, parser):
@@ -274,23 +294,6 @@ class AlphaUpdateFirewall(BetaUpdateFirewall):
     firewalls_utils.AddArgsForServiceAccount(parser, for_update=True)
     flags.AddEnableLogging(parser, default=None)
     flags.AddLoggingMetadata(parser, messages)
-
-  def Modify(self, client, args, existing, cleared_fields):
-    new_firewall = super(AlphaUpdateFirewall, self).Modify(
-        client, args, existing, cleared_fields)
-
-    if args.IsSpecified('logging_metadata'):
-      log_config = encoding.CopyProtoMessage(existing.logConfig)
-      if log_config is None or not log_config.enable:
-        raise calliope_exceptions.InvalidArgumentException(
-            '--logging-metadata',
-            'cannot toggle logging metadata if logging is not enabled.')
-
-      log_config.metadata = flags.GetLoggingMetadataArg(
-          client.messages).GetEnumForChoice(args.logging_metadata)
-      new_firewall.logConfig = log_config
-
-    return new_firewall
 
 
 UpdateFirewall.detailed_help = {

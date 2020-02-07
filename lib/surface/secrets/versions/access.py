@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
+from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
 class Access(base.DescribeCommand):
@@ -44,4 +45,6 @@ class Access(base.DescribeCommand):
 
   def Run(self, args):
     version_ref = args.CONCEPTS.version.Parse()
-    return secrets_api.Versions().Access(version_ref)
+    return secrets_api.Versions(
+        version=secrets_util.GetVersionFromReleasePath(
+            self.ReleaseTrack())).Access(version_ref)

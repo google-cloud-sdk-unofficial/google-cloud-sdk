@@ -41,10 +41,14 @@ class Register(base.CreateCommand):
   r"""Register a cluster with Hub.
 
   This command registers a cluster referenced from a kubeconfig file with Hub.
-  It also installs the Connect agent into this cluster, or updates the Connect
-  agent in a previously-registered cluster.
+  It creates a membership resource corresponding to this cluster and installs
+  the Connect Agent into this cluster. More on the Connect Agent:
+  https://cloud.google.com/anthos/multicluster-management/connect/
 
-  To authenticate the in-cluster Connect agent to Google, requires a Google
+  If this cluster is previously-registered, then this commands just updates the
+  the Connect Agent.
+
+  To authenticate the in-cluster Connect Agent to Google, requires a Google
   Cloud service account key file. Running this command more than once has the
   effect of re-registering the cluster with new parameters but the service
   account key will be preserved if it was provided as part of a previous
@@ -53,40 +57,40 @@ class Register(base.CreateCommand):
   ## EXAMPLES
 
     Register a cluster referenced from the default kubeconfig file, installing
-    the Connect agent:
+    the Connect Agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
         --service-account-key-file=/tmp/keyfile.json
 
     Register a cluster referenced from the default kubeconfig file, and
-    installing the Connect agent:
+    installing the Connect Agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context
         --service-account-key-file=/tmp/keyfile.json
 
-    Upgrade the Connect agent in a cluster:
+    Upgrade the Connect Agent in a cluster:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a GKE cluster using GKE URI, installing the Connect agent:
+    Register a GKE cluster using GKE URI, installing the Connect Agent:
 
       $ {command} my-cluster \
         --gke-uri=my-gke-cluster-uri \
         --service-account-key-file=/tmp/keyfile.json
 
     Register a GKE cluster by location and name in the same project as the Hub,
-    installing the Connect agent:
+    installing the Connect Agent:
 
       $ {command} my-cluster \
         --gke-cluster=my-gke-cluster-region-or-zone/my-cluster \
         --service-account-key-file=/tmp/keyfile.json
 
     Register a cluster and output a manifest that can be used to install the
-    Connect agent:
+    Connect Agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
@@ -108,7 +112,8 @@ class Register(base.CreateCommand):
         type=str,
         help=textwrap.dedent("""\
             The name of the cluster being registered. This name is used to
-            represent the cluster membership name in Hub.
+            create a cluster membership in Hub.
+
          """),
     )
     hub_util.AddUnRegisterCommonArgs(parser)
@@ -132,7 +137,7 @@ class Register(base.CreateCommand):
         '--manifest-output-file',
         type=str,
         help=textwrap.dedent("""\
-            The full path of the file into which the Connect agent installation
+            The full path of the file into which the Connect Agent installation
             manifest should be stored. If this option is provided, then the
             manifest will be written to this file and will not be deployed into
             the cluster by gcloud, and it will need to be deployed manually.
@@ -151,7 +156,7 @@ class Register(base.CreateCommand):
         '--version',
         type=str,
         help=textwrap.dedent("""\
-          The version of the connect agent to install/upgrade if not using the
+          The version of the Connect Agent to install/upgrade if not using the
           latest connect version.
           """),
     )
@@ -162,7 +167,7 @@ class Register(base.CreateCommand):
         help=textwrap.dedent("""\
           The credentials to be used if a private registry is provided and auth
           is required. The contents of the file will be stored into a Secret and
-          referenced from the imagePullSecrets of the Connect agent workload.
+          referenced from the imagePullSecrets of the Connect Agent workload.
           """),
     )
     parser.add_argument(
@@ -170,7 +175,7 @@ class Register(base.CreateCommand):
         type=str,
         hidden=True,
         help=textwrap.dedent("""\
-            The registry to pull GKE Connect agent image if not using
+            The registry to pull GKE Connect Agent image if not using
             gcr.io/gkeconnect.
           """),
     )
@@ -181,9 +186,7 @@ class Register(base.CreateCommand):
     # This incidentally verifies that the kubeconfig and context args are valid.
     kube_client = kube_util.KubernetesClient(args)
     uuid = kube_util.GetClusterUUID(kube_client)
-
-    self._VerifyClusterExclusivity(kube_client, project, args.context, uuid)
-
+    gke_cluster_self_link = api_util.GKEClusterSelfLink(args)
     # Read the service account files provided in the arguments early, in order
     # to catch invalid files before performing mutating operations.
     try:
@@ -204,122 +207,150 @@ class Register(base.CreateCommand):
 
     gke_cluster_self_link = api_util.GKEClusterSelfLink(args)
 
-    # The full resource name of the membership for this registration flow.
-    name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
     # Attempt to create a membership.
     already_exists = False
-    try:
-      exclusivity_util.ApplyMembershipResources(kube_client, project)
-      obj = api_util.CreateMembership(project, uuid, args.CLUSTER_NAME,
-                                      gke_cluster_self_link)
-    except apitools_exceptions.HttpConflictError as e:
-      # If the error is not due to the object already existing, re-raise.
-      error = core_api_exceptions.HttpErrorPayload(e)
-      if error.status_description != 'ALREADY_EXISTS':
-        raise
 
-      # The membership already exists. Check to see if it has the same
-      # description (i.e., user-visible cluster name).
-      #
-      # This intentionally does not verify that the gke_cluster_self_link is
-      # equivalent: this check is meant to prevent the user from updating the
-      # Connect agent in a cluster that is different from the one that they
-      # expect, and is not required for the proper functioning of the agent or
-      # the Hub.
-      obj = api_util.GetMembership(name)
-      if obj.description != args.CLUSTER_NAME:
-        # A membership exists, but does not have the same description. This is
-        # possible if two different users attempt to register the same
+    obj = None
+    # For backward compatiblity, check if a membership was previously created
+    # using the cluster uuid.
+    parent = api_util.ParentRef(project, 'global')
+    membership_id = uuid
+    resource_name = api_util.MembershipRef(project, 'global', uuid)
+    obj = self._CheckMembershipWithUUID(resource_name, args.CLUSTER_NAME)
+    if obj:
+      # The membership exists and has the same description.
+      already_exists = True
+    else:
+      # Attempt to create a new membership using cluster_name.
+      membership_id = args.CLUSTER_NAME
+      resource_name = api_util.MembershipRef(project, 'global',
+                                             args.CLUSTER_NAME)
+      try:
+        self._VerifyClusterExclusivity(kube_client, parent, membership_id)
+        obj = api_util.CreateMembership(project, args.CLUSTER_NAME,
+                                        args.CLUSTER_NAME,
+                                        gke_cluster_self_link, uuid,
+                                        self.ReleaseTrack())
+      except apitools_exceptions.HttpConflictError as e:
+        # If the error is not due to the object already existing, re-raise.
+        error = core_api_exceptions.HttpErrorPayload(e)
+        if error.status_description != 'ALREADY_EXISTS':
+          raise
+        # The membership exists with same cluster_name.
+        already_exists = True
+        obj = api_util.GetMembership(resource_name, self.ReleaseTrack())
+
+    # In case of an existing membership, check with the user to upgrade the
+    # Connect-Agent.
+    if already_exists:
+      console_io.PromptContinue(
+          message='A membership for [{}] already exists. Continuing will '
+          'reinstall the Connect agent deployment to use a new image (if one '
+          'is available).'.format(resource_name),
+          cancel_on_no=True)
+
+    # No membership exists. Attempt to create a new one, and install a new
+    # agent.
+    try:
+      self._InstallOrUpdateExclusivityArtifacts(kube_client, resource_name)
+      agent_util.DeployConnectAgent(
+          args, service_account_key_data, docker_credential_data,
+          resource_name, self.ReleaseTrack())
+    except:
+      # In case of a new membership, we need to clean up membership and
+      # resources if we failed to install the Connect Agent.
+      if not already_exists:
+        api_util.DeleteMembership(resource_name, self.ReleaseTrack())
+        exclusivity_util.DeleteMembershipResources(kube_client)
+      raise
+    return obj
+
+  def _CheckMembershipWithUUID(self, resource_name, cluster_name):
+    """Checks for an existing Membership with UUID.
+
+    In the past, by default we used Cluster UUID to create a membership. Now
+    we use user supplied cluster_name. This check ensures that we don't
+    reregister a cluster.
+
+    Args:
+      resource_name: The full membership resource name using the cluster uuid.
+      cluster_name: User supplied cluster_name.
+
+    Returns:
+     The Membership resource or None.
+
+    Raises:
+      exceptions.Error: If it fails to getMembership.
+    """
+    obj = None
+    try:
+      obj = api_util.GetMembership(resource_name, self.ReleaseTrack())
+      if (hasattr(obj, 'description') and obj.description != cluster_name):
+        # A membership exists, but does not have the same cluster_name.
+        # This is possible if two different users attempt to register the same
         # cluster, or if the user is upgrading and has passed a different
-        # cluster name. Treat this as an error: even in the upgrade case,
+        # cluster_name. Treat this as an error: even in the upgrade case,
         # this is useful to prevent the user from upgrading the wrong cluster.
         raise exceptions.Error(
             'There is an existing membership, [{}], that conflicts with [{}]. '
             'Please delete it before continuing:\n\n'
             '  gcloud {}container hub memberships delete {}'.format(
-                obj.description, args.CLUSTER_NAME,
-                hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()), name))
-
-      # The membership exists and has the same description.
-      already_exists = True
-      console_io.PromptContinue(
-          message='A membership for [{}] already exists. Continuing will '
-          'reinstall the Connect agent deployment to use a new image (if one '
-          'is available).'.format(args.CLUSTER_NAME),
-          cancel_on_no=True)
-
-    # A membership exists. Attempt to update the existing agent deployment, or
-    # install a new agent if necessary.
-    if already_exists:
-      obj = api_util.GetMembership(name)
-      agent_util.DeployConnectAgent(args, service_account_key_data,
-                                    docker_credential_data, name)
-      return obj
-
-    # No membership exists. Attempt to create a new one, and install a new
-    # agent.
-    try:
-      agent_util.DeployConnectAgent(args, service_account_key_data,
-                                    docker_credential_data, name)
-    except:
-      api_util.DeleteMembership(name)
-      exclusivity_util.DeleteMembershipResources(kube_client)
-      raise
+                obj.description, cluster_name,
+                hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
+                resource_name))
+    except apitools_exceptions.HttpNotFoundError:
+      # We couldn't find a membership with uuid, so it's safe to create a
+      # new one.
+      pass
     return obj
 
-  def _VerifyClusterExclusivity(self, kube_client, project, context, uuid):
+  def _VerifyClusterExclusivity(self, kube_client, parent, membership_id):
     """Verifies that the cluster can be registered to the project.
 
-    The ensures cluster exclusivity constraints are not violated as well as
-    ensuring the user is authorized to register the cluster to the project.
-
     Args:
-      kube_client: A KubernetesClient
-      project: A project ID the user is attempting to register the cluster with.
-      context: The kubernetes cluster context.
-      uuid: The UUID of the kubernetes cluster.
+      kube_client: a KubernetesClient
+      parent: the parent collection the user is attempting to register the
+        cluster with.
+      membership_id: the ID of the membership to be created for the cluster.
 
     Raises:
-      exceptions.Error: If exclusivity constraints are violated or the user is
-        not authorized to register to the cluster.
+      apitools.base.py.HttpError: if the API request returns an HTTP error.
+      exceptions.Error: if the cluster is in an invalid exclusivity state.
     """
-    authorized_projects = hub_util.UserAccessibleProjectIDSet()
-    registered_project = exclusivity_util.GetMembershipCROwnerID(kube_client)
 
-    if registered_project:
-      if registered_project not in authorized_projects:
-        raise exceptions.Error(
-            'The cluster is already registered to [{}], which you are not '
-            'authorized to access.'.format(registered_project))
-      elif registered_project != project:
-        raise exceptions.Error(
-            'This cluster is already registered to [{}]. '
-            'Please unregister this cluster before continuing:\n\n'
-            '  gcloud {}container hub memberships unregister --project {} --context {}'
-            .format(registered_project,
-                    hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
-                    registered_project, context))
+    cr_manifest = ''
+    # The cluster has been registered.
+    if kube_client.MembershipCRDExists():
+      cr_manifest = kube_client.GetMembershipCR()
 
-    if project not in authorized_projects:
-      raise exceptions.Error(
-          'The project you are attempting to register with [{}] either '
-          'doesn\'t exist or you are not authorized to access it.'.format(
-              project))
+    res = api_util.ValidateExclusivity(cr_manifest, parent,
+                                       membership_id,
+                                       self.ReleaseTrack())
 
-    try:
-      registered_membership_project = api_util.ProjectForClusterUUID(
-          uuid, [project, registered_project])
-    except apitools_exceptions.HttpNotFoundError as e:
-      raise exceptions.Error(
-          'Could not access Memberships API. Is your project whitelisted for '
-          'API access? Underlying error: {}'.format(e))
+    if res.status.code:
+      raise exceptions.Error(('invalid exclusivity state: {}. If you want ' +
+                              'to register the cluster to with {}, please ' +
+                              'unregister this cluster first.').format(
+                                  parent, res.status.message))
 
-    if registered_membership_project and registered_membership_project != project:
-      raise exceptions.Error(
-          'This cluster is already registered to [{}]. '
-          'Please unregister this cluster before continuing:\n\n'
-          '  gcloud {}container hub memberships unregister --project {} --context {}'
-          .format(registered_membership_project,
-                  hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
-                  registered_membership_project, context))
+  def _InstallOrUpdateExclusivityArtifacts(self, kube_client, membership_ref):
+    """Install the exclusivity artifacts for the cluster.
 
+    Update the exclusivity artifacts if a new version is available if the
+    cluster has already being registered.
+
+    Args:
+      kube_client: a KubernetesClient
+      membership_ref: the full resource name of the membership the cluster is
+        registered with.
+
+    Raises:
+      apitools.base.py.HttpError: if the API request returns an HTTP error.
+      exceptions.Error: if the kubectl interation with the cluster failed.
+    """
+    crd_manifest = kube_client.GetMembershipCRD()
+    cr_manifest = kube_client.GetMembershipCR()
+    res = api_util.GenerateExclusivityManifest(crd_manifest,
+                                               cr_manifest,
+                                               membership_ref)
+    kube_client.ApplyMembership(res.crdManifest, res.crManifest)

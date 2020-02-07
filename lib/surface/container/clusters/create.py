@@ -181,6 +181,7 @@ for examples.
   flags.AddMetadataFlags(parser)
   flags.AddDatabaseEncryptionFlag(parser)
   flags.AddShieldedInstanceFlags(parser)
+  flags.AddEnableShieldedNodesFlags(parser)
 
 
 def ValidateBasicAuthFlags(args):
@@ -318,7 +319,8 @@ def ParseCreateOptionsBase(args):
       shielded_secure_boot=args.shielded_secure_boot,
       shielded_integrity_monitoring=args.shielded_integrity_monitoring,
       reservation_affinity=getattr(args, 'reservation_affinity', None),
-      reservation=getattr(args, 'reservation', None),)
+      reservation=getattr(args, 'reservation', None),
+      enable_shielded_nodes=args.enable_shielded_nodes,)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -523,7 +525,6 @@ class CreateBeta(Create):
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddWorkloadIdentityFlags(parser)
-    flags.AddEnableShieldedNodesFlags(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddSurgeUpgradeFlag(parser, default=1)
     flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
@@ -544,7 +545,6 @@ class CreateBeta(Create):
     ops.enable_vertical_pod_autoscaling = args.enable_vertical_pod_autoscaling
     ops.security_group = args.security_group
     ops.identity_namespace = args.identity_namespace
-    ops.enable_shielded_nodes = args.enable_shielded_nodes
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     ops.release_channel = args.release_channel
     ops.max_surge_upgrade = args.max_surge_upgrade
@@ -599,7 +599,6 @@ class CreateAlpha(Create):
     flags.AddInitialNodePoolNameArg(parser, hidden=False)
     flags.AddEnablePrivateIpv6AccessFlag(parser, hidden=True)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
-    flags.AddEnableShieldedNodesFlags(parser)
     flags.AddDisableDefaultSnatFlag(parser, for_cluster_create=True)
     _AddReleaseChannelGroup(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
@@ -637,7 +636,6 @@ class CreateAlpha(Create):
     ops.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
     ops.enable_peering_route_sharing = args.enable_peering_route_sharing
-    ops.enable_shielded_nodes = args.enable_shielded_nodes
     ops.release_channel = args.release_channel
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade

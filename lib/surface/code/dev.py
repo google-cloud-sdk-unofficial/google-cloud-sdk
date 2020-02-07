@@ -61,7 +61,7 @@ class _SigInterruptedHandler(object):
 
 
 def _FindOrInstallSkaffoldComponent():
-  if (config.Paths().sdk_root or
+  if (config.Paths().sdk_root and
       update_manager.UpdateManager.EnsureInstalledAndRestart(['skaffold'])):
     return os.path.join(config.Paths().sdk_root, 'bin', 'skaffold')
   return None
@@ -77,13 +77,66 @@ def _FindSkaffold():
   return skaffold
 
 
+class WindowsNamedTempFile(object):
+  """Wrapper around named temporary file for Windows.
+
+  NamedTemporaryFiles cannot be read by other processes on windows because
+  only one process can open a file at a time. This file will be unlinked
+  at the end of the context.
+  """
+
+  def __init__(self, *args, **kwargs):
+    self._args = args
+    self._kwargs = kwargs.copy()
+    self._kwargs['delete'] = False
+    self._f = None
+
+  def __enter__(self):
+    self._f = tempfile.NamedTemporaryFile(*self._args, **self._kwargs)
+    return self._f
+
+  def __exit__(self, exc_type, exc_value, tb):
+    if self._f:
+      try:
+        os.unlink(self._f.name)
+      except OSError:
+        # File already unlinked. No need to clean up.
+        pass
+
+
 @contextlib.contextmanager
-def Skaffold(skaffold_config, context_name=None, additional_flags=None):
+def _NamedTempFile(contents):
+  """Write a named temporary with given contents.
+
+  Args:
+    contents: (str) File contents.
+
+  Yields:
+    The temporary file object.
+  """
+  if os.name == 'nt':
+    with WindowsNamedTempFile(mode='w+t') as f:
+      f.write(contents)
+      f.close()
+      yield f
+  else:
+    with tempfile.NamedTemporaryFile(mode='w+t') as f:
+      f.write(contents)
+      f.flush()
+      yield f
+
+
+@contextlib.contextmanager
+def Skaffold(skaffold_config,
+             context_name=None,
+             namespace=None,
+             additional_flags=None):
   """Run skaffold and catch keyboard interrupts to kill the process.
 
   Args:
     skaffold_config: Path to skaffold configuration yaml file.
     context_name: Kubernetes context name.
+    namespace: Kubernetes namespace name.
     additional_flags: Extra skaffold flags.
 
   Yields:
@@ -92,14 +145,23 @@ def Skaffold(skaffold_config, context_name=None, additional_flags=None):
   cmd = [_FindSkaffold(), 'dev', '-f', skaffold_config, '--port-forward']
   if context_name:
     cmd += ['--kube-context', context_name]
+  if namespace:
+    cmd += ['--namespace', namespace]
   if additional_flags:
     cmd += additional_flags
 
   # Supress the current Ctrl-C handler and pass the signal to the child
   # process.
   with _SigInterruptedHandler(_EmptyHandler):
+    # Skaffold needs to be able to run minikube and kind. Those tools
+    # may live in the SDK root as installed gcloud components. Place the
+    # SDK root in the path for skaffold.
+    env = os.environ.copy()
+    if config.Paths().sdk_root:
+      env['PATH'] = env['PATH'] + os.pathsep + config.Paths().sdk_root
+
     try:
-      p = subprocess.Popen(cmd)
+      p = subprocess.Popen(cmd, env=env)
       yield p
     except KeyboardInterrupt:
       p.terminate()
@@ -143,6 +205,10 @@ class Dev(base.Command):
         '--minikube-vm-driver',
         help='If running on minikube, use this vm driver.')
 
+    parser.add_argument(
+        '--namespace',
+        help='Kubernetes namespace for development kubernetes objects.')
+
     # For testing only
     parser.add_argument(
         '--additional-skaffold-flags',
@@ -155,18 +221,18 @@ class Dev(base.Command):
     settings = local.Settings.FromArgs(args)
     local_file_generator = local_files.LocalRuntimeFiles(settings)
 
-    with tempfile.NamedTemporaryFile(mode='w+t') as kubernetes_config:
-      with tempfile.NamedTemporaryFile(mode='w+t') as skaffold_config:
-        kubernetes_config.write(six.u(local_file_generator.KubernetesConfig()))
-        kubernetes_config.flush()
-        skaffold_config.write(
-            six.u(local_file_generator.SkaffoldConfig(kubernetes_config.name)))
-        skaffold_config.flush()
+    kubernetes_config = six.ensure_text(local_file_generator.KubernetesConfig())
 
-        with self._GetKubernetesEngine(args) as context:
-          with Skaffold(skaffold_config.name, context.context_name,
-                        args.additional_skaffold_flags) as skaffold:
-            skaffold.wait()
+    with _NamedTempFile(kubernetes_config) as kubernetes_file:
+      skaffold_config = six.ensure_text(
+          local_file_generator.SkaffoldConfig(kubernetes_file.name))
+      with _NamedTempFile(skaffold_config) as skaffold_file, \
+           self._GetKubernetesEngine(args) as context, \
+           self._WithKubeNamespace(args.namespace, context.context_name), \
+           Skaffold(skaffold_file.name, context.context_name,
+                    args.namespace,
+                    args.additional_skaffold_flags) as skaffold:
+        skaffold.wait()
 
   @classmethod
   def _GetKubernetesEngine(cls, args):
@@ -208,3 +274,20 @@ class Dev(base.Command):
       return Kind()
     else:
       return Minikube()
+
+  @staticmethod
+  @contextlib.contextmanager
+  def _WithKubeNamespace(namespace_name, context_name):
+    """Create and destory a kubernetes namespace if one is specified.
+
+    Args:
+      namespace_name: Namespace name.
+      context_name: Kubernetes context name.
+    Yields:
+      None
+    """
+    if namespace_name:
+      with kube_context.KubeNamespace(namespace_name, context_name):
+        yield
+    else:
+      yield

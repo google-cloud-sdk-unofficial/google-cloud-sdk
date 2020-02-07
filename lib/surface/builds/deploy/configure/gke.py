@@ -898,7 +898,6 @@ class ConfigureGKEDeploy(base.Command):
         description=description,
         github_repo_owner=repo_owner,
         github_repo_name=repo_name,
-        pr_pattern=pull_request_pattern,
         cluster=cluster,
         location=location,
         build_tags=[app_name],

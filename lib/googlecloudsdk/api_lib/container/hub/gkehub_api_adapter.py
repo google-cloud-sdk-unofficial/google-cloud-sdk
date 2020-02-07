@@ -31,8 +31,8 @@ from googlecloudsdk.core.util import encoding as core_encoding
 from six.moves import urllib
 
 
-def NewV1Beta1APIAdapter():
-  return InitAPIAdapter('v1beta1', V1Beta1Adapter)
+def NewAPIAdapter(api_version):
+  return InitAPIAdapter(api_version, APIAdapter)
 
 
 def InitAPIAdapter(api_version, adapter):
@@ -52,7 +52,7 @@ def InitAPIAdapter(api_version, adapter):
   registry = cloud_resources.REGISTRY.Clone()
   registry.RegisterApiByName('gkehub', api_version)
 
-  return adapter(registry, api_client, messages)
+  return adapter(registry, api_client, messages, api_version)
 
 
 class APIAdapter(object):
@@ -61,10 +61,11 @@ class APIAdapter(object):
   _HTTP_ERROR_FORMAT = ('HTTP request failed with status code {}. '
                         'Response content: {}')
 
-  def __init__(self, registry, client, messages):
+  def __init__(self, registry, client, messages, api_version):
     self.registry = registry
     self.client = client
     self.messages = messages
+    self.api_version = api_version
 
   def GenerateConnectAgentManifest(self, option):
     """Generate the YAML manifest to deploy the GKE Connect agent.
@@ -88,8 +89,9 @@ class APIAdapter(object):
         ('image_pull_secret_content', option.image_pull_secret_content)
     ]
     base_url = self.client.url
-    url = '{}/v1beta1/{}:generateConnectManifest?{}'.format(
+    url = '{}/{}/{}:generateConnectManifest?{}'.format(
         base_url,
+        self.api_version,
         option.membership_ref,
         urllib.parse.urlencode(query_params))
     response, raw_content = http.Http().request(uri=url)
@@ -99,10 +101,6 @@ class APIAdapter(object):
       msg = self._HTTP_ERROR_FORMAT.format(status_code, content)
       raise exceptions.HttpException(msg)
     return json.loads(content).get('manifest')
-
-
-class V1Beta1Adapter(APIAdapter):
-  """"APIAdapter for v1beta1."""
 
 
 class ConnectAgentOption(object):

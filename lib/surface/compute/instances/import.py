@@ -85,6 +85,16 @@ class Import(base.CreateCommand):
 
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
+    parser.add_argument(
+        '--hostname',
+        help="""\
+      Specify the hostname of the instance to be imported. The specified
+      hostname must be RFC1035 compliant. If hostname is not specified, the
+      default hostname is [INSTANCE_NAME].c.[PROJECT_ID].internal when using
+      the global DNS, and [INSTANCE_NAME].[ZONE].c.[PROJECT_ID].internal
+      when using zonal DNS.
+      """)
+
   def _ValidateInstanceName(self, args):
     """Raise an exception if requested instance name is invalid."""
     instance_name_pattern = re.compile('^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$')
@@ -118,6 +128,7 @@ class Import(base.CreateCommand):
 
     instances_flags.ValidateNicFlags(args)
     instances_flags.ValidateNetworkTierArgs(args)
+    daisy_utils.ValidateZone(args, compute_client)
 
   def Run(self, args):
     compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -178,20 +189,6 @@ class ImportBeta(Import):
   @classmethod
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
-
-    parser.add_argument(
-        '--hostname',
-        help="""\
-      Specify the hostname of the instance to be imported. The specified
-      hostname must be RFC1035 compliant. If hostname is not specified, the
-      default hostname is [INSTANCE_NAME].c.[PROJECT_ID].internal when using
-      the global DNS, and [INSTANCE_NAME].[ZONE].c.[PROJECT_ID].internal
-      when using zonal DNS.
-      """)
-
-  def _ValidateArgs(self, args, compute_client):
-    super(ImportBeta, self)._ValidateArgs(args, compute_client)
-    daisy_utils.ValidateZone(args, compute_client)
 
 
 Import.detailed_help = {

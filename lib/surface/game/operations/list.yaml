@@ -1,11 +1,23 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List Operations.
-    description: List Cloud Game Services Operations.
+    description: |
+      List Cloud Game Services Operations.
+
+      ## EXAMPLES
+
+      To see the list of all Operations in project 'my-project' and location 'my-location', run:
+
+        $ {command} --project=my-project --location=my-location
+
 
   request:
     collection: gameservices.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
 
   response:
     id_field: name

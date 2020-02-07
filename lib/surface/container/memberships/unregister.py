@@ -62,7 +62,7 @@ class Unregister(base.DeleteCommand):
     # Delete membership from GKE Hub API.
     try:
       name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
-      api_util.DeleteMembership(name)
+      api_util.DeleteMembership(name, self.ReleaseTrack())
     except apitools_exceptions.HttpUnauthorizedError as e:
       raise exceptions.Error(
           'You are not authorized to unregister clusters from project [{}]. '

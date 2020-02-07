@@ -96,6 +96,14 @@ class Login(base.Command):
         'The list of possible scopes can be found at: '
         '[](https://developers.google.com/identity/protocols/googlescopes).'
         .format(', '.join(auth_util.DEFAULT_SCOPES)))
+    parser.add_argument(
+        '--add-quota-project',
+        action='store_true',
+        default=False,
+        help='Read the project from the context of the gcloud command-line '
+             'tool and write it to application default credentials as the '
+             'quota project.'
+    )
     parser.display_info.AddFormat('none')
 
   def Run(self, args):
@@ -132,7 +140,7 @@ class Login(base.Command):
           client_id=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID,
           client_secret=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
 
-    if args.IsSpecified('client_id_file'):
+    if args.IsSpecified('client_id_file') or not args.add_quota_project:
       full_path = c_creds.ADC(creds).DumpADCToFile()
     else:
       full_path = c_creds.ADC(creds).DumpExtendedADCToFile()

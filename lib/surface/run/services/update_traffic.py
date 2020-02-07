@@ -34,7 +34,9 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class AdjustTraffic(base.Command):
   """Adjust the trafic assignments for a Cloud Run service."""
 

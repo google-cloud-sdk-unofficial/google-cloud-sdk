@@ -119,6 +119,12 @@ class ResetWindowsPassword(base.UpdateCommand):
   use this command to create a local user on a domain-controller
   instance.
 
+  NOTE: When resetting passwords or adding a new user to a Domain Controller
+  in this way, the user will be added to the built in Admin Group on the
+  Domain Controller. This will give the user wide reaching permissions. If
+  this is not the desired outcome then Active Directory Users and Computers
+  should be used instead.
+
   For all other instances, including domain-joined instances, running
   this command creates a local user or resets the password for a local
   user.

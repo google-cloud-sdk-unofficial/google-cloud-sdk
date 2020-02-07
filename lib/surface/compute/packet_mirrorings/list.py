@@ -24,9 +24,8 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
-  """List packet mirrorings."""
+  """List packet mirroring policies."""
 
   @staticmethod
   def Args(parser):
@@ -35,7 +34,6 @@ class List(base.ListCommand):
         name,
         region.basename(),
         network.url.basename():label=NETWORK,
-        priority,
         enable
       )
     """)
@@ -53,4 +51,5 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
-List.detailed_help = base_classes.GetRegionalListerHelp('packet mirrorings')
+List.detailed_help = base_classes.GetRegionalListerHelp(
+    'packet mirroring policies')

@@ -173,7 +173,8 @@ class Register(base.CreateCommand):
     try:
       exclusivity_util.ApplyMembershipResources(kube_client, project)
       obj = api_util.CreateMembership(project, uuid, args.CLUSTER_NAME,
-                                      gke_cluster_self_link)
+                                      gke_cluster_self_link, uuid,
+                                      self.ReleaseTrack())
     except apitools_exceptions.HttpConflictError as e:
       # If the error is not due to the object already existing, re-raise.
       error = core_api_exceptions.HttpErrorPayload(e)
@@ -188,7 +189,7 @@ class Register(base.CreateCommand):
       # Connect agent in a cluster that is different from the one that they
       # expect, and is not required for the proper functioning of the agent or
       # the Hub.
-      obj = api_util.GetMembership(name)
+      obj = api_util.GetMembership(name, self.ReleaseTrack())
       if obj.description != args.CLUSTER_NAME:
         # A membership exists, but does not have the same description. This is
         # possible if two different users attempt to register the same
@@ -213,18 +214,20 @@ class Register(base.CreateCommand):
     # A membership exists. Attempt to update the existing agent deployment, or
     # install a new agent if necessary.
     if already_exists:
-      obj = api_util.GetMembership(name)
+      obj = api_util.GetMembership(name, self.ReleaseTrack())
       agent_util.DeployConnectAgent(
-          args, service_account_key_data, docker_credential_data, name)
+          args, service_account_key_data, docker_credential_data,
+          name, self.ReleaseTrack())
       return obj
 
     # No membership exists. Attempt to create a new one, and install a new
     # agent.
     try:
       agent_util.DeployConnectAgent(
-          args, service_account_key_data, docker_credential_data, name)
+          args, service_account_key_data, docker_credential_data,
+          name, self.ReleaseTrack())
     except:
-      api_util.DeleteMembership(name)
+      api_util.DeleteMembership(name, self.ReleaseTrack())
       exclusivity_util.DeleteMembershipResources(kube_client)
       raise
     return obj
@@ -270,7 +273,7 @@ class Register(base.CreateCommand):
 
     try:
       registered_membership_project = api_util.ProjectForClusterUUID(
-          uuid, [project, registered_project])
+          uuid, [project, registered_project], self.ReleaseTrack())
     except apitools_exceptions.HttpNotFoundError as e:
       raise exceptions.Error(
           'Could not access Memberships API. Is your project whitelisted for '

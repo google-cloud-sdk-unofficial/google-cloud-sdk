@@ -1,11 +1,24 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List Configs.
-    description: List Cloud Game Server Configs.
+    description: |
+      List Cloud Game Server Configs.
+
+      ## EXAMPLES
+
+      To see the list of all Game Server Configs in project 'my-project', deployment 'my-deployment' and location 'my-location', run:
+
+        $ {command} --project=my-project --deployment=my-deployment --location=my-location
+
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments.configs
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+
     modify_request_hooks:
     - googlecloudsdk.command_lib.game.servers.hooks:AddDefaultLocationAndDeploymentToListRequest
 

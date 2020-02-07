@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Update a Deployment Rollout.
@@ -28,6 +28,10 @@
         ```
   request:
     collection: gameservices.projects.locations.gameServerDeployments
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
     method: previewRollout
     modify_method_hook:
       googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ChooseUpdateOrPreviewMethod

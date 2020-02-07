@@ -1,12 +1,11 @@
 - release_tracks: [ALPHA, BETA]
-  hidden: true
   help_text:
     brief: Delete a membership.
     description: |
-      This command deletes the membership resource of a registered cluster on the Hub.
-      It will not remove the connect-agent that was installed on the cluster during cluster
-      registration. To delete the membership of a registered cluster and remove the connect-agent,
-      consider using the `{parent_command} unregister` command.
+      This command deletes the membership of a registered cluster on the Hub. It will not remove
+      the Connect Agent that was installed on the cluster during cluster registration. To delete
+      the membership of a registered cluster and remove the Connect Agent, consider using the
+      command: `{parent_command} unregister`.
     examples: |
       Delete a membership from Hub:
 
@@ -20,5 +19,5 @@
 
   arguments:
     resource:
-      help_text: membership resource representing a cluster in Hub.
+      help_text: The cluster membership to delete.
       spec: !REF googlecloudsdk.command_lib.container.hub.memberships.resources:membership

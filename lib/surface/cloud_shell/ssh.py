@@ -77,6 +77,7 @@ class SshAlpha(base.Command):
     command_list = args.command.split(' ') if args.command else ['bash -l']
     project = properties.VALUES.core.project.Get()
     connection_info = util.PrepareEnvironment(args)
+    util.AuthorizeEnvironment()
     command = ssh.SSHCommand(
         remote=ssh.Remote(host=connection_info.host, user=connection_info.user),
         port=six.text_type(connection_info.port),

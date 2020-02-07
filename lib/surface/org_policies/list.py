@@ -78,7 +78,7 @@ class List(base.ListCommand):
       list_policy_set = HasListPolicy(spec)
       boolean_policy_set = HasBooleanPolicy(spec)
       output.append({
-          'constraint': spec.name.split('/')[-1],
+          'constraint': policy.name.split('/')[-1],
           'listPolicy': 'SET' if list_policy_set else '',
           'booleanPolicy': 'SET' if boolean_policy_set else '',
           'etag': spec.etag

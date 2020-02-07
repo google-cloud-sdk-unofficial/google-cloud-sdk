@@ -1,8 +1,18 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Create a Game Server Config.
-    description: Create a Cloud Game Server Config for a Game Server Deployment.
+    description: |
+      Create a Cloud Game Server Config for a Game Server Deployment.
+
+      ## EXAMPLES
+
+      To create Game Server Config 'my-config' in project 'my-project', deployment 'my-deployment', and location in 'my-location' run:
+
+        $ {command} my-config --project=my-project --deployment=my-deployment --location=my-location \
+            --deployment=my-deployment --description=description --labels=a=x,b=y \
+            --fleet-configs-file=fleet_configs.json
+
     help_text: |
       Config resource - Cloud Game Server Config to create. The arguments in this group can be used
       to specify the attributes of this resource.
@@ -21,6 +31,10 @@
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments.configs
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
 
   arguments:
     resource:

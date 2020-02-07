@@ -211,6 +211,11 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
 
 
+def AddAlphaArgs(parser):
+  """Adds alpha args and flags to the parser."""
+  flags.AddEnablePointInTimeRecovery(parser)
+
+
 def RunBasePatchCommand(args, release_track):
   """Updates settings of a Cloud SQL instance using the patch api method.
 
@@ -306,7 +311,7 @@ class Patch(base.UpdateCommand):
     AddBaseArgs(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PatchBeta(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
 
@@ -318,3 +323,18 @@ class PatchBeta(base.UpdateCommand):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
     AddBetaArgs(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class PatchAlpha(base.UpdateCommand):
+  """Updates the settings of a Cloud SQL instance."""
+
+  def Run(self, args):
+    return RunBasePatchCommand(args, self.ReleaseTrack())
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    AddBaseArgs(parser)
+    AddBetaArgs(parser)
+    AddAlphaArgs(parser)

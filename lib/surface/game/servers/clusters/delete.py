@@ -33,7 +33,8 @@ class PreviewTimeFieldNotRelevantError(exceptions.Error):
   """Error if preview-time is specified with dry-run false."""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Game Server Cluster."""
 
@@ -60,7 +61,7 @@ class Delete(base.DeleteCommand):
         return None
       log.status.Print('Delete request issued for: [{}]'.format(args.cluster))
       op = update_hooks.DeleteInstance(args)
-      resp = utils.WaitForOperation(op)
+      resp = utils.WaitForOperation(op, utils.GetApiVersionFromArgs(args))
       log.status.Print('Deleted game server cluster : [{}]'.format(
           args.cluster))
       return resp
@@ -72,20 +73,20 @@ class Delete(base.DeleteCommand):
 
 Delete.detailed_help = {
     'DESCRIPTION':
-        'Delete a Game Server Cluster instance.',
+        'Delete a Game Server Cluster.',
     'API REFERENCE':
         """\
-    This command uses the gameservices/v1alpha API. The full documentation for
+    This command uses the gameservices API. The full documentation for
     this API can be found at: https://cloud.google.com/solutions/gaming/
         """,
     'EXAMPLES':
         """\
-To delete a game server cluster instance named NAME belonging to realm realm-name in us-central1:
+To delete Game Server Cluster 'my-cluster' in project 'my-project', realm 'my-realm', and location 'my-location' run:
 
-  $ {command} NAME --realm=realm-name --location=us-central1 --no-dry-run
+  $ {command} my-cluster --project=my-project --realm=my-realm --location=my-location --no-dry-run
 
-To preview deletion of a Game Server Cluster instance named NAME belonging to realm realm-name in us-central1:
+To preview deletion of Game Server Cluster 'my-cluster' in project 'my-project', realm 'my-realm', and location 'my-location' run:
 
-  $ {command} NAME --realm=realm-name --location=us-central1 --dry-run
+  $ {command} my-cluster --project=my-project --realm=my-realm --location=my-location --dry-run
 """
 }

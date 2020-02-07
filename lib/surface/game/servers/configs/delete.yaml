@@ -1,11 +1,22 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Delete a Game Server Config.
-    description: Delete a Cloud Game Server Config.
+    description: |
+      Delete a Cloud Game Server Config.
+
+      ## EXAMPLES
+
+      To delete Game Server Config 'my-config' in project 'my-project', deployment 'my-deployment', and location 'my-location', run:
+
+        $ {command} my-config --project=my-project --deployment=deployment --location=my-location
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments.configs
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
 
   arguments:
     resource:

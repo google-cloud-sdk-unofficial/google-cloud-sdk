@@ -26,9 +26,8 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 from googlecloudsdk.command_lib.compute.packet_mirrorings import utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  """Update a Google Compute Engine packet mirroring."""
+  """Update a Google Compute Engine packet mirroring policy."""
 
   PACKET_MIRRORING_ARG = None
 
@@ -63,9 +62,6 @@ class Update(base.UpdateCommand):
 
   def _UpdateResource(self, pm_ref, resource, cleared_fields, holder, args,
                       messages):
-    if args.priority is not None:
-      resource.priority = args.priority
-
     if args.enable is not None:
       resource.enable = (
           messages.PacketMirroring.EnableValueValuesEnum.TRUE if args.enable
@@ -195,7 +191,7 @@ class Update(base.UpdateCommand):
 
 Update.detailed_help = {
     'DESCRIPTION':
-        'Update a Google Compute Engine packet mirroring.',
+        'Update a Google Compute Engine packet mirroring policy.',
     'EXAMPLES':
         """\
     Stop mirroring by tags, add subnet-1 as a mirrored subnet.

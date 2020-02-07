@@ -78,14 +78,12 @@ class Update(base.Command):
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
     flags.AddPortFlag(parser)
+    flags.AddCpuFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
-
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddCpuFlag(cluster_group)
 
   def Run(self, args):
     """Update configuration information about the service.
@@ -163,6 +161,5 @@ class AlphaUpdate(Update):
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
-    flags.AddCpuFlag(parser)
 
 AlphaUpdate.__doc__ = Update.__doc__

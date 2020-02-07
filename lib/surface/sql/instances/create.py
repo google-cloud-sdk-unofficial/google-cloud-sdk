@@ -146,6 +146,11 @@ def AddBetaArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
+def AddAlphaArgs(parser):
+  """Declare alpha flags for this command parser."""
+  flags.AddEnablePointInTimeRecovery(parser)
+
+
 def RunBaseCreateCommand(args, release_track):
   """Creates a new Cloud SQL instance.
 
@@ -319,4 +324,5 @@ class CreateAlpha(base.Command):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
     AddBetaArgs(parser)
+    AddAlphaArgs(parser)
     flags.AddDatabaseVersion(parser, restrict_choices=False)

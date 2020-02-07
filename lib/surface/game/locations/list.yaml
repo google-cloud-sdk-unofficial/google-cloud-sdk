@@ -1,11 +1,22 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: List Locations.
-    description: List Cloud Game Services Locations.
+    description: |
+      List Cloud Game Services Locations.
+
+      ## EXAMPLES
+
+      To see the list of all Locations, run:
+
+        $ {command}
 
   request:
     collection: gameservices.projects.locations
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
 
   response:
     id_field: name

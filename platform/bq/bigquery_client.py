@@ -31,6 +31,7 @@ import traceback
 
 # To configure apiclient logging.
 from absl import flags
+from absl import logging as absl_logging
 import googleapiclient
 from googleapiclient import discovery
 from googleapiclient import http as http_request
@@ -533,8 +534,8 @@ def ConfigurePythonLogger(apilog=None):
 
 
 def _SetLogFile(logfile):
-  logging.basicConfig(stream=logfile, level=logging.INFO)
-
+  absl_logging.use_python_logging(quiet=True)
+  absl_logging.get_absl_handler().python_handler.stream = logfile
 
 InsertEntry = collections.namedtuple('InsertEntry',
                                      ['insert_id', 'record'])
@@ -3597,7 +3598,8 @@ class BigqueryClient(object):
       }
 
     configs_request = transfer_client.projects().locations().transferConfigs()
-    response = configs_request.startManualRuns(parent=parent, body=body).execute()
+    response = configs_request.startManualRuns(parent=parent,
+                                               body=body).execute()
 
     return response.get('runs')
 
@@ -4362,7 +4364,8 @@ class BigqueryClient(object):
       if default_partition_expiration_ms == 0:
         dataset['defaultPartitionExpirationMs'] = None
       else:
-        dataset['defaultPartitionExpirationMs'] = default_partition_expiration_ms
+        dataset['defaultPartitionExpirationMs'] = (
+            default_partition_expiration_ms)
     if default_kms_key is not None:
       dataset['defaultEncryptionConfiguration'] = {
           'kmsKeyName': default_kms_key
@@ -4528,7 +4531,8 @@ class BigqueryClient(object):
       try:
         status, result = request.next_chunk()
       except googleapiclient.errors.HttpError as e:
-        logging.error('HTTP Error %d during resumable media upload', e.resp.status)
+        logging.error('HTTP Error %d during resumable media upload',
+                      e.resp.status)
         # Log response headers, which contain debug info for GFEs.
         for key, value in e.resp.items():
           logging.info('  %s: %s', key, value)
@@ -4821,7 +4825,8 @@ class BigqueryClient(object):
         projectId=project_id,
         jobId=job_id,
         location=location)
-    result = self.apiclient.jobs().cancel(**dict(job_reference)).execute()['job']
+    result = (self.apiclient.jobs().cancel(**dict(job_reference))
+              .execute()['job'])
     if result['status']['state'] != 'DONE' and self.sync:
       job_reference = BigqueryClient.ConstructObjectReference(result)
       result = self.WaitJob(job_reference=job_reference)

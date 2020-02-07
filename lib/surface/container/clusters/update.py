@@ -267,6 +267,7 @@ class Update(base.UpdateCommand):
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddVerticalPodAutoscalingFlag(group)
     flags.AddAutoprovisioningFlags(group, ga=True)
+    flags.AddEnableShieldedNodesFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -277,6 +278,7 @@ class Update(base.UpdateCommand):
     opts.enable_resource_consumption_metering = \
         args.enable_resource_consumption_metering
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
+    opts.enable_shielded_nodes = args.enable_shielded_nodes
     return opts
 
   def Run(self, args):
@@ -554,10 +556,10 @@ class UpdateBeta(Update):
     flags.AddEnableIntraNodeVisibilityFlag(group)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
-    flags.AddEnableShieldedNodesFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
+    flags.AddEnableShieldedNodesFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -634,12 +636,12 @@ class UpdateAlpha(Update):
     flags.AddPeeringRouteSharingFlag(group)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
-    flags.AddEnableShieldedNodesFlags(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
+    flags.AddEnableShieldedNodesFlags(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)

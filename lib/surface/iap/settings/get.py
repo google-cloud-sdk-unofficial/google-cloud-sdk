@@ -28,28 +28,40 @@ class Get(base.Command):
       'EXAMPLES':
           """\
           To get the IAP setting for the resources within an organization, run:
-          $ {command} --organization=ORGANIZATION_ID
+
+            $ {command} --organization=ORGANIZATION_ID
 
           To get the IAP setting for the resources within a folder, run:
-          $ {command} --folder=FOLDER_ID
+
+            $ {command} --folder=FOLDER_ID
 
           To get the IAP setting for the resources within a project, run:
+
             $ {command} --project=PROJECT_ID
 
           To get the IAP setting for web type resources within a project, run:
+
             $ {command} --project=PROJECT_ID --resource-type=iap_web
 
+          To get the IAP setting for all app engine services within a project, run:
+
+            $ {command} --project=PROJECT_ID --resource-type=app-engine
+
           To get the IAP setting for an app engine service within a project, run:
+
             $ {command} --project=PROJECT_ID --resource-type=app-engine --service=SERVICE_ID
 
           To get the IAP setting for an app engine service version within a project, run:
+
             $ {command} --project=PROJECT_ID --resource-type=app-engine --service=SERVICE_ID
                 --version=VERSION_ID
 
           To get the IAP setting for all backend services within a project, run:
+
             $ {command} --project=PROJECT_ID --resource-type=compute
 
           To get the IAP setting for a backend service within a project, run:
+
             $ {command} --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
 
           """,

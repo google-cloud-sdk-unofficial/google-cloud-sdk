@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.52",
+  "CLI_VERSION": "2.0.53",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -72,7 +72,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Get the IAM policy for a resource.\n\nGets the IAM policy for a dataset or table resource, and prints\nit to stdout. The policy is in JSON format.\n",
-        "EXAMPLES": "bq get-iam-policy ds\npq get-iam-policy proj:ds\nbq get-iam-policy ds.table\nbq get-iam-policy --project_id=proj -t ds.table\n\nNote: As of September, 2019 this command is an ALPHA feature. It\nis only enabled for customer's projects that are on the\nfeature's ALPHA list until it is released as a public generally-\navailable feature. This command may change before the public\nrelease. Users who need to get access controls for BigQuery\nresources in projects that are not enabled for this ALPHA may\nstill use the 'gcloud projects get-iam-policy' and 'bq show'\ncommands to get access controls on projects and datasets,\nrespectively.\n"
+        "EXAMPLES": "bq get-iam-policy ds\nbq get-iam-policy proj:ds\nbq get-iam-policy ds.table\nbq get-iam-policy --project_id=proj -t ds.table\n\nNote: As of September, 2019 this command is an ALPHA feature. It\nis only enabled for customer's projects that are on the\nfeature's ALPHA list until it is released as a public generally-\navailable feature. This command may change before the public\nrelease. Users who need to get access controls for BigQuery\nresources in projects that are not enabled for this ALPHA may\nstill use the 'gcloud projects get-iam-policy' and 'bq show'\ncommands to get access controls on projects and datasets,\nrespectively.\n"
       }
     },
     "head": {

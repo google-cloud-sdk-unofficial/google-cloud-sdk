@@ -168,14 +168,12 @@ class Deploy(base.Command):
     flags.AddCommandFlag(parser)
     flags.AddArgsFlag(parser)
     flags.AddPortFlag(parser)
+    flags.AddCpuFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddCpuFlag(cluster_group)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -240,6 +238,5 @@ class AlphaDeploy(Deploy):
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddNoTrafficFlag(parser)
-    flags.AddCpuFlag(parser)
 
 AlphaDeploy.__doc__ = Deploy.__doc__

@@ -1,11 +1,30 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Update a Realm.
-    description: Update a Cloud Game Server Realm.
+    description: |
+      Update a Cloud Game Server Realm.
+
+      ## EXAMPLES
+
+      To update Realm 'my-realm' in project 'my-project' and location in 'my-location' with a new time-zone run:
+
+        $ {command} my-realm --project=my-project --location=my-location --time-zone=EST --no-dry-run
+
+      To preview Realm update for 'my-realm' in project 'my-project' and location in 'my-location' with a new time-zone run:
+
+        $ {command} my-realm --project=my-project --location=my-location --time-zone=EST --dry-run
+
+      To update labels for Realm 'my-realm' in project 'my-project' and location in 'my-location' run:
+
+        $ {command} my-realm --project=my-project --location=my-location --update-labels="key1=val1" --no-dry-run
 
   request:
     collection: gameservices.projects.locations.realms
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
     method: previewUpdate
     modify_method_hook:
       googlecloudsdk.command_lib.game.servers.realms.update_hooks:ChooseUpdateOrPreviewMethod

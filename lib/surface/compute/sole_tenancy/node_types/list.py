@@ -43,7 +43,6 @@ class List(base.ListCommand):
           zone.basename(),
           guestCpus:label=CPUs,
           memoryMb,
-          localSsdGb,
           deprecated.state:label=DEPRECATED
         )""")
 

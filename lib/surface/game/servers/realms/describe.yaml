@@ -1,11 +1,23 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Describe a Realm.
-    description: Describe a Cloud Game Server Realm.
+    description: |
+      Describe a Cloud Game Server Realm.
+
+      ## EXAMPLES
+
+      To describe Realm 'my-realm' in project 'my-project' and location 'my-location', run:
+
+        $ {command} my-realm --project=my-project --location=my-location
+
 
   request:
     collection: gameservices.projects.locations.realms
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
 
   arguments:
     resource:

@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveBackend(base.UpdateCommand):
   """Remove a backend from a backend service.
 
@@ -147,8 +147,8 @@ class RemoveBackend(base.UpdateCommand):
         [self.GetSetRequest(client, backend_service_ref, new_object)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveBackendAlpha(RemoveBackend):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveBackendBeta(RemoveBackend):
   """Remove a backend from a backend service.
 
   *{command}* is used to remove a backend from a backend
@@ -161,4 +161,19 @@ class RemoveBackendAlpha(RemoveBackend):
   """
 
   support_global_neg = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveBackendAlpha(RemoveBackendBeta):
+  """Remove a backend from a backend service.
+
+  *{command}* is used to remove a backend from a backend
+  service.
+
+  Before removing a backend, it is a good idea to "drain" the
+  backend first. A backend can be drained by setting its
+  capacity scaler to zero through 'gcloud compute
+  backend-services edit'.
+  """
+
   support_region_neg = True

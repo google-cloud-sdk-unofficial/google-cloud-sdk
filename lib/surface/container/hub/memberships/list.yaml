@@ -15,7 +15,7 @@
 
   arguments:
     resource:
-      help_text: project containing memberships you want to list.
+      help_text: The project to list cluster memberships for.
       spec: !REF googlecloudsdk.command_lib.container.hub.memberships.resources:project
       override_resource_collection: true
 
@@ -24,7 +24,7 @@
 
   output:
     format: |
-      table(
-         name.basename():label=NAME,
-         description:label=DESCRIPTION
-       )
+        table(
+           name.basename():label=NAME,
+           externalId:label=EXTERNAL_ID
+         )

@@ -133,8 +133,9 @@ class DeployGA(base.SilentCommand):
       return project_hash < experiment_percent
     except runtime_builders.ExperimentsError as e:
       log.debug(
-          'Experiment config file could not '
-          'be read. %s' % e, exc_info=True)
+          'Experiment config file could not be read. This error is '
+          'informational, and does not cause a deployment to fail. '
+          'Reason: %s' % e, exc_info=True)
       return False
 
 

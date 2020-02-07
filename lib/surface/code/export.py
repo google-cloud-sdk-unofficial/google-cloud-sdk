@@ -43,11 +43,19 @@ class Export(base.Command):
   def Args(cls, parser):
     flags.CommonFlags(parser)
 
-    parser.add_argument(
+    skaffold_output_group = parser.add_mutually_exclusive_group(required=False)
+    skaffold_output_group.add_argument(
         '--skaffold-file',
         default='skaffold.yaml',
         required=False,
         help='Location of the generated skaffold.yaml file.')
+
+    skaffold_output_group.add_argument(
+        '--no-skaffold-file',
+        default=False,
+        action='store_true',
+        required=False,
+        help='Do not produce a skaffold.yaml file.')
 
     parser.add_argument(
         '--kubernetes-file',
@@ -61,6 +69,7 @@ class Export(base.Command):
     with files.FileWriter(args.kubernetes_file) as output:
       output.write(six.u(local_file_generator.KubernetesConfig()))
 
-    with files.FileWriter(args.skaffold_file) as output:
-      output.write(
-          six.u(local_file_generator.SkaffoldConfig(args.kubernetes_file)))
+    if not args.no_skaffold_file:
+      with files.FileWriter(args.skaffold_file) as output:
+        output.write(
+            six.u(local_file_generator.SkaffoldConfig(args.kubernetes_file)))

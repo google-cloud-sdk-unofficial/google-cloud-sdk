@@ -1029,7 +1029,7 @@ class NewCmd(appcommands.Cmd):
     finally:
       for flag, value in six.iteritems(original_values):
         setattr(self, flag, value)
-        self._command_flags[flag].Parse(value)
+        self._command_flags[flag].parse(value)
 
   def RunCmdLoop(self, argv):
     """Hook for use in cmd.Cmd-based command shells."""
@@ -2171,7 +2171,8 @@ class _Query(BigqueryCmd):
       client: Bigquery client object
       job: json of the job, expressed as a dictionary
     """
-    if job['statistics']['query']['statementType'] == 'SCRIPT':
+    if (job['statistics']['query']['statementType'] == 'SCRIPT'
+        ):
       self._PrintScriptJobResults(client, job)
     else:
       self.PrintNonScriptQueryJobResults(client, job)
@@ -5453,7 +5454,7 @@ class _GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 
     Examples:
       bq get-iam-policy ds
-      pq get-iam-policy proj:ds
+      bq get-iam-policy proj:ds
       bq get-iam-policy ds.table
       bq get-iam-policy --project_id=proj -t ds.table
 

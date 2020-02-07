@@ -342,7 +342,7 @@ def AddMeshArgsToMetadata(args):
       }
 
     if args.mesh['mode'] == mesh_mode_aux_data.MeshModes.ON:
-      args.metadata['os-config-enabled-prerelease-features'] = 'ospackage'
+      args.metadata['enable-osconfig'] = 'true'
       gce_software_declaration = collections.OrderedDict()
       mesh_agent_recipe = collections.OrderedDict()
 

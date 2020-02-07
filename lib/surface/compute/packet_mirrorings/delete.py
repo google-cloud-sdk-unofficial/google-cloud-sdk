@@ -27,9 +27,8 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import client
 from googlecloudsdk.command_lib.compute.packet_mirrorings import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Delete a Google Compute Engine packet mirroring."""
+  """Delete a Google Compute Engine packet mirroring policy."""
 
   PACKET_MIRRORING_ARG = None
 
@@ -56,10 +55,10 @@ class Delete(base.DeleteCommand):
     return holder.client.MakeRequests(requests)
 
 Delete.detailed_help = {
-    'DESCRIPTION': 'Delete a Google Compute Engine Packet Mirroring',
+    'DESCRIPTION': 'Delete a Google Compute Engine Packet Mirroring policy.',
     'EXAMPLES':
     """\
-    Delete the Packet Mirroring resource pm-1 in region us-central1.
+    Delete the Packet Mirroring policy pm-1 in region us-central1.
 
       $ {command} pm-1
         --region us-central1

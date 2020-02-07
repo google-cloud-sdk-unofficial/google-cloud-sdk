@@ -31,7 +31,7 @@ To list the network endpoints in zone ``us-central1-a'':
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Lists Google Compute Engine network endpoint groups."""
 
@@ -62,12 +62,18 @@ class List(base.ListCommand):
 List.detailed_help = base_classes.GetZonalListerHelp('network endpoint groups')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
   """Lists Google Compute Engine network endpoint groups."""
 
-  @staticmethod
-  def Args(parser):
+  detailed_help = base_classes.GetMultiScopeListerHelp(
+      'network endpoint groups',
+      [base_classes.ScopeType.zonal_scope, base_classes.ScopeType.global_scope])
+  support_global_scope = True
+  support_regional_scope = False
+
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat("""\
         table(
             name,
@@ -77,7 +83,10 @@ class ListAlpha(base.ListCommand):
         )
         """)
     lister.AddMultiScopeListerFlags(
-        parser, zonal=True, regional=True, global_=True)
+        parser,
+        zonal=True,
+        regional=cls.support_regional_scope,
+        global_=cls.support_global_scope)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -87,16 +96,23 @@ class ListAlpha(base.ListCommand):
     list_implementation = lister.MultiScopeLister(
         client,
         zonal_service=client.apitools_client.networkEndpointGroups,
-        regional_service=client.apitools_client.regionNetworkEndpointGroups,
-        global_service=client.apitools_client.globalNetworkEndpointGroups,
+        regional_service=client.apitools_client.regionNetworkEndpointGroups
+        if self.support_regional_scope else None,
+        global_service=client.apitools_client.globalNetworkEndpointGroups
+        if self.support_global_scope else None,
         aggregation_service=client.apitools_client.networkEndpointGroups)
 
     return lister.Invoke(request_data, list_implementation)
 
 
-ListAlpha.detailed_help = base_classes.GetMultiScopeListerHelp(
-    'network endpoint groups', [
-        base_classes.ScopeType.zonal_scope,
-        base_classes.ScopeType.regional_scope,
-        base_classes.ScopeType.global_scope
-    ])
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """Lists Google Compute Engine network endpoint groups."""
+
+  detailed_help = base_classes.GetMultiScopeListerHelp(
+      'network endpoint groups', [
+          base_classes.ScopeType.zonal_scope,
+          base_classes.ScopeType.regional_scope,
+          base_classes.ScopeType.global_scope
+      ])
+  support_regional_scope = True

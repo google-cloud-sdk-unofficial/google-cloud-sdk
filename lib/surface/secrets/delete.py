@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
+from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.core.console import console_io
 
 
@@ -49,12 +50,15 @@ class Delete(base.DeleteCommand):
         parser, purpose='to delete', positional=True, required=True)
 
   def Run(self, args):
-    messages = secrets_api.GetMessages()
+    messages = secrets_api.GetMessages(
+        version=secrets_util.GetVersionFromReleasePath(self.ReleaseTrack()))
     secret_ref = args.CONCEPTS.secret.Parse()
 
     # List all secret versions and parse their refs
-    versions = secrets_api.Versions().ListWithPager(
-        secret_ref=secret_ref, limit=9999)
+    versions = secrets_api.Versions(
+        version=secrets_util.GetVersionFromReleasePath(
+            self.ReleaseTrack())).ListWithPager(
+                secret_ref=secret_ref, limit=9999)
     active_version_count = 0
     for version in versions:
       if version.state != messages.SecretVersion.StateValueValuesEnum.DESTROYED:
@@ -64,6 +68,8 @@ class Delete(base.DeleteCommand):
         secret=secret_ref.Name(), num_versions=active_version_count)
     console_io.PromptContinue(msg, throw_if_unattended=True, cancel_on_no=True)
 
-    result = secrets_api.Secrets().Delete(secret_ref)
+    result = secrets_api.Secrets(
+        version=secrets_util.GetVersionFromReleasePath(
+            self.ReleaseTrack())).Delete(secret_ref)
     secrets_log.Secrets().Deleted(secret_ref)
     return result

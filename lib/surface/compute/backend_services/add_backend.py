@@ -227,6 +227,7 @@ class AddBackendBeta(AddBackend):
   """
 
   support_failover = True
+  support_global_neg = True
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):
     """Overrides."""
@@ -268,5 +269,4 @@ class AddBackendAlpha(AddBackendBeta):
   `gcloud compute backend-services edit`.
   """
 
-  support_global_neg = True
   support_region_neg = True

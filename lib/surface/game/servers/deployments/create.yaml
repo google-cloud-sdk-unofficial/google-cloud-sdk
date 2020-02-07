@@ -1,11 +1,23 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Create a Deployment.
-    description: Create a Cloud Game Server Deployment.
+    description: |
+      Create a Cloud Game Server Deployment.
+
+      ## EXAMPLES
+
+      To create Game Server Deployment 'my-deployment' in project 'my-project' and location in 'my-location' run:
+
+        $ {command} my-deployment --project=my-project --location=my-location --description=description \
+        --labels=a=x,b=y
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
 
   arguments:
     resource:

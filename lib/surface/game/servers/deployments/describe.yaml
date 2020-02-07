@@ -1,11 +1,23 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Describe a Deployment.
-    description: Describe a Cloud Game Server Deployment.
+    description: |
+      Describe a Cloud Game Server Deployment.
+
+      ## EXAMPLES
+
+      To describe Game Server Deployment 'my-deployment' in project 'my-project' and location 'my-location', run:
+
+        $ {command} my-deployment --project=my-project --location=my-location
+
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
 
   arguments:
     resource:

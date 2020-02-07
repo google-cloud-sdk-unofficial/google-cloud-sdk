@@ -22,7 +22,7 @@ emulator-reverse-proxy: unavailable
 gcloud: google-cloud-sdk
 gsutil: google-cloud-sdk
 kind: google-cloud-sdk-kind
-kpt: unavailable
+kpt: google-cloud-sdk-kpt
 kubectl: kubectl
 minikube: unavailable
 pubsub-emulator: google-cloud-sdk-pubsub-emulator

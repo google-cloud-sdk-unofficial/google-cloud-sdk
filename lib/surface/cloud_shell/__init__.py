@@ -48,3 +48,11 @@ class Shell(base.Group):
   @staticmethod
   def Args(parser):
     pass
+
+  def Filter(self, context, args):
+    del context, args
+    # Intentionally disable the user project override.  Cloud Shell is inteded
+    # to be able to be used without first creating a GCP project.
+    # Additionally, Cloud Shell is a free product with per user quota, so
+    # enabling the API on gcloud will not cost gcloud money.
+    base.DisableUserProjectQuota()

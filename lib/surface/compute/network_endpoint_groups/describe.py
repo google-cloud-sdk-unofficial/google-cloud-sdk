@@ -33,7 +33,7 @@ To describe a network endpoint group:
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine network endpoint group."""
 
@@ -80,9 +80,15 @@ class Describe(base.DescribeCommand):
     return client.MakeRequests([(service, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
   """Describe a Google Compute Engine network endpoint group."""
 
   support_global_scope = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+  """Describe a Google Compute Engine network endpoint group."""
+
   support_regional_scope = True
