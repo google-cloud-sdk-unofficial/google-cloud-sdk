@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a new version of an existing secret.
 
@@ -71,3 +72,30 @@ class Create(base.CreateCommand):
     version_ref = secrets_args.ParseVersionRef(version.name)
     secrets_log.Versions().Created(version_ref)
     return version
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  r"""Create a new version of an existing secret.
+
+  Create a new version of an existing secret with the provided data. The
+  command will return an error if no such secret exists.
+
+  ## EXAMPLES
+
+  Create a new version of an existing secret named 'my-secret' with secret data
+  "s3cr3t":
+
+    $ echo "s3cr3t" | {command} " my-secret --data-file=-
+
+  Create a new version of an existing secret named 'my-secret' with secret data
+  from a file:
+
+    $ {command} my-secret --data-file=/tmp/secret
+  """
+
+  @staticmethod
+  def Args(parser):
+    secrets_args.AddBetaSecret(
+        parser, purpose='to create', positional=True, required=True)
+    secrets_args.AddDataFile(parser, required=True)

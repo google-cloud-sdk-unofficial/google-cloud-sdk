@@ -35,6 +35,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.game.servers.configs.create_hooks:ProcessConfigsFiles
 
   arguments:
     resource:
@@ -47,7 +49,6 @@
       help_text: |
         Game server config description.
     - _REF_: googlecloudsdk.command_lib.game.servers.flags:fleet_configs_file
-      api_field: gameServerConfig.fleetConfigs
       help_text: |
         Path to a JSON or YAML file that contains fleet configs. The fleet spec
         field in configs file follows Agones Fleet custom resource. Please see
@@ -56,7 +57,6 @@
         https://github.com/googleforgames/agones/blob/master/pkg/apis/agones/v1/fleet.go
         for Fleet Spec definition.
     - _REF_: googlecloudsdk.command_lib.game.servers.flags:scaling_configs_file
-      api_field: gameServerConfig.scalingConfigs
       help_text: |
         Path to a JSON or YAML file that contains scaling configs. The fleet autoscaler spec
         field in configs file follows Agones Fleet Autoscaler custom resource. Please see

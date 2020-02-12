@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   r"""Delete a secret.
 
@@ -73,3 +74,25 @@ class Delete(base.DeleteCommand):
             self.ReleaseTrack())).Delete(secret_ref)
     secrets_log.Secrets().Deleted(secret_ref)
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  r"""Delete a secret.
+
+  Delete a secret and destroy all secret versions. This action is irreversable.
+  If the given secret does not exist, this command will succeed, but the
+  operation will be a no-op.
+
+  ## EXAMPLES
+
+  Delete a secret 'my-secret':
+
+    $ {command} my-secret
+  """
+
+  @staticmethod
+  def Args(parser):
+    secrets_args.AddBetaSecret(
+        parser, purpose='to delete', positional=True, required=True)
+

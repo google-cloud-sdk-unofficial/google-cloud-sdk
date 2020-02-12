@@ -141,7 +141,7 @@ class Register(base.CreateCommand):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
 
     # This incidentally verifies that the kubeconfig and context args are valid.
-    kube_client = kube_util.KubernetesClient(args)
+    kube_client = kube_util.OldKubernetesClient(args)
     uuid = kube_util.GetClusterUUID(kube_client)
 
     self._VerifyClusterExclusivity(kube_client, project, args.context, uuid)
@@ -164,7 +164,7 @@ class Register(base.CreateCommand):
         raise exceptions.Error('Could not process {}: {}'.format(
             DOCKER_CREDENTIAL_FILE_FLAG, e))
 
-    gke_cluster_self_link = api_util.GKEClusterSelfLink(args)
+    gke_cluster_self_link = api_util.GKEClusterSelfLink(kube_client)
 
     # The full resource name of the membership for this registration flow.
     name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
@@ -215,17 +215,17 @@ class Register(base.CreateCommand):
     # install a new agent if necessary.
     if already_exists:
       obj = api_util.GetMembership(name, self.ReleaseTrack())
-      agent_util.DeployConnectAgent(
-          args, service_account_key_data, docker_credential_data,
-          name, self.ReleaseTrack())
+      agent_util.DeployConnectAgent(kube_client, args, service_account_key_data,
+                                    docker_credential_data, name,
+                                    self.ReleaseTrack())
       return obj
 
     # No membership exists. Attempt to create a new one, and install a new
     # agent.
     try:
-      agent_util.DeployConnectAgent(
-          args, service_account_key_data, docker_credential_data,
-          name, self.ReleaseTrack())
+      agent_util.DeployConnectAgent(kube_client, args, service_account_key_data,
+                                    docker_credential_data, name,
+                                    self.ReleaseTrack())
     except:
       api_util.DeleteMembership(name, self.ReleaseTrack())
       exclusivity_util.DeleteMembershipResources(kube_client)

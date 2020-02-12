@@ -76,14 +76,21 @@ class Update(base.UpdateCommand):
     autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
 
+    surge_upgrade_group = group.add_argument_group('Upgrade settings')
+    flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
+    flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
+
   def ParseUpdateNodePoolOptions(self, args):
+    flags.ValidateSurgeUpgradeSettings(args)
     return api_adapter.UpdateNodePoolOptions(
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
         enable_autoscaling=args.enable_autoscaling,
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
-        enable_autoprovisioning=args.enable_autoprovisioning)
+        enable_autoprovisioning=args.enable_autoprovisioning,
+        max_surge_upgrade=args.max_surge_upgrade,
+        max_unavailable_upgrade=args.max_unavailable_upgrade)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
@@ -63,7 +62,7 @@ class List(base.ListCommand):
     elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       api_version = 'v1alpha2'
 
-    dns_client = apis.GetClientInstance('dns', api_version)
+    dns_client = util.GetApiClient(api_version)
 
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,

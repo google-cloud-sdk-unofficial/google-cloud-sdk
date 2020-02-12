@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.run import traffic
+from googlecloudsdk.api_lib.run import traffic_pair
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import display
 from googlecloudsdk.command_lib.run import connection_context
@@ -133,7 +133,7 @@ class AdjustTraffic(base.Command):
       except:
         serv = client.GetService(service_ref)
         if serv:
-          resources = traffic.GetTrafficTargetPairs(
+          resources = traffic_pair.GetTrafficTargetPairs(
               serv.spec.traffic,
               serv.status.traffic,
               is_managed,
@@ -147,7 +147,7 @@ class AdjustTraffic(base.Command):
       pretty_print.Success('Updating traffic asynchronously.')
     else:
       serv = client.GetService(service_ref)
-      resources = traffic.GetTrafficTargetPairs(
+      resources = traffic_pair.GetTrafficTargetPairs(
           serv.spec.traffic,
           serv.status.traffic,
           is_managed,

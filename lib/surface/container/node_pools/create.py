@@ -113,6 +113,7 @@ def ParseCreateNodePoolOptionsBase(args):
   """Parses the flags provided with the node pool creation command."""
   enable_autorepair = cmd_util.GetAutoRepair(args)
   flags.WarnForNodeModification(args, enable_autorepair)
+  flags.ValidateSurgeUpgradeSettings(args)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
   return api_adapter.CreateNodePoolOptions(
@@ -146,7 +147,9 @@ def ParseCreateNodePoolOptionsBase(args):
       shielded_integrity_monitoring=args.shielded_integrity_monitoring,
       reservation_affinity=args.reservation_affinity,
       reservation=args.reservation,
-      sandbox=args.sandbox)
+      sandbox=args.sandbox,
+      max_surge_upgrade=args.max_surge_upgrade,
+      max_unavailable_upgrade=args.max_unavailable_upgrade)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -168,6 +171,9 @@ class Create(base.CreateCommand):
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
     flags.AddSandboxFlag(parser)
+    flags.AddSurgeUpgradeFlag(parser, for_node_pool=True)
+    flags.AddMaxUnavailableUpgradeFlag(
+        parser, for_node_pool=True, is_create=True)
 
   def ParseCreateNodePoolOptions(self, args):
     return ParseCreateNodePoolOptionsBase(args)
@@ -253,13 +259,10 @@ class CreateBeta(Create):
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
-    flags.ValidateSurgeUpgradeSettings(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
     ops.node_locations = args.node_locations
-    ops.max_surge_upgrade = args.max_surge_upgrade
-    ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     return ops
 
 
@@ -270,15 +273,12 @@ class CreateAlpha(Create):
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
-    flags.ValidateSurgeUpgradeSettings(args)
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
     ops.node_group = args.node_group
     ops.linux_sysctls = args.linux_sysctls
-    ops.max_surge_upgrade = args.max_surge_upgrade
-    ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.node_locations = args.node_locations
     ops.node_config = args.node_config
     return ops

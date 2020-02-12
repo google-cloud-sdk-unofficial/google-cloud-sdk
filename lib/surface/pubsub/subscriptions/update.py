@@ -110,7 +110,10 @@ class UpdateAlpha(Update):
   @classmethod
   def Args(cls, parser):
     resource_args.AddSubscriptionResourceArg(parser, 'to update.')
-    flags.AddSubscriptionSettingsFlags(parser, is_update=True)
+    flags.AddSubscriptionSettingsFlags(
+        parser,
+        is_update=True,
+        support_filtering=True)
     labels_util.AddUpdateLabelsFlags(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()

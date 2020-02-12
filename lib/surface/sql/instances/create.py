@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
+from googlecloudsdk.api_lib.sql import exceptions as sql_exceptions
 from googlecloudsdk.api_lib.sql import instances as api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
@@ -33,7 +34,6 @@ from googlecloudsdk.command_lib.sql import validate as command_validate
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_lex
 from googlecloudsdk.core.resource import resource_property
 import six
@@ -46,7 +46,6 @@ def AddBaseArgs(parser):
   parser.display_info.AddFormat(flags.GetInstanceListFormat())
   flags.AddActivationPolicy(parser)
   flags.AddAssignIp(parser)
-  flags.AddAuthorizedGAEApps(parser)
   flags.AddAuthorizedNetworks(parser)
   flags.AddAvailabilityType(parser)
   parser.add_argument(
@@ -64,12 +63,6 @@ def AddBaseArgs(parser):
       required=False,
       help='Also create a failover replica with the specified name.')
   parser.add_argument(
-      '--follow-gae-app',
-      required=False,
-      help=('First Generation instances only. The App Engine app this '
-            'instance should follow. It must be in the same region as '
-            'the instance.'))
-  parser.add_argument(
       'instance',
       type=command_validate.InstanceNameRegexpValidator(),
       help='Cloud SQL instance ID.')
@@ -83,14 +76,6 @@ def AddBaseArgs(parser):
             'replication setup. The newly created instance will be a read '
             'replica of the specified master instance.'))
   flags.AddMemory(parser)
-  parser.add_argument(
-      '--pricing-plan',
-      '-p',
-      required=False,
-      choices=['PER_USE', 'PACKAGE'],
-      default='PER_USE',
-      help=('First Generation instances only. The pricing plan for this '
-            'instance.'))
   # TODO(b/31989340): add remote completion
   # TODO(b/73362371): Make specifying a location required.
   location_group = parser.add_mutually_exclusive_group()
@@ -164,6 +149,10 @@ def RunBaseCreateCommand(args, release_track):
   Raises:
     HttpException: A http error response was received while executing api
         request.
+    RequiredArgumentException: A required argument was not supplied by the user,
+      such as omitting --root-password on a SQL Server instance.
+    ArgumentError: An argument supplied by the user was incorrect, such as
+      attempting to create a V1 instance.
   """
   client = common_api_util.SqlClient(common_api_util.API_VERSION_DEFAULT)
   sql_client = client.sql_client
@@ -224,20 +213,13 @@ def RunBaseCreateCommand(args, release_track):
           release_track=release_track))
 
   # TODO(b/122660263): Remove when V1 instances are no longer supported.
-  # V1 instances are deprecated. Prompt to continue if one is being created.
+  # V1 instances are deprecated.
+  # Note that the exception type is intentionally vague because the user may not
+  # have directly supplied the offending argument.  For example, creating a read
+  # replica defaults its tier to that of its master.
   if api_util.IsInstanceV1(sql_messages, instance_resource):
-    log.warning(
-        'First Generation instances will be automatically upgraded '
-        'to Second Generation starting March 4th, 2020, and First Generation '
-        'will be fully decommissioned on March 25, 2020. We recommend you '
-        'create a Second Generation instance.')
-    console_io.PromptContinue(cancel_on_no=True)
-
-  if args.pricing_plan == 'PACKAGE':
-    console_io.PromptContinue(
-        'Charges will begin accruing immediately. Really create Cloud '
-        'SQL instance?',
-        cancel_on_no=True)
+    raise sql_exceptions.ArgumentError(
+        'First Generation instances can no longer be created.')
 
   operation_ref = None
   try:

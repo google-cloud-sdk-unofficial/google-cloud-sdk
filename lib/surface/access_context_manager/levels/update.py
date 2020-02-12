@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.accesscontextmanager import levels
 from googlecloudsdk.command_lib.accesscontextmanager import policies
 
-_API_VERSION_PER_TRACK = {'ALPHA': 'v1alpha', 'BETA': 'v1beta', 'GA': 'v1'}
+_API_VERSION_PER_TRACK = {'ALPHA': 'v1alpha', 'BETA': 'v1', 'GA': 'v1'}
 
 _FEATURE_MASK_PER_TRACK = {
     'ALPHA': {

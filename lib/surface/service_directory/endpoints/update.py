@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.service_directory import util
 from googlecloudsdk.core import log
 
 _RESOURCE_TYPE = 'endpoint'
+_ENDPOINT_METADATA_LIMIT = 512
 
 
 @base.Hidden
@@ -37,7 +38,7 @@ class Update(base.UpdateCommand):
     resource_args.AddEndpointResourceArg(parser, 'to update.')
     flags.AddAddressFlag(parser)
     flags.AddPortFlag(parser)
-    flags.AddMetadataFlag(parser, _RESOURCE_TYPE)
+    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _ENDPOINT_METADATA_LIMIT)
 
   def Run(self, args):
     client = endpoints.EndpointsClient()

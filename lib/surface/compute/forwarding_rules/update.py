@@ -27,10 +27,13 @@ from googlecloudsdk.command_lib.compute.forwarding_rules import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def _Args(cls, parser, support_network_tier, support_global_access):
+def _Args(cls, parser, support_network_tier, support_global_access,
+          support_labels):
+  """Add the flags to create a forwarding rule."""
   cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
   cls.FORWARDING_RULE_ARG.AddArgument(parser)
-  labels_util.AddUpdateLabelsFlags(parser)
+  if support_labels:
+    labels_util.AddUpdateLabelsFlags(parser)
   if support_network_tier:
     flags.AddNetworkTier(
         parser, supports_network_tier_flag=True, for_update=True)
@@ -38,31 +41,15 @@ def _Args(cls, parser, support_network_tier, support_global_access):
     flags.AddAllowGlobalAccess(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine forwarding rule.
-
-  *{command}* updates labels and global access for a Google Compute Engine
-  forwarding rule.  For example:
-
-    $ {command} example-fr --region us-central1 \
-      --update-labels=k0=value1,k1=value2 --remove-labels=k3
-
-  will add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''.
-
-  Labels can be used to identify the forwarding rule and to filter them as in
-
-    $ {parent_command} list --filter='labels.k1:value2'
-
-  To list existing labels
-
-    $ {parent_command} describe example-fr --format='default(labels)'
-
-  """
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
+  """Update a Compute Engine forwarding rule."""
 
   FORWARDING_RULE_ARG = None
+
   _support_global_access = True
   _support_network_tier = False
+  _support_labels = False
 
   @classmethod
   def Args(cls, parser):
@@ -70,7 +57,8 @@ class Update(base.UpdateCommand):
         cls,
         parser,
         support_network_tier=cls._support_network_tier,
-        support_global_access=cls._support_global_access)
+        support_global_access=cls._support_global_access,
+        support_labels=cls._support_labels)
 
   def _CreateGlobalSetLabelsRequest(self, messages, forwarding_rule_ref,
                                     forwarding_rule, replacement):
@@ -140,10 +128,13 @@ class Update(base.UpdateCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
-    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    has_labels_updates = False
+    if self._support_labels:
+      labels_diff = labels_util.Diff.FromUpdateArgs(args)
+      has_labels_updates = labels_diff.MayHaveUpdates()
 
     has_change = any([
-        labels_diff.MayHaveUpdates(),
+        has_labels_updates,
         self._HasNextTierChange(args),
         self._HasGlobalAccessChange(args)
     ])
@@ -171,7 +162,8 @@ class Update(base.UpdateCommand):
     forwarding_rule = objects[0]
 
     forwarding_rule_replacement = self.Modify(messages, args, forwarding_rule)
-    label_update = labels_diff.Apply(labels_value, forwarding_rule.labels)
+    if self._support_labels:
+      label_update = labels_diff.Apply(labels_value, forwarding_rule.labels)
 
     # Create requests.
     requests = []
@@ -183,7 +175,7 @@ class Update(base.UpdateCommand):
             forwardingRuleResource=forwarding_rule_replacement,
             project=forwarding_rule_ref.project)
         requests.append((client.globalForwardingRules, 'Patch', request))
-      if label_update.needs_update:
+      if self._support_labels and label_update.needs_update:
         request = self._CreateGlobalSetLabelsRequest(
             messages, forwarding_rule_ref, forwarding_rule, label_update.labels)
         requests.append((client.globalForwardingRules, 'SetLabels', request))
@@ -195,7 +187,7 @@ class Update(base.UpdateCommand):
             project=forwarding_rule_ref.project,
             region=forwarding_rule_ref.region)
         requests.append((client.forwardingRules, 'Patch', request))
-      if label_update.needs_update:
+      if self._support_labels and label_update.needs_update:
         request = self._CreateRegionalSetLabelsRequest(
             messages, forwarding_rule_ref, forwarding_rule, label_update.labels)
         requests.append((client.forwardingRules, 'SetLabels', request))
@@ -203,37 +195,97 @@ class Update(base.UpdateCommand):
     return holder.client.MakeRequests(requests)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(UpdateGA):
+  """Update a Compute Engine forwarding rule."""
+
+  _support_global_access = True
+  _support_network_tier = False
+  _support_labels = True
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  r"""Update a Google Compute Engine forwarding rule.
-
-  *{command}* updates labels, global access and network tier for a Google
-  Compute Engine forwarding rule.
-
-  Example to update labels:
-
-    $ {command} example-fr --region us-central1 \
-      --update-labels=k0=value1,k1=value2 --remove-labels=k3
-
-  will add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''.
-
-  Labels can be used to identify the forwarding rule and to filter them as in
-
-    $ {parent_command} list --filter='labels.k1:value2'
-
-  To list existing labels
-
-    $ {parent_command} describe example-fr --format='default(labels)'
-
-  """
+class UpdateAlpha(UpdateBeta):
+  """Update a Compute Engine forwarding rule."""
 
   _support_global_access = True
   _support_network_tier = True
+  _support_labels = True
 
-  @classmethod
-  def Args(cls, parser):
-    _Args(
-        cls,
-        parser,
-        support_network_tier=cls._support_network_tier,
-        support_global_access=cls._support_global_access)
+
+UpdateGA.detailed_help = {
+    'brief':
+        'Update a Compute Engine forwarding rule.',
+    'DESCRIPTION':
+        """\
+        *{command}* updates global access for a Compute Engine forwarding rule.
+        """,
+    'EXAMPLES':
+        """\
+        To update the forwarding rule to allow global access, run:
+
+          $ {command} example-fr --allow-global-access --region=us-central1
+        """
+}
+
+UpdateBeta.detailed_help = {
+    'brief':
+        'Update a Compute Engine forwarding rule.',
+    'DESCRIPTION':
+        """\
+        *{command}* updates labels and global access for a Compute
+        Engine forwarding rule.
+        """,
+    'EXAMPLES':
+        """\
+        To update the forwarding rule to allow global access, run:
+
+          $ {command} example-fr --allow-global-access --region=us-central1
+
+        To add/update labels ``k0'' and ``k1'' and remove labels with key ``k3'',
+        run:
+
+          $ {command} example-fr --region=us-central1 \
+          --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+        Labels can be used to identify the forwarding rule and to filter them as
+        in
+
+          $ {parent_command} list --filter='labels.k1:value2'
+
+        To list existing labels, run:
+
+          $ {parent_command} describe example-fr --format='default(labels)'
+        """
+}
+
+UpdateAlpha.detailed_help = {
+    'brief':
+        'Update a Compute Engine forwarding rule.',
+    'DESCRIPTION':
+        """\
+        *{command}* updates labels, global access and network tier for a Compute
+        Engine forwarding rule.
+        """,
+    'EXAMPLES':
+        """\
+        To update the forwarding rule to allow global access, run:
+
+          $ {command} example-fr --allow-global-access --region=us-central1
+
+        To add/update labels ``k0'' and ``k1'' and remove labels with key ``k3''
+        , run:
+
+          $ {command} example-fr --region=us-central1 \
+            --update-labels=k0=value1,k1=value2 --remove-labels=k3
+
+        Labels can be used to identify the forwarding rule and to filter them as
+        in
+
+          $ {parent_command} list --filter='labels.k1:value2'
+
+        To list existing labels, run:
+
+          $ {parent_command} describe example-fr --format='default(labels)'
+        """
+}

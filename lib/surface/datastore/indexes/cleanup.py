@@ -18,8 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import yaml_parsing
+from googlecloudsdk.api_lib.datastore import index_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.app import output_helpers
@@ -72,6 +72,15 @@ removed.
     output_helpers.DisplayProposedConfigDeployments(project, [info])
     console_io.PromptContinue(
         default=True, throw_if_unattended=False, cancel_on_no=True)
-
-    client = appengine_client.AppengineClient()
-    client.CleanupIndexes(info.parsed)
+    received_indexes = index_api.NormalizeIndexes(info.parsed.indexes or [])
+    indexes_to_delete_ids = set()
+    current_indexes = index_api.ListIndexes(project)
+    for index_id, index in current_indexes:
+      if index in received_indexes:
+        continue
+      msg = ('This index is no longer defined in your index.yaml file.\n{0}'
+             .format(index.ToYAML()))
+      prompt = 'Do you want to delete this index'
+      if console_io.PromptContinue(msg, prompt, default=True):
+        indexes_to_delete_ids.add(index_id)
+    index_api.DeleteIndexes(project, indexes_to_delete_ids)

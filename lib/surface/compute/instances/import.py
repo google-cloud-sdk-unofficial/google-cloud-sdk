@@ -59,11 +59,7 @@ class Import(base.CreateCommand):
     instances_flags.INSTANCES_ARG_FOR_IMPORT.AddArgument(
         parser, operation_type='import')
 
-    parser.add_argument(
-        '--source-uri',
-        required=True,
-        help=('Google Cloud Storage path to one of:\n  OVF descriptor\n  '
-              'OVA file\n  Directory with OVF package'))
+    daisy_utils.AddOVFSourceUriArg(parser)
 
     parser.add_argument(
         '--os',
@@ -74,15 +70,8 @@ class Import(base.CreateCommand):
     parser.add_argument(
         '--description',
         help='Specifies a textual description of the instances.')
-
-    parser.add_argument(
-        '--guest-environment',
-        action='store_true',
-        default=True,
-        help='Google Guest Environment will be installed on the instance.')
-
+    daisy_utils.AddGuestEnvironmentArg(parser)
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
-
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
     parser.add_argument(

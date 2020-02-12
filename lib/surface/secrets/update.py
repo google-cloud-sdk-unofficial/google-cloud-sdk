@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a secret's metadata.
 
@@ -99,3 +100,25 @@ class Update(base.UpdateCommand):
 
     # The secret exists, update it
     return self._RunUpdate(secret, args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  r"""Update a secret's metadata.
+
+      Update a secret's metadata (e.g. labels). This command will
+      return an error if given a secret that does not exist. To upsert the
+      creation of a secret, use the `--create-if-missing` flag.
+
+      ## EXAMPLES
+
+      Update the label of a secret named 'my-secret'.
+
+        $ {command} my-secret --update-labels=foo=bar
+  """
+
+  @staticmethod
+  def Args(parser):
+    secrets_args.AddBetaSecret(
+        parser, purpose='to update', positional=True, required=True)
+    labels_util.AddUpdateLabelsFlags(parser)

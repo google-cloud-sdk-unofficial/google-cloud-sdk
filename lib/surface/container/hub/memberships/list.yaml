@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: List memberships.
@@ -12,6 +12,13 @@
     collection: gkehub.projects.locations.memberships
     modify_request_hooks:
     - googlecloudsdk.command_lib.container.hub.memberships.util:SetParentCollection
+    ALPHA:
+      # TODO(b/148312097): update to alpha api_versions once its live.
+      api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

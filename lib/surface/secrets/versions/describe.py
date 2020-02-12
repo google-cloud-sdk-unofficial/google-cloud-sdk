@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   r"""Describe metadata about the secret version.
 
@@ -47,3 +48,23 @@ class Describe(base.DescribeCommand):
     return secrets_api.Versions(
         version=secrets_util.GetVersionFromReleasePath(
             self.ReleaseTrack())).Get(version_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  r"""Describe metadata about the secret version.
+
+  Describe a secret version's metadata. This command does not include the
+  secret version's secret data.
+
+  ## EXAMPLES
+
+  Describe version '123' of the secret named 'my-secret':
+
+    $ {command} 123 --secret=my-secret
+  """
+
+  @staticmethod
+  def Args(parser):
+    secrets_args.AddBetaVersion(
+        parser, purpose='to describe', positional=True, required=True)

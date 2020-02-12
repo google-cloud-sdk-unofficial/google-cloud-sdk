@@ -77,11 +77,11 @@ class UpdatePerimetersGA(base.UpdateCommand):
 class UpdatePerimetersBeta(UpdatePerimetersGA):
   """Update an existing access zone."""
   _INCLUDE_UNRESTRICTED = False
-  _API_VERSION = 'v1beta'
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
-    UpdatePerimetersGA.ArgsVersioned(parser, version='v1beta', track='BETA')
+    UpdatePerimetersGA.ArgsVersioned(parser, version='v1', track='BETA')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

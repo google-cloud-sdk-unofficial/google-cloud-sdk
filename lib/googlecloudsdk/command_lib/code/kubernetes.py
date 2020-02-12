@@ -60,11 +60,24 @@ def _FindExecutable(exe):
   return path
 
 
-class KindCluster(object):
+class _KubeCluster(object):
+  """A kubernetes cluster.
+
+  Attributes:
+    env_vars: Docker env vars.
+  """
+
+  @property
+  def env_vars(self):
+    return {}
+
+
+class KindCluster(_KubeCluster):
   """A cluster on kind.
 
   Attributes:
     context_name: Kubernetes context name.
+    env_vars: Docker env vars.
   """
 
   def __init__(self, cluster_name):
@@ -142,11 +155,12 @@ def _FindKind():
   return _FindExecutable('kind')
 
 
-class MinikubeCluster(object):
+class MinikubeCluster(_KubeCluster):
   """A cluster on minikube.
 
   Attributes:
     context_name: Kubernetes context name.
+    env_vars: Docker environment variables.
   """
 
   def __init__(self, profile):
@@ -156,6 +170,10 @@ class MinikubeCluster(object):
       profile: Name of minikube profile.
     """
     self.context_name = profile
+
+  @property
+  def env_vars(self):
+    return _GetMinikubeDockerEnvs(self.context_name)
 
 
 class Minikube(object):
@@ -191,7 +209,21 @@ def _StartMinkubeCluster(cluster_name, vm_driver):
     ]
     if vm_driver:
       cmd.append('--vm-driver=' + vm_driver)
+      if vm_driver == 'docker':
+        cmd.append('--container-runtime=docker')
+
     subprocess.check_call(cmd)
+
+
+def _GetMinikubeDockerEnvs(cluster_name):
+  """Get the docker environment settings for a given cluster."""
+  cmd = [_FindMinikube(), 'docker-env', '-p', cluster_name, '--shell=none']
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+  stdout, _ = p.communicate()
+  return dict(
+      line.split('=', 1)
+      for line in six.ensure_text(stdout).splitlines()
+      if line)
 
 
 def _IsMinikubeClusterUp(cluster_name):
@@ -201,7 +233,7 @@ def _IsMinikubeClusterUp(cluster_name):
   stdout, _ = p.communicate()
   try:
     status = json.loads(six.ensure_text(stdout).strip())
-    return 'host' in status and status['host'].strip() == 'Running'
+    return 'Host' in status and status['Host'].strip() == 'Running'
   except ValueError:
     return False
 
@@ -212,11 +244,12 @@ def _StopMinikube(cluster_name):
   subprocess.check_call(cmd)
 
 
-class ExternalCluster(object):
+class ExternalCluster(_KubeCluster):
   """A external kubernetes cluster.
 
   Attributes:
     context_name: Kubernetes context name.
+    env_vars: Docker environment variables.
   """
 
   def __init__(self, cluster_name):

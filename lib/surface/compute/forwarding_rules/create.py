@@ -52,7 +52,7 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing):
   parser.add_argument(
       '--service-label',
       help='(Only for Internal Load Balancing): '
-           'https://cloud.google.com/compute/docs/load-balancing/internal/\n'
+           'https://cloud.google.com/load-balancing/docs/dns-names/\n'
            'The DNS label to use as the prefix of the fully qualified domain '
            'name for this forwarding rule. The full name will be internally '
            'generated and output as dnsName. If this field is not specified, '
@@ -292,7 +292,7 @@ class CreateHelper(object):
 class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
-  _support_global_access = False
+  _support_global_access = True
   _support_l7_internal_load_balancing = True
 
   @classmethod

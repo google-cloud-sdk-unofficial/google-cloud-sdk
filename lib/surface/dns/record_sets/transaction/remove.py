@@ -23,7 +23,6 @@ from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dns import transaction_util as trans_util
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
@@ -77,7 +76,7 @@ class Remove(base.Command):
       change = trans_util.ChangeFromYamlFile(
           trans_file, api_version=api_version)
 
-    dns = apis.GetClientInstance('dns', api_version)
+    dns = util.GetApiClient(api_version)
 
     record_to_remove = trans_util.CreateRecordSetFromArgs(
         args, api_version=api_version)

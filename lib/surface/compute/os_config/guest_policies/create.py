@@ -52,7 +52,9 @@ class Create(base.Command):
     parser.add_argument(
         '--file',
         required=True,
-        help='The JSON or YAML file with the guest policy to create.',
+        help="""\
+        The JSON or YAML file with the guest policy to create. For information
+        about the guest policy format, see https://cloud.google.com/compute/docs/osconfig/rest/v1beta/projects.guestPolicies.""",
     )
 
   def Run(self, args):

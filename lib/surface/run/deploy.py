@@ -97,14 +97,12 @@ def GetSuccessMessageForSynchronousDeploy(operations, service_ref):
       target.percent for target in service.status.traffic
       if target.latestRevision or (
           latest_ready and target.revisionName == latest_ready))
-  msg = (
-      'Service [{{bold}}{serv}{{reset}}] '
-      'revision [{{bold}}{rev}{{reset}}] '
-      'has been deployed')
+  msg = ('Service [{{bold}}{serv}{{reset}}] '
+         'revision [{{bold}}{rev}{{reset}}] '
+         'has been deployed and is serving '
+         '{{bold}}{latest_percent_traffic}{{reset}} percent of traffic')
   if latest_percent_traffic:
-    msg += (
-        ' and is serving {{bold}}{latest_percent_traffic}{{reset}} '
-        'percent of traffic at {{bold}}{url}{{reset}}')
+    msg += (' at {{bold}}{url}{{reset}}')
   return msg.format(
       serv=service_ref.servicesId,
       rev=latest_ready,

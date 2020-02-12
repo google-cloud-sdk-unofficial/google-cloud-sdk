@@ -52,6 +52,8 @@ class Update(base.Command):
         the policy that is already in place has a matching etag value. If no
         etag value is specified, the specifications in the updated policy file
         replaces the existing policy.
+
+        For information about the guest policy format, see https://cloud.google.com/compute/docs/osconfig/rest/v1beta/projects.guestPolicies.
         """)
 
   def Run(self, args):

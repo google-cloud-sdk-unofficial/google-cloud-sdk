@@ -22,7 +22,6 @@ from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import export_util
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dns import flags
@@ -81,7 +80,7 @@ class Export(base.Command):
     if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       api_version = 'v1alpha2'
 
-    dns = apis.GetClientInstance('dns', api_version)
+    dns = util.GetApiClient(api_version)
 
     # Get the managed-zone.
     zone_ref = util.GetRegistry(api_version).Parse(

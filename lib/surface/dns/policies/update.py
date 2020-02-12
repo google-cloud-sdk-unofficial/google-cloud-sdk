@@ -51,7 +51,7 @@ class UpdateGA(base.UpdateCommand):
 
   def _FetchPolicy(self, policy_ref, api_version):
     """Get policy to be Updated."""
-    client = apis.GetClientInstance('dns', api_version)
+    client = util.GetApiClient(api_version)
     m = apis.GetMessagesModule('dns', api_version)
     get_request = m.DnsPoliciesGetRequest(
         policy=policy_ref.Name(), project=policy_ref.project)
@@ -66,7 +66,7 @@ class UpdateGA(base.UpdateCommand):
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    client = apis.GetClientInstance('dns', api_version)
+    client = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
 
     # Get Policy
@@ -138,7 +138,7 @@ class UpdateBeta(UpdateGA):
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    client = apis.GetClientInstance('dns', api_version)
+    client = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
 
     # Get Policy

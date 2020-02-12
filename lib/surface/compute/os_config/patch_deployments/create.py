@@ -62,7 +62,9 @@ class Create(base.Command):
     parser.add_argument(
         '--file',
         required=True,
-        help='The JSON or YAML file with the patch deployment to create.',
+        help="""\
+        The JSON or YAML file with the patch deployment to create. For
+        information about the patch deployment format, see https://cloud.google.com/compute/docs/osconfig/rest/v1beta/projects.patchDeployments.""",
     )
 
   def Run(self, args):

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a new secret.
 
@@ -179,3 +180,47 @@ class Create(base.CreateCommand):
       secrets_log.Secrets().Created(secret_ref)
 
     return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  r"""Create a new secret.
+
+  Create a secret with the given name and creates a secret version with the
+  given data, if any. If a secret already exists with the given name, this
+  command will return an error.
+
+  ## EXAMPLES
+
+  Create a secret with an automatic replication policy without creating any
+  versions:
+
+    $ {command} my-secret --replication-policy=automatic
+
+  Create a new secret named 'my-secret' with an automatic replication policy
+  and data from a file:
+
+    $ {command} my-secret --data-file=/tmp/secret
+    --replication-policy=automatic
+
+  Create a new secret named 'my-secret' in 'us-central1' with data from a file:
+
+    $ {command} my-secret --data-file=/tmp/secret
+    --replication-policy=user-managed \
+        --locations=us-central1
+
+  Create a new secret named 'my-secret' in 'us-central1' and 'us-east1' with
+  the value "s3cr3t":
+
+    $ echo "s3cr3t" | {command} my-secret --data-file=- \
+        --replication-policy=user-managed --locations=us-central1,us-east1
+  """
+
+  @staticmethod
+  def Args(parser):
+    secrets_args.AddBetaSecret(
+        parser, purpose='to create', positional=True, required=True)
+    secrets_args.AddLocations(parser, resource='secret')
+    secrets_args.AddDataFile(parser)
+    secrets_args.AddPolicy(parser)
+    labels_util.AddCreateLabelsFlags(parser)

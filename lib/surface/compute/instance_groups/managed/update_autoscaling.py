@@ -40,7 +40,7 @@ class NoMatchingAutoscalerFoundError(exceptions.Error):
 class UpdateAutoscaling(base.Command):
   """Update autoscaling parameters of a managed instance group."""
 
-  scale_down = False
+  scale_in = False
 
   @staticmethod
   def Args(parser):
@@ -69,7 +69,7 @@ class UpdateAutoscaling(base.Command):
     if args.IsSpecified('mode'):
       mode = mig_utils.ParseModeString(args.mode, client.messages)
       new_autoscaler.autoscalingPolicy.mode = mode
-    if self.scale_down:
+    if self.scale_in:
       new_autoscaler.autoscalingPolicy.scaleDownControl = \
         mig_utils.BuildScaleDown(args, client.messages)
 
@@ -80,19 +80,19 @@ class UpdateAutoscaling(base.Command):
 class UpdateAutoscalingBeta(UpdateAutoscaling):
   """Update autoscaling parameters of a managed instance group."""
 
-  scale_down = False
+  scale_in = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
   """Update autoscaling parameters of a managed instance group."""
 
-  scale_down = True
+  scale_in = True
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    mig_utils.AddScaleDownControlFlag(parser)
+    mig_utils.AddScaleInControlFlag(parser)
 
 UpdateAutoscaling.detailed_help = {
     'brief': 'Update autoscaling parameters of a managed instance group',

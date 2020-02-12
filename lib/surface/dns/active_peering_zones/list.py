@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
@@ -48,7 +49,7 @@ class List(base.ListCommand):
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1alpha2')
+    dns = util.GetApiClient('v1alpha2')
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
 
     project_id = args.project if args.project is not None \

@@ -18,6 +18,7 @@
     collection: dns.policies
     method: list
     api_version: v1
+    use_google_auth: true
 
   response:
     id_field: name

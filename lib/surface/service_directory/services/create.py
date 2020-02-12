@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.service_directory import util
 from googlecloudsdk.core import log
 
 _RESOURCE_TYPE = 'service'
+_SERVICE_METADATA_LIMIT = 2000
 
 
 @base.Hidden
@@ -41,7 +42,7 @@ class Create(base.CreateCommand):
         the first character must be a lowercase letter, and all following
         characters must be a dash, lowercase letter, or digit, except the last
         character, which cannot be a dash.""")
-    flags.AddMetadataFlag(parser, _RESOURCE_TYPE)
+    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _SERVICE_METADATA_LIMIT)
 
   def Run(self, args):
     client = services.ServicesClient()

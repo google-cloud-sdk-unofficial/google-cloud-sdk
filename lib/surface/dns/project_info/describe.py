@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 
@@ -46,7 +45,7 @@ class Describe(base.DescribeCommand):
         help='The identifier for the project you want DNS related info for.')
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1')
+    dns = util.GetApiClient('v1')
     project_ref = resources.REGISTRY.Parse(
         args.dns_project, collection='dns.projects')
 
@@ -77,7 +76,7 @@ class DescribeBeta(base.DescribeCommand):
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    dns = apis.GetClientInstance('dns', api_version)
+    dns = util.GetApiClient(api_version)
     project_ref = util.GetRegistry(api_version).Parse(
         args.dns_project, collection='dns.projects')
 

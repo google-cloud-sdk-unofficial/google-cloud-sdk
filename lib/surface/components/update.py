@@ -19,9 +19,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.components import util
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util.prompt_helper import OptInPrompter
 
 
 # This command is silent as does not produce any resource output.
@@ -88,9 +91,9 @@ class Update(base.SilentCommand):
 
   def Run(self, args):
     """Runs the list command."""
-
+    if properties.VALUES.core.disable_usage_reporting.GetBool() in [None, True]:
+      OptInPrompter().Prompt()
     update_manager = util.GetUpdateManager(args)
-
     if args.component_ids and not args.version:
       install = console_io.PromptContinue(
           message='You have specified individual components to update.  If you '

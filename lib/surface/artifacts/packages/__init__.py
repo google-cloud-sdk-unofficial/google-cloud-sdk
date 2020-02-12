@@ -40,8 +40,4 @@ class Packages(base.Group):
   location, run:
 
       $ {command} delete my-pkg --repository=my-repo
-
-  To delete package `my-pkg` with its tags, run:
-
-      $ {command} delete my-pkg --delete-tags
   """

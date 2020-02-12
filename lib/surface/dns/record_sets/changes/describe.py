@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import properties
@@ -54,7 +53,7 @@ class Describe(base.DescribeCommand):
     elif self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       api_version = 'v1alpha2'
 
-    dns_client = apis.GetClientInstance('dns', api_version)
+    dns_client = util.GetApiClient(api_version)
     change_ref = util.GetRegistry(api_version).Parse(
         args.change_id,
         params={

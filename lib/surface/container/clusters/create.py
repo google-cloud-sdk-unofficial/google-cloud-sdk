@@ -320,7 +320,9 @@ def ParseCreateOptionsBase(args):
       shielded_integrity_monitoring=args.shielded_integrity_monitoring,
       reservation_affinity=getattr(args, 'reservation_affinity', None),
       reservation=getattr(args, 'reservation', None),
-      enable_shielded_nodes=args.enable_shielded_nodes,)
+      enable_shielded_nodes=args.enable_shielded_nodes,
+      max_surge_upgrade=args.max_surge_upgrade,
+      max_unavailable_upgrade=args.max_unavailable_upgrade)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -374,6 +376,8 @@ class Create(base.CreateCommand):
     flags.AddResourceUsageExportFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddReservationAffinityFlags(parser)
+    flags.AddSurgeUpgradeFlag(parser)
+    flags.AddMaxUnavailableUpgradeFlag(parser)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)

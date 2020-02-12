@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
@@ -59,7 +58,7 @@ class List(base.ListCommand):
     parser.display_info.AddUriFunc(_GetUriFunction('v1'))
 
   def Run(self, args):
-    dns_client = apis.GetClientInstance('dns', 'v1')
+    dns_client = util.GetApiClient('v1')
 
     project_id = properties.VALUES.core.project.GetOrFail()
 
@@ -95,7 +94,7 @@ class ListBeta(base.ListCommand):
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    dns_client = apis.GetClientInstance('dns', api_version)
+    dns_client = util.GetApiClient(api_version)
 
     project_id = properties.VALUES.core.project.GetOrFail()
 

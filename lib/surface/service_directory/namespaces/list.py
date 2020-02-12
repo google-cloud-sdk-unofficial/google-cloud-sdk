@@ -19,9 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.service_directory import namespaces
+from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
-from googlecloudsdk.command_lib.service_directory import util
 
 
 @base.Hidden
@@ -37,6 +37,6 @@ class List(base.ListCommand):
   def Run(self, args):
     client = namespaces.NamespacesClient()
     location_ref = args.CONCEPTS.location.Parse()
-    order_by = util.ParseSortByArg(args.sort_by)
+    order_by = common_args.ParseSortByArg(args.sort_by)
 
     return client.List(location_ref, args.filter, order_by, args.page_size)

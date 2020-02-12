@@ -39,6 +39,7 @@
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:SetUpdateMask
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ClearConfigOverrides
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ClearDefaultConfig
+    - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ProcessConfigsFiles
 
   arguments:
     resource:
@@ -76,7 +77,6 @@
         mutex: true
         params:
         - _REF_: googlecloudsdk.command_lib.game.servers.flags:config_overrides_file
-          api_field: gameServerDeploymentRollout.gameServerConfigOverrides
           help_text: |
             JSON/YAML file that specifies the Game Server Config overrides. This file can be used to
             gradualy rollout new config version. The following sample file indicates that the version2

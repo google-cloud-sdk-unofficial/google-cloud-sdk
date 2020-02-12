@@ -30,7 +30,7 @@ from googlecloudsdk.third_party.appengine.tools import context_util
 
 
 class GenRepoInfoFile(base.Command):
-  """Generates repository information files for the Stackdriver Debugger.
+  """Generates repository information files for the Cloud Debugger.
 
   The generated file contains opaque information representing which source
   revision the application was built at, and which repository this revision

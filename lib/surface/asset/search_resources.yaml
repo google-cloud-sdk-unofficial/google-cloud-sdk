@@ -25,21 +25,30 @@
         The query statement.
 
         Examples:
-        To find all Cloud resources which have a token "//xyz/123" in their full resource name. See
+        To find Cloud resources with "foobar" in their searchable attributes:
+        `foobar`
+
+        To find Cloud resources with "foo" prefix in their searchable attributes:
+        `foo*`
+
+        To find Cloud resources with "oo" substring within any searchable attribute:
+        `*oo*`
+
+        To find Cloud resources with token "//xyz/123" in the full resource name. See
         [Full Resource Names](https://cloud.google.com/apis/design/resource_names#full_resource_name):
-        'name: "//xyz/123"'
+        `name: "//xyz/123"`
 
-        To find all Cloud resources which have a prefix "//xyz" in their full resource names.
-        'name: "//xyz*"'
+        To find Cloud resources with prefix "//xyz" in the full resource names.
+        `name: "//xyz*"`
 
-        To find all Cloud resources which have a substring "xyz" in their full resource names.
-        'name: "*xyz*"'
+        To find Cloud resources with substring "xyz" in the full resource names.
+        `name: "*xyz*"`
 
-        To find all Cloud resources which have a token "xyz" in their display name:
-        'displayName: "xyz"'
+        To find Cloud resources with "xyz" in their display name:
+        `displayName: "xyz"`
 
-        To find all Cloud resources which have a token "xyz" in their description:
-        'description: "xyz"'
+        To find Cloud resources with "xyz" in their description:
+        `description: "xyz"`
     - api_field: scope
       arg_name: scope
       required: true

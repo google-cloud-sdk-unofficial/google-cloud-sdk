@@ -27,24 +27,24 @@
 
         Examples:
         To find all Cloud IAM policies in your organization that contain amy@mycompany.com:
-        'policy:"amy@mydomain.com"'
+        `policy:"amy@mydomain.com"`
 
         To find all Cloud IAM policies in your organization that contain owner role:
-        'policy:"roles/owner"'
+        `policy:"roles/owner"`
 
         To find all Cloud IAM policies in your organization which have myuser@mycompany.com in the
         owner role:
-        'policy:("roles/owner" "myuser@mycompany.com")'
+        `policy:("roles/owner" "myuser@mycompany.com")`
 
         To find all Cloud IAM policies in your organization which have myuser@mycompany.com in the
         owner role or youruser@mycompany.com in the viewer role:
-        'policy:(("roles/owner" "myuser@mycompany.com") OR ("roles/viewer" "youruser@mycompany.com"))'
+        `policy:(("roles/owner" "myuser@mycompany.com") OR ("roles/viewer" "youruser@mycompany.com"))`
 
         To find all Cloud IAM policies that are set on a resource:
-        'resource: "projects/123"'
+        `resource: "projects/123"`
 
         To find all Cloud IAM policies of resources that match a query.
-        'resource: "*proj*"'
+        `resource: "*proj*"`
     - api_field: scope
       arg_name: scope
       required: true

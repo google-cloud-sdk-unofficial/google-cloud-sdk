@@ -49,4 +49,4 @@ class UpdatePoliciesAlpha(UpdatePoliciesGA):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdatePoliciesBeta(UpdatePoliciesGA):
-  _API_VERSION = 'v1beta'
+  _API_VERSION = 'v1'

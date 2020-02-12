@@ -95,7 +95,7 @@ class Create(base.CreateCommand):
           have NO network binding.
           """))
 
-    dns = apis.GetClientInstance('dns', 'v1')
+    dns = util.GetApiClient('v1')
     messages = apis.GetMessagesModule('dns', 'v1')
 
     registry = util.GetRegistry('v1')
@@ -210,7 +210,7 @@ class CreateBeta(base.CreateCommand):
           """))
 
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    dns = apis.GetClientInstance('dns', api_version)
+    dns = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
     registry = util.GetRegistry(api_version)
 

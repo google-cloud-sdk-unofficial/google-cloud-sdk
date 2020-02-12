@@ -27,7 +27,6 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.dns import import_util
 from googlecloudsdk.api_lib.dns import transaction_util
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dns import flags
@@ -65,7 +64,7 @@ class Start(base.Command):
       raise transaction_util.TransactionFileAlreadyExists(
           'Transaction already exists at [{0}]'.format(args.transaction_file))
 
-    dns = apis.GetClientInstance('dns', api_version)
+    dns = util.GetApiClient(api_version)
 
     # Get the managed-zone.
     zone_ref = util.GetRegistry(api_version).Parse(

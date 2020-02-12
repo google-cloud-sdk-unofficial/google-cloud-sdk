@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.service_directory import util
 from googlecloudsdk.core import log
 
 _RESOURCE_TYPE = 'service'
+_SERVICE_METADATA_LIMIT = 2000
 
 
 @base.Hidden
@@ -35,7 +36,7 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddServiceResourceArg(parser, 'to update.')
-    flags.AddMetadataFlag(parser, _RESOURCE_TYPE)
+    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _SERVICE_METADATA_LIMIT)
 
   def Run(self, args):
     client = services.ServicesClient()

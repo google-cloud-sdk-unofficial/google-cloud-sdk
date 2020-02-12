@@ -14,7 +14,7 @@
 
       To describe a dashboard contained within a specific project, run:
 
-        $ {command} MY-DASHBOARD --project=MY-PROJECT-
+        $ {command} MY-DASHBOARD --project=MY-PROJECT
 
       To describe a dashboard with a fully qualified dashboard ID, run:
 

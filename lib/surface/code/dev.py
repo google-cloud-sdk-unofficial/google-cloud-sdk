@@ -28,13 +28,12 @@ import tempfile
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.code import flags
-from googlecloudsdk.command_lib.code import kube_context
+from googlecloudsdk.command_lib.code import kubernetes
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.core import config
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
-from googlecloudsdk.core.util import platforms
 import six
 
 DEFAULT_CLUSTER_NAME = 'gcloud-local-dev'
@@ -130,6 +129,7 @@ def _NamedTempFile(contents):
 def Skaffold(skaffold_config,
              context_name=None,
              namespace=None,
+             env_vars=None,
              additional_flags=None):
   """Run skaffold and catch keyboard interrupts to kill the process.
 
@@ -137,6 +137,7 @@ def Skaffold(skaffold_config,
     skaffold_config: Path to skaffold configuration yaml file.
     context_name: Kubernetes context name.
     namespace: Kubernetes namespace name.
+    env_vars: Additional environment variables with which to run skaffold.
     additional_flags: Extra skaffold flags.
 
   Yields:
@@ -157,8 +158,11 @@ def Skaffold(skaffold_config,
     # may live in the SDK root as installed gcloud components. Place the
     # SDK root in the path for skaffold.
     env = os.environ.copy()
+    if env_vars:
+      env.update(env_vars)
     if config.Paths().sdk_root:
-      env['PATH'] = env['PATH'] + os.pathsep + config.Paths().sdk_root
+      env['PATH'] = six.ensure_str(env['PATH'] + os.pathsep +
+                                   config.Paths().sdk_root)
 
     try:
       p = subprocess.Popen(cmd, env=env)
@@ -227,15 +231,15 @@ class Dev(base.Command):
       skaffold_config = six.ensure_text(
           local_file_generator.SkaffoldConfig(kubernetes_file.name))
       with _NamedTempFile(skaffold_config) as skaffold_file, \
-           self._GetKubernetesEngine(args) as context, \
-           self._WithKubeNamespace(args.namespace, context.context_name), \
-           Skaffold(skaffold_file.name, context.context_name,
-                    args.namespace,
+           self._GetKubernetesEngine(args) as kube_context, \
+           self._WithKubeNamespace(args.namespace, kube_context.context_name), \
+           Skaffold(skaffold_file.name, kube_context.context_name,
+                    args.namespace, kube_context.env_vars,
                     args.additional_skaffold_flags) as skaffold:
         skaffold.wait()
 
-  @classmethod
-  def _GetKubernetesEngine(cls, args):
+  @staticmethod
+  def _GetKubernetesEngine(args):
     """Get the appropriate kubernetes implementation from the args.
 
     Args:
@@ -246,14 +250,14 @@ class Dev(base.Command):
     """
 
     def External():
-      return kube_context.ExternalClusterContext(args.kube_context)
+      return kubernetes.ExternalClusterContext(args.kube_context)
 
     def Kind():
       if args.IsSpecified('kind_cluster'):
         cluster_name = args.kind_cluster
       else:
         cluster_name = DEFAULT_CLUSTER_NAME
-      return kube_context.KindClusterContext(cluster_name, args.stop_cluster)
+      return kubernetes.KindClusterContext(cluster_name, args.stop_cluster)
 
     def Minikube():
       if args.IsSpecified('minikube_profile'):
@@ -261,8 +265,8 @@ class Dev(base.Command):
       else:
         cluster_name = DEFAULT_CLUSTER_NAME
 
-      return kube_context.Minikube(cluster_name, args.stop_cluster,
-                                   args.minikube_vm_driver)
+      return kubernetes.Minikube(cluster_name, args.stop_cluster,
+                                 args.minikube_vm_driver)
 
     if args.IsSpecified('kube_context'):
       return External()
@@ -270,10 +274,8 @@ class Dev(base.Command):
       return Kind()
     elif args.IsSpecified('minikube_profile'):
       return Minikube()
-    elif platforms.OperatingSystem.Current() == platforms.OperatingSystem.LINUX:
-      return Kind()
     else:
-      return Minikube()
+      return Kind()
 
   @staticmethod
   @contextlib.contextmanager
@@ -283,11 +285,12 @@ class Dev(base.Command):
     Args:
       namespace_name: Namespace name.
       context_name: Kubernetes context name.
+
     Yields:
       None
     """
     if namespace_name:
-      with kube_context.KubeNamespace(namespace_name, context_name):
+      with kubernetes.KubeNamespace(namespace_name, context_name):
         yield
     else:
       yield

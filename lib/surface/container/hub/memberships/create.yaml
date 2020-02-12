@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Create a new membership for a cluster.
     description: |
@@ -16,6 +16,13 @@
 
   request:
     collection: gkehub.projects.locations.memberships
+    ALPHA:
+      # TODO(b/148312097): update to alpha api_version once its live.
+      api_version: v1beta1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
 
   async:
     collection: gkehub.projects.locations.operations

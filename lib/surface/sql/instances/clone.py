@@ -22,6 +22,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
+from googlecloudsdk.api_lib.sql import instances as instance_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
@@ -106,12 +107,18 @@ def RunBaseCloneCommand(args, supports_point_in_time=False):
 
   _UpdateRequestFromArgs(request, args, sql_messages, supports_point_in_time)
 
+  # Check if source is V1; raise error if so.
   # Check if source has customer-managed key; show warning if so.
   try:
     source_instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
             project=source_instance_ref.project,
             instance=source_instance_ref.instance))
+
+    # TODO(b/122660263): Remove when V1 instances are no longer supported.
+    if instance_util.IsInstanceV1(sql_messages, source_instance_resource):
+      raise exceptions.ArgumentError(
+          'First Generation instances can no longer be created.')
     if source_instance_resource.diskEncryptionConfiguration:
       command_util.ShowCmekWarning('clone', 'the source instance')
   except apitools_exceptions.HttpError:

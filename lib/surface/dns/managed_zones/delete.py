@@ -49,7 +49,7 @@ class Delete(base.DeleteCommand):
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
-    dns = apis.GetClientInstance('dns', 'v1')
+    dns = util.GetApiClient('v1')
     messages = apis.GetMessagesModule('dns', 'v1')
 
     zone_ref = resources.REGISTRY.Parse(
@@ -89,7 +89,7 @@ class DeleteBeta(base.DeleteCommand):
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    dns = apis.GetClientInstance('dns', api_version)
+    dns = util.GetApiClient(api_version)
 
     zone_ref = util.GetRegistry(api_version).Parse(
         args.dns_zone,

@@ -175,7 +175,7 @@ class Update(base.UpdateCommand):
 
     # Check for legacy configuration, and let users decide if they still want
     # to update the sink with new settings.
-    if 'cloud-logs@' in sink.writerIdentity:
+    if sink.writerIdentity and 'cloud-logs@' in sink.writerIdentity:
       console_io.PromptContinue(
           'This update will create a new writerIdentity (service account) for '
           'the sink. In order for the sink to continue working, grant that '

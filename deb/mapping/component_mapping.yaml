@@ -5,7 +5,7 @@ app-engine-php: unavailable
 app-engine-python: google-cloud-sdk-app-engine-python
 app-engine-python-extras: google-cloud-sdk-app-engine-python-extras
 alpha: google-cloud-sdk
-anthoscli: unavailable
+anthoscli: google-cloud-sdk
 appctl: unavailable
 beta: google-cloud-sdk
 bigtable: google-cloud-sdk-bigtable-emulator
@@ -24,6 +24,6 @@ gsutil: google-cloud-sdk
 kind: google-cloud-sdk-kind
 kpt: google-cloud-sdk-kpt
 kubectl: kubectl
-minikube: unavailable
+minikube: google-cloud-sdk-minikube
 pubsub-emulator: google-cloud-sdk-pubsub-emulator
 skaffold: google-cloud-sdk-skaffold

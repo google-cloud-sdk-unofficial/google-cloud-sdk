@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.service_directory import util
 from googlecloudsdk.core import log
 
 _RESOURCE_TYPE = 'endpoint'
+_ENDPOINT_METADATA_LIMIT = 512
 
 
 @base.Hidden
@@ -43,7 +44,7 @@ class Create(base.CreateCommand):
         character, which cannot be a dash.""")
     flags.AddAddressFlag(parser)
     flags.AddPortFlag(parser)
-    flags.AddMetadataFlag(parser, _RESOURCE_TYPE)
+    flags.AddMetadataFlag(parser, _RESOURCE_TYPE, _ENDPOINT_METADATA_LIMIT)
 
   def Run(self, args):
     client = endpoints.EndpointsClient()

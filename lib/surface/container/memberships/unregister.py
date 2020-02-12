@@ -56,7 +56,7 @@ class Unregister(base.DeleteCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    kube_client = kube_util.KubernetesClient(args)
+    kube_client = kube_util.OldKubernetesClient(args)
     uuid = kube_util.GetClusterUUID(kube_client)
 
     # Delete membership from GKE Hub API.
@@ -82,8 +82,8 @@ class Unregister(base.DeleteCommand):
                              'You\'ll have to manually delete the namespace.'
                              'You can find all namespaces by running:\n\n'
                              '  `kubectl get ns -l {}`'.format(
-                                 hub_util.CONNECT_RESOURCE_LABEL,
-                                 hub_util.CONNECT_RESOURCE_LABEL))
+                                 agent_util.CONNECT_RESOURCE_LABEL,
+                                 agent_util.CONNECT_RESOURCE_LABEL))
 
     registered_project = exclusivity_util.GetMembershipCROwnerID(kube_client)
     if registered_project:
@@ -100,4 +100,4 @@ class Unregister(base.DeleteCommand):
     exclusivity_util.DeleteMembershipResources(kube_client)
 
     # Delete the connect agent.
-    agent_util.DeleteConnectNamespace(args)
+    agent_util.DeleteConnectNamespace(kube_client, args)

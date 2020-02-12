@@ -69,7 +69,7 @@ class CreateGA(base.UpdateCommand):
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    client = apis.GetClientInstance('dns', api_version)
+    client = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
 
     # Get Policy
@@ -153,7 +153,7 @@ class CreateBeta(CreateGA):
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    client = apis.GetClientInstance('dns', api_version)
+    client = util.GetApiClient(api_version)
     messages = apis.GetMessagesModule('dns', api_version)
 
     # Get Policy

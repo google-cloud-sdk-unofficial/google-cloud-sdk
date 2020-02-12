@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.util.args import common_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class List(base.ListCommand):
   """List the cloud assets."""
 

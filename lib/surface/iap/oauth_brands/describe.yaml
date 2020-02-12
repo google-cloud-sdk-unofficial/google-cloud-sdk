@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: |
-      Describe an OAuth brand.
+      Describe a Cloud OAuth brand.
     description: |
-      *{command}* is used to describe an OAuth brand.
+      *{command}* is used to describe a Cloud OAuth brand.
 
   request:
     collection: iap.projects.brands
@@ -15,4 +15,4 @@
       arg_name: name
       is_positional: true
       help_text: |
-        Name of the OAuth brand to describe.
+        Name of the Cloud OAuth brand to describe.

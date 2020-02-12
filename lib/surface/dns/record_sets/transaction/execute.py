@@ -23,7 +23,6 @@ import os
 from googlecloudsdk.api_lib.dns import import_util
 from googlecloudsdk.api_lib.dns import transaction_util
 from googlecloudsdk.api_lib.dns import util
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
@@ -69,7 +68,7 @@ class Execute(base.ListCommand):
       os.remove(args.transaction_file)
       return None
 
-    dns = apis.GetClientInstance('dns', api_version)
+    dns = util.GetApiClient(api_version)
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
         params={

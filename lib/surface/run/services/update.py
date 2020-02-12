@@ -123,20 +123,22 @@ class Update(base.Command):
             'Deploying asynchronously.')
       else:
         service = client.GetService(service_ref)
-        active_revs = client.GetActiveRevisions(service_ref)
-
-        msg = ('Service [{{bold}}{serv}{{reset}}] revision{plural} {rev_msg} '
-               'is active and serving traffic at {{bold}}{url}{{reset}}')
-
-        rev_msg = ' '.join(
-            ['[{{bold}}{}{{reset}}]'.format(rev) for rev in active_revs])
-
+        latest_ready = service.status.latestReadyRevisionName
+        latest_percent_traffic = sum(
+            target.percent for target in service.status.traffic
+            if target.latestRevision or
+            (latest_ready and target.revisionName == latest_ready))
+        msg = ('Service [{{bold}}{serv}{{reset}}] '
+               'revision [{{bold}}{rev}{{reset}}] '
+               'has been deployed and is serving '
+               '{{bold}}{latest_percent_traffic}{{reset}} percent of traffic')
+        if latest_percent_traffic:
+          msg += (' at {{bold}}{url}{{reset}}')
         msg = msg.format(
             serv=service_ref.servicesId,
-            plural='s' if len(active_revs) > 1 else '',
-            rev_msg=rev_msg,
-            url=service.domain if 'domain' in dir(service) else service.url)
-
+            rev=latest_ready,
+            url=service.domain if 'domain' in dir(service) else service.url,
+            latest_percent_traffic=latest_percent_traffic)
         pretty_print.Success(msg)
 
 

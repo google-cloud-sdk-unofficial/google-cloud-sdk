@@ -63,6 +63,11 @@ class Create(base.Command):
         'Domain name is the ID of DomainMapping resource.',
         required=True,
         prefixes=False)
+    parser.add_argument(
+        '--force-override',
+        action='store_true',
+        help='Map this domain even if it is already mapped to another service.'
+    )
     concept_parsers.ConceptParser([
         domain_mapping_presentation]).AddToParser(parser)
 
@@ -104,7 +109,8 @@ class Create(base.Command):
                 help=DOMAIN_MAPPINGS_HELP_DOCS_URL, domains=domains_text))
 
     with serverless_operations.Connect(conn_context) as client:
-      mapping = client.CreateDomainMapping(domain_mapping_ref, args.service)
+      mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
+                                           args.force_override)
       for record in mapping.records:
         record.name = record.name or mapping.route_name
       return mapping.records

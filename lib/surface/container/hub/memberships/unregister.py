@@ -36,28 +36,38 @@ class Unregister(base.DeleteCommand):
   r"""Unregister a cluster from Hub.
 
   This command deletes the membership resource of a registered cluster on the
-  Hub and removes the connect-agent that was installed on the registered
-  cluster during registration. To delete only the membership of a registered
-  cluster on the Hub, consider using: `{parent_command} delete` command.
+  Hub and removes the Connect Agent that was installed on the cluster during
+  registration. To delete only the membership of a registered cluster on the
+  Hub, consider using command: `{parent_command} delete`.
 
+  To register a non-GKE cluster use --context flag (with an optional
+  --kubeconfig flag).
+
+  To register a GKE cluster use --gke-cluster or --gke-uri flag (no --kubeconfig
+  flag is required).
 
   ## EXAMPLES
 
-    Unregister a cluster referenced from the default kubeconfig file:
+    Unregister a non-GKE cluster referenced from a specific kubeconfig file:
 
-      $ {command} --context=my-cluster-context
-
-    Unregister a cluster referenced from a specific kubeconfig file:
-
-      $ {command} \
+      $ {command} my-cluster \
         --context=my-cluster-context \
         --kubeconfig=/home/user/custom_kubeconfig
 
-    Unregister a GKE cluster:
+    Unregister a non-GKE cluster referenced from the default kubeconfig file:
 
-      $ {command} --context=my-gke-cluster-context
-      $ {command} --gke-uri=my-gke-cluster-uri
-      $ {command} --gke-cluster=my-gke-cluster-region-or-zone/my-cluster
+      $ {command} my-cluster --context=my-cluster-context
+
+    Unregister a GKE cluster referenced from a GKE URI:
+
+      $ {command} my-cluster \
+        --gke-uri=my-cluster-gke-uri
+
+    Unregister a GKE cluster referenced from a GKE Cluster location and name:
+
+      $ {command} my-cluster \
+        --gke-cluster=my-cluster-region-or-zone/my-cluster
+
   """
 
   @classmethod
@@ -77,6 +87,7 @@ class Unregister(base.DeleteCommand):
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     kube_client = kube_util.KubernetesClient(args)
+    kube_util.ValidateClusterIdentifierFlags(kube_client, args)
     membership_id = args.CLUSTER_NAME
     # Delete membership from Hub API.
     try:
@@ -102,8 +113,8 @@ class Unregister(base.DeleteCommand):
                        'You\'ll have to manually delete the namespace.'
                        'You can find all namespaces by running:\n\n'
                        '  `kubectl get ns -l {}`'.format(
-                           hub_util.CONNECT_RESOURCE_LABEL,
-                           hub_util.CONNECT_RESOURCE_LABEL))
+                           agent_util.CONNECT_RESOURCE_LABEL,
+                           agent_util.CONNECT_RESOURCE_LABEL))
 
     # Delete membership resources.
     try:
@@ -113,4 +124,4 @@ class Unregister(base.DeleteCommand):
                        '`kubectl delete memberships membership`.')
 
     # Delete the connect agent.
-    agent_util.DeleteConnectNamespace(args)
+    agent_util.DeleteConnectNamespace(kube_client, args)

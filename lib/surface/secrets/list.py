@@ -25,39 +25,6 @@ from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
-  r"""List all secret names.
-
-  List all secret names. This command only returns the secret's names, not
-  their secret data. To retrieve the secret's data, run `$ {parent_command}
-  access SECRET`.
-
-  ## EXAMPLES
-
-  List secret names.
-
-    $ {command}
-  """
-
-  @staticmethod
-  def Args(parser):
-    secrets_args.AddProject(parser)
-    secrets_fmt.UseSecretTable(parser, 'v1beta1')
-    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
-
-  def Run(self, args):
-    project_ref = args.CONCEPTS.project.Parse()
-    if not project_ref:
-      raise exceptions.RequiredArgumentException(
-          'project',
-          'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
-      )
-    return secrets_api.Secrets(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).ListWithPager(
-                project_ref=project_ref, limit=args.limit)
-
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
@@ -91,3 +58,25 @@ class List(base.ListCommand):
         version=secrets_util.GetVersionFromReleasePath(
             self.ReleaseTrack())).ListWithPager(
                 project_ref=project_ref, limit=args.limit)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  r"""List all secret names.
+
+  List all secret names. This command only returns the secret's names, not
+  their secret data. To retrieve the secret's data, run `$ {parent_command}
+  access SECRET`.
+
+  ## EXAMPLES
+
+  List secret names.
+
+    $ {command}
+  """
+
+  @staticmethod
+  def Args(parser):
+    secrets_args.AddProject(parser)
+    secrets_fmt.UseSecretTable(parser, 'v1beta1')
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
