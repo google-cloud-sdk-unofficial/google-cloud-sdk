@@ -35,8 +35,9 @@ class List(base.ListCommand):
         'Location from which to list buckets. By default, buckets in all '
         'locations will be listed')
     parser.display_info.AddFormat(
-        'table(name, display_name, retentionDays, locked, create_time,'
-        'update_time, description)')
+        'table(name.segment(-3):label=LOCATION, '
+        'name.segment(-1):label=BUCKET_ID, retentionDays, lifecycle_state, '
+        'locked, create_time, update_time)')
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):

@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Export(base.DescribeCommand):
   """Export a cluster.
 
@@ -51,9 +52,9 @@ To export a cluster to standard output, run:
   @classmethod
   def GetApiVersion(cls):
     """Returns the API version based on the release track."""
-    if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
-      return 'v1beta2'
-    return 'v1'
+    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
+      return 'v1'
+    return 'v1beta2'
 
   @classmethod
   def GetSchemaPath(cls, for_help=False):

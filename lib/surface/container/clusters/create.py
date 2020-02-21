@@ -371,8 +371,8 @@ class Create(base.CreateCommand):
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
-    flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True,
-                                   ga=True)
+    flags.AddAutoprovisioningFlags(
+        parser, hidden=False, for_create=True, ga=True)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddReservationAffinityFlags(parser)
@@ -426,6 +426,11 @@ class Create(base.CreateCommand):
                   'legacy instance metadata endpoints disabled in the default '
                   'node pool, run `clusters create` with the flag '
                   '`--metadata disable-legacy-endpoints=true`.')
+
+    if not options.enable_shielded_nodes:
+      log.warning(
+          'Starting with version 1.18, clusters will have shielded GKE nodes by default.'
+      )
 
     if options.enable_ip_alias:
       log.warning(

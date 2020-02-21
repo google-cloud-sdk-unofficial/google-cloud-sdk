@@ -1,10 +1,13 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hidden: true
   help_text:
     brief: Create a new membership for a cluster.
     description: |
-      Create a new membership for a cluster in Hub. It will not install the Connect Agent. To
-      create a membership and also install a Connect Agent on this cluster, consider using the
-      command: `{parent_command} register --help`.
+      Create a Hub membership resource corresponding to the cluster.
+
+      This command does not install the Connect Agent or in-cluster Kubernetes Resources that are
+      required to connect the cluster with Google. For complete cluster registration, consider using
+      the command: `{parent_command} register --help`.
     examples: |
       Create a new membership for a cluster in Hub:
 

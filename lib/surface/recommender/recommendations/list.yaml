@@ -13,7 +13,7 @@
     collection: recommender.projects.locations.recommenders.recommendations
     method: list
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1alpha2
     BETA:
       api_version: v1beta1
     GA:

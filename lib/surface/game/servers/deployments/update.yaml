@@ -18,6 +18,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:SetUpdateMaskForDeployment
 
   arguments:
     resource:

@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 DETAILED_HELP = {
     'brief': 'Manage Google Kubernetes Hub memberships.',
     'DESCRIPTION': """Manage Google Kubernetes Hub memberships.""",
-    'EXAMPLES': """\
+    'EXAMPLES': """
     Create a membership:
 
       $ gcloud container memberships create a-membership
@@ -66,6 +66,14 @@ DETAILED_HELP = {
 }
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command group is deprecated. '
+        'Please use `gcloud container hub memberships` command group instead.'),
+    error=(
+        'This command group has been removed. '
+        'Please use `gcloud container hub memberships` command group instead.'))
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Memberships(base.Group):
   """Manage Google Kubernetes Hub memberships."""

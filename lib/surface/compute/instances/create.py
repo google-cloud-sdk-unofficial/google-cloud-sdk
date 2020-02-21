@@ -35,6 +35,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -482,12 +483,11 @@ class Create(base.CreateCommand):
         args.IsSpecified('erase_windows_vss_signature'):
         instance.eraseWindowsVssSignature = args.erase_windows_vss_signature
 
-      if self._support_post_key_revocation_action_type and \
-        args.IsSpecified('post_key_revocation_action_type'):
-        instance.postKeyRevocationActionType = \
-            compute_client.messages.Instance \
-                .PostKeyRevocationActionTypeValueValuesEnum(
-                    args.post_key_revocation_action_type)
+      if self._support_post_key_revocation_action_type and args.IsSpecified(
+          'post_key_revocation_action_type'):
+        instance.postKeyRevocationActionType = arg_utils.ChoiceToEnum(
+            args.post_key_revocation_action_type, compute_client.messages
+            .Instance.PostKeyRevocationActionTypeValueValuesEnum)
 
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,

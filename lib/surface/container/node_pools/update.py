@@ -69,6 +69,8 @@ class Update(base.UpdateCommand):
     _Args(parser)
     group = parser.add_mutually_exclusive_group(required=True)
 
+    flags.AddNodePoolLocationsFlag(group)
+
     node_management_group = group.add_argument_group('Node management')
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
@@ -86,6 +88,7 @@ class Update(base.UpdateCommand):
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
         enable_autoscaling=args.enable_autoscaling,
+        node_locations=args.node_locations,
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
         enable_autoprovisioning=args.enable_autoprovisioning,

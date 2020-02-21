@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.service_directory import services
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.service_directory import flags
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
@@ -30,9 +31,10 @@ class Resolve(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddServiceResourceArg(parser, 'to resolve.')
+    flags.AddMaxEndpointsFlag(parser)
 
   def Run(self, args):
     client = services.ServicesClient()
     service_ref = args.CONCEPTS.service.Parse()
 
-    return client.Resolve(service_ref)
+    return client.Resolve(service_ref, args.max_endpoints)

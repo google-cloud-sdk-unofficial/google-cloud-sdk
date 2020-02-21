@@ -2,10 +2,12 @@
   help_text:
     brief: Delete a membership.
     description: |
-      This command deletes the membership of a registered cluster on the Hub. It will not remove
-      the Connect Agent that was installed on the cluster during cluster registration. To delete
-      the membership of a registered cluster and remove the Connect Agent, consider using the
-      command: `{parent_command} unregister`.
+      This command deletes the Hub membership resource corresponding to the cluster.
+
+      This command is intended to delete stale Hub Membership resources as doing so on a fully
+      registered cluster will skip uninstalling the Connect Agent and and orphan in-cluster
+      resources and agent connections to Google. To completely unregister the cluster, consider
+      using the command: `{parent_command} unregister`.
     examples: |
       Delete a membership from Hub:
 

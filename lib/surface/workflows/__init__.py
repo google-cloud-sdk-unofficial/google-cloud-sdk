@@ -27,7 +27,3 @@ class Workflows(base.Group):
   """Manage your Cloud Workflows resources."""
 
   category = base.TOOLS_CATEGORY
-
-  def Filter(self, context, args):
-    del context, args
-    base.DisableUserProjectQuota()

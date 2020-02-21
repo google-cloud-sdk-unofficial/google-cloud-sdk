@@ -17,7 +17,7 @@
     collection: recommender.projects.locations.recommenders.recommendations
     method: markClaimed
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1alpha2
     BETA:
       api_version: v1beta1
     GA:
@@ -30,7 +30,7 @@
     params:
     - arg_name: etag
       ALPHA:
-        api_field: googleCloudRecommenderV1alpha1MarkClaimedRequest.etag
+        api_field: googleCloudRecommenderV1alpha2MarkRecommendationClaimedRequest.etag
       BETA:
         api_field: googleCloudRecommenderV1beta1MarkRecommendationClaimedRequest.etag
       GA:
@@ -40,7 +40,7 @@
     - arg_name: state-metadata
       metavar: KEY=VALUE
       ALPHA:
-        api_field: googleCloudRecommenderV1alpha1MarkClaimedRequest.stateMetadata.additionalProperties
+        api_field: googleCloudRecommenderV1alpha2MarkRecommendationClaimedRequest.stateMetadata.additionalProperties
       BETA:
         api_field: googleCloudRecommenderV1beta1MarkRecommendationClaimedRequest.stateMetadata.additionalProperties
       GA:

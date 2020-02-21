@@ -43,7 +43,7 @@ _DETAILED_HELP = {
         `appengine-web.xml` file inside the WEB-INF directory. {command}
         skips files specified in the .gcloudignore file (see `gcloud topic
         gcloudignore` for more information).
-        For Java11 Standard, you can either use the yaml file, or, if the
+        For Java11 Standard, you can either use the yaml file, or a Maven pom.xml or, if the
         application is a single self-contained jar, you can give the path to the
         jar and a simple service configuration will be generated.
         """,

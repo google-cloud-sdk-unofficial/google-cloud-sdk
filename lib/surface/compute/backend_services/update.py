@@ -66,7 +66,7 @@ class UpdateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging):
+           support_logging, support_client_only):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -96,7 +96,7 @@ class UpdateHelper(object):
     flags.AddCacheKeyIncludeHost(parser, default=None)
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
-    flags.AddSessionAffinity(parser)
+    flags.AddSessionAffinity(parser, support_client_only=support_client_only)
     flags.AddAffinityCookieTtl(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
@@ -356,6 +356,7 @@ class UpdateGA(base.UpdateCommand):
   _support_l7_internal_load_balancer = True
   _support_logging = False
   _support_failover = False
+  _support_client_only = False
 
   @classmethod
   def Args(cls, parser):
@@ -364,7 +365,8 @@ class UpdateGA(base.UpdateCommand):
         support_l7_internal_load_balancer=cls
         ._support_l7_internal_load_balancer,
         support_failover=cls._support_failover,
-        support_logging=cls._support_logging)
+        support_logging=cls._support_logging,
+        support_client_only=cls._support_client_only)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
@@ -383,6 +385,7 @@ class UpdateBeta(UpdateGA):
 
   _support_logging = True
   _support_failover = True
+  _support_client_only = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -394,3 +397,4 @@ class UpdateAlpha(UpdateGA):
 
   _support_logging = True
   _support_failover = True
+  _support_client_only = True

@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.anthos import flags
 from googlecloudsdk.command_lib.util.args import common_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import progress_tracker
 
 
 class Apply(base.BinaryBackedCommand):
@@ -53,13 +52,11 @@ class Apply(base.BinaryBackedCommand):
         account=properties.VALUES.core.account.Get(), operation='apply')
     log.status.Print('Starting apply of package [{}] using '
                      'project [{}]'.format(args.LOCAL_DIR, apply_project))
-    with progress_tracker.ProgressTracker('Apply Running ...',
-                                          interruptable=True):
-      response = command_executor(command='apply',
-                                  apply_dir=args.LOCAL_DIR,
-                                  project=apply_project,
-                                  show_exec_error=args.show_exec_error,
-                                  env=anthoscli_backend.GetEnvArgsForCommand(),
-                                  stdin=auth_cred)
-      return self._DefaultOperationResponseHandler(response)
-
+    response = command_executor(command='apply',
+                                apply_dir=args.LOCAL_DIR,
+                                project=apply_project,
+                                show_exec_error=args.show_exec_error,
+                                env=anthoscli_backend.GetEnvArgsForCommand(
+                                    extra_vars={'GCLOUD_AUTH_PLUGIN': 'true'}),
+                                stdin=auth_cred)
+    return self._DefaultOperationResponseHandler(response)

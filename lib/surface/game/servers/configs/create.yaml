@@ -67,9 +67,27 @@
         Contents of a sample yaml file:
 
               ```
-                - fleetAutoScalerSpec: 'fleet-autoscaler-spec-1'
-                  schedules: [{cronJobDuration: 3600s, cronSpec: '10 0 1-7 5,12 *'}]
-                - fleetAutoScalerSpec: 'fleet-autoscaler-spec-0'
+                - fleetAutoscalerSpec:
+                    policy:
+                      type: Buffer
+                      buffer:
+                        bufferSize: 10
+                        minReplicas: 10
+                        maxReplicas: 20
+                  name: scaling-config-2
+                  schedules:
+                  - startTime: '2020-01-01T01:00:00Z'
+                    endTime: '2020-01-02T01:00:00Z'
+                    cronSpec: '0 9 * * *'
+                    cronJobDuration: 3600s
+                - fleetAutoscalerSpec:
+                    policy:
+                      type: Buffer
+                      buffer:
+                        bufferSize: 2
+                        minReplicas: 2
+                        maxReplicas: 4
+                  name: scaling-config-1
               ```
     labels:
       api_field: gameServerConfig.labels

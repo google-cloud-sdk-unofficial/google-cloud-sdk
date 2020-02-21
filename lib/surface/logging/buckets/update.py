@@ -39,9 +39,6 @@ class Update(base.UpdateCommand):
         '--retention-days', type=int,
         help='A new retention period for the bucket.')
     parser.add_argument(
-        '--display-name',
-        help='A new display name for the bucket.')
-    parser.add_argument(
         '--description',
         help='A new description for the bucket.')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
@@ -61,16 +58,13 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('retention_days'):
       bucket_data['retentionDays'] = args.retention_days
       update_mask.append('retention_days')
-    if args.IsSpecified('display_name'):
-      bucket_data['displayName'] = args.display_name
-      update_mask.append('display_name')
     if args.IsSpecified('description'):
       bucket_data['description'] = args.description
       update_mask.append('description')
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
-          ['--retention-days', '--display-name', '--description'],
+          ['--retention-days', '--description'],
           'Please specify at least one property to update')
 
     return util.GetClient().projects_locations_buckets.Patch(

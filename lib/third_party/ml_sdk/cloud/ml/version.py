@@ -26,7 +26,8 @@ required_install_packages = [
     'nltk >= 3.2.1, <= 3.4',
     'pyyaml >= 3.11, < 4.0',
     'protobuf >= 3.1.0, < 4.0',
-    'enum34 >= 1.1',
+    # Python 3.7 seems incompatible with enum34. See b/148202403.
+    'enum34 >= 1.1; python_version <= "3.5"',
 ]
 
 required_install_packages_with_batch_prediction = required_install_packages + [

@@ -112,5 +112,11 @@
           reachable through `restricted.googleapis.com` (`199.36.153.4/30`).
       help_text: |
         Level of network access available to the pool.
+    - api_field: workerPool.workerConfig.maxConcurrentActions
+      arg_name: max-concurrent-actions
+      required: false
+      default: 1
+      help_text: |
+        Maximum actions each worker VM can run concurrently.
     labels:
       api_field: workerPool.workerConfig.labels

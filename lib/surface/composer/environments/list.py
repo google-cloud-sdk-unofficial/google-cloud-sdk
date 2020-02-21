@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.composer import resource_args
 class List(base.ListCommand):
   """List the Cloud Composer environments under a project and location.
 
-  List environments that not have been successfully deleted. Prints a table
+  List environments that have not been successfully deleted. Prints a table
   with the following columns:
   * name
   * location

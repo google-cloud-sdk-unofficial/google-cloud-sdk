@@ -38,6 +38,7 @@ DEPRECATION_WARNING = ('Because Cloud Composer manages the Airflow metadata '
                        'you understand the outcome.')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Run(base.Command):
   """Run an Airflow sub-command remotely in a Cloud Composer environment.
 
@@ -103,6 +104,10 @@ class Run(base.Command):
           default=False, cancel_on_no=True)
     return response
 
+  def ConvertKubectlError(self, error, env_obj):
+    del env_obj  # Unused argument.
+    return error
+
   def Run(self, args):
     self.DeprecationWarningPrompt(args)
 
@@ -123,23 +128,60 @@ class Run(base.Command):
     cluster_location_id = command_util.ExtractGkeClusterLocationId(env_obj)
 
     with command_util.TemporaryKubeconfig(cluster_location_id, cluster_id):
-      kubectl_ns = command_util.FetchKubectlNamespace(
-          env_obj.config.softwareConfig.imageVersion)
-      pod = command_util.GetGkePod(
-          pod_substr=WORKER_POD_SUBSTR, kubectl_namespace=kubectl_ns)
+      try:
+        kubectl_ns = command_util.FetchKubectlNamespace(
+            env_obj.config.softwareConfig.imageVersion)
+        pod = command_util.GetGkePod(
+            pod_substr=WORKER_POD_SUBSTR, kubectl_namespace=kubectl_ns)
 
-      log.status.Print(
-          'Executing within the following kubectl namespace: {}'.format(
-              kubectl_ns))
+        log.status.Print(
+            'Executing within the following kubectl namespace: {}'.format(
+                kubectl_ns))
 
-      self.BypassConfirmationPrompt(args)
-      kubectl_args = [
-          'exec', pod, '-tic', WORKER_CONTAINER, 'airflow', args.subcommand
-      ]
-      if args.cmd_args:
-        # Add '--' to the argument list so kubectl won't eat the command args.
-        kubectl_args.extend(['--'] + args.cmd_args)
+        self.BypassConfirmationPrompt(args)
+        kubectl_args = [
+            'exec', pod, '-tic', WORKER_CONTAINER, 'airflow', args.subcommand
+        ]
+        if args.cmd_args:
+          # Add '--' to the argument list so kubectl won't eat the command args.
+          kubectl_args.extend(['--'] + args.cmd_args)
 
-      command_util.RunKubectlCommand(
-          command_util.AddKubectlNamespace(kubectl_ns, kubectl_args),
-          out_func=log.status.Print)
+        command_util.RunKubectlCommand(
+            command_util.AddKubectlNamespace(kubectl_ns, kubectl_args),
+            out_func=log.status.Print)
+      except command_util.KubectlError as e:
+        raise self.ConvertKubectlError(e, env_obj)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class RunBeta(Run):
+  """Run an Airflow sub-command remotely in a Cloud Composer environment.
+
+  Executes an Airflow CLI sub-command remotely in an environment. If the
+  sub-command takes flags, separate the environment name from the sub-command
+  and its flags with ``--''. This command waits for the sub-command to
+  complete; its exit code will match the sub-command's exit code.
+
+  ## EXAMPLES
+
+    The following command:
+
+    {command} myenv trigger_dag -- some_dag --run_id=foo
+
+  is equivalent to running the following command from a shell inside the
+  *my-environment* environment:
+
+    airflow trigger_dag some_dag --run_id=foo
+  """
+
+  def ConvertKubectlError(self, error, env_obj):
+    is_private = (
+        env_obj.config.privateEnvironmentConfig and
+        env_obj.config.privateEnvironmentConfig.enablePrivateEnvironment)
+    if is_private:
+      return command_util.Error(
+          str(error) +
+          ' Make sure you have followed https://cloud.google.com/composer/docs/how-to/accessing/airflow-cli#running_commands_on_a_private_ip_environment '
+          'to enable access to your private Cloud Composer environment from '
+          'your machine.')
+    return error

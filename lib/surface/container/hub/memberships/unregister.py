@@ -35,16 +35,31 @@ from googlecloudsdk.core import log
 class Unregister(base.DeleteCommand):
   r"""Unregister a cluster from Hub.
 
-  This command deletes the membership resource of a registered cluster on the
-  Hub and removes the Connect Agent that was installed on the cluster during
-  registration. To delete only the membership of a registered cluster on the
-  Hub, consider using command: `{parent_command} delete`.
+  This command unregisters a cluster with the Hub by:
+
+    1. Deleting the Hub Membership resource for this cluster (a.k.a
+       `{parent_command} delete`).
+    2. Removing the corresponding in-cluster Kubernetes Resources that make the
+       cluster exclusive to one Hub (a.k.a `kubectl delete memberships
+       membership`).
+    3. Uninstalling the Connect Agent from this cluster (a.k.a
+       `kubectl delete on the gke-connect namespace`).
+
+  The unregister command makes additional internal checks to ensure that all
+  three steps can be safely done to properly clean-up in-Hub and in-cluster
+  resources.
 
   To register a non-GKE cluster use --context flag (with an optional
   --kubeconfig flag).
 
   To register a GKE cluster use --gke-cluster or --gke-uri flag (no --kubeconfig
   flag is required).
+
+  To only delete the Hub membership resource, consider using the command:
+  `{parent_command} delete`. This command is intended to delete stale Hub
+  Membership resources as doing so on a fully registered cluster will skip some
+  of the steps above and orphan in-cluster resources and agent connections to
+  Google.
 
   ## EXAMPLES
 
@@ -76,10 +91,9 @@ class Unregister(base.DeleteCommand):
         'CLUSTER_NAME',
         type=str,
         help=textwrap.dedent("""\
-            The name of the cluster being unregistered. This name corresponds
-            to the cluster's membership resource name. To list of all the
-            memberships inside your project, consider using the command:
-            `{parent_command} clusters list`.
+            The membership name that corresponds to the cluster being
+            unregistered. To get list of all the memberships on the Hub,
+            consider using the command: `{parent_command} list`.
          """),
     )
     hub_util.AddUnRegisterCommonArgs(parser)
@@ -87,6 +101,7 @@ class Unregister(base.DeleteCommand):
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     kube_client = kube_util.KubernetesClient(args)
+    kube_client.CheckClusterAdminPermissions()
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
     membership_id = args.CLUSTER_NAME
     # Delete membership from Hub API.
@@ -100,28 +115,34 @@ class Unregister(base.DeleteCommand):
           'Underlying error: {}'.format(project, e))
     except apitools_exceptions.HttpNotFoundError as e:
       log.status.Print(
-          'Membership for [{}] was not found. It may already have been '
-          'deleted, or it may never have existed.'.format(
-              args.context))
+          'Membership [{}] for the cluster [{}] was not found on the Hub. '
+          'It may already have been deleted, or it may never have existed.'
+          .format(name, args.CLUSTER_NAME))
 
     # Get namespace for the connect resource label.
     selector = '{}={}'.format(agent_util.CONNECT_RESOURCE_LABEL, project)
     namespaces = kube_client.NamespacesWithLabelSelector(selector)
     if not namespaces:
-      log.status.Print('There\'s no namespace for the label {}. '
-                       'If gke-connect is labeled with another project,'
-                       'You\'ll have to manually delete the namespace.'
-                       'You can find all namespaces by running:\n\n'
+      log.status.Print('There\'s no namespace for the label [{}]. '
+                       'If [gke-connect] is labeled with another project, '
+                       'You\'ll have to manually delete the namespace. '
+                       'You can find all namespaces by running:\n'
                        '  `kubectl get ns -l {}`'.format(
                            agent_util.CONNECT_RESOURCE_LABEL,
                            agent_util.CONNECT_RESOURCE_LABEL))
 
-    # Delete membership resources.
+    # Delete in-cluster membership resources.
     try:
       exclusivity_util.DeleteMembershipResources(kube_client)
-    except exceptions.Error:
-      log.status.Print('{} You can delete the membership CR manually by '
-                       '`kubectl delete memberships membership`.')
+    except exceptions.Error as e:
+      log.status.Print(
+          '{} error in deleting in-cluster membership resources. '
+          'You can manually delete these membership related '
+          'resources from your cluster by running the command:\n'
+          '  `kubectl delete memberships membership`.\nBy doing so, '
+          'the cluster will lose its association to the Hub in '
+          'project [{}] and can be registered into a different '
+          'project. '.format(e, project))
 
     # Delete the connect agent.
     agent_util.DeleteConnectNamespace(kube_client, args)

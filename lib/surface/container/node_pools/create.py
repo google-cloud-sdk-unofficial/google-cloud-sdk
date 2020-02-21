@@ -171,12 +171,15 @@ class Create(base.CreateCommand):
     flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True, default=True)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
     flags.AddSandboxFlag(parser)
+    flags.AddNodePoolLocationsFlag(parser, for_create=True)
     flags.AddSurgeUpgradeFlag(parser, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         parser, for_node_pool=True, is_create=True)
 
   def ParseCreateNodePoolOptions(self, args):
-    return ParseCreateNodePoolOptionsBase(args)
+    ops = ParseCreateNodePoolOptionsBase(args)
+    ops.node_locations = args.node_locations
+    return ops
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

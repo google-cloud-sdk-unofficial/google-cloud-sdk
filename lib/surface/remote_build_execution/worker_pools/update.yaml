@@ -117,4 +117,9 @@
           reachable through `restricted.googleapis.com` (`199.36.153.4/30`).
       help_text: |
         Level of network access available to the pool.
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.maxConcurrentActions
+      arg_name: max-concurrent-actions
+      required: false
+      help_text: |
+        Maximum actions each worker VM can run concurrently.
     additional_arguments_hook: googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:AddLabelsFlags

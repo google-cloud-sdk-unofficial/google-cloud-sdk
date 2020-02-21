@@ -88,6 +88,11 @@ class Import(base.Command):
       import_job = client.projects_locations_keyRings_importJobs.Get(  # pylint: disable=line-too-long
           messages.CloudkmsProjectsLocationsKeyRingsImportJobsGetRequest(
               name=import_job_name))
+      if import_job.state != messages.ImportJob.StateValueValuesEnum.ACTIVE:
+        raise exceptions.BadArgumentException(
+            'import-job',
+            'Import job [{0}] is not active (state is {1}).'.format(
+                import_job_name, import_job.state))
       public_key_bytes = import_job.publicKey.pem.encode('ascii')
     return public_key_bytes
 

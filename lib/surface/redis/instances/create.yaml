@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
     brief: |
       Create a Memorystore Redis instance.
     description: |
@@ -13,7 +15,6 @@
 
         $ {command} my-redis-instance --region=us-central1 --size=5
 
-  release_tracks: [ALPHA, BETA, GA]
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.redis.resources:instance
@@ -84,6 +85,17 @@
       - enum_value: REDIS_4_0
         arg_value: redis_4_0
         help_text: Redis 4.0 compatibility
+      ALPHA:
+        choices:
+        - enum_value: REDIS_3_2
+          arg_value: redis_3_2
+          help_text: Redis 3.2 compatibility
+        - enum_value: REDIS_4_0
+          arg_value: redis_4_0
+          help_text: Redis 4.0 compatibility
+        - enum_value: REDIS_5_0
+          arg_value: redis_5_0
+          help_text: Redis 5.0 compatibility
     - arg_name: reserved-ip-range
       api_field: instance.reservedIpRange
       help_text: |

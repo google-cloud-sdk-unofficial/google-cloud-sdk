@@ -14,7 +14,7 @@
   request:
     collection: recommender.projects.locations.recommenders.recommendations
     method: markActive
-    api_version: v1alpha1
+    api_version: v1alpha2
 
   arguments:
     resource:
@@ -22,6 +22,6 @@
       spec: !REF googlecloudsdk.command_lib.recommender.resources:recommendation
     params:
     - arg_name: etag
-      api_field: googleCloudRecommenderV1alpha1MarkActiveRequest.etag
+      api_field: googleCloudRecommenderV1alpha2MarkRecommendationActiveRequest.etag
       help_text: The fingerprint of the recommendation.
       required: true

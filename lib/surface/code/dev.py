@@ -34,6 +34,7 @@ from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.core import config
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
+from googlecloudsdk.core.util import platforms
 import six
 
 DEFAULT_CLUSTER_NAME = 'gcloud-local-dev'
@@ -69,8 +70,8 @@ def _FindOrInstallSkaffoldComponent():
 def _FindSkaffold():
   """Find the path to the skaffold executable."""
   skaffold = (
-      file_utils.FindExecutableOnPath('skaffold') or
-      _FindOrInstallSkaffoldComponent())
+      _FindOrInstallSkaffoldComponent() or
+      file_utils.FindExecutableOnPath('skaffold'))
   if not skaffold:
     raise EnvironmentError('Unable to locate skaffold.')
   return skaffold
@@ -159,7 +160,8 @@ def Skaffold(skaffold_config,
     # SDK root in the path for skaffold.
     env = os.environ.copy()
     if env_vars:
-      env.update(env_vars)
+      env.update((six.ensure_str(name), six.ensure_str(value))
+                 for name, value in env_vars.items())
     if config.Paths().sdk_root:
       env['PATH'] = six.ensure_str(env['PATH'] + os.pathsep +
                                    config.Paths().sdk_root)
@@ -207,6 +209,7 @@ class Dev(base.Command):
 
     parser.add_argument(
         '--minikube-vm-driver',
+        default='docker',
         help='If running on minikube, use this vm driver.')
 
     parser.add_argument(
@@ -274,8 +277,10 @@ class Dev(base.Command):
       return Kind()
     elif args.IsSpecified('minikube_profile'):
       return Minikube()
-    else:
+    elif platforms.OperatingSystem.Current() == platforms.OperatingSystem.LINUX:
       return Kind()
+    else:
+      return Minikube()
 
   @staticmethod
   @contextlib.contextmanager

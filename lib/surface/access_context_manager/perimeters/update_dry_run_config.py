@@ -66,7 +66,7 @@ class UpdatePerimetersAlpha(base.UpdateCommand):
         args, result, perimeter_ref.accessPoliciesId, dry_run=True)
     vpc_allowed_services = perimeters.ParseVpcRestriction(
         args, result, self._API_VERSION, dry_run=True)
-    enable_vpc_restriction = args.enable_vpc_service_restriction
+    enable_vpc_accessible_services = args.enable_vpc_accessible_services
 
     return client.Patch(
         perimeter_ref,
@@ -74,5 +74,5 @@ class UpdatePerimetersAlpha(base.UpdateCommand):
         restricted_services=restricted_services,
         levels=levels,
         vpc_allowed_services=vpc_allowed_services,
-        enable_vpc_service_restriction=enable_vpc_restriction,
+        enable_vpc_accessible_services=enable_vpc_accessible_services,
         apply_to_dry_run_config=True)

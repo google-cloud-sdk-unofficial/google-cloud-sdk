@@ -6,7 +6,7 @@ help_text:
     Sets the IAM policy for the given image as defined in a JSON or YAML file.
 
   examples: |
-    The following command will read am IAM policy defined in a JSON file
+    The following command will read an IAM policy defined in a JSON file
     'policy.json' and set it for the image `my-image`:
 
       $ {command} my-image policy.json
@@ -31,6 +31,8 @@ iam:
     policy: Policy
     set_iam_policy_request: ComputeImagesSetIamPolicyRequest
   ALPHA:
+    enable_condition: true
+  BETA:
     enable_condition: true
 
 arguments:

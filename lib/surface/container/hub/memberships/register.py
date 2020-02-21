@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.container.hub import kube_util as kube_util
 from googlecloudsdk.command_lib.container.hub import util as hub_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
@@ -43,13 +44,18 @@ class Register(base.CreateCommand):
   This command registers a cluster with the Hub by:
 
     1. Creating a Hub Membership resource corresponding to the cluster.
-    2. Installing the Connect Agent into this cluster.
+    2. Adding in-cluster Kubernetes Resources that make the cluster exclusive
+       to one Hub.
+    3. Installing the Connect Agent into this cluster.
+
+  A successful registration implies that the cluster is now exclusive to a
+  single Hub.
 
   For more information about Connect Agent, go to:
   https://cloud.google.com/anthos/multicluster-management/connect/overview/
 
-  To register a non-GKE cluster use --context flag (with an optional
-  --kubeconfig flag).
+  To register a non-GKE or GKE On-Prem cluster use --context flag (with an
+  optional --kubeconfig flag).
 
   To register a GKE cluster use --gke-cluster or --gke-uri flag (no --kubeconfig
   flag is required).
@@ -67,31 +73,31 @@ class Register(base.CreateCommand):
 
   ## EXAMPLES
 
-    Register a non-GKE cluster referenced from a specific kubeconfig file, and
-    install the Connect Agent:
+    Register a non-GKE or GKE On-Prem cluster referenced from a specific
+    kubeconfig file, and install the Connect Agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
         --kubeconfig=/home/user/custom_kubeconfig \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a non-GKE cluster referenced from the default kubeconfig file,
-    and install the Connect Agent:
+    Register a non-GKE or GKE On-Prem cluster referenced from the default
+    kubeconfig file, and install the Connect Agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a non-GKE cluster, and install a specific version of the Connect
-    Agent:
+    Register a non-GKE or GKE On-Prem cluster, and install a specific version
+    of the Connect Agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
         --version=gkeconnect_20190802_02_00 \
         --service-account-key-file=/tmp/keyfile.json
 
-    Register a non-GKE cluster and output a manifest that can be used to install
-    the Connect Agent:
+    Register a non-GKE or GKE On-Prem cluster and output a manifest that can be
+    used to install the Connect Agent:
 
       $ {command} my-cluster \
         --context=my-cluster-context \
@@ -145,8 +151,8 @@ class Register(base.CreateCommand):
         'CLUSTER_NAME',
         type=str,
         help=textwrap.dedent("""\
-            The name of the cluster being registered. This name is used to create
-            a cluster membership in Hub.
+          The membership name that you choose to uniquely represents the cluster
+          being registered on the Hub.
          """),
     )
     hub_util.AddUnRegisterCommonArgs(parser)
@@ -188,6 +194,7 @@ class Register(base.CreateCommand):
     parser.add_argument(
         '--version',
         type=str,
+        hidden=True,
         help=textwrap.dedent("""\
           The version of the Connect Agent to install/upgrade if not using the
           latest connect version.
@@ -216,6 +223,8 @@ class Register(base.CreateCommand):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     # This incidentally verifies that the kubeconfig and context args are valid.
     with kube_util.KubernetesClient(args) as kube_client:
+      kube_client.CheckClusterAdminPermissions()
+      kube_util.ValidateClusterIdentifierFlags(kube_client, args)
       uuid = kube_util.GetClusterUUID(kube_client)
       # Read the service account files provided in the arguments early, in order
       # to catch invalid files before performing mutating operations.
@@ -273,26 +282,35 @@ class Register(base.CreateCommand):
       # Connect-Agent.
       if already_exists:
         console_io.PromptContinue(
-            message='A membership for [{}] already exists. Continuing will '
-            'reinstall the Connect agent deployment to use a new image (if one '
-            'is available).'.format(resource_name),
+            message='A membership [{}] for the cluster [{}] already exists. '
+            'Continuing will reinstall the Connect agent deployment to use a '
+            'new image (if one is available).'.format(resource_name,
+                                                      args.CLUSTER_NAME),
             cancel_on_no=True)
+      else:
+        log.status.Print(
+            'Created a new membership [{}] for the cluster [{}]'.format(
+                resource_name, args.CLUSTER_NAME))
 
-      # No membership exists. Attempt to create a new one, and install a new
-      # agent.
+      # Attempt to update the existing agent deployment, or install a new agent
+      # if necessary.
       try:
         self._InstallOrUpdateExclusivityArtifacts(kube_client, resource_name)
         agent_util.DeployConnectAgent(kube_client, args,
                                       service_account_key_data,
                                       docker_credential_data, resource_name,
                                       self.ReleaseTrack())
-      except:
+      except Exception as e:
+        log.status.Print('Error in installing the Connect Agent: {}'.format(e))
         # In case of a new membership, we need to clean up membership and
         # resources if we failed to install the Connect Agent.
         if not already_exists:
           api_util.DeleteMembership(resource_name, self.ReleaseTrack())
           exclusivity_util.DeleteMembershipResources(kube_client)
         raise
+      log.status.Print(
+          'Finished registering the cluster [{}] with the Hub.'.format(
+              args.CLUSTER_NAME))
       return obj
 
   def _CheckMembershipWithUUID(self, resource_name, cluster_name):
@@ -358,10 +376,11 @@ class Register(base.CreateCommand):
                                        self.ReleaseTrack())
 
     if res.status.code:
-      raise exceptions.Error(('invalid exclusivity state: {}. If you want ' +
-                              'to register the cluster to with {}, please ' +
-                              'unregister this cluster first.').format(
-                                  parent, res.status.message))
+      raise exceptions.Error(
+          'Error validating cluster\'s exclusivity state '
+          'with the Hub under parent collection [{}]: {}. '
+          'Cannot proceed with the cluster registration.'.format(
+              parent, res.status.message))
 
   def _InstallOrUpdateExclusivityArtifacts(self, kube_client, membership_ref):
     """Install the exclusivity artifacts for the cluster.

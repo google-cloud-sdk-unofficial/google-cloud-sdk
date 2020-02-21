@@ -41,6 +41,8 @@ _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 class Import(base.CreateCommand):
   """Import an instance into Google Compute Engine from OVF."""
 
+  _OS_CHOICES = os_choices.OS_CHOICES_INSTANCE_IMPORT_GA
+
   @classmethod
   def Args(cls, parser):
     instances_flags.AddCanIpForwardArgs(parser)
@@ -64,7 +66,7 @@ class Import(base.CreateCommand):
     parser.add_argument(
         '--os',
         required=False,
-        choices=sorted(os_choices.OS_CHOICES_INSTANCE_IMPORT_BETA),
+        choices=sorted(cls._OS_CHOICES),
         help='Specifies the OS of the image being imported.')
 
     parser.add_argument(
@@ -174,6 +176,8 @@ class Import(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ImportBeta(Import):
   """Import an instance into Google Compute Engine from OVF."""
+
+  _OS_CHOICES = os_choices.OS_CHOICES_INSTANCE_IMPORT_BETA
 
   @classmethod
   def Args(cls, parser):

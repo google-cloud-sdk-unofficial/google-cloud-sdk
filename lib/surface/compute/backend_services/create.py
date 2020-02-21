@@ -79,7 +79,7 @@ class CreateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging, support_multinic):
+           support_logging, support_multinic, support_client_only):
     """Add flags to create a backend service to the parser."""
 
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -99,7 +99,7 @@ class CreateHelper(object):
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
     flags.AddEnableCdn(parser)
-    flags.AddSessionAffinity(parser)
+    flags.AddSessionAffinity(parser, support_client_only=support_client_only)
     flags.AddAffinityCookieTtl(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(
@@ -313,7 +313,8 @@ class CreateGA(base.CreateCommand):
   _support_l7_internal_load_balancer = True
   _support_failover = False
   _support_logging = False
-  _support_multinic = False
+  _support_multinic = True
+  _support_client_only = False
 
   @classmethod
   def Args(cls, parser):
@@ -323,7 +324,8 @@ class CreateGA(base.CreateCommand):
         ._support_l7_internal_load_balancer,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
-        support_multinic=cls._support_multinic)
+        support_multinic=cls._support_multinic,
+        support_client_only=cls._support_client_only)
 
   def Run(self, args):
     """Issues request necessary to create Backend Service."""
@@ -356,6 +358,7 @@ class CreateBeta(CreateGA):
   _support_failover = True
   _support_logging = True
   _support_multinic = True
+  _support_client_only = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -374,4 +377,4 @@ class CreateAlpha(CreateBeta):
   compute backend-services add-backend' or 'gcloud compute
   backend-services edit'.
   """
-  pass
+  _support_client_only = True

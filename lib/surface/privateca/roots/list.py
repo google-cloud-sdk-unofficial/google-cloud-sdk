@@ -59,7 +59,7 @@ class List(base.ListCommand):
 
     request = messages.PrivatecaProjectsLocationsCertificateAuthoritiesListRequest(
         parent=parent_resource,
-        filter='type=SELF_SIGNED',
+        filter='type:SELF_SIGNED',
         orderBy=common_args.ParseSortByArg(args.sort_by),
         pageSize=args.page_size)
 

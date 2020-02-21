@@ -36,7 +36,7 @@
     modify_method_hook:
       googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ChooseUpdateOrPreviewMethod
     modify_request_hooks:
-    - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:SetUpdateMask
+    - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:SetUpdateMaskForRollout
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ClearConfigOverrides
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ClearDefaultConfig
     - googlecloudsdk.command_lib.game.servers.deployments.update_hooks:ProcessConfigsFiles
