@@ -7,9 +7,9 @@
 
       ## EXAMPLES
 
-      To see the list of all Game Server Deployments in project 'my-project' and location 'my-location', run:
+      To see the list of all Game Server Deployments in project 'my-project' and location 'global'(deployments only support the 'global' location), run:
 
-        $ {command} --project=my-project --location=my-location
+        $ {command} --project=my-project --location=global
 
 
   request:

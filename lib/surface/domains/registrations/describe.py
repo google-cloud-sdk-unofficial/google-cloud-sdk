@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ from googlecloudsdk.command_lib.domains import resource_args
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe an existing domain registration.
+  """Describe an existing Cloud Domains registration.
 
-  This command fetches and prints information about an existing registration.
+  Print information about an existing registration.
 
   ## EXAMPLES
 
-  To describe a registration for example.com, run:
+  To describe a registration for ``example.com'', run:
 
     $ {command} example.com
   """

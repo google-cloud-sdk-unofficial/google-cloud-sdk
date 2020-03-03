@@ -38,7 +38,7 @@ class Describe(base.DescribeCommand):
   To print the configuration with ID ``2017-01-01R0'' for the service
   called ``my-service'', run:
 
-    $ {command} --service my-service 2017-01-01R0
+    $ {command} --service=my-service 2017-01-01R0
   """
 
   @staticmethod

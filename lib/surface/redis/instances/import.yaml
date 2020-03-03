@@ -1,5 +1,5 @@
 - release_tracks: [GA, BETA, ALPHA]
-
+  command_type: GENERIC
   help_text:
     brief: Import data to a Memorystore Redis instance from Google Cloud Storage.
     description: |

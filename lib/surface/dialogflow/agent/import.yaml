@@ -1,4 +1,5 @@
 release_tracks: [ALPHA]
+command_type: GENERIC
 help_text:
   brief: Import a Dialogflow agent from a zip file.
   description: |

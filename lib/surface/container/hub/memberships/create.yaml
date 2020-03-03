@@ -20,8 +20,7 @@
   request:
     collection: gkehub.projects.locations.memberships
     ALPHA:
-      # TODO(b/148312097): update to alpha api_version once its live.
-      api_version: v1beta1
+      api_version: v1alpha2
     BETA:
       api_version: v1beta1
     GA:
@@ -36,7 +35,7 @@
       spec: !REF googlecloudsdk.command_lib.container.hub.memberships.resources:membership
     params:
     - api_field: membership.description
-      release_tracks: [ALPHA, BETA]
+      release_tracks: [BETA]
       arg_name: description
       required: true
       help_text: Description of the membership resource.

@@ -45,6 +45,7 @@ class Create(base.CreateCommand):
     common_flags.AddDisplayNameArg(parser)
     labels_util.AddCreateLabelsFlags(parser)
     resource_args.AddApiConfigResourceArg(parser, 'created', positional=True)
+    common_flags.AddBackendAuthServiceAccountFlag(parser)
 
     group = parser.add_group(mutex=True,
                              required=True,
@@ -102,7 +103,8 @@ class Create(base.CreateCommand):
     resp = api_configs.Create(api_config_ref,
                               rollout['rolloutId'],
                               labels=args.labels,
-                              display_name=args.display_name)
+                              display_name=args.display_name,
+                              backend_auth=args.backend_auth_service_account)
 
     return ops.GetOperationResult(resp, is_async=args.async_)
 

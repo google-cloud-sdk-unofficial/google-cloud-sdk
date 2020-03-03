@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -65,7 +66,7 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete domain mappings."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.RUN)
+        args, product=flags.Product.RUN)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
       client.DeleteDomainMapping(domain_mapping_ref)

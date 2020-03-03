@@ -62,7 +62,6 @@ def _GetProject(args):
 def _Run(args,
          track=None,
          enable_runtime=True,
-         enable_traffic_control=False,
          enable_build_worker_pool=False):
   """Run a function deployment with the given args."""
   # Check for labels that start with `deployment`, which is not allowed.
@@ -138,30 +137,29 @@ def _Run(args,
     function.vpcConnector = ('' if args.clear_vpc_connector else
                              args.vpc_connector)
     updated_fields.append('vpcConnector')
-  if enable_traffic_control:
-    if args.IsSpecified('egress_settings'):
-      will_have_vpc_connector = ((had_vpc_connector and
-                                  not args.clear_vpc_connector) or
-                                 args.vpc_connector)
-      if not will_have_vpc_connector:
-        raise exceptions.RequiredArgumentException(
-            'vpc-connector', 'Flag `--vpc-connector` is '
-            'required for setting `egress-settings`.')
-      egress_settings_enum = arg_utils.ChoiceEnumMapper(
-          arg_name='egress_settings',
-          message_enum=function.VpcConnectorEgressSettingsValueValuesEnum,
-          custom_mappings=flags.EGRESS_SETTINGS_MAPPING).GetEnumForChoice(
-              args.egress_settings)
-      function.vpcConnectorEgressSettings = egress_settings_enum
-      updated_fields.append('vpcConnectorEgressSettings')
-    if args.IsSpecified('ingress_settings'):
-      ingress_settings_enum = arg_utils.ChoiceEnumMapper(
-          arg_name='ingress_settings',
-          message_enum=function.IngressSettingsValueValuesEnum,
-          custom_mappings=flags.INGRESS_SETTINGS_MAPPING).GetEnumForChoice(
-              args.ingress_settings)
-      function.ingressSettings = ingress_settings_enum
-      updated_fields.append('ingressSettings')
+  if args.IsSpecified('egress_settings'):
+    will_have_vpc_connector = ((had_vpc_connector and
+                                not args.clear_vpc_connector) or
+                               args.vpc_connector)
+    if not will_have_vpc_connector:
+      raise exceptions.RequiredArgumentException(
+          'vpc-connector', 'Flag `--vpc-connector` is '
+          'required for setting `egress-settings`.')
+    egress_settings_enum = arg_utils.ChoiceEnumMapper(
+        arg_name='egress_settings',
+        message_enum=function.VpcConnectorEgressSettingsValueValuesEnum,
+        custom_mappings=flags.EGRESS_SETTINGS_MAPPING).GetEnumForChoice(
+            args.egress_settings)
+    function.vpcConnectorEgressSettings = egress_settings_enum
+    updated_fields.append('vpcConnectorEgressSettings')
+  if args.IsSpecified('ingress_settings'):
+    ingress_settings_enum = arg_utils.ChoiceEnumMapper(
+        arg_name='ingress_settings',
+        message_enum=function.IngressSettingsValueValuesEnum,
+        custom_mappings=flags.INGRESS_SETTINGS_MAPPING).GetEnumForChoice(
+            args.ingress_settings)
+    function.ingressSettings = ingress_settings_enum
+    updated_fields.append('ingressSettings')
   if enable_build_worker_pool:
     if args.build_worker_pool or args.clear_build_worker_pool:
       function.buildWorkerPool = ('' if args.clear_build_worker_pool else
@@ -304,6 +302,8 @@ class Deploy(base.Command):
     flags.AddIgnoreFileFlag(parser)
 
     flags.AddVPCConnectorMutexGroup(parser)
+    flags.AddEgressSettingsFlag(parser)
+    flags.AddIngressSettingsFlag(parser)
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack())
@@ -317,11 +317,9 @@ class DeployBeta(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddEgressSettingsFlag(parser)
-    flags.AddIngressSettingsFlag(parser)
 
   def Run(self, args):
-    return _Run(args, track=self.ReleaseTrack(), enable_traffic_control=True)
+    return _Run(args, track=self.ReleaseTrack())
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -332,13 +330,10 @@ class DeployAlpha(base.Command):
   def Args(parser):
     """Register flags for this command."""
     Deploy.Args(parser)
-    flags.AddEgressSettingsFlag(parser)
-    flags.AddIngressSettingsFlag(parser)
     flags.AddBuildWorkerPoolMutexGroup(parser)
 
   def Run(self, args):
     return _Run(
         args,
         track=self.ReleaseTrack(),
-        enable_traffic_control=True,
         enable_build_worker_pool=True)

@@ -74,7 +74,7 @@ class List(commands.List):
 
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.EVENTS)
+        args, product=serverless_flags.Product.EVENTS)
 
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with eventflow_operations.Connect(conn_context) as client:

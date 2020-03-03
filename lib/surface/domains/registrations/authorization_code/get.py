@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,13 +25,16 @@ from googlecloudsdk.command_lib.domains import resource_args
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetAuthorizationCode(base.DescribeCommand):
-  """Get authorization code of specific registration.
+  """Get authorization code of a specific Cloud Domains registration.
+
+  Get authorization code of a specific registration.
 
   Can only be called after 60 days have elapsed since initial registration.
+  Also, the registration must be in state ACTIVE.
 
   ## EXAMPLES
 
-  To get authorization code of example.com run:
+  To get authorization code of ``example.com'', run:
 
     $ {command} example.com
   """

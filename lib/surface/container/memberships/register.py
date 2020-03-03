@@ -139,7 +139,10 @@ class Register(base.CreateCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-
+    # TODO(b/145953996): api_utils map release_track to an api_version.
+    # All old commands needs to use 'v1beta1' irrespective of the release track,
+    # till they are removed (already deprecation policy applied).
+    self.release_track = base.ReleaseTrack.BETA
     # This incidentally verifies that the kubeconfig and context args are valid.
     kube_client = kube_util.OldKubernetesClient(args)
     uuid = kube_util.GetClusterUUID(kube_client)
@@ -174,7 +177,7 @@ class Register(base.CreateCommand):
       exclusivity_util.ApplyMembershipResources(kube_client, project)
       obj = api_util.CreateMembership(project, uuid, args.CLUSTER_NAME,
                                       gke_cluster_self_link, uuid,
-                                      self.ReleaseTrack())
+                                      self.release_track)
     except apitools_exceptions.HttpConflictError as e:
       # If the error is not due to the object already existing, re-raise.
       error = core_api_exceptions.HttpErrorPayload(e)
@@ -189,7 +192,7 @@ class Register(base.CreateCommand):
       # Connect agent in a cluster that is different from the one that they
       # expect, and is not required for the proper functioning of the agent or
       # the Hub.
-      obj = api_util.GetMembership(name, self.ReleaseTrack())
+      obj = api_util.GetMembership(name, self.release_track)
       if obj.description != args.CLUSTER_NAME:
         # A membership exists, but does not have the same description. This is
         # possible if two different users attempt to register the same
@@ -214,10 +217,10 @@ class Register(base.CreateCommand):
     # A membership exists. Attempt to update the existing agent deployment, or
     # install a new agent if necessary.
     if already_exists:
-      obj = api_util.GetMembership(name, self.ReleaseTrack())
+      obj = api_util.GetMembership(name, self.release_track)
       agent_util.DeployConnectAgent(kube_client, args, service_account_key_data,
                                     docker_credential_data, name,
-                                    self.ReleaseTrack())
+                                    self.release_track)
       return obj
 
     # No membership exists. Attempt to create a new one, and install a new
@@ -225,9 +228,9 @@ class Register(base.CreateCommand):
     try:
       agent_util.DeployConnectAgent(kube_client, args, service_account_key_data,
                                     docker_credential_data, name,
-                                    self.ReleaseTrack())
+                                    self.release_track)
     except:
-      api_util.DeleteMembership(name, self.ReleaseTrack())
+      api_util.DeleteMembership(name, self.release_track)
       exclusivity_util.DeleteMembershipResources(kube_client)
       raise
     return obj
@@ -262,7 +265,7 @@ class Register(base.CreateCommand):
             'Please unregister this cluster before continuing:\n\n'
             '  gcloud {}container hub unregister-cluster --project {} --context {}'
             .format(registered_project,
-                    hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
+                    hub_util.ReleaseTrackCommandPrefix(self.release_track),
                     registered_project, context))
 
     if project not in authorized_projects:
@@ -273,7 +276,7 @@ class Register(base.CreateCommand):
 
     try:
       registered_membership_project = api_util.ProjectForClusterUUID(
-          uuid, [project, registered_project], self.ReleaseTrack())
+          uuid, [project, registered_project], self.release_track)
     except apitools_exceptions.HttpNotFoundError as e:
       raise exceptions.Error(
           'Could not access Memberships API. Is your project whitelisted for '
@@ -285,5 +288,5 @@ class Register(base.CreateCommand):
           'Please unregister this cluster before continuing:\n\n'
           '  gcloud {}container hub unregister-cluster --project {} --context {}'
           .format(registered_membership_project,
-                  hub_util.ReleaseTrackCommandPrefix(self.ReleaseTrack()),
+                  hub_util.ReleaseTrackCommandPrefix(self.release_track),
                   registered_membership_project, context))

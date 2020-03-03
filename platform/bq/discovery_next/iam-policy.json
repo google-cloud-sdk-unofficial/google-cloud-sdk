@@ -16,6 +16,7 @@
   "documentationLink": "https://developers.google.com/bigquery/",
   "protocol": "rest",
   "rootUrl": "https://bigquery.googleapis.com/",
+  "mtlsRootUrl": "https://bigquery.mtls.googleapis.com/",
   "servicePath": "",
   "baseUrl": "https://bigquery.googleapis.com/",
   "batchPath": "batch",
@@ -1320,7 +1321,7 @@
           "type": "string"
         },
         "id": {
-          "description": "Output only. Opaque ID field of the job",
+          "description": "Output only. Opaque ID field of the job.",
           "type": "string"
         },
         "selfLink": {
@@ -1497,6 +1498,10 @@
         "destinationEncryptionConfiguration": {
           "description": "Custom encryption configuration (e.g., Cloud KMS keys)",
           "$ref": "EncryptionConfiguration"
+        },
+        "scriptOptions": {
+          "description": "Options controlling the execution of scripts.",
+          "$ref": "ScriptOptions"
         }
       }
     },
@@ -1752,6 +1757,7 @@
     },
     "HivePartitioningOptions": {
       "id": "HivePartitioningOptions",
+      "description": "Options for configuring hive partitioning detect.",
       "type": "object",
       "properties": {
         "mode": {
@@ -1766,6 +1772,13 @@
           "description": "Optional. [Experimental]  If set to true, queries over this table require\na partition filter that can be used for partition elimination to be\nspecified. Note that this field should only be true when creating\na permanent external table or querying a temporary external table.\nHive-partitioned loads with require_partition_filter explicitly set to\ntrue will fail.",
           "default": "false",
           "type": "boolean"
+        },
+        "fields": {
+          "description": "Output only. [Experimental] For permanent external tables, this field is populated with\nthe hive partition keys in the order they were inferred. The types of the\npartition keys can be deduced by checking the table schema (which will\ninclude the partition keys). Not every API will populate this field in the\noutput. For example, Tables.Get will populate it, but Tables.List will not\ncontain this field.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1927,6 +1940,36 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "ScriptOptions": {
+      "id": "ScriptOptions",
+      "type": "object",
+      "properties": {
+        "statementTimeoutMs": {
+          "description": "Timeout period for each statement in a script.",
+          "type": "string",
+          "format": "int64"
+        },
+        "statementByteBudget": {
+          "description": "Limit on the number of bytes billed per statement. Exceeding this budget\nresults in an error.",
+          "type": "string",
+          "format": "int64"
+        },
+        "keyResultStatement": {
+          "description": "Determines which statement in the script represents the \"key result\",\nused to populate the schema and query results of the script job.\nDefault is LAST.",
+          "enumDescriptions": [
+            "",
+            "",
+            ""
+          ],
+          "type": "string",
+          "enum": [
+            "KEY_RESULT_STATEMENT_KIND_UNSPECIFIED",
+            "LAST",
+            "FIRST_SELECT"
+          ]
         }
       }
     },
@@ -3499,6 +3542,10 @@
               "clustering": {
                 "description": "[TrustedTester] Clustering specification for this table, if configured.",
                 "$ref": "Clustering"
+              },
+              "hivePartitioningOptions": {
+                "description": "[Experimental] The hive partitioning configuration for this table,\nwhen applicable.",
+                "$ref": "HivePartitioningOptions"
               },
               "labels": {
                 "description": "The labels associated with this table. You can use these to organize\nand group your tables.",

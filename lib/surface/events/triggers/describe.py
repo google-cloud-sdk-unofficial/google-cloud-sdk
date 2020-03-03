@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.events import exceptions
 from googlecloudsdk.command_lib.events import resource_args
 from googlecloudsdk.command_lib.events import util
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
@@ -69,7 +70,7 @@ class Describe(base.Command):
   def Run(self, args):
     """Executes when the user runs the describe command."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.EVENTS)
+        args, product=serverless_flags.Product.EVENTS)
 
     trigger_ref = args.CONCEPTS.trigger.Parse()
     with eventflow_operations.Connect(conn_context) as client:

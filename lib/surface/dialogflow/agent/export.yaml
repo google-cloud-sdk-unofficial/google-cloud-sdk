@@ -1,4 +1,5 @@
 release_tracks: [ALPHA]
+command_type: GENERIC
 help_text:
   brief: Export the Dialogflow agent to a zip file.
   description: |

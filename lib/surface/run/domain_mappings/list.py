@@ -76,7 +76,7 @@ class List(commands.List):
   def Run(self, args):
     """List available domain mappings."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.RUN)
+        args, product=flags.Product.RUN)
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)

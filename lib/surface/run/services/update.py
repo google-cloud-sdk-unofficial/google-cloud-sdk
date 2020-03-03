@@ -53,7 +53,6 @@ class Update(base.Command):
   def CommonArgs(parser):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddServiceAccountFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
 
@@ -85,6 +84,10 @@ class Update(base.Command):
   def Args(parser):
     Update.CommonArgs(parser)
 
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddServiceAccountFlag(managed_group)
+
   def Run(self, args):
     """Update configuration information about the service.
 
@@ -101,13 +104,13 @@ class Update(base.Command):
           '`--memory`, `--concurrency`, `--timeout`, `--connectivity`?')
 
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.RUN)
+        args, product=flags.Product.RUN)
     service_ref = flags.GetService(args)
 
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
       has_latest = (service is None or
-                    traffic.LATEST_REVISION_KEY in service.traffic)
+                    traffic.LATEST_REVISION_KEY in service.spec_traffic)
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=False,
           include_route=has_latest)
@@ -163,5 +166,7 @@ class AlphaUpdate(Update):
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
+    flags.AddServiceAccountFlagAlpha(parser)
+
 
 AlphaUpdate.__doc__ = Update.__doc__

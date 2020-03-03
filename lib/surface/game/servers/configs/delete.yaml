@@ -7,9 +7,9 @@
 
       ## EXAMPLES
 
-      To delete Game Server Config 'my-config' in project 'my-project', deployment 'my-deployment', and location 'my-location', run:
+      To delete Game Server Config 'my-config' in project 'my-project', deployment 'my-deployment', and location 'global'(configs only support the 'global' location), run:
 
-        $ {command} my-config --project=my-project --deployment=deployment --location=my-location
+        $ {command} my-config --project=my-project --deployment=deployment --location=global
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments.configs

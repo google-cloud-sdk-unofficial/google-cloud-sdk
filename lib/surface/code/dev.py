@@ -31,7 +31,9 @@ from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import kubernetes
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
+from googlecloudsdk.command_lib.code import yaml_helper
 from googlecloudsdk.core import config
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
 from googlecloudsdk.core.util import platforms
@@ -173,8 +175,34 @@ def Skaffold(skaffold_config,
       p.terminate()
       p.wait()
 
-  sys.stdout.flush()
-  sys.stderr.flush()
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+
+@contextlib.contextmanager
+def _SetImagePush(skaffold_file, shared_docker):
+  """Set build.local.push value in skaffold file.
+
+  Args:
+    skaffold_file: Skaffold file handle.
+    shared_docker: Boolean that is true if docker instance is shared between the
+      kubernetes cluster and local docker builder.
+
+  Yields:
+    Path of skaffold file with build.local.push value set to the proper value.
+  """
+  # TODO(b/149935260): This function can be removed when
+  # https://github.com/GoogleContainerTools/skaffold/issues/3668 is resolved.
+  if not shared_docker:
+    # If docker is not shared, use the default value (false). There is no need
+    # to rewrite the skaffold file.
+    yield skaffold_file
+  else:
+    sakffold_yaml = yaml.load_path(skaffold_file.name)
+    local_block = yaml_helper.GetOrCreate(sakffold_yaml, ('build', 'local'))
+    local_block['push'] = False
+    with _NamedTempFile(yaml.dump(sakffold_yaml)) as patched_skaffold_file:
+      yield patched_skaffold_file
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -236,7 +264,8 @@ class Dev(base.Command):
       with _NamedTempFile(skaffold_config) as skaffold_file, \
            self._GetKubernetesEngine(args) as kube_context, \
            self._WithKubeNamespace(args.namespace, kube_context.context_name), \
-           Skaffold(skaffold_file.name, kube_context.context_name,
+           _SetImagePush(skaffold_file, kube_context.shared_docker) as patched_skaffold_file, \
+           Skaffold(patched_skaffold_file.name, kube_context.context_name,
                     args.namespace, kube_context.env_vars,
                     args.additional_skaffold_flags) as skaffold:
         skaffold.wait()

@@ -1534,7 +1534,8 @@ def _CreateExternalTableDefinition(
     connection_id=None,
     ignore_unknown_values=False,
     hive_partitioning_mode=None,
-    hive_partitioning_source_uri_prefix=None
+    hive_partitioning_source_uri_prefix=None,
+    require_hive_partition_filter=None
 ):
   """Create an external table definition with the given URIs and the schema.
 
@@ -1631,6 +1632,8 @@ def _CreateExternalTableDefinition(
         hive_partitioning_options[
             'sourceUriPrefix'] = hive_partitioning_source_uri_prefix
       external_table_def['hivePartitioningOptions'] = hive_partitioning_options
+      if require_hive_partition_filter:
+        hive_partitioning_options['requirePartitionFilter'] = True
     if schema:
       fields = BigqueryClient.ReadSchema(schema)
       external_table_def['schema'] = {'fields': fields}
@@ -1674,6 +1677,11 @@ class _MakeExternalTableDefinition(BigqueryCmd):
         None, '(experimental) Prefix after which hive partition '
         'encoding begins.  For URIs like gs://bucket/path/key1=value/file, '
         'the value should be gs://bucket/path.',
+        flag_values=fv)
+    flags.DEFINE_boolean(
+        'require_hive_partition_filter',
+        None, '(experimental) Whether queries against a table are required to '
+        'include a hive partition key in a query predicate.',
         flag_values=fv)
     flags.DEFINE_enum(
         'source_format',
@@ -1746,7 +1754,9 @@ class _MakeExternalTableDefinition(BigqueryCmd):
             connection_id=self.connection_id,
             ignore_unknown_values=self.ignore_unknown_values,
             hive_partitioning_mode=self.hive_partitioning_mode,
-            hive_partitioning_source_uri_prefix=self.hive_partitioning_source_uri_prefix
+            hive_partitioning_source_uri_prefix=self
+            .hive_partitioning_source_uri_prefix,
+            require_hive_partition_filter=self.require_hive_partition_filter
         ),
         sys.stdout,
         sort_keys=True,
@@ -1941,6 +1951,16 @@ class _Query(BigqueryCmd):
         None,
         'Cloud KMS key for encryption of the destination table data.',
         flag_values=fv)
+    flags.DEFINE_string(
+        'script_statement_timeout_ms',
+        None,
+        'Maximum time to complete each statement in a script.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'script_statement_byte_budget',
+        None,
+        'Maximum bytes that can be billed for any statement in a script.',
+        flag_values=fv)
     flags.DEFINE_integer(
         'max_statement_results',
         100,
@@ -2048,6 +2068,18 @@ class _Query(BigqueryCmd):
     if self.destination_kms_key:
       kwds['destination_encryption_configuration'] = {
           'kmsKeyName': self.destination_kms_key
+      }
+    if ((self.script_statement_timeout_ms is not None)
+        or (self.script_statement_byte_budget is not None)
+       ):
+      script_options = {
+          'statementTimeoutMs': self.script_statement_timeout_ms,
+          'statementByteBudget': self.script_statement_byte_budget,
+      }
+      kwds['script_options'] = {
+          name: value
+          for name, value in six.iteritems(script_options)
+          if value is not None
       }
 
     if self.schedule:
@@ -2393,6 +2425,12 @@ class _Extract(BigqueryCmd):
         'their corresponding AVRO logical types (timestamp-micros), instead of '
         'only using their raw types (avro-long).',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'model',
+        False,
+        'Export model with this model ID.',
+        short_name='m',
+        flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier, destination_uris):
@@ -2416,7 +2454,10 @@ class _Extract(BigqueryCmd):
     if FLAGS.location:
       kwds['location'] = FLAGS.location
 
-    reference = client.GetTableReference(identifier)
+    if self.m:
+      reference = client.GetModelReference(identifier)
+    else:
+      reference = client.GetTableReference(identifier)
     job = client.Extract(
         reference,
         destination_uris,
@@ -2850,7 +2891,8 @@ class _List(BigqueryCmd):  # pylint: disable=missing-docstring
       response = client.ListRoutines(
           reference=reference,
           max_results=self.max_results,
-          page_token=page_token)
+          page_token=page_token,
+          filter_expression=self.filter)
       if 'routines' in response:
         results = response['routines']
       if 'nextPageToken' in response:

@@ -77,14 +77,9 @@ class AddDatabase(base.Command):
         charset=args.charset,
         collation=args.collation)
 
-    request = sql_messages.SqlDatabasesInsertRequest(
-        project=new_database.project,
-        instance=new_database.instance,
-        database=new_database)
-
     # TODO(b/36052521): Move this API call logic per b/35386183.
 
-    result_operation = sql_client.databases.Insert(request)
+    result_operation = sql_client.databases.Insert(new_database)
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',

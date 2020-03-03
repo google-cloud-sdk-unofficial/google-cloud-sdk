@@ -62,7 +62,7 @@ class Delete(base.Command):
   def Run(self, args):
     """Executes when the user runs the delete command."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.EVENTS)
+        args, product=serverless_flags.Product.EVENTS)
 
     trigger_ref = args.CONCEPTS.trigger.Parse()
     console_io.PromptContinue(

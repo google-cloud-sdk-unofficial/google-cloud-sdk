@@ -125,7 +125,7 @@ class Run(base.SilentCommand):
     pipeline.add_argument(
         '--pipeline-file',
         help='''A YAML or JSON file containing a Pipeline object. See
-[](https://cloud.google.com/life-sciences/reference/rest/v2beta/workflows#Pipeline)
+[](https://cloud.google.com/life-sciences/docs/reference/rest/v2beta/projects.locations.pipelines/run#pipeline)
 ''')
     pipeline.add_argument(
         '--command-line',

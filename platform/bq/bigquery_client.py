@@ -1211,9 +1211,7 @@ class BigqueryClient(object):
     return self._op_transfer_client
 
 
-  def GetReservationApiClient(self,
-                              reservationserver_address=None,
-                              reservationserver_bns_address=None):
+  def GetReservationApiClient(self, reservationserver_address=None):
     """Return the apiclient that supports reservation operations."""
     path = reservationserver_address
     if path is None:
@@ -3462,13 +3460,14 @@ class BigqueryClient(object):
         maxResults=max_results,
         pageToken=page_token).execute()
 
-  def ListRoutines(self, reference, max_results, page_token):
+  def ListRoutines(self, reference, max_results, page_token, filter_expression):
     """Lists routines for the given dataset reference.
 
     Arguments:
       reference: Reference to the dataset.
       max_results: Number of results to return.
       page_token: Token to retrieve the next page of results.
+      filter_expression: An expression for filtering routines.
 
     Returns:
       A dict that contains entries:
@@ -3479,7 +3478,8 @@ class BigqueryClient(object):
         projectId=reference.projectId,
         datasetId=reference.datasetId,
         maxResults=max_results,
-        pageToken=page_token).execute()
+        pageToken=page_token,
+        filter=filter_expression).execute()
 
   def GetDatasetIAMPolicy(self, reference):
     """Gets IAM policy for the given dataset resource.
@@ -5164,6 +5164,8 @@ class BigqueryClient(object):
       destination_encryption_configuration=None,
       clustering=None,
       range_partitioning=None,
+      script_options=None,
+      job_timeout_ms=None,
       **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -5214,6 +5216,8 @@ class BigqueryClient(object):
           table created from a query job with a Cloud KMS key.
       range_partitioning: Optional. Provides range partitioning specification
           for the destination table.
+      script_options: Optional. Options controlling script execution.
+      job_timeout_ms: Optional. How long to let the job run.
       **kwds: Passed on to self.ExecuteJob.
 
     Raises:
@@ -5242,6 +5246,8 @@ class BigqueryClient(object):
     if destination_encryption_configuration:
       query_config['destinationEncryptionConfiguration'] = (
           destination_encryption_configuration)
+    if script_options:
+      query_config['scriptOptions'] = script_options
     _ApplyParameters(
         query_config,
         allow_large_results=allow_large_results,
@@ -5427,6 +5433,10 @@ class BigqueryClient(object):
     Raises:
       BigqueryClientError: if required parameters are invalid.
     """
+    _Typecheck(
+        reference,
+        (ApiClientHelper.TableReference, ApiClientHelper.ModelReference),
+        method='Extract')
     uris = destination_uris.split(',')
     for uri in uris:
       if not uri.startswith(_GCS_SCHEME_PREFIX):
@@ -5435,12 +5445,8 @@ class BigqueryClient(object):
                 uri, _GCS_SCHEME_PREFIX))
     if isinstance(reference, ApiClientHelper.TableReference):
       extract_config = {'sourceTable': dict(reference)}
-    else:
-      raise TypeError('Type of %r should be one of %s' % (
-          reference,
-          [
-              ApiClientHelper.TableReference
-          ]))
+    elif isinstance(reference, ApiClientHelper.ModelReference):
+      extract_config = {'sourceModel': dict(reference)}
     _ApplyParameters(
         extract_config, destination_uris=uris,
         destination_format=destination_format,

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   command_type: GENERIC
 
   help_text:
@@ -7,13 +7,30 @@
     description: |
       Replace all existing access level in specified access policy with access levels specified in a
       file.
+
+      ## EXAMPLES
+
+        To replace all levels within a policy, using etag:
+        $ {command} my-policy-number --source-file=path-to-file-containing-all-replacement-access-levels.yaml --etag=optional-latest-etag-of-policy
+
+        To replace all levels within a policy, without using etag:
+        $ {command} my-policy-number --source-file=path-to-file-containing-all-replacement-access-levels.yaml
+
   request:
-    api_version: v1alpha
-    method: replaceAll
     collection: accesscontextmanager.accessPolicies.accessLevels
+    ALPHA:
+      api_version: v1alpha
+      method: replaceAll
+    BETA:
+      api_version: v1
+      method: replaceAll
   response:
-    modify_response_hooks:
-    - googlecloudsdk.command_lib.accesscontextmanager.levels:ParseReplaceAccessLevelsResponse:api_version=v1alpha
+    ALPHA:
+      modify_response_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.levels:ParseReplaceAccessLevelsResponse:api_version=v1alpha
+    BETA:
+      modify_response_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.levels:ParseReplaceAccessLevelsResponse:api_version=v1
 
   arguments:
     resource:
@@ -59,7 +76,12 @@
               expression: "origin.region_code in ['US', 'CA']"
         ```
 
-        For more information, see:
+        For more information about the alpha version, see:
         https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.accessLevels
+        For more information about the beta version, see:
+        https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.accessLevels
       repeated: false
-      processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseAccessLevels:api_version=v1alpha
+      ALPHA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseAccessLevels:api_version=v1alpha
+      BETA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseAccessLevels:api_version=v1

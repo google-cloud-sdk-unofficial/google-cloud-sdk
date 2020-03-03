@@ -39,7 +39,7 @@ class List(base.ListCommand):
 
   To list the configurations for a service named `my-service`, run:
 
-    $ {command} --service my-service
+    $ {command} --service=my-service
   """
 
   @staticmethod

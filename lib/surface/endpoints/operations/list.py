@@ -37,7 +37,7 @@ cause an error.
 startTime is an ISO 8601 datetime and supports >=, >, <=, and < operators. The
 datetime value must be wrapped in quotation marks. For example:
 
-  --filter 'startTime < "2017-03-20T16:02:32"'
+  --filter='startTime < "2017-03-20T16:02:32"'
 
 done is a boolean value and supports = and != operators.\
 '''
@@ -54,17 +54,17 @@ class List(base.ListCommand):
      To list all operations for a service named
      `api.endpoints.proj.cloud.goog`, run:
 
-       $ {command} --service api.endpoints.proj.cloud.goog
+       $ {command} --service=api.endpoints.proj.cloud.goog
 
      To list only operations which are complete, add the `--filter` argument
      with a status filter:
 
-       $ {command} --service api.endpoints.proj.cloud.goog --filter 'done = true'
+       $ {command} --service=api.endpoints.proj.cloud.goog --filter='done = true'
 
      To list only operations begun after a certain point in time, add the
      `--filter` argument with an ISO 8601 datetime startTime filter:
 
-       $ {command} --service api.endpoints.proj.cloud.goog --filter 'startTime >= "2017-02-01"'
+       $ {command} --service=api.endpoints.proj.cloud.goog --filter='startTime >= "2017-02-01"'
   """
   # pylint: enable=line-too-long
 

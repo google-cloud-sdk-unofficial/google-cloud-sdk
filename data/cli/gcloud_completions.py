@@ -5923,7 +5923,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--destination": "value",
-                    "--zone": "dynamic"
+                    "--zone": "value"
                   }
                 },
                 "get-guest-attributes": {
@@ -18943,6 +18943,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--alternative-zone": "value",
                     "--async": "bool",
+                    "--connect-mode": [
+                      "connect-mode-unspecified",
+                      "direct-peering",
+                      "private-service-access"
+                    ],
                     "--display-name": "value",
                     "--labels": "value",
                     "--network": "value",
@@ -22618,6 +22623,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--sort-by": "value"
                   }
                 },
+                "replace-all": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--source-file": "value"
+                  }
+                },
                 "update": {
                   "commands": {},
                   "flags": {
@@ -22673,6 +22685,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--page-size": "value",
                     "--policy": "value",
                     "--sort-by": "value"
+                  }
+                },
+                "replace-all": {
+                  "commands": {},
+                  "flags": {
+                    "--etag": "value",
+                    "--source-file": "value"
                   }
                 },
                 "update": {
@@ -24371,6 +24390,8 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--services-secondary-range-name": "value",
                     "--subnetwork": "value",
                     "--tags": "value",
+                    "--web-server-allow-ip": "value",
+                    "--web-server-deny-all": "bool",
                     "--zone": "value"
                   }
                 },
@@ -24550,7 +24571,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--update-env-variables": "value",
                     "--update-labels": "value",
                     "--update-pypi-package": "value",
-                    "--update-pypi-packages-from-file": "value"
+                    "--update-pypi-packages-from-file": "value",
+                    "--update-web-server-allow-ip": "value",
+                    "--web-server-allow-all": "bool",
+                    "--web-server-deny-all": "bool"
                   }
                 }
               },
@@ -27036,14 +27060,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--network-interface": "value",
                     "--network-tier": "value",
                     "--no-address": "bool",
-                    "--no-public-dns": "bool",
                     "--no-public-ptr": "bool",
                     "--no-public-ptr-domain": "bool",
                     "--no-scopes": "bool",
                     "--no-service-account": "bool",
                     "--preemptible": "bool",
                     "--private-network-ip": "value",
-                    "--public-dns": "bool",
                     "--public-ptr": "bool",
                     "--public-ptr-domain": "value",
                     "--restart-on-failure": "bool",
@@ -37753,6 +37775,43 @@ STATIC_COMPLETION_CLI_TREE = {
                 }
               },
               "flags": {}
+            },
+            "dashboards": {
+              "commands": {
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--config": "value",
+                    "--config-from-file": "value"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "describe": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
+                  }
+                },
+                "update": {
+                  "commands": {},
+                  "flags": {
+                    "--config": "value",
+                    "--config-from-file": "value"
+                  }
+                }
+              },
+              "flags": {}
             }
           },
           "flags": {}
@@ -38552,6 +38611,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--alternative-zone": "value",
                     "--async": "bool",
+                    "--connect-mode": [
+                      "connect-mode-unspecified",
+                      "direct-peering",
+                      "private-service-access"
+                    ],
                     "--display-name": "value",
                     "--labels": "value",
                     "--network": "value",
@@ -43935,14 +43999,12 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--network-interface": "value",
                 "--network-tier": "value",
                 "--no-address": "bool",
-                "--no-public-dns": "bool",
                 "--no-public-ptr": "bool",
                 "--no-public-ptr-domain": "bool",
                 "--no-scopes": "bool",
                 "--no-service-account": "bool",
                 "--preemptible": "bool",
                 "--private-network-ip": "value",
-                "--public-dns": "bool",
                 "--public-ptr": "bool",
                 "--public-ptr-domain": "value",
                 "--restart-on-failure": "bool",
@@ -47721,6 +47783,7 @@ STATIC_COMPLETION_CLI_TREE = {
             "run": {
               "commands": {},
               "flags": {
+                "--dataflow-kms-key": "value",
                 "--disable-public-ips": "bool",
                 "--gcs-location": "value",
                 "--max-workers": "value",
@@ -49803,9 +49866,17 @@ STATIC_COMPLETION_CLI_TREE = {
             "--clear-labels": "bool",
             "--clear-max-instances": "bool",
             "--clear-vpc-connector": "bool",
+            "--egress-settings": [
+              "all",
+              "private-ranges-only"
+            ],
             "--entry-point": "value",
             "--env-vars-file": "value",
             "--ignore-file": "value",
+            "--ingress-settings": [
+              "all",
+              "internal-only"
+            ],
             "--max-instances": "value",
             "--memory": "value",
             "--region": "dynamic",
@@ -52299,6 +52370,11 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--alternative-zone": "value",
                 "--async": "bool",
+                "--connect-mode": [
+                  "connect-mode-unspecified",
+                  "direct-peering",
+                  "private-service-access"
+                ],
                 "--display-name": "value",
                 "--labels": "value",
                 "--network": "value",
@@ -53835,6 +53911,7 @@ STATIC_COMPLETION_CLI_TREE = {
         "connect": {
           "commands": {},
           "flags": {
+            "--database": "value",
             "--user": "value"
           }
         },
@@ -53886,6 +53963,13 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "export": {
           "commands": {
+            "bak": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--database": "value"
+              }
+            },
             "csv": {
               "commands": {},
               "flags": {
@@ -53915,7 +53999,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "MYSQL_5_6",
                   "MYSQL_5_7",
                   "POSTGRES_11",
-                  "POSTGRES_9_6"
+                  "POSTGRES_9_6",
+                  "SQLSERVER_2017_ENTERPRISE",
+                  "SQLSERVER_2017_EXPRESS",
+                  "SQLSERVER_2017_STANDARD",
+                  "SQLSERVER_2017_WEB"
                 ],
                 "--filter": "value",
                 "--limit": "value",
@@ -53929,6 +54017,17 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "import": {
           "commands": {
+            "bak": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--cert-path": "value",
+                "--database": "value",
+                "--prompt-for-pvk-password": "bool",
+                "--pvk-password": "value",
+                "--pvk-path": "value"
+              }
+            },
             "csv": {
               "commands": {},
               "flags": {
@@ -53984,7 +54083,11 @@ STATIC_COMPLETION_CLI_TREE = {
                   "MYSQL_5_6",
                   "MYSQL_5_7",
                   "POSTGRES_11",
-                  "POSTGRES_9_6"
+                  "POSTGRES_9_6",
+                  "SQLSERVER_2017_ENTERPRISE",
+                  "SQLSERVER_2017_EXPRESS",
+                  "SQLSERVER_2017_STANDARD",
+                  "SQLSERVER_2017_WEB"
                 ],
                 "--disk-encryption-key": "dynamic",
                 "--disk-encryption-key-keyring": "dynamic",

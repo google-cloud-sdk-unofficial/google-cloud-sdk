@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,16 +37,16 @@ table(
 class SearchDomains(base.DescribeCommand):
   """Search for available domains.
 
-  This command searches for available domains relevant to a specified query.
+  Search for available domains relevant to a specified query.
 
   ## EXAMPLES
 
-  To search for domains for my-new-project, run:
+  To search for domains for ``my-new-project'', run:
 
     $ {command} my-new-project
 
-  To search for a specific domain, and get suggestions for other domain endings,
-  run:
+  To search for a specific domain, like ``example.com'', and get suggestions for
+  other domain endings, run:
 
     $ {command} example.com
   """

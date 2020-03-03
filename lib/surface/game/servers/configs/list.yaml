@@ -7,9 +7,9 @@
 
       ## EXAMPLES
 
-      To see the list of all Game Server Configs in project 'my-project', deployment 'my-deployment' and location 'my-location', run:
+      To see the list of all Game Server Configs in project 'my-project', deployment 'my-deployment' and location 'global'(configs only support the 'global' location), run:
 
-        $ {command} --project=my-project --deployment=my-deployment --location=my-location
+        $ {command} --project=my-project --deployment=my-deployment --location=global
 
 
   request:

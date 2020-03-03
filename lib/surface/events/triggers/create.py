@@ -76,7 +76,7 @@ class Create(base.Command):
 
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.EVENTS)
+        args, product=serverless_flags.Product.EVENTS)
 
     trigger_ref = args.CONCEPTS.trigger.Parse()
     namespace_ref = trigger_ref.Parent()

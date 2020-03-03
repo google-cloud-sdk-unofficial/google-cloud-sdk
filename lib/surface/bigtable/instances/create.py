@@ -44,7 +44,7 @@ class CreateInstance(base.CreateCommand):
 
           To create an instance with `HDD` storage and `10` nodes, run:
 
-            $ {command} my-hdd-instance --display-name="HDD Instance" --cluster-storage-type=HDD --cluster=my-cluster-id --cluster-zone=us-east1-c
+            $ {command} my-hdd-instance --display-name="HDD Instance" --cluster-storage-type=HDD --cluster-num-nodes=10 --cluster=my-cluster-id --cluster-zone=us-east1-c
 
           """),
   }

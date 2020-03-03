@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -60,7 +61,7 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete a revision."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.RUN)
+        args, product=flags.Product.RUN)
     revision_ref = args.CONCEPTS.revision.Parse()
 
     console_io.PromptContinue(

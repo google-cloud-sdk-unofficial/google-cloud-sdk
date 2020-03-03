@@ -56,7 +56,6 @@ def _Args(parser, deprecate_maintenance_policy=False,
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddKonletArgs(parser)
-  instances_flags.AddPublicDnsArgs(parser, instance=True)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddImageArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -91,6 +90,7 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.ValidateKonletArgs(args)
     instances_flags.ValidateDiskCommonFlags(args)
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
+    instances_flags.ValidatePublicPtrFlags(args)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
           '--disk',
@@ -307,6 +307,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+    instances_flags.AddPublicDnsArgs(parser, instance=True)
 
   def _GetNetworkInterfaces(
       self, args, client, holder, instance_refs, skip_defaults):

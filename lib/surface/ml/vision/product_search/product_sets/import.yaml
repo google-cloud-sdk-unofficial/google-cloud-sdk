@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA, BETA]
-
+  command_type: GENERIC
   help_text:
     brief: Import a list of reference images to specified product sets.
     description: Import a list of reference images to specified product sets based on a list of image information.

@@ -31,7 +31,8 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import import_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Bak(base.Command):
   """Import data into a Cloud SQL instance from a BAK file."""
 

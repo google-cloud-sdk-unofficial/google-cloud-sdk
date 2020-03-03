@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,5 +25,5 @@ from googlecloudsdk.calliope import base
 class Registrations(base.Group):
   """Manage Cloud Domains registrations.
 
-  Commands for managing domain registrations.
+  Commands for managing Cloud Domains registrations.
   """

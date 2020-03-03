@@ -263,13 +263,22 @@ class CreateBeta(Create):
   """
 
   @staticmethod
-  def Args(parser):
+  def AlphaAndBetaArgs(parser):
     Create.Args(parser)
     flags.AddPrivateIpAndIpAliasEnvironmentFlags(parser)
+
+  @staticmethod
+  def Args(parser):
+    CreateBeta.AlphaAndBetaArgs(parser)
+    web_server_group = parser.add_mutually_exclusive_group()
+    flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
+    flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
 
   def Run(self, args):
     self.ParseIpAliasConfigOptions(args)
     self.ParsePrivateEnvironmentConfigOptions(args)
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      self.ParseWebServerAccessControlConfigOptions(args)
     return super(CreateBeta, self).Run(args)
 
   def ParseIpAliasConfigOptions(self, args):
@@ -311,6 +320,13 @@ class CreateBeta(Create):
               prerequisite='enable-private-environment',
               opt='master-ipv4-cidr'))
 
+  def ParseWebServerAccessControlConfigOptions(self, args):
+    self.web_server_access_control = environments_api_util.BuildWebServerAllowedIps(
+        args.web_server_allow_ip, not args.web_server_allow_ip,
+        args.web_server_deny_all)
+    flags.ValidateIpRanges(
+        [acl['ip_range'] for acl in self.web_server_access_control])
+
   def GetOperationMessage(self, args):
     """See base class."""
     return environments_api_util.Create(
@@ -337,6 +353,7 @@ class CreateBeta(Create):
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         master_ipv4_cidr=args.master_ipv4_cidr,
+        web_server_access_control=self.web_server_access_control,
         release_track=self.ReleaseTrack())
 
 
@@ -352,7 +369,7 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    CreateBeta.Args(parser)
+    CreateBeta.AlphaAndBetaArgs(parser)
 
     # Adding alpha arguments
     parser.add_argument(

@@ -66,7 +66,7 @@ class Describe(base.Command):
   def Run(self, args):
     """Describe a domain mapping."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.RUN)
+        args, product=flags.Product.RUN)
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
     with serverless_operations.Connect(conn_context) as client:
       domain_mapping = client.GetDomainMapping(domain_mapping_ref)

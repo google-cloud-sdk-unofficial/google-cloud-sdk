@@ -70,7 +70,7 @@ class Read(base.Command):
       log_filter = ('timestamp>="%s"' % util.FormatTimestamp(last_timestamp))
       # Append any user supplied filters.
       if args.log_filter:
-        log_filter += ' AND (%s)' % args.log_filter
+        log_filter += ' AND %s' % args.log_filter
     else:
       log_filter = args.log_filter
 

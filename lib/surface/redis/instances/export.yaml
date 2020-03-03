@@ -1,5 +1,5 @@
 - release_tracks: [GA, BETA, ALPHA]
-
+  command_type: GENERIC
   help_text:
     brief: Export data from a Memorystore Redis instance to Google Cloud Storage.
     description: |

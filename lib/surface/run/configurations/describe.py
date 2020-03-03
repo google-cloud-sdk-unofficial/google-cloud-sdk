@@ -62,7 +62,7 @@ class Describe(base.Command):
   def Run(self, args):
     """Obtain details about a given configuration."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.RUN)
+        args, product=flags.Product.RUN)
     configuration_ref = args.CONCEPTS.configuration.Parse()
     with serverless_operations.Connect(conn_context) as client:
       conf = client.GetConfiguration(configuration_ref)

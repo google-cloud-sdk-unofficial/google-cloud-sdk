@@ -77,10 +77,7 @@ class Create(base.CreateCommand):
         host=host,
         password=args.password)
 
-    request = sql_messages.SqlUsersInsertRequest(
-        project=new_user.project, instance=new_user.instance, user=new_user)
-
-    result_operation = sql_client.users.Insert(request)
+    result_operation = sql_client.users.Insert(new_user)
     operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,

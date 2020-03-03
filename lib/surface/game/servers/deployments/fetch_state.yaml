@@ -7,9 +7,9 @@
 
       ## EXAMPLES
 
-      To fetch the deployment state for Game Server Deployment 'my-deployment' in project 'my-project' and location 'my-location', run:
+      To fetch the deployment state for Game Server Deployment 'my-deployment' in project 'my-project' and location 'global'(deployments only support the 'global' location), run:
 
-        $ {command} my-deployment --project=my-project --location=my-location
+        $ {command} my-deployment --project=my-project --location=global
 
   request:
     collection: gameservices.projects.locations.gameServerDeployments

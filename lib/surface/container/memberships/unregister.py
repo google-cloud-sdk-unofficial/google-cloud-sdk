@@ -55,6 +55,10 @@ class Unregister(base.DeleteCommand):
     hub_util.AddCommonArgs(parser)
 
   def Run(self, args):
+    # TODO(b/145953996): api_utils map release_track to an api_version.
+    # All old commands needs to use 'v1beta1' irrespective of the release track,
+    # till they are removed (already deprecation policy applied).
+    self.release_track = base.ReleaseTrack.BETA
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     kube_client = kube_util.OldKubernetesClient(args)
     uuid = kube_util.GetClusterUUID(kube_client)
@@ -62,7 +66,7 @@ class Unregister(base.DeleteCommand):
     # Delete membership from GKE Hub API.
     try:
       name = 'projects/{}/locations/global/memberships/{}'.format(project, uuid)
-      api_util.DeleteMembership(name, self.ReleaseTrack())
+      api_util.DeleteMembership(name, self.release_track)
     except apitools_exceptions.HttpUnauthorizedError as e:
       raise exceptions.Error(
           'You are not authorized to unregister clusters from project [{}]. '

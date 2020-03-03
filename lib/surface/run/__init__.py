@@ -76,5 +76,5 @@ class Serverless(base.Group):
     """Runs before command.Run and validates platform with passed args."""
     # Ensures a platform is set on the run/platform property and
     # all other passed args are valid for this platform and release track.
-    flags.GetAndValidatePlatform(args, self.ReleaseTrack())
+    flags.GetAndValidatePlatform(args, self.ReleaseTrack(), flags.Product.RUN)
     return context

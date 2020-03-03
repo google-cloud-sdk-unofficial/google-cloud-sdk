@@ -90,6 +90,10 @@ def _CommonArgs(parser):
       help='The Cloud Dataflow workers must not use public IP addresses.'
   )
 
+  parser.add_argument(
+      '--dataflow-kms-key',
+      help='The Cloud KMS key to protect the job resources.')
+
 
 def _CommonRun(args, support_beta_features=False):
   """Runs the command.
@@ -174,10 +178,6 @@ class RunBeta(Run):
         '--network',
         help='The Compute Engine network for launching instances to '
         'run your pipeline.')
-
-    parser.add_argument(
-        '--dataflow-kms-key',
-        help='The Cloud KMS key to protect the job resources.')
 
     parser.add_argument(
         '--flex-template',

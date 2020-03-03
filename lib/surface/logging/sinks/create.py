@@ -154,10 +154,43 @@ class Create(base.CreateCommand):
                                      self._epilog_is_dlp_sink)
 
 
-# pylint: disable=missing-docstring
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
-  __doc__ = Create.__doc__
+  # pylint: disable=line-too-long
+  """Creates a sink.
+
+  Creates a sink used to export entries from one or more logs to a destination.
+  A sink exports all logs that matches *--log-filter* flag.
+  An empty filter matches all logs.
+  The sink's destination can be a Cloud Storage bucket, a BigQuery dataset,
+  or a Cloud Pub/Sub topic.
+  The destination must already exist and Stackdriver Logging must have
+  permission to write to it.
+  Log entries are exported as soon as the sink is created.
+  See https://cloud.google.com/logging/docs/export/configure_export_v2#dest-auth.
+
+  ## EXAMPLES
+
+  To export all Google Compute Engine logs to BigQuery, run:
+
+    $ {command} my-bq-sink bigquery.googleapis.com/projects/my-project/datasets/my_dataset --log-filter='resource.type="gce_instance"'
+
+  To export "syslog" from App Engine Flexible to Cloud Storage, run:
+
+    $ {command} my-gcs-sink storage.googleapis.com/my-bucket --log-filter='logName="projects/my-project/appengine.googleapis.com%2Fsyslog"'
+
+  To export Google App Engine logs with ERROR severity, run:
+
+    $ {command} my-error-logs bigquery.googleapis.com/projects/my-project/datasets/my_dataset --log-filter='resource.type="gae_app" AND severity=ERROR'
+
+  To export all logs to a Logs bucket in a different project, run:
+
+    $ {command} my-sink logging.googleapis.com/projects/my-central-project/locations/global/buckets/my-central-bucket
+
+  Detailed information about filters can be found at:
+  [](https://cloud.google.com/logging/docs/view/advanced_filters)
+  """
+  # pylint: enable=line-too-long
 
   @staticmethod
   def Args(parser):

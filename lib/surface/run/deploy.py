@@ -139,7 +139,6 @@ class Deploy(base.Command):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddAllowUnauthenticatedFlag(managed_group)
-    flags.AddServiceAccountFlag(managed_group)
     flags.AddCloudSQLFlags(managed_group)
     flags.AddRevisionSuffixArg(managed_group)
 
@@ -172,13 +171,15 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddServiceAccountFlag(managed_group)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     image = args.image
 
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.RUN)
+        args, product=flags.Product.RUN)
     config_changes = flags.GetConfigurationChanges(args)
 
     service_ref = flags.GetService(args)
@@ -193,7 +194,7 @@ class Deploy(base.Command):
 
       pretty_print.Info(GetStartDeployMessage(conn_context, service_ref))
       has_latest = (service is None or
-                    traffic.LATEST_REVISION_KEY in service.traffic)
+                    traffic.LATEST_REVISION_KEY in service.spec_traffic)
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=allow_unauth is not None,
           include_route=has_latest)
@@ -236,5 +237,7 @@ class AlphaDeploy(Deploy):
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddNoTrafficFlag(parser)
+    flags.AddServiceAccountFlagAlpha(parser)
+
 
 AlphaDeploy.__doc__ = Deploy.__doc__

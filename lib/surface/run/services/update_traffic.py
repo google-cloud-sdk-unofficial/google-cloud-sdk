@@ -110,7 +110,7 @@ class AdjustTraffic(base.Command):
       List of traffic.TrafficTargetStatus instances reflecting the change.
     """
     conn_context = connection_context.GetConnectionContext(
-        args, product=connection_context.Product.RUN)
+        args, product=flags.Product.RUN)
     service_ref = flags.GetService(args)
 
     changes = flags.GetConfigurationChanges(args)
@@ -134,8 +134,8 @@ class AdjustTraffic(base.Command):
         serv = client.GetService(service_ref)
         if serv:
           resources = traffic_pair.GetTrafficTargetPairs(
-              serv.spec.traffic,
-              serv.status.traffic,
+              serv.spec_traffic,
+              serv.status_traffic,
               is_managed,
               serv.status.latestReadyRevisionName)
           display.Displayer(
@@ -148,8 +148,8 @@ class AdjustTraffic(base.Command):
     else:
       serv = client.GetService(service_ref)
       resources = traffic_pair.GetTrafficTargetPairs(
-          serv.spec.traffic,
-          serv.status.traffic,
+          serv.spec_traffic,
+          serv.status_traffic,
           is_managed,
           serv.status.latestReadyRevisionName)
       return resources

@@ -57,6 +57,10 @@
         arg_value: standard
         help_text: Standard high-availability Redis instance with replication
       default: basic
+    - arg_name: connect-mode
+      api_field: instance.connectMode
+      help_text: |
+        Network connection mode used by instances.
     - arg_name: display-name
       api_field: instance.displayName
       help_text: |

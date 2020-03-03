@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import environment_patch_util as patch_util
 from googlecloudsdk.command_lib.composer import flags
@@ -43,7 +44,11 @@ class Update(base.Command):
     flags.AddAirflowConfigUpdateFlagsToGroup(Update.update_type_group)
     flags.AddLabelsUpdateFlagsToGroup(Update.update_type_group)
 
-  def _ConstructPatch(self, env_ref, args, support_environment_upgrades=False):
+  def _ConstructPatch(self,
+                      env_ref,
+                      args,
+                      support_environment_upgrades=False,
+                      support_web_server_access_control=False):
 
     params = dict(
         env_ref=env_ref,
@@ -67,6 +72,11 @@ class Update(base.Command):
 
     if support_environment_upgrades:
       params['update_image_version'] = args.image_version
+    if support_web_server_access_control:
+      params['update_web_server_access_control'] = (
+          environments_api_util.BuildWebServerAllowedIps(
+              args.update_web_server_allow_ip, args.web_server_allow_all,
+              args.web_server_deny_all))
 
     return patch_util.ConstructPatch(**params)
 
@@ -86,12 +96,22 @@ class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
   @staticmethod
-  def Args(parser):
+  def AlphaAndBetaArgs(parser):
     Update.Args(parser)
 
     # Environment upgrade arguments
     UpdateBeta.support_environment_upgrades = True
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
+    UpdateBeta.support_web_server_access_control = False
+
+  @staticmethod
+  def Args(parser):
+    UpdateBeta.AlphaAndBetaArgs(parser)
+    UpdateBeta.support_web_server_access_control = True
+    web_server_group = Update.update_type_group.add_mutually_exclusive_group()
+    flags.UPDATE_WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
+    flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
+    flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
 
   def Run(self, args):
     env_ref = args.CONCEPTS.environment.Parse()
@@ -110,8 +130,15 @@ class UpdateBeta(Update):
           'Invalid environment upgrade. [Requested: {}]'.format(
               args.image_version))
 
+    # Checks validity of update_web_server_allow_ip
+    if (self.ReleaseTrack() == base.ReleaseTrack.BETA and
+        args.update_web_server_allow_ip):
+      flags.ValidateIpRanges(
+          [acl['ip_range'] for acl in args.update_web_server_allow_ip])
+
     field_mask, patch = self._ConstructPatch(
-        env_ref, args, UpdateBeta.support_environment_upgrades)
+        env_ref, args, UpdateBeta.support_environment_upgrades,
+        UpdateBeta.support_web_server_access_control)
 
     return patch_util.Patch(
         env_ref,
@@ -127,4 +154,4 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    UpdateBeta.Args(parser)
+    UpdateBeta.AlphaAndBetaArgs(parser)

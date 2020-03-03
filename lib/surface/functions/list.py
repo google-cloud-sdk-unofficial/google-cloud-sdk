@@ -27,8 +27,17 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as base_exceptions
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+
+
+def _GetFunctionsAndLogUnreachable(message, attribute):
+  """Response callback to log unreachable while generating functions."""
+  if message.unreachable:
+    log.warning('The following regions were fully or partially unreachable '
+                'for query: %s' % ', '.join(message.unreachable))
+  return getattr(message, attribute)
 
 
 class List(base.ListCommand):
@@ -75,7 +84,9 @@ class List(base.ListCommand):
         service=client.projects_locations_functions,
         request=self.BuildRequest(location_ref, messages),
         limit=limit, field='functions',
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+        get_field_func=_GetFunctionsAndLogUnreachable)
+
     # Decorators (e.g. util.CatchHTTPErrorRaiseHTTPException) don't work
     # for generators. We have to catch the exception above the iteration loop,
     # but inside the function.

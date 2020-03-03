@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ from googlecloudsdk.command_lib.domains import resource_args
 class Describe(base.DescribeCommand):
   """Show details about a Cloud Domains operation.
 
-  This command fetches and prints information about a Cloud Domains operation.
+  Print information about a Cloud Domains operation.
 
   ## EXAMPLES
 
-  To describe an operation, run:
+  To describe an operation ``operation-id'', run:
 
-    $ {command} operation-1549382742802-58127c801803a-67763ca9-86a28c16
+    $ {command} operation-id
   """
 
   @staticmethod

@@ -7,9 +7,9 @@
 
       ## EXAMPLES
 
-      To create Game Server Config 'my-config' in project 'my-project', deployment 'my-deployment', and location in 'my-location' run:
+      To create Game Server Config 'my-config' in project 'my-project', deployment 'my-deployment', and location in 'global'(configs only support the 'global' location) run:
 
-        $ {command} my-config --project=my-project --deployment=my-deployment --location=my-location \
+        $ {command} my-config --project=my-project --deployment=my-deployment --location=global \
             --deployment=my-deployment --description=description --labels=a=x,b=y \
             --fleet-configs-file=fleet_configs.json
 

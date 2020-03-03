@@ -348,6 +348,8 @@ class Connect(base.Command):
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
+    sql_flags.AddDatabase(
+        parser, 'The SQL Server database to connect to.')
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
