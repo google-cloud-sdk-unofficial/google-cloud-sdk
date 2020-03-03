@@ -646,6 +646,7 @@ class CreateBeta(Create):
     instances_flags.AddSourceMachineImageEncryptionKey(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
+    maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -663,7 +664,7 @@ class CreateAlpha(CreateBeta):
   _support_source_snapshot_csek = True
   _support_image_csek = True
   _support_confidential_compute = True
-  _support_post_key_revocation_action_type = False
+  _support_post_key_revocation_action_type = True
 
   def _GetNetworkInterfaces(self, args, client, holder, instance_refs,
                             skip_defaults):

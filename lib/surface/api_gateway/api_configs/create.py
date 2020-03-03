@@ -29,9 +29,11 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.api_gateway import common_flags
+from googlecloudsdk.command_lib.api_gateway import operations_util
 from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import http_encoding
 
 
@@ -81,7 +83,13 @@ class Create(base.CreateCommand):
     # Check to see if Api exists, create if not
     if not apis.DoesExist(api_ref):
       res = apis.Create(api_ref, service_name)
-      ops.GetOperationResult(res)
+      operation_ref = resources.REGISTRY.Parse(
+          res.name,
+          collection='apigateway.projects.locations.operations')
+
+      ops.WaitForOperation(
+          operation_ref,
+          'Waiting for API [{}] to be created'.format(api_ref.Name()))
 
     # Create OP ServiceConfig and Rollout
     if args.openapi_spec:
@@ -105,8 +113,22 @@ class Create(base.CreateCommand):
                               labels=args.labels,
                               display_name=args.display_name,
                               backend_auth=args.backend_auth_service_account)
+    operation_ref = resources.REGISTRY.Parse(
+        resp.name,
+        collection='apigateway.projects.locations.operations')
 
-    return ops.GetOperationResult(resp, is_async=args.async_)
+    # If async operation, simply log and return the result on passed in object
+    if args.async_:
+      operations_util.PrintOperationResultWithWaitEpilogue(
+          operation_ref,
+          'Asynchronous operation is in progress')
+      return resp
+
+    return ops.WaitForOperation(
+        operation_ref,
+        'Waiting for API Config [{}] to be created for API [{}]'.format(
+            api_config_ref.Name(), api_ref.Name()),
+        api_configs.client.projects_locations_apis_configs)
 
   def __PushOpenApiServiceFile(self, open_api_spec, service_name, project_id,
                                config_id):

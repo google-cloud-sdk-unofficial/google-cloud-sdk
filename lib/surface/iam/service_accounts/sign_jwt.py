@@ -70,7 +70,7 @@ class SignJwt(base.Command):
                 payload=files.ReadFileContents(args.input,))))
 
     log.WriteToFileOrStdout(
-        args.output, content=response.signedJwt, binary=True)
+        args.output, content=response.signedJwt, binary=False, private=True)
     log.status.Print(
         'signed jwt [{0}] as [{1}] for [{2}] using key [{3}]'.format(
             args.input, args.output, args.iam_account, response.keyId))

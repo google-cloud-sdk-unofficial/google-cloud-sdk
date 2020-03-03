@@ -69,11 +69,26 @@ class UpdateAutoscaling(base.Command):
     if args.IsSpecified('mode'):
       mode = mig_utils.ParseModeString(args.mode, client.messages)
       new_autoscaler.autoscalingPolicy.mode = mode
-    if self.scale_in:
-      new_autoscaler.autoscalingPolicy.scaleDownControl = \
-        mig_utils.BuildScaleDown(args, client.messages)
 
-    return autoscalers_client.Patch(igm_ref, new_autoscaler)
+    if self.scale_in:
+      if args.IsSpecified('clear_scale_in_control'):
+        new_autoscaler.autoscalingPolicy.scaleDownControl = None
+      else:
+        new_autoscaler.autoscalingPolicy.scaleDownControl = \
+          mig_utils.BuildScaleDown(args, client.messages)
+
+    return self._SendPatchRequest(args, client, autoscalers_client, igm_ref,
+                                  new_autoscaler)
+
+  def _SendPatchRequest(self, args, client, autoscalers_client, igm_ref,
+                        new_autoscaler):
+    if self.scale_in and args.IsSpecified('clear_scale_in_control'):
+      # Apitools won't send null fields unless explicitly told to.
+      with client.apitools_client.IncludeFields(
+          ['autoscalingPolicy.scaleDownControl']):
+        return autoscalers_client.Patch(igm_ref, new_autoscaler)
+    else:
+      return autoscalers_client.Patch(igm_ref, new_autoscaler)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -92,7 +107,7 @@ class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
-    mig_utils.AddScaleInControlFlag(parser)
+    mig_utils.AddScaleInControlFlag(parser, include_clear=True)
 
 UpdateAutoscaling.detailed_help = {
     'brief': 'Update autoscaling parameters of a managed instance group',

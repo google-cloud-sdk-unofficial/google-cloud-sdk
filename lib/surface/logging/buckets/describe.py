@@ -22,6 +22,17 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {
+    'DESCRIPTION': """
+        Displays information about a bucket.
+    """,
+    'EXAMPLES': """
+     To describe a bucket in a project, run:
+
+        $ {command} my-bucket --location=global
+    """,
+}
+
 
 class Describe(base.DescribeCommand):
   """Displays information about a bucket."""
@@ -48,3 +59,6 @@ class Describe(base.DescribeCommand):
             name=util.CreateResourceName(
                 util.GetBucketLocationFromArgs(args), 'buckets',
                 args.BUCKET_ID)))
+
+
+Describe.detailed_help = DETAILED_HELP

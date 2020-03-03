@@ -58,7 +58,8 @@ def _CommonArgs(
     support_local_ssd_size=False,
     support_kms=False,
     support_resource_policy=False,
-    support_min_node_cpu=False
+    support_min_node_cpu=False,
+    support_location_hint=False
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -92,6 +93,9 @@ def _CommonArgs(
 
   if support_min_node_cpu:
     instances_flags.AddMinNodeCpuArg(parser)
+
+  if support_location_hint:
+    instances_flags.AddLocationHintArg(parser)
 
   flags.AddRegionFlag(
       parser,
@@ -368,7 +372,8 @@ def _RunCreate(compute_api,
                support_source_instance,
                support_kms=False,
                support_min_node_cpu=False,
-               support_confidential_compute=False):
+               support_confidential_compute=False,
+               support_location_hint=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -383,6 +388,7 @@ def _RunCreate(compute_api,
         sole tenancy overcommit is supported.
       support_confidential_compute: Indicate whether confidential compute is
         supported.
+      support_location_hint: Indicate whether location hint is supported
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -451,13 +457,18 @@ def _RunCreate(compute_api,
   if support_min_node_cpu and args.IsSpecified('min_node_cpu'):
     min_node_cpu = args.min_node_cpu
 
+  location_hint = None
+  if support_location_hint and args.IsSpecified('location_hint'):
+    location_hint = args.location_hint
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
       preemptible=args.preemptible,
       restart_on_failure=args.restart_on_failure,
       node_affinities=node_affinities,
-      min_node_cpu=min_node_cpu)
+      min_node_cpu=min_node_cpu,
+      location_hint=location_hint)
 
   if args.no_service_account:
     service_account = None
@@ -607,6 +618,7 @@ class Create(base.CreateCommand):
   _support_source_instance = True
   _support_kms = True
   _support_min_node_cpu = False
+  _support_location_hint = False
 
   @classmethod
   def Args(cls, parser):
@@ -615,7 +627,8 @@ class Create(base.CreateCommand):
         release_track=base.ReleaseTrack.GA,
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
-        support_min_node_cpu=cls._support_min_node_cpu
+        support_min_node_cpu=cls._support_min_node_cpu,
+        support_location_hint=cls._support_location_hint
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
 
@@ -634,7 +647,8 @@ class Create(base.CreateCommand):
         args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_min_node_cpu=self._support_min_node_cpu
+        support_min_node_cpu=self._support_min_node_cpu,
+        support_location_hint=self._support_location_hint
     )
 
 
@@ -656,6 +670,7 @@ class CreateBeta(Create):
   _support_kms = True
   _support_resource_policy = True
   _support_min_node_cpu = True
+  _support_location_hint = False
 
   @classmethod
   def Args(cls, parser):
@@ -666,7 +681,8 @@ class CreateBeta(Create):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_resource_policy=cls._support_resource_policy,
-        support_min_node_cpu=cls._support_min_node_cpu
+        support_min_node_cpu=cls._support_min_node_cpu,
+        support_location_hint=cls._support_location_hint
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
@@ -685,7 +701,8 @@ class CreateBeta(Create):
         args=args,
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
-        support_min_node_cpu=self._support_min_node_cpu)
+        support_min_node_cpu=self._support_min_node_cpu,
+        support_location_hint=self._support_location_hint)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -707,6 +724,7 @@ class CreateAlpha(Create):
   _support_resource_policy = True
   _support_min_node_cpu = True
   _support_confidential_compute = True
+  _support_location_hint = True
 
   @classmethod
   def Args(cls, parser):
@@ -717,7 +735,9 @@ class CreateAlpha(Create):
         support_source_instance=cls._support_source_instance,
         support_kms=cls._support_kms,
         support_resource_policy=cls._support_resource_policy,
-        support_min_node_cpu=cls._support_min_node_cpu)
+        support_min_node_cpu=cls._support_min_node_cpu,
+        support_location_hint=cls._support_location_hint
+    )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
@@ -739,7 +759,8 @@ class CreateAlpha(Create):
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
         support_min_node_cpu=self._support_min_node_cpu,
-        support_confidential_compute=self._support_confidential_compute)
+        support_confidential_compute=self._support_confidential_compute,
+        support_location_hint=self._support_location_hint)
 
 
 DETAILED_HELP = {

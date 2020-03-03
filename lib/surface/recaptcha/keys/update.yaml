@@ -42,6 +42,10 @@
               type: bool
               help_text: |
                 Creates a Key configured for websites.
+            - arg_name: allow-amp-traffic
+              api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAmpTraffic
+              help_text: |
+                  Wether this key can be used on AMP (Accelerated Mobile Pages) websites.
             - arg_name: domains
               api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowedDomains
               help_text: |

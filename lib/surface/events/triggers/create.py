@@ -44,7 +44,7 @@ class Create(base.Command):
           {description}
           """,
       'EXAMPLES': """\
-          To create a trigger for a PubSub event type:
+          To create a trigger for a Cloud Pub/Sub event type:
 
               $ {command} TRIGGER --type=com.google.cloud.pubsub.topic.publish
                   --parameters="topic=my-topic" --target-service=my-service
@@ -59,10 +59,14 @@ class Create(base.Command):
 
     # Flags not specific to any platform
     flags.AddEventTypeFlagArg(parser)
-    flags.AddSourceFlag(parser)
     flags.AddTargetServiceFlag(parser, required=True)
-    flags.AddParametersFlags(parser)
-    flags.AddSecretsFlag(parser)
+    mutual_with_source_group = parser.add_mutually_exclusive_group()
+    flags.AddCustomEventTypeFlag(mutual_with_source_group)
+    source_group = mutual_with_source_group.add_group(
+        'Configuration parameters for the event source.')
+    flags.AddSourceFlag(source_group)
+    flags.AddParametersFlags(source_group)
+    flags.AddSecretsFlag(source_group)
     trigger_presentation = presentation_specs.ResourcePresentationSpec(
         'trigger',
         resource_args.GetTriggerResourceSpec(),
@@ -81,48 +85,58 @@ class Create(base.Command):
     trigger_ref = args.CONCEPTS.trigger.Parse()
     namespace_ref = trigger_ref.Parent()
     with eventflow_operations.Connect(conn_context) as client:
-      source_crds = client.ListSourceCustomResourceDefinitions()
-      event_type = util.EventTypeFromTypeString(
-          source_crds, args.type, args.source)
-      source_obj = source.Source.New(client.client, namespace_ref.Name(),
-                                     event_type.crd.source_kind,
-                                     event_type.crd.source_api_category)
-      source_obj.name = _SOURCE_NAME_PATTERN.format(
-          trigger=trigger_ref.Name())
+      if args.custom_type:
+        event_type = args.type
+        source_obj = None
+        tracker_stages = stages.TriggerStages()
+      else:
+        source_crds = client.ListSourceCustomResourceDefinitions()
+        event_type = util.EventTypeFromTypeString(
+            source_crds, args.type, args.source)
+        source_obj = source.Source.New(client.client, namespace_ref.Name(),
+                                       event_type.crd.source_kind,
+                                       event_type.crd.source_api_category)
+        source_obj.name = _SOURCE_NAME_PATTERN.format(
+            trigger=trigger_ref.Name())
+        parameters = flags.GetAndValidateParameters(args, event_type)
+        tracker_stages = stages.TriggerAndSourceStages()
 
       trigger_obj = client.GetTrigger(trigger_ref)
       if trigger_obj is not None:
-        # If trigger already exists, validate it has the attributes we're trying
-        # to set right now.
-        try:
-          util.ValidateTrigger(trigger_obj, source_obj, event_type)
-        except AssertionError:
-          raise exceptions.TriggerCreationError(
-              'Trigger [{}] already exists with attributes not '
-              'matching this event type.'.format(trigger_obj.name))
-        # If the trigger has the right attributes, check if there's already
-        # a source that matches the attributes as well.
-        source_ref = util.GetSourceRef(
-            source_obj.name, source_obj.namespace, event_type.crd)
-        if client.GetSource(source_ref, event_type.crd) is not None:
+        if args.custom_type:
+          # If custom type, no need to check idempotency since there's only
+          # a trigger to worry about.
           raise exceptions.TriggerCreationError(
               'Trigger [{}] already exists.'.format(trigger_obj.name))
-
-      parameters = flags.GetAndValidateParameters(args, event_type)
+        else:
+          # If trigger already exists, validate it has the attributes we're
+          # trying to set right now to see if this is a case of idempotency.
+          try:
+            util.ValidateTrigger(trigger_obj, source_obj, event_type)
+          except AssertionError:
+            raise exceptions.TriggerCreationError(
+                'Trigger [{}] already exists with attributes not '
+                'matching this event type.'.format(trigger_obj.name))
+          # If the trigger has the right attributes, check if there's already
+          # a source that matches the attributes as well.
+          source_ref = util.GetSourceRef(
+              source_obj.name, source_obj.namespace, event_type.crd)
+          if client.GetSource(source_ref, event_type.crd) is not None:
+            raise exceptions.TriggerCreationError(
+                'Trigger [{}] already exists.'.format(trigger_obj.name))
 
       # Create the trigger and source
       with progress_tracker.StagedProgressTracker(
           'Initializing trigger...',
-          stages.TriggerSourceStages(),
+          tracker_stages,
           failure_message='Trigger creation failed') as tracker:
-        client.CreateTriggerAndSource(
-            trigger_obj,
-            trigger_ref,
-            namespace_ref,
-            source_obj,
-            event_type,
-            parameters,
-            args.broker,
-            args.target_service,
-            tracker
-        )
+        if trigger_obj is None:
+          trigger_obj = client.CreateTrigger(
+              trigger_ref, source_obj,
+              event_type if args.custom_type else event_type.type,
+              args.target_service, args.broker)
+        if not args.custom_type:
+          client.CreateSource(source_obj, event_type.crd, trigger_obj,
+                              namespace_ref, args.broker, parameters)
+          client.PollSource(source_obj, event_type, tracker)
+        client.PollTrigger(trigger_ref, tracker)

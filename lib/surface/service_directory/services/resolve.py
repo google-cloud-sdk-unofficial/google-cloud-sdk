@@ -32,9 +32,10 @@ class Resolve(base.Command):
   def Args(parser):
     resource_args.AddServiceResourceArg(parser, 'to resolve.')
     flags.AddMaxEndpointsFlag(parser)
+    flags.AddEndpointFilterFlag(parser)
 
   def Run(self, args):
     client = services.ServicesClient()
     service_ref = args.CONCEPTS.service.Parse()
 
-    return client.Resolve(service_ref, args.max_endpoints)
+    return client.Resolve(service_ref, args.max_endpoints, args.endpoint_filter)

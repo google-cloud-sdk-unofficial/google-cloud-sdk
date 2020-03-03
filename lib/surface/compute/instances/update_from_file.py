@@ -27,11 +27,12 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class UpdateFromFile(base.Command):
   """Update a Compute Engine virtual machine instance using a configuration file."""
 
-  DETAILED_HELP = {
+  detailed_help = {
       'DESCRIPTION':
           """\
           Update a Compute Engine virtual machine instance using a configuration file.

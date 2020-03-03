@@ -110,7 +110,8 @@ class CloudWildcardIterator(WildcardIterator):
     self.project_id = project_id
     self.logger = logger or logging.getLogger()
 
-  def __iter__(self, bucket_listing_fields=None,
+  def __iter__(self,
+               bucket_listing_fields=None,
                expand_top_level_buckets=False):
     """Iterator that gets called when iterating over the cloud wildcard.
 
@@ -643,10 +644,7 @@ class FileWildcardIterator(WildcardIterator):
     # originated on Windows) os.walk() will not attempt to decode and then die
     # with a "codec can't decode byte" error, and instead we can catch the error
     # at yield time and print a more informative error message.
-    for dirpath, dirnames, filenames in os.walk(directory.encode(UTF8)):
-      dirpath = dirpath.decode(UTF8)
-      dirnames = [dn.decode(UTF8) for dn in dirnames]
-      filenames = [fn.decode(UTF8) for fn in filenames]
+    for dirpath, dirnames, filenames in os.walk(six.ensure_text(directory)):
       if self.logger:
         for dirname in dirnames:
           full_dir_path = os.path.join(dirpath, dirname)

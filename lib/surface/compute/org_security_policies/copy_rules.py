@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
+from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -48,6 +49,9 @@ class CopyRules(base.UpdateCommand):
         args, holder.resources, with_project=False)
     org_security_policy = client.OrgSecurityPolicy(
         ref=ref, compute_client=holder.client)
+    dest_sp_id = org_security_policies_utils.GetSecurityPolicyId(
+        org_security_policy, ref.Name(), organization=args.organization)
     return org_security_policy.CopyRules(
         only_generate_request=False,
+        dest_sp_id=dest_sp_id,
         source_security_policy=args.source_security_policy)

@@ -22,9 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Buckets(base.Group):
-  """Manage Stackdriver Logging buckets.
+  """Manage Cloud Logging buckets.
 
-  Commands for managing Stackdriver Logging buckets.
+  Commands for managing Cloud Logging buckets. A bucket is a container of logs
+  that can be managed as a unit, for example by setting the retention period.
   """

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
+from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -47,7 +48,9 @@ class Delete(base.DeleteCommand):
         args, holder.resources, with_project=False)
     org_security_policy = client.OrgSecurityPolicy(
         ref=ref, compute_client=holder.client)
-    if args.IsSpecified('security_policy'):
-      security_policy_id = args.security_policy
+    security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
+        org_security_policy,
+        args.security_policy,
+        organization=args.organization)
     return org_security_policy.DeleteAssociation(
         security_policy_id=security_policy_id, only_generate_request=False)

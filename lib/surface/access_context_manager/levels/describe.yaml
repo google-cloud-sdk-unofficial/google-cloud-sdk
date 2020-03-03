@@ -3,6 +3,10 @@
   help_text:
     brief: Show details about an access level.
     description: Show details about an access level in a given access policy.
+    examples: |
+      To show the details of the access policy ``my-policy'', run:
+
+        $ {command} my-policy
 
   request:
     collection: accesscontextmanager.accessPolicies.accessLevels

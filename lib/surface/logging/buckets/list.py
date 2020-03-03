@@ -22,6 +22,17 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {
+    'DESCRIPTION': """
+        Lists the buckets for a project.
+    """,
+    'EXAMPLES': """
+     To list the buckets in a project, run:
+
+        $ {command}
+    """,
+}
+
 
 class List(base.ListCommand):
   """Lists the defined buckets."""
@@ -55,3 +66,6 @@ class List(base.ListCommand):
             parent=util.GetBucketLocationFromArgs(args)))
     for bucket in result.buckets:
       yield bucket
+
+
+List.detailed_help = DETAILED_HELP

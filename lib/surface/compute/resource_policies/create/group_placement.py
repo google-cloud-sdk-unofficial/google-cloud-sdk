@@ -79,7 +79,8 @@ Create a Google Compute Engine Group Placement Resource Policy.
 """,
     'EXAMPLES':
         """\
-To create a Google Compute Engine Group Placement Resource policy with 2 VMs and 2 availability domains, run:
-  $ {command} my-resource-policy --region=REGION --vm-count=2 --availability-domain-count=2
+To create a Google Compute Engine group placement policy with two
+availability domains, run:
+  $ {command} my-resource-policy --region=REGION --availability-domain-count=2
 """
 }

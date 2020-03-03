@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
+from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -47,11 +48,15 @@ class Describe(base.UpdateCommand):
         args, holder.resources, with_project=False)
     org_security_policy = client.OrgSecurityPolicy(
         ref=ref, compute_client=holder.client)
+    sp_id = org_security_policies_utils.GetSecurityPolicyId(
+        org_security_policy, ref.Name(), organization=args.organization)
     existing_security_policy = org_security_policy.Describe(
-        only_generate_request=False)[0]
+        sp_id=sp_id, only_generate_request=False)[0]
     security_policy = holder.client.messages.SecurityPolicy(
         description=args.description,
         fingerprint=existing_security_policy.fingerprint)
 
     return org_security_policy.Update(
-        only_generate_request=False, security_policy=security_policy)
+        sp_id=sp_id,
+        only_generate_request=False,
+        security_policy=security_policy)

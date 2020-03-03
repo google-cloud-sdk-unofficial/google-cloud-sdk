@@ -18,10 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import sys
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
+from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -44,23 +48,25 @@ class Create(base.CreateCommand):
 
     name = None
     attachment_id = None
-    security_policy_id = None
     replace_existing_association = False
-
-    if args.security_policy:
-      security_policy_id = args.security_policy
 
     if args.IsSpecified('name'):
       name = args.name
 
+    attachment_id = None
     if args.IsSpecified('organization'):
       attachment_id = 'organizations/' + args.organization
       if name is None:
         name = 'organization-' + args.organization
-    elif args.IsSpecified('folder'):
+    if args.IsSpecified('folder'):
       attachment_id = 'folders/' + args.folder
       if name is None:
         name = 'folder-' + args.folder
+    if attachment_id is None:
+      log.error(
+          'Must specify attachment ID with --organization=ORGANIZATION or '
+          '--folder=FOLDER')
+      sys.exit()
 
     replace_existing_association = False
     if args.replace_association_on_target:
@@ -69,6 +75,10 @@ class Create(base.CreateCommand):
     association = holder.client.messages.SecurityPolicyAssociation(
         attachmentId=attachment_id, name=name)
 
+    security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
+        org_security_policy,
+        args.security_policy,
+        organization=args.organization)
     return org_security_policy.AddAssociation(
         association=association,
         security_policy_id=security_policy_id,

@@ -1,5 +1,6 @@
 - release_tracks: [ALPHA, BETA]
-
+  BETA:
+    hidden: true
   help_text:
     brief: Searches accessible IAM policies that match a query.
     description: Searches accessible IAM policies that match a query.

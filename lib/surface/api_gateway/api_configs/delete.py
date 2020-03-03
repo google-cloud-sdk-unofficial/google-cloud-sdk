@@ -22,7 +22,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.api_gateway import api_configs
 from googlecloudsdk.api_lib.api_gateway import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.api_gateway import operations_util
 from googlecloudsdk.command_lib.api_gateway import resource_args
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -68,6 +70,20 @@ class Delete(base.DeleteCommand):
     client = api_configs.ApiConfigClient()
 
     resp = client.Delete(api_config_ref)
+    operation_ref = resources.REGISTRY.Parse(
+        resp.name,
+        collection='apigateway.projects.locations.operations')
 
-    return operations.OperationsClient().GetOperationResult(
-        resp, is_async=args.async_)
+    # If async operation, simply log and return the result on passed in object
+    if args.async_:
+      operations_util.PrintOperationResultWithWaitEpilogue(
+          operation_ref,
+          'Asynchronous operation is in progress')
+      return resp
+
+    op_client = operations.OperationsClient()
+
+    return op_client.WaitForOperation(
+        operation_ref,
+        'Waiting for API Config [{}] to be deleted'.format(
+            api_config_ref.Name()))

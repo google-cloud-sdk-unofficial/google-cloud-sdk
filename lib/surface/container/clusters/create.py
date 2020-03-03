@@ -310,6 +310,7 @@ def ParseCreateOptionsBase(args):
       autoprovisioning_max_unavailable_upgrade=getattr(args, 'autoprovisioning_max_unavailable_upgrade', None),
       enable_autoprovisioning_autorepair=getattr(args, 'enable_autoprovisioning_autorepair', None),
       enable_autoprovisioning_autoupgrade=getattr(args, 'enable_autoprovisioning_autoupgrade', None),
+      autoprovisioning_min_cpu_platform=getattr(args, 'autoprovisioning_min_cpu_platform', None),
       min_cpu=args.min_cpu,
       max_cpu=args.max_cpu,
       min_memory=args.min_memory,
@@ -364,8 +365,7 @@ class Create(base.CreateCommand):
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
     flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddPrivateClusterFlags(
-        parser, with_deprecated=False, with_alpha=False)
+    flags.AddPrivateClusterFlags(parser, with_deprecated=False)
     flags.AddClusterVersionFlag(parser)
     flags.AddNodeVersionFlag(parser)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
@@ -417,15 +417,6 @@ class Create(base.CreateCommand):
           'and our documentation on setting up private clusters: '
           'https://cloud.google.com'
           '/kubernetes-engine/docs/how-to/private-clusters')
-
-    if not (options.metadata and
-            'disable-legacy-endpoints' in options.metadata):
-      log.warning('Starting in 1.12, default node pools in new clusters '
-                  'will have their legacy Compute Engine instance metadata '
-                  'endpoints disabled by default. To create a cluster with '
-                  'legacy instance metadata endpoints disabled in the default '
-                  'node pool, run `clusters create` with the flag '
-                  '`--metadata disable-legacy-endpoints=true`.')
 
     if not options.enable_shielded_nodes:
       log.warning(
@@ -524,7 +515,7 @@ class CreateBeta(Create):
     flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddPrivateClusterFlags(parser, with_deprecated=True, with_alpha=False)
+    flags.AddPrivateClusterFlags(parser, with_deprecated=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddTpuFlags(parser, hidden=False)
     flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
@@ -596,7 +587,7 @@ class CreateAlpha(Create):
     flags.AddPreemptibleFlag(parser)
     flags.AddPodSecurityPolicyFlag(parser)
     flags.AddAllowRouteOverlapFlag(parser)
-    flags.AddPrivateClusterFlags(parser, with_deprecated=True, with_alpha=True)
+    flags.AddPrivateClusterFlags(parser, with_deprecated=True)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
@@ -644,7 +635,6 @@ class CreateAlpha(Create):
     ops.enable_network_egress_metering = args.enable_network_egress_metering
     ops.enable_resource_consumption_metering = args.enable_resource_consumption_metering
     ops.enable_private_ipv6_access = args.enable_private_ipv6_access
-    ops.enable_peering_route_sharing = args.enable_peering_route_sharing
     ops.release_channel = args.release_channel
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade

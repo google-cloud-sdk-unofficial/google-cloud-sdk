@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import org_security_policy_rule_utils as rul
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
+from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -44,10 +45,13 @@ class Create(base.CreateCommand):
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
     flags.AddDestPorts(parser)
+    flags.AddLayer4Configs(parser)
     flags.AddDirection(parser)
     flags.AddEnableLogging(parser)
     flags.AddTargetResources(parser)
+    flags.AddTargetServiceAccounts(parser)
     flags.AddDescription(parser)
+    flags.AddOrganization(parser, required=False)
     parser.display_info.AddCacheUpdater(flags.OrgSecurityPoliciesCompleter)
 
   def Run(self, args):
@@ -59,7 +63,9 @@ class Create(base.CreateCommand):
     src_ip_ranges = []
     dest_ip_ranges = []
     dest_ports = []
+    layer4_configs = []
     target_resources = []
+    target_service_accounts = []
     enable_logging = False
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
@@ -67,21 +73,27 @@ class Create(base.CreateCommand):
       dest_ip_ranges = args.dest_ip_ranges
     if args.IsSpecified('dest_ports'):
       dest_ports = args.dest_ports
+    if args.IsSpecified('layer4_configs'):
+      layer4_configs = args.layer4_configs
     if args.IsSpecified('target_resources'):
       target_resources = args.target_resources
+    if args.IsSpecified('target_service_accounts'):
+      target_service_accounts = args.target_service_accounts
     if args.IsSpecified('enable_logging'):
       enable_logging = True
 
-    dest_port_list = rule_utils.ParseDestPorts(dest_ports,
-                                               holder.client.messages)
-
+    dest_ports_list = rule_utils.ParseDestPorts(dest_ports,
+                                                holder.client.messages)
+    layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
+                                                       holder.client.messages)
     matcher = holder.client.messages.SecurityPolicyRuleMatcher(
         versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher
         .VersionedExprValueValuesEnum.FIREWALL,
         config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
             srcIpRanges=src_ip_ranges,
             destIpRanges=dest_ip_ranges,
-            destPorts=dest_port_list))
+            destPorts=dest_ports_list,
+            layer4Configs=layer4_config_list))
     traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
@@ -95,9 +107,16 @@ class Create(base.CreateCommand):
         match=matcher,
         direction=traffic_direct,
         targetResources=target_resources,
+        targetServiceAccounts=target_service_accounts,
         description=args.description,
         enableLogging=enable_logging)
 
+    org_security_policy = client.OrgSecurityPolicy(
+        ref=ref, compute_client=holder.client)
+    security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
+        org_security_policy,
+        args.security_policy,
+        organization=args.organization)
     return security_policy_rule_client.Create(
-        security_policy=args.security_policy,
+        security_policy=security_policy_id,
         security_policy_rule=security_policy_rule)

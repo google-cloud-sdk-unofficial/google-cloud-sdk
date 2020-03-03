@@ -652,7 +652,6 @@ class UpdateAlpha(Update):
     flags.AddSecurityProfileForUpdateFlag(group)
     flags.AddIstioConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
-    flags.AddPeeringRouteSharingFlag(group)
     flags.AddWorkloadIdentityFlags(group)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
@@ -694,7 +693,6 @@ class UpdateAlpha(Update):
           'will fail to terminate. Any new pods that try to use those '
           'PersistentVolumes will also fail to start.',
           cancel_on_no=True)
-    opts.enable_peering_route_sharing = args.enable_peering_route_sharing
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.release_channel = args.release_channel
 

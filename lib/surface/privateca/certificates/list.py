@@ -36,7 +36,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser, 'certificates')
+    flags.AddLocationFlag(parser, 'certificates', '--issuer-location')
     concept_parsers.ConceptParser(
         [
             presentation_specs.ResourcePresentationSpec(
@@ -48,7 +48,7 @@ class List(base.ListCommand):
                 flag_name_overrides={'location': ''})
         ],
         command_level_fallthroughs={
-            '--issuer.location': ['--location']
+            '--issuer.location': ['--issuer-location']
         }).AddToParser(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
@@ -70,11 +70,11 @@ class List(base.ListCommand):
 
     if ca_ref:
       parent_resource = ca_ref.RelativeName()
-    elif args.IsSpecified('location'):
+    elif args.IsSpecified('issuer_location'):
       parent_resource = 'projects/{}/locations/{}/certificateAuthorities/-'.format(
-          properties.VALUES.core.project.GetOrFail(), args.location)
+          properties.VALUES.core.project.GetOrFail(), args.issuer_location)
     elif args.IsSpecified('issuer'):
-      raise exceptions.InvalidArgumentException('--location',
+      raise exceptions.InvalidArgumentException('--issuer-location',
                                                 'location must be specified.')
     else:
       parent_resource = 'projects/{}/locations/-/certificateAuthorities/-'.format(

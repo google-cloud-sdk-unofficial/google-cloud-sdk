@@ -76,12 +76,12 @@ _CH_SYNOPSIS = """
       -d ("user"|"serviceAccount"|"domain"|"group"):id
       -d ("allUsers"|"allAuthenticatedUsers")
 
-  Note: The "iam ch" command does not support changing IAM policies with
+  NOTE: The "iam ch" command does not support changing IAM policies with
   bindings that contain conditions. As such, "iam ch" cannot be used to add
   conditions to a policy or to change the policy of a resource that already
   contains conditions. See additional details below.
 
-  Note: The "gsutil iam" command disallows using project convenience groups
+  NOTE: The "gsutil iam" command disallows using project convenience groups
   (projectOwner, projectEditor, projectViewer) as the first segment of a binding
   because these groups go against the principle of least privilege.
 
@@ -154,7 +154,7 @@ _CH_DESCRIPTION = """
   The gsutil -m option may be set to handle object-level operations more
   efficiently.
 
-  Note: The ``iam ch`` command may NOT be used to change the IAM policy of a
+  NOTE: The ``iam ch`` command may NOT be used to change the IAM policy of a
   resource that contains conditions in its policy bindings. Attempts to do so
   will result in an error. To change the IAM policy of such a resource, you can
   perform a read-modify-write operation by using ``gsutil iam get`` to save the
@@ -197,6 +197,8 @@ _CH_DESCRIPTION = """
 
 <B>CH OPTIONS</B>
   The ``ch`` sub-command has the following options
+
+  -d          Removes roles granted to the specified member.
 
   -R, -r      Performs ``iam ch`` recursively to all objects under the
               specified bucket.

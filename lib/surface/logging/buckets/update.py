@@ -22,8 +22,21 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.core.console import console_io
+
+DETAILED_HELP = {
+    'DESCRIPTION': """
+        Updates the properties of a bucket.
+    """,
+    'EXAMPLES': """
+     To update a bucket in your project, run:
+
+        $ {command} my-bucket --location=global --description=my-new-description
+    """,
+}
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates a bucket.
 
@@ -43,28 +56,29 @@ class Update(base.UpdateCommand):
         help='A new description for the bucket.')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
 
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The updated bucket.
-    """
+  def _Run(self, args, is_alpha=False):
     bucket_data = {}
     update_mask = []
+    parameter_names = ['--retention-days', '--description']
     if args.IsSpecified('retention_days'):
       bucket_data['retentionDays'] = args.retention_days
       update_mask.append('retention_days')
     if args.IsSpecified('description'):
       bucket_data['description'] = args.description
       update_mask.append('description')
+    if is_alpha:
+      parameter_names.extend(['--locked'])
+      if args.IsSpecified('locked'):
+        bucket_data['locked'] = args.locked
+        update_mask.append('locked')
+        if args.locked:
+          console_io.PromptContinue(
+              'WARNING: Locking a bucket cannot be undone.',
+              default=False, cancel_on_no=True)
 
     if not update_mask:
       raise calliope_exceptions.MinimumArgumentException(
-          ['--retention-days', '--description'],
+          parameter_names,
           'Please specify at least one property to update')
 
     return util.GetClient().projects_locations_buckets.Patch(
@@ -77,3 +91,34 @@ class Update(base.UpdateCommand):
                 'buckets', args.BUCKET_ID),
             logBucket=util.GetMessages().LogBucket(**bucket_data),
             updateMask=','.join(update_mask)))
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The updated bucket.
+    """
+    return self._Run(args)
+
+Update.detailed_help = DETAILED_HELP
+
+
+# pylint: disable=missing-docstring
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  __doc__ = Update.__doc__
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+    parser.add_argument(
+        '--locked', action='store_true',
+        help=('Lock the bucket and prevent it from being modified or deleted '
+              '(unless it is empty).'))
+
+  def Run(self, args):
+    return self._Run(args, is_alpha=True)

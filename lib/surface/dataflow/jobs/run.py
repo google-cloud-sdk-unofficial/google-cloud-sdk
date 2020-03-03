@@ -134,11 +134,7 @@ def _CommonRun(args, support_beta_features=False):
       ),
       parameters=args.parameters,
       service_account_email=args.service_account_email)
-  flex_template = properties.VALUES.dataflow.flex_template.GetBool()
-  if flex_template:
-    return apis.Templates.CreateJobFromFlexTemplate(arguments)
-  else:
-    return apis.Templates.Create(arguments)
+  return apis.Templates.Create(arguments)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -178,13 +174,6 @@ class RunBeta(Run):
         '--network',
         help='The Compute Engine network for launching instances to '
         'run your pipeline.')
-
-    parser.add_argument(
-        '--flex-template',
-        action=actions.StoreBooleanProperty(
-            properties.VALUES.dataflow.flex_template),
-        help='The job template to run is a flex template.'
-    )
 
   def Run(self, args):
     return _CommonRun(args, True)

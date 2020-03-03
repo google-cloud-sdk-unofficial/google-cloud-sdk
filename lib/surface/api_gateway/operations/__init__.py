@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The rules command group for the Cloud Recommender API CLI."""
+"""The operations command group for the Cloud API Gateways CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,6 +22,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Rules(base.Group):
-  """Manage Cloud resource recommendation rules."""
+class Operations(base.Group):
+  """Manage operations for Cloud API Gateways.
+
+  Commands for managing operations for Google API Gateways.
+  """

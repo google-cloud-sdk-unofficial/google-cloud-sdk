@@ -49,6 +49,7 @@ class Create(base.CreateCommand):
       parent_id = 'folders/' + args.folder
     security_policy = holder.client.messages.SecurityPolicy(
         description=args.description,
+        displayName=args.display_name,
         type=holder.client.messages.SecurityPolicy.TypeValueValuesEnum.FIREWALL)
     return org_security_policy.Create(
         security_policy=security_policy,

@@ -312,7 +312,7 @@ class CreateGA(base.CreateCommand):
 
   _support_l7_internal_load_balancer = True
   _support_failover = False
-  _support_logging = False
+  _support_logging = True
   _support_multinic = True
   _support_client_only = False
 
@@ -356,7 +356,6 @@ class CreateBeta(CreateGA):
   backend-services edit'.
   """
   _support_failover = True
-  _support_logging = True
   _support_multinic = True
   _support_client_only = False
 
