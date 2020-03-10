@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.services import apikeys
+from googlecloudsdk.api_lib.services import scm
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import actions
@@ -26,6 +28,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
 
 MAX_RESPONSE_BYTES = 1000
+# Define GetOperation function mapping. Default is serviceusage.GetOperation.
+_GET_OP_FUNC_MAP = {
+    'akmf': apikeys.GetOperation,
+    'acf': scm.GetOperation,
+}
 
 
 class Describe(base.DescribeCommand):
@@ -73,5 +80,8 @@ class Describe(base.DescribeCommand):
     Returns:
       The response from the operations.Get API call.
     """
-    op = serviceusage.GetOperation(args.operation)
-    services_util.PrintOperation(op)
+    namespace = common_flags.get_operation_namespace(args.operation)
+    get_op_func = _GET_OP_FUNC_MAP.get(namespace, serviceusage.GetOperation)
+
+    op = get_op_func(args.operation)
+    services_util.PrintOperationWithResponse(op)

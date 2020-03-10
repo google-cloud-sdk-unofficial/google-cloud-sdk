@@ -26,9 +26,17 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 _RESOURCE_TYPE = 'service'
 
 
-@base.Hidden
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding from a service."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To remove an IAM policy binding to a Service Directory service, run:
+
+            $ {command} my-service --namespace=my-namespace --location=us-east1 --role=roles/owner --member=user:foo@gmail.com
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -36,13 +44,11 @@ class RemoveIamPolicyBinding(base.Command):
         parser,
         """to remove IAM policy binding from.""")
 
-    iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=True)
+    iam_util.AddArgsForRemoveIamPolicyBinding(parser)
 
   def Run(self, args):
-    condition = iam_util.ValidateAndExtractCondition(args)
     client = services.ServicesClient()
     service_ref = args.CONCEPTS.service.Parse()
 
     iam_util.LogSetIamPolicy(service_ref.Name(), _RESOURCE_TYPE)
-    return client.RemoveIamPolicyBinding(service_ref, args.member, args.role,
-                                         condition)
+    return client.RemoveIamPolicyBinding(service_ref, args.member, args.role)

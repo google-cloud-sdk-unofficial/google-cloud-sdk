@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2020 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,9 +29,17 @@ _RESOURCE_TYPE = 'endpoint'
 _ENDPOINT_METADATA_LIMIT = 512
 
 
-@base.Hidden
 class Create(base.CreateCommand):
   """Create an endpoint."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To create a Service Directory endpoint, run:
+
+            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1 --address=1.2.3.4 --port=5 --metadata=a=b,c=d
+          """,
+  }
 
   @staticmethod
   def Args(parser):

@@ -77,6 +77,7 @@ class Update(base.UpdateCommand):
 
     autoscaling_group = flags.AddClusterAutoscalingFlags(group, hidden=False)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
+    flags.AddWorkloadMetadataFromNodeFlag(group)
 
     surge_upgrade_group = group.add_argument_group('Upgrade settings')
     flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
@@ -91,6 +92,7 @@ class Update(base.UpdateCommand):
         node_locations=args.node_locations,
         max_nodes=args.max_nodes,
         min_nodes=args.min_nodes,
+        workload_metadata_from_node=args.workload_metadata_from_node,
         enable_autoprovisioning=args.enable_autoprovisioning,
         max_surge_upgrade=args.max_surge_upgrade,
         max_unavailable_upgrade=args.max_unavailable_upgrade)
@@ -154,7 +156,7 @@ class UpdateBeta(Update):
     flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
 
-    flags.AddWorkloadMetadataFromNodeFlag(group)
+    flags.AddWorkloadMetadataFromNodeFlag(group, use_mode=False)
 
     flags.AddNodePoolLocationsFlag(group)
 
@@ -194,7 +196,7 @@ class UpdateAlpha(Update):
     flags.AddSurgeUpgradeFlag(surge_upgrade_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(surge_upgrade_group, for_node_pool=True)
 
-    flags.AddWorkloadMetadataFromNodeFlag(group)
+    flags.AddWorkloadMetadataFromNodeFlag(group, use_mode=False)
 
     flags.AddNodePoolLocationsFlag(group)
 

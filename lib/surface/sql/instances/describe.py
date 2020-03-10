@@ -24,35 +24,12 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import instances as instance_api_util
 from googlecloudsdk.api_lib.sql import validate
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import instances as instance_command_util
 from googlecloudsdk.core import properties
-import six
 import six.moves.http_client
-
-messages = apis.GetMessagesModule('sql', 'v1beta4')
-
-
-class DatabaseInstancePresentation(object):
-  """Represents a DatabaseInstance message that is modified for user visibility."""
-
-  def __init__(self, orig):
-    for field in orig.all_fields():
-      if field.name == 'state':
-        if orig.settings and orig.settings.activationPolicy == messages.Settings.ActivationPolicyValueValuesEnum.NEVER:
-          self.state = 'STOPPED'
-        else:
-          self.state = orig.state
-      else:
-        value = getattr(orig, field.name)
-        if value is not None and not (isinstance(value, list) and not value):
-          if field.name in ['currentDiskSize', 'maxDiskSize']:
-            setattr(self, field.name, six.text_type(value))
-          else:
-            setattr(self, field.name, value)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
@@ -92,8 +69,8 @@ class Get(base.DescribeCommand):
         with.
 
     Returns:
-      A dict object representing the instance resource if fetching the instance
-      was successful.
+      A DatabaseInstancePresentation object representing the instance resource
+      if fetching the instance was successful.
     Raises:
       HttpException: A http error response was received while executing api
           request.
@@ -116,7 +93,7 @@ class Get(base.DescribeCommand):
       # TODO(b/122660263): Remove when V1 instances are no longer supported.
       if instance_api_util.IsInstanceV1(sql_messages, instance):
         instance_command_util.ShowV1DeprecationWarning()
-      return DatabaseInstancePresentation(instance)
+      return instance_api_util.DatabaseInstancePresentation(instance)
     except apitools_exceptions.HttpError as error:
       if error.status_code == six.moves.http_client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(

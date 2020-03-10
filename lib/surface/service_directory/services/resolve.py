@@ -24,9 +24,16 @@ from googlecloudsdk.command_lib.service_directory import flags
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
-@base.Hidden
 class Resolve(base.Command):
   """Resolve a service."""
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To resolve Service Directory services, run:
+
+            $ {command} my-service --namespace=my-namespace --location=us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

@@ -41,6 +41,10 @@ class List(base.ListCommand):
   alphabetically by project ID:
 
     $ {command} --sort-by=projectId --limit=5
+
+  To list projects that have been marked for deletion:
+
+    $ {command} --filter='lifecycleState:DELETE_REQUESTED'
   """
 
   @staticmethod

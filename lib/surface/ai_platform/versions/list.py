@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.ml_engine import versions_util
 
 def _AddListArgs(parser):
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
+  flags.GetRegionArg('model').AddToParser(parser)
 
 
 class List(base.ListCommand):

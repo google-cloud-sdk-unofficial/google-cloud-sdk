@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.ml_engine import models_util
 
 def _AddDeleteArgs(parser):
   flags.GetModelName().AddToParser(parser)
+  flags.GetRegionArg('model').AddToParser(parser)
 
 
 class Delete(base.DeleteCommand):

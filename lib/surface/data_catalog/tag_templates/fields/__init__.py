@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.GA)
 class TagTemplateFields(base.Group):
   """Manage tag template fields in Cloud Data Catalog."""
   pass

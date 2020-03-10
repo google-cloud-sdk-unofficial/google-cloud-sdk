@@ -30,6 +30,7 @@ from googlecloudsdk.core import log
 def _AddUpdateArgs(parser):
   """Get arguments for the `ai-platform models update` command."""
   flags.GetModelName().AddToParser(parser)
+  flags.GetRegionArg('model').AddToParser(parser)
   flags.GetDescriptionFlag('model').AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
 

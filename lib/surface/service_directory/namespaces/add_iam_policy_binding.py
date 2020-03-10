@@ -26,22 +26,28 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 _RESOURCE_TYPE = 'namespace'
 
 
-@base.Hidden
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding to a namespace."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To add an IAM policy binding to a Service Directory namespace, run:
+
+            $ {command} my-namespace --location=us-east1 --role=roles/owner --member=user:foo@gmail.com
+          """,
+  }
 
   @staticmethod
   def Args(parser):
     resource_args.AddNamespaceResourceArg(parser,
                                           'to add IAM policy binding to.')
 
-    iam_util.AddArgsForAddIamPolicyBinding(parser, add_condition=True)
+    iam_util.AddArgsForAddIamPolicyBinding(parser)
 
   def Run(self, args):
-    condition = iam_util.ValidateAndExtractCondition(args)
     client = namespaces.NamespacesClient()
     namespace_ref = args.CONCEPTS.namespace.Parse()
 
     iam_util.LogSetIamPolicy(namespace_ref.Name(), _RESOURCE_TYPE)
-    return client.AddIamPolicyBinding(namespace_ref, args.member, args.role,
-                                      condition)
+    return client.AddIamPolicyBinding(namespace_ref, args.member, args.role)

@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.ml_engine import operations_util
 
 def _AddCancelArgs(parser):
   flags.OPERATION_NAME.AddToParser(parser)
+  flags.GetRegionArg('operation').AddToParser(parser)
 
 
 class Cancel(base.SilentCommand):

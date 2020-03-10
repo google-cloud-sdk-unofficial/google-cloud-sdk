@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.ml_engine import versions_util
 
 def _AddSetDefaultArgs(parser):
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
+  flags.GetRegionArg('version').AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
 
 

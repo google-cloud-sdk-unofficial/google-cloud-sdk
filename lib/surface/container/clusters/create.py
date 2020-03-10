@@ -300,6 +300,8 @@ def ParseCreateOptionsBase(args):
       enable_resource_consumption_metering=\
           args.enable_resource_consumption_metering,
       database_encryption_key=args.database_encryption_key,
+      workload_pool=args.workload_pool,
+      workload_metadata_from_node=args.workload_metadata_from_node,
       enable_vertical_pod_autoscaling=args.enable_vertical_pod_autoscaling,
       enable_autoprovisioning=args.enable_autoprovisioning,
       autoprovisioning_config_file=args.autoprovisioning_config_file,
@@ -375,6 +377,8 @@ class Create(base.CreateCommand):
         parser, hidden=False, for_create=True, ga=True)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
+    flags.AddWorkloadIdentityFlags(parser)
+    flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddReservationAffinityFlags(parser)
     flags.AddSurgeUpgradeFlag(parser)
     flags.AddMaxUnavailableUpgradeFlag(parser)
@@ -508,7 +512,6 @@ class CreateBeta(Create):
     flags.AddMaintenanceWindowGroup(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
-    flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
     flags.AddNodeTaintsFlag(parser)
     flags.AddPreemptibleFlag(parser)
@@ -524,7 +527,8 @@ class CreateBeta(Create):
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
-    flags.AddWorkloadIdentityFlags(parser)
+    flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
+    flags.AddWorkloadMetadataFromNodeFlag(parser, use_mode=False)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddSurgeUpgradeFlag(parser, default=1)
     flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
@@ -537,7 +541,6 @@ class CreateBeta(Create):
     flags.ValidateSurgeUpgradeSettings(args)
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.min_cpu_platform = args.min_cpu_platform
-    ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
     ops.private_cluster = args.private_cluster
@@ -579,7 +582,6 @@ class CreateAlpha(Create):
     flags.AddMaintenanceWindowGroup(parser)
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
-    flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
     flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
     flags.AddAutoscalingProfilesFlag(parser)
@@ -591,7 +593,8 @@ class CreateAlpha(Create):
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
-    flags.AddWorkloadIdentityFlags(parser)
+    flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
+    flags.AddWorkloadMetadataFromNodeFlag(parser, use_mode=False)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
@@ -616,7 +619,6 @@ class CreateAlpha(Create):
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.autoscaling_profile = args.autoscaling_profile
     ops.local_ssd_volume_configs = args.local_ssd_volumes
-    ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
     ops.allow_route_overlap = args.allow_route_overlap
     ops.private_cluster = args.private_cluster

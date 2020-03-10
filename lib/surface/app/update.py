@@ -25,11 +25,11 @@ from googlecloudsdk.command_lib.app import update_util
 
 _DETAILED_HELP = {
     'brief': ('Updates an App Engine application.'),
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
         This command is used to update settings on an app engine application.
 
         """,
-    'EXAMPLES': """\
+    'EXAMPLES': """
         To enable split health checks on an application:
 
           $ {command} --split-health-checks
@@ -62,11 +62,9 @@ class UpdateAlphaAndBeta(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    update_util.AddAppUpdateFlags(parser,
-                                  enable_use_container_optimized_os=True)
+    update_util.AddAppUpdateFlags(parser)
 
   def Run(self, args):
     update_util.PatchApplication(
         self.ReleaseTrack(),
-        split_health_checks=args.split_health_checks,
-        use_container_optimized_os=args.use_container_optimized_os)
+        split_health_checks=args.split_health_checks)

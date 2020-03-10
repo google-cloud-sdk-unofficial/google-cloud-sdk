@@ -18,11 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import sys
-
 from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.api_lib.ml_engine import versions_api
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import versions_util
@@ -43,6 +40,7 @@ def _AddCreateArgs(parser):
   """Add common arguments for `versions create` command."""
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
   flags.GetDescriptionFlag('version').AddToParser(parser)
+  flags.GetRegionArg('version').AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
   base.Argument(
       '--origin',

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import predict
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import predict_utilities
 
 INPUT_INSTANCES_LIMIT = 100
@@ -51,6 +52,7 @@ class Explain(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('--model', required=True, help='Name of the model.')
+    flags.GetRegionArg('model').AddToParser(parser)
     parser.add_argument(
         '--version',
         help="""\

@@ -31,6 +31,7 @@ def _AddCreateArgs(parser, support_console_logging=False):
   """Get arguments for the `ai-platform models create` command."""
   flags.GetModelName().AddToParser(parser)
   flags.GetDescriptionFlag('model').AddToParser(parser)
+  flags.GetRegionArg('model').AddToParser(parser)
   parser.add_argument(
       '--regions',
       metavar='REGION',
@@ -39,7 +40,7 @@ def _AddCreateArgs(parser, support_console_logging=False):
 The Google Cloud region where the model will be deployed (currently only a
 single region is supported).
 
-Will soon be required, but defaults to 'us-central1' for now.
+Defaults to 'us-central1'.
 """)
   parser.add_argument(
       '--enable-logging',
@@ -70,12 +71,14 @@ class Create(base.CreateCommand):
     labels = models_util.ParseCreateLabels(models_client, args)
     enable_console_logging = (support_console_logging and
                               args.enable_console_logging)
-    model = models_util.Create(models_client, args.model,
-                               regions=args.regions,
-                               enable_logging=args.enable_logging,
-                               enable_console_logging=enable_console_logging,
-                               labels=labels,
-                               description=args.description)
+    model = models_util.Create(
+        models_client,
+        args.model,
+        args,
+        enable_logging=args.enable_logging,
+        enable_console_logging=enable_console_logging,
+        labels=labels,
+        description=args.description)
     log.CreatedResource(model.name, kind='ml engine model')
 
   def Run(self, args):

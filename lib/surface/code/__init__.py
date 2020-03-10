@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.code import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -38,3 +39,11 @@ class Code(base.Group):
             $ {command} setup
       """,
   }
+
+  @staticmethod
+  def Args(parser):
+    flags.CommonFlags(parser)
+
+  def Filter(self, context, args):
+    flags.Validate(args)
+    return context

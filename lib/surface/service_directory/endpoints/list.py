@@ -24,9 +24,17 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
-@base.Hidden
 class List(base.ListCommand):
   """List endpoints."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list Service Directory endpoints, run:
+
+            $ {command} --service=my-service --namespace=my-namespace --location=us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

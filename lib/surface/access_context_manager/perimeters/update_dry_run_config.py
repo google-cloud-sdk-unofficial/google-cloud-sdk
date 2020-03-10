@@ -57,7 +57,7 @@ class UpdatePerimetersAlpha(base.UpdateCommand):
 
   def Patch(self, client, args, perimeter_ref, result):
     if args.clear:
-      return client.Patch(perimeter_ref, clear_dry_run=True)
+      return client.UnsetSpec(perimeter_ref, use_explicit_dry_run_spec=False)
 
     resources = perimeters.ParseResources(args, result, dry_run=True)
     restricted_services = perimeters.ParseRestrictedServices(
@@ -68,11 +68,10 @@ class UpdatePerimetersAlpha(base.UpdateCommand):
         args, result, self._API_VERSION, dry_run=True)
     enable_vpc_accessible_services = args.enable_vpc_accessible_services
 
-    return client.Patch(
+    return client.PatchDryRunConfig(
         perimeter_ref,
         resources=resources,
         restricted_services=restricted_services,
         levels=levels,
         vpc_allowed_services=vpc_allowed_services,
-        enable_vpc_accessible_services=enable_vpc_accessible_services,
-        apply_to_dry_run_config=True)
+        enable_vpc_accessible_services=enable_vpc_accessible_services)

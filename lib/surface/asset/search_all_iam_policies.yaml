@@ -3,10 +3,10 @@
   help_text:
     brief: |
       Searches all IAM policies under a given scope (i.e., an organization, a folder, or a project)
-      with admin access.
+      with `cloudasset.assets.searchAllIamPolicies` permission.
     description: |
       Searches all IAM policies under a given scope (i.e., an organization, a folder, or a project)
-      with admin access.
+      with `cloudasset.assets.searchAllIamPolicies` permission.
     examples: |
       To search all the IAM policies that contains `amy@mycompany.com` under the organization
       (organizations/123), which you have `cloudasset.assets.searchAllIamPolicies` permission, run:
@@ -28,30 +28,26 @@
         The query statement.
 
         Examples:
-        To find all Cloud IAM policies in your organization that contain amy@mycompany.com:
-        `policy:"amy@mydomain.com"`
-
-        To find all Cloud IAM policies in your organization that contain owner role:
-        `policy:"roles/owner"`
-
-        To find all Cloud IAM policies in your organization which have myuser@mycompany.com in the
-        owner role:
-        `policy:("roles/owner" "myuser@mycompany.com")`
-
-        To find all Cloud IAM policies in your organization which have myuser@mycompany.com in the
-        owner role or youruser@mycompany.com in the viewer role:
-        `policy:(("roles/owner" "myuser@mycompany.com") OR ("roles/viewer" "youruser@mycompany.com"))`
-
-        To find all Cloud IAM policies that are set on a resource:
-        `resource: "projects/123"`
-
-        To find all Cloud IAM policies of resources that match a query.
-        `resource: "*proj*"`
+          * To find all Cloud IAM policies in your organization that contain amy@mycompany.com:
+            `policy:"amy@mydomain.com"`
+          * To find all Cloud IAM policies in your organization that contain owner role:
+            `policy:"roles/owner"`
+          * To find all Cloud IAM policies in your organization which have myuser@mycompany.com in
+            the owner role:
+           `policy:("roles/owner" "myuser@mycompany.com")`
+          * To find all Cloud IAM policies in your organization which have myuser@mycompany.com in
+            the owner role or youruser@mycompany.com in the viewer role:
+            `policy:(("roles/owner" "myuser@mycompany.com") OR ("roles/viewer" "youruser@mycompany.com"))`
+          * To find all Cloud IAM policies that are set on a resource:
+            `resource: "projects/123"`
+          * To find all Cloud IAM policies of resources that match a query.
+            `resource: "*proj*"`
     - api_field: scope
       arg_name: scope
       help_text: |
-        The search is limited to the IAM policies within the `scope`. The allowed value must be one
-        of the following:
+        The search result scope is limited within a project, folder, or organization. You must have
+        the cloudasset.assets.searchAllIamPolicies permission granted to the caller for the desired
+        scope. The allowed value must be one of the following:
           * Organization number (i.e. "organizations/123")
           * Folder number(i.e. "folders/1234")
           * Project number (i.e. "projects/12345")

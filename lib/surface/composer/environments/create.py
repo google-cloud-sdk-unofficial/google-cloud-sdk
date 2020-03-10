@@ -265,7 +265,8 @@ class CreateBeta(Create):
   @staticmethod
   def AlphaAndBetaArgs(parser):
     Create.Args(parser)
-    flags.AddPrivateIpAndIpAliasEnvironmentFlags(parser)
+    flags.AddPrivateIpEnvironmentFlags(parser)
+    flags.AddIpAliasEnvironmentFlags(parser)
 
   @staticmethod
   def Args(parser):

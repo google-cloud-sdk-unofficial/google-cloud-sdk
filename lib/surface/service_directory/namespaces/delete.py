@@ -26,9 +26,17 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'namespace'
 
 
-@base.Hidden
 class Delete(base.DeleteCommand):
   """Delete a namespace."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete a Service Directory namespace, run:
+
+            $ {command} my-namespace --location=us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+import time
 
 from googlecloudsdk.api_lib.api_gateway import api_configs as api_configs_client
 from googlecloudsdk.api_lib.api_gateway import apis as apis_client
@@ -33,8 +34,9 @@ from googlecloudsdk.command_lib.api_gateway import operations_util
 from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import http_encoding
+
+MAX_SERVICE_CONFIG_ID_LENGTH = 50
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -83,27 +85,30 @@ class Create(base.CreateCommand):
     # Check to see if Api exists, create if not
     if not apis.DoesExist(api_ref):
       res = apis.Create(api_ref, service_name)
-      operation_ref = resources.REGISTRY.Parse(
-          res.name,
-          collection='apigateway.projects.locations.operations')
-
-      ops.WaitForOperation(
-          operation_ref,
-          'Waiting for API [{}] to be created'.format(api_ref.Name()))
+      operations_util.PrintOperationResult(
+          res.name, ops,
+          wait_string='Waiting for API [{}] to be created'.format(
+              api_ref.Name()))
 
     # Create OP ServiceConfig and Rollout
+
+    # Creating a suffix to avoid name collisions on ServiceConfig IDs.
+    suffix = '-' + str(int(time.time()))
+    length = MAX_SERVICE_CONFIG_ID_LENGTH - len(suffix)
+    config_id = api_config_ref.Name()[:length] + suffix
+
     if args.openapi_spec:
       service_config_id = self.__PushOpenApiServiceFile(
           args.openapi_spec,
           service_name,
           api_config_ref.projectsId,
-          config_id=api_config_ref.Name())
+          config_id=config_id)
     else:
       service_config_id = self.__PushGrpcConfigFiles(
           args.grpc_files,
           service_name,
           api_config_ref.projectsId,
-          config_id=api_config_ref.Name())
+          config_id=config_id)
     rollout = endpoints.CreateRollout(service_config_id, service_name)
 
     # Create ApiConfig object using the service config and rollout
@@ -113,22 +118,16 @@ class Create(base.CreateCommand):
                               labels=args.labels,
                               display_name=args.display_name,
                               backend_auth=args.backend_auth_service_account)
-    operation_ref = resources.REGISTRY.Parse(
+
+    wait = 'Waiting for API Config [{}] to be created for API [{}]'.format(
+        api_config_ref.Name(), api_ref.Name())
+
+    return operations_util.PrintOperationResult(
         resp.name,
-        collection='apigateway.projects.locations.operations')
-
-    # If async operation, simply log and return the result on passed in object
-    if args.async_:
-      operations_util.PrintOperationResultWithWaitEpilogue(
-          operation_ref,
-          'Asynchronous operation is in progress')
-      return resp
-
-    return ops.WaitForOperation(
-        operation_ref,
-        'Waiting for API Config [{}] to be created for API [{}]'.format(
-            api_config_ref.Name(), api_ref.Name()),
-        api_configs.client.projects_locations_apis_configs)
+        ops,
+        service=api_configs.service,
+        wait_string=wait,
+        is_async=args.async_)
 
   def __PushOpenApiServiceFile(self, open_api_spec, service_name, project_id,
                                config_id):

@@ -83,6 +83,7 @@ versions run
         This flag accepts "-" for stdin.
         """)
 
+    flags.GetRegionArg('model').AddToParser(parser)
     flags.SIGNATURE_NAME.AddToParser(parser)
 
   def Run(self, args):

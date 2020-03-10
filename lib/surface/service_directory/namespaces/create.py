@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2020 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,9 +28,17 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'namespace'
 
 
-@base.Hidden
 class Create(base.CreateCommand):
   """Create a namespace."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To create a Service Directory namespace, run:
+
+            $ {command} my-namespace --location=us-east1 --labels=a=b,c=d
+          """,
+  }
 
   @staticmethod
   def Args(parser):

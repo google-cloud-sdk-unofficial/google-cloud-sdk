@@ -2,7 +2,19 @@
 
   help_text:
     brief: List access policies.
-    description: List access policies.
+    description: |
+      List access policies.
+
+      ## EXAMPLES
+
+      To list access policies, run the following command:
+
+        $ {command}
+
+      This will print out a list of Access Policies in a tabular form:
+
+        NAME      ORGANIZATION  TITLE      ETAG
+        MY_POLICY 12345         My Policy  123abcdef
 
   request:
     collection: accesscontextmanager.accessPolicies
@@ -24,5 +36,6 @@
       table(
           name.basename(),
           parent.basename():label=ORGANIZATION,
-          title
+          title,
+          etag
       )

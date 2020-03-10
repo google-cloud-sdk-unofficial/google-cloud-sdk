@@ -274,9 +274,28 @@ class Register(base.CreateCommand):
           error = core_api_exceptions.HttpErrorPayload(e)
           if error.status_description != 'ALREADY_EXISTS':
             raise
+          obj = api_util.GetMembership(resource_name, self.ReleaseTrack())
+          if not obj.externalId:
+            raise exceptions.Error('invalid membership {} does not have '
+                                   'external_id field set. We cannot determine '
+                                   'if registration is requested against a '
+                                   'valid existing Membership. Consult the '
+                                   'documentation on container hub memberships '
+                                   'update for more information or run gcloud '
+                                   'container hub memberships delete {} if you '
+                                   'are sure that this is an invalid or '
+                                   'otherwise stale Membership'.format(
+                                       membership_id, membership_id))
+          if obj.externalId != uuid:
+            raise exceptions.Error('membership {} already exists in the project'
+                                   ' with another cluster. If this operation is'
+                                   ' intended, please run `gcloud container '
+                                   'hub memberships delete {}` and register '
+                                   'again.'.format(membership_id,
+                                                   membership_id))
+
           # The membership exists with same cluster_name.
           already_exists = True
-          obj = api_util.GetMembership(resource_name, self.ReleaseTrack())
 
       # In case of an existing membership, check with the user to upgrade the
       # Connect-Agent.

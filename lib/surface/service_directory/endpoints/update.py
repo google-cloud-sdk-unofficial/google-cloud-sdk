@@ -29,9 +29,17 @@ _RESOURCE_TYPE = 'endpoint'
 _ENDPOINT_METADATA_LIMIT = 512
 
 
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update an endpoint."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update a Service Directory endpoint, run:
+
+            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1 --address=1.2.3.4 --port=5 --metadata=a=b,c=d
+          """,
+  }
 
   @staticmethod
   def Args(parser):

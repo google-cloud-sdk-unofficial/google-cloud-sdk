@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import managed_instance_groups_utils as mig_
 from googlecloudsdk.api_lib.compute.instance_groups.managed import autoscalers as autoscalers_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
 
 
@@ -41,6 +42,7 @@ class UpdateAutoscaling(base.Command):
   """Update autoscaling parameters of a managed instance group."""
 
   scale_in = False
+  predictive = False
 
   @staticmethod
   def Args(parser):
@@ -77,6 +79,14 @@ class UpdateAutoscaling(base.Command):
         new_autoscaler.autoscalingPolicy.scaleDownControl = \
           mig_utils.BuildScaleDown(args, client.messages)
 
+    if self.predictive and args.IsSpecified(
+        'cpu_utilization_predictive_method'):
+      cpu_predictive_enum = client.messages.AutoscalingPolicyCpuUtilization.PredictiveMethodValueValuesEnum
+      new_autoscaler.autoscalingPolicy.cpuUtilization = client.messages.AutoscalingPolicyCpuUtilization(
+      )
+      new_autoscaler.autoscalingPolicy.cpuUtilization.predictiveMethod = arg_utils.ChoiceToEnum(
+          args.cpu_utilization_predictive_method, cpu_predictive_enum)
+
     return self._SendPatchRequest(args, client, autoscalers_client, igm_ref,
                                   new_autoscaler)
 
@@ -96,6 +106,7 @@ class UpdateAutoscalingBeta(UpdateAutoscaling):
   """Update autoscaling parameters of a managed instance group."""
 
   scale_in = False
+  predictive = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -103,11 +114,13 @@ class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
   """Update autoscaling parameters of a managed instance group."""
 
   scale_in = True
+  predictive = True
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser)
     mig_utils.AddScaleInControlFlag(parser, include_clear=True)
+    mig_utils.AddPredictiveAutoscaling(parser)
 
 UpdateAutoscaling.detailed_help = {
     'brief': 'Update autoscaling parameters of a managed instance group',
@@ -118,7 +131,7 @@ UpdateAutoscaling.detailed_help = {
             $ {command} --mode=only-up
 
         """,
-    'DESCRIPTION': """\
+    'DESCRIPTION': """
 *{command}* updates autoscaling parameters of specified managed instance
 group.
 

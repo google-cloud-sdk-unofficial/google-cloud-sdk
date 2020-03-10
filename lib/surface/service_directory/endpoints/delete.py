@@ -26,9 +26,17 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'endpoint'
 
 
-@base.Hidden
 class Delete(base.DeleteCommand):
   """Delete an endpoint."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete a Service Directory endpoint, run:
+
+            $ {command} my-endpoint --service=my-service --namespace=my-namespace --location=us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

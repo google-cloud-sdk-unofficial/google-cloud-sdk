@@ -24,9 +24,17 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
-@base.Hidden
 class List(base.ListCommand):
   """List services."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To list Service Directory services, run:
+
+            $ {command} --namespace=my-namespace --location=us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

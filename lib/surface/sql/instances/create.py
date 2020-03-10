@@ -149,10 +149,11 @@ def RunBaseCreateCommand(args, release_track):
   Raises:
     HttpException: A http error response was received while executing api
         request.
+    ArgumentError: An argument supplied by the user was incorrect, such as
+      specifying an invalid CMEK configuration or attempting to create a V1
+      instance.
     RequiredArgumentException: A required argument was not supplied by the user,
       such as omitting --root-password on a SQL Server instance.
-    ArgumentError: An argument supplied by the user was incorrect, such as
-      attempting to create a V1 instance.
   """
   client = common_api_util.SqlClient(common_api_util.API_VERSION_DEFAULT)
   sql_client = client.sql_client
@@ -194,9 +195,28 @@ def RunBaseCreateCommand(args, release_track):
       args.database_version = master_instance_resource.databaseVersion.name
     if not args.IsSpecified('tier') and master_instance_resource.settings:
       args.tier = master_instance_resource.settings.tier
-    # Check for CMEK usage; warn the user about replica inheriting the setting.
+
+    # Validate master/replica CMEK configurations.
     if master_instance_resource.diskEncryptionConfiguration:
-      command_util.ShowCmekWarning('replica', 'the master instance')
+      if args.region == master_instance_resource.region:
+        # Warn user that same-region replicas inherit their master's CMEK
+        # configuration.
+        command_util.ShowCmekWarning('replica', 'the master instance')
+      elif not args.IsSpecified('disk_encryption_key'):
+        # Raise error that cross-region replicas require their own CMEK key if
+        # the master is CMEK.
+        raise exceptions.RequiredArgumentException(
+            '--disk-encryption-key',
+            '`--disk-encryption-key` is required when creating a cross-region '
+            'replica of an instance with customer-managed encryption.')
+      else:
+        command_util.ShowCmekWarning('replica')
+    elif args.IsSpecified('disk_encryption_key'):
+      # Raise error that cross-region replicas cannot be CMEK encrypted if their
+      # master is not.
+      raise sql_exceptions.ArgumentError(
+          '`--disk-encryption-key` cannot be specified when creating a replica '
+          'of an instance without customer-managed encryption.')
 
   # --root-password is required when creating SQL Server instances
   if args.IsSpecified('database_version') and args.database_version.startswith(

@@ -27,7 +27,6 @@ import tempfile
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import kubernetes
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
@@ -218,8 +217,6 @@ class Dev(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    flags.CommonFlags(parser)
-
     group = parser.add_mutually_exclusive_group(required=False)
 
     group.add_argument('--kube-context', help='Kubernetes context.')

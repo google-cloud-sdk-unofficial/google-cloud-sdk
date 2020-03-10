@@ -25,6 +25,8 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.data_catalog import search
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+
 
 class Search(base.Command):
   """Search Cloud Data Catalog for resources that match a query."""
@@ -119,4 +121,16 @@ class Search(base.Command):
 
   def Run(self, args):
     """Run the search command."""
-    return search.Search(args)
+    version_label = 'v1'
+    return search.Search(args, version_label)
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+
+
+class SearchBeta(Search):
+  __doc__ = Search.__doc__
+
+  def Run(self, args):
+    """Run the search command."""
+    version_label = 'v1beta1'
+    return search.Search(args, version_label)

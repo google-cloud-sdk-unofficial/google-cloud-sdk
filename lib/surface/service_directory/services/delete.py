@@ -26,9 +26,17 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'service'
 
 
-@base.Hidden
 class Delete(base.DeleteCommand):
   """Delete a service."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To delete a Service Directory service, run:
+
+            $ {command} my-service --namespace=my-namespace --location=us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

@@ -29,9 +29,17 @@ _RESOURCE_TYPE = 'service'
 _SERVICE_METADATA_LIMIT = 2000
 
 
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a service."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update a Service Directory service, run:
+
+            $ {command} my-service --namespace=my-namespace --location=us-east1 --metadata=a=b,c=d
+          """,
+  }
 
   @staticmethod
   def Args(parser):

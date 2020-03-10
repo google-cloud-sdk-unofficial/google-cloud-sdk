@@ -28,6 +28,7 @@ _COLLECTION = 'ml.models'
 
 def _AddDescribeArgs(parser):
   flags.GetModelName().AddToParser(parser)
+  flags.GetRegionArg('model').AddToParser(parser)
 
 
 # TODO(b/62998601): don't repeat the first sentence due. Also if b/62998171 is

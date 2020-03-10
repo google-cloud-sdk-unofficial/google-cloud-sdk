@@ -272,6 +272,8 @@ class Update(base.UpdateCommand):
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
+    flags.AddWorkloadIdentityFlags(group)
+    flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddVerticalPodAutoscalingFlag(group)
@@ -563,12 +565,13 @@ class UpdateBeta(Update):
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddIstioConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
-    flags.AddWorkloadIdentityFlags(group)
+    flags.AddWorkloadIdentityFlags(group, use_workload_pool=False)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
     flags.AddEnableShieldedNodesFlags(group)
+    flags.AddTpuFlags(group, enable_tpu_service_networking=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -595,11 +598,11 @@ class UpdateBeta(Update):
       if pdcsi_disabled:
         # GCE Persistent Disk CSI Driver is being disabled
         console_io.PromptContinue(
-          message='If the GCE Persistent Disk CSI Driver is disabled, then any '
-          'pods currently using PersistentVolumes owned by the driver '
-          'will fail to terminate. Any new pods that try to use those '
-          'PersistentVolumes will also fail to start.',
-          cancel_on_no=True)
+            message='If the GCE Persistent Disk CSI Driver is disabled, then any '
+            'pods currently using PersistentVolumes owned by the driver '
+            'will fail to terminate. Any new pods that try to use those '
+            'PersistentVolumes will also fail to start.',
+            cancel_on_no=True)
 
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.release_channel = args.release_channel
@@ -608,8 +611,10 @@ class UpdateBeta(Update):
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.
     opts.identity_namespace = args.identity_namespace
-    opts.disable_workload_identity = args.disable_workload_identity
     opts.enable_shielded_nodes = args.enable_shielded_nodes
+    opts.enable_tpu = args.enable_tpu
+    opts.tpu_ipv4_cidr = args.tpu_ipv4_cidr
+    opts.enable_tpu_service_networking = args.enable_tpu_service_networking
 
     return opts
 
@@ -652,7 +657,7 @@ class UpdateAlpha(Update):
     flags.AddSecurityProfileForUpdateFlag(group)
     flags.AddIstioConfigFlag(parser)
     flags.AddEnableIntraNodeVisibilityFlag(group)
-    flags.AddWorkloadIdentityFlags(group)
+    flags.AddWorkloadIdentityFlags(group, use_workload_pool=False)
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddDatabaseEncryptionFlag(group)
@@ -660,6 +665,7 @@ class UpdateAlpha(Update):
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
     flags.AddEnableShieldedNodesFlags(group)
+    flags.AddTpuFlags(group, enable_tpu_service_networking=True)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -688,18 +694,20 @@ class UpdateAlpha(Update):
       if pdcsi_disabled:
         # GCE Persistent Disk CSI Driver is being disabled
         console_io.PromptContinue(
-          message='If the GCE Persistent Disk CSI Driver is disabled, then any '
-          'pods currently using PersistentVolumes owned by the driver '
-          'will fail to terminate. Any new pods that try to use those '
-          'PersistentVolumes will also fail to start.',
-          cancel_on_no=True)
+            message='If the GCE Persistent Disk CSI Driver is disabled, then any '
+            'pods currently using PersistentVolumes owned by the driver '
+            'will fail to terminate. Any new pods that try to use those '
+            'PersistentVolumes will also fail to start.',
+            cancel_on_no=True)
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.release_channel = args.release_channel
+    opts.enable_tpu = args.enable_tpu
+    opts.tpu_ipv4_cidr = args.tpu_ipv4_cidr
+    opts.enable_tpu_service_networking = args.enable_tpu_service_networking
 
     # Top-level update options are automatically forced to be
     # mutually-exclusive, so we don't need special handling for these two.
     opts.identity_namespace = args.identity_namespace
-    opts.disable_workload_identity = args.disable_workload_identity
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.disable_default_snat = args.disable_default_snat
     opts.enable_cost_management = args.enable_cost_management

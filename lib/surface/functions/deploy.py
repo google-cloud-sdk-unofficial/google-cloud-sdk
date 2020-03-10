@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
+
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.functions import env_vars as env_vars_api_util
 from googlecloudsdk.api_lib.functions import util as api_util
@@ -34,6 +36,8 @@ from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+
+from six.moves import urllib
 
 
 def _ApplyEnvVarsArgsToFunction(function, args):
@@ -53,6 +57,14 @@ def _CreateBindPolicyCommand(function_name, region):
               '--member=allUsers --role=roles/cloudfunctions.invoker')
   region_flag = '--region=%s ' % region if region else ''
   return template % (function_name, region_flag)
+
+
+def _CreateStackdriverURLforBuildLogs(build_id, project_id):
+  query_param = ('resource.type=build\nresource.labels.build_id=%s\n'
+                 'logName=projects/%s/logs/cloudbuild' % (build_id, project_id))
+  return ('https://console.cloud.google.com/logs/viewer?'
+          'project=%s&advancedFilter=%s' %
+          (project_id, urllib.parse.quote(query_param, safe='')))  # pylint: disable=redundant-keyword-arg
 
 
 def _GetProject(args):
@@ -258,9 +270,31 @@ def _Run(args,
       log.warning('Setting IAM policy failed, try "%s"' %
                   _CreateBindPolicyCommand(args.NAME, args.region))
 
+  log_stackdriver_url = [True]
+
+  def TryToLogStackdriverURL(op):
+    """Logs stackdriver URL.
+
+    This is for executing in the polling loop, and will stop trying as soon as
+    it succeeds at making a change.
+
+    Args:
+      op: the operation
+    """
+    if log_stackdriver_url[0] and op.metadata:
+      metadata = encoding.PyValueToMessage(
+          messages.OperationMetadataV1, encoding.MessageToPyValue(op.metadata))
+      if metadata.buildId:
+        sd_info_template = '\nFor Cloud Build Stackdriver Logs, visit: %s'
+        log.status.Print(sd_info_template %
+                         _CreateStackdriverURLforBuildLogs(metadata.buildId,
+                                                           _GetProject(args)))
+        log_stackdriver_url[0] = False
+
   if op:
     api_util.WaitForFunctionUpdateOperation(
-        op, do_every_poll=TryToSetInvokerPermission)
+        op, try_set_invoker=TryToSetInvokerPermission,
+        on_every_poll=[TryToLogStackdriverURL])
   return api_util.GetFunction(function.name)
 
 

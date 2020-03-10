@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.api_gateway import common_flags
 from googlecloudsdk.command_lib.api_gateway import operations_util
 from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -49,21 +48,13 @@ class Create(base.CreateCommand):
                                   api_config_ref,
                                   display_name=args.display_name,
                                   labels=args.labels)
-    operation_ref = resources.REGISTRY.Parse(
+
+    wait = 'Waiting for API Gateway [{}] to be created with [{}] config'.format(
+        gateway_ref.Name(), api_config_ref.RelativeName())
+
+    return operations_util.PrintOperationResult(
         resp.name,
-        collection='apigateway.projects.locations.operations')
-
-    # If async operation, simply log and return the result on passed in object
-    if args.async_:
-      operations_util.PrintOperationResultWithWaitEpilogue(
-          operation_ref,
-          'Asynchronous operation is in progress')
-      return resp
-
-    op_client = operations.OperationsClient()
-
-    return op_client.WaitForOperation(
-        operation_ref,
-        'Waiting for API Gateway [{}] to be created with [{}] config'.format(
-            gateway_ref.Name(), api_config_ref.RelativeName()),
-        gateways_client.client.projects_locations_gateways)
+        operations.OperationsClient(),
+        service=gateways_client.service,
+        wait_string=wait,
+        is_async=args.async_)

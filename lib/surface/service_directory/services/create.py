@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google Inc. All Rights Reserved.
+# Copyright 2020 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,9 +29,17 @@ _RESOURCE_TYPE = 'service'
 _SERVICE_METADATA_LIMIT = 2000
 
 
-@base.Hidden
 class Create(base.CreateCommand):
   """Create a service."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To create a Service Directory service, run:
+
+            $ {command} my-service --namespace=my-namespace --location=us-east1 --metadata=a=b,c=d
+          """,
+  }
 
   @staticmethod
   def Args(parser):

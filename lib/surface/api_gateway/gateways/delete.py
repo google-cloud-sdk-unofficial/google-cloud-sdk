@@ -24,7 +24,6 @@ from googlecloudsdk.api_lib.api_gateway import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.api_gateway import operations_util
 from googlecloudsdk.command_lib.api_gateway import resource_args
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -69,20 +68,11 @@ class Delete(base.DeleteCommand):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    resp = gateways.GatewayClient().Delete(gateway_ref.RelativeName())
-    operation_ref = resources.REGISTRY.Parse(
-        resp.name,
-        collection='apigateway.projects.locations.operations')
+    resp = gateways.GatewayClient().Delete(gateway_ref)
 
-    # If async operation, simply log and return the result on passed in object
-    if args.async_:
-      operations_util.PrintOperationResultWithWaitEpilogue(
-          operation_ref,
-          'Asynchronous operation is in progress')
-      return resp
+    wait = 'Waiting for API Gateway [{}] to be deleted'.format(
+        gateway_ref.Name())
 
-    op_client = operations.OperationsClient()
-
-    return op_client.WaitForOperation(
-        operation_ref,
-        'Waiting for API Gateway [{}] to be deleted'.format(gateway_ref.Name()))
+    return operations_util.PrintOperationResult(
+        resp.name, operations.OperationsClient(), wait_string=wait,
+        is_async=args.async_)

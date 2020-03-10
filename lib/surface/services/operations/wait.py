@@ -19,10 +19,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.services import apikeys
+from googlecloudsdk.api_lib.services import scm
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
+
+_GET_OP_FUNC_MAP = {
+    'akmf': apikeys.GetOperation,
+    'acf': scm.GetOperation,
+}
 
 
 class WaitAlpha(base.Command):
@@ -58,5 +65,8 @@ class WaitAlpha(base.Command):
     Returns:
       If successful, the response from the operations.Get API call.
     """
-    op = services_util.WaitOperation(args.operation, serviceusage.GetOperation)
-    services_util.PrintOperation(op)
+    namespace = common_flags.get_operation_namespace(args.operation)
+    get_op_func = _GET_OP_FUNC_MAP.get(namespace, serviceusage.GetOperation)
+
+    op = services_util.WaitOperation(args.operation, get_op_func)
+    services_util.PrintOperationWithResponse(op)

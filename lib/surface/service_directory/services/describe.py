@@ -23,9 +23,17 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
-@base.Hidden
 class Describe(base.DescribeCommand):
   """Describe a service."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To describe a Service Directory service, run:
+
+            $ {command} my-service --namespace=my-namespace --location=us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

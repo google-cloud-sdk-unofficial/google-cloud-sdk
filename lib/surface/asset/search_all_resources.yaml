@@ -3,10 +3,10 @@
   help_text:
     brief: |
       Searches all the resources under a given scope (i.e., an organization, a folder, or a project)
-      with admin access.
+      with `cloudasset.assets.searchAllResources` permission.
     description: |
       Searches all the resources under a given scope (i.e., an organization, a folder, or a project)
-      with admin access.
+      with `cloudasset.assets.searchAllResources` permission.
     examples: |
       To search all the resources that contains `xyz` in the full resource name, under the
       organization (organizations/123), which you have `cloudasset.assets.searchAllResources`
@@ -30,35 +30,29 @@
         The query statement.
 
         Examples:
-        To find all Cloud resources with "foobar" in their searchable attributes:
-        `foobar`
-
-        To find all Cloud resources with "foo" prefix in their searchable attributes:
-        `foo*`
-
-        To find all Cloud resources with "oo" substring within any searchable attribute:
-        `*oo*`
-
-        To find all Cloud resources with token "//xyz/123" in the full resource name. See
-        [Full Resource Names](https://cloud.google.com/apis/design/resource_names#full_resource_name):
-        `name: "//xyz/123"`
-
-        To find all Cloud resources with prefix "//xyz" in the full resource names.
-        `name: "//xyz*"`
-
-        To find all Cloud resources with substring "xyz" in the full resource names.
-        `name: "*xyz*"`
-
-        To find all Cloud resources with "xyz" in their display name:
-        `displayName: "xyz"`
-
-        To find all Cloud resources with "xyz" in their description:
-        `description: "xyz"`
+          * To find all Cloud resources with "foobar" in their searchable attributes:
+            `foobar`
+          * To find all Cloud resources with "foo" prefix in their searchable attributes:
+            `foo*`
+          * To find all Cloud resources with "oo" substring within any searchable attribute:
+            `*oo*`
+          * To find all Cloud resources with token "//xyz/123" in the full resource name. See
+            [Full Resource Names](https://cloud.google.com/apis/design/resource_names#full_resource_name):
+            `name: "//xyz/123"`
+          * To find all Cloud resources with prefix "//xyz" in the full resource names.
+            `name: "//xyz*"`
+          * To find all Cloud resources with substring "xyz" in the full resource names.
+            `name: "*xyz*"`
+          * To find all Cloud resources with "xyz" in their display name:
+            `displayName: "xyz"`
+          * To find all Cloud resources with "xyz" in their description:
+            `description: "xyz"`
     - api_field: scope
       arg_name: scope
       help_text: |
-        The search is limited to the resources within the `scope`. The allowed value must be one of
-        the following:
+        The search result scope is limited within a project, folder, or organization. You must have
+        the cloudasset.assets.searchAllResources permission granted to the caller for the desired
+        scope. The allowed value must be one of the following:
           * Organization number (i.e. "organizations/123")
           * Folder number(i.e. "folders/1234")
           * Project number (i.e. "projects/12345")

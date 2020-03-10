@@ -28,9 +28,17 @@ from googlecloudsdk.core import log
 _RESOURCE_TYPE = 'namespace'
 
 
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a namespace."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update a Service Directory namespace, run:
+
+            $ {command} my-namespace --location=us-east1 --labels=a=b,c=d
+          """,
+  }
 
   @staticmethod
   def Args(parser):

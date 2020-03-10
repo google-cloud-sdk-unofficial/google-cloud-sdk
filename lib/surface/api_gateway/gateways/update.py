@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.api_gateway import common_flags
 from googlecloudsdk.command_lib.api_gateway import operations_util
 from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -48,23 +47,16 @@ class Update(base.UpdateCommand):
     gateway, mask = self.ProcessUpdates(gateways_client.Get(gateway_ref), args)
 
     resp = gateways_client.Update(gateway, update_mask=mask)
-    operation_ref = resources.REGISTRY.Parse(
+
+    wait = 'Waiting for API Gateway [{}] to be updated'.format(
+        gateway_ref.Name())
+
+    return operations_util.PrintOperationResult(
         resp.name,
-        collection='apigateway.projects.locations.operations')
-
-    # If async operation, simply log and return the result on passed in object
-    if args.async_:
-      operations_util.PrintOperationResultWithWaitEpilogue(
-          operation_ref,
-          'Asynchronous operation is in progress')
-      return resp
-
-    op_client = operations.OperationsClient()
-
-    return op_client.WaitForOperation(
-        operation_ref,
-        'Waiting for API Gateway [{}] to be updated'.format(gateway_ref.Name()),
-        gateways_client.client.projects_locations_gateways)
+        operations.OperationsClient(),
+        service=gateways_client.service,
+        wait_string=wait,
+        is_async=args.async_)
 
   def ProcessUpdates(self, gateway, args):
     api_config_ref = args.CONCEPTS.api_config.Parse()

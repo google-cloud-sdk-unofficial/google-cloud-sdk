@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 from googlecloudsdk.core import resources
 
@@ -46,6 +47,7 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat(_DEFAULT_FORMAT)
     parser.display_info.AddUriFunc(_GetUri)
+    flags.GetRegionArg('model').AddToParser(parser)
 
   def Run(self, args):
     return models_util.List(models.ModelsClient())

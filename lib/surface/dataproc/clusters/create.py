@@ -61,17 +61,6 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def ValidateArgs(args):
-
-    if args.single_node:
-      # --num-workers and --num-preemptible-workers must be None (unspecified)
-      # or 0
-      if args.num_workers:
-        raise exceptions.ConflictingArgumentsException(
-            '--single-node', '--num-workers')
-      if args.num_preemptible_workers:
-        raise exceptions.ConflictingArgumentsException(
-            '--single-node', '--num-preemptible-workers')
-
     if constants.ALLOW_ZERO_WORKERS_PROPERTY in args.properties:
       raise exceptions.InvalidArgumentException(
           '--properties',

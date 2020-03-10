@@ -35,7 +35,8 @@ class List(base.ListCommand):
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     resource_args.AddLocationResourceArg(parser,
-                                         'operations will be listed from')
+                                         'operations will be listed from',
+                                         default='-')
     parser.display_info.AddFormat("""
       table(
         name,

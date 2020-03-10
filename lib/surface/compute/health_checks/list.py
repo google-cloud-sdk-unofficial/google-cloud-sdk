@@ -164,6 +164,7 @@ class ListAlpha(List):
   def _ProtocolWhitelist(self):
     # Returns a list of whitelisted protocols.
     whitelist = super(ListAlpha, self)._ProtocolWhitelist()
+    whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.GRPC.number)
     return whitelist
 
   def _Format(self, args):
@@ -171,7 +172,12 @@ class ListAlpha(List):
     if args.protocol is not None:
       protocol_value = self._ConvertProtocolArgToValue(args)
       if (protocol_value ==
-          self.messages.HealthCheck.TypeValueValuesEnum.UDP.number):
+          self.messages.HealthCheck.TypeValueValuesEnum.GRPC.number):
+        columns.extend([
+            'grpcHealthCheck.port:label=PORT',
+            'grpcHealthCheck.grpcServiceName:label=GRPC_SERVICE_NAME'])
+      elif (protocol_value ==
+            self.messages.HealthCheck.TypeValueValuesEnum.UDP.number):
         columns.extend([
             'udpHealthCheck.port:label=PORT',
             'udpHealthCheck.request:label=REQUEST',

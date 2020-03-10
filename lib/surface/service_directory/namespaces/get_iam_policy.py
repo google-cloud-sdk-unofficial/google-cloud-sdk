@@ -25,9 +25,17 @@ from googlecloudsdk.command_lib.service_directory import resource_args
 _RESOURCE_TYPE = 'namespace'
 
 
-@base.Hidden
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a namespace."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To get an IAM policy to a Service Directory namespace, run:
+
+            $ {command} my-namespace --location=us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

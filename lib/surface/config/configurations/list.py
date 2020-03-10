@@ -53,8 +53,8 @@ class List(base.ListCommand):
         is_active,
         properties.core.account,
         properties.core.project,
-        properties.compute.zone:label=DEFAULT_ZONE,
-        properties.compute.region:label=DEFAULT_REGION)
+        properties.compute.zone:label=COMPUTE_DEFAULT_ZONE,
+        properties.compute.region:label=COMPUTE_DEFAULT_REGION)
     """)
 
   def Run(self, args):

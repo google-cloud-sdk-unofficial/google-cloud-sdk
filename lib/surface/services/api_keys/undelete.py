@@ -18,9 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import json
-
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.services import apikeys
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.calliope import base
@@ -53,7 +50,7 @@ class Undelete(base.RestoreCommand):
         command invocation.
 
     Returns:
-      The response from the Undelete API call.
+      None
     """
 
     client = apikeys.GetClientInstance()
@@ -71,10 +68,4 @@ class Undelete(base.RestoreCommand):
                          'completion:\n {0}'.format(cmd))
         return op
       op = services_util.WaitOperation(op.name, apikeys.GetOperation)
-    log.status.Print('Operation [{0}] complete. Result: {1}'.format(
-        op.name,
-        json.dumps(
-            encoding.MessageToDict(op.response),
-            sort_keys=True,
-            indent=4,
-            separators=(',', ':'))))
+    services_util.PrintOperationWithResponse(op)

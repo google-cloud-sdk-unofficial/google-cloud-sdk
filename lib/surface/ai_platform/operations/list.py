@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import operations_util
 
 
@@ -38,6 +39,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(_LIST_FORMAT)
+    flags.GetRegionArg('operation').AddToParser(parser)
 
   def Run(self, args):
     return operations_util.List(operations.OperationsClient())
