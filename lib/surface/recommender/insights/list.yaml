@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: |
       List insights for a Cloud project.
@@ -12,7 +12,10 @@
   request:
     collection: recommender.projects.locations.insightTypes.insights
     method: list
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

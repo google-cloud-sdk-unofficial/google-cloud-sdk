@@ -4,6 +4,72 @@ help_text:
     French, German, Italian, Korean, and Portuguese are supported.
   language_help_ga: |
     Currently English, Spanish, and Japanese are supported.
+  language_examples:
+    AE: |
+        To analyze entites in raw content 'puppies':
+
+          $ {command} --content='puppies'
+
+        To analyze entites in file 'myfile.txt':
+
+          $ {command} --content-file='myfile.txt'
+
+        To analyze entites in a remote file 'gs://bucket_name/mycontent.html' for Japanese language using
+        UTF-8 encoding:
+
+          $ {command} --content-file='gs://bucket_name/mycontent.html' --content-type=HTML --encoding-type=utf8 --language=ja-JP
+    AES: |
+        To analyze entity sentiment in raw content 'puppies':
+
+          $ {command} --content='puppies'
+
+        To analyze entity sentiment in file 'myfile.txt':
+
+          $ {command} --content-file='myfile.txt'
+
+        To  analyze entity sentiment in a remote file 'gs://bucket_name/mycontent.html' for Japanese language using
+        UTF-8 encoding:
+
+          $ {command} --content-file='gs://bucket_name/mycontent.html' --content-type=HTML --encoding-type=utf8 --language=ja-JP
+    AS: |
+        To analyze sentiment in raw content 'I love puppies.':
+
+          $ {command} --content='I love puppies.'
+
+        To analyze sentiment in file 'myfile.txt':
+
+          $ {command} --content-file='myfile.txt'
+
+        To analyze sentiment in a remote file 'gs://bucket_name/mycontent.html' for Japanese language using
+        UTF-8 encoding:
+
+          $ {command} --content-file='gs://bucket_name/mycontent.html' --content-type=HTML --encoding-type=utf8 --language=ja-JP
+    ASX: |
+        To analyze syntax in raw content 'They drink.':
+
+          $ {command} --content='They drink'
+
+        To analyze syntax in file 'myfile.txt':
+
+          $ {command} --content-file='myfile.txt'
+
+        To analyze syntax in a remote file 'gs://bucket_name/mycontent.html' for Japanese language using
+        UTF-8 encoding:
+
+          $ {command} --content-file='gs://bucket_name/mycontent.html' --content-type=HTML --encoding-type=utf8 --language=ja-JP
+    CT: |
+        To classify text in raw content 'Long Political Text.':
+
+          $ {command} --content='Long Political Text.'
+
+        To classify text in file 'myfile.txt':
+
+          $ {command} --content-file='myfile.txt'
+
+        To classify text in a remote file 'gs://bucket_name/mycontent.html' for Japanese language:
+
+          $ {command} --content-file='gs://bucket_name/mycontent.html' --content-type=HTML  --language=ja-JP
+
 
 request:
   collection: language.documents

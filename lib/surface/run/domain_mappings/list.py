@@ -75,8 +75,14 @@ class List(commands.List):
 
   def Run(self, args):
     """List available domain mappings."""
+    # domains.cloudrun.com api group only supports v1alpha1 on clusters.
     conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
+        args,
+        flags.Product.RUN,
+        self.ReleaseTrack(),
+        version_override=('v1alpha1'
+                          if flags.GetPlatform() != flags.PLATFORM_MANAGED else
+                          None))
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)

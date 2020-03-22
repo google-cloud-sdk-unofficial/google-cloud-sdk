@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -67,19 +68,20 @@ class Create(base.CreateCommand):
     _AddCreateArgs(parser)
 
   def _Run(self, args, support_console_logging=False):
-    models_client = models.ModelsClient()
-    labels = models_util.ParseCreateLabels(models_client, args)
-    enable_console_logging = (support_console_logging and
-                              args.enable_console_logging)
-    model = models_util.Create(
-        models_client,
-        args.model,
-        args,
-        enable_logging=args.enable_logging,
-        enable_console_logging=enable_console_logging,
-        labels=labels,
-        description=args.description)
-    log.CreatedResource(model.name, kind='ml engine model')
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      models_client = models.ModelsClient()
+      labels = models_util.ParseCreateLabels(models_client, args)
+      enable_console_logging = (
+          support_console_logging and args.enable_console_logging)
+      model = models_util.Create(
+          models_client,
+          args.model,
+          args,
+          enable_logging=args.enable_logging,
+          enable_console_logging=enable_console_logging,
+          labels=labels,
+          description=args.description)
+      log.CreatedResource(model.name, kind='ml engine model')
 
   def Run(self, args):
     self._Run(args)

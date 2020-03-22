@@ -9,6 +9,7 @@
 
       {language_help}
     language_help: !COMMON help_text.language_help_ga
+    examples: !COMMON help_text.language_examples.AS
 
   request:
     _COMMON_: request
@@ -36,6 +37,7 @@
 
       {language_help}
     language_help: !COMMON help_text.language_help
+    examples: !COMMON help_text.language_examples.AS
 
   request:
     _COMMON_: request

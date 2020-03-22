@@ -30,6 +30,19 @@ import six
 class Cancel(base.Command):
   """Cancel an ongoing build."""
 
+  detailed_help = {
+      'DESCRIPTION': 'Cancel an ongoing build.',
+      'EXAMPLES': ("""
+            To cancel a build `123-456-789`:
+
+                $ {command} '123-456-789'
+
+            You may also cancel multiple builds at the same time:
+
+                $ {command} '123-456-789', '987-654-321'
+            """),
+  }
+
   @staticmethod
   def Args(parser):
     parser.add_argument(

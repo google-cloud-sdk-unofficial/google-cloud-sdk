@@ -40,7 +40,8 @@ def _PostProcessListResult(results):
   return results_json
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.GA)
 class ListInstanceDetails(base.ListCommand):
   """List the instance details for an OS patch job.
 

@@ -65,7 +65,7 @@ class Import(base.Command):
 
   The following command:
 
-    {command} myenv --source /foo
+    {command} myenv --source=/foo
 
   would result in the following structure in `myenv`'s Cloud Storage bucket:
 
@@ -88,7 +88,7 @@ class Import(base.Command):
 
   If instead we had run
 
-    {command} myenv --source /foo --destination bar
+    {command} myenv --source=/foo --destination=bar
 
   the resulting bucket structure would be the following:
 

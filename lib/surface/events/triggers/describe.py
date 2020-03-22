@@ -70,7 +70,7 @@ class Describe(base.Command):
   def Run(self, args):
     """Executes when the user runs the describe command."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=serverless_flags.Product.EVENTS)
+        args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
     trigger_ref = args.CONCEPTS.trigger.Parse()
     with eventflow_operations.Connect(conn_context) as client:

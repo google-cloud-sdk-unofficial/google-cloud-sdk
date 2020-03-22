@@ -110,7 +110,7 @@ class AdjustTraffic(base.Command):
       List of traffic.TrafficTargetStatus instances reflecting the change.
     """
     conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
+        args, flags.Product.RUN, self.ReleaseTrack())
     service_ref = flags.GetService(args)
 
     changes = flags.GetConfigurationChanges(args)

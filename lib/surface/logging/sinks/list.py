@@ -24,7 +24,17 @@ from googlecloudsdk.calliope import base
 
 
 class List(base.ListCommand):
-  """Lists the defined sinks."""
+  """Lists the defined sinks.
+
+  Lists the defined sinks.
+
+  ## EXAMPLES
+
+  To list all defined sinks:
+
+    $ {command} --limit=10
+
+  """
 
   @staticmethod
   def Args(parser):

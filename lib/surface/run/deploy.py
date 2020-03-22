@@ -19,8 +19,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import uuid
+
+from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.builds import flags as build_flags
+from googlecloudsdk.command_lib.builds import submit_util
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
@@ -30,6 +35,7 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -51,8 +57,8 @@ def GetAllowUnauth(args, operations, service_ref, service_exists):
   """
   allow_unauth = None
   if flags.GetPlatform() == flags.PLATFORM_MANAGED:
-    allow_unauth = flags.GetAllowUnauthenticated(
-        args, operations, service_ref, not service_exists)
+    allow_unauth = flags.GetAllowUnauthenticated(args, operations, service_ref,
+                                                 not service_exists)
     # Avoid failure removing a policy binding for a service that
     # doesn't exist.
     if not service_exists and not allow_unauth:
@@ -150,7 +156,6 @@ class Deploy(base.Command):
         'Service to deploy to.',
         required=True,
         prefixes=False)
-    flags.AddImageArg(parser)
     flags.AddFunctionArg(parser)
     flags.AddMutexEnvVarsFlags(parser)
     flags.AddMemoryFlag(parser)
@@ -168,18 +173,34 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+    flags.AddImageArg(parser)
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddServiceAccountFlag(managed_group)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
-    image = args.image
-
-    conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
-    config_changes = flags.GetConfigurationChanges(args)
-
     service_ref = flags.GetService(args)
+    image = args.image
+    # Build an image from source if source specified.
+    if flags.FlagIsExplicitlySet(args, 'source'):
+      # Create a tag for the image creation
+      if image is None and not args.IsSpecified('config'):
+        image = 'gcr.io/{projectID}/cloud-run-source-deploy/{service}:{tag}'.format(
+            projectID=properties.VALUES.core.project.Get(required=True),
+            service=service_ref.servicesId,
+            tag=uuid.uuid4().hex)
+      messages = cloudbuild_util.GetMessagesModule()
+      build_config = submit_util.CreateBuildConfig(
+          image, args.no_cache, messages, args.substitutions, args.config,
+          args.IsSpecified('source'), False, args.source,
+          args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
+          args.machine_type, args.disk_size)
+      submit_util.Build(messages, args.async_, build_config)
+
+    # Deploy a container with an image
+    conn_context = connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack())
+    config_changes = flags.GetConfigurationChanges(args)
 
     with serverless_operations.Connect(conn_context) as operations:
       image_change = config_changes_mod.ImageChange(image)
@@ -235,6 +256,18 @@ class AlphaDeploy(Deploy):
     flags.AddMinInstancesFlag(parser)
     flags.AddNoTrafficFlag(parser)
     flags.AddServiceAccountFlagAlpha(parser)
+
+    # Flags inherited from gcloud builds submit
+    flags.AddConfigFlags(parser)
+    flags.AddSourceFlag(parser)
+    flags.AddBuildTimeoutFlag(parser)
+    build_flags.AddGcsSourceStagingDirFlag(parser, True)
+    build_flags.AddGcsLogDirFlag(parser, True)
+    build_flags.AddMachineTypeFlag(parser, True)
+    build_flags.AddDiskSizeFlag(parser, True)
+    build_flags.AddSubstitutionsFlag(parser, True)
+    build_flags.AddNoCacheFlag(parser, True)
+    build_flags.AddIgnoreFileFlag(parser, True)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

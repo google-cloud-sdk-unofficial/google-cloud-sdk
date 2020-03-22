@@ -48,7 +48,11 @@ class Create(base.CreateCommand):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddClusterResourceArg(parser, 'create', dataproc.api_version)
-    clusters.ArgsForClusterRef(parser, cls.BETA, include_ttl_config=True)
+    clusters.ArgsForClusterRef(
+        parser,
+        cls.BETA,
+        include_ttl_config=True,
+        include_gke_platform_args=cls.BETA)
     # Add gce-pd-kms-key args
     kms_flag_overrides = {
         'kms-key': '--gce-pd-kms-key',
@@ -86,7 +90,8 @@ class Create(base.CreateCommand):
         cluster_ref.projectId,
         compute_resources,
         self.BETA,
-        include_ttl_config=True)
+        include_ttl_config=True,
+        include_gke_platform_args=self.BETA)
 
     cluster = dataproc.messages.Cluster(
         config=cluster_config,
@@ -95,8 +100,13 @@ class Create(base.CreateCommand):
 
     self.ConfigureCluster(dataproc.messages, args, cluster)
 
-    return clusters.CreateCluster(dataproc, cluster_ref, cluster, args.async_,
-                                  args.timeout)
+    return clusters.CreateCluster(
+        dataproc,
+        cluster_ref,
+        cluster,
+        args.async_,
+        args.timeout,
+        enable_create_on_gke=self.BETA)
 
   @staticmethod
   def ConfigureCluster(messages, args, cluster):

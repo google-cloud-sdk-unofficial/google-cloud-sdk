@@ -68,9 +68,8 @@ class SourceRepoNotConnectedException(c_exceptions.InvalidArgumentException):
 class ConfigureGKEDeploy(base.Command):
   """Configure automated build and deployment to a target Google Kubernetes Engine cluster.
 
-  Configure automated build and deployment of a repository that can be triggered
-  via a git branch or tag push. The image that will be built and deployed will
-  have the format 'gcr.io/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA'.
+  Configure automated build and deployment from a repository. This can be
+  triggered by a Git branch or tag push.
   """
 
   @staticmethod
@@ -90,17 +89,21 @@ class ConfigureGKEDeploy(base.Command):
         selected:
 
         `github` - A GitHub (Cloud Build GitHub App) repository connected to
-        Cloud Build triggers.
+        Cloud Build triggers. The deployed image will have the format
+        'gcr.io/[PROJECT_ID]/github.com/[REPO_OWNER]/[REPO_NAME]:$COMMIT_SHA'.
 
         `bitbucket_mirrored` - A Bitbucket repository connected to Cloud Source
-        Repositories.
+        Repositories. The deployed image will have the format
+        'gcr.io/[PROJECT_ID]/bitbucket.org/[REPO_OWNER]/[REPO_NAME]:$COMMIT_SHA'.
 
         `github_mirrored` - A GitHub repository connected to Cloud Source
-        Repositories.
+        Repositories. The deployed image will have the format
+        'gcr.io/[PROJECT_ID]/github.com/[REPO_OWNER]/[REPO_NAME]:$COMMIT_SHA'.
 
         `--repo-owner` must not be provided if the following is selected:
 
-        `csr` - A repository on Cloud Source Repositories.
+        `csr` - A repository on Cloud Source Repositories. The deployed image
+        will have the format 'gcr.io/[PROJECT_ID]/[REPO_NAME]:$COMMIT_SHA'.
 
         Connect repositories at
         https://console.cloud.google.com/cloud-build/triggers/connect.
@@ -283,16 +286,23 @@ class ConfigureGKEDeploy(base.Command):
             '--preview-expiry',
             'Preview expiry must be > 0.')
 
-    # Determine github or csr
+    # Determine image based on repo type
+    image = None
+
+    # Determine github app or csr
     github_repo_name = None
     github_repo_owner = None
     csr_repo_name = None
+
+    project = properties.VALUES.core.project.Get(required=True)
 
     if args.repo_type == 'github':
       if not args.repo_owner:
         raise c_exceptions.RequiredArgumentException(
             '--repo-owner',
             'Repo owner is required for --repo-type=github.')
+      image = 'gcr.io/{}/github.com/{}/{}:$COMMIT_SHA'.format(
+          project, args.repo_owner, args.repo_name)
       github_repo_name = args.repo_name
       github_repo_owner = args.repo_owner
       # We do not have to verify that this repo exists because the request to
@@ -304,6 +314,7 @@ class ConfigureGKEDeploy(base.Command):
         raise c_exceptions.InvalidArgumentException(
             '--repo-owner',
             'Repo owner must not be provided for --repo-type=csr.')
+      image = 'gcr.io/{}/{}:$COMMIT_SHA'.format(project, args.repo_name)
       csr_repo_name = args.repo_name
       self._VerifyCSRRepoExists(csr_repo_name)
 
@@ -312,6 +323,8 @@ class ConfigureGKEDeploy(base.Command):
         raise c_exceptions.RequiredArgumentException(
             '--repo-owner',
             'Repo owner is required for --repo-type=bitbucket_mirrored.')
+      image = 'gcr.io/{}/bitbucket.org/{}/{}:$COMMIT_SHA'.format(
+          project, args.repo_owner, args.repo_name)
       csr_repo_name = 'bitbucket_{}_{}'.format(args.repo_owner, args.repo_name)
       self._VerifyBitbucketCSRRepoExists(
           csr_repo_name, args.repo_owner, args.repo_name)
@@ -321,6 +334,8 @@ class ConfigureGKEDeploy(base.Command):
         raise c_exceptions.RequiredArgumentException(
             '--repo-owner',
             'Repo owner is required for --repo-type=github_mirrored.')
+      image = 'gcr.io/{}/github.com/{}/{}:$COMMIT_SHA'.format(
+          project, args.repo_owner, args.repo_name)
       csr_repo_name = 'github_{}_{}'.format(args.repo_owner, args.repo_name)
       self._VerifyGitHubCSRRepoExists(
           csr_repo_name, args.repo_owner, args.repo_name)
@@ -378,6 +393,7 @@ class ConfigureGKEDeploy(base.Command):
           pull_request_pattern=args.pull_request_pattern,
           preview_expiry=args.preview_expiry,
           comment_control=args.comment_control,
+          image=image,
           dockerfile_path=args.dockerfile,
           app_name=app_name,
           config_path=args.config,
@@ -395,6 +411,7 @@ class ConfigureGKEDeploy(base.Command):
           github_repo_name=github_repo_name,
           branch_pattern=args.branch_pattern,
           tag_pattern=args.tag_pattern,
+          image=image,
           dockerfile_path=args.dockerfile,
           app_name=app_name,
           config_path=args.config,
@@ -617,8 +634,9 @@ class ConfigureGKEDeploy(base.Command):
 
   def _ConfigureGitPushBuildTrigger(
       self, repo_type, csr_repo_name, github_repo_owner, github_repo_name,
-      branch_pattern, tag_pattern, dockerfile_path, app_name, config_path,
-      namespace, expose_port, gcs_config_staging_path, cluster, location):
+      branch_pattern, tag_pattern, image, dockerfile_path, app_name,
+      config_path, namespace, expose_port, gcs_config_staging_path, cluster,
+      location):
 
     # Generate deterministic trigger name
     if csr_repo_name:
@@ -648,6 +666,7 @@ class ConfigureGKEDeploy(base.Command):
         github_repo_name=github_repo_name,
         branch_pattern=branch_pattern,
         tag_pattern=tag_pattern,
+        image=image,
         dockerfile_path=dockerfile_path,
         app_name=app_name,
         config_path=config_path,
@@ -677,8 +696,8 @@ class ConfigureGKEDeploy(base.Command):
 
   def _ConfigurePRPreview(
       self, repo_owner, repo_name, pull_request_pattern, preview_expiry,
-      comment_control, dockerfile_path, app_name, config_path, expose_port,
-      gcs_config_staging_path, cluster, location):
+      comment_control, image, dockerfile_path, app_name, config_path,
+      expose_port, gcs_config_staging_path, cluster, location):
     """Configures previewing the application for each pull request.
 
     PR previewing is only supported for GitHub repos.
@@ -699,6 +718,8 @@ class ConfigureGKEDeploy(base.Command):
         is expired.
       comment_control: Whether or not a user must comment /gcbrun to trigger
         the deployment build.
+      image: The image that will be built and deployed. The image can include a
+        tag or digest.
       dockerfile_path: Path to the source repository's Dockerfile, relative to
         the source repository's root directory.
       app_name: Application name, which is set as a label to deployed objects.
@@ -722,6 +743,7 @@ class ConfigureGKEDeploy(base.Command):
         pull_request_pattern=pull_request_pattern,
         preview_expiry=preview_expiry,
         comment_control=comment_control,
+        image=image,
         dockerfile_path=dockerfile_path,
         app_name=app_name,
         config_path=config_path,
@@ -842,8 +864,8 @@ class ConfigureGKEDeploy(base.Command):
 
   def _ConfigurePRPreviewBuildTrigger(
       self, repo_owner, repo_name, pull_request_pattern, preview_expiry,
-      comment_control, dockerfile_path, app_name, config_path, expose_port,
-      gcs_config_staging_path, cluster, location):
+      comment_control, image, dockerfile_path, app_name, config_path,
+      expose_port, gcs_config_staging_path, cluster, location):
 
     # Generate deterministic trigger name
     name = self._FixBuildTriggerName(self._GenerateResourceName(
@@ -864,6 +886,7 @@ class ConfigureGKEDeploy(base.Command):
         pr_pattern=pull_request_pattern,
         preview_expiry_days=preview_expiry,
         comment_control=comment_control,
+        image=image,
         dockerfile_path=dockerfile_path,
         app_name=app_name,
         config_path=config_path,

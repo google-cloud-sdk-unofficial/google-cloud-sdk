@@ -32,6 +32,17 @@ DEFAULT_LIST_FORMAT = """\
 class List(base.ListCommand):
   """List all Artifact Registry supported locations."""
 
+  detailed_help = {
+      "DESCRIPTION":
+          "{description}",
+      "EXAMPLES":
+          """\
+    To list all supported locations:
+
+        $ {command}
+    """,
+  }
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(DEFAULT_LIST_FORMAT)

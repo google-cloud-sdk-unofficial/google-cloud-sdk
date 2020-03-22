@@ -25,6 +25,16 @@ from googlecloudsdk.command_lib.ml_engine import jobs_util
 from googlecloudsdk.core import log
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To describe the AI Platform job named ``my-job'', run:
+
+            {command} my-job
+        """
+}
+
+
 def _AddDescribeArgs(parser):
   flags.JOB_NAME.AddToParser(parser)
   flags.GetSummarizeFlag().AddToParser(parser)
@@ -32,6 +42,8 @@ def _AddDescribeArgs(parser):
 
 class Describe(base.DescribeCommand):
   """Describe an AI Platform job."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

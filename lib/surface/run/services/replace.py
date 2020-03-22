@@ -84,7 +84,7 @@ class Replace(base.Command):
   def Run(self, args):
     """Create or Update service from YAML."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
+        args, flags.Product.RUN, self.ReleaseTrack())
 
     with serverless_operations.Connect(conn_context) as client:
       new_service = service.Service(

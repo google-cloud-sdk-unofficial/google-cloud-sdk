@@ -34,18 +34,23 @@ def _CommonArgs(parser, api_version):
   flags.GetServerBindingMapperFlag(messages).choice_arg.AddToParser(parser)
 
 
-def _Run(args, track, enable_disk=False):
+def _Run(args, track, enable_disk=False, overcommit=False):
   """Creates a node template."""
   holder = base_classes.ComputeApiHolder(track)
   client = holder.client
 
   node_template_ref = flags.MakeNodeTemplateArg().ResolveAsResource(
-      args, holder.resources,
+      args,
+      holder.resources,
       scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
   messages = holder.client.messages
-  node_template = util.CreateNodeTemplate(node_template_ref, args, messages,
-                                          enable_disk=enable_disk)
+  node_template = util.CreateNodeTemplate(
+      node_template_ref,
+      args,
+      messages,
+      enable_disk=enable_disk,
+      overcommit=overcommit)
   request = messages.ComputeNodeTemplatesInsertRequest(
       nodeTemplate=node_template,
       project=node_template_ref.project,
@@ -60,40 +65,50 @@ class Create(base.CreateCommand):
   """Create a Compute Engine node template."""
 
   detailed_help = {
-      'brief': 'Create a Compute Engine node template.',
-      'EXAMPLES': """
+      'brief':
+          'Create a Compute Engine node template.',
+      'EXAMPLES':
+          """
          To create a node template of type `n1-node-96-624`, run:
 
            $ {command} my-node-template --node-type=n1-node-96-624
        """
   }
+  overcommit = False
+  enable_disk = False
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, 'v1')
 
   def Run(self, args):
-    return _Run(args, self.ReleaseTrack())
+    return _Run(
+        args,
+        self.ReleaseTrack(),
+        enable_disk=self.enable_disk,
+        overcommit=self.overcommit)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Compute Engine node template."""
 
+  overcommit = True
+
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, 'beta')
+    flags.AddCpuOvercommitTypeFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine node template."""
 
+  enable_disk = True
+
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, 'alpha')
+    flags.AddCpuOvercommitTypeFlag(parser)
     flags.AddDiskArgToParser(parser)
-
-  def Run(self, args):
-    return _Run(args, self.ReleaseTrack(), enable_disk=True)
-

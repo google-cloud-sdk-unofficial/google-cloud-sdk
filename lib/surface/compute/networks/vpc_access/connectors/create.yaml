@@ -55,6 +55,8 @@
       required: false
       help_text: |
         Minimum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
+        Must be lower than the value specified by `--max-throughput`; the set value, if applicable,
+        or the default maximum throughput value.
       default: 200
     - arg_name: max-throughput
       release_tracks: [GA, BETA]
@@ -62,4 +64,6 @@
       required: false
       help_text: |
         Maximum throughput in Mbps. Value must be a multiple of 100 between 200 and 1000.
+        Must be higher than the value specified by `--min-throughput`; the set value, if applicable,
+        or the default minimum throughput value.
       default: 300

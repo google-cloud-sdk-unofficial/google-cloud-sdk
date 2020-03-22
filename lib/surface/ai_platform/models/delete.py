@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
@@ -47,6 +48,7 @@ class Delete(base.DeleteCommand):
     _AddDeleteArgs(parser)
 
   def Run(self, args):
-    models_client = models.ModelsClient()
-    operations_client = operations.OperationsClient()
-    return models_util.Delete(models_client, operations_client, args.model)
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      models_client = models.ModelsClient()
+      operations_client = operations.OperationsClient()
+      return models_util.Delete(models_client, operations_client, args.model)

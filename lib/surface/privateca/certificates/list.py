@@ -57,7 +57,7 @@ class List(base.ListCommand):
           name.basename(),
           name.scope().segment(-3):label=ISSUER,
           name.scope().segment(-5):label=LOCATION,
-          revocation_details.revocation_state.yesno(no="ACTIVE"):label=REVOCATION_STATUS,
+          revocation_details.yesno(yes="REVOKED", no="ACTIVE"):label=REVOCATION_STATUS,
           certificate_description.subject_description.not_before_time:label=NOT_BEFORE,
           certificate_description.subject_description.not_after_time:label=NOT_AFTER)
         """)
@@ -83,7 +83,8 @@ class List(base.ListCommand):
     request = messages.PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesListRequest(
         parent=parent_resource,
         orderBy=common_args.ParseSortByArg(args.sort_by),
-        pageSize=args.page_size)
+        pageSize=args.page_size,
+        filter=args.filter)
 
     return list_pager.YieldFromList(
         client.projects_locations_certificateAuthorities_certificates,

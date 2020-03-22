@@ -48,6 +48,12 @@ def _Run(args, enable_labels=False, legacy_output=False):
   retention_duration = getattr(args, 'message_retention_duration', None)
   if retention_duration:
     retention_duration = util.FormatDuration(retention_duration)
+  min_retry_delay = getattr(args, 'min_retry_delay', None)
+  if min_retry_delay:
+    min_retry_delay = util.FormatDuration(min_retry_delay)
+  max_retry_delay = getattr(args, 'max_retry_delay', None)
+  if max_retry_delay:
+    max_retry_delay = util.FormatDuration(max_retry_delay)
 
   no_expiration = False
   expiration_period = getattr(args, 'expiration_period', None)
@@ -81,7 +87,9 @@ def _Run(args, enable_labels=False, legacy_output=False):
           enable_message_ordering=enable_message_ordering,
           filter_string=filter_string,
           dead_letter_topic=dead_letter_topic,
-          max_delivery_attempts=max_delivery_attempts)
+          max_delivery_attempts=max_delivery_attempts,
+          min_retry_delay=min_retry_delay,
+          max_retry_delay=max_retry_delay)
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
       log.CreatedResource(subscription_ref.RelativeName(),
@@ -166,7 +174,8 @@ class CreateAlpha(CreateBeta):
     flags.AddSubscriptionSettingsFlags(
         parser,
         support_message_ordering=True,
-        support_filtering=True)
+        support_filtering=True,
+        support_retry_policy=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()

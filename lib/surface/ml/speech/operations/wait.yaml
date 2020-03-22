@@ -4,6 +4,9 @@
       Poll a long-running speech recognition operation until it completes. When
       the operation is complete, this command will display the results of the
       transcription.
+    examples: |
+      To wait for the result of operation '12345':
+      $ {command} 12345
 
   request:
     collection: speech.operations

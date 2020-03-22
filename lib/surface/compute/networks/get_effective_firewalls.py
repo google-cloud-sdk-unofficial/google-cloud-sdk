@@ -40,6 +40,32 @@ class GetEffectiveFirewalls(base.Command):
     flags.NetworkArgument().AddArgument(
         parser, operation_type='get effective firewalls')
 
+  def SortNetworkFirewallRules(self, client, rules):
+    ingress_network_firewall = [
+        item for item in rules if item.direction ==
+        client.messages.Firewall.DirectionValueValuesEnum.INGRESS
+    ]
+    ingress_network_firewall.sort(key=lambda x: x.priority, reverse=False)
+    egress_network_firewall = [
+        item for item in rules if item.direction ==
+        client.messages.Firewall.DirectionValueValuesEnum.EGRESS
+    ]
+    egress_network_firewall.sort(key=lambda x: x.priority, reverse=False)
+    return ingress_network_firewall + egress_network_firewall
+
+  def SortOrgFirewallRules(self, client, rules):
+    ingress_org_firewall_rule = [
+        item for item in rules if item.direction ==
+        client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
+    ]
+    ingress_org_firewall_rule.sort(key=lambda x: x.priority, reverse=False)
+    egress_org_firewall_rule = [
+        item for item in rules if item.direction ==
+        client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
+    ]
+    egress_org_firewall_rule.sort(key=lambda x: x.priority, reverse=False)
+    return ingress_org_firewall_rule + egress_org_firewall_rule
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -53,4 +79,18 @@ class GetEffectiveFirewalls(base.Command):
         **network_ref.AsDict())
     responses = client.MakeRequests([(client.apitools_client.networks,
                                       'GetEffectiveFirewalls', request)])
-    return responses[0]
+    res = responses[0]
+    org_firewall = []
+    network_firewall = []
+    if hasattr(res, 'firewalls'):
+      network_firewall = self.SortNetworkFirewallRules(client, res.firewalls)
+
+    if hasattr(res, 'organizationFirewalls'):
+      for sp in res.organizationFirewalls:
+        org_firewall_rule = self.SortOrgFirewallRules(client, sp.rules)
+        org_firewall.append(
+            client.messages
+            .NetworksGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
+                id=sp.id, rules=org_firewall_rule))
+    return client.messages.NetworksGetEffectiveFirewallsResponse(
+        organizationFirewalls=org_firewall, firewalls=network_firewall)

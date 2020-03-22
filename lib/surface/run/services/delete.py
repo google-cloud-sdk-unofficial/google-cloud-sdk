@@ -61,7 +61,7 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete a service."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
+        args, flags.Product.RUN, self.ReleaseTrack())
     service_ref = flags.GetService(args)
     console_io.PromptContinue(
         message='Service [{service}] will be deleted.'.format(

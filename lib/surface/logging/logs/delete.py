@@ -26,7 +26,15 @@ from googlecloudsdk.core.console import console_io
 
 
 class Delete(base.DeleteCommand):
-  """Deletes all entries from a log."""
+  """Deletes all entries from a log.
+
+  ## EXAMPLES
+
+  To delete all entries from log 'my-log':
+
+    $ {command} my-log
+
+  """
 
   @staticmethod
   def Args(parser):
@@ -52,9 +60,9 @@ class Delete(base.DeleteCommand):
 
 
 Delete.detailed_help = {
-    'DESCRIPTION': """\
+    'DESCRIPTION': ("""
         {index}
         With no entries, the log will not appear in the list of your
         project's logs. However, you can write new entries to the log.
-    """,
+    """),
 }

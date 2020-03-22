@@ -20,11 +20,13 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a model.
 
@@ -42,9 +44,10 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetModelName().AddToParser(parser)
-    parser.add_argument('policy_file', help=('JSON or YAML file '
-                                             'with the IAM policy'))
+    flags.GetModelResourceArg(
+        positional=True, required=True,
+        verb='to set IAM policy for').AddToParser(parser)
+    iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):
     return models_util.SetIamPolicy(models.ModelsClient(), args.model,

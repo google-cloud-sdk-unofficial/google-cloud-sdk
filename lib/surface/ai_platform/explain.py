@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import predict
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import predict_utilities
 
@@ -106,9 +107,10 @@ versions run
     instances = predict_utilities.ReadInstancesFromArgs(
         args.json_instances, args.text_instances, limit=INPUT_INSTANCES_LIMIT)
 
-    model_or_version_ref = predict_utilities.ParseModelOrVersionRef(
-        args.model, args.version)
-    results = predict.Explain(model_or_version_ref, instances)
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      model_or_version_ref = predict_utilities.ParseModelOrVersionRef(
+          args.model, args.version)
+      results = predict.Explain(model_or_version_ref, instances)
 
     if not args.IsSpecified('format'):
       # default format is based on the response.

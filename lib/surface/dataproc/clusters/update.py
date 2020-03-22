@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
@@ -73,10 +74,20 @@ class Update(base.UpdateCommand):
         '--num-workers',
         type=int,
         help='The new number of worker nodes in the cluster.')
-    parser.add_argument(
+    num_secondary_workers = parser.add_argument_group(mutex=True)
+    num_secondary_workers.add_argument(
         '--num-preemptible-workers',
+        action=actions.DeprecationAction(
+            '--num-preemptible-workers',
+            warn=('The `--num-preemptible-workers` flag is deprecated. '
+                  'Use the `--num-secondary-workers` flag instead.')),
         type=int,
+        hidden=True,
         help='The new number of preemptible worker nodes in the cluster.')
+    num_secondary_workers.add_argument(
+        '--num-secondary-workers',
+        type=int,
+        help='The new number of secondary worker nodes in the cluster.')
 
     parser.add_argument(
         '--graceful-decommission-timeout',
@@ -163,9 +174,11 @@ class Update(base.UpdateCommand):
       changed_fields.append('config.worker_config.num_instances')
       has_changes = True
 
-    if args.num_preemptible_workers is not None:
+    num_secondary_workers = _FirstNonNone(args.num_preemptible_workers,
+                                          args.num_secondary_workers)
+    if num_secondary_workers is not None:
       worker_config = dataproc.messages.InstanceGroupConfig(
-          numInstances=args.num_preemptible_workers)
+          numInstances=num_secondary_workers)
       cluster_config.secondaryWorkerConfig = worker_config
       changed_fields.append(
           'config.secondary_worker_config.num_instances')
@@ -273,3 +286,7 @@ class Update(base.UpdateCommand):
     cluster = dataproc.client.projects_regions_clusters.Get(request)
     log.UpdatedResource(cluster_ref)
     return cluster
+
+
+def _FirstNonNone(first, second):
+  return first if first is not None else second

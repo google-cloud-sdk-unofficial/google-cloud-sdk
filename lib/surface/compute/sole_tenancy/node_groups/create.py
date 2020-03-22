@@ -76,6 +76,12 @@ class Create(base.CreateCommand):
       autoscaling_policy = util.BuildAutoscaling(args, messages)
       node_group.autoscalingPolicy = autoscaling_policy
 
+    if hasattr(
+        args,
+        'maintenance_window_start_time') and args.maintenance_window_start_time:
+      node_group.maintenanceWindow = messages.NodeGroupMaintenanceWindow(
+          startTime=args.maintenance_window_start_time)
+
     request = messages.ComputeNodeGroupsInsertRequest(
         nodeGroup=node_group,
         initialNodeCount=args.target_size,
@@ -101,3 +107,11 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine node group."""
+
+  @staticmethod
+  def Args(parser):
+    flags.MakeNodeGroupArg().AddArgument(parser)
+    flags.AddCreateArgsToParser(parser)
+    flags.AddMaintenancePolicyArgToParser(parser)
+    flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
+    flags.AddMaintenanceWindowArgToParser(parser)

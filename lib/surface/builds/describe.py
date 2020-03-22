@@ -28,6 +28,15 @@ from googlecloudsdk.core import resources
 class Describe(base.DescribeCommand):
   """Get information about a particular build."""
 
+  detailed_help = {
+      'DESCRIPTION': 'Get information about a particular build.',
+      'EXAMPLES': ("""
+            To describe a build `123-456-789`:
+
+                $ {command} '123-456-789'
+            """),
+  }
+
   @staticmethod
   def Args(parser):
     flags.AddBuildArg(parser, intro='The build to describe.')

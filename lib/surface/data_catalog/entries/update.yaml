@@ -72,13 +72,21 @@
         - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:schema_from_file
 
     - group:
+        mutex: true
         params:
-        - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:add_file_patterns
         - group:
-            mutex: true
             params:
-            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:remove_file_patterns
-            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:clear_file_patterns
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:add_file_patterns
+            - group:
+                mutex: true
+                params:
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:remove_file_patterns
+                - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:clear_file_patterns
+        - group:
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:user_specified_type
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:user_specified_system
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:linked_resource
 
 
     additional_arguments_hook: |-

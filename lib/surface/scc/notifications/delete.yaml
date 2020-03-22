@@ -13,7 +13,7 @@
   request:
     collection: securitycenter.organizations.notificationConfigs
     disable_resource_check: true
-    api_version: v1p1beta1
+    api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.scc.notifications.request_hooks:DeleteNotificationReqHook
 

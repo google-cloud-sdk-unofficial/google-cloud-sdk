@@ -46,16 +46,24 @@
               api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAmpTraffic
               help_text: |
                   Wether this key can be used on AMP (Accelerated Mobile Pages) websites.
-            - arg_name: domains
-              api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowedDomains
-              help_text: |
-                Domains or subdomains of websites allowed to use the key. All subdomains of an allowed
-                domain are automatically allowed. A valid domain requires a host and must not include
-                any path, port, query or fragment.
+            - group:
+                mutex: true
+                required: false
+                params:
+                - arg_name: allow-all-domains
+                  api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAllDomains
+                  help_text: |
+                    If set, domain name enforcemente will NOT be enabled on this key.
+                - arg_name: domains
+                  api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowedDomains
+                  help_text: |
+                    Domains or subdomains of websites allowed to use the key. All subdomains of an
+                    allowed domain are automatically allowed. A valid domain requires a host and must
+                    not include any path, port, query or fragment.
 
-                Examples of valid domains:
-                     'example.com'
-                     'subdomain.example.com'
+                    Examples of valid domains:
+                         'example.com'
+                         'subdomain.example.com'
             - arg_name: security-preference
               api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.challengeSecurityPreference
               help_text: |

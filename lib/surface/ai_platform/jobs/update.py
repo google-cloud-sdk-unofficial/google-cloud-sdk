@@ -26,6 +26,16 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To remove all labels in the AI Platform job named ``my-job'', run:
+
+            $ {command} my-job --clear-labels
+        """
+}
+
+
 def _AddUpdateArgs(parser):
   """Get arguments for the `ai-platform jobs update` command."""
   flags.JOB_NAME.AddToParser(parser)
@@ -34,6 +44,8 @@ def _AddUpdateArgs(parser):
 
 class Update(base.UpdateCommand):
   """Update an AI Platform job."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

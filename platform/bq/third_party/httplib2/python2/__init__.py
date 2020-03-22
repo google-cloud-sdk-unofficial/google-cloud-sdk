@@ -1950,7 +1950,7 @@ class Http(object):
         a string that contains the response entity body.
         """
         conn_key = ''
-
+        
         try:
             if headers is None:
                 headers = {}
@@ -2166,7 +2166,7 @@ class Http(object):
                 conn = self.connections.pop(conn_key, None)
                 if conn:
                     conn.close()
-
+                    
             if self.force_exception_to_status_code:
                 if isinstance(e, HttpLib2ErrorWithResponse):
                     response = e.response

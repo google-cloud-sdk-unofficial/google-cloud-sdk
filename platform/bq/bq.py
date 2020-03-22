@@ -533,25 +533,30 @@ def _PrintDryRunInfo(job):
     print(num_bytes)
   else:
     if num_bytes_accuracy == 'PRECISE':
-      print((
+      print(
           'Query successfully validated. Assuming the tables are not modified, '
-          'running this query will process %s bytes of data.' % (num_bytes,)))
+          'running this query will process %s bytes of data.' % (num_bytes,))
     elif num_bytes_accuracy == 'LOWER_BOUND':
-      print((
+      print(
           'Query successfully validated. Assuming the tables are not modified, '
           'running this query will process lower bound of %s bytes of data.' %
-          (num_bytes,)))
+          (num_bytes,))
     elif num_bytes_accuracy == 'UPPER_BOUND':
-      print((
+      print(
           'Query successfully validated. Assuming the tables are not modified, '
           'running this query will process upper bound of %s bytes of data.' %
-          (num_bytes,)))
+          (num_bytes,))
     else:
-      print((
-          'Query successfully validated. Assuming the tables are not modified, '
-          'running this query will process %s bytes of data and the accuracy '
-          'is unknown because of federated tables or clustered tables.' %
-          (num_bytes,)))
+      if job['statistics']['query']['statementType'] == 'CREATE_MODEL':
+        print('Query successfully validated. The number of bytes that will '
+              'be processed by this query cannot be calculated automatically. '
+              'More information about this can be seen in '
+              'https://cloud.google.com/bigquery-ml/pricing#dry_run')
+      else:
+        print('Query successfully validated. Assuming the tables are not '
+              'modified, running this query will process %s of data and the '
+              'accuracy is unknown because of federated tables or clustered '
+              'tables.' % (num_bytes,))
 
 
 def _PrintFormattedJsonObject(obj, default_format='json'):
@@ -2396,26 +2401,34 @@ class _Extract(BigqueryCmd):
         'field_delimiter',
         None,
         'The character that indicates the boundary between columns in the '
-        'output file. "\\t" and "tab" are accepted names for tab.',
+        'output file. "\\t" and "tab" are accepted names for tab. '
+        'Not applicable when extracting models.',
         short_name='F',
         flag_values=fv)
     flags.DEFINE_enum(
         'destination_format',
-        None, ['CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO', 'SAVED_MODEL'],
-        'The format with which to write the extracted data. Tables with '
-        'nested or repeated fields cannot be extracted to CSV.',
+        None,
+        ['CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO', 'SAVED_MODEL', 'BOOSTER'],
+        'The extracted file format. Format CSV,'
+        'NEWLINE_DELIMITED_JSON and AVRO are applicable for extracting tables. '
+        'Formats SAVED_MODEL and BOOSTER are applicable for extracting models. '
+        'The default value for tables is CSV. Tables with nested or repeated '
+        'fields cannot be exported as CSV. The default value for models is '
+        'SAVED_MODEL.',
         flag_values=fv)
     flags.DEFINE_enum(
         'compression',
         'NONE', ['GZIP', 'DEFLATE', 'SNAPPY', 'NONE'],
         'The compression type to use for exported files. Possible values '
-        'include GZIP, DEFLATE, SNAPPY and NONE. The default value is NONE.',
+        'include GZIP, DEFLATE, SNAPPY and NONE. The default value is NONE. '
+        'Not applicable when extracting models.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'print_header',
         None,
         'Whether to print header rows for formats that '
-        'have headers. Prints headers by default.',
+        'have headers. Prints headers by default.'
+        'Not applicable when extracting models.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'use_avro_logical_types',
@@ -2423,27 +2436,32 @@ class _Extract(BigqueryCmd):
         'If destinationFormat is set to "AVRO", this flag indicates whether to '
         'enable extracting applicable column types (such as TIMESTAMP) to '
         'their corresponding AVRO logical types (timestamp-micros), instead of '
-        'only using their raw types (avro-long).',
+        'only using their raw types (avro-long). '
+        'Not applicable when extracting models.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'model',
         False,
-        'Export model with this model ID.',
+        'Extract model with this model ID.',
         short_name='m',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier, destination_uris):
-    """Perform an extract operation of source_table into destination_uris.
+    """Perform an extract operation of source into destination_uris.
 
     Usage:
       extract <source_table> <destination_uris>
 
+    Use -m option to extract a source_model.
+
     Examples:
-      bq extract ds.summary gs://mybucket/summary.csv
+      bq extract ds.table gs://mybucket/table.csv
+      bq extract -m ds.model gs://mybucket/model
 
     Arguments:
       source_table: Source table to extract.
+      source_model: Source model to extract.
       destination_uris: One or more Google Cloud Storage URIs, separated by
         commas.
     """
@@ -3426,6 +3444,28 @@ def _ParseClustering(clustering_fields=None):
     return None
 
 
+def _ParseNumericTypeConversionMode(numeric_type_conversion_mode=None):
+  """Parses the numeric type conversion mode from the arguments.
+
+  Args:
+    numeric_type_conversion_mode: specifies how the numeric values are handled
+    when the value is out of scale.
+  Return: Conversion mode.
+
+  Raises:
+    UsageError: when an illegal value is passed.
+  """
+
+  if numeric_type_conversion_mode is None:
+    return None
+  elif numeric_type_conversion_mode == 'ROUND':
+    return 'NUMERIC_TYPE_VALUE_ROUND'
+  else:
+    raise app.UsageError(
+        'Error parsing numeric_type_conversion_mode, only ROUND or no value '
+        'are accepted')
+
+
 def _ParseRangePartitioning(range_partitioning_spec=None):
   """Parses range partitioning from the arguments.
 
@@ -3738,18 +3778,24 @@ class _Make(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
-        None, ['QUERY', 'PIPELINE'],
+        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL'],
         'Type of jobs to create reservation assignment for. Options include:'
         '\n QUERY'
         '\n PIPELINE'
         '\n Note if PIPELINE reservations are created, then load jobs will '
         'just use the slots from this reservation and slots from shared pool '
-        'won\'t be used.',
+        'won\'t be used.'
+        '\n ML_EXTERNAL'
+        '\n BigQuery ML jobs that use services external to BQ for model '
+        'training will use slots from this reservation. Slots used by these '
+        'jobs are not preemptible, i.e., they are not available for other jobs '
+        'running in the reservation. These jobs will not utilize idle slots '
+        'from other reservations.',
         flag_values=fv)
     flags.DEFINE_string(
         'reservation_id',
         None, 'Reservation ID used to create reservation assignment for. '
-        'Used in conjuction with --reservation_assignment.',
+        'Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'reservation_assignment',
@@ -3786,12 +3832,17 @@ class _Make(BigqueryCmd):
     flags.DEFINE_string(
         'properties',
         None,
-        'Connection properties in JSON format',
+        'Connection properties in JSON format.',
         flag_values=fv)
     flags.DEFINE_string(
         'connection_credential',
         None,
-        'Connection credential in JSON format',
+        'Connection credential in JSON format.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'iam_role_id',
+        None,
+        '[Experimental] IAM role id.',
         flag_values=fv)
     flags.DEFINE_string(
         'default_kms_key',
@@ -3960,6 +4011,9 @@ class _Make(BigqueryCmd):
     elif self.connection:
       if not self.connection_type:
         raise app.UsageError('Need to specify --connection_type.')
+      if self.connection_type == 'AWS' and self.iam_role_id:
+        self.properties = bigquery_client.MakeIamRoleIdPropertiesJson(
+            self.iam_role_id)
       if not self.properties:
         raise app.UsageError('Need to specify --properties')
       created_connection = client.CreateConnection(
@@ -3977,6 +4031,8 @@ class _Make(BigqueryCmd):
           client.UpdateConnectionCredential(reference, self.connection_type,
                                             self.connection_credential)
         print('Connection %s successfully created' % reference)
+        bigquery_client.MaybePrintManualInstructionsForConnection(
+            created_connection)
     elif self.d or not identifier:
       reference = client.GetDatasetReference(identifier)
     else:
@@ -4374,12 +4430,17 @@ class _Update(BigqueryCmd):
     flags.DEFINE_string(
         'properties',
         None,
-        'Connection properties in JSON format',
+        'Connection properties in JSON format.',
         flag_values=fv)
     flags.DEFINE_string(
         'connection_credential',
         None,
-        'Connection credential in JSON format',
+        'Connection credential in JSON format.',
+        flag_values=fv)
+    flags.DEFINE_string(
+        'iam_role_id',
+        None,
+        '[Experimental] IAM role id.',
         flag_values=fv)
     flags.DEFINE_string(
         'range_partitioning',
@@ -4490,13 +4551,18 @@ class _Update(BigqueryCmd):
     elif self.connection:
       reference = client.GetConnectionReference(
           identifier=identifier, default_location=FLAGS.location)
+      if self.connection_type == 'AWS' and self.iam_role_id:
+        self.properties = bigquery_client.MakeIamRoleIdPropertiesJson(
+            self.iam_role_id)
       if self.properties or self.display_name or self.description:
-        client.UpdateConnection(
+        updated_connection = client.UpdateConnection(
             reference=reference,
             display_name=self.display_name,
             description=self.description,
             connection_type=self.connection_type,
             properties=self.properties)
+        bigquery_client.MaybePrintManualInstructionsForConnection(
+            updated_connection)
       if self.connection_credential:
         client.UpdateConnectionCredential(reference, self.connection_type,
                                           self.connection_credential)
@@ -4851,10 +4917,11 @@ class _Show(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_enum(
         'job_type',
-        None, ['QUERY', 'PIPELINE'],
+        None, ['QUERY', 'PIPELINE', 'ML_EXTERNAL'],
         'Type of jobs to search reservation assignment for. Options include:'
         '\n QUERY'
         '\n PIPELINE'
+        '\n ML_EXTERNAL'
         '\n Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_enum(

@@ -83,8 +83,14 @@ class Create(base.Command):
 
   def Run(self, args):
     """Create a domain mapping."""
+    # domains.cloudrun.com api group only supports v1alpha1 on clusters.
     conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
+        args,
+        flags.Product.RUN,
+        self.ReleaseTrack(),
+        version_override=('v1alpha1'
+                          if flags.GetPlatform() != flags.PLATFORM_MANAGED else
+                          None))
     domain_mapping_ref = args.CONCEPTS.domain.Parse()
 
     # Check if the provided domain has already been verified

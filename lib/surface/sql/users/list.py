@@ -27,8 +27,32 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+def AddBaseArgs(parser):
+  flags.AddInstance(parser)
+  parser.display_info.AddCacheUpdater(flags.UserCompleter)
+
+
+def RunBaseListCommand(args):
+  """Lists Cloud SQL users in a given instance.
+
+  Args:
+    args: argparse.Namespace, The arguments that this command was invoked with.
+
+  Returns:
+    SQL user resource iterator.
+  """
+  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  sql_client = client.sql_client
+  sql_messages = client.sql_messages
+
+  project_id = properties.VALUES.core.project.Get(required=True)
+
+  return sql_client.users.List(
+      sql_messages.SqlUsersListRequest(
+          project=project_id, instance=args.instance)).items
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists Cloud SQL users in a given instance.
 
@@ -38,27 +62,25 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddInstance(parser)
-    # TODO(b/36473146): Add an output format test to kill a mutant.
-    parser.display_info.AddFormat(flags.USERS_FORMAT_BETA)
-    parser.display_info.AddCacheUpdater(flags.UserCompleter)
+    AddBaseArgs(parser)
+    parser.display_info.AddFormat(flags.USERS_FORMAT)
 
   def Run(self, args):
-    """Lists Cloud SQL users in a given instance.
+    return RunBaseListCommand(args)
 
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
 
-    Returns:
-      SQL user resource iterator.
-    """
-    client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
-    sql_client = client.sql_client
-    sql_messages = client.sql_messages
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(base.ListCommand):
+  """Lists Cloud SQL users in a given instance.
 
-    project_id = properties.VALUES.core.project.Get(required=True)
+  Lists Cloud SQL users in a given instance in the alphabetical
+  order of the user name.
+  """
 
-    return sql_client.users.List(
-        sql_messages.SqlUsersListRequest(
-            project=project_id, instance=args.instance)).items
+  @staticmethod
+  def Args(parser):
+    AddBaseArgs(parser)
+    parser.display_info.AddFormat(flags.USERS_FORMAT_ALPHA)
+
+  def Run(self, args):
+    return RunBaseListCommand(args)

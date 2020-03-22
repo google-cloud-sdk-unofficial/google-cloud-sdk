@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [GA, BETA]
   help_text:
     brief: |
       Create a new connectivity test.
@@ -9,7 +9,7 @@
       and the test between a source VM and a destination IP address in a peering
       network.
 
-        $ gcloud beta network-management connectivity-tests create my-test \
+        $ {command} my-test \
             --source-instance=projects/my-project/zones/us-west-1/instances/my-instance
             --destination-ip-address=10.142.0.2 --destination-network=projects/my-project/global/networks/peering-network
   arguments:
@@ -18,10 +18,18 @@
       help_text: |
         Name of the connectivity test you want to create.
     params:
-    - arg_name: source-instance
-      api_field: connectivityTest.source.instance
-      help_text: |
-        A Compute Engine instance URI as the source endpoint.
+    - group:
+        required: true
+        params:
+        - arg_name: source-instance
+          api_field: connectivityTest.source.instance
+          help_text: |
+            A Compute Engine instance URI as the source endpoint.
+        - arg_name: source-ip-address
+          api_field: connectivityTest.source.ipAddress
+          help_text: |
+            The IP address of the source which can be an external or internal IP.
+            An IPv6 address is only allowed when the test's destination is a global load balancer VIP.
     - arg_name: source-network
       api_field: connectivityTest.source.network
       help_text: |
@@ -38,19 +46,22 @@
         arg_value: non-gcp-network
         help_text: Network outside Google Cloud Platform.
       default: gcp-network
-    - arg_name: source-ip-address
-      api_field: connectivityTest.source.ipAddress
-      help_text: |
-        The IP address of the source which can be an external or internal IP.
-        An IPv6 address is only allowed when the test's destination is a global load balancer VIP.
     - arg_name: source-project
       api_field: connectivityTest.source.projectId
       help_text: |
         Project ID of the source endpoint.
-    - arg_name: destination-instance
-      api_field: connectivityTest.destination.instance
-      help_text: |
-        A Compute Engine instance URI as the destination endpoint.
+    - group:
+        required: true
+        params:
+        - arg_name: destination-instance
+          api_field: connectivityTest.destination.instance
+          help_text: |
+            A Compute Engine instance URI as the destination endpoint.
+        - arg_name: destination-ip-address
+          api_field: connectivityTest.destination.ipAddress
+          help_text: |
+            The IP address of the destination which can be an external or internal IP.
+            An IPv6 address is only allowed when the test's destination is a global load balancer VIP.
     - arg_name: destination-network
       api_field: connectivityTest.destination.network
       help_text: |
@@ -60,11 +71,6 @@
       help_text: |
         The IP protocol port of the destination. Only applicable when protocol is
         TCP or UDP.
-    - arg_name: destination-ip-address
-      api_field: connectivityTest.destination.ipAddress
-      help_text: |
-        The IP address of the destination which can be an external or internal IP.
-        An IPv6 address is only allowed when the test's destination is a global load balancer VIP.
     - arg_name: destination-project
       api_field: connectivityTest.destination.projectId
       help_text: |
@@ -98,8 +104,10 @@
     collection: networkmanagement.projects.locations.global.operations
 
   request:
-    api_version: v1beta1
+    api_version: v1
     collection: networkmanagement.projects.locations.global.connectivityTests
     method: create
     modify_request_hooks:
+    - googlecloudsdk.command_lib.network_management.util:ValidateInstanceNames
+    - googlecloudsdk.command_lib.network_management.util:ValidateNetworkURIs
     - googlecloudsdk.command_lib.network_management.util:AppendLocationsGlobalToParent

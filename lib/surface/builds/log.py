@@ -28,6 +28,18 @@ from googlecloudsdk.core import resources
 
 class Log(base.Command):
   """Stream the logs for a build."""
+  detailed_help = {
+      'DESCRIPTION': 'Stream the logs for a build.',
+      'EXAMPLES': ("""
+            To stream logs for in progress build `123-456-789`:
+
+                $ {command} --stream `123-456-789`
+
+            To display logs for a completed build `098-765-432`:
+
+                $ {command} `098-765-432`
+            """),
+  }
 
   @staticmethod
   def Args(parser):

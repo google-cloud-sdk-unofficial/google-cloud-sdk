@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import predict
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import predict_utilities
 from googlecloudsdk.core import log
@@ -99,16 +100,18 @@ versions run
     instances = predict_utilities.ReadInstancesFromArgs(
         args.json_instances, args.text_instances, limit=INPUT_INSTANCES_LIMIT)
 
-    model_or_version_ref = predict_utilities.ParseModelOrVersionRef(
-        args.model, args.version)
-    if (args.signature_name is None and
-        predict_utilities.CheckRuntimeVersion(args.model, args.version)):
-      log.status.Print('You are running on a runtime version >= 1.8. '
-                       'If the signature defined in the model is '
-                       'not serving_default then you must specify it via '
-                       '--signature-name flag, otherwise the command may fail.')
-    results = predict.Predict(model_or_version_ref, instances,
-                              signature_name=args.signature_name)
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      model_or_version_ref = predict_utilities.ParseModelOrVersionRef(
+          args.model, args.version)
+      if (args.signature_name is None and
+          predict_utilities.CheckRuntimeVersion(args.model, args.version)):
+        log.status.Print(
+            'You are running on a runtime version >= 1.8. '
+            'If the signature defined in the model is '
+            'not serving_default then you must specify it via '
+            '--signature-name flag, otherwise the command may fail.')
+      results = predict.Predict(
+          model_or_version_ref, instances, signature_name=args.signature_name)
 
     if not args.IsSpecified('format'):
       # default format is based on the response.

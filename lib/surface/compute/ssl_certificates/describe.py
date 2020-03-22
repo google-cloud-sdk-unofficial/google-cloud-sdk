@@ -41,7 +41,8 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     Describe.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
-        include_l7_internal_load_balancing=True)
+        include_l7_internal_load_balancing=True,
+        global_help_text='(Default) If set, the SSL certificate is global.')
     Describe.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):

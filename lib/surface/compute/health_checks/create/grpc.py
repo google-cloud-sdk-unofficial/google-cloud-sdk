@@ -122,7 +122,6 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a gRPC health check."""

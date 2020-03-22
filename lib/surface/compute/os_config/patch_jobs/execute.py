@@ -86,7 +86,7 @@ def _AddCommonInstanceFilterFlags(mutually_exclusive_group):
   )
 
 
-def _AddTopLevelArgumentsBeta(parser):
+def _AddTopLevelArguments(parser):
   """Adds top-level argument flags for the Beta track."""
   instance_filter_group = parser.add_mutually_exclusive_group(
       required=True,
@@ -731,10 +731,10 @@ def _CreatePatchInstanceFilter(messages, filter_all, filter_group_labels,
   )
 
 
-def _CreateExecuteRequestBeta(messages, project, description, dry_run, duration,
-                              patch_config, display_name, filter_all,
-                              filter_group_labels, filter_zones, filter_names,
-                              filter_name_prefixes):
+def _CreateExecuteRequest(messages, project, description, dry_run, duration,
+                          patch_config, display_name, filter_all,
+                          filter_group_labels, filter_zones, filter_names,
+                          filter_name_prefixes):
   """Creates an ExecuteRequest message for the Beta track."""
   patch_instance_filter = _CreatePatchInstanceFilter(
       messages,
@@ -788,11 +788,10 @@ def _CreateExecuteRequestAlpha(messages, project, description, dry_run,
         ),
         parent=osconfig_command_utils.GetProjectUriPath(project))
   else:
-    return _CreateExecuteRequestBeta(messages, project, description, dry_run,
-                                     duration, patch_config, display_name,
-                                     filter_all, filter_group_labels,
-                                     filter_zones, filter_names,
-                                     filter_name_prefixes)
+    return _CreateExecuteRequest(messages, project, description, dry_run,
+                                 duration, patch_config, display_name,
+                                 filter_all, filter_group_labels, filter_zones,
+                                 filter_names, filter_name_prefixes)
 
 
 def _CreateExecuteResponse(client, messages, request, is_async, command_prefix):
@@ -830,66 +829,68 @@ def _CreateExecuteResponse(client, messages, request, is_async, command_prefix):
   return sync_response
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Execute(base.Command):
-  r"""Execute an OS patch on the specified VM instances.
+  """Execute an OS patch on the specified VM instances."""
 
-  ## EXAMPLES
+  detailed_help = {
+      'EXAMPLES':
+      """\
+      To start a patch job named `my patch job` that patches all instances in the
+      current project, run:
 
-  To start a patch job named `my patch job` that patches all instances in the
-  current project, run:
+            $ {command} --display-name="my patch job" --instance-filter-all
 
-        $ {command} --display-name="my patch job" --instance-filter-all
+      To patch an instance named `my-instance-1` in the `us-east1-b` zone, run:
 
-  To patch an instance named `my-instance-1` in the `us-east1-b` zone, run:
+            $ {command} --instance-filter-names=\
+            "zones/us-east1-b/instances/my-instance-1"
 
-        $ {command} --instance-filter-names=\
-        "zones/us-east1-b/instances/my-instance-1"
+      To patch all instances in the `us-central1-b` and `europe-west1-d` zones, run:
 
-  To patch all instances in the `us-central1-b` and `europe-west1-d` zones, run:
+            $ {command} --instance-filter-zones="us-central1-b,europe-west1-d"
 
-        $ {command} --instance-filter-zones="us-central1-b,europe-west1-d"
+      To patch all instances where the `env` label is `test` and `app` label is
+      `web`, run:
 
-  To patch all instances where the `env` label is `test` and `app` label is
-  `web`, run:
+            $ {command} --instance-filter-group-labels="env=test,app=web"
 
-        $ {command} --instance-filter-group-labels="env=test,app=web"
+      To patch all instances where the `env` label is `test` and `app` label is
+      `web` or where the `env` label is `staging` and `app` label is `web`, run:
 
-  To patch all instances where the `env` label is `test` and `app` label is
-  `web` or where the `env` label is `staging` and `app` label is `web`, run:
+            $ {command} \
+            --instance-filter-group-labels="env=test,app=web" \
+            --instance-filter-group-labels="env=staging,app=web"
 
-        $ {command} \
-        --instance-filter-group-labels="env=test,app=web" \
-        --instance-filter-group-labels="env=staging,app=web"
+      To apply security and critical patches to Windows instances with the prefix
+      `windows-` in the instance name, run:
 
-  To apply security and critical patches to Windows instances with the prefix
-  `windows-` in the instance name, run:
+            $ {command} --instance-filter-name-prefixes="windows-" \
+            --windows-classifications=SECURITY,CRITICAL
 
-        $ {command} --instance-filter-name-prefixes="windows-" \
-        --windows-classifications=SECURITY,CRITICAL
+      To update only `KB4339284` on Windows instances with the prefix `windows-` in
+      the instance name, run:
 
-  To update only `KB4339284` on Windows instances with the prefix `windows-` in
-  the instance name, run:
+            $ {command} --instance-filter-name-prefixes="windows-" \
+            --windows-exclusive-patches=KB4339284
 
-        $ {command} --instance-filter-name-prefixes="windows-" \
-        --windows-exclusive-patches=KB4339284
+      To patch all instances in the current project and specify scripts to run
+      pre-patch and post-patch, run:
 
-  To patch all instances in the current project and specify scripts to run
-  pre-patch and post-patch, run:
+            $ {command} --instance-filter-all \
+            --pre-patch-linux-executable="/bin/my-script" \
+            --pre-patch-linux-success-codes=0,200 \
+            --pre-patch-windows-executable="C:\\Users\\user\\test-script.ps1" \
+            --post-patch-linux-executable="gs://my-bucket/my-linux-script#12345" \
+            --post-patch-windows-executable="gs://my-bucket/my-windows-script#67890"
+      """
+  }
 
-        $ {command} --instance-filter-all \
-        --pre-patch-linux-executable="/bin/my-script" \
-        --pre-patch-linux-success-codes=0,200 \
-        --pre-patch-windows-executable="C:\\Users\\user\\test-script.ps1" \
-        --post-patch-linux-executable="gs://my-bucket/my-linux-script#12345" \
-        --post-patch-windows-executable="gs://my-bucket/my-windows-script#67890"
-  """
-
-  _command_prefix = 'gcloud beta compute os-config patch-jobs'
+  _command_prefix = 'gcloud compute os-config patch-jobs'
 
   @staticmethod
   def Args(parser):
-    _AddTopLevelArgumentsBeta(parser)
+    _AddTopLevelArguments(parser)
     _AddCommonTopLevelArguments(parser)
     _AddPatchConfigArguments(parser)
 
@@ -903,7 +904,7 @@ class Execute(base.Command):
     duration = _GetDuration(args)
     patch_config = _CreatePatchConfig(args, messages)
 
-    request = _CreateExecuteRequestBeta(
+    request = _CreateExecuteRequest(
         messages,
         project,
         args.description,
@@ -923,60 +924,69 @@ class Execute(base.Command):
                                   self._command_prefix)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ExecuteBeta(Execute):
+  """Execute an OS patch on the specified VM instances."""
+
+  _command_prefix = 'gcloud beta compute os-config patch-jobs'
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ExecuteAlpha(Execute):
-  r"""Execute an OS patch on the specified VM instances.
+class ExecuteAlpha(ExecuteBeta):
+  """Execute an OS patch on the specified VM instances."""
 
-  ## EXAMPLES
+  detailed_help = {
+      'EXAMPLES':
+          """\
+    To start a patch job named `my patch job` that patches all instances in the
+    current project, run:
 
-  To start a patch job named `my patch job` that patches all instances in the
-  current project, run:
+          $ {command} --display-name="my patch job" --instance-filter-all
 
-        $ {command} --display-name="my patch job" --instance-filter-all
+    To patch an instance named `my-instance-1` in the `us-east1-b` zone, run:
 
-  To patch an instance named `my-instance-1` in the `us-east1-b` zone, run:
+          $ {command} --instance-filter-names=\
+          "zones/us-east1-b/instances/my-instance-1"
 
-        $ {command} --instance-filter-names=\
-        "zones/us-east1-b/instances/my-instance-1"
+    To patch all instances in the `us-central1-b` and `europe-west1-d` zones, run:
 
-  To patch all instances in the `us-central1-b` and `europe-west1-d` zones, run:
+          $ {command} --instance-filter-zones="us-central1-b,europe-west1-d"
 
-        $ {command} --instance-filter-zones="us-central1-b,europe-west1-d"
+    To patch all instances where the `env` label is `test` and `app` label is
+    `web`, run:
 
-  To patch all instances where the `env` label is `test` and `app` label is
-  `web`, run:
+          $ {command} --instance-filter-group-labels="env=test,app=web"
 
-        $ {command} --instance-filter-group-labels="env=test,app=web"
+    To patch all instances where the `env` label is `test` and `app` label is
+    `web` or where the `env` label is `staging` and `app` label is `web`, run:
 
-  To patch all instances where the `env` label is `test` and `app` label is
-  `web` or where the `env` label is `staging` and `app` label is `web`, run:
+          $ {command} \
+          --instance-filter-group-labels="env=test,app=web" \
+          --instance-filter-group-labels="env=staging,app=web"
 
-        $ {command} \
-        --instance-filter-group-labels="env=test,app=web" \
-        --instance-filter-group-labels="env=staging,app=web"
+    To apply security and critical patches to Windows instances with the prefix
+    `windows-` in the instance name, run:
 
-  To apply security and critical patches to Windows instances with the prefix
-  `windows-` in the instance name, run:
+          $ {command} --instance-filter-name-prefixes="windows-" \
+          --windows-classifications=SECURITY,CRITICAL
 
-        $ {command} --instance-filter-name-prefixes="windows-" \
-        --windows-classifications=SECURITY,CRITICAL
+    To update only `KB4339284` on Windows instances with the prefix `windows-` in
+    the instance name, run:
 
-  To update only `KB4339284` on Windows instances with the prefix `windows-` in
-  the instance name, run:
+          $ {command} --instance-filter-name-prefixes="windows-" \
+          --windows-exclusive-patches=KB4339284
 
-        $ {command} --instance-filter-name-prefixes="windows-" \
-        --windows-exclusive-patches=KB4339284
+    To patch all instances in the current project and specify scripts to run
+    pre-patch and post-patch, run:
 
-  To patch all instances in the current project and specify scripts to run
-  pre-patch and post-patch, run:
-
-        $ {command} --instance-filter-all \
-        --pre-patch-linux-executable="/bin/my-script" \
-        --pre-patch-linux-success-codes=0,200 \
-        --pre-patch-windows-executable="C:\\Users\\user\\test-script.ps1" \
-        --post-patch-linux-executable="gs://my-bucket/my-linux-script#12345" \
-        --post-patch-windows-executable="gs://my-bucket/my-windows-script#67890"
-  """
+          $ {command} --instance-filter-all \
+          --pre-patch-linux-executable="/bin/my-script" \
+          --pre-patch-linux-success-codes=0,200 \
+          --pre-patch-windows-executable="C:\\Users\\user\\test-script.ps1" \
+          --post-patch-linux-executable="gs://my-bucket/my-linux-script#12345" \
+          --post-patch-windows-executable="gs://my-bucket/my-windows-script#67890"
+    """
+  }
 
   _command_prefix = 'gcloud alpha compute os-config patch-jobs'
 

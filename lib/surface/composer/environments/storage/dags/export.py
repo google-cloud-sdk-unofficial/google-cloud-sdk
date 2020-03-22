@@ -66,7 +66,7 @@ class Export(base.Command):
 
   The following command:
 
-    {command} myenv --destination /foo
+    {command} myenv --destination=/foo
 
   would result in the following structure in the local '/foo' directory:
 
@@ -88,7 +88,7 @@ class Export(base.Command):
 
   If instead we had run
 
-    {command} myenv --source subdir1/file3.py --destination /foo
+    {command} myenv --source=subdir1/file3.py --destination=/foo
 
   the resulting local directory structure would be the following:
 

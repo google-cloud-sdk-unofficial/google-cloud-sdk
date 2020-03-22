@@ -8,6 +8,7 @@
       about entities within the text.
 
       Currently only English is supported for this feature.
+    examples: !COMMON help_text.language_examples.AES
 
   request:
     _COMMON_: request
@@ -34,6 +35,7 @@
       about entities within the text.
 
       Currently only English is supported for this feature.
+    examples: !COMMON help_text.language_examples.AES
 
   request:
     _COMMON_: request

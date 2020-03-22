@@ -24,8 +24,16 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 
 
+DEFAULT_LIST_FORMAT = """\
+  table(
+    name,
+    displayName,
+    securityPolicyId
+  )"""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.DescribeCommand):
+class Create(base.DescribeCommand, base.ListCommand):
   """List the associations of an organization or folder resource.
 
   *{command}* is used to list the associations of an organization or folder
@@ -35,6 +43,7 @@ class Create(base.DescribeCommand):
   @classmethod
   def Args(cls, parser):
     flags.AddArgsListAssociation(parser)
+    parser.display_info.AddFormat(DEFAULT_LIST_FORMAT)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -47,5 +56,8 @@ class Create(base.DescribeCommand):
 
     elif args.IsSpecified('folder'):
       target_resource = 'folders/' + args.folder
-    return org_security_policy.ListAssociations(
+    res = org_security_policy.ListAssociations(
         target_resource=target_resource, only_generate_request=False)
+    if not res:
+      return None
+    return res[0].associations

@@ -25,9 +25,22 @@ from googlecloudsdk.command_lib.composer import storage_util
 from googlecloudsdk.core.console import console_io
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        '''\
+          To delete the data from the path ``path/to/data'', for the
+          environment named ``environmnet-1'' in the location ``us-east1'', run:
+
+            $ {command} path/to/data --environment=environment-1 --location=us-east1
+        '''
+}
+
+
 class Delete(base.Command):
   """Delete data from an Cloud Composer environment's Cloud Storage bucket.
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

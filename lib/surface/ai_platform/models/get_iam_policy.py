@@ -24,7 +24,8 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a model.
 
@@ -41,7 +42,9 @@ class GetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetModelName().AddToParser(parser)
+    flags.GetModelResourceArg(
+        positional=True, required=True,
+        verb='to set IAM policy for').AddToParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):

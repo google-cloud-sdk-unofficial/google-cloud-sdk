@@ -81,7 +81,7 @@ class List(commands.List):
     """List available revisions."""
     service_name = args.service
     conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
+        args, flags.Product.RUN, self.ReleaseTrack())
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)

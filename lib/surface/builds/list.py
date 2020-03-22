@@ -28,6 +28,20 @@ from googlecloudsdk.core import properties
 class List(base.ListCommand):
   """List builds."""
 
+  detailed_help = {
+      'DESCRIPTION': 'List builds.',
+      'EXAMPLES': ("""
+            To list all completed builds in the current project:
+
+                $ {command}
+
+            To list all builds in the current project in
+            QUEUED or WORKING status.:
+
+                $ {command} --ongoing
+            """),
+  }
+
   @staticmethod
   def Args(parser):
     """Register flags for this command.

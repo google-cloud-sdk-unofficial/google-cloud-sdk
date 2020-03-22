@@ -47,6 +47,20 @@ class Submit(base.CreateCommand):
           for faster builds. By default, Kaniko will cache layers for 6 hours.
           To override this, set the `builds/kaniko_cache_ttl` property.
       """,
+      'EXAMPLES': ("""
+      To submit a build with source located at storage URL `gs://bucket/object.zip`:
+
+         $ {command}  `gs://bucket/object.zip` --tag=gcr.io/my-project/image
+
+      To submit a build with source located at storage URL `gs://bucket/object.zip`
+      using config file `config.yaml`:
+
+        $ {command} `gs://bucket/object.zip` --tag=gcr.io/my-project/image --config=config.yaml
+
+      To submit a build with local source `source.tgz` asynchronously:
+
+        $ {command} `source.tgz` --tag=gcr.io/my-project/image --async
+      """)
   }
 
   @staticmethod

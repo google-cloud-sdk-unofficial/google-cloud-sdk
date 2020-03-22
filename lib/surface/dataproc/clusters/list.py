@@ -80,10 +80,14 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
           table(
             clusterName:label=NAME,
+            config.gkeClusterConfig.yesno(yes=GKE, no=GCE):label=PLATFORM,
             config.workerConfig.numInstances:label=WORKER_COUNT,
             config.secondaryWorkerConfig.numInstances:label=PREEMPTIBLE_WORKER_COUNT,
             status.state:label=STATUS,
-            config.gceClusterConfig.zoneUri.scope(zone):label=ZONE,
+            config.firstof(
+                gkeClusterConfig.namespacedGkeDeploymentTarget.targetGkeCluster,
+                gceClusterConfig.zoneUri
+              ).scope('locations'):label=ZONE,
             config.lifecycleConfig.yesno(yes=enabled, no=''):label=SCHEDULED_DELETE
           )
     """)

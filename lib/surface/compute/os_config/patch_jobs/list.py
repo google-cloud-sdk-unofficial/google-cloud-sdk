@@ -115,7 +115,7 @@ def _Args(parser, release_track):
   parser.display_info.AddUriFunc(_MakeGetUriFunc(registry))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List ongoing and completed patch jobs.
 
@@ -129,7 +129,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, base.ReleaseTrack.BETA)
+    _Args(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     project = properties.VALUES.core.project.GetOrFail()
@@ -152,8 +152,25 @@ class List(base.ListCommand):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List ongoing and completed patch jobs.
+
+  ## EXAMPLES
+
+  To list patch jobs in the current project, run:
+
+        $ {command}
+
+  """
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, base.ReleaseTrack.BETA)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
+class ListAlpha(ListBeta):
   """List ongoing and completed patch jobs.
 
   ## EXAMPLES

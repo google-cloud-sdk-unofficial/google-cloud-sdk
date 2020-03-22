@@ -43,6 +43,7 @@ class Enable(base.EnableCommand):
   """
 
   FEATURE_NAME = 'multiclusteringress'
+  FEATURE_DISPLAY_NAME = 'MultiClusterIngress'
 
   @classmethod
   def Args(cls, parser):

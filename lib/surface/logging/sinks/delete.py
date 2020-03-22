@@ -32,6 +32,13 @@ class Delete(base.DeleteCommand):
   Deleting a sink does not affect log entries already exported through
   the deleted sink, and will not affect other sinks that are exporting
   the same log(s).
+
+  ## EXAMPLES
+
+  To delete a sync 'my-bq-sync':
+
+    $ {command} my-bq-sink
+
   """
 
   @staticmethod

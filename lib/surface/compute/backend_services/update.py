@@ -66,7 +66,7 @@ class UpdateHelper(object):
 
   @classmethod
   def Args(cls, parser, support_l7_internal_load_balancer, support_failover,
-           support_logging, support_client_only):
+           support_logging, support_client_only, support_grpc_protocol):
     """Add all arguments for updating a backend service."""
 
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(
@@ -88,7 +88,8 @@ class UpdateHelper(object):
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser, default=None)
+    flags.AddProtocol(
+        parser, default=None, support_grpc_protocol=support_grpc_protocol)
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser)
@@ -357,6 +358,7 @@ class UpdateGA(base.UpdateCommand):
   _support_logging = True
   _support_failover = False
   _support_client_only = False
+  _support_grpc_protocol = False
 
   @classmethod
   def Args(cls, parser):
@@ -366,7 +368,8 @@ class UpdateGA(base.UpdateCommand):
         ._support_l7_internal_load_balancer,
         support_failover=cls._support_failover,
         support_logging=cls._support_logging,
-        support_client_only=cls._support_client_only)
+        support_client_only=cls._support_client_only,
+        support_grpc_protocol=cls._support_grpc_protocol)
 
   def Run(self, args):
     """Issues requests necessary to update the Backend Services."""
@@ -385,6 +388,7 @@ class UpdateBeta(UpdateGA):
 
   _support_failover = True
   _support_client_only = False
+  _support_grpc_protocol = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -396,3 +400,4 @@ class UpdateAlpha(UpdateGA):
 
   _support_failover = True
   _support_client_only = True
+  _support_grpc_protocol = True

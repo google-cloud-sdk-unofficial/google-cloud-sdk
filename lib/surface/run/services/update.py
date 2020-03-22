@@ -104,7 +104,7 @@ class Update(base.Command):
           '`--memory`, `--concurrency`, `--timeout`, `--connectivity`?')
 
     conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
+        args, flags.Product.RUN, self.ReleaseTrack())
     service_ref = flags.GetService(args)
 
     with serverless_operations.Connect(conn_context) as client:

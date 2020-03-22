@@ -27,9 +27,22 @@ from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import util as command_util
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To update the Cloud Composer environment named ``env-1'' to have 8
+          Airflow workers, and not have the ``production'' label, run:
+
+            $ {command} env-1 --node-count=8 --remove-labels=production
+        """
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update properties of a Cloud Composer environment."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

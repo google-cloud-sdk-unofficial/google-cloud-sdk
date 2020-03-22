@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [GA, BETA]
 
   help_text:
     brief: |
@@ -22,5 +22,5 @@
 
   request: &request
     method: rerun
-    api_version: v1beta1
+    api_version: v1
     collection: networkmanagement.projects.locations.global.connectivityTests

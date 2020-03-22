@@ -25,6 +25,16 @@ from googlecloudsdk.command_lib.ml_engine import log_utils
 from googlecloudsdk.core import properties
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To show the logs from running the AI Platform job ``my-job'', run:
+
+            $ {command} my-job
+        """
+}
+
+
 def _AddStreamLogsArgs(parser):
   flags.JOB_NAME.AddToParser(parser)
   flags.POLLING_INTERVAL.AddToParser(parser)
@@ -34,6 +44,8 @@ def _AddStreamLogsArgs(parser):
 
 class StreamLogs(base.Command):
   """Show logs from a running AI Platform job."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

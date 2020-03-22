@@ -24,12 +24,24 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import jobs_util
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To cancel a running AI Platform job named ``my-job'', run:
+
+            $ {command} my-job
+        """
+}
+
+
 def _AddCancelArgs(parser):
   flags.JOB_NAME.AddToParser(parser)
 
 
 class Cancel(base.SilentCommand):
   """Cancel a running AI Platform job."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

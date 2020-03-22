@@ -63,7 +63,7 @@ class Describe(base.Command):
   def Run(self, args):
     """Obtain details about a given route."""
     conn_context = connection_context.GetConnectionContext(
-        args, product=flags.Product.RUN)
+        args, flags.Product.RUN, self.ReleaseTrack())
     route_ref = args.CONCEPTS.route.Parse()
     with serverless_operations.Connect(conn_context) as client:
       conf = client.GetRoute(route_ref)

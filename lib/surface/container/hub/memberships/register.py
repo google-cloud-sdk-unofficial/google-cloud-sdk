@@ -219,6 +219,40 @@ class Register(base.CreateCommand):
           """),
     )
 
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      # Optional groups with required arguments are "modal,"
+      # meaning that if any of the required arguments is specified,
+      # all are required.
+      workload_identity = parser.add_group(help='Workload Identity')
+      workload_identity.add_argument(
+          '--enable-workload-identity',
+          required=True,
+          hidden=True,
+          action='store_true',
+          help=textwrap.dedent("""\
+            Enable Workload Identity when registering the cluster with Hub.
+            Requires gcloud alpha.
+            """),
+      )
+      # TODO(b/150696295): Since --public-issuer-url is the only option added
+      # so far, it is required. Future CLs add the ability to auto-detect the
+      # issuer from some clusters, but this depends on more complex client
+      # support so we split those pieces out. Once auto-detection is added,
+      # --public-issuer-url will be an optional flag.
+      workload_identity.add_argument(
+          '--public-issuer-url',
+          required=True,
+          hidden=True,
+          type=str,
+          help=textwrap.dedent("""\
+            Skip auto-discovery and register the cluster with this issuer URL.
+            Use this option when the OpenID Provider Configuration and associated
+            JSON Web Key Set for validating the cluster's service account JWTs
+            are served at a public endpoint different from the cluster API server.
+            Requires gcloud alpha and --enable-workload-identity.
+            """),
+      )
+
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     # This incidentally verifies that the kubeconfig and context args are valid.
@@ -244,7 +278,14 @@ class Register(base.CreateCommand):
           raise exceptions.Error('Could not process {}: {}'.format(
               DOCKER_CREDENTIAL_FILE_FLAG, e))
 
-      gke_cluster_self_link = kube_util.GKEClusterSelfLink(args, project)
+      gke_cluster_self_link = kube_client.processor.gke_cluster_self_link
+
+      issuer_url = None
+      # public_issuer_url is only a property if we are on the alpha track
+      if self.ReleaseTrack() is base.ReleaseTrack.ALPHA and \
+          args.public_issuer_url:
+        issuer_url = args.public_issuer_url
+
       # Attempt to create a membership.
       already_exists = False
 
@@ -268,7 +309,8 @@ class Register(base.CreateCommand):
           obj = api_util.CreateMembership(project, args.CLUSTER_NAME,
                                           args.CLUSTER_NAME,
                                           gke_cluster_self_link, uuid,
-                                          self.ReleaseTrack())
+                                          self.ReleaseTrack(),
+                                          issuer_url)
         except apitools_exceptions.HttpConflictError as e:
           # If the error is not due to the object already existing, re-raise.
           error = core_api_exceptions.HttpErrorPayload(e)

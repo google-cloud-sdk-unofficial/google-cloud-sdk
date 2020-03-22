@@ -23,8 +23,21 @@ from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import storage_util
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To list the data from the Cloud Composer environment
+        ``environmnet-1'' and location ``us-central1'', run:
+
+          $ {command} --environment=environment-1 --location=us-central1
+        """
+}
+
+
 class List(base.Command):
   """List the data for a Cloud Composer environment."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

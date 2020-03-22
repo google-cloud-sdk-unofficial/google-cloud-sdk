@@ -95,7 +95,7 @@ class Create(base.Command):
           'Only brokers named "default" may be created.')
 
     conn_context = connection_context.GetConnectionContext(
-        args, product=serverless_flags.Product.EVENTS)
+        args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
     service_account_ref = resources.REGISTRY.Parse(
         args.service_account,

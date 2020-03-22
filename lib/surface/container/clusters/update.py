@@ -545,6 +545,7 @@ class UpdateBeta(Update):
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
+    flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -605,6 +606,7 @@ class UpdateBeta(Update):
             cancel_on_no=True)
 
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
+    opts.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     opts.release_channel = args.release_channel
     opts.autoscaling_profile = args.autoscaling_profile
 
@@ -636,6 +638,7 @@ class UpdateAlpha(Update):
     flags.AddLoggingServiceFlag(group_logging_monitoring)
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
+    flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -700,6 +703,7 @@ class UpdateAlpha(Update):
             'PersistentVolumes will also fail to start.',
             cancel_on_no=True)
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
+    opts.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     opts.release_channel = args.release_channel
     opts.enable_tpu = args.enable_tpu
     opts.tpu_ipv4_cidr = args.tpu_ipv4_cidr

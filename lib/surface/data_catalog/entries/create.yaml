@@ -8,7 +8,7 @@
         $ {command} entry1 \
             --location=us-central1 --entry-group=group1 \
             --gcs-file-patterns="gs://bucket1/abc/*,gs://bucket1/file1" \
-            --display-name="analytics data"
+            --display-name="analytics data" type=FILESET
 
       To create an entry for a Google Cloud Storage fileset with an inline schema, run:
 
@@ -17,18 +17,25 @@
             --gcs-file-patterns="gs://bucket1/*" --display-name="sales data" \
             --schema="qtr=STRING,sales=FLOAT,year=STRING"
 
+      To create an entry for a resource of a custom type, run:
+
+        $ {command} entry1 \
+            --location=us-central1 --entry-group=group1 \
+            --display-name="sales data" --linked-resource="www.resource.com" \
+            --user-specified-type="type_name" --user-specified-system="system_name"
+
       To create an entry for a Google Cloud Storage fileset with a schema from a file, run:
 
         $ {command} entry1 \
             --location=us-central1 --entry-group=group1 \
             --gcs-file-patterns="gs://bucket1/*" --display-name="sales data" \
-            --schema-from-file=/tmp/schema.json
+            --schema-from-file=/tmp/schema.json --type=FILESET
 
   request:
     api_version: v1
     collection: datacatalog.projects.locations.entryGroups.entries
-    static_fields:
-      googleCloudDatacatalogV1Entry.type: FILESET
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.data_catalog.entries.v1_util:ParseFilesetRequirements
 
   arguments:
     resource:
@@ -37,7 +44,29 @@
     params:
     - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:display_name
     - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:description
-    - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:gcs_file_patterns
+    - group:
+        mutex: true
+        required: true
+        help_text: |
+          Types can either be specified as a built-in type or described as a custom type.
+        params:
+        - group:
+            help_text: |
+              Built-in type can be specified for an entry. For types FILESET,
+              a file pattern must be specified.
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:type
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:gcs_file_patterns
+        - group:
+            help_text: |
+              For externally ingested resources, `--user-specified-type` and `--user-specified-system`
+              are required. Linked resource and source system time stamps are optional.
+            params:
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:required_user_specified_type
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:required_user_specified_system
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:linked_resource
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:source_system_create_time
+            - !REF googlecloudsdk.command_lib.data_catalog.entries.v1_flags:source_system_update_time
     - group:
         mutex: true
         help_text: |

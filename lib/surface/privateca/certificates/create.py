@@ -88,7 +88,8 @@ class Create(base.CreateCommand):
     base.Argument(
         '--generate-key',
         help='Use this flag to have a new RSA-2048 private key securely generated on your machine.',
-        action='store_true',
+        action='store_const',
+        const=True,
         default=False,
         required=True).AddToParser(key_generation_group)
     base.Argument(
@@ -191,9 +192,16 @@ class Create(base.CreateCommand):
 
     if args.csr:
       request.certificate.pemCsr = self._ReadCsr(request, args.csr)
-    else:
+    elif args.generate_key:
       request.certificate.config = self._GenerateCertificateConfig(
           request, args)
+    else:
+      # This should not happen because of the required arg group, but protects
+      # in case of future additions.
+      raise exceptions.OneOfArgumentsRequiredException(
+          ['--csr', '--generate-key'],
+          ('To create a certificate, please specify either a CSR or the '
+           '--generate-key flag to create a new key.'))
 
     operation = client.projects_locations_certificateAuthorities_certificates.Create(
         request)

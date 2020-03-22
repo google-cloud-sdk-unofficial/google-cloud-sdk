@@ -25,9 +25,22 @@ from googlecloudsdk.command_lib.composer import storage_util
 from googlecloudsdk.core.console import console_io
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        '''\
+          To delete the plugins in the path ``path/to/plugins'', for the
+          environment named ``environmnet-1'' in the location ``us-east1'', run:
+
+            $ {command} path/to/plugins --environment=environment-1 --location=us-east1
+        '''
+}
+
+
 class Delete(base.Command):
   """Delete plugins from an Cloud Composer environment's Cloud Storage bucket.
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

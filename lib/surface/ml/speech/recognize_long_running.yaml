@@ -5,14 +5,14 @@
       Get a transcript of audio up to 80 minutes in length. If the audio is
       under 60 seconds, you may also use `{parent_command} recognize` to
       analyze it.
-
+    examples: |
       To block the command from completing until analysis is finished, run:
 
-        $ {command} AUDIO_FILE --language-code LANGUAGE_CODE --sample-rate SAMPLE_RATE
+        $ {command} AUDIO_FILE --language-code=LANGUAGE_CODE --sample-rate=SAMPLE_RATE
 
       You can also receive an operation as the result of the command by running:
 
-        $ {command} AUDIO_FILE --language-code LANGUAGE_CODE --sample-rate SAMPLE_RATE --async
+        $ {command} AUDIO_FILE --language-code=LANGUAGE_CODE --sample-rate=SAMPLE_RATE --async
 
       This will return information about an operation. To get information about the
       operation, run:
@@ -50,14 +50,14 @@
       Get a transcript of audio up to 80 minutes in length. If the audio is
       under 60 seconds, you may also use `{parent_command} recognize` to
       analyze it.
-
+    examples: |
       To block the command from completing until analysis is finished, run:
 
-        $ {command} AUDIO_FILE --language-code LANGUAGE_CODE --sample-rate SAMPLE_RATE
+        $ {command} AUDIO_FILE --language-code=LANGUAGE_CODE --sample-rate=SAMPLE_RATE
 
       You can also receive an operation as the result of the command by running:
 
-        $ {command} AUDIO_FILE --language-code LANGUAGE_CODE --sample-rate SAMPLE_RATE --async
+        $ {command} AUDIO_FILE --language-code=LANGUAGE_CODE --sample-rate=SAMPLE_RATE --async
 
       This will return information about an operation. To get information about the
       operation, run:
@@ -95,14 +95,14 @@
       Get a transcript of audio up to 80 minutes in length. If the audio is
       under 60 seconds, you may also use `{parent_command} recognize` to
       analyze it.
-
+    examples: |
       To block the command from completing until analysis is finished, run:
 
-        $ {command} AUDIO_FILE --language-code LANGUAGE_CODE --sample-rate SAMPLE_RATE
+        $ {command} AUDIO_FILE --language-code=LANGUAGE_CODE --sample-rate=SAMPLE_RATE
 
       You can also receive an operation as the result of the command by running:
 
-        $ {command} AUDIO_FILE --language-code LANGUAGE_CODE --sample-rate SAMPLE_RATE --async
+        $ {command} AUDIO_FILE --language-code=LANGUAGE_CODE --sample-rate=SAMPLE_RATE --async
 
       This will return information about an operation. To get information about the
       operation, run:

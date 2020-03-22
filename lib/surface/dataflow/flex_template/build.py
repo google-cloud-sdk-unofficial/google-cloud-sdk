@@ -67,16 +67,14 @@ class RunBeta(base.Command):
 
     parser.add_argument(
         '--image',
-        help=('The Google Cloud Registry location of the flex template image. '
-              '(Must be a URL beginning with \'gcr://\'.)'),
-        type=arg_parsers.RegexpValidator(r'^gcr://.*',
-                                         'Must begin with \'gcr://\''),
+        help=('Path to the any image registry location of the flex template '
+              'image.'),
         required=True)
 
     parser.add_argument(
         '--sdk-language',
         help=('SDK language of the flex template job.'),
-        choices={'JAVA', 'PYTHON'},
+        choices=['JAVA', 'PYTHON'],
         required=True)
 
     parser.add_argument(

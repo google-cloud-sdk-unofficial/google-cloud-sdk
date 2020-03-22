@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""`gcloud api-gateway gateways create` command."""
+"""`gcloud api-gateway apis create` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -75,8 +75,7 @@ class Create(base.CreateCommand):
     api_config_ref = args.CONCEPTS.api_config.Parse()
     api_ref = api_config_ref.Parent()
 
-    service_name = '{}.apigateway.{}.cloud.goog'.format(api_ref.Name(),
-                                                        api_ref.projectsId)
+    service_name = common_flags.ProcessApiRefToEndpointsService(api_ref)
 
     # Check if OP service exists with Api name, create if not, activate it
     if not endpoints.DoesServiceExist(service_name):

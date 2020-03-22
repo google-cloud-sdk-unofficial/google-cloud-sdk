@@ -503,6 +503,7 @@ class CreateBeta(Create):
     flags.AddEnableAutoRepairFlag(parser, for_create=True)
     flags.AddEnableBinAuthzFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
+    flags.AddEnableLoggingMonitoringSystemOnlyFlag(parser)
     flags.AddEnableCloudRunAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser)
@@ -520,7 +521,7 @@ class CreateBeta(Create):
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddPrivateClusterFlags(parser, with_deprecated=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
-    flags.AddTpuFlags(parser, hidden=False)
+    flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
     flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
     flags.AddAutoscalingProfilesFlag(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
@@ -553,6 +554,8 @@ class CreateBeta(Create):
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.autoscaling_profile = args.autoscaling_profile
+    ops.enable_tpu_service_networking = args.enable_tpu_service_networking
+    ops.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     return ops
 
 
@@ -583,6 +586,7 @@ class CreateAlpha(Create):
     flags.AddMasterAuthorizedNetworksFlags(parser)
     flags.AddMinCpuPlatformFlag(parser)
     flags.AddNetworkPolicyFlags(parser)
+    flags.AddILBSubsettingFlags(parser)
     flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
     flags.AddAutoscalingProfilesFlag(parser)
     flags.AddNodeTaintsFlag(parser)
@@ -593,6 +597,7 @@ class CreateAlpha(Create):
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
     flags.AddEnableStackdriverKubernetesFlag(parser)
+    flags.AddEnableLoggingMonitoringSystemOnlyFlag(parser)
     flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
     flags.AddWorkloadMetadataFromNodeFlag(parser, use_mode=False)
     flags.AddResourceUsageExportFlags(parser)
@@ -641,11 +646,11 @@ class CreateAlpha(Create):
     ops.max_surge_upgrade = args.max_surge_upgrade
     ops.max_unavailable_upgrade = args.max_unavailable_upgrade
     ops.linux_sysctls = args.linux_sysctls
+    ops.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     ops.disable_default_snat = args.disable_default_snat
-
     ops.node_config = args.node_config
-
     ops.enable_cost_management = args.enable_cost_management
+    ops.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     return ops
 
 

@@ -31,9 +31,20 @@ _DEFAULT_FORMAT = """
          )
     """
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To list the existing AI Platform jobs, run:
+
+            $ {command}
+        """
+}
+
 
 class List(base.ListCommand):
   """List existing AI Platform jobs."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

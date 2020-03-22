@@ -23,6 +23,7 @@ from __future__ import absolute_import
 
 
 import json
+import six
 
 from googleapiclient import _helpers as util
 
@@ -38,8 +39,10 @@ class HttpError(Error):
   @util.positional(3)
   def __init__(self, resp, content, uri=None):
     self.resp = resp
-    if not isinstance(content, bytes):
-        raise TypeError("HTTP content should be bytes")
+    try:
+      content = six.ensure_binary(content)
+    except TypeError:
+      raise TypeError("HTTP content should be bytes")
     self.content = content
     self.uri = uri
     self.error_details = ''

@@ -34,6 +34,7 @@ class Disable(base.DisableCommand):
   """
 
   FEATURE_NAME = 'multiclusteringress'
+  FEATURE_DISPLAY_NAME = 'MultiClusterIngress'
 
   def Run(self, args):
     self.RunCommand(args)

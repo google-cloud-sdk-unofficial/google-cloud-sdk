@@ -110,7 +110,7 @@ def _Args(parser, release_track):
   parser.display_info.AddUriFunc(_MakeGetUriFunc(registry))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List patch deployments in a project."""
 
@@ -125,7 +125,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, base.ReleaseTrack.BETA)
+    _Args(parser, base.ReleaseTrack.GA)
 
   def Run(self, args):
     release_track = self.ReleaseTrack()
@@ -149,8 +149,26 @@ class List(base.ListCommand):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List patch deployments in a project."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+      To list all patch deployments in the current project, run:
+
+          $ {command}
+      """,
+  }
+
+  @staticmethod
+  def Args(parser):
+    _Args(parser, base.ReleaseTrack.BETA)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
+class ListAlpha(ListBeta):
   """List patch deployments in a project."""
 
   detailed_help = {

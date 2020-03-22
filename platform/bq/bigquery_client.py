@@ -64,11 +64,42 @@ _GCS_SCHEME_PREFIX = 'gs://'
 # connection proto.
 CONNECTION_TYPE_TO_PROPERTY_MAP = {
     'CLOUD_SQL': 'cloudSql',
+    'AWS': 'aws',
 }
 CONNECTION_PROPERTY_TO_TYPE_MAP = {
     p: t for t, p in six.iteritems(CONNECTION_TYPE_TO_PROPERTY_MAP)
 }
 CONNECTION_TYPES = CONNECTION_TYPE_TO_PROPERTY_MAP.keys()
+
+
+def MakeIamRoleIdPropertiesJson(iam_role_id):
+  """Returns propeties for a connection with IAM role id.
+
+  Args:
+    iam_role_id: IAM role id.
+
+  Returns:
+    JSON string with properties to create a connection with IAM role id.
+  """
+
+  return '{"crossAccountRole": {"iamRoleId": "%s"}}' % iam_role_id
+
+
+def MaybePrintManualInstructionsForConnection(connection):
+  """Prints follow-up instructions for created or updated connections."""
+
+  if not connection:
+    return
+
+  if connection.get('aws') and connection['aws'].get(
+      'crossAccountRole'):
+    print(('Please add the following identity to your AWS IAM Role \'%s\'\n'
+           'IAM user: \'%s\'\n'
+           'External Id: \'%s\'\n') %
+          (connection['aws']['crossAccountRole'].get('iamRoleId'),
+           connection['aws']['crossAccountRole'].get('iamUserId'),
+           connection['aws']['crossAccountRole'].get('externalId')))
+
 
 
 
@@ -2129,6 +2160,13 @@ class BigqueryClient(object):
         update_mask.append('cloudSql.database')
       if cloudsql_properties.get('type'):
         update_mask.append('cloudSql.type')
+
+    if connection_type == 'AWS':
+      aws_properties = json.loads(properties)
+      connection['aws'] = aws_properties
+      if aws_properties.get('crossAccountRole') and \
+          aws_properties['crossAccountRole'].get('iamRoleId'):
+        update_mask.append('aws.crossAccountRole.iamRoleId')
 
     client = self.GetConnectionV1ApiClient()
 
@@ -5267,7 +5305,8 @@ class BigqueryClient(object):
         min_completion_ratio=min_completion_ratio,
         range_partitioning=range_partitioning)
     request = {'query': query_config}
-    _ApplyParameters(request, dry_run=dry_run, labels=labels)
+    _ApplyParameters(request, dry_run=dry_run, labels=labels,
+                     job_timeout_ms=job_timeout_ms)
     return self.ExecuteJob(request, **kwds)
 
   def Load(

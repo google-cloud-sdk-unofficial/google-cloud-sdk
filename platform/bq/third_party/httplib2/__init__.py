@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Shim to enable run-time selection of httplib2 library version.
 
 It is packaged into the public BQCLI using get_bq_public_libs.py.

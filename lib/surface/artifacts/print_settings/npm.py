@@ -32,6 +32,27 @@ class Npm(base.Command):
   repository.
   """
 
+  detailed_help = {
+      "DESCRIPTION":
+          "{description}",
+      "EXAMPLES":
+          """\
+    To print a snippet for the repository set in the `artifacts/repository`
+    property in the default location:
+
+      $ {command}
+
+    To print a snippet for repository `my-repository` in the default location:
+
+      $ {command} --repository="my-repository"
+
+    To print a snippet for the repository set in the `artifacts/repository`
+    property with scope @my-company:
+
+      $ {command} --scope=@my-company
+    """,
+  }
+
   @staticmethod
   def Args(parser):
     flags.GetRepoFlag().AddToParser(parser)

@@ -31,6 +31,13 @@ class List(base.ListCommand):
   """Lists your project's logs.
 
   Only logs that contain log entries are listed.
+
+  ## EXAMPLES
+
+  To list all logs in current project:
+
+    $ {command}
+
   """
 
   @staticmethod

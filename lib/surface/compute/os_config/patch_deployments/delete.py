@@ -24,7 +24,8 @@ from googlecloudsdk.command_lib.compute.os_config import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete the specified patch deployment."""
 

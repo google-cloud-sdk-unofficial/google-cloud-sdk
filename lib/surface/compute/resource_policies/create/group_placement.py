@@ -38,7 +38,7 @@ def _CommonArgs(parser, api_version):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateGroupPlacement(base.CreateCommand):
-  """Create a Google Compute Engine Group Placement Resource Policy."""
+  """Create a Google Compute Engine group placement resource policy."""
 
   @staticmethod
   def Args(parser):
@@ -66,11 +66,20 @@ class CreateGroupPlacement(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateGroupPlacementBeta(CreateGroupPlacement):
-  """Create a Google Compute Engine Group Placement Resource Policy."""
+  """Create a Google Compute Engine group placement resource policy."""
 
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, api_version=compute_api.COMPUTE_BETA_API_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGroupPlacementGa(CreateGroupPlacement):
+  """Create a Google Compute Engine group placement resource policy."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, api_version=compute_api.COMPUTE_GA_API_VERSION)
 
 CreateGroupPlacement.detailed_help = {
     'DESCRIPTION':

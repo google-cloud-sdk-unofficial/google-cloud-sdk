@@ -36,6 +36,22 @@ PREREQUISITE_OPTION_ERROR_MSG = """\
 Cannot specify --{opt} without --{prerequisite}.
 """
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To create an environment called ``env-1'' with all the default values,
+          run:
+
+            $ {command} env-1
+
+          To create a new environment named ``env-1'' with the Google Compute
+          Engine machine-type ``n1-standard-8'', and the Google Compute Engine
+          network ``my-network'', run:
+
+            $ {command} env-1 --machine-type=n1-standard-8 --network=my-network
+        """
+}
+
 
 def _CommonArgs(parser):
   """Common arguments that apply to all ReleaseTracks."""
@@ -171,6 +187,8 @@ class Create(base.Command):
 
     {top_command} composer operations describe
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

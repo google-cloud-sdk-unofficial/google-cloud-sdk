@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [GA, BETA]
 
   help_text:
     brief: |
@@ -20,7 +20,7 @@
         Project of the operations to display.
 
   request:
-    api_version: v1beta1
+    api_version: v1
     collection: networkmanagement.projects.locations.global.operations
     modify_request_hooks:
     - googlecloudsdk.command_lib.network_management.util:UpdateOperationRequestNameVariable

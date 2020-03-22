@@ -54,7 +54,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     conn_context = connection_context.GetConnectionContext(
-        args, product=serverless_flags.Product.EVENTS)
+        args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
     with eventflow_operations.Connect(conn_context) as client:
       source_crds = client.ListSourceCustomResourceDefinitions()

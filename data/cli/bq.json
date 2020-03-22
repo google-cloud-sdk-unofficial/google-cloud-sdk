@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.54",
+  "CLI_VERSION": "2.0.55",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -53,8 +53,8 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Perform an extract operation of source_table into\ndestination_uris.\n\nUsage:\nextract <source_table> <destination_uris>\n",
-        "EXAMPLES": "bq extract ds.summary gs://mybucket/summary.csv\n"
+        "DESCRIPTION": "Perform an extract operation of source into destination_uris.\n\nUsage:\nextract <source_table> <destination_uris>\n\nUse -m option to extract a source_model.\n",
+        "EXAMPLES": "bq extract ds.table gs://mybucket/table.csv\nbq extract -m ds.model gs://mybucket/model\n"
       }
     },
     "get-iam-policy": {

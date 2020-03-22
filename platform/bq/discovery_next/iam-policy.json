@@ -1611,19 +1611,15 @@
         },
         "policyTags": {
           "description": "Optional. The policy tags attached to this field, used for field-level access\ncontrol. If not set, defaults to empty policy_tags.",
-          "$ref": "PolicyTagList"
-        }
-      }
-    },
-    "PolicyTagList": {
-      "id": "PolicyTagList",
-      "type": "object",
-      "properties": {
-        "names": {
-          "description": "A list of policy tag resource names. For example,\n\"projects\/1\/locations\/eu\/taxonomies\/2\/policyTags\/3\". At most 1 policy tag\nis currently allowed.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "type": "object",
+          "properties": {
+            "names": {
+              "description": "A list of policy tag resource names. For example,\n\"projects\/1\/locations\/eu\/taxonomies\/2\/policyTags\/3\". At most 1 policy tag\nis currently allowed.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       }
@@ -1882,7 +1878,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "description": "Required. The only type supported is DAY, which will generate one\npartition per day.\nProviding an empty string used to cause an error, but in OnePlatform the\nfield will be treated as unset.",
+          "description": "Required. The supported types are DAY, which will generate one partition per day,\nand HOUR, which will generate one partition per hour.",
           "type": "string"
         },
         "expirationMs": {
@@ -2193,7 +2189,7 @@
           "type": "string"
         },
         "destinationFormat": {
-          "description": "[Optional] The exported file format. Possible values include CSV,\nNEWLINE_DELIMITED_JSON and AVRO for tables and SAVED_MODEL for models.\nThe default value for tables is CSV. Tables with nested or repeated fields\ncannot be exported as CSV. The default value for models is SAVED_MODEL.",
+          "description": "[Optional] The exported file format. Possible values include CSV,\nNEWLINE_DELIMITED_JSON or AVRO for tables and SAVED_MODEL or BOOSTER for\nmodels. The default value for tables is CSV. Tables with nested or repeated\nfields cannot be exported as CSV. The default value for models is\nSAVED_MODEL.",
           "type": "string"
         },
         "compression": {
@@ -2298,7 +2294,7 @@
             }
           }
         },
-        "reservationId": {
+        "reservation_id": {
           "description": "Output only. Name of the primary reservation assigned to this job. Note\nthat this could be different than reservations reported in the reservation\nusage field if parent reservations were used to execute this job.",
           "type": "string"
         },
@@ -2432,7 +2428,7 @@
           "type": "string"
         },
         "ddlTargetTable": {
-          "description": "Output only. The DDL target table. Present only for\nCREATE\/DROP TABLE\/VIEW queries.",
+          "description": "Output only. The DDL target table. Present only for\nCREATE\/DROP TABLE\/VIEW and DROP ALL ROW ACCESS POLICIES queries.",
           "$ref": "TableReference"
         },
         "ddlTargetRoutine": {
@@ -2745,13 +2741,13 @@
           "description": "Stack trace showing the line\/column\/procedure name of each frame on the\nstack at the point where the current evaluation happened. The leaf frame\nis first, the primary script is last. Never empty.",
           "type": "array",
           "items": {
-            "$ref": "StackFrame"
+            "$ref": "ScriptStackFrame"
           }
         }
       }
     },
-    "StackFrame": {
-      "id": "StackFrame",
+    "ScriptStackFrame": {
+      "id": "ScriptStackFrame",
       "description": "Represents the location of the statement\/expression being evaluated.\nLine and column numbers are defined as follows:\n\n- Line and column numbers start with one.  That is, line 1 column 1 denotes\n  the start of the script.\n- When inside a stored procedure, all line\/column numbers are relative\n  to the procedure body, not the script in which the procedure was defined.\n- Start\/end positions exclude leading\/trailing comments and whitespace.\n  The end position always ends with a \";\", when present.\n- Multi-byte Unicode characters are treated as just one column.\n- If the original script (or procedure definition) contains TAB characters,\n  a tab \"snaps\" the indentation forward to the nearest multiple of 8\n  characters, plus 1. For example, a TAB on column 1, 2, 3, 4, 5, 6 , or 8\n  will advance the next character to column 9.  A TAB on column 9, 10, 11,\n  12, 13, 14, 15, or 16 will advance the next character to column 17.",
       "type": "object",
       "properties": {
@@ -3014,6 +3010,21 @@
         "location": {
           "description": "The geographic location where the job should run. See details at\nhttps:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
           "type": "string"
+        },
+        "formatOptions": {
+          "description": "Optional. Output format adjustments.",
+          "$ref": "DataFormatOptions"
+        }
+      }
+    },
+    "DataFormatOptions": {
+      "id": "DataFormatOptions",
+      "description": "Options for data format adjustments.",
+      "type": "object",
+      "properties": {
+        "useInt64Timestamp": {
+          "description": "Optional. Output timestamp as usec int64. Default is false.\n(== doc: go\/timestamp-usec-int ==)",
+          "type": "boolean"
         }
       }
     },
@@ -3589,18 +3600,19 @@
       "type": "object",
       "properties": {
         "kind": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "description": "The resource type of the response.",
+          "type": "string"
         },
         "skipInvalidRows": {
+          "description": "[Optional] Insert all valid rows of a request, even if invalid rows exist.\nThe default value is false, which causes the entire request to fail if any\ninvalid rows exist.",
           "type": "boolean"
         },
         "ignoreUnknownValues": {
+          "description": "[Optional] Accept rows that contain values that do not match the schema.\nThe unknown values are ignored.\nDefault is false, which treats unknown values as errors.",
           "type": "boolean"
         },
         "templateSuffix": {
+          "description": "If specified, treats the destination table as a base\n template, and inserts the rows into an instance table named\n\"{destination}{templateSuffix}\". BigQuery will manage creation of the\ninstance table, using the schema of the base template table.\n\nSee\nhttps:\/\/cloud.google.com\/bigquery\/streaming-data-into-bigquery#template-tables\nfor considerations when working with templates tables.",
           "type": "string"
         },
         "rows": {
@@ -4413,6 +4425,45 @@
     },
     "jobs": {
       "methods": {
+        "cancel": {
+          "id": "bigquery.jobs.cancel",
+          "path": "bigquery/v2/projects/{+projectId}/jobs/{+jobId}/cancel",
+          "flatPath": "bigquery/v2/projects/{projectsId}/jobs/{jobsId}/cancel",
+          "httpMethod": "POST",
+          "parameters": {
+            "projectId": {
+              "description": "Required. Project ID of the job to cancel",
+              "location": "path",
+              "required": true,
+              "pattern": "^[^\/]+$",
+              "type": "string"
+            },
+            "jobId": {
+              "description": "Required. Job ID of the job to cancel",
+              "location": "path",
+              "required": true,
+              "pattern": "^[^\/]+$",
+              "type": "string"
+            },
+            "location": {
+              "description": "The geographic location of the job. Required except for US and EU. See\ndetails at\nhttps:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "projectId",
+            "jobId"
+          ],
+          "response": {
+            "$ref": "JobCancelResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform"
+          ],
+          "description": "Requests that a job be cancelled. This call will return immediately, and\nthe client will need to poll for the job status to see if the cancel\ncompleted successfully. Cancelled jobs may still incur costs."
+        },
         "get": {
           "id": "bigquery.jobs.get",
           "path": "bigquery/v2/projects/{+projectId}/jobs/{+jobId}",
@@ -4498,6 +4549,87 @@
           ],
           "description": "Starts a new asynchronous job.\n\nThis API has two different kinds of endpoint URIs, as this method supports\na variety of use cases.\n\n* The *Metadata* URI is used for most interactions, as it accepts the job\n  configuration directly.\n* The *Upload* URI is ONLY for the case when you're sending both a load job\n  configuration and a data stream together.  In this case, the Upload URI\n  accepts the job configuration and the data as two distinct multipart MIME\n  parts."
         },
+        "list": {
+          "id": "bigquery.jobs.list",
+          "path": "bigquery/v2/projects/{+projectId}/jobs",
+          "flatPath": "bigquery/v2/projects/{projectsId}/jobs",
+          "httpMethod": "GET",
+          "parameters": {
+            "projectId": {
+              "description": "Project ID of the jobs to list.",
+              "location": "path",
+              "required": true,
+              "pattern": "^[^\/]+$",
+              "type": "string"
+            },
+            "allUsers": {
+              "description": "Whether to display jobs owned by all users in the project. Default False.",
+              "location": "query",
+              "type": "boolean"
+            },
+            "maxResults": {
+              "description": "The maximum number of results to return in a single response page.\nLeverage the page tokens to iterate through the entire collection.",
+              "location": "query",
+              "type": "integer",
+              "format": "int32"
+            },
+            "minCreationTime": {
+              "description": "Min value for job creation time, in milliseconds since the POSIX epoch.\nIf set, only jobs created after or at this timestamp are returned.",
+              "location": "query",
+              "type": "string",
+              "format": "uint64"
+            },
+            "maxCreationTime": {
+              "description": "Max value for job creation time, in milliseconds since the POSIX epoch.\nIf set, only jobs created before or at this timestamp are returned.",
+              "location": "query",
+              "type": "string",
+              "format": "uint64"
+            },
+            "pageToken": {
+              "description": "Page token, returned by a previous call, to request the next page of\nresults.",
+              "location": "query",
+              "type": "string"
+            },
+            "projection": {
+              "description": "Restrict information returned to a set of selected fields",
+              "location": "query",
+              "type": "string",
+              "enum": [
+                "MINIMAL",
+                "FULL"
+              ]
+            },
+            "stateFilter": {
+              "description": "Filter for job state",
+              "location": "query",
+              "repeated": true,
+              "type": "string",
+              "enum": [
+                "DONE",
+                "PENDING",
+                "RUNNING"
+              ]
+            },
+            "parentJobId": {
+              "description": "If set, show only child jobs of the specified parent.  Otherwise, show all\ntop-level jobs.",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "projectId"
+          ],
+          "response": {
+            "$ref": "JobList"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/bigquery.readonly",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Lists all jobs that you started in the specified project. Job information\nis available for a six month period after creation. The job list is sorted\nin reverse chronological order, by job creation time. Requires the Can View\nproject role, or the Is Owner project role if you set the allUsers\nproperty."
+        },
         "getQueryResults": {
           "id": "bigquery.jobs.getQueryResults",
           "path": "bigquery/v2/projects/{+projectId}/queries/{+jobId}",
@@ -4545,6 +4677,11 @@
               "description": "The geographic location of the job. Required except for US and EU. See\ndetails at\nhttps:\/\/cloud.google.com\/bigquery\/docs\/locations#specifying_your_location.",
               "location": "query",
               "type": "string"
+            },
+            "formatOptions.useInt64Timestamp": {
+              "description": "Optional. Output timestamp as usec int64. Default is false.\n(== doc: go\/timestamp-usec-int ==)",
+              "location": "query",
+              "type": "boolean"
             }
           },
           "parameterOrder": [
@@ -5341,6 +5478,11 @@
               "description": "Subset of fields to return, supports select into sub fields.\nExample: selected_fields = \"a,e.d.f\";",
               "location": "query",
               "type": "string"
+            },
+            "formatOptions.useInt64Timestamp": {
+              "description": "Optional. Output timestamp as usec int64. Default is false.\n(== doc: go\/timestamp-usec-int ==)",
+              "location": "query",
+              "type": "boolean"
             }
           },
           "parameterOrder": [

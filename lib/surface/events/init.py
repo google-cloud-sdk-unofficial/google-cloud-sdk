@@ -91,7 +91,7 @@ class Init(base.Command):
           'This command is only available with Cloud Run for Anthos.')
 
     conn_context = connection_context.GetConnectionContext(
-        args, product=serverless_flags.Product.EVENTS)
+        args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
     service_account_ref = resources.REGISTRY.Parse(
         args.service_account,

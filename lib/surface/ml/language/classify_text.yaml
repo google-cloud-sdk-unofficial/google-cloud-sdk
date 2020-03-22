@@ -10,6 +10,7 @@
       is the more specific result.
 
       Currently only English is supported for this feature.
+    examples: !COMMON help_text.language_examples.CT
 
   request:
     _COMMON_: request
@@ -37,6 +38,7 @@
       is the more specific result.
 
       Currently only English is supported for this feature.
+    examples: !COMMON help_text.language_examples.CT
 
   request:
     _COMMON_: request

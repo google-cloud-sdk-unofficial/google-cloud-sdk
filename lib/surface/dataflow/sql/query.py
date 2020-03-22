@@ -35,21 +35,21 @@ DETAILED_HELP = {
         """\
       To execute a simple SQL query on Dataflow that reads from and writes to BigQuery, run:
 
-        $ {command} "SELECT word FROM bigquery.table.`my-project`.input_dataset.input_table where count > 3" --job-name=my-job --region=us-west1 --bigquery-dataset=my_output_dataset --bigquery-table=my_output_table
+        $ {command} 'SELECT word FROM bigquery.table.`my-project`.input_dataset.input_table where count > 3' --job-name=my-job --region=us-west1 --bigquery-dataset=my_output_dataset --bigquery-table=my_output_table
 
       To execute a simple SQL query on Dataflow that reads from and writes to Cloud
       Pub/Sub, run:
 
-        $ {command} "SELECT word FROM pubsub.topic.`my-project`.input_topic where count > 3" --job-name=my-job --region=us-west1 --pubsub-topic=my_output_topic
+        $ {command} 'SELECT word FROM pubsub.topic.`my-project`.input_topic where count > 3' --job-name=my-job --region=us-west1 --pubsub-topic=my_output_topic
 
       To join data from BigQuery and Cloud Pub/Sub and write the result to Cloud
       Pub/Sub, run:
 
-        $ {command} "SELECT bq.name AS name FROM pubsub.topic.`my-project`.input_topic p INNER JOIN bigquery.table.`my-project`.input_dataset.input_table bq ON p.id = bq.id" --job-name=my-job --region=us-west1 --pubsub-topic=my_output_topic
+        $ {command} 'SELECT bq.name AS name FROM pubsub.topic.`my-project`.input_topic p INNER JOIN bigquery.table.`my-project`.input_dataset.input_table bq ON p.id = bq.id' --job-name=my-job --region=us-west1 --pubsub-topic=my_output_topic
 
       To execute a parameterized SQL query that reads from and writes to BigQuery, run:
 
-        $ {command} "SELECT word FROM bigquery.table.`my-project`.input_dataset.input_table where count > @threshold" --parameter=threshold:INT64:5 --job-name=my-job --region=us-west1 --bigquery-dataset=my_output_dataset --bigquery-table=my_output_table
+        $ {command} 'SELECT word FROM bigquery.table.`my-project`.input_dataset.input_table where count > @threshold' --parameter=threshold:INT64:5 --job-name=my-job --region=us-west1 --bigquery-dataset=my_output_dataset --bigquery-table=my_output_table
 
     """,
 }

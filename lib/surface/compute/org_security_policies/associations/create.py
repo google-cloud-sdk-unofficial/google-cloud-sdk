@@ -54,14 +54,16 @@ class Create(base.CreateCommand):
       name = args.name
 
     attachment_id = None
-    if args.IsSpecified('organization'):
-      attachment_id = 'organizations/' + args.organization
-      if name is None:
-        name = 'organization-' + args.organization
     if args.IsSpecified('folder'):
       attachment_id = 'folders/' + args.folder
       if name is None:
         name = 'folder-' + args.folder
+
+    if args.IsSpecified('organization') and attachment_id is None:
+      attachment_id = 'organizations/' + args.organization
+      if name is None:
+        name = 'organization-' + args.organization
+
     if attachment_id is None:
       log.error(
           'Must specify attachment ID with --organization=ORGANIZATION or '

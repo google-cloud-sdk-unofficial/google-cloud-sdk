@@ -101,7 +101,7 @@ class List(commands.List):
       return commands.SortByName(global_methods.ListServices(client))
     else:
       conn_context = connection_context.GetConnectionContext(
-          args, product=flags.Product.RUN)
+          args, flags.Product.RUN, self.ReleaseTrack())
       self._SetFormat(
           args, show_region=is_managed, show_namespace=(not is_managed))
       namespace_ref = args.CONCEPTS.namespace.Parse()

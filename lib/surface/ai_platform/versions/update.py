@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import versions_util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -60,8 +61,14 @@ class UpdateAlpha(base.UpdateCommand):
     _AddUpdateArgs(parser)
 
   def Run(self, args):
-    versions_client = versions_api.VersionsClient()
-    operations_client = operations.OperationsClient()
-    version_ref = args.CONCEPTS.version.Parse()
-    versions_util.Update(versions_client, operations_client, version_ref, args,)
-    log.UpdatedResource(args.version, kind='AI Platform version')
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      versions_client = versions_api.VersionsClient()
+      operations_client = operations.OperationsClient()
+      version_ref = args.CONCEPTS.version.Parse()
+      versions_util.Update(
+          versions_client,
+          operations_client,
+          version_ref,
+          args,
+      )
+      log.UpdatedResource(args.version, kind='AI Platform version')
