@@ -30,6 +30,4 @@ class PostProcess(base.SilentCommand):
   def Run(self, args):
     # Re-compile python files.
     state = local_state.InstallationState.ForCurrent()
-    failure_count = state.CompilePythonFiles()
-    if failure_count > 0:
-      self.exit_code = min(255, failure_count)
+    state.CompilePythonFiles()
