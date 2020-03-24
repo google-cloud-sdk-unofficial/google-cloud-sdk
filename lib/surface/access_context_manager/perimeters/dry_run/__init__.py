@@ -21,12 +21,33 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DryRunBeta(base.Group):
+  """Manage the dry-run mode configuration for Service Perimeters."""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DryRun(base.Group):
-  """Manage the dry-run config for Access Context Manager service perimeters.
+class DryRunAlpha(DryRunBeta):
+  """Manage the dry-run mode configuration for Service Perimeters."""
 
-  A service perimeter describes a set of Google Cloud Platform resources which
-  can freely import and export data amongst themselves, but not externally.
 
-  Currently, the only allowed members of a service perimeter are projects.
-  """
+detailed_help = {
+    'brief':
+        'Enable management of dry-run mode configuration for Service Perimeters.',
+    'DESCRIPTION':
+        """A Service Perimeter describes a set of Google Cloud Platform
+        resources which can freely import and export data amongst themselves,
+        but not externally, by default.
+
+        A dry-run mode configuration (also known as the Service Perimeter
+        `spec`) makes it possible to understand the impact of any changes to a
+        VPC Service Controls policy change before committing the change to the
+        enforcement mode configuration.
+
+        Note: For Service Perimeters without an explicit dry-run mode
+        configuration, the enforcement mode configuration is used as the dry-run
+        mode configuration, resulting in no audit logs being generated."""
+}
+
+DryRunAlpha.detailed_help = detailed_help
+DryRunBeta.detailed_help = detailed_help

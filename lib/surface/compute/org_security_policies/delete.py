@@ -23,9 +23,10 @@ from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Google Compute Engine organization security policy.
 
@@ -51,7 +52,20 @@ class Delete(base.DeleteCommand):
     ref = self.ORG_SECURITY_POLICY_ARG.ResolveAsResource(
         args, holder.resources, with_project=False)
     org_security_policy = client.OrgSecurityPolicy(
-        ref=ref, compute_client=holder.client)
+        ref=ref,
+        compute_client=holder.client,
+        resources=holder.resources,
+        version=six.text_type(self.ReleaseTrack()).lower())
     sp_id = org_security_policies_utils.GetSecurityPolicyId(
         org_security_policy, ref.Name(), organization=args.organization)
     return org_security_policy.Delete(sp_id=sp_id, only_generate_request=False)
+
+
+Delete.detailed_help = {
+    'EXAMPLES':
+        """\
+    To delete an organization security policy with ID ``123456789", run:
+
+      $ {command} delete 123456789
+    """,
+}

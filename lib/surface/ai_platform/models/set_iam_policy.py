@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
@@ -47,8 +48,10 @@ class SetIamPolicy(base.Command):
     flags.GetModelResourceArg(
         positional=True, required=True,
         verb='to set IAM policy for').AddToParser(parser)
+    flags.GetRegionArg('model').AddToParser(parser)
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):
-    return models_util.SetIamPolicy(models.ModelsClient(), args.model,
-                                    args.policy_file)
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      return models_util.SetIamPolicy(models.ModelsClient(), args.model,
+                                      args.policy_file)

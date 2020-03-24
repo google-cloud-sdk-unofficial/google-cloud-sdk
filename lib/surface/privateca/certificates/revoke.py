@@ -29,7 +29,54 @@ from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import times
+
+_CERTIFICATE_COLLECTION_NAME = 'privateca.projects.locations.certificateAuthorities.certificates'
+
+
+def _ParseCertificateResource(args):
+  """Gets the certificate resource to be revoked based on the specified args."""
+  # Option 1: user specified full resource name for the certificate.
+  cert_ref = args.CONCEPTS.certificate.Parse()
+  if cert_ref:
+    return cert_ref
+
+  if not args.IsSpecified('issuer'):
+    raise exceptions.RequiredArgumentException(
+        '--issuer',
+        ('The issuing CA is required if a full resource name is not provided '
+         'for --certificate.'))
+
+  issuer_ref = args.CONCEPTS.issuer.Parse()
+  if not issuer_ref:
+    raise exceptions.RequiredArgumentException(
+        '--issuer',
+        ('The issuer flag is not fully specified. Please add the '
+         "--issuer-location flag or specify the issuer's full resource name."))
+
+  # Option 2: user specified certificate ID + issuer.
+  if args.IsSpecified('certificate'):
+    return resources.REGISTRY.Parse(
+        args.certificate,
+        collection=_CERTIFICATE_COLLECTION_NAME,
+        params={
+            'projectsId': issuer_ref.projectsId,
+            'locationsId': issuer_ref.locationsId,
+            'certificateAuthoritiesId': issuer_ref.certificateAuthoritiesId,
+        })
+
+  # Option 3: user specified serial number + issuer.
+  if args.IsSpecified('serial_number'):
+    certificate = certificate_utils.GetCertificateBySerialNum(
+        issuer_ref, args.serial_number)
+    return resources.REGISTRY.Parse(
+        certificate.name, collection=_CERTIFICATE_COLLECTION_NAME)
+
+  raise exceptions.OneOfArgumentsRequiredException(
+      ['--certificate', '--serial-number'],
+      ('To revoke a Certificate, please provide either its resource ID or '
+       'serial number.'))
 
 
 class Revoke(base.SilentCommand):
@@ -41,16 +88,17 @@ class Revoke(base.SilentCommand):
 
   To revoke the 'frontend-server-tls' certificate due to key compromise:
 
-    $ {command} --certificate-id frontend-server-tls \
-      --issuer server-tls-1 --issuer-location us \
+    $ {command} \
+      --certificate frontend-server-tls \
+      --issuer server-tls-1 --issuer-location us-west1 \
       --reason key_compromise
 
   To revoke the a certificate with the serial number
-  '7B1E676A36BB90D01200000000AFF09C' due to a newer one being issued:
+  '7dc1d9186372de2e1f4824abb1c4c9e5e43cbb40' due to a newer one being issued:
 
     $ {command} \
-      --serial-number 7B1E676A36BB90D01200000000AFF09C \
-      --issuer server-tls-1 --issuer-location us \
+      --serial-number 7dc1d9186372de2e1f4824abb1c4c9e5e43cbb40 \
+      --issuer server-tls-1 --issuer-location us-west1 \
       --reason superseded
   """
 
@@ -58,69 +106,32 @@ class Revoke(base.SilentCommand):
   def Args(parser):
     id_group = parser.add_group(
         mutex=True, required=True, help='The certificate identifier.')
-    serial_num_group = id_group.add_group(
-        help='The serial number and certificate authority resource.',
-        required=False)
-    serial_num_group.add_argument(
+    base.Argument(
         '--serial-number',
-        help='The serial number of the certificate.',
-        required=True)
+        help='The serial number of the certificate.').AddToParser(id_group)
     concept_parsers.ConceptParser([
         presentation_specs.ResourcePresentationSpec(
             '--certificate',
-            resource_args.CreateCertificateResourceSpec('CERTIFICATE'),
+            resource_args.CreateCertificateResourceSpec('certificate'),
             'The certificate to revoke.',
-            required=False,
-            prefixes=True,
+            flag_name_overrides={
+                'issuer': '',
+                'issuer-location': '',
+                'project': '',
+            },
             group=id_group),
         presentation_specs.ResourcePresentationSpec(
             '--issuer',
             resource_args.CreateCertificateAuthorityResourceSpec(
-                'CERTIFICATE_AUTHORITY', 'issuer', 'issuer-location'),
+                'Issuing CA', 'issuer', 'issuer-location'),
             'The issuing certificate authority of the certificate to revoke.',
-            required=False,
-            group=serial_num_group),
+            required=False),
     ]).AddToParser(parser)
 
     flags.AddRevocationReasonFlag(parser)
 
-  def CheckCompleteResourceFlag(self, args, resource_attributes):
-    """Validates that the resource, if specified, is complete.
-
-    Args:
-      args: The command arguments, parsed.
-      resource_attributes: The attributes to check modal group properties on.
-    """
-    for attribute in resource_attributes:
-      if not args.IsSpecified(attribute):
-        continue
-
-      for other_attribute in resource_attributes:
-        if attribute != other_attribute and not args.IsSpecified(
-            other_attribute):
-          raise exceptions.InvalidArgumentException(
-              attribute, '{} must be specified if {} is specified.'.format(
-                  other_attribute.replace('_', '-'),
-                  attribute.replace('_', '-')))
-
   def Run(self, args):
-    cert_ref = args.CONCEPTS.certificate.Parse()
-    if cert_ref:
-      cert_name = cert_ref.RelativeName()
-    else:
-      # Check to make sure the certificate was not partially provided.
-      self.CheckCompleteResourceFlag(
-          args,
-          ['certificate', 'certificate_issuer', 'certificate_issuer_location'])
-      ca_ref = args.CONCEPTS.issuer.Parse()
-      if not ca_ref:
-        # Check to make sure the certificate authority was not partially
-        # provided.
-        self.CheckCompleteResourceFlag(args, ['issuer', 'issuer_location'])
-        raise exceptions.Invalid.ArgumentException(
-            '--issuer', 'Expected a value for the issuer.')
-      cert_name = certificate_utils.GetCertificateBySerialNum(
-          ca_ref, args.serial_number).name
+    cert_ref = _ParseCertificateResource(args)
 
     reason = flags.ParseRevocationChoiceToEnum(args.reason)
 
@@ -130,7 +141,7 @@ class Revoke(base.SilentCommand):
     operation = client.projects_locations_certificateAuthorities_certificates.Revoke(
         messages.
         PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesRevokeRequest(
-            name=cert_name,
+            name=cert_ref.RelativeName(),
             revokeCertificateRequest=messages.RevokeCertificateRequest(
                 reason=reason)))
 
@@ -140,5 +151,6 @@ class Revoke(base.SilentCommand):
 
     revoke_time = times.ParseDateTime(
         certificate.revocationDetails.revocationTime)
-    log.Print('Revoked certificate at {}.'.format(
-        times.FormatDateTime(revoke_time, tzinfo=times.LOCAL)))
+    log.Print('Revoked certificate [{}] at {}.'.format(
+        certificate.name, times.FormatDateTime(revoke_time,
+                                               tzinfo=times.LOCAL)))

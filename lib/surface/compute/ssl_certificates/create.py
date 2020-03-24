@@ -292,3 +292,49 @@ class CreateAlpha(base.CreateCommand):
         args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     return _Run(args, holder, ssl_certificate_ref)
+
+
+Create.detailed_help = {
+    'brief':
+        'Create a Google Compute Engine SSL certificate',
+    'DESCRIPTION':
+        """\
+        *{command}* creates SSL certificates, which you can use in a target
+        HTTPS or target SSL proxy. An SSL certificate resource consists of a
+        certificate and private key. The private key is encrypted before it is
+        stored. For more information, see:
+        [](https://cloud.google.com/load-balancing/docs/ssl-certificates)
+        """,
+    'EXAMPLES':
+        """\
+        To create a certificate 'my-cert' from a certificate placed under path
+        'foo/cert' and a private key placed under path 'foo/pk', run:
+
+            $ {command} my-cert --certificate=foo/cert --private-key=foo/pk
+        """,
+}
+CreateBeta.detailed_help = {
+    'brief':
+        'Create a Google Compute Engine SSL certificate',
+    'DESCRIPTION':
+        """\
+        *{command}* creates SSL certificates, which you can use in a target
+        HTTPS or target SSL proxy. An SSL certificate resource consists of a
+        certificate and private key. The private key is encrypted before it is
+        stored.
+
+        You can create either a managed or a self-managed SslCertificate. A managed
+        SslCertificate will be provisioned and renewed for you, when you specify
+        the `--domains` flag. A self-managed certificate is created by passing the
+        certificate obtained from Certificate Authority through `--certificate` and
+        `--private-key` flags.
+        """,
+    'EXAMPLES':
+        """\
+        To create a certificate 'my-cert' from a certificate placed under path
+        'foo/cert' and a private key placed under path 'foo/pk', run:
+
+            $ {command} my-cert --certificate=foo/cert --private-key=foo/pk
+        """,
+}
+CreateAlpha.detailed_help = CreateBeta.detailed_help

@@ -23,10 +23,11 @@ from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Update(base.UpdateCommand):
   """Update a Google Compute Engine organization security policy.
 
   *{command}* is used to update organization security policies. An organization
@@ -47,7 +48,10 @@ class Describe(base.UpdateCommand):
     ref = self.ORG_SECURITY_POLICY_ARG.ResolveAsResource(
         args, holder.resources, with_project=False)
     org_security_policy = client.OrgSecurityPolicy(
-        ref=ref, compute_client=holder.client)
+        ref=ref,
+        compute_client=holder.client,
+        resources=holder.resources,
+        version=six.text_type(self.ReleaseTrack()).lower())
     sp_id = org_security_policies_utils.GetSecurityPolicyId(
         org_security_policy, ref.Name(), organization=args.organization)
     existing_security_policy = org_security_policy.Describe(
@@ -60,3 +64,14 @@ class Describe(base.UpdateCommand):
         sp_id=sp_id,
         only_generate_request=False,
         security_policy=security_policy)
+
+
+Update.detailed_help = {
+    'EXAMPLES':
+        """\
+    To update an organization security policy with ID ``123456789" to change the
+    description to ``New description", run:
+
+      $ {command} update 123456789 --description='New description'
+    """,
+}

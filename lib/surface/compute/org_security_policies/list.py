@@ -25,7 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Google Compute Engine organization security policies.
 
@@ -57,3 +57,14 @@ class List(base.ListCommand):
         field='items',
         limit=args.limit,
         batch_size=None)
+
+
+List.detailed_help = {
+    'EXAMPLES':
+        """\
+    To list organization security policies under folder with ID
+    ``123456789", run:
+
+      $ {command} list --folder=123456789
+    """,
+}

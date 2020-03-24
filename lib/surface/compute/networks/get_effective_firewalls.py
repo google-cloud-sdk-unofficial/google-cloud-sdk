@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetEffectiveFirewalls(base.Command):
   """Get the effective firewalls of a Google Compute Engine network.
 
@@ -94,3 +94,13 @@ class GetEffectiveFirewalls(base.Command):
                 id=sp.id, rules=org_firewall_rule))
     return client.messages.NetworksGetEffectiveFirewallsResponse(
         organizationFirewalls=org_firewall, firewalls=network_firewall)
+
+
+GetEffectiveFirewalls.detailed_help = {
+    'EXAMPLES':
+        """\
+    To get the effective firewalls of network with name example-network, run:
+
+      $ {command} example-network,
+    """,
+}

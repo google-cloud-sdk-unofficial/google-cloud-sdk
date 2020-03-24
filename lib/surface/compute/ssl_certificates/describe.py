@@ -65,3 +65,20 @@ class Describe(base.DescribeCommand):
       collection = client.apitools_client.sslCertificates
 
     return client.MakeRequests([(collection, 'Get', request)])[0]
+
+
+Describe.detailed_help = {
+    'brief':
+        'Describe a Google Compute Engine SSL certificate',
+    'DESCRIPTION':
+        """\
+        *{command}* displays all data (except private keys) associated with
+        Google Compute Engine SSL certificate in a project.
+        """,
+    'EXAMPLES':
+        """\
+        To display a description of a certificate 'my-cert', run:
+
+          $ {command} my-cert
+        """,
+}

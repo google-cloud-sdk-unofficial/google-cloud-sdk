@@ -24,74 +24,9 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
-  r"""Create a new version.
-
-  Creates a new version within the given key.
-
-  ## EXAMPLES
-
-  The following command creates a new version within the `frodo`
-  key, `fellowship` keyring, and `global` location and sets it as
-  the primary version:
-
-    $ {command} --location=global \
-        --keyring=fellowship \
-        --key=frodo --primary
-  """
-
-  GOOGLE_SYMMETRIC_ENCRYPTION = cloudkms_base.GetMessagesModule() \
-      .CryptoKeyVersion.AlgorithmValueValuesEnum.GOOGLE_SYMMETRIC_ENCRYPTION
-
-  SYMMETRIC_NEW_PRIMARY_MESSAGE = (
-      'Successfully created key version [{version}] and set it as the primary '
-      'version. Future encryption requests will use [{version}] until the next '
-      'key rotation. Data that was encrypted with an older key version can '
-      'still be decrypted, and Cloud KMS will automatically choose the correct '
-      'key for decryption based on the ciphertext.')
-
-  @staticmethod
-  def Args(parser):
-    flags.AddKeyResourceFlags(parser)
-    parser.add_argument(
-        '--primary',
-        action='store_true',
-        help='If specified, immediately make the new version primary.')
-
-  def _CreateCreateCKVRequest(self, args):
-    # pylint: disable=line-too-long
-    messages = cloudkms_base.GetMessagesModule()
-    crypto_key_ref = flags.ParseCryptoKeyName(args)
-    return messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsCreateRequest(
-        parent=crypto_key_ref.RelativeName())
-
-  def Run(self, args):
-    # pylint: disable=line-too-long
-    client = cloudkms_base.GetClientInstance()
-    ckv = client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions
-    new_ckv = ckv.Create(self._CreateCreateCKVRequest(args))
-
-    if args.primary:
-      version_id = new_ckv.name.split('/')[-1]
-      crypto_key_ref = flags.ParseCryptoKeyName(args)
-      messages = cloudkms_base.GetMessagesModule()
-
-      req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionRequest(
-          name=crypto_key_ref.RelativeName(),
-          updateCryptoKeyPrimaryVersionRequest=(
-              messages.UpdateCryptoKeyPrimaryVersionRequest(
-                  cryptoKeyVersionId=version_id)))
-      client.projects_locations_keyRings_cryptoKeys.UpdatePrimaryVersion(req)
-
-      if new_ckv.algorithm == self.GOOGLE_SYMMETRIC_ENCRYPTION:
-        log.err.Print(self.SYMMETRIC_NEW_PRIMARY_MESSAGE.format(version=version_id))
-
-    return new_ckv
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateBeta(Create):
   r"""Create a new version.
 
   Creates a new version within the given key.
@@ -118,6 +53,16 @@ class CreateBeta(Create):
         --primary
   """
 
+  GOOGLE_SYMMETRIC_ENCRYPTION = cloudkms_base.GetMessagesModule() \
+      .CryptoKeyVersion.AlgorithmValueValuesEnum.GOOGLE_SYMMETRIC_ENCRYPTION
+
+  SYMMETRIC_NEW_PRIMARY_MESSAGE = (
+      'Successfully created key version [{version}] and set it as the primary '
+      'version. Future encryption requests will use [{version}] until the next '
+      'key rotation. Data that was encrypted with an older key version can '
+      'still be decrypted, and Cloud KMS will automatically choose the correct '
+      'key for decryption based on the ciphertext.')
+
   @staticmethod
   def Args(parser):
     flags.AddKeyResourceFlags(parser)
@@ -142,3 +87,26 @@ class CreateBeta(Create):
 
     return messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsCreateRequest(
         parent=crypto_key_ref.RelativeName())
+
+  def Run(self, args):
+    # pylint: disable=line-too-long
+    client = cloudkms_base.GetClientInstance()
+    ckv = client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions
+    new_ckv = ckv.Create(self._CreateCreateCKVRequest(args))
+
+    if args.primary:
+      version_id = new_ckv.name.split('/')[-1]
+      crypto_key_ref = flags.ParseCryptoKeyName(args)
+      messages = cloudkms_base.GetMessagesModule()
+
+      req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionRequest(
+          name=crypto_key_ref.RelativeName(),
+          updateCryptoKeyPrimaryVersionRequest=(
+              messages.UpdateCryptoKeyPrimaryVersionRequest(
+                  cryptoKeyVersionId=version_id)))
+      client.projects_locations_keyRings_cryptoKeys.UpdatePrimaryVersion(req)
+
+      if new_ckv.algorithm == self.GOOGLE_SYMMETRIC_ENCRYPTION:
+        log.err.Print(self.SYMMETRIC_NEW_PRIMARY_MESSAGE.format(version=version_id))
+
+    return new_ckv

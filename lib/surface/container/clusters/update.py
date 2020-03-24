@@ -570,9 +570,10 @@ class UpdateBeta(Update):
     flags.AddWorkloadIdentityUpdateFlags(group)
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
-    flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
+    flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
+    flags.AddMasterGlobalAccessFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -617,6 +618,7 @@ class UpdateBeta(Update):
     opts.enable_tpu = args.enable_tpu
     opts.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     opts.enable_tpu_service_networking = args.enable_tpu_service_networking
+    opts.enable_master_global_access = args.enable_master_global_access
 
     return opts
 
@@ -666,9 +668,10 @@ class UpdateAlpha(Update):
     flags.AddDatabaseEncryptionFlag(group)
     flags.AddDisableDatabaseEncryptionFlag(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
-    flags.AddReleaseChannelFlag(group, is_update=True, hidden=True)
+    flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
+    flags.AddMasterGlobalAccessFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -715,5 +718,6 @@ class UpdateAlpha(Update):
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.disable_default_snat = args.disable_default_snat
     opts.enable_cost_management = args.enable_cost_management
+    opts.enable_master_global_access = args.enable_master_global_access
 
     return opts

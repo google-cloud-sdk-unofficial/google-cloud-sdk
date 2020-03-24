@@ -24,26 +24,10 @@ from googlecloudsdk.command_lib.accesscontextmanager import policies
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CommitPerimeterDryRunAlpha(base.DeleteCommand):
-  """Commit the dry-run specs for Service Perimeters in the given Access Policy.
-
-  A commit operation on a Service Perimeter involves copying its `spec` field to
-  that Service Perimeter's `status` field. Only Service Perimeters with their
-  `use_explicit_dry_run_spec` fields set to true are affected by a commit
-  operation. The overall commit operation succeeds if once the dry-run specs for
-  all the Service Perimeters have been committed. If a commit fails for any
-  given Service Perimeter, it will cause the entire commit operation to be
-  aborted.
-
-  ## EXAMPLES
-
-  To commit the dry-run specs for all Service Perimeter in an Access Policy,
-  run the following command:
-
-      $ {command}
-  """
-  _API_VERSION = 'v1alpha'
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CommitPerimeterDryRunBeta(base.UpdateCommand):
+  """Commit dry-run specs for Service Perimeters in the given Access Policy."""
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -75,3 +59,33 @@ class CommitPerimeterDryRunAlpha(base.DeleteCommand):
         policy_id, collection='accesscontextmanager.accessPolicies')
 
     return client.Commit(policy_ref, args.etag)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CommitPerimeterDryRunAlpha(CommitPerimeterDryRunBeta):
+  """Commit dry-run specs for Service Perimeters in the given Access Policy."""
+  _API_VERSION = 'v1alpha'
+
+
+detailed_help = {
+    'brief':
+        'Commit the dry-run mode configuration for all Service Perimeters.',
+    'DESCRIPTION':
+        ('A commit operation on a Service Perimeter involves copying its '
+         'dry-run mode configuration (`spec`) to that Service Perimeter\'s '
+         'enforcement mode configration (`status`). This command performs this '
+         'operation for *all* Service Perimeters in the user\'s Access '
+         'Policy.\n\nNote: Only Service Perimeters with an explicit dry-run '
+         'mode configuration are affected by this operation. The overall commit'
+         ' operation succeeds once the dry-run configurations of all such '
+         'Service Perimeters have been committed. If a commit fails for any '
+         'given Service Perimeter, it will cause the entire commit operation to'
+         ' be aborted.'),
+    'EXAMPLES':
+        ('To commit the dry-run mode configurations for all Service Perimeter '
+         'in an Access Policy, run the following command:\n\n'
+         '  $ {command}')
+}
+
+CommitPerimeterDryRunAlpha.detailed_help = detailed_help
+CommitPerimeterDryRunBeta.detailed_help = detailed_help

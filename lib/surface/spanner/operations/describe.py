@@ -20,9 +20,11 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.spanner import backup_operations
 from googlecloudsdk.api_lib.spanner import database_operations
 from googlecloudsdk.api_lib.spanner import instance_operations
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.spanner import flags
 
 
@@ -40,6 +42,11 @@ class Describe(base.DescribeCommand):
 
           $ {command}  _auto_12345 --instance=my-instance-id
               --database=my-database-id
+
+        To describe a Cloud Spanner backup operation, run:
+
+          $ {command}  _auto_12345 --instance=my-instance-id
+              --backup=my-backup-id
         """),
   }
 
@@ -60,6 +67,11 @@ class Describe(base.DescribeCommand):
     flags.Database(positional=False, required=False,
                    text='For a database operation, the name of the database '
                    'the operation is executing on.').AddToParser(parser)
+    flags.Backup(
+        positional=False,
+        required=False,
+        text='For a backup operation, the name of the backup '
+        'the operation is executing on.').AddToParser(parser)
     flags.OperationId().AddToParser(parser)
 
   def Run(self, args):
@@ -72,8 +84,17 @@ class Describe(base.DescribeCommand):
     Returns:
       Some value that we want to have printed later.
     """
+    # Checks that user only specified either database or backup flag.
+    if (args.IsSpecified('database') and args.IsSpecified('backup')):
+      raise c_exceptions.InvalidArgumentException(
+          '--database or --backup',
+          'Must specify either --database or --backup.')
+
+    if args.backup:
+      return backup_operations.Get(args.instance, args.backup, args.operation)
+
     if args.database:
       return database_operations.Get(
           args.instance, args.database, args.operation)
-    else:
-      return instance_operations.Get(args.instance, args.operation)
+
+    return instance_operations.Get(args.instance, args.operation)

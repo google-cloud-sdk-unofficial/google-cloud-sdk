@@ -148,6 +148,9 @@ class Deploy(base.Command):
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
+    flags.AddSecretsFlags(cluster_group)
+    flags.AddConfigMapsFlags(cluster_group)
+    flags.AddHttp2Flag(cluster_group)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -174,8 +177,15 @@ class Deploy(base.Command):
   def Args(parser):
     Deploy.CommonArgs(parser)
     flags.AddImageArg(parser)
+
+    # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddServiceAccountFlag(managed_group)
+
+    # Flags only supported on GKE and Knative
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddMinInstancesFlag(cluster_group)
+    flags.AddNoTrafficFlag(cluster_group)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -245,12 +255,6 @@ class AlphaDeploy(Deploy):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
-
-    # Flags specific to connecting to a cluster
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddSecretsFlags(cluster_group)
-    flags.AddConfigMapsFlags(cluster_group)
-    flags.AddHttp2Flag(cluster_group)
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)

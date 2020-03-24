@@ -103,12 +103,12 @@ class Disable(base.SilentCommand):
 
       op = serviceusage.DisableApiCall(project, service_name, args.force)
       if op.done:
-        return
+        continue
       if args.async_:
         cmd = OP_WAIT_CMD.format(op.name)
         log.status.Print('Asynchronous operation is in progress... '
                          'Use the following command to wait for its '
                          'completion:\n {0}'.format(cmd))
-        return
+        continue
       op = services_util.WaitOperation(op.name, serviceusage.GetOperation)
       services_util.PrintOperation(op)

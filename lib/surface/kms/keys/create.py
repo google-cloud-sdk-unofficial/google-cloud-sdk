@@ -26,49 +26,53 @@ from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a new key.
 
   Creates a new key within the given keyring.
 
-  The flag `purpose` is always required when creating a key.
-  The flag `default-algorithm` is required when creating an asymmetric key.
-  Algorithm and purpose should be compatible.
+  The flag `--purpose` is always required when creating a key.
+  The flag `--default-algorithm` is required when creating an asymmetric key,
+  or when creating an external key. Algorithm and purpose should be compatible.
 
-  The optional flags `rotation-period` and `next-rotation-time` define a
+  The optional flags `--rotation-period` and `--next-rotation-time` define a
   rotation schedule for the key. A schedule can also be defined
-  by the `create-rotation-schedule` command.
+  by the `--create-rotation-schedule` command.
 
-  The flag `next-rotation-time` must be in ISO 8601 or RFC3339 format,
+  The flag `--next-rotation-time` must be in ISO 8601 or RFC3339 format,
   and `rotation-period` must be in the form INTEGER[UNIT], where units
   can be one of seconds (s), minutes (m), hours (h) or days (d).
 
-  The optional flag `protection-level` specifies the protection level of the
-  created key. The default is software; use "HSM" to create a hardware-backed
-  key.
+  The optional flag ``--protection-level`` specifies the physical environment
+  where crypto operations with the key happen. The default is software; use
+  ``hsm'' to create a hardware-backed key, or ``external'' to create an
+  externally backed key.
 
-  The optional flag `labels` defines a user specified key/value pair for the
+  The optional flag `--labels` defines a user specified key/value pair for the
   given key.
 
   The flag `--skip-initial-version-creation` creates a CryptoKey with no
   versions. If you import into the CryptoKey, or create a new version in that
   CryptoKey, there will be no primary version until one is set using the
-  `set-primary-version` command.
+  `--set-primary-version` command. You must include
+  ``--skip-initial-version-creation`` when creating a CryptoKey with protection
+  level ``external''.
 
   ## EXAMPLES
 
-  The following command creates a key named `frodo` with protection level
-  `software` within the keyring `fellowship` and location `us-east1`:
+  The following command creates a key named ``frodo'' with protection level
+  ``software'' within the keyring ``fellowship'' and location ``us-east1'':
 
     $ {command} frodo \
         --location=us-east1 \
         --keyring=fellowship \
         --purpose=encryption
 
-  The following command creates a key named `strider` with protection level
-  `software` within the keyring `rangers` and location `global` with a specified
-  rotation schedule:
+  The following command creates a key named ``strider'' with protection level
+  ``software'' within the keyring ``rangers'' and location ``global'' with a
+  specified rotation schedule:
 
     $ {command} strider \
         --location=global --keyring=rangers \
@@ -76,9 +80,9 @@ class Create(base.CreateCommand):
         --rotation-period=30d \
         --next-rotation-time=2017-10-12T12:34:56.1234Z
 
-  The following command creates a key named `foo` with protection level
-  `software` within the keyring `fellowship` and location `us-east1` with two
-  specified labels:
+  The following command creates a key named ``foo'' with protection level
+  ``software'' within the keyring ``fellowship'' and location ``us-east1'' with
+  two specified labels:
 
     $ {command} foo \
         --location=us-east1 \
@@ -86,9 +90,9 @@ class Create(base.CreateCommand):
         --purpose=encryption \
         --labels=env=prod,team=kms
 
-  The following command creates an asymmetric key named `samwise` with
-  protection level `software` and default algorithm `ec-sign-p256-sha256`
-  within the keyring `fellowship` and location `us-east1`:
+  The following command creates an asymmetric key named ``samwise'' with
+  protection level ``software'' and default algorithm ``ec-sign-p256-sha256''
+  within the keyring ``fellowship'' and location ``us-east1'':
 
     $ {command} samwise \
         --location=us-east1 \
@@ -96,15 +100,27 @@ class Create(base.CreateCommand):
         --purpose=asymmetric-signing \
         --default-algorithm=ec-sign-p256-sha256
 
-  The following command creates a key named `gimli` with protection level `hsm`
-  and default algorithm `google-symmetric-encryption` within the keyring
-  `fellowship` and location `us-east1`:
+  The following command creates a key named ``gimli'' with protection level
+  ``hsm'' and default algorithm ``google-symmetric-encryption'' within the
+  keyring ``fellowship'' and location ``us-east1'':
 
     $ {command} gimli \
         --location=us-east1 \
         --keyring=fellowship \
         --purpose=encryption \
         --protection-level=hsm
+
+  The following command creates a key named ``legolas'' with protection level
+  ``external'' and default algorithm ``external-symmetric-encryption'' within
+  the keyring ``fellowship'' and location ``us-central1'':
+
+    $ {command} legolas \
+        --location=us-central1 \
+        --keyring=fellowship \
+        --purpose=encryption \
+        --default-algorithm=external-symmetric-encryption \
+        --protection-level=external
+        --skip-initial-version-creation
   """
 
   @staticmethod
@@ -172,99 +188,3 @@ class Create(base.CreateCommand):
     client = cloudkms_base.GetClientInstance()
     return client.projects_locations_keyRings_cryptoKeys.Create(
         self._CreateRequest(args))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  r"""Create a new key.
-
-  Creates a new key within the given keyring.
-
-  The flag `purpose` is always required when creating a key.
-  The flag `default-algorithm` is required when creating an asymmetric key,
-  or when creating an external key. Algorithm and purpose should be compatible.
-
-  The optional flags `rotation-period` and `next-rotation-time` define a
-  rotation schedule for the key. A schedule can also be defined
-  by the `create-rotation-schedule` command.
-
-  The flag `next-rotation-time` must be in ISO 8601 or RFC3339 format,
-  and `rotation-period` must be in the form INTEGER[UNIT], where units
-  can be one of seconds (s), minutes (m), hours (h) or days (d).
-
-  The optional flag `protection-level` specifies the protection level of the
-  created key. The default is software; use "hsm" to create a hardware-backed
-  key, or "external" to create an externally backed key.
-
-  The optional flag `labels` defines a user specified key/value pair for the
-  given key.
-
-  The flag `--skip-initial-version-creation` creates a CryptoKey with no
-  versions. If you import into the CryptoKey, or create a new version in that
-  CryptoKey, there will be no primary version until one is set using the
-  `set-primary-version` command.  When creating a CryptoKey with protection
-  level `external`, the initial version must always be skipped.
-
-  ## EXAMPLES
-
-  The following command creates a key named `frodo` with protection level
-  `software` within the keyring `fellowship` and location `us-east1`:
-
-    $ {command} frodo \
-        --location=us-east1 \
-        --keyring=fellowship \
-        --purpose=encryption
-
-  The following command creates a key named `strider` with protection level
-  `software` within the keyring `rangers` and location `global` with a specified
-  rotation schedule:
-
-    $ {command} strider \
-        --location=global --keyring=rangers \
-        --purpose=encryption \
-        --rotation-period=30d \
-        --next-rotation-time=2017-10-12T12:34:56.1234Z
-
-  The following command creates a key named `foo` with protection level
-  `software` within the keyring `fellowship` and location `us-east1` with two
-  specified labels:
-
-    $ {command} foo \
-        --location=us-east1 \
-        --keyring=fellowship \
-        --purpose=encryption \
-        --labels=env=prod,team=kms
-
-  The following command creates an asymmetric key named `samwise` with
-  protection level `software` and default algorithm `ec-sign-p256-sha256`
-  within the keyring `fellowship` and location `us-east1`:
-
-    $ {command} samwise \
-        --location=us-east1 \
-        --keyring=fellowship \
-        --purpose=asymmetric-signing \
-        --default-algorithm=ec-sign-p256-sha256
-
-  The following command creates a key named `gimli` with protection level `hsm`
-  and default algorithm `google-symmetric-encryption` within the keyring
-  `fellowship` and location `us-east1`:
-
-    $ {command} gimli \
-        --location=us-east1 \
-        --keyring=fellowship \
-        --purpose=encryption \
-        --protection-level=hsm
-
-  The following command creates a key named `legolas` with protection level
-  `external` and default algorithm `external-symmetric-encryption` within the
-  keyring `fellowship` and location `us-central1`:
-
-    $ {command} legolas \
-        --location=us-central1 \
-        --keyring=fellowship \
-        --purpose=encryption \
-        --default-algorithm=external-symmetric-encryption \
-        --protection-level=external
-        --skip-initial-version-creation
-  """
-

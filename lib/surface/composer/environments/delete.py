@@ -30,6 +30,16 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To delete the environment named ``environment-1'', run:
+
+            $ {command} environment-1
+        """
+}
+
+
 class Delete(base.DeleteCommand):
   """Delete one or more Cloud Composer environments.
 
@@ -44,6 +54,8 @@ class Delete(base.DeleteCommand):
   the original deletion operations are waited on (default) or printed
   (`--async`).
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

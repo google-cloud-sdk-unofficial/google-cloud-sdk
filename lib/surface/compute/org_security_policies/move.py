@@ -24,11 +24,13 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
-from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+from googlecloudsdk.command_lib.compute.org_security_policies \
+    import org_security_policies_utils
 from googlecloudsdk.core import log
+import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Move(base.UpdateCommand):
   """Move a Google Compute Engine organization security policy.
 
@@ -50,7 +52,10 @@ class Move(base.UpdateCommand):
     ref = self.ORG_SECURITY_POLICY_ARG.ResolveAsResource(
         args, holder.resources, with_project=False)
     org_security_policy = client.OrgSecurityPolicy(
-        ref=ref, compute_client=holder.client)
+        ref=ref,
+        compute_client=holder.client,
+        resources=holder.resources,
+        version=six.text_type(self.ReleaseTrack()).lower())
 
     parent_id = None
     if args.IsSpecified('organization'):
@@ -65,3 +70,14 @@ class Move(base.UpdateCommand):
         org_security_policy, ref.Name(), organization=args.organization)
     return org_security_policy.Move(
         only_generate_request=False, sp_id=sp_id, parent_id=parent_id)
+
+
+Move.detailed_help = {
+    'EXAMPLES':
+        """\
+    To move an organization security policy under folder with ID ``123456789" to
+    folder ``987654321", run:
+
+      $ {command} move 123456789 --folder=987654321
+    """,
+}

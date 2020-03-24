@@ -30,17 +30,21 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, include_l7_internal_load_balancing):
+  def __init__(self, holder, include_l7_internal_load_balancing,
+               support_target_grpc_proxy):
     self._holder = holder
     self._include_l7_internal_load_balancing = include_l7_internal_load_balancing
+    self._support_target_grpc_proxy = support_target_grpc_proxy
 
   @classmethod
-  def Args(cls, parser, include_l7_internal_load_balancing):
+  def Args(cls, parser, include_l7_internal_load_balancing,
+           support_target_grpc_proxy):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
     flags.AddUpdateArgs(
         parser,
-        include_l7_internal_load_balancing=include_l7_internal_load_balancing)
+        include_l7_internal_load_balancing=include_l7_internal_load_balancing,
+        include_target_grpc_proxy=support_target_grpc_proxy)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -63,7 +67,8 @@ class SetTargetHelper(object):
 
   def CreateGlobalRequests(self, client, resources, forwarding_rule_ref, args):
     """Create a globally scoped request."""
-    target_ref = utils.GetGlobalTarget(resources, args)
+    target_ref = utils.GetGlobalTarget(resources, args,
+                                       self._support_target_grpc_proxy)
 
     request = client.messages.ComputeGlobalForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),
@@ -94,14 +99,15 @@ class SetTargetHelper(object):
     return [(client.apitools_client.forwardingRules, 'SetTarget', request)]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   FORWARDING_RULE_ARG = None
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
+  _support_target_grpc_proxy = False
+
   detailed_help = {
       'DESCRIPTION': ("""
           *{{command}}* is used to set a new target for a forwarding
@@ -116,9 +122,37 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing)
+    SetTargetHelper.Args(parser, cls._include_l7_internal_load_balancing,
+                         cls._support_target_grpc_proxy)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder,
-                           self._include_l7_internal_load_balancing).Run(args)
+    return SetTargetHelper(holder, self._include_l7_internal_load_balancing,
+                           self._support_target_grpc_proxy).Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SetBeta(Set):
+  """Modify a forwarding rule to direct network traffic to a new target."""
+  _include_l7_internal_load_balancing = True
+  _support_target_grpc_proxy = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SetAlpha(SetBeta):
+  """Modify a forwarding rule to direct network traffic to a new target."""
+  _include_l7_internal_load_balancing = True
+  _support_target_grpc_proxy = True
+
+  detailed_help = {
+      'DESCRIPTION': ("""
+          *{{command}}* is used to set a new target for a forwarding
+          rule. {overview}
+
+          When creating a forwarding rule, exactly one of  ``--target-instance'',
+          ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
+          ``--target-grpc-proxy'', ``--target-ssl-proxy'',
+          ``--target-tcp-proxy'' or ``--target-vpn-gateway''
+          must be specified.""".format(overview=flags.FORWARDING_RULES_OVERVIEW)
+                     ),
+  }

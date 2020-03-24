@@ -138,13 +138,19 @@ def AddBaseArgs(parser):
       help=('Clear the list of external networks that are allowed to connect '
             'to the instance.'))
   flags.AddAvailabilityType(parser)
+
   backups_group = parser.add_mutually_exclusive_group()
-  flags.AddBackupStartTime(backups_group)
+
+  backups_enabled_group = backups_group.add_group()
+  flags.AddBackupStartTime(backups_enabled_group)
+  flags.AddBackupLocation(backups_enabled_group, allow_empty=True)
+
   backups_group.add_argument(
       '--no-backup',
       required=False,
       action='store_true',
       help='Specified if daily backup should be disabled.')
+
   database_flags_group = parser.add_mutually_exclusive_group()
   flags.AddDatabaseFlags(database_flags_group)
   database_flags_group.add_argument(

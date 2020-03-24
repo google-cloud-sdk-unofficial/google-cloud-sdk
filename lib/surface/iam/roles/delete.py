@@ -26,6 +26,22 @@ from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To delete the role ``ProjectUpdater'' of the organization ``1234567'',
+          run:
+
+            $ {command} ProjectUpdater --organization=1234567
+
+          To delete the role ``ProjectUpdater'' of the project ``myproject'',
+          run:
+
+            $ {command} ProjectUpdater --project=myproject
+        """
+}
+
+
 class Delete(base.DescribeCommand):
   """Delete a custom role from an organization or a project.
 
@@ -35,16 +51,9 @@ class Delete(base.DescribeCommand):
   * The role specified does not exist.
   * The active user does not have permission to access the given role.
 
-  ## EXAMPLES
-
-  To delete a role of an organization, run:
-
-    $ {command} --organization 1234567 viewer
-
-  To delete a role of a project, run:
-
-    $ {command} --project myproject viewer
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

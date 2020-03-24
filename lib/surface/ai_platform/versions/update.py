@@ -45,11 +45,13 @@ class Update(base.UpdateCommand):
     _AddUpdateArgs(parser)
 
   def Run(self, args):
-    versions_client = versions_api.VersionsClient()
-    operations_client = operations.OperationsClient()
-    version_ref = args.CONCEPTS.version.Parse()
-    versions_util.Update(versions_client, operations_client, version_ref, args)
-    log.UpdatedResource(args.version, kind='AI Platform version')
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      versions_client = versions_api.VersionsClient()
+      operations_client = operations.OperationsClient()
+      version_ref = args.CONCEPTS.version.Parse()
+      versions_util.Update(versions_client, operations_client, version_ref,
+                           args)
+      log.UpdatedResource(args.version, kind='AI Platform version')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

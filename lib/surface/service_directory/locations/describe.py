@@ -23,10 +23,17 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Describe(base.DescribeCommand):
   """Describe a location."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To describe a Service Directory location, run:
+
+            $ {command} location us-east1
+          """,
+  }
 
   @staticmethod
   def Args(parser):

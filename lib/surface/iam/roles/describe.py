@@ -36,17 +36,19 @@ class Describe(base.DescribeCommand):
 
   ## EXAMPLES
 
-  To print metadata for a role of an organization, run:
+  To print metadata for the role ``spanner.databaseAdmin'' of the organization
+  ``1234567'', run:
 
-    $ {command} --organization 1234567 viewer
+    $ {command} roles/spanner.databaseAdmin --organization=1234567
 
-  To print metadata for a role of a project, run:
+  To print metadata for the role ``spanner.databaseAdmin'' of the project
+  ``myproject'', run:
 
-    $ {command} --project myproject viewer
+    $ {command} roles/spanner.databaseAdmin --project=myproject
 
-  To print metadata for a predefined role, run:
+  To print metadata for a predefined role, ``spanner.databaseAdmin'', run:
 
-    $ {command} roles/viewer
+    $ {command} roles/spanner.databaseAdmin
   """
 
   @staticmethod

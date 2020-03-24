@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+import six
 
 DEFAULT_LIST_FORMAT = """\
   table(
@@ -36,7 +37,7 @@ DEFAULT_LIST_FORMAT = """\
   )"""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListRules(base.DescribeCommand, base.ListCommand):
   """List the rules of a Google Compute Engine organization security policy.
 
@@ -62,7 +63,10 @@ class ListRules(base.DescribeCommand, base.ListCommand):
     ref = self.ORG_SECURITY_POLICY_ARG.ResolveAsResource(
         args, holder.resources, with_project=False)
     org_security_policy = client.OrgSecurityPolicy(
-        ref=ref, compute_client=holder.client)
+        ref=ref,
+        compute_client=holder.client,
+        resources=holder.resources,
+        version=six.text_type(self.ReleaseTrack()).lower())
     sp_id = org_security_policies_utils.GetSecurityPolicyId(
         org_security_policy, ref.Name(), organization=args.organization)
     response = org_security_policy.Describe(
@@ -70,3 +74,14 @@ class ListRules(base.DescribeCommand, base.ListCommand):
     if not response:
       return None
     return response[0].rules
+
+
+ListRules.detailed_help = {
+    'EXAMPLES':
+        """\
+    To list the rules of an organization security policy with ID
+    ``123456789", run:
+
+      $ {command} list-rules 123456789
+    """,
+}

@@ -145,8 +145,7 @@ class Create(base.CreateCommand):
             },
             group=reusable_config_group)
     ]).AddToParser(parser)
-    flags.AddSubjectFlag(parser, required=True)
-    flags.AddSubjectAlternativeNameFlags(parser)
+    flags.AddSubjectFlags(parser, subject_required=True)
     flags.AddPublishCaCertFlag(parser, use_update_help_text=False)
     flags.AddPublishCrlFlag(parser, use_update_help_text=False)
     flags.AddInlineReusableConfigFlags(reusable_config_group, is_ca=True)
@@ -210,8 +209,7 @@ class Create(base.CreateCommand):
     kms_key_ref = kms_key_version_ref.Parent()
     project_ref = ca_ref.Parent().Parent()
 
-    common_name, subject = flags.ParseSubject(args.subject)
-    subject_alt_names = flags.ParseSanFlags(args)
+    subject_config = flags.ParseSubjectFlags(args, is_ca=True)
     issuing_options = flags.ParseIssuingOptions(args)
     issuance_policy = flags.ParseIssuancePolicy(args)
     reusable_config_wrapper = flags.ParseReusableConfig(args)
@@ -233,10 +231,7 @@ class Create(base.CreateCommand):
         lifetime=lifetime,
         config=self.messages.CertificateConfig(
             reusableConfig=reusable_config_wrapper,
-            subjectConfig=self.messages.SubjectConfig(
-                commonName=common_name,
-                subject=subject,
-                subjectAltName=subject_alt_names)),
+            subjectConfig=subject_config),
         cloudKmsKeyVersion=kms_key_version_ref.RelativeName(),
         certificatePolicy=issuance_policy,
         issuingOptions=issuing_options,

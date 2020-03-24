@@ -26,9 +26,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
 from googlecloudsdk.core import log
+import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new association between a security policy and an organization or folder resource.
 
@@ -44,7 +45,10 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    org_security_policy = client.OrgSecurityPolicy(compute_client=holder.client)
+    org_security_policy = client.OrgSecurityPolicy(
+        compute_client=holder.client,
+        resources=holder.resources,
+        version=six.text_type(self.ReleaseTrack()).lower())
 
     name = None
     attachment_id = None
@@ -86,3 +90,14 @@ class Create(base.CreateCommand):
         security_policy_id=security_policy_id,
         replace_existing_association=replace_existing_association,
         only_generate_request=False)
+
+
+Create.detailed_help = {
+    'EXAMPLES':
+        """\
+    To associate an organization security policy under folder with ID
+    ``123456789" to folder ``987654321", run:
+
+      $ {command} create --security-policy=123456789 --folder=987654321
+    """,
+}

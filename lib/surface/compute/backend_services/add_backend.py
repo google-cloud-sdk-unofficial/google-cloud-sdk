@@ -51,9 +51,9 @@ class AddBackend(base.UpdateCommand):
   `gcloud compute backend-services edit`.
   """
 
-  support_global_neg = False
+  support_global_neg = True
   support_region_neg = False
-  support_failover = False
+  support_failover = True
 
   @classmethod
   def Args(cls, parser):
@@ -150,7 +150,8 @@ class AddBackend(base.UpdateCommand):
         maxUtilization=args.max_utilization,
         maxConnections=args.max_connections,
         maxConnectionsPerInstance=args.max_connections_per_instance,
-        maxConnectionsPerEndpoint=args.max_connections_per_endpoint)
+        maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
+        failover=args.failover)
 
   def _Modify(self, client, resources, backend_service_ref, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
@@ -226,7 +227,6 @@ class AddBackendBeta(AddBackend):
   `gcloud compute backend-services edit`.
   """
 
-  support_failover = True
   support_global_neg = True
 
   def _CreateBackendMessage(self, messages, group_uri, balancing_mode, args):

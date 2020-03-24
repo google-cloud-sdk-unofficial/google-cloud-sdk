@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Packages(base.Group):
   """Anthos packages command group.
 

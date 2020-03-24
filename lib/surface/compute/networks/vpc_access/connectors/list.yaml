@@ -25,7 +25,7 @@
 
   arguments:
     resource:
-      help_text: The region of the connectos to list.
+      help_text: The region of the connectors to list.
       spec: !REF googlecloudsdk.command_lib.compute.networks.vpc_access.resources:region
 
   output:

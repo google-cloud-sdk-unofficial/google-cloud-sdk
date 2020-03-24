@@ -38,12 +38,12 @@ To remove two endpoints from a network endpoint group:
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_global_scope = False
+  support_global_scope = True
   support_hybrid_neg = False
   support_l4ilb_neg = False
 
@@ -80,15 +80,8 @@ class Update(base.UpdateCommand):
         neg_ref, add_endpoints=add_endpoints, remove_endpoints=remove_endpoints)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class BetaUpdate(Update):
-  """Update a Google Compute Engine network endpoint group."""
-
-  support_global_scope = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdate(BetaUpdate):
+class AlphaUpdate(Update):
   """Update a Google Compute Engine network endpoint group."""
 
   support_hybrid_neg = True

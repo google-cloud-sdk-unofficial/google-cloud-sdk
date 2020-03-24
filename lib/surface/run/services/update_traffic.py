@@ -29,14 +29,15 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run import traffic_printer
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.resource import resource_printer
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA,
-                    base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+                    base.ReleaseTrack.BETA)
 class AdjustTraffic(base.Command):
   """Adjust the trafic assignments for a Cloud Run service."""
 
@@ -76,7 +77,7 @@ class AdjustTraffic(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def CommonArgs(parser):
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(prompt=True),
@@ -87,18 +88,9 @@ class AdjustTraffic(base.Command):
     flags.AddUpdateTrafficFlags(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
-  def _SetFormat(self, args):
-    """Set display format for output.
-
-    Args:
-      args: Namespace, the args namespace
-    """
-    columns = [
-        'displayPercent:label=TRAFFIC',
-        'displayRevisionId:label=REVISION',
-    ]
-    args.GetDisplayInfo().AddFormat(
-        'table({})'.format(','.join(columns)))
+  @staticmethod
+  def Args(parser):
+    AdjustTraffic.CommonArgs(parser)
 
   def Run(self, args):
     """Update the traffic split for the service.
@@ -109,6 +101,13 @@ class AdjustTraffic(base.Command):
     Returns:
       List of traffic.TrafficTargetStatus instances reflecting the change.
     """
+    # TODO(b/143898356) Begin code that should be in Args
+    resource_printer.RegisterFormatter(
+        traffic_printer.TRAFFIC_PRINTER_FORMAT,
+        traffic_printer.TrafficPrinter)
+    args.GetDisplayInfo().AddFormat('traffic')
+    # End code that should be in Args
+
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     service_ref = flags.GetService(args)
@@ -117,8 +116,6 @@ class AdjustTraffic(base.Command):
     if not changes:
       raise exceptions.NoConfigurationChangeError(
           'No traffic configuration change requested.')
-
-    self._SetFormat(args)
 
     is_managed = flags.GetPlatform() == flags.PLATFORM_MANAGED
     with serverless_operations.Connect(conn_context) as client:
@@ -137,7 +134,8 @@ class AdjustTraffic(base.Command):
               serv.spec_traffic,
               serv.status_traffic,
               is_managed,
-              serv.status.latestReadyRevisionName)
+              serv.status.latestReadyRevisionName,
+              serv.status.url)
           display.Displayer(
               self, args, resources,
               display_info=args.GetDisplayInfo()).Display()
@@ -151,5 +149,17 @@ class AdjustTraffic(base.Command):
           serv.spec_traffic,
           serv.status_traffic,
           is_managed,
-          serv.status.latestReadyRevisionName)
+          serv.status.latestReadyRevisionName,
+          serv.status.url)
       return resources
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaAdjustTraffic(AdjustTraffic):
+  """Adjust the traffic assignments for a Cloud Run service."""
+
+  @staticmethod
+  def Args(parser):
+    AdjustTraffic.CommonArgs(parser)
+    flags.AddTrafficTagsFlags(parser)
+

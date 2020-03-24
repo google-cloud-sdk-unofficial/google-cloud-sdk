@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
@@ -49,13 +50,15 @@ class AddIamPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetModelName().AddToParser(parser)
+    flags.GetRegionArg('model').AddToParser(parser)
     iam_util.AddArgsForAddIamPolicyBinding(
         parser,
         flags.MlEngineIamRolesCompleter)
 
   def Run(self, args):
-    return models_util.AddIamPolicyBinding(models.ModelsClient(), args.model,
-                                           args.member, args.role)
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      return models_util.AddIamPolicyBinding(models.ModelsClient(), args.model,
+                                             args.member, args.role)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -72,17 +75,19 @@ class AddIamPolicyBindingAlpha(base.Command):
   @staticmethod
   def Args(parser):
     flags.GetModelName().AddToParser(parser)
+    flags.GetRegionArg('model').AddToParser(parser)
     iam_util.AddArgsForAddIamPolicyBinding(
         parser,
         flags.MlEngineIamRolesCompleter,
         add_condition=True)
 
   def Run(self, args):
-    condition = iam_util.ValidateAndExtractCondition(args)
-    iam_util.ValidateMutexConditionAndPrimitiveRoles(condition, args.role)
-    return models_util.AddIamPolicyBindingWithCondition(
-        models.ModelsClient(),
-        args.model,
-        args.member,
-        args.role,
-        condition)
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      condition = iam_util.ValidateAndExtractCondition(args)
+      iam_util.ValidateMutexConditionAndPrimitiveRoles(condition, args.role)
+      return models_util.AddIamPolicyBindingWithCondition(
+          models.ModelsClient(),
+          args.model,
+          args.member,
+          args.role,
+          condition)

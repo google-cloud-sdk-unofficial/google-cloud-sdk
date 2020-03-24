@@ -35,7 +35,8 @@ in zone ``us-central1-a'':
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class ListNetworkEndpoints(base.ListCommand):
   """List network endpoints in a network endpoint group."""
 
@@ -44,9 +45,10 @@ class ListNetworkEndpoints(base.ListCommand):
         table(
           networkEndpoint.instance,
           networkEndpoint.ipAddress,
-          networkEndpoint.port
+          networkEndpoint.port,
+          networkEndpoint.fqdn
         )"""
-  support_global_scope = False
+  support_global_scope = True
 
   @classmethod
   def Args(cls, parser):
@@ -89,17 +91,3 @@ class ListNetworkEndpoints(base.ListCommand):
         field='items',
         limit=args.limit,
         batch_size=None)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaListNetworkEndpoints(ListNetworkEndpoints):
-  """List network endpoints in a network endpoint group."""
-
-  display_info_format = """\
-        table(
-          networkEndpoint.instance,
-          networkEndpoint.ipAddress,
-          networkEndpoint.port,
-          networkEndpoint.fqdn
-        )"""
-  support_global_scope = True

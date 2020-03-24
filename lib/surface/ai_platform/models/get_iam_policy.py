@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.ml_engine import endpoint_util
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
@@ -45,7 +46,9 @@ class GetIamPolicy(base.ListCommand):
     flags.GetModelResourceArg(
         positional=True, required=True,
         verb='to set IAM policy for').AddToParser(parser)
+    flags.GetRegionArg('model').AddToParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
-    return models_util.GetIamPolicy(models.ModelsClient(), args.model)
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      return models_util.GetIamPolicy(models.ModelsClient(), args.model)

@@ -59,6 +59,7 @@ class UpdateBackend(base.UpdateCommand):
     backend_flags.AddBalancingMode(parser)
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
+    backend_flags.AddFailover(parser, default=None)
 
   def _GetGetRequest(self, client, backend_service_ref):
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -137,6 +138,9 @@ class UpdateBackend(base.UpdateCommand):
 
     self._ModifyBalancingModeArgs(client, args, backend_to_update)
 
+    if backend_to_update is not None and args.failover is not None:
+      backend_to_update.failover = args.failover
+
     return replacement
 
   def _ModifyBalancingModeArgs(self, client, args, backend_to_update):
@@ -168,6 +172,7 @@ class UpdateBackend(base.UpdateCommand):
         args.max_connections_per_instance is not None,
         args.max_connections_per_endpoint is not None,
         args.capacity_scaler is not None,
+        args.failover is not None,
     ]):
       raise exceptions.ToolException('At least one property must be modified.')
 
@@ -228,25 +233,6 @@ class UpdateBackendBeta(UpdateBackend):
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
 
-  def _Modify(self, client, resources, backend_service_ref, args, existing):
-    """Modify Backend."""
-    replacement = super(UpdateBackendBeta, self)._Modify(
-        client, resources, backend_service_ref, args, existing)
-
-    group_ref = self._GetGroupRef(args, resources, client)
-
-    backend_to_update = None
-    for backend in replacement.backends:
-      # At most one backend will match
-      if group_ref.SelfLink() == backend.group:
-        backend_to_update = backend
-        break
-
-    if backend_to_update is not None and args.failover is not None:
-      backend_to_update.failover = args.failover
-
-    return replacement
-
   def _ValidateArgs(self, args):
     """Overrides."""
 
@@ -297,26 +283,6 @@ class UpdateBackendAlpha(UpdateBackendBeta):
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
-
-  def _Modify(self, client, resources, backend_service_ref, args, existing):
-    """Modify Backend."""
-    replacement = super(UpdateBackendAlpha, self)._Modify(
-        client, resources, backend_service_ref, args, existing)
-
-    group_ref = self._GetGroupRef(args, resources, client)
-
-    backend_to_update = None
-    for backend in replacement.backends:
-      # At most one backend will match
-      if group_ref.RelativeName() == resources.ParseURL(
-          backend.group).RelativeName():
-        backend_to_update = backend
-        break
-
-    if backend_to_update is not None and args.failover is not None:
-      backend_to_update.failover = args.failover
-
-    return replacement
 
   def _ValidateArgs(self, args):
     """Overrides."""

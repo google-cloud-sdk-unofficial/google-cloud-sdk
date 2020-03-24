@@ -22,48 +22,9 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
-DETAILED_HELP = {
-    'EXAMPLES': """
-To list the network endpoints in zone ``us-central1-a'':
 
-  $ {command} --zone=us-central1-a
-""",
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """Lists Google Compute Engine network endpoint groups."""
-
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat("""\
-        table(
-            name,
-            selfLink.scope().segment(-3).yesno(no="global"):label=LOCATION,
-            networkEndpointType:label=ENDPOINT_TYPE,
-            size
-        )
-        """)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
-    list_implementation = lister.MultiScopeLister(
-        client,
-        aggregation_service=client.apitools_client.networkEndpointGroups)
-
-    return lister.Invoke(request_data, list_implementation)
-
-List.detailed_help = base_classes.GetZonalListerHelp('network endpoint groups')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
   """Lists Google Compute Engine network endpoint groups."""
 
   detailed_help = base_classes.GetMultiScopeListerHelp(
@@ -106,7 +67,7 @@ class ListBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
+class ListAlpha(List):
   """Lists Google Compute Engine network endpoint groups."""
 
   detailed_help = base_classes.GetMultiScopeListerHelp(

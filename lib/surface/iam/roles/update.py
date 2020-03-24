@@ -31,28 +31,35 @@ from googlecloudsdk.core.console import console_io
 import six.moves.http_client
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To update the role ``ProjectUpdater'' from a YAML file, run:
+
+            $ {command} roles/ProjectUpdater --organization=123 --file=role_file_path
+
+          To update the role ``ProjectUpdater'' with flags, run:
+
+            $ {command} roles/ProjectUpdater --project=myproject --permissions=permission1,permission2
+        """
+}
+
+
 class Update(base.Command):
   """Update an IAM custom role.
 
   This command updates an IAM custom role.
 
-  ## EXAMPLES
-
-  To update a role from a Yaml file, run:
-
-    $ {command} viewer --organization 123 --file role_file_path
-
-  To update a role with flags, run:
-
-    $ {command} viewer --project myproject --permissions permission1,permission2
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     updated = parser.add_argument_group(
         'The following flags determine the fields need to be updated. '
         'You can update a role by specifying the following flags, or '
-        'you can update a role from a Yaml file by specifying the file flag.')
+        'you can update a role from a YAML file by specifying the file flag.')
     updated.add_argument(
         '--title', help='The title of the role you want to update.')
     updated.add_argument(
@@ -73,7 +80,7 @@ class Update(base.Command):
         'role. Use commas to separate them.')
     parser.add_argument(
         '--file',
-        help='The Yaml file you want to use to update a role. '
+        help='The YAML file you want to use to update a role. '
         'Can not be specified with other flags except role-id.')
     flags.AddParentFlags(parser, 'update')
     flags.GetCustomRoleFlag('update').AddToParser(parser)

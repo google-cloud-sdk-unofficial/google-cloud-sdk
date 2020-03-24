@@ -36,12 +36,12 @@ To create a network endpoint group:
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Google Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_global_scope = False
+  support_global_scope = True
   support_regional_scope = False
   support_neg_type = False
   support_hybrid_neg = False
@@ -140,18 +140,12 @@ class Create(base.CreateCommand):
             '--network', 'Global NEGs cannot specify network.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Create a Google Compute Engine network endpoint group."""
-
-  support_global_scope = True
-  support_neg_type = True
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
+class CreateAlpha(Create):
   """Create a Google Compute Engine network endpoint group."""
 
   support_regional_scope = True
   support_hybrid_neg = True
   support_l4ilb_neg = True
+  support_neg_type = True
+

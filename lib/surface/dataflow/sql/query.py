@@ -96,10 +96,17 @@ class Query(base.Command):
         region_id=region,
         job_name=args.job_name,
         gcs_location=gcs_location,
-        zone=args.worker_zone,
+        zone=args.zone,
         max_workers=args.max_workers,
         disable_public_ips=properties.VALUES.dataflow.disable_public_ips
         .GetBool(),
         parameters=template_parameters,
-        service_account_email=args.service_account_email)
+        service_account_email=args.service_account_email,
+        kms_key_name=args.dataflow_kms_key,
+        num_workers=args.num_workers,
+        network=args.network,
+        subnetwork=args.subnetwork,
+        worker_machine_type=args.worker_machine_type,
+        worker_region=args.worker_region,
+        worker_zone=args.worker_zone)
     return apis.Templates.LaunchDynamicTemplate(arguments)

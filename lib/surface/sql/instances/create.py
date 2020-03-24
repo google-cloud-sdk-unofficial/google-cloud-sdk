@@ -55,6 +55,7 @@ def AddBaseArgs(parser):
       default=True,
       help='Enables daily backup.')
   flags.AddBackupStartTime(parser)
+  flags.AddBackupLocation(parser, allow_empty=False)
   flags.AddCPU(parser)
   flags.AddDatabaseFlags(parser)
   flags.AddEnableBinLog(parser, show_negated_in_help=False)

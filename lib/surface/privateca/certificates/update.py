@@ -18,16 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import uuid
-
 from googlecloudsdk.api_lib.privateca import base as privateca_base
+from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
-
-import six
 
 
 class Update(base.UpdateCommand):
@@ -69,7 +66,7 @@ class Update(base.UpdateCommand):
             name=original_cert.name,
             certificate=original_cert,
             updateMask='labels',
-            requestId=six.text_type(uuid.uuid4())))
+            requestId=request_utils.GenerateRequestId()))
 
     return operations.Await(operation, 'Updating Certificate.')
 

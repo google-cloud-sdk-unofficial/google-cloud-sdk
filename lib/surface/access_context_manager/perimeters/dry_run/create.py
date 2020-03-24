@@ -89,43 +89,10 @@ def _ParseArgWithShortName(args, short_name):
   return None
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreatePerimeterDryRunAlpha(base.CreateCommand):
-  r"""Creates a dry-run spec for a new or existing Service Perimeter.
-
-  A dry run `spec` makes it is possible to understand the impact of any
-  changes to a VPC Service Controls policy change before enforcing it.
-
-  When a perimeter with the specified name does not exist, a new perimeter
-  will be created. In this case, there will be no perimeter enforcement, but
-  all policy violations will be logged.
-
-  When a perimeter with the specified name does exist, a dry-run `spec` will
-  be created for it. The behavior of the enforced configuration (i.e.
-  `status`), if present, will not be impacted in this case. Requests that
-  violate the existing enforced configuration of the Service Perimeter will
-  continue being denied. Requests that only violate the policy in the dry run
-  mode will be logged but will not be denied.
-
-  ## EXAMPLES
-  To create a dry-run configuration for an existing Service Perimeter:
-
-    $ {command} my-perimeter \
-      --resources="projects/0123456789" \
-      --access-levels="accessPolicies/a_policy/accessLevels/a_level" \
-      --restricted-services="storage.googleapis.com"
-
-  To create a dry-run configuration for a new Service Perimeter:
-
-    $ {command} my-perimeter \
-      --perimeter-title="My New Perimeter" \
-      --perimeter-description="Perimeter description" \
-      --perimeter-type="regular" \
-      --perimeter-resources="projects/0123456789" \
-      --perimeter-access-levels="accessPolicies/a_policy/accessLevels/a_level" \
-      --perimeter-restricted-services="storage.googleapis.com" \
-  """
-  _API_VERSION = 'v1alpha'
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreatePerimeterDryRunBeta(base.UpdateCommand):
+  """Creates a dry-run spec for a new or existing Service Perimeter."""
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -217,3 +184,44 @@ class CreatePerimeterDryRunAlpha(base.CreateCommand):
         restricted_services=restricted_services,
         vpc_allowed_services=vpc_allowed_services,
         enable_vpc_accessible_services=enable_vpc_accessible_services)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreatePerimeterDryRunAlpha(CreatePerimeterDryRunBeta):
+  """Creates a dry-run spec for a new or existing Service Perimeter."""
+  _API_VERSION = 'v1alpha'
+
+
+detailed_help = {
+    'brief':
+        """Create a dry-run mode configuration for a new or existing Service
+        Perimeter.""",
+    'DESCRIPTION': (
+        'When a Service Perimeter with the specified name does not exist, a '
+        'new Service Perimeter will be created. In this case, the newly '
+        'created Service Perimeter will not have any enforcement mode '
+        'configuration, and, therefore, all policy violations will be '
+        'logged.\n\nWhen a perimeter with the specified name does exist, a '
+        'dry-run mode configuration will be created for it. The behavior of '
+        'the enforcement mode configuration, if present, will not be impacted '
+        'in this case. Requests that violate the existing enforcement mode '
+        'configuration of the Service Perimeter will continue being denied. '
+        'Requests that only violate the policy in the dry-run mode '
+        'configuration will be logged but will not be denied.'),
+    'EXAMPLES': (
+        'To create a dry-run configuration for an existing Service '
+        'Perimeter:\n\n  $ {command} my-perimeter '
+        '--resources="projects/0123456789" '
+        '--access-levels="accessPolicies/a_policy/accessLevels/a_level" '
+        '--restricted-services="storage.googleapis.com"\n\nTo create a dry-run'
+        ' configuration for a new Service Perimeter:\n\n  $ {command} '
+        'my-perimeter --perimeter-title="My New Perimeter" '
+        '--perimeter-description="Perimeter description" '
+        '--perimeter-type="regular" '
+        '--perimeter-resources="projects/0123456789" '
+        '--perimeter-access-levels="accessPolicies/a_policy/accessLevels/a_level"'
+        ' --perimeter-restricted-services="storage.googleapis.com"')
+}
+
+CreatePerimeterDryRunAlpha.detailed_help = detailed_help
+CreatePerimeterDryRunBeta.detailed_help = detailed_help

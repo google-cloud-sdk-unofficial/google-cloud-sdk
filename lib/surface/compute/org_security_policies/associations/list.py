@@ -22,7 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
-
+import six
 
 DEFAULT_LIST_FORMAT = """\
   table(
@@ -32,8 +32,8 @@ DEFAULT_LIST_FORMAT = """\
   )"""
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.DescribeCommand, base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class List(base.DescribeCommand, base.ListCommand):
   """List the associations of an organization or folder resource.
 
   *{command}* is used to list the associations of an organization or folder
@@ -47,7 +47,10 @@ class Create(base.DescribeCommand, base.ListCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    org_security_policy = client.OrgSecurityPolicy(compute_client=holder.client)
+    org_security_policy = client.OrgSecurityPolicy(
+        compute_client=holder.client,
+        resources=holder.resources,
+        version=six.text_type(self.ReleaseTrack()).lower())
 
     target_resource = None
 
@@ -61,3 +64,13 @@ class Create(base.DescribeCommand, base.ListCommand):
     if not res:
       return None
     return res[0].associations
+
+
+List.detailed_help = {
+    'EXAMPLES':
+        """\
+    To list the associations of the folder with ID ``987654321", run:
+
+      $ {command} list-folder=987654321
+    """,
+}

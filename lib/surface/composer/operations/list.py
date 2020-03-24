@@ -24,6 +24,16 @@ from googlecloudsdk.command_lib.composer import flags
 from googlecloudsdk.command_lib.composer import resource_args
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To list the environment operations, run:
+
+            $ {command}
+        """
+}
+
+
 class List(base.ListCommand):
   """Lists environment operations.
 
@@ -35,6 +45,8 @@ class List(base.ListCommand):
   * status
   * last updated timestamp
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

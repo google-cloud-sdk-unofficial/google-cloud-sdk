@@ -6,6 +6,7 @@ app-engine-python: google-cloud-sdk-app-engine-python
 app-engine-python-extras: google-cloud-sdk-app-engine-python-extras
 alpha: google-cloud-sdk
 anthoscli: google-cloud-sdk
+anthos-auth: google-cloud-sdk-anthos-auth
 appctl: unavailable
 beta: google-cloud-sdk
 bigtable: google-cloud-sdk-bigtable-emulator
@@ -15,6 +16,7 @@ cloud-build-local: google-cloud-sdk-cloud-build-local
 cloud_sql_proxy: unavailable
 cloud-datastore-emulator: google-cloud-sdk-datastore-emulator
 cloud-firestore-emulator: google-cloud-sdk-firestore-emulator
+cloud-spanner-emulator: unavailable
 core: google-cloud-sdk
 datalab: google-cloud-sdk-datalab
 docker-credential-gcr: unavailable

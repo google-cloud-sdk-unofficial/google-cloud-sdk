@@ -24,24 +24,10 @@ from googlecloudsdk.command_lib.accesscontextmanager import perimeters
 from googlecloudsdk.command_lib.accesscontextmanager import policies
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ResetPerimeterDryRunAlpha(base.DeleteCommand):
-  """Resets the dry-run state of a Service Perimeter.
-
-  Resets the dry-run state such that the new dry-run state is the same as the
-  enforced configuration. No audit logs will be generated in this state.
-
-  The `use_explicit_dry_run_spec` field of the Service Perimeter is set to
-  false after this operation, and the `spec` field, which contains the dry-run
-  configuration, is deleted.
-
-  ## EXAMPLES
-
-  To reset the dry-run configuration for a Service Perimeter:
-
-      $ {command} my-perimeter
-  """
-  _API_VERSION = 'v1alpha'
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ResetPerimeterDryRunBeta(base.UpdateCommand):
+  """Resets the dry-run state of a Service Perimeter."""
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -57,3 +43,26 @@ class ResetPerimeterDryRunAlpha(base.DeleteCommand):
     perimeter_ref = args.CONCEPTS.perimeter.Parse()
     policies.ValidateAccessPolicyArg(perimeter_ref, args)
     return client.UnsetSpec(perimeter_ref, use_explicit_dry_run_spec=False)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ResetPerimeterDryRunAlpha(ResetPerimeterDryRunBeta):
+  """Resets the dry-run mode configuration of a Service Perimeter."""
+  _API_VERSION = 'v1alpha'
+
+
+detailed_help = {
+    'brief':
+        'Reset the dry-run mode configuration of a Service Perimeter.',
+    'DESCRIPTION':
+        ('Removes the explicit dry-run mode configuration for a Service '
+         'Perimeter. After this operation, the effective dry-run mode '
+         'configuration is implicitly inherited from the enforcement mode '
+         'configuration. No audit logs will be generated in this state.'),
+    'EXAMPLES':
+        ('To reset the dry-run mode configuration for a Service Perimeter:\n\n'
+         '  $ {command} my-perimeter')
+}
+
+ResetPerimeterDryRunAlpha.detailed_help = detailed_help
+ResetPerimeterDryRunBeta.detailed_help = detailed_help

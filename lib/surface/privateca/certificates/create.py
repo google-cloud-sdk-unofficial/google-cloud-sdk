@@ -98,8 +98,7 @@ class Create(base.CreateCommand):
 
     subject_group = key_generation_group.add_group(
         help='The subject names for the certificate.', required=True)
-    flags.AddSubjectAlternativeNameFlags(subject_group)
-    flags.AddSubjectFlag(subject_group, required=False)
+    flags.AddSubjectFlags(subject_group)
     reusable_config_group = key_generation_group.add_group(
         mutex=True, help='The x509 configuration used for this certificate.')
     flags.AddInlineReusableConfigFlags(reusable_config_group, is_ca=False)
@@ -159,13 +158,7 @@ class Create(base.CreateCommand):
     config.publicKey.type = messages.PublicKey.TypeValueValuesEnum.PEM_RSA_KEY
     config.reusableConfig = flags.ParseReusableConfig(args)
 
-    config.subjectConfig = messages.SubjectConfig()
-    if args.IsSpecified('subject'):
-      common_name, subject = flags.ParseSubject(args.subject)
-      config.subjectConfig.subject = subject
-      config.subjectConfig.commonName = common_name
-    if flags.SanFlagsAreSpecified(args):
-      config.subjectConfig.subjectAltName = flags.ParseSanFlags(args)
+    config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=False)
 
     return config
 
@@ -213,4 +206,4 @@ class Create(base.CreateCommand):
       self._WritePemCertificate(certificate.pemCertificate,
                                 args.cert_output_file)
 
-    log.status.Print('Created certificate [{}]'.format(certificate.name))
+    log.status.Print('Created Certificate [{}].'.format(certificate.name))

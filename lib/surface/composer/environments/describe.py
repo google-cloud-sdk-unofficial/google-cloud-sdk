@@ -23,8 +23,20 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import resource_args
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To get details about the Cloud Composer environment ``env-1'', run:
+
+            $ {command} env-1
+        """
+}
+
+
 class Describe(base.DescribeCommand):
   """Get details about a Cloud Composer environment."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

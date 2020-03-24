@@ -23,8 +23,21 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import resource_args
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To wait for the asynchronous operation ``operation-1'' in the
+          location ``us-central1'' to complete, run:
+
+            $ {command} operation-1 --location=us-central1
+        """
+}
+
+
 class Wait(base.SilentCommand):
   """Wait for asynchronous operation to complete."""
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

@@ -87,7 +87,8 @@ class Create(base.CreateCommand):
           queue_ref,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
-          app_engine_routing_override=queue_config.appEngineRoutingOverride)
+          app_engine_routing_override=queue_config.appEngineRoutingOverride,
+          stackdriver_logging_config=queue_config.stackdriverLoggingConfig)
     log.CreatedResource(queue_ref.Name(), 'queue')
     return create_response
 

@@ -12,7 +12,7 @@
       The following command updates the Cloud Filestore Snapshot named 'my-snapshot' in region
       us-central1 to change the description to 'A new description.'
 
-       $ {command} my-snapshot --region=us-central1 --description "A new description."
+       $ {command} my-snapshot --region=us-central1 --description="A new description."
 
   arguments:
     params:
@@ -35,7 +35,7 @@
       api_field: snapshot.description
       help_text: |
         Description of the snapshot.
-    additional_arguments_hook: googlecloudsdk.command_lib.filestore.snapshots.update_util:AdditionalSnapshotUpdateArguments
+    additional_arguments_hook: googlecloudsdk.command_lib.filestore.update_util:UpdateLabelsFlags
 
   response:
     modify_response_hooks:

@@ -24,50 +24,10 @@ from googlecloudsdk.command_lib.accesscontextmanager import policies
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ResetPerimeterDryRunAlpha(base.ListCommand):
-  """List the effective dry-run configuration across all Service Perimeters.
-
-  List the effective dry run configuration across all Service Perimeters. When
-  a Service Perimeter has an explicit dry-run `spec`, that is, when the
-  `use_explicit_dry_run_spec` flag is set to true, this command displays the
-  value of the `spec` field directly. If `user_explicit_dry_run_spec` is false
-  for a Service Perimeter, then the name of that Service Perimeter is marked
-  with an asterisk ('*') and it's `status` field is displayed in place of the
-  `spec` field, since `status` is the implicit `spec` for such Service
-  Perimeters.
-
-  ## EXAMPLES
-
-  To list the dry-run mode configuration across all Service Perimeter:
-
-      $ {command}
-
-  Output:
-
-      name: perimeter_1*
-      spec:
-        resources:
-        - projects/123
-        - projects/456
-        restrictedServices:
-        - storage.googleapis.com
-      title: Perimeter 1
-      ---
-      name: perimeter_2
-      spec:
-        resources:
-        - projects/789
-        restrictedServices:
-        - bigquery.googleapis.com
-        vpcAccessibleServices:
-          allowedServices:
-          - bigquery.googleapis.com
-          enableRestriction: true
-      title: Perimeter 2
-
-  """
-  _API_VERSION = 'v1alpha'
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListPerimeterDryRunBeta(base.ListCommand):
+  """Lists the effective dry-run configuration across all Service Perimeters."""
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -106,3 +66,34 @@ class ResetPerimeterDryRunAlpha(base.ListCommand):
     print('Note: Perimeters marked with \'*\' do not have an explicit `spec`. '
           'Instead, their `status` also acts as the `spec`.')
     return perimeters_to_display
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListPerimeterDryRunAlpha(ListPerimeterDryRunBeta):
+  """Lists the effective dry-run configuration across all Service Perimeters."""
+  _API_VERSION = 'v1alpha'
+
+
+detailed_help = {
+    'brief': ('List the effective dry-run configuration across all Service '
+              'Perimeters.'),
+    'DESCRIPTION': (
+        'By default, only the Service Perimeter name, title, type and the '
+        'dry-run mode configuration (as `spec`) is displayed.\n\nNote: For '
+        'Service Perimeters without an explicit dry-run mode configuration, '
+        'the enforcement mode configuration is used as the dry-run mode '
+        'configuration, resulting in no audit logs being generated.'),
+    'EXAMPLES': (
+        'To list the dry-run mode configuration across all Service '
+        'Perimeter:\n\n  $ {command}\n\nOutput:\n\n  name: perimeter_1*\n  '
+        'spec:\n    resources:\n    - projects/123\n    - projects/456\n    '
+        'restrictedServices:\n    - storage.googleapis.com\n  title: Perimeter'
+        ' 1\n  ---\n  name: perimeter_2\n  spec:\n    resources:\n    - '
+        'projects/789\n    restrictedServices:\n    - '
+        'bigquery.googleapis.com\n    vpcAccessibleServices:\n      '
+        'allowedServices:\n      - bigquery.googleapis.com\n      '
+        'enableRestriction: true\n  title: Perimeter 2')
+}
+
+ListPerimeterDryRunAlpha.detailed_help = detailed_help
+ListPerimeterDryRunBeta.detailed_help = detailed_help

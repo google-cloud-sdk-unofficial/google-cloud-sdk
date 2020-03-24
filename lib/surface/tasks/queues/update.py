@@ -104,7 +104,8 @@ class Update(base.UpdateCommand):
           updated_fields,
           retry_config=queue_config.retryConfig,
           rate_limits=queue_config.rateLimits,
-          app_engine_routing_override=app_engine_routing_override)
+          app_engine_routing_override=app_engine_routing_override,
+          stackdriver_logging_config=queue_config.stackdriverLoggingConfig)
     log.status.Print('Updated queue [{}].'.format(queue_ref.Name()))
     return update_response
 

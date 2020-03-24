@@ -23,10 +23,17 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.service_directory import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class List(base.Command):
   """List locations."""
+
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To describe a Service Directory location, run:
+
+            $ {command}
+          """,
+  }
 
   @staticmethod
   def Args(parser):

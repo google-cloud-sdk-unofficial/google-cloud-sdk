@@ -47,6 +47,11 @@ class CreateBackup(base.CreateCommand):
     flags.AddInstance(parser)
     parser.add_argument(
         '--description', help='A friendly description of the backup.')
+    parser.add_argument(
+        '--location',
+        help=('Choose where to store your backup. Backups are stored in the '
+              'closest multi-region location to you by default. Only '
+              'customize if needed.'))
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(None)
 
@@ -90,6 +95,7 @@ class CreateBackup(base.CreateCommand):
             backupRun=sql_messages.BackupRun(
                 description=args.description,
                 instance=instance_ref.instance,
+                location=args.location,
                 kind='sql#backupRun')))
 
     operation_ref = client.resource_parser.Create(

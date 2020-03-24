@@ -356,7 +356,7 @@ class UpdateGA(base.UpdateCommand):
 
   _support_l7_internal_load_balancer = True
   _support_logging = True
-  _support_failover = False
+  _support_failover = True
   _support_client_only = False
   _support_grpc_protocol = False
 
@@ -386,7 +386,6 @@ class UpdateBeta(UpdateGA):
   *{command}* is used to update backend services.
   """
 
-  _support_failover = True
   _support_client_only = False
   _support_grpc_protocol = False
 
@@ -398,6 +397,5 @@ class UpdateAlpha(UpdateGA):
   *{command}* is used to update backend services.
   """
 
-  _support_failover = True
   _support_client_only = True
   _support_grpc_protocol = True

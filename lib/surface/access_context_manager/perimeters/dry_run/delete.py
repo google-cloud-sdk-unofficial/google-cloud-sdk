@@ -24,21 +24,10 @@ from googlecloudsdk.command_lib.accesscontextmanager import perimeters
 from googlecloudsdk.command_lib.accesscontextmanager import policies
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ResetPerimeterDryRunAlpha(base.DeleteCommand):
-  """Marks the Service Perimeter for deletion in the dry-run mode.
-
-  The Service Perimeter will be considered to have been deleted in the dry run
-  mode, but the enforced configuration will be left untouched. This operation
-  retains an explicit `spec`, but that `spec` will be empty.
-
-  ## EXAMPLES
-
-  To mark the Service Perimeter as deleted in the dry-run mode:
-
-      $ {command} my-perimeter
-  """
-  _API_VERSION = 'v1alpha'
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeletePerimeterDryRunBeta(base.UpdateCommand):
+  """Marks the Service Perimeter for deletion in the dry-run mode."""
+  _API_VERSION = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -54,3 +43,26 @@ class ResetPerimeterDryRunAlpha(base.DeleteCommand):
     perimeter_ref = args.CONCEPTS.perimeter.Parse()
     policies.ValidateAccessPolicyArg(perimeter_ref, args)
     return client.UnsetSpec(perimeter_ref, use_explicit_dry_run_spec=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeletePerimeterDryRunAlpha(DeletePerimeterDryRunBeta):
+  """Marks the Service Perimeter for deletion in the dry-run mode."""
+  _API_VERSION = 'v1alpha'
+
+
+detailed_help = {
+    'brief':
+        'Mark the Service Perimeter as deleted in the dry-run mode.',
+    'DESCRIPTION':
+        ('When this command completed successfully, the affected Service '
+         'Perimeter will be considered to have been deleted in the dry-run '
+         'mode, but the enforcement mode configuration will be left untouched.'
+        ),
+    'EXAMPLES':
+        ('To mark the Service Perimeter as deleted in the dry-run mode:\n\n'
+         '  $ {command} my-perimeter')
+}
+
+DeletePerimeterDryRunAlpha.detailed_help = detailed_help
+DeletePerimeterDryRunBeta.detailed_help = detailed_help

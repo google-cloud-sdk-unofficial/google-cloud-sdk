@@ -26,15 +26,13 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import rolling_a
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
-def _AddArgs(
-    parser, supports_min_ready=False, supports_replacement_method=False):
+def _AddArgs(parser, supports_min_ready=False):
   """Adds args."""
   instance_groups_managed_flags.AddMaxSurgeArg(parser)
   instance_groups_managed_flags.AddMaxUnavailableArg(parser)
   if supports_min_ready:
     instance_groups_managed_flags.AddMinReadyArg(parser)
-  if supports_replacement_method:
-    instance_groups_managed_flags.AddReplacementMethodFlag(parser)
+  instance_groups_managed_flags.AddReplacementMethodFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -78,6 +76,6 @@ class StartUpdateBeta(StartUpdate):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser, supports_min_ready=True, supports_replacement_method=True)
+    _AddArgs(parser, supports_min_ready=True)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)

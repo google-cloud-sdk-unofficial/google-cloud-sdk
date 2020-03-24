@@ -29,6 +29,16 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To delete the operation ``operation-1'', run:
+
+            $ {command} operation-1
+        """
+}
+
+
 class Delete(base.DeleteCommand):
   """Delete one or more completed Cloud Composer operations.
 
@@ -37,6 +47,8 @@ class Delete(base.DeleteCommand):
   and their failure messages will be listed on the standard error, and the
   command will exit with a non-zero status.
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

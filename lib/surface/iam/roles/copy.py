@@ -26,26 +26,31 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To create a copy of an existing role ``spanner.databaseAdmin'' into an organization
+          with ``1234567'', run:
+
+            $ {command} --source="roles/spanner.databaseAdmin" --destination=CustomViewer --dest-organization=1234567
+
+          To create a copy of an existing role ``spanner.databaseAdmin'' into a project with
+          ``PROJECT_ID'', run:
+
+            $ {command} --source="roles/spanner.databaseAdmin" --destination=CustomSpannerDbAdmin --dest-project=PROJECT_ID
+
+          To modify the newly created role see the roles update command.
+        """
+}
+
+
 class Copy(base.Command):
   r"""Create a role from an existing role.
 
   This command creates a role from an existing role.
-
-  ## EXAMPLES
-
-  To create a copy of an existing role into an organization with
-  ORGANIZATION_ID.
-
-    ${command} --source "roles/viewer" --destination CustomViewer
-     --dest-organization ORGANIZATION_ID
-
-  To create a copy of an existing role into a project with PROJECT_ID.
-
-    ${command} --source "roles/spanner.databaseAdmin"
-     --destination CustomSpannerDbAdmin --dest-project PROJECT_ID
-
-  To modify the newly created role see the roles update command.
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

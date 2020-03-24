@@ -23,12 +23,25 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
 
-def AddOrganizationArgs(parser):
+def AddOrganizationArgs(parser, required=True):
   parser.add_argument(
       '--organization',
       metavar='ORGANIZATION_ID',
-      required=True,
+      required=required,
       help='The organization ID to perform the analysis.')
+
+
+def AddFolderArgs(parser):
+  parser.add_argument(
+      '--folder',
+      metavar='FOLDER_ID',
+      help='The folder ID to perform the analysis.')
+
+
+def AddParentArgs(parser):
+  parent_group = parser.add_mutually_exclusive_group(required=True)
+  AddOrganizationArgs(parent_group, required=False)
+  AddFolderArgs(parent_group)
 
 
 def AddResourceSelectorGroup(parser):
@@ -84,7 +97,8 @@ def AddPermissionsArgs(parser):
       help='The permissions to appear in the result.')
 
 
-def AddOptionsGroup(parser):
+def AddOptionsGroup(parser, api_version=client_util.V1P4ALPHA1_API_VERSION):
+  """Adds a group of options."""
   options_group = parser.add_group(
       mutex=False, required=False, help='The analysis options.')
   AddExpandGroupsArgs(options_group)
@@ -92,7 +106,11 @@ def AddOptionsGroup(parser):
   AddExpandResourcesArgs(options_group)
   AddOutputResourceEdgesArgs(options_group)
   AddOutputGroupEdgesArgs(options_group)
-  AddOutputPartialResultBeforeTimeoutArgs(options_group)
+  if api_version == client_util.V1P4ALPHA1_API_VERSION:
+    AddOutputPartialResultBeforeTimeoutArgs(options_group)
+  elif api_version == client_util.V1P4BETA1_API_VERSION:
+    AddExecutionTimeout(options_group)
+    AddShowAccessControlEntries(options_group)
 
 
 def AddExpandGroupsArgs(parser):
@@ -110,10 +128,9 @@ def AddExpandRolesArgs(parser):
   parser.add_argument(
       '--expand-roles',
       action='store_true',
-      help=(
-          'If true, the access section of result will expand any roles '
-          'appearing in IAM policy bindings to include their permissions. '
-          'Default is false.'))
+      help=('If true, the access section of result will expand any roles '
+            'appearing in IAM policy bindings to include their permissions. '
+            'Default is false.'))
   parser.set_defaults(expand_roles=False)
 
 
@@ -121,10 +138,9 @@ def AddExpandResourcesArgs(parser):
   parser.add_argument(
       '--expand-resources',
       action='store_true',
-      help=(
-          'If true, the resource section of the result will expand any '
-          'resource attached to an IAM policy to include resources lower in '
-          'the resource hierarchy. Default is false.'))
+      help=('If true, the resource section of the result will expand any '
+            'resource attached to an IAM policy to include resources lower in '
+            'the resource hierarchy. Default is false.'))
   parser.set_defaults(expand_resources=False)
 
 
@@ -132,10 +148,9 @@ def AddOutputResourceEdgesArgs(parser):
   parser.add_argument(
       '--output-resource-edges',
       action='store_true',
-      help=(
-          'If true, the result will output resource edges, starting '
-          'from the policy attached resource, to any expanded resources. '
-          'Default is false.'))
+      help=('If true, the result will output resource edges, starting '
+            'from the policy attached resource, to any expanded resources. '
+            'Default is false.'))
   parser.set_defaults(output_resource_edges=False)
 
 
@@ -143,10 +158,9 @@ def AddOutputGroupEdgesArgs(parser):
   parser.add_argument(
       '--output-group-edges',
       action='store_true',
-      help=(
-          "If true, the result will output group identity edges, starting "
-          "from the binding's group members, to any expanded identities. "
-          "Default is false."))
+      help=('If true, the result will output group identity edges, starting '
+            "from the binding's group members, to any expanded identities. "
+            'Default is false.'))
   parser.set_defaults(output_group_edges=False)
 
 
@@ -159,6 +173,26 @@ def AddOutputPartialResultBeforeTimeoutArgs(parser):
           'a DEADLINE_EXCEEDED error when your request processing takes longer '
           'than the deadline. Default is false.'))
   parser.set_defaults(output_partial_result_before_timeout=False)
+
+
+def AddExecutionTimeout(parser):
+  parser.add_argument(
+      '--execution-timeout',
+      type=arg_parsers.Duration(),
+      help=(
+          'The amount of time the executable has to complete. See JSON '
+          'representation of '
+          '[Duration](https://developers.google.com/protocol-buffers/docs/proto3#json). '
+          'Deafult is empty. '))
+
+
+def AddShowAccessControlEntries(parser):
+  parser.add_argument(
+      '--show-response',
+      action='store_true',
+      help=(
+          'If true, the response will be showed as-is in the command output.'))
+  parser.set_defaults(show_response=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -200,7 +234,49 @@ class AnalyzeIamPolicy(base.Command):
     AddResourceSelectorGroup(parser)
     AddIdentitySelectorGroup(parser)
     AddAccessSelectorGroup(parser)
-    AddOptionsGroup(parser)
+    AddOptionsGroup(parser, client_util.V1P4ALPHA1_API_VERSION)
 
   def Run(self, args):
-    return client_util.MakeAnalyzeIamPolicyHttpRequests(args)
+    return client_util.MakeAnalyzeIamPolicyHttpRequests(
+        args, client_util.V1P4ALPHA1_API_VERSION)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AnalyzeIamPolicyBeta(base.Command):
+  """Analyzes accessible IAM policies that match a request."""
+
+  detailed_help = {
+      'DESCRIPTION': ' Analyzes accessible IAM policies that match a request.',
+      'EXAMPLES':
+          """\
+          To find out which users have been granted the
+          iam.serviceAccounts.actAs permission on a service account, run:
+
+            $ {command} --organization=YOUR_ORG_ID
+            --full-resource-name='//iam.googleapis.com/projects/YOUR_PROJ_ID/serviceAccounts/YOUR_SERVICE_ACCOUNT_UNIQUE_ID'
+            --permissions='iam.serviceAccounts.actAs'
+
+          To find out which resources a user can access, run:
+
+            $ {command} --organization=YOUR_ORG_ID --identity='user:u1@foo.com'
+
+          To find out which roles or permissions a user has been granted on a
+          project, run:
+
+            $ {command} --organization=YOUR_ORG_ID
+            --full-resource-name='//cloudresourcemanager.googleapis.com/projects/YOUR_PROJ_ID'
+            --identity='user:u1@foo.com'
+      """
+  }
+
+  @staticmethod
+  def Args(parser):
+    AddParentArgs(parser)
+    AddResourceSelectorGroup(parser)
+    AddIdentitySelectorGroup(parser)
+    AddAccessSelectorGroup(parser)
+    AddOptionsGroup(parser, client_util.V1P4BETA1_API_VERSION)
+
+  def Run(self, args):
+    return client_util.MakeAnalyzeIamPolicyHttpRequests(
+        args, client_util.V1P4BETA1_API_VERSION)

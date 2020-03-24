@@ -26,23 +26,27 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import log
 
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+          To create a custom role ``ProjectUpdater'' from a YAML file, run:
+
+            $ {command} ProjectUpdater --organization=12345 --file=role_file_path
+
+          To create a custom role ``ProjectUpdater'' with flags, run:
+
+            $ {command} ProjectUpdater --project=myproject --title=ProjectUpdater --description="Have access to get and update the project" --permissions=resourcemanager.projects.get,resourcemanager.projects.update
+        """
+}
+
+
 class Create(base.Command):
   r"""Create a custom role for a project or an organization.
 
   This command creates a custom role with the provided information.
-
-  ## EXAMPLES
-
-  To create a custom role from a yaml file, run:
-
-    $ {command} viewer --organization 12345 --file role_file_path
-
-  To create a custom role with flags, run:
-
-    $ {command} editor --project myproject --title myrole --description \
-        "Have access to get and update the project" --permissions \
-        resourcemanager.projects.get,resourcemanager.projects.update
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):

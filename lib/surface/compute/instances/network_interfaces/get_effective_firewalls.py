@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetEffectiveFirewalls(base.Command):
   r"""Get the effective firewalls on a Google Compute Engine virtual machine network interface.
 
@@ -76,3 +76,13 @@ class GetEffectiveFirewalls(base.Command):
         zone=instance_ref.zone,
         networkInterface=args.network_interface)
     return client.apitools_client.instances.GetEffectiveFirewalls(request)
+
+
+GetEffectiveFirewalls.detailed_help = {
+    'EXAMPLES':
+        """\
+    To get the effective firewalls of instance with name example-instance, run:
+
+      $ {command} example-instance,
+    """,
+}

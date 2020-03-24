@@ -72,3 +72,25 @@ class Delete(base.DeleteCommand):
                              **ssl_certificate_ref.AsDict())))
 
     return client.MakeRequests(requests)
+
+
+Delete.detailed_help = {
+    'brief':
+        'Delete Google Compute Engine SSL certificates',
+    'DESCRIPTION':
+        """\
+        *{command}* deletes one or more Google Compute Engine SSL certificates.
+        SSL certificates can only be deleted when no other resources (for
+        example, target HTTPS proxies) refer to them.
+        """,
+    'EXAMPLES':
+        """\
+        To delete a certificate 'my-cert', run:
+
+            $ {command} my-cert
+
+        To delete certificates 'my-cert1', 'my-cert2' and 'my-cert3', run:
+
+            $ {command} my-cert1 my-cert2 my-cert3
+        """,
+}

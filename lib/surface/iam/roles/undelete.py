@@ -38,13 +38,14 @@ class Undelete(base.DescribeCommand):
 
   ## EXAMPLES
 
-  To undelete a role of an organization, run:
+  To undelete the role ``ProjectUpdater'' of the organization ``1234567'', run:
 
-    $ {command} --organization 1234567 viewer
+    $ {command} roles/ProjectUpdater --organization=1234567
 
-  To undelete a role of a project, run:
+  To undelete the role ``ProjectUpdater'' of the project ``myproject'',
+  run:
 
-    $ {command} --project myproject viewer
+    $ {command} roles/ProjectUpdater --project=myproject
   """
 
   @staticmethod

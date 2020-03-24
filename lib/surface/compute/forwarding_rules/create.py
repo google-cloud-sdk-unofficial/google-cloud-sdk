@@ -32,12 +32,14 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(parser, support_global_access, support_l7_internal_load_balancing):
+def _Args(parser, support_global_access, support_l7_internal_load_balancing,
+          support_target_grpc_proxy):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
       parser,
-      include_l7_internal_load_balancing=support_l7_internal_load_balancing)
+      include_l7_internal_load_balancing=support_l7_internal_load_balancing,
+      include_target_grpc_proxy=support_target_grpc_proxy)
   flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -73,16 +75,18 @@ class CreateHelper(object):
   FORWARDING_RULE_ARG = None
 
   def __init__(self, holder, support_global_access,
-               support_l7_internal_load_balancing):
+               support_l7_internal_load_balancing, support_target_grpc_proxy):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
+    self._support_target_grpc_proxy = support_target_grpc_proxy
 
   @classmethod
   def Args(cls, parser, support_global_access,
-           support_l7_internal_load_balancing):
+           support_l7_internal_load_balancing, support_target_grpc_proxy):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
-                                    support_l7_internal_load_balancing)
+                                    support_l7_internal_load_balancing,
+                                    support_target_grpc_proxy)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -119,7 +123,8 @@ class CreateHelper(object):
     if not port_range:
       raise exceptions.ToolException(
           '[--ports] is required for global forwarding rules.')
-    target_ref = utils.GetGlobalTarget(resources, args)
+    target_ref = utils.GetGlobalTarget(resources, args,
+                                       self._support_target_grpc_proxy)
     protocol = self.ConstructProtocol(client.messages, args)
 
     if args.address is None or args.ip_version:
@@ -294,16 +299,19 @@ class Create(base.CreateCommand):
 
   _support_global_access = True
   _support_l7_internal_load_balancing = True
+  _support_target_grpc_proxy = False
 
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(parser, cls._support_global_access,
-                      cls._support_l7_internal_load_balancing)
+                      cls._support_l7_internal_load_balancing,
+                      cls._support_target_grpc_proxy)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(holder, self._support_global_access,
-                        self._support_l7_internal_load_balancing).Run(args)
+                        self._support_l7_internal_load_balancing,
+                        self._support_target_grpc_proxy).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -311,6 +319,7 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
+  _support_target_grpc_proxy = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -318,6 +327,7 @@ class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_global_access = True
   _support_l7_internal_load_balancing = True
+  _support_target_grpc_proxy = True
 
 
 Create.detailed_help = {

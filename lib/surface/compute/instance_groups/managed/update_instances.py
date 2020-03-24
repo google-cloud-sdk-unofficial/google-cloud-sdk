@@ -28,8 +28,9 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as 
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateInstancesBeta(base.Command):
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateInstances(base.Command):
   r"""Immediately update selected instances in a Google Compute Engine managed instance group."""
 
   @staticmethod
@@ -135,7 +136,7 @@ class UpdateInstancesBeta(base.Command):
     return field_name, service, requests
 
 
-UpdateInstancesBeta.detailed_help = {
+UpdateInstances.detailed_help = {
     'brief':
         'Immediately update selected instances in a Google Compute '
         'Engine managed instance group.',
@@ -151,14 +152,14 @@ UpdateInstancesBeta.detailed_help = {
           *{command}* allows you to specify the least and the most disruptive actions
           that can be performed while updating the instances. This way you can reduce
           the risk of rolling out too many changes at once. Possible actions are:
-          `none`, `refresh`, `restart` and `replace`. The order of disruption to the
-          instance is: `none` < `refresh` < `restart` < `replace`.
+          `none`, `refresh`, `restart` and `replace`. The level of disruption to the
+          instance is ordered as: `none` < `refresh` < `restart` < `replace`.
         """,
     'EXAMPLES':
         """\
         To update instances `instance-1`, `instance-2` in `my-group`,
-        with `minimal-action` none and `most-disruptive-allowed-action` equal to
-        `restart`, run:
+        with `minimal-action=none` and `most-disruptive-allowed-action=restart`,
+        run:
 
             $ {command} \\
                   my-group --instances=instance-1,instance2 \\
@@ -166,15 +167,3 @@ UpdateInstancesBeta.detailed_help = {
                   --most-disruptive-allowed-action=restart
         """
 }
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateInstancesAlpha(UpdateInstancesBeta):
-  r"""Immediately update selected instances in a Google Compute Engine managed instance group."""
-
-  @staticmethod
-  def Args(parser):
-    UpdateInstancesBeta.Args(parser)
-
-
-UpdateInstancesAlpha.detailed_help = UpdateInstancesBeta.detailed_help

@@ -35,13 +35,13 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  To list the roles for an organization, run:
+  To list the roles for the organization ``12345'', run:
 
-    $ {command} --organization 12345
+    $ {command} --organization=12345
 
-  To list the roles for a project, run:
+  To list the roles for the project ``myproject'', run:
 
-    $ {command} --project myproject
+    $ {command} --project=myproject
 
   To list the curated roles, run:
 
