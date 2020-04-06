@@ -53,7 +53,7 @@ class Explain(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('--model', required=True, help='Name of the model.')
-    flags.GetRegionArg('model').AddToParser(parser)
+    flags.GetRegionArg().AddToParser(parser)
     parser.add_argument(
         '--version',
         help="""\
@@ -65,6 +65,22 @@ versions run
   $ {parent_command} versions list
 """)
     group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        '--json-request',
+        help="""\
+        Path to a local file containing the body of JSON request.
+
+        An example of a JSON request:
+
+            {
+              "instances": [
+                {"x": [1, 2], "y": [3, 4]},
+                {"x": [-1, -2], "y": [-3, -4]}
+              ]
+            }
+
+        This flag accepts "-" for stdin.
+        """)
     group.add_argument(
         '--json-instances',
         help="""\
@@ -105,7 +121,10 @@ versions run
       Some value that we want to have printed later.
     """
     instances = predict_utilities.ReadInstancesFromArgs(
-        args.json_instances, args.text_instances, limit=INPUT_INSTANCES_LIMIT)
+        args.json_request,
+        args.json_instances,
+        args.text_instances,
+        limit=INPUT_INSTANCES_LIMIT)
 
     with endpoint_util.MlEndpointOverrides(region=args.region):
       model_or_version_ref = predict_utilities.ParseModelOrVersionRef(

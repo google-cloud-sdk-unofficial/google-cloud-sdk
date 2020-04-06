@@ -31,6 +31,17 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.DeleteCommand):
   """Delete an API Gateway."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To delete a gateway 'my-gateway' in 'us-central1', run:
+
+          $ {command} my-gateway --location=us-central1
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.

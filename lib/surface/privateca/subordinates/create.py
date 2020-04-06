@@ -212,7 +212,7 @@ class Create(base.CreateCommand):
     subject_config = flags.ParseSubjectFlags(args, is_ca=True)
     issuing_options = flags.ParseIssuingOptions(args)
     issuance_policy = flags.ParseIssuancePolicy(args)
-    reusable_config_wrapper = flags.ParseReusableConfig(args)
+    reusable_config_wrapper = flags.ParseReusableConfig(args, is_ca=True)
     lifetime = flags.ParseValidityFlag(args)
     labels = labels_util.ParseCreateArgs(
         args, self.messages.CertificateAuthority.LabelsValue)

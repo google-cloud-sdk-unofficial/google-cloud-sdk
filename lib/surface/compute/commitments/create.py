@@ -45,6 +45,15 @@ def _CommonArgsAlphaBeta(track, parser):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Google Compute Engine commitments."""
+  detailed_help = {
+      'EXAMPLES': '''
+        To create a commitment called ``commitment-1'' in the ``us-central1''
+        region, with a ``12-month'' plan, ``9GB'' of memory and 4 vcpu cores,
+        run:
+
+          $ {command} commitment-1 --plan=12-month --resources=memory=9GB,vcpu=4 --region=us-central1
+      '''
+  }
 
   @classmethod
   def Args(cls, parser):

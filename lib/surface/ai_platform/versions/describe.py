@@ -27,10 +27,17 @@ from googlecloudsdk.command_lib.ml_engine import versions_util
 
 def _AddDescribeArgs(parser):
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
-  flags.GetRegionArg('version').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
 
 
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    client = versions_api.VersionsClient()
+    return versions_util.Describe(client, args.version, model=args.model)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe an existing AI Platform version."""
 
@@ -39,6 +46,17 @@ class Describe(base.DescribeCommand):
     _AddDescribeArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      client = versions_api.VersionsClient()
-      return versions_util.Describe(client, args.version, model=args.model)
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DescribeBeta(base.DescribeCommand):
+  """Describe an existing AI Platform version."""
+
+  @staticmethod
+  def Args(parser):
+    _AddDescribeArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)
+

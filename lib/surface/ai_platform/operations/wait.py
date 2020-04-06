@@ -27,21 +27,13 @@ from googlecloudsdk.command_lib.ml_engine import operations_util
 
 def _AddWaitArgs(parser):
   flags.OPERATION_NAME.AddToParser(parser)
-  flags.GetRegionArg('operation').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
 
 
-class Wait(base.CreateCommand):
-  """Wait for an AI Platform operation to complete."""
-
-  @staticmethod
-  def Args(parser):
-    _AddWaitArgs(parser)
-
-  def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      client = operations.OperationsClient()
-      return operations_util.Wait(client, args.operation)
-
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    client = operations.OperationsClient()
+    return operations_util.Wait(client, args.operation)
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -55,4 +47,29 @@ _DETAILED_HELP = {
 }
 
 
-Wait.detailed_help = _DETAILED_HELP
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Wait(base.CreateCommand):
+  """Wait for an AI Platform operation to complete."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    _AddWaitArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class WaitBeta(base.CreateCommand):
+  """Wait for an AI Platform operation to complete."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    _AddWaitArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)

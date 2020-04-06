@@ -26,38 +26,79 @@ from googlecloudsdk.command_lib.compute.reservations import resource_args
 from googlecloudsdk.command_lib.compute.reservations import util
 
 
+def _MakeCreateRequest(args, messages, project, reservation_ref):
+  """Common routine for creating reservation request."""
+  reservation = util.MakeReservationMessageFromArgs(messages, args,
+                                                    reservation_ref)
+  reservation.description = args.description
+  return messages.ComputeReservationsInsertRequest(
+      reservation=reservation, project=project, zone=reservation_ref.zone)
+
+
+def _RunCreate(compute_api, args):
+  """Common routine for creating reservation."""
+  resources = compute_api.resources
+  reservation_ref = resource_args.GetReservationResourceArg().ResolveAsResource(
+      args,
+      resources,
+      scope_lister=compute_flags.GetDefaultScopeLister(compute_api.client))
+
+  messages = compute_api.client.messages
+  project = reservation_ref.project
+  create_request = _MakeCreateRequest(args, messages, project, reservation_ref)
+
+  service = compute_api.client.apitools_client.reservations
+  return compute_api.client.MakeRequests([(service, 'Insert', create_request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
+  _support_location_hint = False
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='create')
-    flags.AddCreateFlags(parser)
+    flags.AddCreateFlags(
+        parser, support_location_hint=cls._support_location_hint)
 
   def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    resources = holder.resources
-    reservation_ref = resource_args.GetReservationResourceArg(
-    ).ResolveAsResource(
-        args,
-        resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+    return _RunCreate(base_classes.ComputeApiHolder(base.ReleaseTrack.GA), args)
 
-    messages = holder.client.messages
-    project = reservation_ref.project
-    create_request = self._MakeCreateRequest(args, messages, project,
-                                             reservation_ref)
 
-    service = holder.client.apitools_client.reservations
-    return holder.client.MakeRequests([(service, 'Insert', create_request)])
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine reservation."""
+  _support_location_hint = False
 
-  def _MakeCreateRequest(self, args, messages, project, reservation_ref):
-    reservation = util.MakeReservationMessageFromArgs(messages, args,
-                                                      reservation_ref)
-    reservation.description = args.description
-    return messages.ComputeReservationsInsertRequest(
-        reservation=reservation, project=project, zone=reservation_ref.zone)
+  @classmethod
+  def Args(cls, parser):
+    resource_args.GetReservationResourceArg().AddArgument(
+        parser, operation_type='create')
+    flags.AddCreateFlags(
+        parser, support_location_hint=cls._support_location_hint)
+
+  def Run(self, args):
+    return _RunCreate(
+        base_classes.ComputeApiHolder(base.ReleaseTrack.BETA), args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Compute Engine reservation."""
+  _support_location_hint = True
+
+  @classmethod
+  def Args(cls, parser):
+    resource_args.GetReservationResourceArg().AddArgument(
+        parser, operation_type='create')
+    flags.AddCreateFlags(
+        parser, support_location_hint=cls._support_location_hint)
+
+  def Run(self, args):
+    return _RunCreate(
+        base_classes.ComputeApiHolder(base.ReleaseTrack.ALPHA), args)
 
 
 Create.detailed_help = {

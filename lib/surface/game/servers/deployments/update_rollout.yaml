@@ -18,12 +18,12 @@
         ```
           - realmsSelector:
               realms:
-              - realm1
-              - realm2
+              - projects/test-project-1/locations/us-west1/realms/realm-1
+              - projects/test-project-1/locations/us-west1/realms/realm-2
             configVersion: version2
           - realmsSelector:
               realms:
-              - realm4
+              - projects/test-project-1/locations/us-west1/realms/realm-3
             configVersion: version3
         ```
   request:
@@ -78,21 +78,21 @@
         params:
         - _REF_: googlecloudsdk.command_lib.game.servers.flags:config_overrides_file
           help_text: |
-            JSON/YAML file that specifies the Game Server Config overrides. This file can be used to
-            gradualy rollout new config version. The following sample file indicates that the version2
-            config is rolled out to realm1 and realm2 while the version3 config is deployed to realms.
-            The rest of the realms are deployed with the default config version (if one specified).
+            JSON/YAML file that specifies the Game Server config overrides. This file can be used to
+            gradually rollout a new config version. The following sample file indicates that the version2
+            config is rolled out to realm-1 and realm-2 while the version3 config is deployed to realm-3.
+            The rest of the realms are deployed with the default config version (if one is specified).
             Contents of a sample yaml file:
 
               ```
                  - realmsSelector:
                      realms:
-                     - realm1
-                     - realm2
+                     - projects/test-project-1/locations/us-west1/realms/realm-1
+                     - projects/test-project-1/locations/us-west1/realms/realm-2
                    configVersion: version2
                  - realmsSelector:
                      realms:
-                     - realm4
+                     - projects/test-project-1/locations/us-west1/realms/realm-3
                    configVersion: version3
               ```
         - arg_name: clear-config-overrides

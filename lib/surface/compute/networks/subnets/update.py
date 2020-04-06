@@ -58,8 +58,8 @@ class Update(base.UpdateCommand):
     aggregation_interval = args.logging_aggregation_interval
     flow_sampling = args.logging_flow_sampling
     metadata = args.logging_metadata
-    filter_expr = None
-    metadata_fields = None
+    filter_expr = args.logging_filter_expr
+    metadata_fields = args.logging_metadata_fields
 
     if self._include_alpha_logging:
       if args.aggregation_interval is not None:
@@ -68,10 +68,6 @@ class Update(base.UpdateCommand):
         flow_sampling = args.flow_sampling
       if args.metadata is not None:
         metadata = args.metadata
-      if args.logging_filter_expr is not None:
-        filter_expr = args.logging_filter_expr
-      if args.logging_metadata_fields is not None:
-        metadata_fields = args.logging_metadata_fields
 
     set_role_active = None
     drain_timeout_seconds = None
@@ -94,7 +90,6 @@ class Update(base.UpdateCommand):
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
         subnet_ref,
-        self._include_alpha_logging,
         enable_private_ip_google_access=args.enable_private_ip_google_access,
         add_secondary_ranges=args.add_secondary_ranges,
         remove_secondary_ranges=args.remove_secondary_ranges,

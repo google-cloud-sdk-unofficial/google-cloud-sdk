@@ -25,24 +25,43 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import operations_util
 
 
-_LIST_FORMAT = """\
+def _AddListArgs(parser):
+  list_format = """\
     table(
         name.basename(),
         metadata.operationType,
         done
     )
 """
+  parser.display_info.AddFormat(list_format)
+  flags.GetRegionArg().AddToParser(parser)
 
 
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    client = operations.OperationsClient()
+    return operations_util.List(client)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List existing AI Platform jobs."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(_LIST_FORMAT)
-    flags.GetRegionArg('operation').AddToParser(parser)
+    _AddListArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      client = operations.OperationsClient()
-      return operations_util.List(client)
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class ListBeta(base.ListCommand):
+  """List existing AI Platform jobs."""
+
+  @staticmethod
+  def Args(parser):
+    _AddListArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)

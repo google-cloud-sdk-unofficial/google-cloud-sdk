@@ -28,6 +28,14 @@ from googlecloudsdk.command_lib.compute.commitments import reservation_helper
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateReservationsAlpha(base.UpdateCommand):
   """Update the resource shape of reservations within the commitment."""
+  detailed_help = {
+      'EXAMPLES': '''
+        To update reservations of the commitment called ``commitment-1'' in
+        the ``us-central1'' region with values from ``reservations.yaml'', run:
+
+          $ {command} commitment-1 --reservations-from-file=reservations.yaml
+      '''
+  }
 
   @staticmethod
   def Args(parser):
@@ -37,13 +45,14 @@ class UpdateReservationsAlpha(base.UpdateCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
     resources = holder.resources
     commitment_ref = flags.MakeCommitmentArg(False).ResolveAsResource(
         args,
         resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
-    service = holder.client.apitools_client.regionCommitments
-    messages = holder.client.messages
+        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    service = client.apitools_client.regionCommitments
+    messages = client.messages
     update_reservation_request = messages.RegionCommitmentsUpdateReservationsRequest(
         reservations=reservation_helper.MakeReservations(
             args, messages, holder))
@@ -52,4 +61,4 @@ class UpdateReservationsAlpha(base.UpdateCommand):
         project=commitment_ref.project,
         region=commitment_ref.region,
         regionCommitmentsUpdateReservationsRequest=update_reservation_request)
-    return service.UpdateReservations(request)
+    return client.MakeRequests([(service, 'UpdateReservations', request)])

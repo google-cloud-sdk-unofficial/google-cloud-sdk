@@ -1,4 +1,3 @@
-# TODO(b/120788962) migrate the implementation to declarative.
 # -*- coding: utf-8 -*- #
 # Copyright 2019 Google LLC. All Rights Reserved.
 #
@@ -27,38 +26,49 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+def _AddIamPolicyBindingFlags(parser, add_condition=False):
+  flags.GetModelName().AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
+  iam_util.AddArgsForAddIamPolicyBinding(
+      parser,
+      flags.MlEngineIamRolesCompleter,
+      add_condition=add_condition)
+
+
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    return models_util.AddIamPolicyBinding(models.ModelsClient(), args.model,
+                                           args.member, args.role)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
-  r"""Add IAM policy binding to a model.
+  """Add IAM policy binding to a model."""
 
-  Adds IAM policy binding to the given model.
-
-  See https://cloud.google.com/iam/docs/managing-policies for details of
-  policy role and member types.
-
-  ## EXAMPLES
-
-  The following command will add an IAM policy binding for the role of
-  'roles/editor' for the user 'test-user@gmail.com' on the model
-  `my_model`:
-
-    $ {command} my_model \
-        --member='user:test-user@gmail.com' \
-        --role='roles/editor'
-  """
+  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
+      'model', 'my_model', role='roles/ml.admin', condition=False)
 
   @staticmethod
   def Args(parser):
-    flags.GetModelName().AddToParser(parser)
-    flags.GetRegionArg('model').AddToParser(parser)
-    iam_util.AddArgsForAddIamPolicyBinding(
-        parser,
-        flags.MlEngineIamRolesCompleter)
+    _AddIamPolicyBindingFlags(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      return models_util.AddIamPolicyBinding(models.ModelsClient(), args.model,
-                                             args.member, args.role)
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddIamPolicyBindingBeta(AddIamPolicyBinding):
+  """Add IAM policy binding to a model."""
+
+  detailed_help = iam_util.GetDetailedHelpForAddIamPolicyBinding(
+      'model', 'my_model', role='roles/ml.admin', condition=False)
+
+  @staticmethod
+  def Args(parser):
+    _AddIamPolicyBindingFlags(parser)
+
+  def Run(self, args):
+    return _Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -74,12 +84,7 @@ class AddIamPolicyBindingAlpha(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetModelName().AddToParser(parser)
-    flags.GetRegionArg('model').AddToParser(parser)
-    iam_util.AddArgsForAddIamPolicyBinding(
-        parser,
-        flags.MlEngineIamRolesCompleter,
-        add_condition=True)
+    _AddIamPolicyBindingFlags(parser, add_condition=True)
 
   def Run(self, args):
     with endpoint_util.MlEndpointOverrides(region=args.region):

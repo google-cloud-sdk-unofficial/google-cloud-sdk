@@ -28,9 +28,17 @@ from googlecloudsdk.command_lib.ml_engine import models_util
 
 def _AddDeleteArgs(parser):
   flags.GetModelName().AddToParser(parser)
-  flags.GetRegionArg('model').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
 
 
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    models_client = models.ModelsClient()
+    operations_client = operations.OperationsClient()
+    return models_util.Delete(models_client, operations_client, args.model)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   r"""Delete an existing AI Platform model.
 
@@ -48,7 +56,25 @@ class Delete(base.DeleteCommand):
     _AddDeleteArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      models_client = models.ModelsClient()
-      operations_client = operations.OperationsClient()
-      return models_util.Delete(models_client, operations_client, args.model)
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DeleteBeta(Delete):
+  r"""Delete an existing AI Platform model.
+
+  ## EXAMPLES
+
+  To delete all models matching the regular expression `vision[0-9]+`, run:
+
+      $ {parent_command} list --uri \
+            --filter 'name ~ vision[0-9]+' |
+            xargs -n 1 {command}
+  """
+
+  @staticmethod
+  def Args(parser):
+    _AddDeleteArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)

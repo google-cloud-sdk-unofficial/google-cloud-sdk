@@ -12,18 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API utilities for `gcloud build-artifacts` commands."""
+"""Command group for Config Management feature."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
 
-API_VERSION_FOR_TRACK = {base.ReleaseTrack.ALPHA: 'v1alpha2'}
-
-
-def Messages(api_version):
-  return apis.GetMessagesModule('buildartifacts', api_version)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class Configmanagement(base.Group):
+  """Manage Config Management feature."""
+  pass

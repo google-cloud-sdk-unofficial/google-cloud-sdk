@@ -52,7 +52,7 @@ class Describe(base.DescribeCommand):
         command invocation.
 
     Returns:
-      The specified sink with its destination.
+      The specified bucket.
     """
     return util.GetClient().projects_locations_buckets.Get(
         util.GetMessages().LoggingProjectsLocationsBucketsGetRequest(

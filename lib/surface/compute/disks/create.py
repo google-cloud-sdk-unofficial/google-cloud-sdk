@@ -210,12 +210,14 @@ class Create(base.Command):
   """Create Google Compute Engine persistent disks."""
 
   source_disk_enabled = False
+  pd_balanced_enabled = False
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser)
-    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.GA)
+    image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
@@ -251,7 +253,10 @@ class Create(base.Command):
 
     if (not size_gb and not args.source_snapshot and not from_image and
         not self.GetFromSourceDisk(args)):
-      if args.type and 'pd-ssd' in args.type:
+      pd_disk_types = ['pd-ssd']
+      if self.pd_balanced_enabled:
+        pd_disk_types.append('pd-balanced')
+      if args.type and args.type in pd_disk_types:
         size_gb = constants.DEFAULT_SSD_DISK_SIZE_GB
       else:
         size_gb = constants.DEFAULT_STANDARD_DISK_SIZE_GB
@@ -347,6 +352,10 @@ class Create(base.Command):
       result.append(zone_ref.SelfLink())
     return result
 
+  @classmethod
+  def _GetApiHolder(cls, no_http=False):
+    return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
+
   def Run(self, args):
     return self._Run(args, supports_kms_keys=True)
 
@@ -356,7 +365,7 @@ class Create(base.Command):
            supports_physical_block=False,
            support_shared_disk=False,
            support_vss_erase=False):
-    compute_holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    compute_holder = self._GetApiHolder()
     client = compute_holder.client
 
     self.show_unformated_message = not (args.IsSpecified('image') or
@@ -513,15 +522,15 @@ class CreateBeta(Create):
 
   source_disk_enabled = False
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
-
     _CommonArgs(
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True)
-    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
+    image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)
@@ -535,21 +544,22 @@ class CreateBeta(Create):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create Google Compute Engine persistent disks."""
 
   source_disk_enabled = True
+  pd_balanced_enabled = True
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    messages = cls._GetApiHolder(no_http=True).client.messages
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
-
     _CommonArgs(
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
         source_disk_enabled=True)
-    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
+    image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', region_fallthrough=True)

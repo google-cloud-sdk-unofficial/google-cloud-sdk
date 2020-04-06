@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: |
@@ -58,14 +58,14 @@
 
         $ {command} MY-DASHBOARD --config-from-file=MY-FILE
 
-        Sample contents of MY-FILE:
+      Sample contents of MY-FILE:
 
-          displayName: New Dashboard with new Display Name
-          etag: 40d1040034db4e5a9dee931ec1b12c0d
-          gridLayout:
-            widgets:
-            - text:
-                content: Hello World
+        displayName: New Dashboard with new Display Name
+        etag: 40d1040034db4e5a9dee931ec1b12c0d
+        gridLayout:
+          widgets:
+          - text:
+              content: Hello World
 
   arguments:
     resource:

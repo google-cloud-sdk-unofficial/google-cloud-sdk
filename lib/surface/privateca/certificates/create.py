@@ -156,9 +156,9 @@ class Create(base.CreateCommand):
     config.publicKey = messages.PublicKey()
     config.publicKey.key = public_key
     config.publicKey.type = messages.PublicKey.TypeValueValuesEnum.PEM_RSA_KEY
-    config.reusableConfig = flags.ParseReusableConfig(args)
-
-    config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=False)
+    config.reusableConfig = flags.ParseReusableConfig(
+        args, is_ca=args.is_ca_cert)
+    config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=args.is_ca_cert)
 
     return config
 

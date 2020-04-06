@@ -26,11 +26,17 @@ from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
 import six
 
+
 DEFAULT_LIST_FORMAT = """\
   table(
     priority,
     action,
     direction,
+    match.config.srcIpRanges.list(),
+    match.config.destIpRanges.list(),
+    match.config.layer4Configs.map().org_firewall_rule().list():label=PORT_RANGE,
+    targetServiceAccounts.list():label=TARGET_SVC_ACCT,
+    targetResources:label=TARGET_RESOURCES,
     ruleTupleCount,
     enableLogging,
     description

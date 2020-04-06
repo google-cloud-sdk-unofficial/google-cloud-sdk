@@ -281,16 +281,23 @@ class CreateBeta(Create):
   """
 
   @staticmethod
-  def AlphaAndBetaArgs(parser):
+  def AlphaArgs(parser):
     Create.Args(parser)
-    flags.AddPrivateIpEnvironmentFlags(parser)
+    flags.AddPrivateIpEnvironmentFlags(parser, False)
+    flags.AddIpAliasEnvironmentFlags(parser)
+
+  @staticmethod
+  def BetaArgs(parser):
+    Create.Args(parser)
+    flags.AddPrivateIpEnvironmentFlags(parser, True)
     flags.AddIpAliasEnvironmentFlags(parser)
 
   @staticmethod
   def Args(parser):
-    CreateBeta.AlphaAndBetaArgs(parser)
+    CreateBeta.BetaArgs(parser)
     web_server_group = parser.add_mutually_exclusive_group()
     flags.WEB_SERVER_ALLOW_IP.AddToParser(web_server_group)
+    flags.WEB_SERVER_ALLOW_ALL.AddToParser(web_server_group)
     flags.WEB_SERVER_DENY_ALL.AddToParser(web_server_group)
 
   def Run(self, args):
@@ -298,6 +305,7 @@ class CreateBeta(Create):
     self.ParsePrivateEnvironmentConfigOptions(args)
     if self.ReleaseTrack() == base.ReleaseTrack.BETA:
       self.ParseWebServerAccessControlConfigOptions(args)
+      self.ParsePrivateEnvironmentWebServerCloudSqlRanges(args)
     return super(CreateBeta, self).Run(args)
 
   def ParseIpAliasConfigOptions(self, args):
@@ -339,10 +347,32 @@ class CreateBeta(Create):
               prerequisite='enable-private-environment',
               opt='master-ipv4-cidr'))
 
+  def ParsePrivateEnvironmentWebServerCloudSqlRanges(self, args):
+    if args.web_server_ipv4_cidr and not args.enable_private_environment:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-private-environment',
+              opt='web-server-ipv4-cidr'))
+
+    if args.cloud_sql_ipv4_cidr and not args.enable_private_environment:
+      raise command_util.InvalidUserInputError(
+          PREREQUISITE_OPTION_ERROR_MSG.format(
+              prerequisite='enable-private-environment',
+              opt='cloud-sql-ipv4-cidr'))
+
   def ParseWebServerAccessControlConfigOptions(self, args):
-    self.web_server_access_control = environments_api_util.BuildWebServerAllowedIps(
-        args.web_server_allow_ip, not args.web_server_allow_ip,
-        args.web_server_deny_all)
+    if (args.enable_private_environment and not args.web_server_allow_ip and
+        not args.web_server_allow_all and not args.web_server_deny_all):
+      raise command_util.InvalidUserInputError(
+          'Cannot specify --enable-private-environment without one of: ' +
+          '--web-server-allow-ip, --web-server-allow-all ' +
+          'or --web-server-deny-all')
+
+    # Default to allow all if no flag is specified.
+    self.web_server_access_control = (
+        environments_api_util.BuildWebServerAllowedIps(
+            args.web_server_allow_ip, args.web_server_allow_all or
+            not args.web_server_allow_ip, args.web_server_deny_all))
     flags.ValidateIpRanges(
         [acl['ip_range'] for acl in self.web_server_access_control])
 
@@ -372,6 +402,8 @@ class CreateBeta(Create):
         private_environment=args.enable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         master_ipv4_cidr=args.master_ipv4_cidr,
+        web_server_ipv4_cidr=args.web_server_ipv4_cidr,
+        cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,
         web_server_access_control=self.web_server_access_control,
         release_track=self.ReleaseTrack())
 
@@ -388,7 +420,7 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    CreateBeta.AlphaAndBetaArgs(parser)
+    CreateBeta.AlphaArgs(parser)
 
     # Adding alpha arguments
     parser.add_argument(

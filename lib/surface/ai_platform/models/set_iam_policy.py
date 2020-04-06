@@ -26,9 +26,22 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
-class SetIamPolicy(base.Command):
+def _AddSetIamPolicyArgs(parser):
+  flags.GetModelResourceArg(
+      positional=True, required=True,
+      verb='to set IAM policy for').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
+  iam_util.AddArgForPolicyFile(parser)
+
+
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    return models_util.SetIamPolicy(models.ModelsClient(), args.model,
+                                    args.policy_file)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class SetIamPolicyGA(base.Command):
   """Set the IAM policy for a model.
 
   Sets the IAM policy for the given model as defined in a JSON or YAML file.
@@ -45,13 +58,31 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetModelResourceArg(
-        positional=True, required=True,
-        verb='to set IAM policy for').AddToParser(parser)
-    flags.GetRegionArg('model').AddToParser(parser)
-    iam_util.AddArgForPolicyFile(parser)
+    _AddSetIamPolicyArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      return models_util.SetIamPolicy(models.ModelsClient(), args.model,
-                                      args.policy_file)
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class SetIamPolicyBeta(base.Command):
+  """Set the IAM policy for a model.
+
+  Sets the IAM policy for the given model as defined in a JSON or YAML file.
+
+  See https://cloud.google.com/iam/docs/managing-policies for details of
+  the policy file format and contents.
+
+  ## EXAMPLES
+  The following command will read am IAM policy defined in a JSON file
+  'policy.json' and set it for the model `my_model`:
+
+    $ {command} my_model policy.json
+  """
+
+  @staticmethod
+  def Args(parser):
+    _AddSetIamPolicyArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)

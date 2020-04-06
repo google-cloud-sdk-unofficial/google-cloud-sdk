@@ -75,17 +75,19 @@ class ReplayRecentAccesses(base.Command):
     policy = iam_util.ParsePolicyFile(args.policy_file,
                                       messages.GoogleIamV1Policy)
     policy.version = iam_util.MAX_LIBRARY_IAM_SUPPORTED_VERSION
-    additional_property = messages.GoogleIamAssistV1alpha2ReplayRecentAccessesRequest.PolicyOverlayValue.AdditionalProperty(
+    additional_property = messages.GoogleIamAssistV1alpha3ReplayConfig.PolicyOverlayValue.AdditionalProperty(
         key=args.resource, value=policy)
-    overlay = messages.GoogleIamAssistV1alpha2ReplayRecentAccessesRequest.PolicyOverlayValue(
+    overlay = messages.GoogleIamAssistV1alpha3ReplayConfig.PolicyOverlayValue(
         additionalProperties=[additional_property])
-    request = messages.GoogleIamAssistV1alpha2ReplayRecentAccessesRequest(
+    config = messages.GoogleIamAssistV1alpha3ReplayConfig(
         policyOverlay=overlay)
-    response = client.SimulatorService.ReplayRecentAccesses(
-        client.SimulatorService(client), request)
+    request = messages.GoogleIamAssistV1alpha3Replay(
+        config=config)
+    response = client.ReplaysService.Create(
+        client.ReplaysService(client), request)
 
-    operations_client = operations.Client.FromApiVersion('v1alpha2')
+    operations_client = operations.Client.FromApiVersion('v1alpha3')
     operation_response = operations_client.WaitForOperation(
         response,
-        'Waiting for operation [{}] to complete'.format(response.name))
+        'Waiting for replay [{}] to complete'.format(response.name))
     return operation_response

@@ -32,6 +32,15 @@ from googlecloudsdk.command_lib.util.args import labels_util
 class Update(base.UpdateCommand):
   """Update an API Gateway."""
 
+  detailed_help = {
+      'EXAMPLES':
+          """\
+          To update the display name of a gateway, run:
+
+            $ {command} my-gateway --location=us-central1 --display-name="New Display Name"
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     base.ASYNC_FLAG.AddToParser(parser)

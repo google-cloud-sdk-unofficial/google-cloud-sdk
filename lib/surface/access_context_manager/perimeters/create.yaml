@@ -23,6 +23,7 @@
       modify_request_hooks:
       - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
       - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevelsGA
+      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddVpcAccessibleServicesGA
       - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=servicePerimeter.name
 
 
@@ -89,7 +90,7 @@
           must be empty.
 
     - group:
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, BETA]
         params:
         - api_field: servicePerimeter.status.vpcAccessibleServices.allowedServices
           arg_name: vpc-allowed-services

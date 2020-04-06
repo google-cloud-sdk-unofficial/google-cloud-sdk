@@ -33,6 +33,25 @@ from googlecloudsdk.core.console import console_io
 class Delete(base.DeleteCommand):
   """Deletes an API."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          {description}
+
+          NOTE: All API configs belonging to the API will need to be deleted before
+          the API can be deleted.
+          """,
+      'EXAMPLES':
+          """\
+          To delete an API 'my-api', run:
+
+            $ {command} my-api
+
+          NOTE: All API configs belonging to the API will need to be deleted before
+          the API can be deleted.
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.

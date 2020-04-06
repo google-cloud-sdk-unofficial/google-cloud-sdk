@@ -21,21 +21,59 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class Monitoring(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class MonitoringGA(base.Group):
   # pylint: disable=line-too-long
-  """Manage Stackdriver Monitoring alerting policies and notification channels."""
+  """Manage Stackdriver Monitoring dashboards."""
   category = base.MONITORING_CATEGORY
 
   detailed_help = {
       'DESCRIPTION':
           """\
-          Manage Stackdriver Monitoring alerting policies and notification
+          Manage Stackdriver Monitoring dashboards.
+
+          More information can be found here:
+              * https://cloud.google.com/monitoring/dashboards/api-dashboard
+      """
+  }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class MonitoringBeta(base.Group):
+  # pylint: disable=line-too-long
+  """Manage Stackdriver Monitoring dashboards and notification channels."""
+  category = base.MONITORING_CATEGORY
+
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          Manage Stackdriver Monitoring dashboards and notification
+          channels.
+
+          More information can be found here:
+              * https://cloud.google.com/monitoring/api/v3/
+              * https://cloud.google.com/monitoring/alerts/using-channels-api
+              * https://cloud.google.com/monitoring/dashboards/api-dashboard
+      """
+  }
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class MonitoringAlpha(base.Group):
+  # pylint: disable=line-too-long
+  """Manage Stackdriver Monitoring alerting policies, dashboards, and notification channels."""
+  category = base.MONITORING_CATEGORY
+
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          Manage Stackdriver Monitoring alerting policies, dashboards, and notification
           channels.
 
           More information can be found here:
               * https://cloud.google.com/monitoring/api/v3/
               * https://cloud.google.com/monitoring/alerts/using-alerting-api
               * https://cloud.google.com/monitoring/alerts/using-channels-api
+              * https://cloud.google.com/monitoring/dashboards/api-dashboard
       """
   }

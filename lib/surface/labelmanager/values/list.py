@@ -58,6 +58,7 @@ class List(base.ListCommand):
         group,
         required=True,
         message=('This flag must be specified.'))
+    arguments.AddShowDeletedArgToParser(parser)
     parser.display_info.AddFormat('table(name:sort=1, displayName)')
 
   def Run(self, args):
@@ -73,6 +74,6 @@ class List(base.ListCommand):
       label_key = label_key_id
 
     list_request = labelmanager_messages.LabelmanagerLabelValuesListRequest(
-        parent=label_key)
+        parent=label_key, showDeleted=args.show_deleted)
     response = labelvalues_service.List(list_request)
     return response.values

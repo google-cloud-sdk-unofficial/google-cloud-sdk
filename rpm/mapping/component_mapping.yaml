@@ -16,7 +16,7 @@ cloud-build-local: google-cloud-sdk-cloud-build-local
 cloud_sql_proxy: unavailable
 cloud-datastore-emulator: google-cloud-sdk-datastore-emulator
 cloud-firestore-emulator: google-cloud-sdk-firestore-emulator
-cloud-spanner-emulator: unavailable
+cloud-spanner-emulator: google-cloud-sdk-spanner-emulator
 core: google-cloud-sdk
 datalab: google-cloud-sdk-datalab
 docker-credential-gcr: unavailable

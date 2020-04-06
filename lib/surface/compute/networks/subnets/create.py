@@ -89,8 +89,8 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
       '--enable-flow-logs',
       action='store_true',
       default=None,
-      help=('Enable/disable VPC flow logging for this subnet. More information '
-            'for VPC flow logs can be found at '
+      help=('Enable/disable VPC Flow Logs for this subnet. More information '
+            'for VPC Flow Logs can be found at '
             'https://cloud.google.com/vpc/docs/using-flow-logs.'))
 
   flags.AddLoggingAggregationInterval(parser, messages)
@@ -98,11 +98,29 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
       '--logging-flow-sampling',
       type=arg_parsers.BoundedFloat(lower_bound=0.0, upper_bound=1.0),
       help="""\
-      Can only be specified if VPC flow logging for this subnetwork is
+      Can only be specified if VPC Flow Logs for this subnetwork is
       enabled. The value of the field must be in [0, 1]. Set the sampling rate
       of VPC flow logs within the subnetwork where 1.0 means all collected
       logs are reported and 0.0 means no logs are reported. Default is 0.5
       which means half of all collected logs are reported.
+      """)
+
+  parser.add_argument(
+      '--logging-filter-expr',
+      help="""\
+        Can only be specified if VPC Flow Logs for this subnetwork is enabled.
+        Export filter used to define which logs should be generated.
+        """)
+  flags.AddLoggingMetadata(parser, messages)
+  parser.add_argument(
+      '--logging-metadata-fields',
+      type=arg_parsers.ArgList(),
+      metavar='METADATA_FIELD',
+      default=None,
+      help="""\
+      Can only be specified if VPC Flow Logs for this subnetwork is enabled
+      and "metadata" is set to CUSTOM_METADATA. The comma-separated list of
+      metadata fields that should be added to reported logs.
       """)
 
   if include_alpha_logging:
@@ -120,26 +138,6 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
         which means half of all collected logs are reported.
         """)
     flags.AddLoggingMetadataDeprecated(parser, messages)
-
-    parser.add_argument(
-        '--logging-filter-expr',
-        help="""\
-        Can only be specified if VPC flow logs for this subnetwork is enabled.
-        Export filter used to define which VPC flow logs should be logged.
-        """)
-    flags.AddLoggingMetadataAlpha(parser, messages)
-    parser.add_argument(
-        '--logging-metadata-fields',
-        type=arg_parsers.ArgList(),
-        metavar='METADATA_FIELD',
-        default=None,
-        help="""\
-        Can only be specified if VPC flow logs for this subnetwork is enabled
-        and "metadata" is set to CUSTOM_METADATA. The custom list of metadata
-        fields that should be added to reported VPC flow logs.
-        """)
-  else:
-    flags.AddLoggingMetadata(parser, messages)
 
   purpose_choices = {
       'PRIVATE':
@@ -261,8 +259,8 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
       args.logging_aggregation_interval is not None or
       args.logging_flow_sampling is not None or
       args.logging_metadata is not None or
-      (include_alpha_logging and args.logging_filter_expr is not None) or
-      (include_alpha_logging and args.logging_metadata_fields is not None)):
+      args.logging_filter_expr is not None or
+      args.logging_metadata_fields is not None):
     log_config = messages.SubnetworkLogConfig(enable=args.enable_flow_logs)
     if args.logging_aggregation_interval:
       log_config.aggregationInterval = flags.GetLoggingAggregationIntervalArg(
@@ -270,15 +268,11 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
     if args.logging_flow_sampling is not None:
       log_config.flowSampling = args.logging_flow_sampling
     if args.logging_metadata:
-      if include_alpha_logging:
-        log_config.metadata = flags.GetLoggingMetadataArgAlpha(
-            messages).GetEnumForChoice(args.logging_metadata)
-      else:
-        log_config.metadata = flags.GetLoggingMetadataArg(
-            messages).GetEnumForChoice(args.logging_metadata)
-    if include_alpha_logging and args.logging_filter_expr is not None:
+      log_config.metadata = flags.GetLoggingMetadataArg(
+          messages).GetEnumForChoice(args.logging_metadata)
+    if args.logging_filter_expr is not None:
       log_config.filterExpr = args.logging_filter_expr
-    if include_alpha_logging and args.logging_metadata_fields is not None:
+    if args.logging_metadata_fields is not None:
       log_config.metadataFields = args.logging_metadata_fields
     subnetwork.logConfig = log_config
 

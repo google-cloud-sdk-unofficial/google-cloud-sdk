@@ -32,7 +32,7 @@ def _AddCreateArgs(parser, support_console_logging=False):
   """Get arguments for the `ai-platform models create` command."""
   flags.GetModelName().AddToParser(parser)
   flags.GetDescriptionFlag('model').AddToParser(parser)
-  flags.GetRegionArg('model').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   parser.add_argument(
       '--regions',
       metavar='REGION',

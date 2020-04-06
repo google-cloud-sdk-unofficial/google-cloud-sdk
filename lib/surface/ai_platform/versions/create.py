@@ -41,7 +41,7 @@ def _AddCreateArgs(parser):
   """Add common arguments for `versions create` command."""
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
   flags.GetDescriptionFlag('version').AddToParser(parser)
-  flags.GetRegionArg('version').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
   base.Argument(
       '--origin',

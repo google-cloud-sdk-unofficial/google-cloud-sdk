@@ -127,6 +127,8 @@ def _CommonArgs(parser,
       group_text='Specifies the reservation for the instance.',
       affinity_text='The type of reservation for the instance.')
 
+  maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
+
   sole_tenancy_flags.AddNodeAffinityFlagToParser(parser)
 
   if supports_min_node_cpu:
@@ -646,7 +648,6 @@ class CreateBeta(Create):
     instances_flags.AddSourceMachineImageEncryptionKey(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
-    maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -695,7 +696,6 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddLocalNvdimmArgs(parser)
-    maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
 

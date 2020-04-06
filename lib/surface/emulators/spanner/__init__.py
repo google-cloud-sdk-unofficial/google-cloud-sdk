@@ -44,7 +44,6 @@ def _RequireDockerInstalled():
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.Hidden
 class Spanner(base.Group):
   """Manage your local Spanner emulator.
 

@@ -32,8 +32,7 @@ from googlecloudsdk.core import resources
 import six
 
 
-def _Args(parser, release_track, supports_force_create=False,
-          supports_shielded_instance_initial_state=False):
+def _Args(parser, messages, supports_force_create=False):
   """Set Args based on Release Track."""
   # GA Args
   parser.display_info.AddFormat(flags.LIST_FORMAT)
@@ -51,7 +50,7 @@ def _Args(parser, release_track, supports_force_create=False,
   flags.AddCloningImagesArgs(parser, sources_group)
   flags.AddCreatingImageFromSnapshotArgs(parser, sources_group)
 
-  image_utils.AddGuestOsFeaturesArg(parser, release_track)
+  image_utils.AddGuestOsFeaturesArg(parser, messages)
   kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
 
   # Alpha and Beta Args
@@ -68,8 +67,7 @@ def _Args(parser, release_track, supports_force_create=False,
     location closest to the source is chosen automatically.
     """)
 
-  if supports_shielded_instance_initial_state:
-    compute_flags.AddShieldedInstanceInitialStateKeyArg(parser)
+  compute_flags.AddShieldedInstanceInitialStateKeyArg(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -80,16 +78,20 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, cls.ReleaseTrack())
+    messages = cls._GetApiHolder(no_http=True).client.messages
+    _Args(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
+
+  @classmethod
+  def _GetApiHolder(cls, no_http=False):
+    return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
     return self._Run(args)
 
-  def _Run(self, args,
-           supports_shielded_instance_initial_state=False):
+  def _Run(self, args):
     """Returns a list of requests necessary for adding images."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    holder = self._GetApiHolder()
     client = holder.client
     messages = client.messages
     resource_parser = holder.resources
@@ -170,11 +172,10 @@ class Create(base.CreateCommand):
         guest_os_feature_messages.append(guest_os_feature)
       image.guestOsFeatures = guest_os_feature_messages
 
-    if supports_shielded_instance_initial_state:
-      initial_state, has_set =\
-          image_utils.CreateInitialStateConfig(args, messages)
-      if has_set:
-        image.shieldedInstanceInitialState = initial_state
+    initial_state, has_set =\
+        image_utils.CreateInitialStateConfig(args, messages)
+    if has_set:
+      image.shieldedInstanceInitialState = initial_state
 
     if args.IsSpecified('storage_location'):
       image.storageLocations = [args.storage_location]
@@ -209,8 +210,9 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
+    messages = cls._GetApiHolder(no_http=True).client.messages
     _Args(parser,
-          cls.ReleaseTrack(),
+          messages,
           supports_force_create=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
@@ -226,15 +228,14 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
+    messages = cls._GetApiHolder(no_http=True).client.messages
     _Args(parser,
-          cls.ReleaseTrack(),
-          supports_force_create=True,
-          supports_shielded_instance_initial_state=True)
+          messages,
+          supports_force_create=True)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args,
-                     supports_shielded_instance_initial_state=True)
+    return self._Run(args)
 
 
 Create.detailed_help = {

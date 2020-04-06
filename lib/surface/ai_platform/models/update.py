@@ -31,11 +31,32 @@ from googlecloudsdk.core import log
 def _AddUpdateArgs(parser):
   """Get arguments for the `ai-platform models update` command."""
   flags.GetModelName().AddToParser(parser)
-  flags.GetRegionArg('model').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   flags.GetDescriptionFlag('model').AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
 
 
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    models_client = models.ModelsClient()
+    operations_client = operations.OperationsClient()
+    models_util.Update(models_client, operations_client, args)
+    log.UpdatedResource(args.model, kind='ml engine model')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
+  """Update an existing AI Platform model."""
+
+  @staticmethod
+  def Args(parser):
+    _AddUpdateArgs(parser)
+
+  def Run(self, args):
+    _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update an existing AI Platform model."""
 
@@ -44,8 +65,4 @@ class Update(base.UpdateCommand):
     _AddUpdateArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      models_client = models.ModelsClient()
-      operations_client = operations.OperationsClient()
-      models_util.Update(models_client, operations_client, args)
-      log.UpdatedResource(args.model, kind='ml engine model')
+    _Run(args)

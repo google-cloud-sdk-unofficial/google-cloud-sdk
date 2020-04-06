@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Create a new Stackdriver Monitoring dashboard.
@@ -62,13 +62,13 @@
 
         $ {command} --config-from-file=MY-FILE
 
-        Sample contents of MY-FILE:
+      Sample contents of MY-FILE:
 
-          displayName: New Dashboard
-          gridLayout:
-            widgets:
-            - text:
-                content: Hello World
+        displayName: New Dashboard
+        gridLayout:
+          widgets:
+          - text:
+              content: Hello World
 
   arguments:
     resource:

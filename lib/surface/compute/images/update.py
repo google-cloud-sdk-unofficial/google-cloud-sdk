@@ -19,12 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute.operations import poller
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.images import flags as images_flags
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -49,7 +49,26 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+def _Args(cls, parser, patch_enable=False):
+  """Set Args based on Release Track."""
+  cls.DISK_IMAGE_ARG = images_flags.MakeDiskImageArg(plural=False)
+  cls.DISK_IMAGE_ARG.AddArgument(parser, operation_type='update')
+  labels_util.AddUpdateLabelsFlags(parser)
+
+  if patch_enable:
+    parser.add_argument(
+        '--description',
+        help=('An optional text description for the image being created.'))
+
+    parser.add_argument(
+        '--family',
+        help=('Family of the image. When creating an instance or disk, '
+              'specifying a family will cause the latest non-deprecated image '
+              'in the family to be used.')
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine image."""
@@ -59,44 +78,83 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.DISK_IMAGE_ARG = images_flags.MakeDiskImageArg(plural=False)
-    cls.DISK_IMAGE_ARG.AddArgument(parser, operation_type='update')
-    labels_util.AddUpdateLabelsFlags(parser)
+    _Args(cls, parser, False)
 
   def Run(self, args):
+    return self._Run(args, False)
+
+  def _Run(self, args, patch_enable=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client.apitools_client
+    client = holder.client
     messages = holder.client.messages
 
     image_ref = self.DISK_IMAGE_ARG.ResolveAsResource(
         args, holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(holder.client))
+        scope_lister=flags.GetDefaultScopeLister(client))
 
-    labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
+    requests = []
+    result = None
 
-    image = client.images.Get(
-        messages.ComputeImagesGetRequest(**image_ref.AsDict()))
+    # check if need to update labels
+    if patch_enable:
+      # Throws a different error message.
+      labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    else:
+      labels_diff = labels_util.GetAndValidateOpsFromArgs(args)
 
-    labels_update = labels_diff.Apply(
-        messages.GlobalSetLabelsRequest.LabelsValue, image.labels)
+    if labels_diff.MayHaveUpdates():
+      image = holder.client.apitools_client.images.Get(
+          messages.ComputeImagesGetRequest(**image_ref.AsDict()))
+      labels_update = labels_diff.Apply(
+          messages.GlobalSetLabelsRequest.LabelsValue, image.labels)
 
-    if not labels_update.needs_update:
-      return image
+      if labels_update.needs_update:
+        request = messages.ComputeImagesSetLabelsRequest(
+            project=image_ref.project,
+            resource=image_ref.image,
+            globalSetLabelsRequest=
+            messages.GlobalSetLabelsRequest(
+                labelFingerprint=image.labelFingerprint,
+                labels=labels_update.labels))
 
-    request = messages.ComputeImagesSetLabelsRequest(
-        project=image_ref.project,
-        resource=image_ref.image,
-        globalSetLabelsRequest=
-        messages.GlobalSetLabelsRequest(
-            labelFingerprint=image.labelFingerprint,
-            labels=labels_update.labels))
+        requests.append((client.apitools_client.images, 'SetLabels', request))
 
-    operation = client.images.SetLabels(request)
-    operation_ref = holder.resources.Parse(
-        operation.selfLink, collection='compute.globalOperations')
+    if patch_enable:
+      should_patch = False
+      image_resource = messages.Image()
 
-    operation_poller = poller.Poller(client.images)
-    return waiter.WaitFor(
-        operation_poller, operation_ref,
-        'Updating labels of image [{0}]'.format(
-            image_ref.Name()))
+      if args.IsSpecified('family'):
+        image_resource.family = args.family
+        should_patch = True
+
+      if args.IsSpecified('description'):
+        image_resource.description = args.description
+        should_patch = True
+
+      if should_patch:
+        request = messages.ComputeImagesPatchRequest(
+            project=image_ref.project,
+            imageResource=image_resource,
+            image=image_ref.Name())
+        requests.append((client.apitools_client.images, 'Patch', request))
+
+    errors_to_collect = []
+    result = client.BatchRequests(requests, errors_to_collect)
+    if errors_to_collect:
+      raise exceptions.MultiError(errors_to_collect)
+    if result:
+      log.status.Print('Updated [{0}].'.format(image_ref))
+
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update Google Compute Engine images."""
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(cls, parser, patch_enable=True)
+
+  def Run(self, args):
+    return self._Run(args, patch_enable=True)

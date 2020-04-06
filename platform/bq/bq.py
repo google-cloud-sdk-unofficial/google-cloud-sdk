@@ -2118,11 +2118,10 @@ class _Query(BigqueryCmd):
             '--destination_table flag.')
       credentials = transfer_client.projects().dataSources().checkValidCreds(
           name=scheduled_queries_reference, body={}).execute()
-      authorization_code = ''
+      auth_info = {}
       if not credentials:
-        authorization_code = RetrieveAuthorizationCode(reference,
-                                                       'scheduled_query',
-                                                       transfer_client)
+        auth_info = RetrieveAuthorizationInfo(reference, 'scheduled_query',
+                                              transfer_client)
       schedule_args = bigquery_client.TransferScheduleArgs(
           schedule=self.schedule)
       write_disposition = ('WRITE_APPEND' if self.append_table else
@@ -2141,7 +2140,7 @@ class _Query(BigqueryCmd):
           target_dataset=target_dataset,
           display_name=self.display_name,
           params=json.dumps(params),
-          authorization_code=authorization_code,
+          auth_info=auth_info,
           schedule_args=schedule_args)
       print(('Transfer configuration \'%s\' successfully created.' %
              transfer_name))
@@ -2408,13 +2407,14 @@ class _Extract(BigqueryCmd):
     flags.DEFINE_enum(
         'destination_format',
         None,
-        ['CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO', 'SAVED_MODEL', 'BOOSTER'],
-        'The extracted file format. Format CSV,'
-        'NEWLINE_DELIMITED_JSON and AVRO are applicable for extracting tables. '
-        'Formats SAVED_MODEL and BOOSTER are applicable for extracting models. '
-        'The default value for tables is CSV. Tables with nested or repeated '
-        'fields cannot be exported as CSV. The default value for models is '
-        'SAVED_MODEL.',
+        ['CSV', 'NEWLINE_DELIMITED_JSON', 'AVRO', 'ML_TF_SAVED_MODEL',
+         'ML_XGBOOST_BOOSTER'],
+        'The extracted file format. Format CSV, NEWLINE_DELIMITED_JSON and AVRO '
+        'are applicable for extracting tables. Formats ML_TF_SAVED_MODEL and '
+        'ML_XGBOOST_BOOSTER are applicable for extracting models. The default '
+        'value for tables is CSV. Tables with nested or repeated fields cannot '
+        'be exported as CSV. The default value for models is '
+        'ML_TF_SAVED_MODEL.',
         flag_values=fv)
     flags.DEFINE_enum(
         'compression',
@@ -3815,7 +3815,7 @@ class _Make(BigqueryCmd):
         'assignee_id',
         None,
         'Project/folder/organization ID, to which the reservation is assigned. '
-        'Used in conjuction with --reservation_assignment.',
+        'Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'connection',
@@ -3955,13 +3955,12 @@ class _Make(BigqueryCmd):
             name=data_sources_reference, body={}).execute()
       else:
         raise bigquery_client.BigqueryError('A data source must be provided.')
-      authorization_code = ''
+      auth_info = {}
       if (not credentials
           and self.data_source != 'loadtesting'
           and not self.service_account_name):
-        authorization_code = RetrieveAuthorizationCode(reference,
-                                                       self.data_source,
-                                                       transfer_client)
+        auth_info = RetrieveAuthorizationInfo(reference, self.data_source,
+                                              transfer_client)
       schedule_args = bigquery_client.TransferScheduleArgs(
           schedule=self.schedule,
           start_time=self.schedule_start_time,
@@ -3974,7 +3973,7 @@ class _Make(BigqueryCmd):
           display_name=self.display_name,
           refresh_window_days=self.refresh_window_days,
           params=self.params,
-          authorization_code=authorization_code,
+          auth_info=auth_info,
           service_account_name=self.service_account_name,
           schedule_args=schedule_args)
       print(('Transfer configuration \'%s\' successfully created.' %
@@ -4184,16 +4183,38 @@ class _Update(BigqueryCmd):
         'this reservation node.',
         flag_values=fv)
     flags.DEFINE_boolean(
+        'capacity_commitment',
+        None,
+        'Updates a capacity commitment described by this identifier.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'plan',
+        None, ['MONTHLY', 'ANNUAL'],
+        'Commitment plan for this capacity commitment. Plan can only be '
+        'updated to the one with longer committed period. Options include:'
+        '\n MONTHLY'
+        '\n ANNUAL',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'renewal_plan',
+        None, ['FLEX', 'MONTHLY', 'ANNUAL'],
+        'The plan this capacity commitment is converted to after committed '
+        'period ends. Options include:'
+        '\n FLEX'
+        '\n MONTHLY'
+        '\n ANNUAL',
+        flag_values=fv)
+    flags.DEFINE_boolean(
         'reservation_assignment',
         None,
         'Updates a reservation assignment and so that the assignee will use a '
         'new reservation. '
-        'Used in conjuction with --destination_reservation_id',
+        'Used in conjunction with --destination_reservation_id',
         flag_values=fv)
     flags.DEFINE_string(
         'destination_reservation_id',
         None, 'Destination reservation ID. '
-        'Used in conjuction with --reservation_assignment.',
+        'Used in conjunction with --reservation_assignment.',
         flag_values=fv)
     flags.DEFINE_string(
         'reservation_size',
@@ -4481,6 +4502,8 @@ class _Update(BigqueryCmd):
           projects/p/locations/l/transferConfigs/c
       bq update --reservation --location=US --project_id=my-project
           --reservation_size=2G
+      bq update --capacity_commitment --location=US --project_id=my-project
+          --plan=MONTHLY --renewal_plan=FLEX
       bq update --reservation_assignment --reservation_id=proj:US.reservation1
           reservation2.<reservation_assignment_id>
       bq update --connection_credential='{"username":"u", "password":"p"}'
@@ -4518,6 +4541,16 @@ class _Update(BigqueryCmd):
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to update reservation '%s': %s" % (identifier, e))
+    elif self.capacity_commitment:
+      try:
+        reference = client.GetCapacityCommitmentReference(
+            identifier=identifier, default_location=FLAGS.location)
+        object_info = client.UpdateCapacityCommitment(reference, self.plan,
+                                                      self.renewal_plan)
+        _PrintObjectInfo(object_info, reference, custom_format='show')
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to update capacity commitment '%s': %s" % (identifier, e))
     elif self.reservation_assignment:
       try:
         reference = client.GetReservationAssignmentReference(
@@ -4695,7 +4728,7 @@ class _Update(BigqueryCmd):
       ))
     elif isinstance(reference, TransferConfigReference):
       if client.TransferExists(reference):
-        authorization_code = ''
+        auth_info = {}
         service_account_name = ''
         if self.update_credentials:
           if self.service_account_name:
@@ -4704,7 +4737,7 @@ class _Update(BigqueryCmd):
             transfer_config_name = _FormatDataTransferIdentifiers(
                 client, reference.transferConfigName)
             current_config = client.GetTransferConfig(transfer_config_name)
-            authorization_code = RetrieveAuthorizationCode(
+            auth_info = RetrieveAuthorizationInfo(
                 'projects/' + client.GetProjectReference().projectId,
                 current_config['dataSourceId'], client.GetTransferV1ApiClient())
         schedule_args = bigquery_client.TransferScheduleArgs(
@@ -4718,7 +4751,7 @@ class _Update(BigqueryCmd):
             display_name=self.display_name,
             refresh_window_days=self.refresh_window_days,
             params=self.params,
-            authorization_code=authorization_code,
+            auth_info=auth_info,
             service_account_name=service_account_name,
             schedule_args=schedule_args)
         print("Transfer configuration '%s' successfully updated." %
@@ -4742,7 +4775,7 @@ class _Update(BigqueryCmd):
       print("Model '%s' successfully updated." % (reference))
 
 
-def RetrieveAuthorizationCode(reference, data_source, transfer_client):
+def RetrieveAuthorizationInfo(reference, data_source, transfer_client):
   """Retrieves the authorization code.
 
   An authorization code is needed if the Data Transfer Service does not
@@ -4756,21 +4789,37 @@ def RetrieveAuthorizationCode(reference, data_source, transfer_client):
     transfer_client: The transfer api client.
 
   Returns:
-    authentication_code: Authentication from user.
+    auth_info: A dict which contains authorization info from user. It is either
+    an authorization_code or a version_info.
 
   """
   data_source_retrieval = reference + '/dataSources/' + data_source
   data_source_info = transfer_client.projects().dataSources().get(
       name=data_source_retrieval).execute()
-  auth_uri = ('https://www.gstatic.com/bigquerydatatransfer/oauthz/'
-              'auth?client_id=' + data_source_info['clientId'] + '&scope=' +
-              '%20'.join(data_source_info['scopes']) +
-              '&redirect_uri=urn:ietf:wg:oauth:2.0:oob')
+  first_party_oauth = False
+  if data_source_info['authorizationType'] == 'FIRST_PARTY_OAUTH':
+    first_party_oauth = True
+  auth_uri = (
+      'https://www.gstatic.com/bigquerydatatransfer/oauthz/'
+      'auth?client_id=' + data_source_info['clientId'] + '&scope=' +
+      '%20'.join(data_source_info['scopes']) +
+      '&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=' +
+      ('version_info' if first_party_oauth else 'authorization_code'))
   print('\n' + auth_uri)
-  print('Please copy and paste the above URL into your web browser'
-        ' and follow the instructions to retrieve an authentication code.')
-  authentication_code = _RawInput('Enter your authentication code here: ')
-  return authentication_code
+
+  auth_info = {}
+  if first_party_oauth:
+    print('Please copy and paste the above URL into your web browser'
+          ' and follow the instructions to retrieve a version_info.')
+    auth_info[bigquery_client.VERSION_INFO] = _RawInput(
+        'Enter your version_info here: ')
+  else:
+    print('Please copy and paste the above URL into your web browser'
+          ' and follow the instructions to retrieve an authorization code.')
+    auth_info[bigquery_client.AUTHORIZATION_CODE] = _RawInput(
+        'Enter your authorization code here: ')
+
+  return auth_info
 
 
 def _UpdateDataset(
@@ -5108,8 +5157,21 @@ def _PrintJobMessages(printable_job_info):
     table_id = ddl_target_table.get('tableId')
     op = _DDL_OPERATION_MAP.get(
         printable_job_info.get('DDL Operation Performed'))
+    # DDL Target Table is returned for both TABLE DDL and DROP ALL ROW ACCESS
+    # POLICIES DDL statements.
     if project_id and dataset_id and table_id and op:
-      print('%s %s.%s.%s\n' % (op, project_id, dataset_id, table_id))
+      if 'DDL Affected Row Access Policy Count' in printable_job_info:
+        ddl_affected_row_access_policy_count = printable_job_info[
+            'DDL Affected Row Access Policy Count']
+        print('{op} {count} row access policies on table '
+              '{project}.{dataset}.{table}\n'.format(
+                  op=op,
+                  count=ddl_affected_row_access_policy_count,
+                  project=project_id,
+                  dataset=dataset_id,
+                  table=table_id))
+      else:
+        print('%s %s.%s.%s\n' % (op, project_id, dataset_id, table_id))
   elif 'DDL Target Routine' in printable_job_info:
     ddl_target_routine = printable_job_info['DDL Target Routine']
     project_id = ddl_target_routine.get('projectId')
@@ -5119,6 +5181,24 @@ def _PrintJobMessages(printable_job_info):
         printable_job_info.get('DDL Operation Performed'))
     if project_id and dataset_id and routine_id and op:
       print('%s %s.%s.%s' % (op, project_id, dataset_id, routine_id))
+  elif 'DDL Target Row Access Policy' in printable_job_info:
+    ddl_target_row_access_policy = printable_job_info[
+        'DDL Target Row Access Policy']
+    project_id = ddl_target_row_access_policy.get('projectId')
+    dataset_id = ddl_target_row_access_policy.get('datasetId')
+    table_id = ddl_target_row_access_policy.get('tableId')
+    row_access_policy_id = ddl_target_row_access_policy.get('policyId')
+    op = _DDL_OPERATION_MAP.get(
+        printable_job_info.get('DDL Operation Performed'))
+    if project_id and dataset_id and table_id and row_access_policy_id and op:
+      print(
+          '{op} row access policy {policy} on table {project}.{dataset}.{table}'
+          .format(
+              op=op,
+              policy=row_access_policy_id,
+              project=project_id,
+              dataset=dataset_id,
+              table=table_id))
   elif 'Assertion' in printable_job_info:
     print('Assertion successful')
 

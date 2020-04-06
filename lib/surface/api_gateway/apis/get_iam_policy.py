@@ -26,7 +26,18 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetIamPolicy(base.ListCommand):
-  """Get the IAM policy for a gateway."""
+  """Get the IAM policy for an API."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To print the IAM policy for a given API, run:
+
+            $ {command} my-api
+          """,
+  }
 
   @staticmethod
   def Args(parser):

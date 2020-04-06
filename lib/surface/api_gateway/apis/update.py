@@ -33,6 +33,23 @@ from googlecloudsdk.command_lib.util.args import labels_util
 class Update(base.UpdateCommand):
   """Update an API Gateway API."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          {description}
+
+          NOTE: Only the display name and labels attributes are mutable on an API.
+          """,
+      'EXAMPLES':
+          """\
+          To update the display name of an API, run:
+
+            $ {command} my-api --display-name="New Display Name"
+
+          NOTE: Only the display name and labels attributes are mutable on an API.
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     base.ASYNC_FLAG.AddToParser(parser)

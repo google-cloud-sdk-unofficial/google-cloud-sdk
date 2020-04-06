@@ -27,21 +27,14 @@ from googlecloudsdk.command_lib.ml_engine import versions_util
 
 def _AddSetDefaultArgs(parser):
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
-  flags.GetRegionArg('version').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
 
 
-class SetDefault(base.DescribeCommand):
-  """Sets an existing AI Platform version as the default for its model."""
-
-  @staticmethod
-  def Args(parser):
-    _AddSetDefaultArgs(parser)
-
-  def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      client = versions_api.VersionsClient()
-      return versions_util.SetDefault(client, args.version, model=args.model)
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    client = versions_api.VersionsClient()
+    return versions_util.SetDefault(client, args.version, model=args.model)
 
 
 _DETAILED_HELP = {
@@ -55,4 +48,27 @@ model.  Only one version may be the default for a given version.
 }
 
 
-SetDefault.detailed_help = _DETAILED_HELP
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class SetDefault(base.DescribeCommand):
+  """Sets an existing AI Platform version as the default for its model."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    _AddSetDefaultArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class SetDefaultBeta(SetDefault):
+  """Sets an existing AI Platform version as the default for its model."""
+
+  @staticmethod
+  def Args(parser):
+    _AddSetDefaultArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)

@@ -67,11 +67,10 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
   messages = client.messages
 
   # Check that port related flags are set for gRPC health check.
-  args_unset = not (args.port or args.port_name or args.use_serving_port)
+  args_unset = not (args.port or args.use_serving_port)
   if args_unset:
     raise exceptions.ToolException(
-        'Either --port, --port-name or --use-serving-port must be set for gRPC '
-        'health check.'
+        'Either --port or --use-serving-port must be set for gRPC health check.'
     )
 
   health_check_ref = flags.HealthCheckArgument(
@@ -81,10 +80,9 @@ def _Run(args, holder, include_l7_internal_load_balancing, include_log_config):
       args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
   grpc_health_check = messages.GRPCHealthCheck(
       port=args.port,
-      portName=args.port_name,
       grpcServiceName=args.grpc_service_name)
 
-  health_checks_utils.ValidateAndAddPortSpecificationToHealthCheck(
+  health_checks_utils.ValidateAndAddPortSpecificationToGRPCHealthCheck(
       args, grpc_health_check)
 
   if health_checks_utils.IsRegionalHealthCheckRef(health_check_ref):

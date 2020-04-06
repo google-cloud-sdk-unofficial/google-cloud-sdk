@@ -33,6 +33,17 @@ from googlecloudsdk.command_lib.util.args import labels_util
 class Create(base.CreateCommand):
   """Create a new API."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To create an API, run:
+
+          $ {command} my-api
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     base.ASYNC_FLAG.AddToParser(parser)

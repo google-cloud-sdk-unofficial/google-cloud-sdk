@@ -26,6 +26,25 @@
       spec: !REF googlecloudsdk.command_lib.healthcare.resources:fhir_store
 
     params:
+    - arg_name: version
+      api_field: fhirStore.version
+      choices:
+      - arg_value: dstu2
+        enum_value: DSTU2
+        help_text: |
+          Draft Standard for Trial Use, [Release 2](https://www.hl7.org/fhir/DSTU2)
+      - arg_value: stu3
+        enum_value: STU3
+        help_text: |
+          Standard for Trial Use, [Release 3](https://www.hl7.org/fhir/STU3)
+      - arg_value: r4
+        enum_value: R4
+        help_text: |
+          [Release 4](https://www.hl7.org/fhir/R4)
+      help_text: |
+        The FHIR specification version that this FHIR store supports natively. This field is
+        immutable after store creation. Requests are rejected if they contain FHIR resources of a
+        different version. An empty value is treated as STU3.
     - arg_name: disable-referential-integrity
       api_field: fhirStore.disableReferentialIntegrity
       action: store_true

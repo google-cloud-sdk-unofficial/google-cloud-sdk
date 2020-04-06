@@ -206,25 +206,19 @@ class AnalyzeIamPolicy(base.Command):
       """,
       'EXAMPLES':
           """\
-          To find out who has iam.serviceAccounts.actAs permission permission on a
+          To find out which users have been granted the iam.serviceAccounts.actAs permission on a
           specified service account, run:
 
-          $ {command} --organization=YOUR_ORG_ID
-          --full-resource-name='//iam.googleapis.com/projects/YOUR_PROJ_ID/serviceAccounts/YOUR_SERVICE_ACCOUNT_UNIQUE_ID'
-          --permissions='iam.serviceAccounts.actAs'
-          --output-partial-result-before-timeout
+            $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_SERVICE_ACCOUNT_FULL_RESOURCE_NAME --permissions='iam.serviceAccounts.actAs'
 
-          To find out which resources a specified user can access, run:
+          To find out which resources a user can access, run:
 
-          $ {command} --organization=YOUR_ORG_ID
-          --identity='user:u1@foo.com' --output-partial-result-before-timeout
+            $ {command} --organization=YOUR_ORG_ID --identity='user:u1@foo.com'
 
-          To find out which accesses (roles or permissions) a specified user has
-          on a specified project, run:
+          To find out which roles or permissions a user has been granted on a
+          project, run:
 
-          $ {command} --organization=YOUR_ORG_ID
-          --full-resource-name='//cloudresourcemanager.googleapis.com/projects/YOUR_PROJ_ID'
-          --identity='user:u1@foo.com' --output-partial-result-before-timeout
+            $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_PROJECT_FULL_RESOURCE_NAME --identity='user:u1@foo.com'
       """
   }
 
@@ -252,9 +246,8 @@ class AnalyzeIamPolicyBeta(base.Command):
           To find out which users have been granted the
           iam.serviceAccounts.actAs permission on a service account, run:
 
-            $ {command} --organization=YOUR_ORG_ID
-            --full-resource-name='//iam.googleapis.com/projects/YOUR_PROJ_ID/serviceAccounts/YOUR_SERVICE_ACCOUNT_UNIQUE_ID'
-            --permissions='iam.serviceAccounts.actAs'
+            $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_SERVICE_ACCOUNT_FULL_RESOURCE_NAME --permissions='iam.serviceAccounts.actAs'
+
 
           To find out which resources a user can access, run:
 
@@ -263,9 +256,7 @@ class AnalyzeIamPolicyBeta(base.Command):
           To find out which roles or permissions a user has been granted on a
           project, run:
 
-            $ {command} --organization=YOUR_ORG_ID
-            --full-resource-name='//cloudresourcemanager.googleapis.com/projects/YOUR_PROJ_ID'
-            --identity='user:u1@foo.com'
+            $ {command} --organization=YOUR_ORG_ID --full-resource-name=YOUR_PROJECT_FULL_RESOURCE_NAME --identity='user:u1@foo.com'
       """
   }
 

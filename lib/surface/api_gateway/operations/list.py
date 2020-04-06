@@ -28,6 +28,21 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 class List(base.ListCommand):
   """List API Gateway operations."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To list all operations, run:
+
+            $ {command}
+
+          To list all operations within the 'us-central1' location:
+
+            $ {command} --location=us-central1
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     # --sort-by and --uri are inherited for all ListCommands but are not

@@ -115,8 +115,8 @@ def _Modify(client, args, existing_check, include_log_config):
   else:
     grpc_service_name = None
 
-  port, port_name, port_specification = health_checks_utils.\
-    HandlePortRelatedFlagsForUpdate(
+  port, port_specification = health_checks_utils.\
+    HandlePortRelatedFlagsForGRPCUpdate(
         args, existing_check.grpcHealthCheck)
 
   new_health_check = client.messages.HealthCheck(
@@ -125,7 +125,6 @@ def _Modify(client, args, existing_check, include_log_config):
       type=client.messages.HealthCheck.TypeValueValuesEnum.GRPC,
       grpcHealthCheck=client.messages.GRPCHealthCheck(
           port=port,
-          portName=port_name,
           portSpecification=port_specification,
           grpcServiceName=grpc_service_name),
       checkIntervalSec=(args.check_interval or existing_check.checkIntervalSec),
@@ -154,7 +153,7 @@ def _ValidateArgs(args, include_log_config):
     args_unset = (args.enable_logging is None and args_unset)
 
   if (args.description is None and args.grpc_service_name is None and
-      args.port_name is None and args_unset):
+      args_unset):
     raise exceptions.ToolException('At least one property must be modified.')
 
 

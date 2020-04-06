@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
 import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -98,12 +99,28 @@ class Unregister(base.DeleteCommand):
     )
     hub_util.AddUnRegisterCommonArgs(parser)
 
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      workload_identity = parser.add_group(
+          help='Workload Identity', hidden=True)
+      workload_identity.add_argument(
+          '--manage-workload-identity-bucket',
+          hidden=True,
+          action='store_true',
+          help=textwrap.dedent("""\
+            Set this option if --manage-workload-identity-bucket was set when
+            the cluster was initially registered with Hub. Setting this option
+            will cause the bucket to be deleted.
+            Requires gcloud alpha.
+            """),
+      )
+
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     kube_client = kube_util.KubernetesClient(args)
     kube_client.CheckClusterAdminPermissions()
     kube_util.ValidateClusterIdentifierFlags(kube_client, args)
     membership_id = args.CLUSTER_NAME
+
     # Delete membership from Hub API.
     try:
       name = 'projects/{}/locations/global/memberships/{}'.format(
@@ -118,6 +135,38 @@ class Unregister(base.DeleteCommand):
           'Membership [{}] for the cluster [{}] was not found on the Hub. '
           'It may already have been deleted, or it may never have existed.'
           .format(name, args.CLUSTER_NAME))
+
+    # enable_workload_identity and manage_workload_identity_bucket are only
+    # properties if we are on the alpha track
+    if (self.ReleaseTrack() is base.ReleaseTrack.ALPHA and
+        args.manage_workload_identity_bucket):
+      # The issuer URL from the cluster indicates which bucket to delete.
+      # --manage-workload-identity-bucket always uses the cluster's
+      # built-in endpoints.
+      openid_config_json = None
+      try:
+        openid_config_json = kube_client.GetOpenIDConfiguration()
+      except exceptions.Error as e:
+        log.status.Print(
+            'Cannot get the issuer URL that identifies the bucket associated '
+            'with this membership. Please double check that it is possible to '
+            'access the /.well-known/openid-configuration endpoint on the '
+            'cluster: {}'.format(e))
+
+      if openid_config_json:
+        issuer_url = json.loads(openid_config_json).get('issuer')
+        if not issuer_url:
+          log.status.Print(
+              'Cannot get the issuer URL that identifies the bucket associated '
+              'with this membership. The OpenID Config from '
+              '/.well-known/openid-configuration is missing the issuer field: '
+              '{}'.format(openid_config_json))
+
+        try:
+          api_util.DeleteWorkloadIdentityBucket(issuer_url)
+        except exceptions.Error as e:
+          log.status.Print(
+              'Failed to delete bucket for issuer {}: {}'.format(issuer_url, e))
 
     # Get namespace for the connect resource label.
     selector = '{}={}'.format(agent_util.CONNECT_RESOURCE_LABEL, project)

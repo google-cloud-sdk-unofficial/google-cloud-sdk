@@ -26,6 +26,14 @@ from googlecloudsdk.command_lib.compute.commitments import flags
 
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine commitment."""
+  detailed_help = {
+      'EXAMPLES': '''
+        To describe the commitment called ``commitment-1'' in the ``us-central1''
+        region, run:
+
+          $ {command} commitment-1 --region=us-central1
+      '''
+  }
 
   @staticmethod
   def Args(parser):

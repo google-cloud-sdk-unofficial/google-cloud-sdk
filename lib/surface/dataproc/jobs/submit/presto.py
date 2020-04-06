@@ -18,13 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc.jobs import presto
 from googlecloudsdk.command_lib.dataproc.jobs import submitter
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class PrestoBeta(presto.PrestoBase, submitter.JobSubmitter):
+class Presto(presto.PrestoBase, submitter.JobSubmitter):
   r"""Submit a Presto job to a cluster.
 
   Submit a Presto job to a cluster

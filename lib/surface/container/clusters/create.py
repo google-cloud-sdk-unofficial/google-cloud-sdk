@@ -535,6 +535,7 @@ class CreateBeta(Create):
     flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
     flags.AddReservationAffinityFlags(parser)
     flags.AddMasterGlobalAccessFlag(parser)
+    flags.AddEnableGvnicFlag(parser)
     _AddReleaseChannelGroup(parser)
 
   def ParseCreateOptions(self, args):
@@ -558,6 +559,7 @@ class CreateBeta(Create):
     ops.enable_tpu_service_networking = args.enable_tpu_service_networking
     ops.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     ops.enable_master_global_access = args.enable_master_global_access
+    ops.enable_gvnic = args.enable_gvnic
     return ops
 
 
@@ -620,6 +622,7 @@ class CreateAlpha(Create):
     flags.AddReservationAffinityFlags(parser)
     flags.AddDatapathProviderFlag(parser)
     flags.AddMasterGlobalAccessFlag(parser)
+    flags.AddEnableGvnicFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -657,6 +660,7 @@ class CreateAlpha(Create):
     ops.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     ops.datapath_provider = args.datapath_provider
     ops.enable_master_global_access = args.enable_master_global_access
+    ops.enable_gvnic = args.enable_gvnic
     return ops
 
 

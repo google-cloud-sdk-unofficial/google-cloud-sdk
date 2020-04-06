@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""`gcloud api-gateway apis create` command."""
+"""`gcloud api-gateway api-configs create` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -42,6 +42,20 @@ MAX_SERVICE_CONFIG_ID_LENGTH = 50
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Add a new config to an API."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          """\
+          {description}
+
+          NOTE: If the specified API does not exist it will be created.""",
+      'EXAMPLES':
+          """\
+        To create an API config for the API 'my-api' with an OpenAPI spec, run:
+
+          $ {command} my-config --api=my-api --openapi-spec=path/to/openapi_spec.yaml
+        """,
+  }
 
   @staticmethod
   def Args(parser):

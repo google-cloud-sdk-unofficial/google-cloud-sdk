@@ -12,18 +12,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Wrapper for user-visible raised exception."""
+"""The command to enable Config Management feature."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.core import exceptions
+from googlecloudsdk.command_lib.container.hub.features import base
 
 
-class InvalidInputValueError(exceptions.Error):
-  """Raised when the given flag value is invalid."""
+class Enable(base.EnableCommand):
+  """Enable Config Management feature.
 
+  This command enables Config Management feature in Hub.
 
-class UnsupportedLocationError(exceptions.Error):
-  """Raised when the given location is invalid."""
+  ## Examples
+
+  Enable Config Management feature:
+
+    $ {command}
+  """
+
+  FEATURE_NAME = 'configmanagement'
+  FEATURE_DISPLAY_NAME = 'Config Management'
+
+  @classmethod
+  def Args(cls, parser):
+    pass
+
+  def Run(self, args):
+    return self.RunCommand(args, configmanagementFeatureSpec=(
+        base.CreateConfigManagementFeatureSpec()))

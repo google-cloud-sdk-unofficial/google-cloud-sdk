@@ -32,6 +32,17 @@ from googlecloudsdk.command_lib.util.args import labels_util
 class Create(base.CreateCommand):
   """Create a new gateway."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To create a gateway in 'us-central1' run:
+
+          $ {command} my-gateway --api=my-api --api-config=my-config --location=us-central1
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     base.ASYNC_FLAG.AddToParser(parser)

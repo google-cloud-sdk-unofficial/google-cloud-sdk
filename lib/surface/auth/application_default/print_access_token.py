@@ -48,8 +48,6 @@ class PrintAccessToken(base.Command):
 
     $ curl https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=\
     $(gcloud auth application-default print-access-token)
-
-  This command should be used sparingly and for debugging alone.
   """
 
   @staticmethod

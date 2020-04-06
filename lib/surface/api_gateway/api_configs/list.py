@@ -28,6 +28,17 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 class List(base.ListCommand):
   """List configs for an API."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To list all API configs, run:
+
+            $ {command}
+          """,
+  }
+
   LIST_FORMAT = """
     table(
       name,

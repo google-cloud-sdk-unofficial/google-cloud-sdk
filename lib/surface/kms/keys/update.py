@@ -169,11 +169,18 @@ class Update(base.UpdateCommand):
     messages = cloudkms_base.GetMessagesModule()
     crypto_key_ref = flags.ParseCryptoKeyName(args)
 
+    labels_update = labels_util.Diff.FromUpdateArgs(args).Apply(
+        messages.CryptoKey.LabelsValue, crypto_key.labels)
+
+    if labels_update.needs_update:
+      new_labels = labels_update.labels
+    else:
+      new_labels = crypto_key.labels
+
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysPatchRequest(
         name=crypto_key_ref.RelativeName(),
         cryptoKey=messages.CryptoKey(
-            labels=labels_util.Diff.FromUpdateArgs(args).Apply(
-                messages.CryptoKey.LabelsValue, crypto_key.labels).GetOrNone()))
+            labels=new_labels))
     req.updateMask = ','.join(fields_to_update)
     flags.SetNextRotationTime(args, req.cryptoKey)
     flags.SetRotationPeriod(args, req.cryptoKey)

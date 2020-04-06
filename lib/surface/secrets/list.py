@@ -31,8 +31,8 @@ class List(base.ListCommand):
   r"""List all secret names.
 
   List all secret names. This command only returns the secret's names, not
-  their secret data. To retrieve the secret's data, run `$ {parent_command}
-  access SECRET`.
+  their secret data. To learn about retrieving a secret's data, run
+  `$ {parent_command} versions access --help`.
 
   ## EXAMPLES
 
@@ -65,8 +65,8 @@ class ListBeta(List):
   r"""List all secret names.
 
   List all secret names. This command only returns the secret's names, not
-  their secret data. To retrieve the secret's data, run `$ {parent_command}
-  access SECRET`.
+  their secret data. To learn about retrieving a secret's data, run
+  `$ {parent_command} versions access --help`.
 
   ## EXAMPLES
 

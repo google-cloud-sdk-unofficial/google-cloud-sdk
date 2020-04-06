@@ -12,23 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Cloud Build Artifacts long-running operations."""
+"""The command to disable Config Management feature."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.container.hub.features import base
 
 
-class Operations(base.Group):
-  """Manage Cloud Build Artifacts long-running operations.
+class Disable(base.DisableCommand):
+  """Disable Config Management feature.
 
-  ## EXAMPLES
+  This command disables Config Management feature in Hub.
 
-  To describe a Cloud Build Artifacts operation given a valid operation id,
-  run:
+  ## Examples
 
-    $ {command} describe 13166c87-a9c0-4b5f-8ccf-c5343a93eb2b
+  Disable Config Management feature:
 
+    $ {command}
   """
+
+  FEATURE_NAME = 'configmanagement'
+  FEATURE_DISPLAY_NAME = 'Config Management'
+
+  def Run(self, args):
+    self.RunCommand(args)

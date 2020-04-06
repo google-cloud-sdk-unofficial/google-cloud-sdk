@@ -82,6 +82,9 @@ class Create(base.CreateCommand):
       node_group.maintenanceWindow = messages.NodeGroupMaintenanceWindow(
           startTime=args.maintenance_window_start_time)
 
+    if hasattr(args, 'location_hint') and args.location_hint:
+      node_group.locationHint = args.location_hint
+
     request = messages.ComputeNodeGroupsInsertRequest(
         nodeGroup=node_group,
         initialNodeCount=args.target_size,
@@ -115,3 +118,4 @@ class CreateAlpha(CreateBeta):
     flags.AddMaintenancePolicyArgToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
     flags.AddMaintenanceWindowArgToParser(parser)
+    flags.AddLocationHintArgToParser(parser)

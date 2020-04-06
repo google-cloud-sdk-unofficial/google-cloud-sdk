@@ -38,6 +38,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     arguments.AddLabelParentArgToParser(parser, required=True)
+    arguments.AddShowDeletedArgToParser(parser)
     parser.display_info.AddFormat('table(name:sort=1, displayName)')
 
   def Run(self, args):
@@ -47,6 +48,6 @@ class List(base.ListCommand):
     label_parent = args.label_parent
 
     list_request = labelmanager_messages.LabelmanagerLabelKeysListRequest(
-        parent=label_parent)
+        parent=label_parent, showDeleted=args.show_deleted)
     response = labelkeys_service.List(list_request)
     return response.keys

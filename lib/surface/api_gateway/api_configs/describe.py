@@ -28,6 +28,17 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 class Describe(base.DescribeCommand):
   """Show details about a specific API config."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To show details about an API config, run:
+
+          $ {command} my-config --api=my-api
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddApiConfigResourceArg(parser, 'created', positional=True)

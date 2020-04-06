@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.0.55",
+  "CLI_VERSION": "2.0.56",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -339,7 +339,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "Updates a dataset, table, view or transfer configuration with\nthis name.\n\nSee 'bq help load' for more information on specifying the\nschema.\n",
-        "EXAMPLES": "bq update --description \"Dataset description\" existing_dataset\nbq update --description \"My table\"\nexisting_dataset.existing_table\nbq update --description \"My model\" -m\nexisting_dataset.existing_model\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num'\nexisting_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US --project_id=my-project\n--reservation_size=2G\nbq update --reservation_assignment\n--reservation_id=proj:US.reservation1\nreservation2.<reservation_assignment_id>\nbq update --connection_credential='{\"username\":\"u\",\n\"password\":\"p\"}'\n--location=US --project_id=my-project existing_connection\n"
+        "EXAMPLES": "bq update --description \"Dataset description\" existing_dataset\nbq update --description \"My table\"\nexisting_dataset.existing_table\nbq update --description \"My model\" -m\nexisting_dataset.existing_model\nbq update -t existing_dataset.existing_table\nname:integer,value:string\nbq update --destination_kms_key\nprojects/p/locations/l/keyRings/r/cryptoKeys/k\nexisting_dataset.existing_table\nbq update --view='select 1 as num'\nexisting_dataset.existing_view\n(--view_udf_resource=path/to/file.js)\nbq update --transfer_config --display_name=name\n-p='{\"param\":\"value\"}'\nprojects/p/locations/l/transferConfigs/c\nbq update --transfer_config --target_dataset=dataset\n--refresh_window_days=5 --update_credentials\nprojects/p/locations/l/transferConfigs/c\nbq update --reservation --location=US --project_id=my-project\n--reservation_size=2G\nbq update --capacity_commitment --location=US --project_id=my-\nproject\n--plan=MONTHLY --renewal_plan=FLEX\nbq update --reservation_assignment\n--reservation_id=proj:US.reservation1\nreservation2.<reservation_assignment_id>\nbq update --connection_credential='{\"username\":\"u\",\n\"password\":\"p\"}'\n--location=US --project_id=my-project existing_connection\n"
       }
     },
     "version": {

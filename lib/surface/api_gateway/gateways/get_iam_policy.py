@@ -28,6 +28,17 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a gateway."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To print the IAM policy for a given gateway, run:
+
+            $ {command} my-gateway --location=us-central1
+          """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddGatewayResourceArg(parser, 'for which to get IAM policy',

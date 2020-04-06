@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.labelmanager import service as labelmanager
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.labelmanager import arguments
-from googlecloudsdk.command_lib.labelmanager import operations
 from googlecloudsdk.command_lib.labelmanager import utils
 
 
@@ -70,7 +70,6 @@ class Delete(base.Command):
         message=(
             'This field is required if and only if LABEL_VALUE_ID and '
             '--label-key are display names instead of one being a numeric id.'))
-    arguments.AddAsyncArgToParser(parser)
 
   def Run(self, args):
     labelvalues_service = labelmanager.LabelValuesService()
@@ -82,9 +81,6 @@ class Delete(base.Command):
         name=label_value)
     op = labelvalues_service.Delete(delete_request)
 
-    if args.async_:
-      return op
-    else:
-      return operations.WaitForOperation(
-          op, 'Waiting for LabelValue [{}] to be deleted with [{}]'.format(
-              args.LABEL_VALUE_ID, op.name), labelvalues_service)
+    response_dict = encoding.MessageToPyValue(op.response)
+    del response_dict['@type']
+    return response_dict

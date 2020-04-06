@@ -28,9 +28,21 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 class Describe(base.DescribeCommand):
   """Show details about a specific API."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To show details about an API, run:
+
+          $ {command} my-api
+        """,
+  }
+
   @staticmethod
   def Args(parser):
-    resource_args.AddApiResourceArg(parser, 'will be created', positional=True)
+    resource_args.AddApiResourceArg(parser, 'will be described',
+                                    positional=True)
 
   def Run(self, args):
     api_ref = args.CONCEPTS.api.Parse()

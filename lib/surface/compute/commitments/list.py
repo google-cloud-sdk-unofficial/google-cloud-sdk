@@ -27,6 +27,14 @@ from googlecloudsdk.calliope import base
 class List(base.ListCommand):
   """List Google Compute Engine commitments."""
 
+  detailed_help = {
+      'EXAMPLES': '''
+        To list commitments, run:
+
+          $ {command}
+      '''
+  }
+
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat("""\

@@ -28,6 +28,17 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 class Describe(base.DescribeCommand):
   """Show details about a specific gateway."""
 
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To show details about a Gateway in us-central1, run:
+
+          $ {command} my-gateway --location=us-central1
+        """,
+  }
+
   @staticmethod
   def Args(parser):
     resource_args.AddGatewayResourceArg(parser, 'created', positional=True)

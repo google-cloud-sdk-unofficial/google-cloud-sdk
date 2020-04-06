@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.48",
+  "CLI_VERSION": "4.49",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -4186,6 +4186,20 @@
           "nargs": "0",
           "type": "bool",
           "value": ""
+        },
+        "-u": {
+          "attr": {},
+          "category": "",
+          "default": "",
+          "description": "--use-service-account\nse service account credentials instead of a private key file\no sign the url.",
+          "group": "",
+          "is_global": false,
+          "is_hidden": false,
+          "is_required": false,
+          "name": "-u",
+          "nargs": "0",
+          "type": "bool",
+          "value": ""
         }
       },
       "groups": {},
@@ -4198,8 +4212,8 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "The signurl command will generate a signed URL that embeds authentication data\nso the URL can be used by someone who does not have a Google account. Please\nsee the `Signed URLs documentation\n<https://cloud.google.com/storage/docs/access-control/signed-urls>`_ for\nbackground about signed URLs.\n\nMultiple gs:// urls may be provided and may contain wildcards. A signed url\nwill be produced for each provided url, authorized\nfor the specified HTTP method and valid for the given duration.\n\nNOTE: Unlike the gsutil ls command, the signurl command does not support\noperations on sub-directories. For example, if you run the command:\n\n  gsutil signurl <private-key-file> gs://some-bucket/some-object/\n\nThe signurl command uses the private key for a service account (the\n'<private-key-file>' argument) to generate the cryptographic\nsignature for the generated URL. The private key file must be in PKCS12\nor JSON format. If the private key is encrypted the signed url command will\nprompt for the passphrase used to protect the private key file\n(default 'notasecret'). For more information regarding generating a private\nkey for use with the signurl command please see the `Authentication\ndocumentation.\n<https://cloud.google.com/storage/docs/authentication#generating-a-private-key>`_\n\ngsutil will look up information about the object \"some-object/\" (with a\ntrailing slash) inside bucket \"some-bucket\", as opposed to operating on\nobjects nested under gs://some-bucket/some-object. Unless you actually\nhave an object with that name, the operation will fail.",
-        "USAGE": "Create a signed url for downloading an object valid for 10 minutes:\n\n  gsutil signurl -d 10m <private-key-file> gs://<bucket>/<object>\n\nCreate a signed url, valid for one hour, for uploading a plain text\nfile via HTTP PUT:\n\n  gsutil signurl -m PUT -d 1h -c text/plain <private-key-file> \\\n      gs://<bucket>/<obj>\n\nTo construct a signed URL that allows anyone in possession of\nthe URL to PUT to the specified bucket for one day, creating\nan object of Content-Type image/jpg, run:\n\n  gsutil signurl -m PUT -d 1d -c image/jpg <private-key-file> \\\n      gs://<bucket>/<obj>\n\nTo construct a signed URL that allows anyone in possession of\nthe URL to POST a resumable upload to the specified bucket for one day,\ncreating an object of Content-Type image/jpg, run:\n\n  gsutil signurl -m RESUMABLE -d 1d -c image/jpg <private-key-file> \\\n      gs://bucket/<obj>"
+        "DESCRIPTION": "The signurl command will generate a signed URL that embeds authentication data\nso the URL can be used by someone who does not have a Google account. Please\nsee the `Signed URLs documentation\n<https://cloud.google.com/storage/docs/access-control/signed-urls>`_ for\nbackground about signed URLs.\n\nMultiple gs:// urls may be provided and may contain wildcards. A signed url\nwill be produced for each provided url, authorized\nfor the specified HTTP method and valid for the given duration.\n\nNOTE: Unlike the gsutil ls command, the signurl command does not support\noperations on sub-directories. For example, unless you have an object named\n``some-directory/`` stored inside the bucket ``some-bucket``, the following\ncommand returns an error: ``gsutil signurl <private-key-file> gs://some-bucket/some-directory/``\n\nThe signurl command uses the private key for a service account (the\n'<private-key-file>' argument) to generate the cryptographic\nsignature for the generated URL. The private key file must be in PKCS12\nor JSON format. If the private key is encrypted the signed url command will\nprompt for the passphrase used to protect the private key file\n(default 'notasecret'). For more information regarding generating a private\nkey for use with the signurl command please see the `Authentication\ndocumentation.\n<https://cloud.google.com/storage/docs/authentication#generating-a-private-key>`_\n\nIf you used `service account credentials\n<https://cloud.google.com/storage/docs/gsutil/addlhelp/CredentialTypesSupportingVariousUseCases#supported-credential-types_1>`_\nfor authentication, you can replace the  <private-key-file> argument with\nthe -u or --use-service-account option to use the system-managed private key\ndirectly. This avoids the need to download the private key file.",
+        "USAGE": "Create a signed url for downloading an object valid for 10 minutes:\n\n  gsutil signurl -d 10m <private-key-file> gs://<bucket>/<object>\n\n\nCreate a signed url without a private key, using a service account's\ncredentials:\n\n  gsutil signurl -d 10m -u gs://<bucket>/<object>\n\nCreate a signed url by impersonating a service account:\n\n  gsutil -i <service account email> signurl -d 10m -u gs://<bucket>/<object>\n\nCreate a signed url, valid for one hour, for uploading a plain text\nfile via HTTP PUT:\n\n  gsutil signurl -m PUT -d 1h -c text/plain <private-key-file> \\\n      gs://<bucket>/<obj>\n\nTo construct a signed URL that allows anyone in possession of\nthe URL to PUT to the specified bucket for one day, creating\nan object of Content-Type image/jpg, run:\n\n  gsutil signurl -m PUT -d 1d -c image/jpg <private-key-file> \\\n      gs://<bucket>/<obj>\n\nTo construct a signed URL that allows anyone in possession of\nthe URL to POST a resumable upload to the specified bucket for one day,\ncreating an object of Content-Type image/jpg, run:\n\n  gsutil signurl -m RESUMABLE -d 1d -c image/jpg <private-key-file> \\\n      gs://bucket/<obj>"
       }
     },
     "stat": {

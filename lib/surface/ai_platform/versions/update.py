@@ -32,8 +32,17 @@ def _AddUpdateArgs(parser):
   """Get arguments for the `ai-platform versions update` command."""
   flags.AddVersionResourceArg(parser, 'to update')
   flags.GetDescriptionFlag('version').AddToParser(parser)
-  flags.GetRegionArg('version').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
+
+
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    versions_client = versions_api.VersionsClient()
+    operations_client = operations.OperationsClient()
+    version_ref = args.CONCEPTS.version.Parse()
+    versions_util.Update(versions_client, operations_client, version_ref, args)
+    log.UpdatedResource(args.version, kind='AI Platform version')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -45,17 +54,11 @@ class Update(base.UpdateCommand):
     _AddUpdateArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      versions_client = versions_api.VersionsClient()
-      operations_client = operations.OperationsClient()
-      version_ref = args.CONCEPTS.version.Parse()
-      versions_util.Update(versions_client, operations_client, version_ref,
-                           args)
-      log.UpdatedResource(args.version, kind='AI Platform version')
+    return _Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlpha(base.UpdateCommand):
+class UpdateBeta(base.UpdateCommand):
   """Update an AI Platform version."""
 
   @staticmethod
@@ -63,14 +66,4 @@ class UpdateAlpha(base.UpdateCommand):
     _AddUpdateArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      versions_client = versions_api.VersionsClient()
-      operations_client = operations.OperationsClient()
-      version_ref = args.CONCEPTS.version.Parse()
-      versions_util.Update(
-          versions_client,
-          operations_client,
-          version_ref,
-          args,
-      )
-      log.UpdatedResource(args.version, kind='AI Platform version')
+    return _Run(args)

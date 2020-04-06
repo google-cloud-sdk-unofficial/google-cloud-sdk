@@ -26,7 +26,16 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+def _GetRemoveIamPolicyBindingArgs(parser, add_condition=False):
+  iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=add_condition)
+  flags.GetModelResourceArg(
+      required=True,
+      verb='for which to remove IAM policy binding from').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
+  base.URI_FLAG.RemoveFromParser(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
   """Removes IAM policy binding from an AI Platform Model resource.
 
@@ -48,12 +57,47 @@ class RemoveIamPolicyBinding(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=False)
-    flags.GetModelResourceArg(
-        required=True,
-        verb='for which to remove IAM policy binding from').AddToParser(parser)
-    flags.GetRegionArg('model').AddToParser(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
+    _GetRemoveIamPolicyBindingArgs(parser, add_condition=False)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The specified function with its description and configured filter.
+    """
+    with endpoint_util.MlEndpointOverrides(region=args.region):
+      client = models.ModelsClient()
+      return models_util.RemoveIamPolicyBinding(client, args.model, args.member,
+                                                args.role)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveIamPolicyBindingBeta(base.Command):
+  """Removes IAM policy binding from an AI Platform Model resource.
+
+  Removes a policy binding from an AI Platform Model. One
+  binding consists of a member, a role and an optional condition.
+  See $ {parent_command} get-iam-policy for examples of how to
+  specify a model resource.
+  """
+
+  description = 'remove IAM policy binding from an AI Platform model'
+  detailed_help = iam_util.GetDetailedHelpForRemoveIamPolicyBinding(
+      'model', 'my_model', role='roles/ml.admin', condition=False)
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    _GetRemoveIamPolicyBindingArgs(parser, add_condition=False)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -93,12 +137,7 @@ class RemoveIamPolicyBindingAlpha(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=True)
-    flags.GetModelResourceArg(
-        required=True,
-        verb='for which to remove IAM policy binding from').AddToParser(parser)
-    flags.GetRegionArg('model').AddToParser(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
+    _GetRemoveIamPolicyBindingArgs(parser, add_condition=True)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

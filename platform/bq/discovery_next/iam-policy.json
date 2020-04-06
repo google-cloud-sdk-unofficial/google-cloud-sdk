@@ -389,7 +389,14 @@
             "Linear regression model.",
             "Logistic regression based classification model.",
             "K-means clustering model.",
-            "[Beta] An imported TensorFlow model."
+            "Matrix factorization model.",
+            "DNN classifier model.",
+            "[Beta] An imported TensorFlow model.",
+            "DNN regressor model.",
+            "Boosted tree regressor model.",
+            "Boosted tree classifier model.",
+            "AutoML Tables regression model.",
+            "AutoML Tables classification model."
           ],
           "type": "string",
           "enum": [
@@ -397,7 +404,14 @@
             "LINEAR_REGRESSION",
             "LOGISTIC_REGRESSION",
             "KMEANS",
-            "TENSORFLOW"
+            "MATRIX_FACTORIZATION",
+            "DNN_CLASSIFIER",
+            "TENSORFLOW",
+            "DNN_REGRESSOR",
+            "BOOSTED_TREE_REGRESSOR",
+            "BOOSTED_TREE_CLASSIFIER",
+            "AUTOML_REGRESSOR",
+            "AUTOML_CLASSIFIER"
           ]
         },
         "trainingRuns": {
@@ -587,6 +601,14 @@
             "format": "double"
           }
         },
+        "userColumn": {
+          "description": "User column specified for matrix factorization models.",
+          "type": "string"
+        },
+        "itemColumn": {
+          "description": "Item column specified for matrix factorization models.",
+          "type": "string"
+        },
         "distanceType": {
           "description": "Distance type for clustering models.",
           "enumDescriptions": [
@@ -623,6 +645,63 @@
             "BATCH_GRADIENT_DESCENT",
             "NORMAL_EQUATION"
           ]
+        },
+        "hiddenUnits": {
+          "description": "Hidden units for dnn models.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "int64"
+          }
+        },
+        "batchSize": {
+          "description": "Batch size for dnn models.",
+          "type": "string",
+          "format": "int64"
+        },
+        "dropout": {
+          "description": "Dropout probability for dnn models.",
+          "type": "number",
+          "format": "double"
+        },
+        "maxTreeDepth": {
+          "description": "Maximum depth of a tree for boosted tree models.",
+          "type": "string",
+          "format": "int64"
+        },
+        "subsample": {
+          "description": "Subsample fraction of the training data to grow tree to prevent\noverfitting for boosted tree models.",
+          "type": "number",
+          "format": "double"
+        },
+        "minSplitLoss": {
+          "description": "Minimum split loss for boosted tree models.",
+          "type": "number",
+          "format": "double"
+        },
+        "numFactors": {
+          "description": "Num factors specified for matrix factorization models.",
+          "type": "string",
+          "format": "int64"
+        },
+        "feedbackType": {
+          "description": "Feedback type that specifies which algorithm to run for matrix\nfactorization.",
+          "enumDescriptions": [
+            "",
+            "Use weighted-als for implicit feedback problems.",
+            "Use nonweighted-als for explicit feedback problems."
+          ],
+          "type": "string",
+          "enum": [
+            "FEEDBACK_TYPE_UNSPECIFIED",
+            "IMPLICIT",
+            "EXPLICIT"
+          ]
+        },
+        "walsAlpha": {
+          "description": "Hyperparameter for matrix factoration when implicit feedback type is\nspecified.",
+          "type": "number",
+          "format": "double"
         },
         "kmeansInitializationMethod": {
           "description": "The method used to initialize the centroids for kmeans algorithm.",
@@ -860,6 +939,10 @@
         "clusteringMetrics": {
           "description": "Populated for clustering models.",
           "$ref": "ClusteringMetrics"
+        },
+        "rankingMetrics": {
+          "description": "[Alpha] Populated for implicit feedback type matrix factorization\nmodels.",
+          "$ref": "RankingMetrics"
         }
       }
     },
@@ -1184,6 +1267,33 @@
         }
       }
     },
+    "RankingMetrics": {
+      "id": "RankingMetrics",
+      "description": "Evaluation metrics used by weighted-ALS models specified by\nfeedback_type=implicit.",
+      "type": "object",
+      "properties": {
+        "meanAveragePrecision": {
+          "description": "Calculates a precision per user for all the items by ranking them and\nthen averages all the precisions across all the users.",
+          "type": "number",
+          "format": "double"
+        },
+        "meanSquaredError": {
+          "description": "Similar to the mean squared error computed in regression and explicit\nrecommendation models except instead of computing the rating directly,\nthe output from evaluate is computed against a preference which is 1 or 0\ndepending on if the rating exists or not.",
+          "type": "number",
+          "format": "double"
+        },
+        "normalizedDiscountedCumulativeGain": {
+          "description": "A metric to determine the goodness of a ranking calculated from the\npredicted confidence by comparing it to an ideal rank measured by the\noriginal ratings.",
+          "type": "number",
+          "format": "double"
+        },
+        "averageRank": {
+          "description": "Determines the goodness of a ranking by computing the percentile rank\nfrom the predicted confidence and dividing it by the original rank.",
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
     "DataSplitResult": {
       "id": "DataSplitResult",
       "description": "Data split result. This contains references to the training and evaluation\ndata tables that were used to train the model.",
@@ -1502,6 +1612,13 @@
         "scriptOptions": {
           "description": "Options controlling the execution of scripts.",
           "$ref": "ScriptOptions"
+        },
+        "connectionProperties": {
+          "description": "Connection properties which can modify the query behavior.",
+          "type": "array",
+          "items": {
+            "$ref": "ConnectionProperty"
+          }
         }
       }
     },
@@ -1969,6 +2086,21 @@
         }
       }
     },
+    "ConnectionProperty": {
+      "id": "ConnectionProperty",
+      "description": "A connection-level property to customize query behavior. Under JDBC, these\ncorrespond directly to connection properties passed to the DriverManager.\nUnder ODBC, these correspond to properties in the connection string.\n\nCurrently, the only supported connection property is \"time_zone\", whose value\nrepresents the default timezone used to run the query. Additional properties\nare allowed, but ignored. Specifying multiple connection properties with the\nsame key is an error.",
+      "type": "object",
+      "properties": {
+        "key": {
+          "description": "The key of the property to set.",
+          "type": "string"
+        },
+        "value": {
+          "description": "The value of the property to set.",
+          "type": "string"
+        }
+      }
+    },
     "JobConfigurationLoad": {
       "id": "JobConfigurationLoad",
       "description": "JobConfigurationLoad contains the configuration properties for loading data\ninto a destination table.",
@@ -2180,24 +2312,24 @@
           }
         },
         "printHeader": {
-          "description": "[Optional] Whether to print out a header row in the results.\nDefault is true.",
+          "description": "[Optional] Whether to print out a header row in the results.\nDefault is true. Not applicable when extracting models.",
           "default": "true",
           "type": "boolean"
         },
         "fieldDelimiter": {
-          "description": "[Optional] When extracting data in CSV format, this defines the\ndelimiter to use between fields in the exported data.\nDefault is ','",
+          "description": "[Optional] When extracting data in CSV format, this defines the\ndelimiter to use between fields in the exported data.\nDefault is ','. Not applicable when extracting models.",
           "type": "string"
         },
         "destinationFormat": {
-          "description": "[Optional] The exported file format. Possible values include CSV,\nNEWLINE_DELIMITED_JSON or AVRO for tables and SAVED_MODEL or BOOSTER for\nmodels. The default value for tables is CSV. Tables with nested or repeated\nfields cannot be exported as CSV. The default value for models is\nSAVED_MODEL.",
+          "description": "[Optional] The exported file format. Possible values include CSV,\nNEWLINE_DELIMITED_JSON or AVRO for tables and ML_TF_SAVED_MODEL or\nML_XGBOOST_BOOSTER for models. The default value for tables is CSV. Tables\nwith nested or repeated fields cannot be exported as CSV. The default value\nfor models is ML_TF_SAVED_MODEL.",
           "type": "string"
         },
         "compression": {
-          "description": "[Optional] The compression type to use for exported files. Possible values\ninclude GZIP, DEFLATE, SNAPPY, and NONE. The default value is NONE.\nDEFLATE and SNAPPY are only supported for Avro.",
+          "description": "[Optional] The compression type to use for exported files. Possible values\ninclude GZIP, DEFLATE, SNAPPY, and NONE. The default value is NONE.\nDEFLATE and SNAPPY are only supported for Avro. Not applicable when\nextracting models.",
           "type": "string"
         },
         "useAvroLogicalTypes": {
-          "description": "Whether to use logical types when extracting to AVRO format.",
+          "description": "Whether to use logical types when extracting to AVRO format. Not applicable\nwhen extracting models.",
           "type": "boolean"
         }
       }
@@ -3014,6 +3146,25 @@
         "formatOptions": {
           "description": "Optional. Output format adjustments.",
           "$ref": "DataFormatOptions"
+        },
+        "connectionProperties": {
+          "description": "Optional. Connection properties which can modify the query behavior.",
+          "type": "array",
+          "items": {
+            "$ref": "ConnectionProperty"
+          }
+        },
+        "labels": {
+          "description": "Optional. The labels associated with this query.\nLabels can be used to organize and group query jobs.\nLabel keys and values can be no longer than 63 characters, can only contain\nlowercase letters, numeric characters, underscores and dashes.\nInternational characters are allowed. Label keys must start with a letter\nand each label in the list must have a different key.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "maximumBytesBilled": {
+          "description": "Optional. Limits the bytes billed for this query. Queries with\nbytes billed above this limit will fail (without incurring a charge).\nIf unspecified, the project default is used.",
+          "type": "string",
+          "format": "int64"
         }
       }
     },

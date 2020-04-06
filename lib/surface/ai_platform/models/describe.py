@@ -29,11 +29,17 @@ _COLLECTION = 'ml.models'
 
 def _AddDescribeArgs(parser):
   flags.GetModelName().AddToParser(parser)
-  flags.GetRegionArg('model').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
+
+
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    return models.ModelsClient().Get(args.model)
 
 
 # TODO(b/62998601): don't repeat the first sentence due. Also if b/62998171 is
 # resolved this should be obsolete.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe an existing AI Platform model.
 
@@ -48,5 +54,22 @@ class Describe(base.DescribeCommand):
     _AddDescribeArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      return models.ModelsClient().Get(args.model)
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DescribeBeta(base.DescribeCommand):
+  """Describe an existing AI Platform model.
+
+  Describe an existing AI Platform model.
+
+  If you would like to see all versions of a model, use
+  `gcloud ai-platform versions list`.
+  """
+
+  @staticmethod
+  def Args(parser):
+    _AddDescribeArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)

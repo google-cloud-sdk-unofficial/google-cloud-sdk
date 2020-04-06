@@ -101,10 +101,11 @@ class RunLocal(base.Command):
             flag='--parameter-server-count'))
       if args.worker_count:
         log.warning(_BAD_FLAGS_WARNING_MESSAGE.format(flag='--worker-count'))
-      retval = local_train.MakeProcess(args.module_name,
-                                       package_root,
-                                       args=user_args,
-                                       task_type='master')
+      retval = local_train.MakeProcess(
+          args.module_name,
+          package_root,
+          args=user_args,
+          task_type=local_train.GetPrimaryNodeName())
     # Don't raise an exception because the users will already see the message.
     # We want this to mimic calling the script directly as much as possible.
     self.exit_code = retval

@@ -27,9 +27,16 @@ from googlecloudsdk.command_lib.ml_engine import operations_util
 
 def _AddCancelArgs(parser):
   flags.OPERATION_NAME.AddToParser(parser)
-  flags.GetRegionArg('operation').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
 
 
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    client = operations.OperationsClient()
+    return operations_util.Cancel(client, args.operation)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Cancel(base.SilentCommand):
   """Cancel an AI Platform operation."""
 
@@ -38,6 +45,16 @@ class Cancel(base.SilentCommand):
     _AddCancelArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      client = operations.OperationsClient()
-      return operations_util.Cancel(client, args.operation)
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CancelBeta(base.SilentCommand):
+  """Cancel an AI Platform operation."""
+
+  @staticmethod
+  def Args(parser):
+    _AddCancelArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)

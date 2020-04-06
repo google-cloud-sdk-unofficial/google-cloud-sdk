@@ -24,6 +24,60 @@ from googlecloudsdk.command_lib.builds import flags
 from googlecloudsdk.command_lib.builds import submit_util
 
 
+def _CommonArgs(parser):
+  """Register flags for this command.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in order to
+      capture some information, but behaves like an ArgumentParser.
+  """
+  source = parser.add_mutually_exclusive_group()
+  source.add_argument(
+      'source',
+      nargs='?',
+      default='.',  # By default, the current directory is used.
+      help='The location of the source to build. The location can be a '
+      'directory on a local disk or a gzipped archive file (.tar.gz) in '
+      'Google Cloud Storage. If the source is a local directory, this '
+      'command skips the files specified in the `--ignore-file`. If '
+      '`--ignore-file` is not specified, use`.gcloudignore` file. If a '
+      '`.gitignore` file is present in the local source directory, gcloud '
+      'will use a Git-compatible `.gcloudignore` file that respects your '
+      '.gitignored files. The global `.gitignore` is not respected. For more '
+      'information on `.gcloudignore`, see `gcloud topic gcloudignore`.',
+  )
+  source.add_argument(
+      '--no-source',
+      action='store_true',
+      help='Specify that no source should be uploaded with this build.')
+
+  flags.AddGcsSourceStagingDirFlag(parser)
+  flags.AddGcsLogDirFlag(parser)
+  flags.AddTimeoutFlag(parser)
+
+  flags.AddMachineTypeFlag(parser)
+  flags.AddDiskSizeFlag(parser)
+  flags.AddSubstitutionsFlag(parser)
+
+  flags.AddNoCacheFlag(parser)
+  flags.AddAsyncFlag(parser)
+  parser.display_info.AddFormat("""
+        table(
+          id,
+          createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+          duration(start=startTime,end=finishTime,precision=0,calendar=false,undefined="  -").slice(2:).join(""):label=DURATION,
+          build_source(undefined="-"):label=SOURCE,
+          build_images(undefined="-"):label=IMAGES,
+          status
+        )
+      """)
+  # Do not try to create a URI to update the cache.
+  parser.display_info.AddCacheUpdater(None)
+
+  flags.AddIgnoreFileFlag(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Submit(base.CreateCommand):
   """Submit a build using Google Cloud Build.
 
@@ -65,57 +119,8 @@ class Submit(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    source = parser.add_mutually_exclusive_group()
-    source.add_argument(
-        'source',
-        nargs='?',
-        default='.',  # By default, the current directory is used.
-        help='The location of the source to build. The location can be a '
-        'directory on a local disk or a gzipped archive file (.tar.gz) in '
-        'Google Cloud Storage. If the source is a local directory, this '
-        'command skips the files specified in the `--ignore-file`. If '
-        '`--ignore-file` is not specified, use`.gcloudignore` file. If a '
-        '`.gitignore` file is present in the local source directory, gcloud '
-        'will use a Git-compatible `.gcloudignore` file that respects your '
-        '.gitignored files. The global `.gitignore` is not respected. For more '
-        'information on `.gcloudignore`, see `gcloud topic gcloudignore`.',
-    )
-    source.add_argument(
-        '--no-source',
-        action='store_true',
-        help='Specify that no source should be uploaded with this build.')
-
-    flags.AddGcsSourceStagingDirFlag(parser)
-    flags.AddGcsLogDirFlag(parser)
-    flags.AddTimeoutFlag(parser)
-
-    flags.AddMachineTypeFlag(parser)
-    flags.AddDiskSizeFlag(parser)
-    flags.AddSubstitutionsFlag(parser)
+    _CommonArgs(parser)
     flags.AddConfigFlags(parser)
-
-    flags.AddNoCacheFlag(parser)
-    flags.AddAsyncFlag(parser)
-    parser.display_info.AddFormat("""
-          table(
-            id,
-            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
-            duration(start=startTime,end=finishTime,precision=0,calendar=false,undefined="  -").slice(2:).join(""):label=DURATION,
-            build_source(undefined="-"):label=SOURCE,
-            build_images(undefined="-"):label=IMAGES,
-            status
-          )
-        """)
-    # Do not try to create a URI to update the cache.
-    parser.display_info.AddCacheUpdater(None)
-
-    flags.AddIgnoreFileFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -139,6 +144,63 @@ class Submit(base.CreateCommand):
         args.IsSpecified('source'), args.no_source, args.source,
         args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
         args.machine_type, args.disk_size)
+
+    # Start the build.
+    return submit_util.Build(messages, args.async_, build_config)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SubmitBeta(Submit):
+  """Submit a build using Google Cloud Build.
+
+  Submit a build using Google Cloud Build.
+
+  ## NOTES
+
+  You can also run a build locally using the
+  separate component: `gcloud components install cloud-build-local`.
+  """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SubmitAlpha(SubmitBeta):
+  """Submit a build using Google Cloud Build.
+
+  Submit a build using Google Cloud Build.
+
+  ## NOTES
+
+  You can also run a build locally using the
+  separate component: `gcloud components install cloud-build-local`.
+  """
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    flags.AddConfigFlagsAlpha(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+
+    Raises:
+      FailedBuildException: If the build is completed and not 'SUCCESS'.
+    """
+
+    messages = cloudbuild_util.GetMessagesModule()
+
+    # Create the build request.
+    build_config = submit_util.CreateBuildConfigAlpha(
+        args.tag, args.no_cache, messages, args.substitutions, args.config,
+        args.IsSpecified('source'), args.no_source, args.source,
+        args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
+        args.machine_type, args.disk_size, args.pack)
 
     # Start the build.
     return submit_util.Build(messages, args.async_, build_config)

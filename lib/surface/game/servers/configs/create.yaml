@@ -54,7 +54,7 @@
         field in configs file follows Agones Fleet custom resource. Please see
         https://github.com/googleforgames/agones/blob/master/examples/simple-udp/fleet.yaml
         for example and
-        https://github.com/googleforgames/agones/blob/master/pkg/apis/agones/v1/fleet.go
+        https://agones.dev/site/docs/reference/fleet/
         for Fleet Spec definition.
     - _REF_: googlecloudsdk.command_lib.game.servers.flags:scaling_configs_file
       help_text: |
@@ -62,7 +62,7 @@
         field in configs file follows Agones Fleet Autoscaler custom resource. Please see
         https://github.com/googleforgames/agones/blob/master/examples/simple-udp/fleetautoscaler.yaml
         for example and
-        https://github.com/googleforgames/agones/blob/master/pkg/apis/autoscaling/v1/fleetautoscaler.go
+        https://agones.dev/site/docs/reference/fleetautoscaler/
         for Fleet Autoscaler Spec definition. Scaling config file can also specifies schedules.
         Contents of a sample yaml file:
 

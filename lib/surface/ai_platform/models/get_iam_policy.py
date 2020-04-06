@@ -25,8 +25,43 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import models_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+def _AddGetIamPolicyArgs(parser):
+  flags.GetModelResourceArg(
+      positional=True, required=True,
+      verb='to set IAM policy for').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
+  base.URI_FLAG.RemoveFromParser(parser)
+
+
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    return models_util.GetIamPolicy(models.ModelsClient(), args.model)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class GetIamPolicyBeta(base.ListCommand):
+  """Get the IAM policy for a model.
+
+  Gets the IAM policy for the given model.
+
+  Returns an empty policy if the resource does not have a policy set.
+
+  ## EXAMPLES
+
+  The following command gets the IAM policy for the model `my_model`:
+
+    $ {command} my_model
+  """
+
+  @staticmethod
+  def Args(parser):
+    _AddGetIamPolicyArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a model.
 
@@ -43,12 +78,7 @@ class GetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetModelResourceArg(
-        positional=True, required=True,
-        verb='to set IAM policy for').AddToParser(parser)
-    flags.GetRegionArg('model').AddToParser(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
+    _AddGetIamPolicyArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      return models_util.GetIamPolicy(models.ModelsClient(), args.model)
+    return _Run(args)

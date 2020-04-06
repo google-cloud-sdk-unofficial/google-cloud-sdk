@@ -574,6 +574,7 @@ class UpdateBeta(Update):
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
     flags.AddMasterGlobalAccessFlag(group)
+    flags.AddEnableGvnicFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -598,12 +599,12 @@ class UpdateBeta(Update):
     if args.disable_addons and api_adapter.GCEPDCSIDRIVER in args.disable_addons:
       pdcsi_disabled = args.disable_addons[api_adapter.GCEPDCSIDRIVER]
       if pdcsi_disabled:
-        # GCE Persistent Disk CSI Driver is being disabled
+        # Persistent Disk CSI Driver is being disabled
         console_io.PromptContinue(
-            message='If the GCE Persistent Disk CSI Driver is disabled, then any '
-            'pods currently using PersistentVolumes owned by the driver '
-            'will fail to terminate. Any new pods that try to use those '
-            'PersistentVolumes will also fail to start.',
+            message='If the Compute Engine Persistent Disk CSI Driver is '
+            'disabled, then any pods currently using PersistentVolumes owned '
+            'by the driver will fail to terminate. Any new pods that try to '
+            'use those PersistentVolumes will also fail to start.',
             cancel_on_no=True)
 
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
@@ -619,6 +620,7 @@ class UpdateBeta(Update):
     opts.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     opts.enable_tpu_service_networking = args.enable_tpu_service_networking
     opts.enable_master_global_access = args.enable_master_global_access
+    opts.enable_gvnic = args.enable_gvnic
 
     return opts
 
@@ -672,6 +674,7 @@ class UpdateAlpha(Update):
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
     flags.AddMasterGlobalAccessFlag(group)
+    flags.AddEnableGvnicFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -719,5 +722,6 @@ class UpdateAlpha(Update):
     opts.disable_default_snat = args.disable_default_snat
     opts.enable_cost_management = args.enable_cost_management
     opts.enable_master_global_access = args.enable_master_global_access
+    opts.enable_gvnic = args.enable_gvnic
 
     return opts

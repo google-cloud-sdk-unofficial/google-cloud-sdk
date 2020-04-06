@@ -29,7 +29,18 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
-  """Deletes a Config from an API."""
+  """Deletes a config from an API."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+        To delete an API Config 'my-config' in 'my-api', run:
+
+          $ {command} my-config --api=my-api
+        """,
+  }
 
   @staticmethod
   def Args(parser):

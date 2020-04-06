@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
 import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -157,22 +158,6 @@ class Register(base.CreateCommand):
     )
     hub_util.AddUnRegisterCommonArgs(parser)
     parser.add_argument(
-        SERVICE_ACCOUNT_KEY_FILE_FLAG,
-        type=str,
-        required=True,
-        help=textwrap.dedent("""\
-            The JSON file of a Google Cloud service account private key. This
-            service account key is stored as a secret named ``creds-gcp'' in
-            gke-connect namespace. To update the ``creds-gcp'' secret in
-            gke-connect namespace with a new service account key file, run the
-            following command:
-
-            kubectl delete secret creds-gcp -n gke-connect
-
-            kubectl create secret generic creds-gcp -n gke-connect --from-file=creds-gcp.json=/path/to/file
-         """),
-    )
-    parser.add_argument(
         '--manifest-output-file',
         type=str,
         help=textwrap.dedent("""\
@@ -218,12 +203,30 @@ class Register(base.CreateCommand):
         The registry to pull GKE Connect Agent image if not using gcr.io/gkeconnect.
           """),
     )
+    credentials = parser.add_mutually_exclusive_group(
+        required=True)
+    credentials.add_argument(
+        SERVICE_ACCOUNT_KEY_FILE_FLAG,
+        type=str,
+        help=textwrap.dedent("""\
+            The JSON file of a Google Cloud service account private key. This
+            service account key is stored as a secret named ``creds-gcp'' in
+            gke-connect namespace. To update the ``creds-gcp'' secret in
+            gke-connect namespace with a new service account key file, run the
+            following command:
+
+            kubectl delete secret creds-gcp -n gke-connect
+
+            kubectl create secret generic creds-gcp -n gke-connect --from-file=creds-gcp.json=/path/to/file
+         """),
+    )
 
     if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
       # Optional groups with required arguments are "modal,"
       # meaning that if any of the required arguments is specified,
       # all are required.
-      workload_identity = parser.add_group(help='Workload Identity')
+      workload_identity = credentials.add_group(
+          hidden=True, help='Workload Identity')
       workload_identity.add_argument(
           '--enable-workload-identity',
           required=True,
@@ -232,16 +235,12 @@ class Register(base.CreateCommand):
           help=textwrap.dedent("""\
             Enable Workload Identity when registering the cluster with Hub.
             Requires gcloud alpha.
+            --service_account_key_file flag should not be set if this is set.
             """),
       )
-      # TODO(b/150696295): Since --public-issuer-url is the only option added
-      # so far, it is required. Future CLs add the ability to auto-detect the
-      # issuer from some clusters, but this depends on more complex client
-      # support so we split those pieces out. Once auto-detection is added,
-      # --public-issuer-url will be an optional flag.
-      workload_identity.add_argument(
+      workload_identity_mutex = workload_identity.add_group(mutex=True)
+      workload_identity_mutex.add_argument(
           '--public-issuer-url',
-          required=True,
           hidden=True,
           type=str,
           help=textwrap.dedent("""\
@@ -250,6 +249,22 @@ class Register(base.CreateCommand):
             JSON Web Key Set for validating the cluster's service account JWTs
             are served at a public endpoint different from the cluster API server.
             Requires gcloud alpha and --enable-workload-identity.
+            Mutually exclusive with --manage-workload-identity-bucket.
+            """),
+      )
+      workload_identity_mutex.add_argument(
+          '--manage-workload-identity-bucket',
+          hidden=True,
+          action='store_true',
+          help=textwrap.dedent("""\
+            Create the GCS bucket for serving OIDC discovery information when
+            registering the cluster with Hub. The cluster must already be
+            configured with an issuer URL of the format:
+            https://storage.googleapis.com/gke-issuer-{UUID}. The cluster must
+            also serve the built-in OIDC discovery endpoints by enabling and
+            correctly configuring the ServiceAccountIssuerDiscovery feature.
+            Requires gcloud alpha and --enable-workload-identity.
+            Mutually exclusive with --public-issuer-url.
             """),
       )
 
@@ -262,12 +277,19 @@ class Register(base.CreateCommand):
       uuid = kube_util.GetClusterUUID(kube_client)
       # Read the service account files provided in the arguments early, in order
       # to catch invalid files before performing mutating operations.
-      try:
-        service_account_key_data = hub_util.Base64EncodedFileContents(
-            args.service_account_key_file)
-      except files.Error as e:
-        raise exceptions.Error('Could not process {}: {}'.format(
-            SERVICE_ACCOUNT_KEY_FILE_FLAG, e))
+      # Service Account key file is required if Workload Identity is not
+      # enabled.
+      # If Workload Identity is enabled, then the Connect Agent uses
+      # a Kubernetes Service Account token instead and hence a GCP Service
+      # Account key is not required.
+      service_account_key_data = ''
+      if args.service_account_key_file:
+        try:
+          service_account_key_data = hub_util.Base64EncodedFileContents(
+              args.service_account_key_file)
+        except files.Error as e:
+          raise exceptions.Error('Could not process {}: {}'.format(
+              SERVICE_ACCOUNT_KEY_FILE_FLAG, e))
 
       docker_credential_data = None
       if args.docker_credential_file:
@@ -281,10 +303,52 @@ class Register(base.CreateCommand):
       gke_cluster_self_link = kube_client.processor.gke_cluster_self_link
 
       issuer_url = None
-      # public_issuer_url is only a property if we are on the alpha track
-      if self.ReleaseTrack() is base.ReleaseTrack.ALPHA and \
-          args.public_issuer_url:
-        issuer_url = args.public_issuer_url
+      # enable_workload_identity, public_issuer_url, and
+      # manage_workload_identity_bucket are only properties if we are on the
+      # alpha track
+      if (self.ReleaseTrack() is base.ReleaseTrack.ALPHA
+          and args.enable_workload_identity):
+        if args.public_issuer_url:
+          issuer_url = args.public_issuer_url
+          # Use the user-provided public URL, and ignore the built-in endpoints.
+          try:
+            openid_config_json = kube_client.GetOpenIDConfiguration(
+                issuer_url=args.public_issuer_url)
+          except Exception as e:  # pylint: disable=broad-except
+            raise exceptions.Error(
+                'Please double check that --public-issuer-url was set '
+                'correctly: {}'.format(e))
+        else:
+          # Since the user didn't specify a public URL, try to use the cluster's
+          # built-in endpoints.
+          try:
+            openid_config_json = kube_client.GetOpenIDConfiguration()
+          except Exception as e:  # pylint: disable=broad-except
+            raise exceptions.Error(
+                'Please double check that it is possible to access the '
+                '/.well-known/openid-configuration endpoint on the cluster: '
+                '{}'.format(e))
+
+        # Extract the issuer URL from the discovery doc.
+        issuer_url = json.loads(openid_config_json).get('issuer')
+        if not issuer_url:
+          raise exceptions.Error('Invalid OpenID Config: '
+                                 'missing issuer: {}'.format(
+                                     openid_config_json))
+        # If a public issuer URL was provided, ensure it matches what came back
+        # in the discovery doc.
+        elif args.public_issuer_url \
+            and args.public_issuer_url != issuer_url:
+          raise exceptions.Error('--public-issuer-url {} did not match issuer '
+                                 'returned in discovery doc: {}'.format(
+                                     args.public_issuer_url, issuer_url))
+
+        # Set up the GCS bucket that serves OpenID Provider Config and JWKS.
+        if args.manage_workload_identity_bucket:
+          openid_keyset_json = kube_client.GetOpenIDKeyset()
+          api_util.CreateWorkloadIdentityBucket(project, issuer_url,
+                                                openid_config_json,
+                                                openid_keyset_json)
 
       # Attempt to create a membership.
       already_exists = False

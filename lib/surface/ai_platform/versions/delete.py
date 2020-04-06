@@ -28,10 +28,18 @@ from googlecloudsdk.command_lib.ml_engine import versions_util
 
 def _AddDeleteArgs(parser):
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
-  flags.GetRegionArg('version').AddToParser(parser)
+  flags.GetRegionArg().AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
 
 
+def _Run(args):
+  with endpoint_util.MlEndpointOverrides(region=args.region):
+    client = versions_api.VersionsClient()
+    return versions_util.Delete(
+        client, operations.OperationsClient(), args.version, model=args.model)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete an existing AI Platform version."""
 
@@ -40,7 +48,16 @@ class Delete(base.DeleteCommand):
     _AddDeleteArgs(parser)
 
   def Run(self, args):
-    with endpoint_util.MlEndpointOverrides(region=args.region):
-      client = versions_api.VersionsClient()
-      return versions_util.Delete(
-          client, operations.OperationsClient(), args.version, model=args.model)
+    return _Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DeleteBeta(base.DeleteCommand):
+  """Delete an existing AI Platform version."""
+
+  @staticmethod
+  def Args(parser):
+    _AddDeleteArgs(parser)
+
+  def Run(self, args):
+    return _Run(args)

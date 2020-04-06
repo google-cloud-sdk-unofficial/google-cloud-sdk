@@ -31,6 +31,22 @@ def _AddLocalPredictArgs(parser):
   flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
   group = parser.add_mutually_exclusive_group(required=True)
   group.add_argument(
+      '--json-request',
+      help="""\
+      Path to a local file containing the body of JSON request.
+
+      An example of a JSON request:
+
+          {
+            "instances": [
+              {"x": [1, 2], "y": [3, 4]},
+              {"x": [-1, -2], "y": [-3, -4]}
+            ]
+          }
+
+      This flag accepts "-" for stdin.
+      """)
+  group.add_argument(
       '--json-instances',
       help="""\
       Path to a local file from which instances are read.
@@ -77,6 +93,7 @@ class Predict(base.Command):
                        '--signature-name flag, otherwise the command may fail.')
     results = local_utils.RunPredict(
         args.model_dir,
+        json_request=args.json_request,
         json_instances=args.json_instances,
         text_instances=args.text_instances,
         framework=framework_flag,

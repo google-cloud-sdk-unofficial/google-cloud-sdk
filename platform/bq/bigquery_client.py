@@ -71,6 +71,10 @@ CONNECTION_PROPERTY_TO_TYPE_MAP = {
 }
 CONNECTION_TYPES = CONNECTION_TYPE_TO_PROPERTY_MAP.keys()
 
+# Data Transfer Service Authorization Info
+AUTHORIZATION_CODE = 'authorization_code'
+VERSION_INFO = 'version_info'
+
 
 def MakeIamRoleIdPropertiesJson(iam_role_id):
   """Returns propeties for a connection with IAM role id.
@@ -1959,6 +1963,36 @@ class BigqueryClient(object):
     client.projects().locations().capacityCommitments().delete(
         name=reference.path()).execute()
 
+  def UpdateCapacityCommitment(self, reference, plan, renewal_plan):
+    """Updates a capacity commitment with the given reference.
+
+    Arguments:
+      reference: Capacity commitment to update.
+      plan: Commitment plan for this capacity commitment.
+      renewal_plan: Renewal plan for this capacity commitment.
+
+    Returns:
+      Capacity commitment object that was updated.
+
+    Raises:
+      BigqueryError: if capacity commitment cannot be updated.
+    """
+    if plan is None and renewal_plan is None:
+      raise BigqueryError('Please specify fields to be updated.')
+    capacity_commitment = {}
+    update_mask = []
+    if plan is not None:
+      capacity_commitment['plan'] = plan
+      update_mask.append('plan')
+    if renewal_plan is not None:
+      capacity_commitment['renewal_plan'] = renewal_plan
+      update_mask.append('renewal_plan')
+
+    client = self.GetReservationApiClient()
+    return client.projects().locations().capacityCommitments().patch(
+        name=reference.path(), updateMask=','.join(update_mask),
+        body=capacity_commitment).execute()
+
   def CreateReservationAssignment(self, reference, job_type, assignee_type,
                                   assignee_id):
     """Creates a reservation assignment for a given project/folder/organization.
@@ -2402,8 +2436,8 @@ class BigqueryClient(object):
     elif reference_type == ApiClientHelper.ReservationReference:
       formatter.AddColumns(('name', 'slotCapacity', 'useIdleSlots'))
     elif reference_type == ApiClientHelper.CapacityCommitmentReference:
-      formatter.AddColumns(
-          ('name', 'slotCount', 'plan', 'state', 'commitmentEndTime'))
+      formatter.AddColumns(('name', 'slotCount', 'plan', 'renewalPlan', 'state',
+                            'commitmentEndTime'))
     elif reference_type == ApiClientHelper.ReservationAssignmentReference:
       formatter.AddColumns(('name', 'jobType', 'assignee'))
     elif reference_type == ApiClientHelper.ConnectionReference:
@@ -2645,6 +2679,12 @@ class BigqueryClient(object):
       result['DDL Target Table'] = dict(query_stats['ddlTargetTable'])
     if 'ddlTargetRoutine' in query_stats:
       result['DDL Target Routine'] = dict(query_stats['ddlTargetRoutine'])
+    if 'ddlTargetRowAccessPolicy' in query_stats:
+      result['DDL Target Row Access Policy'] = dict(
+          query_stats['ddlTargetRowAccessPolicy'])
+    if 'ddlAffectedRowAccessPolicyCount' in query_stats:
+      result['DDL Affected Row Access Policy Count'] = query_stats[
+          'ddlAffectedRowAccessPolicyCount']
     if ('statementType' in query_stats and
         query_stats['statementType'] == 'ASSERT'):
       result['Assertion'] = True
@@ -3933,7 +3973,7 @@ class BigqueryClient(object):
                            display_name=None,
                            refresh_window_days=None,
                            params=None,
-                           authorization_code=None,
+                           auth_info=None,
                            service_account_name=None,
                            schedule_args=None):
     """Updates a transfer config.
@@ -3945,7 +3985,8 @@ class BigqueryClient(object):
       refresh_window_days: Optional update to the refresh window days. Some
         data sources do not support this.
       params: Optional parameters to update.
-      authorization_code: Authorization code that the user input if they want to
+      auth_info: A dict contains authorization info which can be either an
+        authorization_code or a version_info that the user input if they want to
         update credentials.
       service_account_name: The service account that the user could act as and
         used as the credential to create transfer runs from the transfer config.
@@ -3970,14 +4011,14 @@ class BigqueryClient(object):
       dataset_reference = self.GetDatasetReference(target_dataset)
       if self.DatasetExists(dataset_reference):
         update_items['destinationDatasetId'] = target_dataset
-        update_mask.append('transfer_config.destination_dataset_id,')
+        update_mask.append('transfer_config.destination_dataset_id')
       else:
         raise BigqueryNotFoundError(
             'Unknown %r' % (dataset_reference,), {'reason': 'notFound'}, [])
       update_items['destinationDatasetId'] = target_dataset
 
     if display_name:
-      update_mask.append('transfer_config.display_name,')
+      update_mask.append('transfer_config.display_name')
       update_items['displayName'] = display_name
 
     data_source_retrieval = (project_reference + '/locations/-/dataSources/' +
@@ -3987,7 +4028,7 @@ class BigqueryClient(object):
 
     if params:
       update_items = self.ProcessParamsFlag(params, update_items)
-      update_mask.append('transfer_config.params,')
+      update_mask.append('transfer_config.params')
 
     # if refresh window provided, check that data source supports it
     if refresh_window_days:
@@ -3995,29 +4036,34 @@ class BigqueryClient(object):
         update_items = self.ProcessRefreshWindowDaysFlag(
             refresh_window_days, data_source_info,
             update_items, current_config['dataSourceId'])
-        update_mask.append('transfer_config.data_refresh_window_days,')
+        update_mask.append('transfer_config.data_refresh_window_days')
 
     if schedule_args:
       if schedule_args.schedule is not None:
         # update schedule if a custom string was provided
         update_items['schedule'] = schedule_args.schedule
-        update_mask.append('transfer_config.schedule,')
+        update_mask.append('transfer_config.schedule')
 
       update_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload(
           options_to_copy=current_config.get('scheduleOptions'))
-      update_mask.append('transfer_config.scheduleOptions,')
+      update_mask.append('transfer_config.scheduleOptions')
 
-    if authorization_code:
-      update_mask.append('authorization_code,')
+    if auth_info is not None and AUTHORIZATION_CODE in auth_info:
+      update_mask.append(AUTHORIZATION_CODE)
+
+    if auth_info is not None and VERSION_INFO in auth_info:
+      update_mask.append(VERSION_INFO)
 
     if service_account_name:
-      update_mask.append('service_account_name,')
+      update_mask.append('service_account_name')
 
     transfer_client.projects().locations().transferConfigs().patch(
         body=update_items,
         name=reference.transferConfigName,
-        updateMask=''.join(update_mask),
-        authorizationCode=authorization_code,
+        updateMask=','.join(update_mask),
+        authorizationCode=(None if auth_info is None else
+                           auth_info.get(AUTHORIZATION_CODE)),
+        versionInfo=None if auth_info is None else auth_info.get(VERSION_INFO),
         serviceAccountName=service_account_name,
         x__xgafv='2').execute()
 
@@ -4028,7 +4074,7 @@ class BigqueryClient(object):
                            display_name=None,
                            refresh_window_days=None,
                            params=None,
-                           authorization_code=None,
+                           auth_info=None,
                            service_account_name=None,
                            schedule_args=None):
     """Create a transfer config corresponding to TransferConfigReference.
@@ -4043,8 +4089,9 @@ class BigqueryClient(object):
         be in JSON format given as a string. Ex: --params="{'param':'value'}".
         The params should be the required values needed for each data source and
         will vary.
-      authorization_code: The authorization code that the user input if they
-        need credentials.
+      auth_info: A dict contains authorization info which can be either an
+        authorization_code or a version_info that the user input if they need
+        credentials.
       service_account_name: The service account that the user could act as and
         used as the credential to create transfer runs from the transfer config.
       schedule_args: Optional parameters to customize data transfer schedule.
@@ -4103,7 +4150,9 @@ class BigqueryClient(object):
     ).transferConfigs().create(
         parent=parent,
         body=create_items,
-        authorizationCode=authorization_code,
+        authorizationCode=(None if auth_info is None else
+                           auth_info.get(AUTHORIZATION_CODE)),
+        versionInfo=None if auth_info is None else auth_info.get(VERSION_INFO),
         serviceAccountName=service_account_name).execute()
 
     return new_transfer_config['name']
@@ -4663,20 +4712,21 @@ class BigqueryClient(object):
       result = request.execute()
     return result
 
-  def _StartQueryRpc(self,
-                     query,
-                     dry_run=None,
-                     use_cache=None,
-                     preserve_nulls=None,
-                     max_results=None,
-                     timeout_ms=None,
-                     min_completion_ratio=None,
-                     project_id=None,
-                     external_table_definitions_json=None,
-                     udf_resources=None,
-                     use_legacy_sql=None,
-                     location=None,
-                     **kwds):
+  def _StartQueryRpc(
+      self,
+      query,
+      dry_run=None,
+      use_cache=None,
+      preserve_nulls=None,
+      max_results=None,
+      timeout_ms=None,
+      min_completion_ratio=None,
+      project_id=None,
+      external_table_definitions_json=None,
+      udf_resources=None,
+      use_legacy_sql=None,
+      location=None,
+      **kwds):
     """Executes the given query using the rpc-style query api.
 
     Args:
@@ -5044,20 +5094,21 @@ class BigqueryClient(object):
                                      start_row=start_row,
                                      max_rows=max_rows)
 
-  def RunQueryRpc(self,
-                  query,
-                  dry_run=None,
-                  use_cache=None,
-                  preserve_nulls=None,
-                  max_results=None,
-                  wait=sys.maxsize,
-                  min_completion_ratio=None,
-                  wait_printer_factory=None,
-                  max_single_wait=None,
-                  external_table_definitions_json=None,
-                  udf_resources=None,
-                  location=None,
-                  **kwds):
+  def RunQueryRpc(
+      self,
+      query,
+      dry_run=None,
+      use_cache=None,
+      preserve_nulls=None,
+      max_results=None,
+      wait=sys.maxsize,
+      min_completion_ratio=None,
+      wait_printer_factory=None,
+      max_single_wait=None,
+      external_table_definitions_json=None,
+      udf_resources=None,
+      location=None,
+      **kwds):
     """Executes the given query using the rpc-style query api.
 
     Args:
