@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Debugging tools for Google Compute Engine virtual machine instances."""
+"""Debugging tools for Compute Engine virtual machine instances."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,12 +22,12 @@ from googlecloudsdk.calliope import base
 
 
 class Diagnose(base.Group):
-  """Debugging tools for Google Compute Engine virtual machine instances."""
+  """Debugging tools for Compute Engine virtual machine instances."""
 
 
 Diagnose.category = base.INSTANCES_CATEGORY
 
 Diagnose.detailed_help = {
     'brief': (
-        'Debugging tools for Google Compute Engine virtual machine instances.'),
+        'Debugging tools for Compute Engine virtual machine instances.'),
 }

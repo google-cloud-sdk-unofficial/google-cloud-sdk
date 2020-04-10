@@ -24,5 +24,16 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class MachineImage(base.Group):
-  """Read and manage Google Compute Engine machine image resources."""
+  """Read and manage Compute Engine machine image resources."""
   category = base.COMPUTE_CATEGORY
+
+MachineImage.detailed_help = {
+    'DESCRIPTION': """
+        Read and manage Compute Engine machine image resources..
+
+        For more information about machine images, see the
+        [machine images documentation](https://cloud.google.com/compute/docs/machine-images).
+
+        See also: [Machine images API](https://cloud.google.com/compute/docs/reference/rest/beta/machineImages).
+    """,
+}

@@ -135,16 +135,18 @@ class Run(base.Command):
             pod_substr=WORKER_POD_SUBSTR, kubectl_namespace=kubectl_ns)
 
         log.status.Print(
-            'Executing within the following kubectl namespace: {}'.format(
-                kubectl_ns))
+            'Executing within the following Kubernetes cluster namespace: '
+            '{}'.format(kubectl_ns))
 
         self.BypassConfirmationPrompt(args)
         kubectl_args = [
-            'exec', pod, '-tic', WORKER_CONTAINER, 'airflow', args.subcommand
+            'exec', pod,
+            '--stdin', '--tty',
+            '--container', WORKER_CONTAINER, '--',
+            'airflow', args.subcommand
         ]
         if args.cmd_args:
-          # Add '--' to the argument list so kubectl won't eat the command args.
-          kubectl_args.extend(['--'] + args.cmd_args)
+          kubectl_args.extend(args.cmd_args)
 
         command_util.RunKubectlCommand(
             command_util.AddKubectlNamespace(kubectl_ns, kubectl_args),

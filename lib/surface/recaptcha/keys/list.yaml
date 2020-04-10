@@ -6,8 +6,6 @@
 
   request:
     collection: recaptchaenterprise.projects.keys
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.recaptcha.hooks:SetParent
 
   response:
     id_field: name

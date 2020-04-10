@@ -22,5 +22,17 @@ from googlecloudsdk.calliope import base
 
 
 class InterconnectLocations(base.Group):
-  """Read and manipulate Google Compute Engine interconnect locations."""
+  """Read and manipulate Compute Engine interconnect locations."""
   pass
+
+InterconnectLocations.detailed_help = {
+    'DESCRIPTION': """
+        Read and manipulate Cloud Interconnect locations.
+
+        For more information about interconnect locations, see the
+        [interconnect locations documentation](https://cloud.google.com/interconnect/docs/concepts/colocation-facilities).
+
+        See also: [Interconnect locations API](https://cloud.google.com/compute/docs/reference/rest/v1/interconnectLocations).
+    """,
+}
+

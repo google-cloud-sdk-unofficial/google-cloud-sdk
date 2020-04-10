@@ -72,7 +72,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     base.Argument(
         '--cert-output-file',
-        help='The path where the resulting PEM-encoded certificate file should be written.',
+        help='The path where the resulting PEM-encoded certificate chain file should be written (ordered from leaf to root).',
         required=False).AddToParser(parser)
     flags.AddValidityFlag(parser, 'certificate', 'P30D', '30 days')
     labels_util.AddCreateLabelsFlags(parser)
@@ -140,9 +140,10 @@ class Create(base.CreateCommand):
       raise exceptions.BadFileException(
           "Could not read provided CSR file '{}'.".format(csr_file))
 
-  def _WritePemCertificate(self, pem_cert, cert_file):
+  def _WritePemChain(self, pem_cert, issuing_chain, cert_file):
     try:
-      files.WriteFileContents(cert_file, pem_cert)
+      pem_chain = [pem_cert] + issuing_chain
+      files.WriteFileContents(cert_file, '\n'.join(pem_chain))
     except (files.Error, OSError, IOError):
       raise exceptions.BadFileException(
           "Could not write certificate to '{}'.".format(cert_file))
@@ -203,7 +204,8 @@ class Create(base.CreateCommand):
                                                     messages.Certificate)
 
     if args.IsSpecified('cert_output_file'):
-      self._WritePemCertificate(certificate.pemCertificate,
-                                args.cert_output_file)
+      self._WritePemChain(certificate.pemCertificate,
+                          certificate.pemCertificateChain,
+                          args.cert_output_file)
 
     log.status.Print('Created Certificate [{}].'.format(certificate.name))

@@ -26,3 +26,16 @@ class ForwardingRules(base.Group):
 
 
 ForwardingRules.category = base.LOAD_BALANCING_CATEGORY
+
+ForwardingRules.detailed_help = {
+    'DESCRIPTION': """
+        Read and manipulate traffic forwarding rules for load balancers,
+        protocol forwarding, or Classic Cloud VPN.
+
+        For more information about forwarding rules, see the
+        [forwarding rules documentation](https://cloud.google.com/load-balancing/docs/forwarding-rule-concepts).
+
+        See also: [Region forwarding rules API](https://cloud.google.com/compute/docs/reference/rest/v1/forwardingRules)
+        and [Global forwarding rules API](https://cloud.google.com/compute/docs/reference/rest/v1/globalForwardingRules).
+    """,
+}

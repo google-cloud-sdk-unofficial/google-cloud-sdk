@@ -37,11 +37,11 @@ DETAILED_HELP = {
 }
 
 
-def _AddCreateArgs(parser):
+def _AddCreateArgs(parser, hide_region_arg=True):
   """Add common arguments for `versions create` command."""
   flags.GetModelName(positional=False, required=True).AddToParser(parser)
   flags.GetDescriptionFlag('version').AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(hidden=hide_region_arg).AddToParser(parser)
   flags.VERSION_NAME.AddToParser(parser)
   base.Argument(
       '--origin',
@@ -146,7 +146,7 @@ class CreateBeta(CreateGA):
 
   @staticmethod
   def Args(parser):
-    _AddCreateArgs(parser)
+    _AddCreateArgs(parser, hide_region_arg=False)
     flags.SERVICE_ACCOUNT.AddToParser(parser)
     flags.AddMachineTypeFlagToParser(parser)
     flags.AddUserCodeArgs(parser)

@@ -27,5 +27,7 @@ class Vulnerabilities(base.Group):
 
 
 Vulnerabilities.detailed_help = {
-    'brief': 'List and describe instance vulnerabilities.',
+    'DESCRIPTION': """
+        List and describe instance vulnerabilities.
+    """,
 }

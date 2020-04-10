@@ -25,3 +25,16 @@ from googlecloudsdk.calliope import base
 class InterconnectAttachments(base.Group):
   """Create or manipulate dedicated interconnect attachments."""
   pass
+
+InterconnectAttachments.detailed_help = {
+    'DESCRIPTION': """
+        Create or manipulate Dedicated Interconnect attachments.
+
+        For more information about about interconnect attachments for Dedicated
+        Interconnect, see the documentation for
+        [Dedicated interconnect attachments](https://cloud.google.com/interconnect/docs/how-to/dedicated/creating-vlan-attachments).
+
+        See also: [Interconnect attachments API](https://cloud.google.com/compute/docs/reference/rest/v1/interconnectAttachments).
+    """,
+}
+

@@ -28,10 +28,10 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _AddUpdateArgs(parser):
+def _AddUpdateArgs(parser, hide_region_flag=True):
   """Get arguments for the `ai-platform models update` command."""
   flags.GetModelName().AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
   flags.GetDescriptionFlag('model').AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
 
@@ -50,7 +50,7 @@ class UpdateBeta(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    _AddUpdateArgs(parser)
+    _AddUpdateArgs(parser, hide_region_flag=False)
 
   def Run(self, args):
     _Run(args)

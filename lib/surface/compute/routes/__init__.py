@@ -28,5 +28,12 @@ class Routes(base.Group):
 Routes.category = base.NETWORKING_CATEGORY
 
 Routes.detailed_help = {
-    'brief': 'Read and manipulate routes',
+    'DESCRIPTION': """
+        Read and manipulate routes.
+
+        For more information about routes, see the
+        [routes documentation](https://cloud.google.com/vpc/docs/routes).
+
+        See also: [Routes API](https://cloud.google.com/compute/docs/reference/rest/v1/routes).
+    """,
 }

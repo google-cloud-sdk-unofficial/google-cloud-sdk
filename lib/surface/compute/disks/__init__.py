@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Disks(base.Group):
-  """Read and manipulate Google Compute Engine disks."""
+  """Read and manipulate Compute Engine disks."""
 
 
 Disks.category = base.DISKS_CATEGORY
 
 Disks.detailed_help = {
-    'brief': 'Read and manipulate Google Compute Engine disks',
+    'DESCRIPTION': """
+        Read and manipulate Compute Engine disks.
+
+        For more information about disks, see the
+        [disks documentation](https://cloud.google.com/compute/docs/disks/).
+
+        See also: [Disks API](https://cloud.google.com/compute/docs/reference/rest/v1/disks).
+    """,
 }

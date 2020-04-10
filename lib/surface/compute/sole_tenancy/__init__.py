@@ -28,3 +28,12 @@ class SoleTenancy(base.Group):
 
 
 SoleTenancy.category = base.INSTANCES_CATEGORY
+
+SoleTenancy.detailed_help = {
+    'DESCRIPTION': """
+        Read and manage Compute Engine sole-tenancy resources.
+
+        For more information about sole-tenancy resources, see the
+        [sole-tenancy documentation](https://cloud.google.com/compute/docs/nodes/).
+    """,
+}

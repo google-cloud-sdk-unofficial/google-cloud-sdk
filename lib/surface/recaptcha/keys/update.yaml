@@ -6,7 +6,7 @@
   request:
     collection: recaptchaenterprise.projects.keys
     modify_request_hooks:
-    - googlecloudsdk.command_lib.recaptcha.hooks:SetParent
+    - googlecloudsdk.command_lib.recaptcha.hooks:SanitizePlatformSettings
 
   arguments:
     resource:
@@ -23,13 +23,13 @@
       metavar: KEY=VALUE
       required: false
       help_text: |
-          List of label KEY=VALUE pairs to add.
+        List of label KEY=VALUE pairs to add.
       type:
-          arg_dict:
-              flatten: true
-              spec:
-              - api_field: key
-              - api_field: value
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     - group:
         mutex: true
         params:
@@ -45,7 +45,7 @@
             - arg_name: allow-amp-traffic
               api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.allowAmpTraffic
               help_text: |
-                  Wether this key can be used on AMP (Accelerated Mobile Pages) websites.
+                Wether this key can be used on AMP (Accelerated Mobile Pages) websites.
             - group:
                 mutex: true
                 required: false
@@ -104,3 +104,5 @@
 
                 Examples of valid package names:
                      'com.companyname.appname'
+  output:
+    format: none

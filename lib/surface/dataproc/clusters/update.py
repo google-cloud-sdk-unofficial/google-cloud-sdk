@@ -67,8 +67,9 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     # Allow the user to specify new labels as well as update/remove existing
     labels_util.AddUpdateLabelsFlags(parser)
-    # Updates can take hours if a lot of data needs to be moved on HDFS
-    flags.AddTimeoutFlag(parser, default='3h')
+    # Graceful decomissioning timeouts can be up to 24 hours + add 1 hour for
+    # deleting VMs, etc.
+    flags.AddTimeoutFlag(parser, default='25h')
     flags.AddClusterResourceArg(parser, 'update', dataproc.api_version)
     parser.add_argument(
         '--num-workers',

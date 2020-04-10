@@ -36,7 +36,7 @@ class Code(base.Group):
           """\
           To set up a local development environment, run:
 
-            $ {command} setup
+            $ {command} dev
       """,
   }
 

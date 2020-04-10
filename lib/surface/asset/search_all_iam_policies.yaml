@@ -11,7 +11,7 @@
       To search all the IAM policies that contains `amy@mycompany.com` under the organization
       (organizations/123), which you have `cloudasset.assets.searchAllIamPolicies` permission, run:
 
-          $ {command} --scope='organizations/123' --query='policy:"amy@mydomain.com"'
+          $ {command} --scope='organizations/123' --query='policy : "amy@mydomain.com"'
 
   request:
     collection: cloudasset.iamPolicies
@@ -25,23 +25,25 @@
     - api_field: query
       arg_name: query
       help_text: |
-        The query statement.
+        The query statement. To learn how to construct a query, see
+        https://cloud.google.com/asset-inventory/docs/searching-iam-policies#how_to_construct_a_query.
 
         Examples:
-          * To find all Cloud IAM policies in your organization that contain amy@mycompany.com:
-            `policy:"amy@mydomain.com"`
-          * To find all Cloud IAM policies in your organization that contain owner role:
-            `policy:"roles/owner"`
-          * To find all Cloud IAM policies in your organization which have myuser@mycompany.com in
-            the owner role:
-           `policy:("roles/owner" "myuser@mycompany.com")`
-          * To find all Cloud IAM policies in your organization which have myuser@mycompany.com in
-            the owner role or youruser@mycompany.com in the viewer role:
-            `policy:(("roles/owner" "myuser@mycompany.com") OR ("roles/viewer" "youruser@mycompany.com"))`
-          * To find all Cloud IAM policies that are set on a resource:
-            `resource: "projects/123"`
-          * To find all Cloud IAM policies of resources that match a query.
-            `resource: "*proj*"`
+          * To find all Cloud IAM policy bindings in your organization that contain
+            amy@mycompany.com: ```policy : "amy@mydomain.com"```
+          * To find all Cloud IAM policy bindings in your organization that contain the Owner role:
+            ```policy : "roles/owner"```
+          * To find all Cloud IAM policy bindings in your organization that have
+            myuser@mycompany.com in the Owner role:
+            ```policy : ("roles/owner" "myuser@mycompany.com")```
+          * To find all Cloud IAM policy bindings in your organization that have
+            myuser@mycompany.com in the owner role or youruser@mycompany.com in the Viewer role:
+            ```policy : (("roles/owner" "myuser@mycompany.com") OR ("roles/viewer" "youruser@mycompany.com"))```
+          * To find all Cloud IAM policy bindings that are set on a resource:
+            ```resource : "projects/123"```
+          * To find all Cloud IAM policy bindings that are set on resources whose names contain
+            substring "proj":
+            ```resource : "*proj*"```
     - api_field: scope
       arg_name: scope
       help_text: |

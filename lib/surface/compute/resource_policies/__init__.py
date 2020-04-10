@@ -24,5 +24,16 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class ResourcePolicies(base.Group):
-  """Manage Google Compute Engine Resource Policies."""
+  """Manage Compute Engine Resource Policies."""
   category = base.COMPUTE_CATEGORY
+
+ResourcePolicies.detailed_help = {
+    'DESCRIPTION': """
+        Manage Compute Engine resource policies.
+
+        For more information about resource policies, see the
+        [resource policies documentation](https://cloud.google.com/compute/docs/access#resource-policies).
+
+        See also: [Resource policies API](https://cloud.google.com/compute/docs/reference/rest/v1/resourcePolicies).
+    """,
+}

@@ -23,9 +23,20 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Peerings(base.Group):
-  """List, create, and delete Google Compute Engine network peerings."""
+  """List, create, and delete, and update VPC Network Peering."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class PeeringsAlpha(base.Group):
-  """List, create, delete, and update Google Compute Engine network peerings."""
+  """List, create, delete, and update VPC Network Peering."""
+
+Peerings.detailed_help = {
+    'DESCRIPTION': """
+        Read and manipulate VPC Network Peering connections.
+
+        For more information about VPC Network Peering, see the
+        [VPC Network Peering documentation](https://cloud.google.com/vpc/docs/vpc-peering).
+
+        See also: [Network API](https://cloud.google.com/compute/docs/reference/rest/v1/networks).
+    """,
+}

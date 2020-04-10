@@ -27,26 +27,23 @@ from googlecloudsdk.command_lib.compute.instances import (flags as
 from googlecloudsdk.command_lib.compute.target_instances import flags
 
 
-class Create(base.CreateCommand):
-  """Create a target instance for handling traffic from a forwarding rule.
-
-    *{command}* is used to create a target instance for handling
-  traffic from one or more forwarding rules. Target instances
-  are ideal for traffic that should be managed by a single
-  source. For more information on target instances, see
-  [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
-  """
+class CreateHelper(object):
+  """Helper class to creat a target instance."""
 
   INSTANCE_ARG = None
   TARGET_INSTANCE_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_network):
+    """Add flags to create a target instance to the parser."""
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForTargetInstance()
     cls.INSTANCE_ARG.AddArgument(parser)
     cls.TARGET_INSTANCE_ARG = flags.TargetInstanceArgument()
     cls.TARGET_INSTANCE_ARG.AddArgument(parser)
+
+    if support_network:
+      flags.AddNetwork(parser)
 
     parser.add_argument(
         '--description',
@@ -54,8 +51,11 @@ class Create(base.CreateCommand):
 
     parser.display_info.AddCacheUpdater(flags.TargetInstancesCompleter)
 
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+  def __init__(self, support_network):
+    self._support_network = support_network
+
+  def Run(self, args, holder):
+    """Issues request necessary to create a target instance."""
     client = holder.client
 
     target_instance_ref = self.TARGET_INSTANCE_ARG.ResolveAsResource(
@@ -72,14 +72,65 @@ class Create(base.CreateCommand):
       raise calliope_exceptions.ToolException(
           'Target instance zone must match the virtual machine instance zone.')
 
+    target_instance = client.messages.TargetInstance(
+        description=args.description,
+        name=target_instance_ref.Name(),
+        instance=instance_ref.SelfLink())
+
+    if self._support_network and args.IsSpecified('network'):
+      target_instance.network = flags.NETWORK_ARG.ResolveAsResource(
+          args, holder.resources).SelfLink()
+
     request = client.messages.ComputeTargetInstancesInsertRequest(
-        targetInstance=client.messages.TargetInstance(
-            description=args.description,
-            name=target_instance_ref.Name(),
-            instance=instance_ref.SelfLink(),
-        ),
+        targetInstance=target_instance,
         project=target_instance_ref.project,
         zone=target_instance_ref.zone)
 
     return client.MakeRequests([(client.apitools_client.targetInstances,
                                  'Insert', request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGA(base.CreateCommand):
+  """Create a target instance for handling traffic from a forwarding rule.
+
+    *{command}* is used to create a target instance for handling
+  traffic from one or more forwarding rules. Target instances
+  are ideal for traffic that should be managed by a single
+  source. For more information on target instances, see
+  [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
+  """
+  _support_network = False
+
+  @classmethod
+  def Args(cls, parser):
+    CreateHelper.Args(parser, support_network=cls._support_network)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    return CreateHelper(support_network=self._support_network).Run(args, holder)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateGA):
+  """Create a target instance for handling traffic from a forwarding rule.
+
+    *{command}* is used to create a target instance for handling
+  traffic from one or more forwarding rules. Target instances
+  are ideal for traffic that should be managed by a single
+  source. For more information on target instances, see
+  [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
+  """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a target instance for handling traffic from a forwarding rule.
+
+    *{command}* is used to create a target instance for handling
+  traffic from one or more forwarding rules. Target instances
+  are ideal for traffic that should be managed by a single
+  source. For more information on target instances, see
+  [](https://cloud.google.com/compute/docs/protocol-forwarding/#targetinstances)
+  """
+  _support_network = True

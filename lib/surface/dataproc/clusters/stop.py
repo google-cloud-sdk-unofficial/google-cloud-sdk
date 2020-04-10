@@ -52,11 +52,14 @@ class Stop(base.Command):
 
     cluster_ref = args.CONCEPTS.cluster.Parse()
 
+    stop_cluster_request = dataproc.messages.StopClusterRequest(
+        requestId=util.GetUniqueId())
+
     request = dataproc.messages.DataprocProjectsRegionsClustersStopRequest(
         clusterName=cluster_ref.clusterName,
         region=cluster_ref.region,
         projectId=cluster_ref.projectId,
-        requestId=util.GetUniqueId())
+        stopClusterRequest=stop_cluster_request)
 
     console_io.PromptContinue(
         message="Cluster '{0}' is stopping."

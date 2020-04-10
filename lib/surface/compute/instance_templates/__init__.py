@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class InstanceTemplates(base.Group):
-  """Read and manipulate Google Compute Engine instances templates.
+  """Read and manipulate Compute Engine instances templates.
 
   Lists, creates, deletes, and modifies Compute Engine instance templates.
 
@@ -31,5 +31,15 @@ class InstanceTemplates(base.Group):
 
   """
 
-
 InstanceTemplates.category = base.INSTANCES_CATEGORY
+
+InstanceTemplates.detailed_help = {
+    'DESCRIPTION': """
+        Lists, creates, deletes, and modifies Compute Engine instance templates.
+
+        For more information about instance templates, see the
+        [instances templates documentation](https://cloud.google.com/compute/docs/instance-templates).
+
+        See also: [Instance templates API](https://cloud.google.com/compute/docs/reference/rest/v1/instanceTemplates).
+    """,
+}

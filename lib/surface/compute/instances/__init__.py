@@ -22,12 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Instances(base.Group):
-  """Read and manipulate Google Compute Engine virtual machine instances."""
+  """Read and manipulate Compute Engine virtual machine instances."""
 
 
 Instances.category = base.INSTANCES_CATEGORY
 
 Instances.detailed_help = {
-    'brief': (
-        'Read and manipulate Google Compute Engine virtual machine instances'),
+    'DESCRIPTION': """
+        Read and manipulate Compute Engine virtual machine instances.
+
+        For more information about virtual machine instances, see the
+        [virtual machine instances documentation](https://cloud.google.com/compute/docs/instances/).
+
+        See also: [Instances API](https://cloud.google.com/compute/docs/reference/rest/v1/instances).
+    """,
 }

@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Snapshots(base.Group):
-  """List, describe, and delete Google Compute Engine snapshots."""
+  """List, describe, and delete Compute Engine snapshots."""
 
 
 Snapshots.category = base.INSTANCES_CATEGORY
 
 Snapshots.detailed_help = {
-    'brief': 'List, describe, and delete Google Compute Engine snapshots',
+    'DESCRIPTION': """
+        List, describe, and delete Compute Engine snapshots.
+
+        For more information about snapshots, see the
+        [snapshots documentation](https://cloud.google.com/compute/docs/disks/create-snapshots).
+
+        See also: [Snapshots API](https://cloud.google.com/compute/docs/reference/rest/v1/snapshots).
+    """,
 }

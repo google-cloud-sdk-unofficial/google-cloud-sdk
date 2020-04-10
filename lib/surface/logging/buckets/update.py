@@ -40,7 +40,7 @@ DETAILED_HELP = {
 class Update(base.UpdateCommand):
   """Updates a bucket.
 
-  Changes one or more proprties associated with a bucket.
+  Changes one or more properties associated with a bucket.
   """
 
   @staticmethod

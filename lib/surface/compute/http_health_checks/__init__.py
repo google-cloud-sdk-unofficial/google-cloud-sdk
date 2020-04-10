@@ -28,6 +28,12 @@ class HttpHealthChecks(base.Group):
 HttpHealthChecks.category = base.LOAD_BALANCING_CATEGORY
 
 HttpHealthChecks.detailed_help = {
-    'brief': ('Read and manipulate HTTP health checks for load balanced '
-              'instances')
+    'DESCRIPTION': """
+        Read and manipulate legacy health checks that use the HTTP protocol.
+
+        For more information about legacy health checks, see the
+        [HTTP health checks documentation](https://cloud.google.com/load-balancing/docs/health-checks#legacy-health-checks).
+
+        See also: [HTTP health checks API](https://cloud.google.com/compute/docs/reference/rest/v1/httpHealthChecks).
+    """,
 }

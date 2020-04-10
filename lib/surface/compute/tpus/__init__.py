@@ -29,3 +29,14 @@ class Tpus(base.Group):
 
 
 Tpus.category = base.INSTANCES_CATEGORY
+
+Tpus.detailed_help = {
+    'DESCRIPTION': """
+        List, create, and delete Cloud TPUs.
+
+        For more information about Cloud TPUs, see the
+        [Cloud TPUs documentation](https://cloud.google.com/tpu/docs/tpus).
+
+        See also: [Cloud TPUs API](https://cloud.google.com/tpu/docs/reference/rest/).
+    """,
+}

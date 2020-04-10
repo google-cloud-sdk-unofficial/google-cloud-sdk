@@ -22,14 +22,22 @@ from googlecloudsdk.calliope import base
 
 
 class SecurityPolicies(base.Group):
-  """Read and manipulate Google Compute Engine security policies."""
+  """Read and manipulate Cloud Armor security policies."""
   pass
 
 
 SecurityPolicies.category = base.LOAD_BALANCING_CATEGORY
 
 SecurityPolicies.detailed_help = {
-    'brief': ('Read and manipulate Google Compute Engine security policies. '
-              'Security policies are used to control access to Google Cloud '
-              'HTTP/HTTPS load balancers'),
+    'DESCRIPTION': """
+       Read and manipulate Cloud Armor security policies.
+
+       Security policies are used to control access to Google Cloud
+       HTTP/HTTPS load balancers.
+
+       For more information about security policies, see
+       [Security policies for HTTPS load balancing](https://cloud.google.com/armor/docs/security-policy-concepts#security_policies_for_https_load_balancing).
+
+       See also: [Security policies API](https://cloud.google.com/compute/docs/reference/rest/v1/securityPolicies).
+    """,
 }

@@ -27,13 +27,30 @@ from googlecloudsdk.command_lib.ml_engine import models_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
+_REGION_FLAG_HELPTEXT = """\
+Google Cloud region of the regional endpoint to use for this command.
+If unspecified, the command uses the global endpoint of the AI Platform Training
+and Prediction API.
 
-def _AddCreateArgs(parser, support_console_logging=False):
+If you specify this flag, do not specify `--regions`.
+
+Learn more about regional endpoints and see a list of available regions:
+ https://cloud.google.com/ai-platform/prediction/docs/regional-endpoints
+"""
+
+
+def _AddCreateArgs(parser,
+                   support_console_logging=False,
+                   hide_region_flag=True):
   """Get arguments for the `ai-platform models create` command."""
   flags.GetModelName().AddToParser(parser)
   flags.GetDescriptionFlag('model').AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
-  parser.add_argument(
+  region_group = parser.add_mutually_exclusive_group()
+  region_group.add_argument(
+      '--region',
+      hidden=hide_region_flag,
+      help=_REGION_FLAG_HELPTEXT)
+  region_group.add_argument(
       '--regions',
       metavar='REGION',
       type=arg_parsers.ArgList(min_length=1),
@@ -93,7 +110,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _AddCreateArgs(parser, support_console_logging=True)
+    _AddCreateArgs(parser, support_console_logging=True, hide_region_flag=False)
 
   def Run(self, args):
     self._Run(args, support_console_logging=True)

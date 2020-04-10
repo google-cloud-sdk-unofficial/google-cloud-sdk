@@ -31,8 +31,13 @@ class VpnGateways(base.Group):
   detailed_help = None
   category = base.NETWORKING_CATEGORY
 
-
 VpnGateways.detailed_help = {
-    'brief': ('read and manipulate Google Compute Engine Highly '
-              'Available VPN Gateways.'),
+    'DESCRIPTION': """
+        Read and manipulate highly available (HA) VPN gateways for Cloud VPN.
+
+        For more information about HA VPN gateways, see
+        [Cloud VPN overview](https://cloud.google.com/vpn/docs/concepts/overview).
+
+        See also: [VPN Gateways API](https://cloud.google.com/compute/docs/reference/rest/v1/vpnGateways).
+    """,
 }

@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class DiskTypes(base.Group):
-  """Read Google Compute Engine virtual disk types."""
+  """Read Compute Engine virtual disk types."""
 
 
 DiskTypes.category = base.DISKS_CATEGORY
 
 DiskTypes.detailed_help = {
-    'brief': 'Read Google Compute Engine virtual disk types',
+    'DESCRIPTION': """
+        Read Compute Engine virtual disk types.
+
+        For more information disk types, see the
+        [disk types documentation](https://cloud.google.com/compute/docs/disks/).
+
+        See also: [Disk types API](https://cloud.google.com/compute/docs/reference/rest/v1/diskTypes).
+    """,
 }

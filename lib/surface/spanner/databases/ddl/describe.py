@@ -42,6 +42,7 @@ class Describe(base.ListCommand):
     """See base class."""
     resource_args.AddDatabaseResourceArg(parser, 'of which the ddl to describe')
     parser.display_info.AddCacheUpdater(None)
+    parser.display_info.AddFormat('value(format("{0};\n"))')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

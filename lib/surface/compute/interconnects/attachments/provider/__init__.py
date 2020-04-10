@@ -26,3 +26,16 @@ from googlecloudsdk.calliope import base
 class InterconnectAttachments(base.Group):
   """Create or manipulate partner provider interconnect attachments."""
   pass
+
+InterconnectAttachments.detailed_help = {
+    'DESCRIPTION': """
+        Create or manipulate provider interconnect attachments.
+
+        For more information about provider interconnect attachments,
+        as configured by providers, see the
+        [interconnect attachments documentation](https://cloud.google.com/interconnect/docs/how-to/dedicated/creating-vlan-attachments).
+
+        See also: [Interconnect attachments API](https://cloud.google.com/compute/docs/reference/rest/v1/interconnectAttachments).
+    """,
+}
+

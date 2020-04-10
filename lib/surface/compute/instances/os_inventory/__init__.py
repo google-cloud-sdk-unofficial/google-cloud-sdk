@@ -24,4 +24,13 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class InstanceOsInventory(base.Group):
-  """Read Google Compute Engine OS Inventory Data and Related Resources."""
+  """Read Compute Engine OS Inventory Data and Related Resources."""
+
+InstanceOsInventory.detailed_help = {
+    'DESCRIPTION': """
+        Read Compute Engine OS inventory data.
+
+        For more information about OS inventory, see the
+        [OS inventory documentation](https://cloud.google.com/compute/docs/instances/os-inventory-management).
+    """,
+}

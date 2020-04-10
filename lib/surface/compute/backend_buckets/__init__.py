@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 class BackendBuckets(base.Group):
   """Read and manipulate backend buckets.
 
-  Backend buckets define Google Cloud Storage buckets that can serve content.
+  Backend buckets define Cloud Storage buckets that can serve content.
   URL maps define which requests are sent to which backend buckets. For more
   information, see:
   https://cloud.google.com/compute/docs/load-balancing/http/adding-a-backend-bucket-to-content-based-load-balancing.
@@ -34,5 +34,14 @@ class BackendBuckets(base.Group):
 BackendBuckets.category = base.LOAD_BALANCING_CATEGORY
 
 BackendBuckets.detailed_help = {
-    'brief': 'Read and manipulate backend buckets',
+    'DESCRIPTION': """
+        Read and manipulate backend buckets. Backend buckets define Cloud
+        Storage buckets that can serve content. URL maps define which
+        requests are sent to which backend buckets.
+
+        For more information about backend buckets, see the
+        [backend buckets documentation](https://cloud.google.com/load-balancing/docs/https/adding-backend-buckets-to-load-balancers).
+
+        See also: [Backend buckets API](https://cloud.google.com/compute/docs/reference/rest/v1/backendBuckets).
+    """,
 }

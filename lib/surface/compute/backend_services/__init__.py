@@ -28,5 +28,13 @@ class BackendServices(base.Group):
 BackendServices.category = base.LOAD_BALANCING_CATEGORY
 
 BackendServices.detailed_help = {
-    'brief': 'List, create, and delete backend services',
+    'DESCRIPTION': """
+        List, create, and delete backend services.
+
+        For more information about backend services, see the
+        [backend services documentation](https://cloud.google.com/load-balancing/docs/backend-service).
+
+        See also: [Global backend services API](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices)
+        and [Regional backend services API](https://cloud.google.com/compute/docs/reference/rest/v1/regionBackendServices).
+    """,
 }

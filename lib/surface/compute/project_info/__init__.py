@@ -29,11 +29,18 @@ ProjectInfo.category = base.TOOLS_CATEGORY
 
 ProjectInfo.detailed_help = {
     'DESCRIPTION': """
-        Read and manipulate project-level data like quotas and metadata.
+        Read and manipulate project-level data like quotas and
+        metadata.
 
+        For more information about quotas, see the
+        [quotas documentation](https://cloud.google.com/compute/quotas).
 
-        `Note`: project-level metadata is a distinct concept from instance-level
-        metadata; for details on instance metadata see:
-        https://cloud.google.com/compute/docs/storing-retrieving-metadata
+        ``Note'': Project-level metadata is a distinct concept from instance-level
+        metadata.
+
+        For more information about instance metadata, see
+        [Storing and retrieving instance metadata](https://cloud.google.com/compute/docs/storing-retrieving-metadata).
+
+        See also: [Projects API](https://cloud.google.com/compute/docs/reference/rest/v1/projects).
         """,
 }

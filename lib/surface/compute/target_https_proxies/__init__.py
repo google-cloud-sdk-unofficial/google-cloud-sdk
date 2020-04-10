@@ -28,5 +28,14 @@ class TargetHTTPSProxies(base.Group):
 TargetHTTPSProxies.category = base.NETWORKING_CATEGORY
 
 TargetHTTPSProxies.detailed_help = {
-    'brief': 'List, create, and delete target HTTPS proxies',
+    'DESCRIPTION': """
+        List, create, and delete target HTTPS proxies.
+
+        For more information about target HTTPS proxies, see the
+        [target HTTPS proxies documentation](https://cloud.google.com/load-balancing/docs/target-proxies).
+
+        See also: [Target HTTPS proxies API](https://cloud.google.com/compute/docs/reference/rest/v1/targetHttpsProxies)
+        and
+        [Regional target HTTPS proxies API](https://cloud.google.com/compute/docs/reference/rest/v1/regionTargetHttpsProxies).
+    """,
 }

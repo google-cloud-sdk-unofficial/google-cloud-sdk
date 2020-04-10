@@ -206,7 +206,7 @@ def _SetImagePush(skaffold_file, shared_docker):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Dev(base.Command):
-  """Run a service in a development environment.
+  """Run a Cloud Run service in a local development environment.
 
   By default, this command runs the user's containers on minikube on the local
   machine. To run on another kubernetes cluster, use the --kube-context flag.

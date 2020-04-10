@@ -25,9 +25,24 @@ from googlecloudsdk.command_lib.dataflow import snapshot_utils
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.Command):
   """List all Cloud Dataflow snapshots in a project in the specified region, optionally filtered by job ID."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To list all Cloud Dataflow snapshots in the us-central1 region, run:
+
+            $ {command} --region=us-central1
+
+          To list all Cloud Dataflow snapshots for a job, run:
+
+            $ {command} --job-id=JOB_ID --region=JOB_REGION
+          """,
+  }
 
   @staticmethod
   def Args(parser):

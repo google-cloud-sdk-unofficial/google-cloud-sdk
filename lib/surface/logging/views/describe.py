@@ -37,12 +37,12 @@ DETAILED_HELP = {
 
 
 class Describe(base.DescribeCommand):
-  """Displays information about a view."""
+  """Display information about a view."""
 
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    parser.add_argument('VIEW_ID', help='The id of the view to describe.')
+    parser.add_argument('VIEW_ID', help='Id of the view to describe.')
     util.AddParentArgs(parser, 'Describe a view')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
     parser.add_argument(

@@ -25,13 +25,13 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 class PrintRefreshToken(base.Command):
-  """A command that prints the access token for the current account."""
+  """A command that prints the refresh token for the current account."""
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
         'account', nargs='?',
-        help=('The account to get the access token for. Leave empty for the '
+        help=('The account to get the refresh token for. Leave empty for the '
               'active account.'))
     parser.display_info.AddFormat('value(refresh_token)')
 

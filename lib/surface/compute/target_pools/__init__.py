@@ -26,3 +26,14 @@ class TargetPools(base.Group):
 
 
 TargetPools.category = base.LOAD_BALANCING_CATEGORY
+
+TargetPools.detailed_help = {
+    'DESCRIPTION': """
+        Control Compute Engine target pools for Network Load Balancing.
+
+        For more information about target pools, see the
+        [target pools documentation](https://cloud.google.com/load-balancing/docs/target-pools).
+
+        See also: [Target pools API](https://cloud.google.com/compute/docs/reference/rest/v1/targetPools).
+    """,
+}

@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Operations(base.Group):
-  """Read and manipulate Google Compute Engine operations."""
+  """Read and manipulate Compute Engine operations."""
 
 
 Operations.category = base.INFO_CATEGORY
 
 Operations.detailed_help = {
-    'brief': 'Read and manipulate Google Compute Engine operations',
+    'DESCRIPTION': """
+        Read and manipulate Compute Engine operations.
+
+        For more information about operations, see the
+        [operations documentation](https://cloud.google.com/compute/docs/audit-logging).
+
+        See also: [Operations API](https://cloud.google.com/compute/docs/reference/rest/v1/regionOperations).
+    """,
 }

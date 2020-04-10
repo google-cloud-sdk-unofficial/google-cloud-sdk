@@ -22,12 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class TargetInstances(base.Group):
-  """Read and manipulate Google Compute Engine virtual target instances."""
+  """Read and manipulate Compute Engine virtual target instances."""
 
 
 TargetInstances.category = base.INSTANCES_CATEGORY
 
 TargetInstances.detailed_help = {
-    'brief': (
-        'Read and manipulate Google Compute Engine virtual target instances'),
+    'DESCRIPTION': """
+        Read and manipulate Compute Engine virtual target instances.
+
+        For more information about target instances, see the
+        [target instances documentation](https://cloud.google.com/compute/docs/protocol-forwarding#targetinstances).
+
+        See also: [Target instances API](https://cloud.google.com/compute/docs/reference/rest/v1/targetInstances).
+    """,
 }

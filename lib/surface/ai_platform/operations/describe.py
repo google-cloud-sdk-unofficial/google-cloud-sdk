@@ -25,9 +25,9 @@ from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import operations_util
 
 
-def _AddDescribeArgs(parser):
+def _AddDescribeArgs(parser, hide_region_flag=True):
   flags.OPERATION_NAME.AddToParser(parser)
-  flags.GetRegionArg().AddToParser(parser)
+  flags.GetRegionArg(hidden=hide_region_flag).AddToParser(parser)
 
 
 def _Run(args):
@@ -42,7 +42,7 @@ class DescribeBeta(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    _AddDescribeArgs(parser)
+    _AddDescribeArgs(parser, hide_region_flag=False)
 
   def Run(self, args):
     return _Run(args)

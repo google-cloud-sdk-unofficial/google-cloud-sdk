@@ -28,6 +28,13 @@ class HealthChecks(base.Group):
 HealthChecks.category = base.LOAD_BALANCING_CATEGORY
 
 HealthChecks.detailed_help = {
-    'brief': ('Read and manipulate health checks for load balanced '
-              'instances')
+    'DESCRIPTION': """
+        Read and manipulate health checks for load balanced instances.
+
+        For more information about health checks, see the
+        [health checks documentation](https://cloud.google.com/load-balancing/docs/health-check-concepts).
+
+        See also: [Health checks API](https://cloud.google.com/compute/docs/reference/rest/v1/healthChecks)
+        and [Regional health checks API](https://cloud.google.com/compute/docs/reference/rest/v1/regionHealthChecks).
+    """,
 }

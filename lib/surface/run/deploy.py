@@ -171,6 +171,7 @@ class Deploy(base.Command):
     flags.AddArgsFlag(parser)
     flags.AddPortFlag(parser)
     flags.AddCpuFlag(parser)
+    flags.AddNoTrafficFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -185,7 +186,6 @@ class Deploy(base.Command):
     # Flags only supported on GKE and Knative
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddMinInstancesFlag(cluster_group)
-    flags.AddNoTrafficFlag(cluster_group)
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -258,7 +258,6 @@ class AlphaDeploy(Deploy):
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
-    flags.AddNoTrafficFlag(parser)
     flags.AddServiceAccountFlagAlpha(parser)
 
     # Flags inherited from gcloud builds submit

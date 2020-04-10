@@ -52,11 +52,14 @@ class Start(base.Command):
 
     cluster_ref = args.CONCEPTS.cluster.Parse()
 
+    start_cluster_request = dataproc.messages.StartClusterRequest(
+        requestId=util.GetUniqueId())
+
     request = dataproc.messages.DataprocProjectsRegionsClustersStartRequest(
         clusterName=cluster_ref.clusterName,
         region=cluster_ref.region,
         projectId=cluster_ref.projectId,
-        requestId=util.GetUniqueId())
+        startClusterRequest=start_cluster_request)
 
     console_io.PromptContinue(
         message="Cluster '{0}' is starting."

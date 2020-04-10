@@ -19,13 +19,36 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import firewalls_utils
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags
 
+DEFAULT_LIST_FORMAT = """\
+  table(
+    type,
+    priority,
+    action,
+    direction,
+    src_ip_ranges,
+    dest_ip_ranges,
+    target_svc_acct,
+    enableLogging,
+    description,
+    name,
+    disabled,
+    security_policy_id,
+    target_tags,
+    src_svc_acct,
+    src_tags,
+    ruleTupleCount,
+    targetResources:label=TARGET_RESOURCES
+  )"""
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class GetEffectiveFirewalls(base.Command):
+class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   """Get the effective firewalls of a Google Compute Engine network.
 
   *{command}* Get the effective firewalls applied on the network. For example:
@@ -39,32 +62,9 @@ class GetEffectiveFirewalls(base.Command):
   def Args(parser):
     flags.NetworkArgument().AddArgument(
         parser, operation_type='get effective firewalls')
-
-  def SortNetworkFirewallRules(self, client, rules):
-    ingress_network_firewall = [
-        item for item in rules if item.direction ==
-        client.messages.Firewall.DirectionValueValuesEnum.INGRESS
-    ]
-    ingress_network_firewall.sort(key=lambda x: x.priority, reverse=False)
-    egress_network_firewall = [
-        item for item in rules if item.direction ==
-        client.messages.Firewall.DirectionValueValuesEnum.EGRESS
-    ]
-    egress_network_firewall.sort(key=lambda x: x.priority, reverse=False)
-    return ingress_network_firewall + egress_network_firewall
-
-  def SortOrgFirewallRules(self, client, rules):
-    ingress_org_firewall_rule = [
-        item for item in rules if item.direction ==
-        client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
-    ]
-    ingress_org_firewall_rule.sort(key=lambda x: x.priority, reverse=False)
-    egress_org_firewall_rule = [
-        item for item in rules if item.direction ==
-        client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
-    ]
-    egress_org_firewall_rule.sort(key=lambda x: x.priority, reverse=False)
-    return ingress_org_firewall_rule + egress_org_firewall_rule
+    parser.display_info.AddFormat(
+        firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -83,17 +83,29 @@ class GetEffectiveFirewalls(base.Command):
     org_firewall = []
     network_firewall = []
     if hasattr(res, 'firewalls'):
-      network_firewall = self.SortNetworkFirewallRules(client, res.firewalls)
+      network_firewall = firewalls_utils.SortNetworkFirewallRules(
+          client, res.firewalls)
 
     if hasattr(res, 'organizationFirewalls'):
       for sp in res.organizationFirewalls:
-        org_firewall_rule = self.SortOrgFirewallRules(client, sp.rules)
+        org_firewall_rule = firewalls_utils.SortOrgFirewallRules(
+            client, sp.rules)
         org_firewall.append(
             client.messages
             .NetworksGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
                 id=sp.id, rules=org_firewall_rule))
-    return client.messages.NetworksGetEffectiveFirewallsResponse(
-        organizationFirewalls=org_firewall, firewalls=network_firewall)
+    if args.IsSpecified('format') and args.format == 'json':
+      return client.messages.NetworksGetEffectiveFirewallsResponse(
+          organizationFirewalls=org_firewall, firewalls=network_firewall)
+
+    result = []
+    for sp in org_firewall:
+      result.extend(
+          firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp))
+    result.extend(
+        firewalls_utils.ConvertNetworkFirewallRulesToEffectiveFwRules(
+            network_firewall))
+    return result
 
 
 GetEffectiveFirewalls.detailed_help = {
@@ -102,5 +114,7 @@ GetEffectiveFirewalls.detailed_help = {
     To get the effective firewalls of network with name example-network, run:
 
       $ {command} example-network,
+    To show all fields of the firewall rules, please show in JSON format with
+    option --format=json
     """,
 }

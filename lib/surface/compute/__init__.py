@@ -24,18 +24,19 @@ from googlecloudsdk.calliope import base
 
 
 DETAILED_HELP = {
-    'DESCRIPTION': """\
-        The gcloud compute command group lets you create, configure and
-        manipulate Google Compute Engine virtual machines.
+    'DESCRIPTION': """
+        The gcloud compute command group lets you create, configure, and
+        manipulate Compute Engine virtual machine (VM) instances.
 
-        With Compute Engine you can create and run virtual machines
-        on Google infrastructure. Compute Engine offers scale, performance, and
-        value that allows you to easily launch large compute clusters on
+        With Compute Engine, you can create and run VMs
+        on Google's infrastructure. Compute Engine offers scale, performance,
+        and value that lets you launch large compute clusters on
         Google's infrastructure.
 
-        More information on Compute Engine can be found here:
-        https://cloud.google.com/compute/ and detailed documentation can be
-        found here: https://cloud.google.com/compute/docs/
+        For more information about Compute Engine, see the
+        [Compute Engine overview](https://cloud.google.com/compute/)
+        and the
+        [Compute Engine user documentation](https://cloud.google.com/compute/docs/).
         """,
 }
 
@@ -43,7 +44,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Compute(base.Group):
-  """Create and manipulate Google Compute Engine resources."""
+  """Create and manipulate Compute Engine resources."""
   detailed_help = DETAILED_HELP
 
   category = base.COMPUTE_CATEGORY

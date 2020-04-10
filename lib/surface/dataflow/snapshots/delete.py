@@ -25,10 +25,21 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import snapshot_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete a Cloud Dataflow snapshot.
   """
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To delete an existing Cloud Dataflow snapshot, run:
+
+            $ {command} SNAPSHOT_ID --region=SNAPSHOT_REGION
+          """,
+  }
 
   @staticmethod
   def Args(parser):

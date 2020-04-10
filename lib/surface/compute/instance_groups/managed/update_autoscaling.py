@@ -105,8 +105,13 @@ class UpdateAutoscaling(base.Command):
 class UpdateAutoscalingBeta(UpdateAutoscaling):
   """Update autoscaling parameters of a managed instance group."""
 
-  scale_in = False
+  scale_in = True
   predictive = False
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    mig_utils.AddScaleInControlFlag(parser, include_clear=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Commands for configuring shared VPC network (XPN) associated projects.
+"""Commands for configuring Shared VPC network associated projects.
 """
 
 from __future__ import absolute_import
@@ -23,4 +23,4 @@ from googlecloudsdk.calliope import base
 
 
 class AssociatedProjects(base.Group):
-  """Configure associated projects for cross-project networking (XPN)."""
+  """Configure associated projects for Shared VPC networking."""

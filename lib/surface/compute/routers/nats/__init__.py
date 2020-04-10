@@ -22,9 +22,14 @@ from googlecloudsdk.calliope import base
 
 
 class Nats(base.Group):
-  """List, create, describe and delete Google Compute Engine NATs."""
+  """List, create, describe, and delete Cloud NAT."""
 
 
 Nats.detailed_help = {
-    'brief': 'List, create, describe and delete Google Compute Engine NATs',
+    'DESCRIPTION': """
+        List, create, describe, and delete Cloud NAT.
+
+        For more information about Cloud NAT, see the
+        [Cloud NAT documentation](https://cloud.google.com/nat/docs/using-nat).
+    """,
 }

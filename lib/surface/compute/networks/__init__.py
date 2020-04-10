@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Networks(base.Group):
-  """List, create, and delete Google Compute Engine networks."""
+  """List, create, and delete Compute Engine networks."""
 
 
 Networks.category = base.NETWORKING_CATEGORY
 
 Networks.detailed_help = {
-    'brief': 'List, create, and delete Google Compute Engine networks',
+    'DESCRIPTION': """
+        Read and manipulate VPC networks.
+
+        For more information about networks, see the
+        [networks documentation](https://cloud.google.com/vpc/docs/vpc).
+
+        See also: [Networks API](https://cloud.google.com/compute/docs/reference/rest/v1/networks).
+    """,
 }

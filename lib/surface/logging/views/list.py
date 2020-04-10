@@ -36,7 +36,7 @@ DETAILED_HELP = {
 
 
 class List(base.ListCommand):
-  """Lists the defined views."""
+  """List the defined views."""
 
   @staticmethod
   def Args(parser):

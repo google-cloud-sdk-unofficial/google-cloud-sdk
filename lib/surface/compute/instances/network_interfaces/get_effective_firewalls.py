@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import firewalls_utils
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
@@ -26,7 +28,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class GetEffectiveFirewalls(base.Command):
+class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   r"""Get the effective firewalls on a Google Compute Engine virtual machine network interface.
 
   *{command}* Get the effective firewalls applied on the network interfaces of
@@ -47,6 +49,9 @@ class GetEffectiveFirewalls(base.Command):
         default='nic0',
         help='The name of the network interface to get the effective firewalls.'
     )
+    parser.display_info.AddFormat(
+        firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -75,7 +80,33 @@ class GetEffectiveFirewalls(base.Command):
         instance=instance_ref.instance,
         zone=instance_ref.zone,
         networkInterface=args.network_interface)
-    return client.apitools_client.instances.GetEffectiveFirewalls(request)
+    res = client.apitools_client.instances.GetEffectiveFirewalls(request)
+    org_firewall = []
+    network_firewall = []
+    if hasattr(res, 'firewalls'):
+      network_firewall = firewalls_utils.SortNetworkFirewallRules(
+          client, res.firewalls)
+
+    if hasattr(res, 'organizationFirewalls'):
+      for sp in res.organizationFirewalls:
+        org_firewall_rule = firewalls_utils.SortOrgFirewallRules(
+            client, sp.rules)
+        org_firewall.append(
+            client.messages
+            .InstancesGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
+                id=sp.id, rules=org_firewall_rule))
+    if args.IsSpecified('format') and args.format == 'json':
+      return client.messages.InstancesGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
+          organizationFirewalls=org_firewall, firewalls=network_firewall)
+
+    result = []
+    for sp in org_firewall:
+      result.extend(
+          firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp))
+    result.extend(
+        firewalls_utils.ConvertNetworkFirewallRulesToEffectiveFwRules(
+            network_firewall))
+    return result
 
 
 GetEffectiveFirewalls.detailed_help = {
@@ -84,5 +115,7 @@ GetEffectiveFirewalls.detailed_help = {
     To get the effective firewalls of instance with name example-instance, run:
 
       $ {command} example-instance,
+    To show all fields of the firewall rules, please show in JSON format with
+    option --format=json
     """,
 }

@@ -53,7 +53,7 @@ class Explain(base.Command):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('--model', required=True, help='Name of the model.')
-    flags.GetRegionArg().AddToParser(parser)
+    flags.GetRegionArg(hidden=False).AddToParser(parser)
     parser.add_argument(
         '--version',
         help="""\

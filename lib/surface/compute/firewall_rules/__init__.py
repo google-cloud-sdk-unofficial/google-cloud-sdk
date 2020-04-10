@@ -28,6 +28,12 @@ class FirewallRules(base.Group):
 FirewallRules.category = base.NETWORKING_CATEGORY
 
 FirewallRules.detailed_help = {
-    'brief': ('List, create, update, and delete Google Compute Engine firewall '
-              'rules'),
+    'DESCRIPTION': """
+        Read and manipulate VPC firewall rules.
+
+        For more information about firewall rules, see the
+        [firewall rules documentation](https://cloud.google.com/vpc/docs/firewalls).
+
+        See also: [Firewall rules API](https://cloud.google.com/compute/docs/reference/rest/v1/firewalls).
+    """,
 }

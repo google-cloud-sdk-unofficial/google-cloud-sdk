@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.labelmanager import service as labelmanager
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.labelmanager import arguments
+from googlecloudsdk.command_lib.labelmanager import operations
 from googlecloudsdk.command_lib.labelmanager import utils
 
 
@@ -91,4 +92,7 @@ class Delete(base.Command):
         name=label_binding_name)
 
     op = labelbindings_service.Delete(request)
-    return {'response': op.response}
+    if op.response is not None:
+      return {'response': op.response}
+    else:
+      raise operations.OperationError(op.error.message)

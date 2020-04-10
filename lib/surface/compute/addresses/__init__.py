@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Addresses(base.Group):
-  """Read and manipulate Google Compute Engine addresses."""
+  """Read and manipulate Compute Engine addresses."""
 
 
 Addresses.category = base.NETWORKING_CATEGORY
 
 Addresses.detailed_help = {
-    'brief': 'Read and manipulate Google Compute Engine addresses',
+    'DESCRIPTION': """
+        Read and manipulate Compute Engine addresses.
+
+        For more information about addresses, see the
+        [addresses documentation](https://cloud.google.com/compute/docs/ip-addresses/).
+
+        See also: [Addresses API](https://cloud.google.com/compute/docs/reference/rest/v1/addresses).
+    """,
 }

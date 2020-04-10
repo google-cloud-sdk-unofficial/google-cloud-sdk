@@ -24,3 +24,14 @@ from googlecloudsdk.calliope import base
 class Reservations(base.Group):
   """Manage Compute Engine reservations."""
   category = base.NETWORKING_CATEGORY
+
+Reservations.detailed_help = {
+    'DESCRIPTION': """
+        Manage Compute Engine reservations.
+
+        For more information about reservations, see the
+        [reservations documentation](https://cloud.google.com/compute/docs/instances/reserving-zonal-resources).
+
+        See also: [Reservations API](https://cloud.google.com/compute/docs/reference/rest/v1/reservations).
+    """,
+}

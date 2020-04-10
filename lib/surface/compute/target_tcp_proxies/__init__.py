@@ -28,5 +28,13 @@ class TargetTCPProxies(base.Group):
 TargetTCPProxies.category = base.NETWORKING_CATEGORY
 
 TargetTCPProxies.detailed_help = {
-    'brief': 'List, create, and delete target TCP proxies',
+    'DESCRIPTION': """
+        List, create, and delete target TCP proxies for TCP Proxy Load
+        Balancing.
+
+        For more information about target TCP proxies, see the
+        [TCP proxy load balancer documentation](https://cloud.google.com/load-balancing/docs/tcp/).
+
+        See also: [Target TCP proxies API](https://cloud.google.com/compute/docs/reference/rest/v1/targetTcpProxies).
+    """,
 }

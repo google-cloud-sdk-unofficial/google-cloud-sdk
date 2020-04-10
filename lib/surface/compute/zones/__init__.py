@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Zones(base.Group):
-  """List Google Compute Engine zones."""
+  """List Compute Engine zones."""
 
 
 Zones.category = base.INFO_CATEGORY
 
 Zones.detailed_help = {
-    'brief': 'List Google Compute Engine zones'
+    'DESCRIPTION': """
+        List Compute Engine zones.
+
+        For more information about zones, see the
+        [zones documentation](https://cloud.google.com/compute/docs/regions-zones/).
+
+        See also: [Zones API](https://cloud.google.com/compute/docs/reference/rest/v1/zones).
+    """,
 }

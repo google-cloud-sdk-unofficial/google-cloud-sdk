@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class TargetVpnGateways(base.Group):
-  """read and manipulate Classic VPN Gateways."""
+  """Read and manipulate classic VPN gateways."""
 
   # Placeholder to indicate that a detailed_help field exists and should
   # be set outside the class definition.
@@ -32,7 +32,12 @@ class TargetVpnGateways(base.Group):
 TargetVpnGateways.category = base.NETWORKING_CATEGORY
 
 TargetVpnGateways.detailed_help = {
-    'brief': (
-        'read and manipulate Google Compute Engine Classic VPN '
-        'Gateways.'),
+    'DESCRIPTION': """
+        Read and manipulate Classic VPN gateways for Cloud VPN.
+
+        For more information about Classic VPN gateways, see the
+        [Classic VPN gateways documentation](https://cloud.google.com/vpn/docs/concepts/overview#classic-vpn).
+
+        See also: [Classic VPN gateways API](https://cloud.google.com/compute/docs/reference/rest/v1/targetVpnGateways).
+    """,
 }

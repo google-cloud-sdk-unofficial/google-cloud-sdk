@@ -22,7 +22,19 @@ from googlecloudsdk.calliope import base
 
 
 class SslPolicies(base.Group):
-  """List, create, delete and update Google Compute Engine SSL policies."""
+  """List, create, delete and update Compute Engine SSL policies."""
 
 
 SslPolicies.category = base.LOAD_BALANCING_CATEGORY
+
+SslPolicies.detailed_help = {
+    'DESCRIPTION': """
+        List, create, delete and update Compute Engine SSL policies.
+
+        For more information about SSL policies, see the
+        [SSL policies documentation](https://cloud.google.com/load-balancing/docs/ssl-policies-concepts).
+
+        See also: [SSL policies API](https://cloud.google.com/compute/docs/reference/rest/v1/sslPolicies).
+    """,
+}
+

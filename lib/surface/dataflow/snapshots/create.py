@@ -12,9 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Command to snapshot a Cloud Dataflow job.
-"""
+"""Command to snapshot a Cloud Dataflow job."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,10 +23,20 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import snapshot_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.Command):
-  """Creates a snapshot for a Cloud Dataflow job.
-  """
+  """Creates a snapshot for a Cloud Dataflow job."""
+
+  detailed_help = {
+      'DESCRIPTION':
+          '{description}',
+      'EXAMPLES':
+          """\
+          To create a Cloud Dataflow snapshot with sources for a running job, run:
+
+            $ {command} --job-id=JOB_ID --region=JOB_REGION --snapshot-sources=true --snapshot-ttl=7d
+          """,
+  }
 
   @staticmethod
   def Args(parser):

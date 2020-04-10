@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Commands for managing Google Compute Engine commitments."""
+"""Commands for managing Compute Engine commitments."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,7 +22,19 @@ from googlecloudsdk.calliope import base
 
 
 class Commitments(base.Group):
-  """Manage Google Compute Engine commitments."""
+  """Manage Compute Engine commitments."""
 
 
 Commitments.category = base.INSTANCES_CATEGORY
+
+Commitments.detailed_help = {
+    'DESCRIPTION': """
+        Manage Compute Engine commitments.
+
+        For more information about commitments, see the
+        [commitments documentation](https://cloud.google.com/compute/docs/instances/signing-up-committed-use-discounts).
+
+        See also: [Commitments API](https://cloud.google.com/compute/docs/reference/rest/v1/regionCommitments).
+    """,
+}
+

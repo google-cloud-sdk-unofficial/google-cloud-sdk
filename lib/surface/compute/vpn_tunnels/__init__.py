@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 class VpnTunnels(base.Group):
-  """Read and manipulate Google Compute Engine VPN Tunnels."""
+  """Read and manipulate Compute Engine VPN tunnels."""
 
   # Placeholder to indicate that a detailed_help field exists and should
   # be set outside the class definition.
@@ -32,5 +32,12 @@ class VpnTunnels(base.Group):
 VpnTunnels.category = base.NETWORKING_CATEGORY
 
 VpnTunnels.detailed_help = {
-    'brief': 'Read and manipulate Google Compute Engine VPN Tunnels'
+    'DESCRIPTION': """
+        Read and manipulate Cloud VPN tunnels.
+
+        For more information about Cloud VPN tunnels, see the
+        [Cloud VPN tunnels documentation](https://cloud.google.com/vpn/docs/concepts/overview).
+
+        See also: [VPN tunnels API](https://cloud.google.com/compute/docs/reference/rest/v1/vpnTunnels).
+    """,
 }

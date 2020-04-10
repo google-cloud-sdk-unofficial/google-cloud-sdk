@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Routers(base.Group):
-  """List, create, and delete Google Compute Engine routers."""
+  """List, create, and delete Compute Engine routers."""
 
 
 Routers.category = base.NETWORKING_CATEGORY
 
 Routers.detailed_help = {
-    'brief': 'List, create, and delete Google Compute Engine routers',
+    'DESCRIPTION': """
+        List, create, and delete Cloud Routers.
+
+        For more information about Cloud Routers, see the
+        [Cloud Router documentation](https://cloud.google.com/router/docs/concepts/overview).
+
+        See also: [Routers API](https://cloud.google.com/compute/docs/reference/rest/v1/routers).
+    """,
 }

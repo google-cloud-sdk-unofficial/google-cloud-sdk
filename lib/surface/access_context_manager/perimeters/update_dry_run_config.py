@@ -26,6 +26,11 @@ from googlecloudsdk.command_lib.util.args import repeated
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. Please use '
+             '`gcloud beta access-context-manager perimeters dry-run` to '
+             'manage dry-run state.'))
 class UpdatePerimetersAlpha(base.UpdateCommand):
   """Update the dry-run config for an existing Service Perimeter.
 

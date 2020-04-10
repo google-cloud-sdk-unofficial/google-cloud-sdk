@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Regions(base.Group):
-  """List Google Compute Engine regions."""
+  """List Compute Engine regions."""
 
 
 Regions.category = base.INFO_CATEGORY
 
 Regions.detailed_help = {
-    'brief': 'List Google Compute Engine regions',
+    'DESCRIPTION': """
+        List Compute Engine regions.
+
+        For more information about regions, see the
+        [regions documentation](https://cloud.google.com/compute/docs/regions-zones/).
+
+        See also: [Regions API](https://cloud.google.com/compute/docs/reference/rest/v1/regions).
+    """,
 }

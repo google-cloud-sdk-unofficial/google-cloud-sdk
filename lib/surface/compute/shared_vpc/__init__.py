@@ -26,3 +26,13 @@ class Xpn(base.Group):
 
 
 Xpn.category = base.NETWORKING_CATEGORY
+
+Xpn.detailed_help = {
+    'DESCRIPTION': """
+        Configure Shared VPC configurations.
+
+        For more information about Shared VPC, see the
+        [Shared VPC documentation](https://cloud.google.com/vpc/docs/shared-vpc/).
+    """,
+}
+

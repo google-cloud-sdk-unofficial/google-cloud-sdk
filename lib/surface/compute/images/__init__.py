@@ -22,11 +22,18 @@ from googlecloudsdk.calliope import base
 
 
 class Images(base.Group):
-  """List, create, and delete Google Compute Engine images."""
+  """List, create, and delete Compute Engine images."""
 
 
 Images.category = base.INSTANCES_CATEGORY
 
 Images.detailed_help = {
-    'brief': 'List, create, and delete Google Compute Engine images',
+    'DESCRIPTION': """
+        Create and manipulate Compute Engine images.
+
+        For more information about images, see the
+        [images documentation](https://cloud.google.com/compute/docs/images).
+
+        See also: [Images API](https://cloud.google.com/compute/docs/reference/rest/v1/images).
+    """,
 }

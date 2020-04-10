@@ -22,4 +22,15 @@ from googlecloudsdk.calliope import base
 
 
 class Subnetworks(base.Group):
-  """List, describe, and delete Google Compute Engine subnetworks."""
+  """List, describe, and delete, and update Compute Engine subnetworks."""
+
+Subnetworks.detailed_help = {
+    'DESCRIPTION': """
+        Read and manipulate VPC subnetworks.
+
+        For more information about VPC, see the
+        [VPC documentation](https://cloud.google.com/vpc/docs/vpc).
+
+        See also: [Subnetworks API](https://cloud.google.com/compute/docs/reference/rest/v1/subnetworks).
+    """,
+}

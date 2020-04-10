@@ -28,5 +28,12 @@ class MachineTypes(base.Group):
 MachineTypes.category = base.INFO_CATEGORY
 
 MachineTypes.detailed_help = {
-    'brief': 'Read Google Compute Engine virtual machine types',
+    'DESCRIPTION': """
+        Read Compute Engine virtual machine types.
+
+        For more information about machine types, see the
+        [machine types documentation](https://cloud.google.com/compute/docs/machine-types).
+
+        See also: [Machine types API](https://cloud.google.com/compute/docs/reference/rest/v1/machineTypes).
+    """,
 }

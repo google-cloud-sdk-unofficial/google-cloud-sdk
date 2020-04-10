@@ -30,4 +30,5 @@ TargetGrpcProxies.category = base.NETWORKING_CATEGORY
 
 TargetGrpcProxies.detailed_help = {
     'brief': 'Manage Google Compute Engine target gRPC proxy resources.',
+    'DESCRIPTION': 'List, create, and delete target gRPC proxies.',
 }
