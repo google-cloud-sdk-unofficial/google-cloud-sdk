@@ -45,9 +45,12 @@ class List(base.ListCommand):
 
   LIST_FORMAT = """
     table(
-      name,
+      name.segment(5):label=GATEWAY_ID,
+      name.segment(3):label=LOCATION,
       displayName,
-      state
+      state,
+      createTime.date(),
+      updateTime.date()
     )"""
 
   @staticmethod

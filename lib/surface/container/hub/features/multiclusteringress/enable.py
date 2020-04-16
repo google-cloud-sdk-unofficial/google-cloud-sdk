@@ -20,11 +20,15 @@ from __future__ import unicode_literals
 
 import os
 import textwrap
+import time
 
+from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.command_lib.container.hub.features import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.util import retry
 
 
 CONFIG_MEMBERSHIP_FLAG = '--config-membership'
@@ -71,6 +75,63 @@ class Enable(base.EnableCommand):
     config_membership = ('projects/{0}/locations/global/memberships/{1}'
                          .format(project,
                                  os.path.basename(config_membership)))
-    self.RunCommand(args, multiclusteringressFeatureSpec=(
+    result = self.RunCommand(args, multiclusteringressFeatureSpec=(
         base.CreateMultiClusterIngressFeatureSpec(
             config_membership)))
+
+    # We only want to poll for usability if everything above succeeded.
+    if result is not None:
+      self.PollForUsability()
+
+  # Continuously poll the top-level Feature status until it has the "OK"
+  # code. This ensures that MCI is actually usable and that the user gets
+  # clear synchronous feedback on this.
+  def PollForUsability(self):
+    message = 'Waiting for controller to start...'
+    aborted_message = 'Aborting wait for controller to start.\n'
+    timeout = 120000
+    timeout_message = ('Please use the `describe` command to check Feature'
+                       'state for debugging information.\n')
+
+    project = properties.VALUES.core.project.GetOrFail()
+    feature_name = 'projects/{}/locations/global/features/{}'.format(
+        project, self.FEATURE_NAME)
+
+    client = core_apis.GetClientInstance('gkehub', 'v1alpha1')
+    ok_code = client.MESSAGES_MODULE.FeatureStateDetails.CodeValueValuesEnum.OK
+
+    try:
+      with progress_tracker.ProgressTracker(
+          message, aborted_message=aborted_message) as tracker:
+
+        # Sleeping before polling for usability ensures the Feature was created
+        # in the backend.
+        time.sleep(5)
+
+        # Prints status update to console. We use the default spinning wheel.
+        def _StatusUpdate(unused_result, unused_status):
+          tracker.Tick()
+
+        retryer = retry.Retryer(
+            # It should take no more than 2 mins for the "OK" status to appear.
+            max_wait_ms=timeout,
+            # Wait no more than 1 seconds before retrying.
+            wait_ceiling_ms=1000,
+            status_update_func=_StatusUpdate)
+
+        def _PollFunc():
+          return base.GetFeature(feature_name)
+
+        def _IsNotDone(feature, unused_state):
+          feature_state = feature.featureState
+          if feature_state is None or feature_state.details is None:
+            return True
+          return feature_state.details.code != ok_code
+
+        return retryer.RetryOnResult(
+            func=_PollFunc, should_retry_if=_IsNotDone, sleep_ms=500)
+
+    except retry.WaitException:
+      raise exceptions.Error(
+          'Controller did not start in {} minutes. {}'.format(
+              timeout / 60000, timeout_message))

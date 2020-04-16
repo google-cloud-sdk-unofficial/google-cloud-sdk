@@ -32,7 +32,9 @@ _FEATURE_MASK_PER_TRACK = {
     'BETA': {
         'custom_levels': True
     },
-    'GA': {}
+    'GA': {
+        'custom_levels': True
+    }
 }
 
 

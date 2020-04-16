@@ -256,7 +256,7 @@ Create.detailed_help = {
         projects.
 
         To learn more about creating image tarballs, visit
-        [](https://cloud.google.com/compute/docs/creating-custom-image)
+        [](https://cloud.google.com/compute/docs/creating-custom-image).
         """,
     'EXAMPLES':
         """\

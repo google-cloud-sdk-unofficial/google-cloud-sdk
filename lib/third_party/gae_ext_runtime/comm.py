@@ -15,9 +15,13 @@
 # Note: this file is part of the sdk-ext-runtime package.  It gets copied into
 # individual GAE runtime modules so that they can be easily deployed.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import json
 import os
 import sys
+import six
 
 
 class JSONObject(object):
@@ -35,7 +39,7 @@ class JSONObject(object):
 
     def to_dict(self):
         result = {}
-        for attr, val in self.__dict__.iteritems():
+        for attr, val in six.iteritems(self.__dict__):
             if not attr.startswith('_'):
                 result[attr] = _make_serializable(val)
         return result
@@ -132,7 +136,7 @@ def dict_to_object(json_dict):
       (JSONObject)
     """
     obj = JSONObject()
-    for name, val in json_dict.iteritems():
+    for name, val in six.iteritems(json_dict):
         if isinstance(val, dict):
           val = dict_to_object(val)
         setattr(obj, name, val)

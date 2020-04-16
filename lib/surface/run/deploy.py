@@ -36,6 +36,7 @@ from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -190,9 +191,13 @@ class Deploy(base.Command):
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     service_ref = flags.GetService(args)
+    build_op_ref = None
+    messages = None
+    build_log_url = None
     image = args.image
+    include_build = flags.FlagIsExplicitlySet(args, 'source')
     # Build an image from source if source specified.
-    if flags.FlagIsExplicitlySet(args, 'source'):
+    if include_build:
       # Create a tag for the image creation
       if image is None and not args.IsSpecified('config'):
         image = 'gcr.io/{projectID}/cloud-run-source-deploy/{service}:{tag}'.format(
@@ -205,8 +210,12 @@ class Deploy(base.Command):
           args.IsSpecified('source'), False, args.source,
           args.gcs_source_staging_dir, args.ignore_file, args.gcs_log_dir,
           args.machine_type, args.disk_size)
-      submit_util.Build(messages, args.async_, build_config)
 
+      build, build_op = submit_util.Build(messages, True, build_config, True)
+      build_op_ref = resources.REGISTRY.ParseRelativeName(
+          build_op.name, 'cloudbuild.operations'
+      )
+      build_log_url = build.logUrl
     # Deploy a container with an image
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
@@ -225,8 +234,14 @@ class Deploy(base.Command):
                     traffic.LATEST_REVISION_KEY in service.spec_traffic)
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=allow_unauth is not None,
-          include_route=has_latest)
-      header = 'Deploying...' if service else 'Deploying new service...'
+          include_route=has_latest,
+          include_build=include_build)
+      header = 'Deploying'
+      if include_build:
+        header += ' and building'
+      if service is None:
+        header += ' new service'
+      header += '...'
       with progress_tracker.StagedProgressTracker(
           header,
           deployment_stages,
@@ -238,7 +253,9 @@ class Deploy(base.Command):
             tracker,
             asyn=args.async_,
             allow_unauthenticated=allow_unauth,
-            prefetch=service)
+            prefetch=service,
+            build_op_ref=build_op_ref,
+            build_log_url=build_log_url)
       if args.async_:
         pretty_print.Success(
             'Service [{{bold}}{serv}{{reset}}] is deploying '
@@ -255,6 +272,9 @@ class AlphaDeploy(Deploy):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+
+    # Flags specific to VPCAccess
+    flags.AddVpcConnectorArg(parser)
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)

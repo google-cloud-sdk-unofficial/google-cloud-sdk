@@ -17,7 +17,7 @@
       is_positional: true
       help_text: |
           The deleted service account's unique ID must be provided when using the undelete command.
-          Unique IDs are a 22 digit number, such as 103271949540120710052.
+          Unique IDs are a 21 digit number, such as 103271949540120710052.
       processor: googlecloudsdk.command_lib.iam.hooks:CreateFullServiceAccountNameFromId
   request:
     collection: iam.projects.serviceAccounts

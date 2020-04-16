@@ -46,8 +46,9 @@ class Export(base.Command):
   @classmethod
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
-    flags.AddExportArgs(parser, 'export', dataproc.api_version,
-                        'AutoscalingPolicy')
+    flags.AddAutoscalingPolicyResourceArg(parser, 'export',
+                                          dataproc.api_version)
+    export_util.AddExportFlags(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -59,13 +60,14 @@ class Export(base.Command):
         name=policy_ref.RelativeName())
     policy = dataproc.client.projects_regions_autoscalingPolicies.Get(request)
 
-    schema_path = export_util.GetSchemaPath(
-        'dataproc', dataproc.api_version, 'AutoscalingPolicy', for_help=False)
+    # Filter out OUTPUT_ONLY fields and resource identifying fields. Note this
+    # needs to be kept in sync with v1/v1beta2 autoscaling_policies.proto.
+    policy.id = None
+    policy.name = None
+
     if args.destination:
       with files.FileWriter(args.destination) as stream:
-        export_util.Export(
-            message=policy, stream=stream, schema_path=schema_path)
+        export_util.Export(message=policy, stream=stream)
     else:
       # Print to stdout
-      export_util.Export(
-          message=policy, stream=sys.stdout, schema_path=schema_path)
+      export_util.Export(message=policy, stream=sys.stdout)

@@ -54,7 +54,8 @@ class List(base.ListCommand):
                                          default='-')
     parser.display_info.AddFormat("""
       table(
-        name,
+        name.segment(5):label=OPERATION_ID,
+        name.segment(3):label=LOCATION,
         done,
         metadata.requestedCancellation:label=CANCELLED,
         metadata.createTime.date(),

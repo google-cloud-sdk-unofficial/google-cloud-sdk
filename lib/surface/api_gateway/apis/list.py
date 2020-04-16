@@ -41,10 +41,11 @@ class List(base.ListCommand):
 
   LIST_FORMAT = """
     table(
-      name,
+      name.segment(5):label=API_ID,
       displayName,
       apiController.managedService,
-      state
+      state,
+      createTime.date()
       )
   """
 

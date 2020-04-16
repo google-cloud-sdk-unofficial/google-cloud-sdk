@@ -47,18 +47,11 @@ class Describe(base.DescribeCommand):
 
   detailed_help = DETAILED_HELP
 
-  @staticmethod
-  def GetSchemaPath(api_version, for_help=False):
-    """Returns the resource schema path."""
-    return export_util.GetSchemaPath(
-        'dataproc', api_version, 'WorkflowTemplate', for_help=for_help)
-
   @classmethod
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     flags.AddTemplateResourceArg(parser, 'export', dataproc.api_version)
-    export_util.AddExportFlags(
-        parser, cls.GetSchemaPath(dataproc.api_version, for_help=True))
+    export_util.AddExportFlags(parser)
     flags.AddVersionFlag(parser)
 
   def Run(self, args):
@@ -70,12 +63,24 @@ class Describe(base.DescribeCommand):
     workflow_template = dataproc.GetRegionsWorkflowTemplate(
         template_ref, args.version)
 
+    # Filter out OUTPUT_ONLY fields and resource identifying fields. Note this
+    # needs to be kept in sync with v1/v1beta2 workflow_templates.proto.
+    workflow_template.id = None
+    workflow_template.name = None
+    workflow_template.version = None
+    workflow_template.createTime = None
+    workflow_template.updateTime = None
+    # We do not need to clear any fields from workflow_template.placement.
+    # 1) Managed cluster:
+    #    a) cluster_name is really a name prefix, so it's okay that multiple
+    #       templates have the same value.
+    #    b) The server does not resolve OUTPUT_ONLY fields when storing a
+    #       workflow template, so cluster_config is fine as is.
+    # 2) Cluster selector: there are no OUTPUT_ONLY or directly resource
+    # identifying fields here.
+
     if args.destination:
       with files.FileWriter(args.destination) as stream:
-        export_util.Export(message=workflow_template,
-                           stream=stream,
-                           schema_path=self.GetSchemaPath(dataproc.api_version))
+        export_util.Export(message=workflow_template, stream=stream)
     else:
-      export_util.Export(message=workflow_template,
-                         stream=sys.stdout,
-                         schema_path=self.GetSchemaPath(dataproc.api_version))
+      export_util.Export(message=workflow_template, stream=sys.stdout)

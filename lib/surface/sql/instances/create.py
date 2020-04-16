@@ -38,6 +38,31 @@ from googlecloudsdk.core.resource import resource_lex
 from googlecloudsdk.core.resource import resource_property
 import six
 
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To create a MySQL 5.7 instance with ID ``prod-instance'' and machine
+        type ``db-n1-standard-1'', in the region ``us-central1'' (a zone will be
+        auto-assigned), where the 'root' user has its password set to
+        ``password123'', run:
+
+          $ {command} prod-instance --database-version=MYSQL_5_7 --tier=db-n1-standard-1 --region=us-central1 --root-password=password123
+
+        To create a Postgres 9.6 instance with ID ``prod-instance'' that has 2
+        CPUs, 8 GiB of RAM, and is in the zone ``us-central1-a'', where the
+        'postgres' user has its password set to ``password123'', run:
+
+          $ {command} prod-instance --database-version=POSTGRES_9_6 --cpu=2 --memory=8GiB --zone=us-central1-a --root-password=password123
+
+        To create a SQL Server 2017 Express instance with ID ``prod-instance''
+        that has 2 CPUs, 3840MiB of RAM, and is in the zone ``us-central1-a'',
+        where the 'sqlserver' user has its password set to ``password123'',
+        run:
+
+          $ {command} prod-instance --database-version=SQLSERVER_2017_EXPRESS --cpu=2 --memory=3840MiB --zone=us-central1-a --root-password=password123
+        """,
+}
+
 
 def AddBaseArgs(parser):
   """Declare flag and positional arguments for this command parser."""
@@ -287,6 +312,8 @@ def RunBaseCreateCommand(args, release_track):
 class Create(base.Command):
   """Creates a new Cloud SQL instance."""
 
+  detailed_help = DETAILED_HELP
+
   def Run(self, args):
     return RunBaseCreateCommand(args, self.ReleaseTrack())
 
@@ -300,6 +327,8 @@ class Create(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(base.Command):
   """Creates a new Cloud SQL instance."""
+
+  detailed_help = DETAILED_HELP
 
   def Run(self, args):
     return RunBaseCreateCommand(args, self.ReleaseTrack())
@@ -315,6 +344,8 @@ class CreateBeta(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(base.Command):
   """Creates a new Cloud SQL instance."""
+
+  detailed_help = DETAILED_HELP
 
   def Run(self, args):
     return RunBaseCreateCommand(args, self.ReleaseTrack())

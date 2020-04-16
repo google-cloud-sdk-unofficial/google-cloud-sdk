@@ -45,7 +45,10 @@ _DETAILED_HELP = {
         gcloudignore` for more information).
         For Java11 Standard, you can either use the yaml file, or a Maven pom.xml or, if the
         application is a single self-contained jar, you can give the path to the
-        jar and a simple service configuration will be generated.
+        jar and a simple service configuration will be generated. You can deploy
+        Java11 Maven source projects by specifying the location of your
+        project's pom.xml file, and it will be built and deployed using
+        App Engine Buildpacks.
         """,
     'EXAMPLES':
         """\
@@ -60,6 +63,10 @@ _DETAILED_HELP = {
         To deploy an App Engine Standard Java11 single jar, run:
 
           $ {command} ~/my_app/my_jar.jar
+
+        To deploy an App Engine Standard Java11 Maven source project, run:
+
+          $ {command} ~/my_app/pom.xml
 
         By default, the service is deployed the current project configured via:
 

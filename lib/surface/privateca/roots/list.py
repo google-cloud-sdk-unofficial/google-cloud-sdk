@@ -23,6 +23,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.core import properties
 
 
@@ -44,9 +45,13 @@ class List(base.ListCommand):
           name.basename(),
           name.scope().segment(-3):label=LOCATION,
           state,
-          ca_certificate_description.subject_description.not_before_time:label=NOT_BEFORE,
-          ca_certificate_description.subject_description.not_after_time:label=NOT_AFTER)
+          ca_certificate_description.subject_description.not_before_time():label=NOT_BEFORE,
+          ca_certificate_description.subject_description.not_after_time():label=NOT_AFTER)
         """)
+    parser.display_info.AddTransforms({
+        'not_before_time': text_utils.TransformNotBeforeTime,
+        'not_after_time': text_utils.TransformNotAfterTime
+    })
 
   def Run(self, args):
     client = privateca_base.GetClientInstance()

@@ -214,10 +214,10 @@ class Create(base.CreateCommand):
     else:
       return None
 
-  def _GetNetworkInterfaces(self, args, client, holder, instance_refs,
+  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
                             skip_defaults):
-    return instance_utils.GetNetworkInterfaces(args, client, holder,
-                                               instance_refs, skip_defaults)
+    return instance_utils.GetNetworkInterfaces(args, client, holder, project,
+                                               zone, skip_defaults)
 
   def _GetDiskMessages(self, args, skip_defaults, instance_refs, compute_client,
                        resource_parser, create_boot_disk, boot_disk_size_gb,
@@ -252,108 +252,128 @@ class Create(base.CreateCommand):
     # A mapping of zone to boot disk references for all existing boot
     # disks that are being attached.
     # TODO(b/36050875): Simplify since resources.Resource is now hashable.
-    existing_boot_disks = {}
     for instance_ref in instance_refs:
-      persistent_disks, boot_disk_ref = (
-          instance_utils.CreatePersistentAttachedDiskMessages(
-              resource_parser, compute_client, csek_keys, args.disk or [],
-              instance_ref))
-      persistent_create_disks = (
-          instance_utils.CreatePersistentCreateDiskMessages(
-              compute_client,
-              resource_parser,
-              csek_keys,
-              getattr(args, 'create_disk', []),
-              instance_ref,
-              enable_kms=self._support_kms,
-              enable_snapshots=True,
-              resource_policy=self._support_disk_resource_policy,
-              enable_source_snapshot_csek=self._support_source_snapshot_csek,
-              enable_image_csek=self._support_image_csek))
-      local_nvdimms = []
-      if self._support_nvdimm:
-        local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
-            args, resource_parser, compute_client.messages, instance_ref.zone,
-            instance_ref.project)
-      local_ssds = instance_utils.CreateLocalSsdMessages(
-          args, resource_parser, compute_client.messages, instance_ref.zone,
-          instance_ref.project)
+      disks_messages.append(
+          self._CreateDiskMessage(args, skip_defaults, instance_ref.Name(),
+                                  instance_ref.project, instance_ref.zone,
+                                  compute_client, resource_parser,
+                                  create_boot_disk, boot_disk_size_gb,
+                                  image_uri, csek_keys))
+    return disks_messages
 
-      if create_boot_disk:
-        boot_snapshot_uri = instance_utils.ResolveSnapshotURI(
-            user_project=instance_refs[0].project,
-            snapshot=args.source_snapshot,
-            resource_parser=resource_parser)
-
-        boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
+  def _CreateDiskMessage(self, args, skip_defaults, instance_name, project,
+                         zone, compute_client, resource_parser,
+                         create_boot_disk, boot_disk_size_gb, image_uri,
+                         csek_keys):
+    persistent_disks = (
+        instance_utils.CreatePersistentAttachedDiskMessages(
+            resource_parser, compute_client, csek_keys, args.disk or [],
+            project, zone))
+    persistent_create_disks = (
+        instance_utils.CreatePersistentCreateDiskMessages(
             compute_client,
             resource_parser,
-            disk_type=args.boot_disk_type,
-            disk_device_name=args.boot_disk_device_name,
-            disk_auto_delete=args.boot_disk_auto_delete,
-            disk_size_gb=boot_disk_size_gb,
-            require_csek_key_create=(args.require_csek_key_create
-                                     if csek_keys else None),
-            image_uri=image_uri,
-            instance_ref=instance_ref,
-            csek_keys=csek_keys,
-            kms_args=args,
-            snapshot_uri=boot_snapshot_uri,
-            enable_kms=self._support_kms)
-        persistent_disks = [boot_disk] + persistent_disks
-      else:
-        existing_boot_disks[boot_disk_ref.zone] = boot_disk_ref
-      disks_messages.append(persistent_disks + persistent_create_disks +
-                            local_nvdimms + local_ssds)
-    return disks_messages
+            csek_keys,
+            getattr(args, 'create_disk', []),
+            project,
+            zone,
+            enable_kms=self._support_kms,
+            enable_snapshots=True,
+            resource_policy=self._support_disk_resource_policy,
+            enable_source_snapshot_csek=self._support_source_snapshot_csek,
+            enable_image_csek=self._support_image_csek))
+    local_nvdimms = []
+    if self._support_nvdimm:
+      local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
+          args, resource_parser, compute_client.messages, zone, project)
+    local_ssds = instance_utils.CreateLocalSsdMessages(args, resource_parser,
+                                                       compute_client.messages,
+                                                       zone, project)
+
+    if create_boot_disk:
+      boot_snapshot_uri = instance_utils.ResolveSnapshotURI(
+          user_project=project,
+          snapshot=args.source_snapshot,
+          resource_parser=resource_parser)
+
+      boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
+          compute_client,
+          resource_parser,
+          disk_type=args.boot_disk_type,
+          disk_device_name=args.boot_disk_device_name,
+          disk_auto_delete=args.boot_disk_auto_delete,
+          disk_size_gb=boot_disk_size_gb,
+          require_csek_key_create=(args.require_csek_key_create
+                                   if csek_keys else None),
+          image_uri=image_uri,
+          instance_name=instance_name,
+          project=project,
+          zone=zone,
+          csek_keys=csek_keys,
+          kms_args=args,
+          snapshot_uri=boot_snapshot_uri,
+          enable_kms=self._support_kms)
+      persistent_disks = [boot_disk] + persistent_disks
+    return persistent_disks + persistent_create_disks + local_nvdimms + local_ssds
 
   def _GetProjectToServiceAccountMap(self, args, instance_refs, client,
                                      skip_defaults):
     project_to_sa = {}
     for instance_ref in instance_refs:
       if instance_ref.project not in project_to_sa:
-        scopes = None
-        if not args.no_scopes and not args.scopes:
-          # User didn't provide any input on scopes. If project has no default
-          # service account then we want to create a VM with no scopes
-          request = (client.apitools_client.projects, 'Get',
-                     client.messages.ComputeProjectsGetRequest(
-                         project=instance_ref.project))
-          errors = []
-          result = client.MakeRequests([request], errors)
-          if not errors:
-            if not result[0].defaultServiceAccount:
-              scopes = []
-              log.status.Print(
-                  'There is no default service account for project {}. '
-                  'Instance {} will not have scopes.'.format(
-                      instance_ref.project, instance_ref.Name))
-        if scopes is None:
-          scopes = [] if args.no_scopes else args.scopes
-
-        if args.no_service_account:
-          service_account = None
-        else:
-          service_account = args.service_account
-        if (skip_defaults and not args.IsSpecified('scopes') and
-            not args.IsSpecified('no_scopes') and
-            not args.IsSpecified('service_account') and
-            not args.IsSpecified('no_service_account')):
-          service_accounts = []
-        else:
-          service_accounts = instance_utils.CreateServiceAccountMessages(
-              messages=client.messages,
-              scopes=scopes,
-              service_account=service_account)
-        project_to_sa[instance_ref.project] = service_accounts
+        project_to_sa[instance_ref.project] = self._GetProjectServiceAccount(
+            args, instance_ref.Name(), instance_ref.project, client,
+            skip_defaults)
     return project_to_sa
 
-  def _GetImageUri(self, args, client, create_boot_disk, instance_refs,
+  def _GetProjectServiceAccount(
+      self,
+      args,
+      instance_name,
+      project,
+      client,
+      skip_defaults,
+  ):
+    scopes = None
+    if not args.no_scopes and not args.scopes:
+      # User didn't provide any input on scopes. If project has no default
+      # service account then we want to create a VM with no scopes
+      request = (client.apitools_client.projects, 'Get',
+                 client.messages.ComputeProjectsGetRequest(project=project))
+      errors = []
+      result = client.MakeRequests([request], errors)
+      if not errors:
+        if not result[0].defaultServiceAccount:
+          scopes = []
+          log.status.Print(
+              'There is no default service account for project {}. '
+              'Instance {} will not have scopes.'.format(
+                  project, instance_name))
+    if scopes is None:
+      scopes = [] if args.no_scopes else args.scopes
+
+    if args.no_service_account:
+      service_account = None
+    else:
+      service_account = args.service_account
+    if (skip_defaults and not args.IsSpecified('scopes') and
+        not args.IsSpecified('no_scopes') and
+        not args.IsSpecified('service_account') and
+        not args.IsSpecified('no_service_account')):
+      service_accounts = []
+    else:
+      service_accounts = instance_utils.CreateServiceAccountMessages(
+          messages=client.messages,
+          scopes=scopes,
+          service_account=service_account)
+    return service_accounts
+
+  def _GetImageUri(self, args, client, create_boot_disk, project,
                    resource_parser):
     if create_boot_disk:
       image_expander = image_utils.ImageExpander(client, resource_parser)
       image_uri, _ = image_expander.ExpandImageFlag(
-          user_project=instance_refs[0].project,
+          user_project=project,
           image=args.image,
           image_family=args.image_family,
           image_project=args.image_project,
@@ -361,23 +381,24 @@ class Create(base.CreateCommand):
       return image_uri
 
   def _GetNetworkInterfacesWithValidation(self, args, resource_parser,
-                                          compute_client, holder, instance_refs,
+                                          compute_client, holder, project, zone,
                                           skip_defaults):
     if args.network_interface:
       return instance_utils.CreateNetworkInterfaceMessages(
           resources=resource_parser,
           compute_client=compute_client,
           network_interface_arg=args.network_interface,
-          instance_refs=instance_refs)
+          project=project,
+          zone=zone)
     else:
       instances_flags.ValidatePublicPtrFlags(args)
       if self._support_public_dns:
         instances_flags.ValidatePublicDnsFlags(args)
 
-      return self._GetNetworkInterfaces(args, compute_client, holder,
-                                        instance_refs, skip_defaults)
+      return self._GetNetworkInterfaces(args, compute_client, holder, project,
+                                        zone, skip_defaults)
 
-  def _CreateRequests(self, args, instance_refs, compute_client,
+  def _CreateRequests(self, args, instance_refs, project, zone, compute_client,
                       resource_parser, holder):
     # gcloud creates default values for some fields in Instance resource
     # when no value was specified on command line.
@@ -404,7 +425,7 @@ class Create(base.CreateCommand):
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
 
     network_interfaces = self._GetNetworkInterfacesWithValidation(
-        args, resource_parser, compute_client, holder, instance_refs,
+        args, resource_parser, compute_client, holder, project, zone,
         skip_defaults)
 
     machine_type_uris = instance_utils.GetMachineTypeUris(
@@ -412,7 +433,7 @@ class Create(base.CreateCommand):
 
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
     image_uri = self._GetImageUri(args, compute_client, create_boot_disk,
-                                  instance_refs, resource_parser)
+                                  project, resource_parser)
 
     shielded_instance_config = self._BuildShieldedInstanceConfigMessage(
         messages=compute_client.messages, args=args)
@@ -444,7 +465,8 @@ class Create(base.CreateCommand):
 
       can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
       guest_accelerators = instance_utils.GetAccelerators(
-          args, compute_client, resource_parser, instance_ref)
+          args, compute_client, resource_parser, instance_ref.project,
+          instance_ref.zone)
 
       instance = compute_client.messages.Instance(
           canIpForward=can_ip_forward,
@@ -546,7 +568,9 @@ class Create(base.CreateCommand):
 
     instance_refs = instance_utils.GetInstanceRefs(args, compute_client, holder)
 
-    requests = self._CreateRequests(args, instance_refs, compute_client,
+    requests = self._CreateRequests(args, instance_refs,
+                                    instance_refs[0].project,
+                                    instance_refs[0].zone, compute_client,
                                     resource_parser, holder)
     if not args.async_:
       # TODO(b/63664449): Replace this with poller + progress tracker.
@@ -609,17 +633,16 @@ class CreateBeta(Create):
   _support_confidential_compute = False
   _support_post_key_revocation_action_type = False
 
-  def _GetNetworkInterfaces(self, args, client, holder, instance_refs,
+  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
                             skip_defaults):
     return instance_utils.GetNetworkInterfaces(args, client, holder,
-                                               instance_refs, skip_defaults)
+                                               project, zone, skip_defaults)
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
 
     Args:
-      args: The arguments passed into the gcloud command calling this
-        function.
+      args: The arguments passed into the gcloud command calling this function.
       resources: Resource parser used to retrieve the specified resource
         reference.
 
@@ -667,10 +690,10 @@ class CreateAlpha(CreateBeta):
   _support_confidential_compute = True
   _support_post_key_revocation_action_type = True
 
-  def _GetNetworkInterfaces(self, args, client, holder, instance_refs,
+  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
                             skip_defaults):
     return instance_utils.GetNetworkInterfacesAlpha(args, client, holder,
-                                                    instance_refs,
+                                                    project, zone,
                                                     skip_defaults)
 
   @classmethod
@@ -698,6 +721,5 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
-
 
 Create.detailed_help = DETAILED_HELP

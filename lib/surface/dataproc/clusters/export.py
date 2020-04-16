@@ -57,16 +57,10 @@ To export a cluster to standard output, run:
     return 'v1beta2'
 
   @classmethod
-  def GetSchemaPath(cls, for_help=False):
-    """Returns the resource schema path."""
-    return export_util.GetSchemaPath(
-        'dataproc', cls.GetApiVersion(), 'Cluster', for_help=for_help)
-
-  @classmethod
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     flags.AddClusterResourceArg(parser, 'export', dataproc.api_version)
-    export_util.AddExportFlags(parser, cls.GetSchemaPath(for_help=True))
+    export_util.AddExportFlags(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -83,11 +77,41 @@ To export a cluster to standard output, run:
     # Filter out Dataproc-generated labels.
     clusters.DeleteGeneratedLabels(cluster, dataproc)
 
-    schema_path = self.GetSchemaPath()
+    RemoveNonImportableFields(cluster)
+
     if args.destination:
       with files.FileWriter(args.destination) as stream:
-        export_util.Export(
-            message=cluster, stream=stream, schema_path=schema_path)
+        export_util.Export(message=cluster, stream=stream)
     else:
-      export_util.Export(
-          message=cluster, stream=sys.stdout, schema_path=schema_path)
+      export_util.Export(message=cluster, stream=sys.stdout)
+
+
+# Note that this needs to be kept in sync with v1/v1beta2 clusters.proto.
+def RemoveNonImportableFields(cluster):
+  """Modifies cluster to exclude OUTPUT_ONLY and resource-identifying fields."""
+
+  cluster.projectId = None
+  cluster.clusterName = None
+  cluster.status = None
+  cluster.statusHistory = []
+  cluster.clusterUuid = None
+  cluster.metrics = None
+
+  if cluster.config is not None:
+    config = cluster.config
+    if config.lifecycleConfig is not None:
+      config.lifecycleConfig.idleStartTime = None
+
+      # This is an absolute time, so exclude it from cluster templates. Due to
+      # b/152239418, even if a user specified a TTL (auto_delete_ttl) rather
+      # than an absolute time, the API still returns the absolute time and does
+      # not return auto_delete_ttl. So TTLs are effectively excluded from
+      # templates, at least until that FR is resolved.
+      config.lifecycleConfig.autoDeleteTime = None
+
+    for group in (config.masterConfig, config.workerConfig,
+                  config.secondaryWorkerConfig):
+      if group is not None:
+        group.instanceNames = []
+        group.isPreemptible = None
+        group.managedGroupConfig = None

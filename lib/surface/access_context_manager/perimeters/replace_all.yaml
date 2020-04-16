@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   command_type: GENERIC
 
   help_text:
@@ -24,14 +24,19 @@
     BETA:
       api_version: v1
       method: replaceAll
-
+    GA:
+      api_version: v1
+      method: replaceAll
   response:
     ALPHA:
       modify_response_hooks:
       - googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseReplaceServicePerimetersResponseAlpha
     BETA:
       modify_response_hooks:
-      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseReplaceServicePerimetersResponseBeta
+      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseReplaceServicePerimetersResponseGA
+    GA:
+      modify_response_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseReplaceServicePerimetersResponseGA
 
   arguments:
     resource:
@@ -73,10 +78,12 @@
 
         For more information about the alpha version, see:
         https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
-        For more information about the beta version, see:
+        For other versions, see:
         https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters
       repeated: false
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseServicePerimetersAlpha
       BETA:
-        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseServicePerimetersBeta
+        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseServicePerimetersGA
+      GA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseServicePerimetersGA

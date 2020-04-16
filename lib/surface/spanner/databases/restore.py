@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.core import log
 
 
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Restore(base.RestoreCommand):
   """Restore a Cloud Spanner database."""
 

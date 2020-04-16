@@ -32,7 +32,8 @@ from googlecloudsdk.core import log
 from six.moves import zip
 
 
-def _Args(parser, deprecate_maintenance_policy=False,
+def _Args(parser,
+          deprecate_maintenance_policy=False,
           container_mount_enabled=False):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -61,8 +62,7 @@ def _Args(parser, deprecate_maintenance_policy=False,
   labels_util.AddCreateLabelsFlags(parser)
 
   parser.add_argument(
-      '--description',
-      help='Specifies a textual description of the instances.')
+      '--description', help='Specifies a textual description of the instances.')
 
   instances_flags.INSTANCES_ARG.AddArgument(parser, operation_type='create')
 
@@ -93,8 +93,7 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.ValidatePublicPtrFlags(args)
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
-          '--disk',
-          'Boot disk specified for containerized VM.')
+          '--disk', 'Boot disk specified for containerized VM.')
 
   def GetImageUri(self, args, client, holder, instance_refs):
     if (args.IsSpecified('image') or args.IsSpecified('image_family') or
@@ -114,31 +113,29 @@ class CreateWithContainer(base.CreateCommand):
       image_uri = containers_utils.ExpandKonletCosImageFlag(client)
     return image_uri
 
-  def _GetNetworkInterfaces(
-      self, args, client, holder, instance_refs, skip_defaults):
-    return instance_utils.GetNetworkInterfaces(args, client, holder,
-                                               instance_refs, skip_defaults)
+  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
+                            skip_defaults):
+    return instance_utils.GetNetworkInterfaces(args, client, holder, project,
+                                               zone, skip_defaults)
 
-  def GetNetworkInterfaces(
-      self, args, resources, client, holder, instance_refs, skip_defaults):
+  def GetNetworkInterfaces(self, args, resources, client, holder, project, zone,
+                           skip_defaults):
     if args.network_interface:
       return instance_utils.CreateNetworkInterfaceMessages(
           resources=resources,
           compute_client=client,
           network_interface_arg=args.network_interface,
-          instance_refs=instance_refs)
-    return self._GetNetworkInterfaces(
-        args, client, holder, instance_refs, skip_defaults)
+          project=project,
+          zone=zone)
+    return self._GetNetworkInterfaces(args, client, holder, project, zone,
+                                      skip_defaults)
 
   def Run(self, args):
     self._ValidateArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
-        holder,
-        args.container_mount_disk,
-        args.disk,
-        args.create_disk)
+        holder, args.container_mount_disk, args.disk, args.create_disk)
     client = holder.client
     source_instance_template = instance_utils.GetSourceInstanceTemplate(
         args, holder.resources, self.SOURCE_INSTANCE_TEMPLATE)
@@ -149,8 +146,11 @@ class CreateWithContainer(base.CreateCommand):
     user_metadata = instance_utils.GetValidatedMetadata(args, client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, client, holder)
-    network_interfaces = self.GetNetworkInterfaces(
-        args, holder.resources, client, holder, instance_refs, skip_defaults)
+    network_interfaces = self.GetNetworkInterfaces(args, holder.resources,
+                                                   client, holder,
+                                                   instance_refs[0].project,
+                                                   instance_refs[0].zone,
+                                                   skip_defaults)
     machine_type_uris = instance_utils.GetMachineTypeUris(
         args, client, holder, instance_refs, skip_defaults)
     image_uri = self.GetImageUri(args, client, holder, instance_refs)
@@ -162,14 +162,23 @@ class CreateWithContainer(base.CreateCommand):
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateKonletMetadataMessage(
-          client.messages, args, instance_ref.Name(), user_metadata,
+          client.messages,
+          args,
+          instance_ref.Name(),
+          user_metadata,
           container_mount_disk_enabled=True,
           container_mount_disk=container_mount_disk)
       disks = instance_utils.CreateDiskMessages(
-          holder, args, boot_disk_size_gb, image_uri, instance_ref,
-          skip_defaults, match_container_mount_disks=True)
+          holder,
+          args,
+          boot_disk_size_gb,
+          image_uri,
+          instance_ref,
+          skip_defaults,
+          match_container_mount_disks=True)
       guest_accelerators = instance_utils.GetAccelerators(
-          args, client, holder.resources, instance_ref)
+          args, client, holder.resources, instance_ref.project,
+          instance_ref.zone)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,
@@ -189,8 +198,7 @@ class CreateWithContainer(base.CreateCommand):
           project=instance_ref.project,
           zone=instance_ref.zone)
 
-      requests.append((client.apitools_client.instances,
-                       'Insert', request))
+      requests.append((client.apitools_client.instances, 'Insert', request))
 
     return client.MakeRequests(requests)
 
@@ -234,10 +242,7 @@ class CreateWithContainerBeta(CreateWithContainer):
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
-        holder,
-        args.container_mount_disk,
-        args.disk,
-        args.create_disk)
+        holder, args.container_mount_disk, args.disk, args.create_disk)
     client = holder.client
     source_instance_template = instance_utils.GetSourceInstanceTemplate(
         args, holder.resources, self.SOURCE_INSTANCE_TEMPLATE)
@@ -248,8 +253,11 @@ class CreateWithContainerBeta(CreateWithContainer):
     user_metadata = instance_utils.GetValidatedMetadata(args, client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, client, holder)
-    network_interfaces = self.GetNetworkInterfaces(
-        args, holder.resources, client, holder, instance_refs, skip_defaults)
+    network_interfaces = self.GetNetworkInterfaces(args, holder.resources,
+                                                   client, holder,
+                                                   instance_refs[0].project,
+                                                   instance_refs[0].zone,
+                                                   skip_defaults)
     machine_type_uris = instance_utils.GetMachineTypeUris(
         args, client, holder, instance_refs, skip_defaults)
     image_uri = self.GetImageUri(args, client, holder, instance_refs)
@@ -261,14 +269,23 @@ class CreateWithContainerBeta(CreateWithContainer):
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateKonletMetadataMessage(
-          client.messages, args, instance_ref.Name(), user_metadata,
+          client.messages,
+          args,
+          instance_ref.Name(),
+          user_metadata,
           container_mount_disk_enabled=True,
           container_mount_disk=container_mount_disk)
       disks = instance_utils.CreateDiskMessages(
-          holder, args, boot_disk_size_gb, image_uri, instance_ref,
-          skip_defaults, match_container_mount_disks=True)
+          holder,
+          args,
+          boot_disk_size_gb,
+          image_uri,
+          instance_ref,
+          skip_defaults,
+          match_container_mount_disks=True)
       guest_accelerators = instance_utils.GetAccelerators(
-          args, client, holder.resources, instance_ref)
+          args, client, holder.resources, instance_ref.project,
+          instance_ref.zone)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,
@@ -288,8 +305,7 @@ class CreateWithContainerBeta(CreateWithContainer):
           project=instance_ref.project,
           zone=instance_ref.zone)
 
-      requests.append((client.apitools_client.instances,
-                       'Insert', request))
+      requests.append((client.apitools_client.instances, 'Insert', request))
 
     return client.MakeRequests(requests)
 
@@ -300,8 +316,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, deprecate_maintenance_policy=True,
-          container_mount_enabled=True)
+    _Args(
+        parser, deprecate_maintenance_policy=True, container_mount_enabled=True)
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -309,10 +325,11 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
 
-  def _GetNetworkInterfaces(
-      self, args, client, holder, instance_refs, skip_defaults):
-    return instance_utils.GetNetworkInterfacesAlpha(
-        args, client, holder, instance_refs, skip_defaults)
+  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
+                            skip_defaults):
+    return instance_utils.GetNetworkInterfacesAlpha(args, client, holder,
+                                                    project, zone,
+                                                    skip_defaults)
 
   def Run(self, args):
     self._ValidateArgs(args)
@@ -321,10 +338,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
-        holder,
-        args.container_mount_disk,
-        args.disk,
-        args.create_disk)
+        holder, args.container_mount_disk, args.disk, args.create_disk)
 
     client = holder.client
     source_instance_template = instance_utils.GetSourceInstanceTemplate(
@@ -336,8 +350,11 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     user_metadata = instance_utils.GetValidatedMetadata(args, client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, client, holder)
-    network_interfaces = self.GetNetworkInterfaces(
-        args, holder.resources, client, holder, instance_refs, skip_defaults)
+    network_interfaces = self.GetNetworkInterfaces(args, holder.resources,
+                                                   client, holder,
+                                                   instance_refs[0].project,
+                                                   instance_refs[0].zone,
+                                                   skip_defaults)
     machine_type_uris = instance_utils.GetMachineTypeUris(
         args, client, holder, instance_refs, skip_defaults)
     image_uri = self.GetImageUri(args, client, holder, instance_refs)
@@ -349,14 +366,23 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     requests = []
     for instance_ref, machine_type_uri in zip(instance_refs, machine_type_uris):
       metadata = containers_utils.CreateKonletMetadataMessage(
-          client.messages, args, instance_ref.Name(), user_metadata,
+          client.messages,
+          args,
+          instance_ref.Name(),
+          user_metadata,
           container_mount_disk_enabled=True,
           container_mount_disk=container_mount_disk)
       disks = instance_utils.CreateDiskMessages(
-          holder, args, boot_disk_size_gb, image_uri, instance_ref,
-          skip_defaults, match_container_mount_disks=True)
+          holder,
+          args,
+          boot_disk_size_gb,
+          image_uri,
+          instance_ref,
+          skip_defaults,
+          match_container_mount_disks=True)
       guest_accelerators = instance_utils.GetAccelerators(
-          args, client, holder.resources, instance_ref)
+          args, client, holder.resources, instance_ref.project,
+          instance_ref.zone)
       request = client.messages.ComputeInstancesInsertRequest(
           instance=client.messages.Instance(
               canIpForward=can_ip_forward,
@@ -376,8 +402,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
           project=instance_ref.project,
           zone=instance_ref.zone)
 
-      requests.append((client.apitools_client.instances,
-                       'Insert', request))
+      requests.append((client.apitools_client.instances, 'Insert', request))
     return client.MakeRequests(requests)
 
 

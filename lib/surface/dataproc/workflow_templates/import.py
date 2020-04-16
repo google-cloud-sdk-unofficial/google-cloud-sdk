@@ -20,11 +20,9 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.export import util as export_util
-from googlecloudsdk.core import yaml_validator
 from googlecloudsdk.core.console import console_io
 
 
@@ -45,16 +43,10 @@ class Import(base.UpdateCommand):
     return dp.Dataproc(cls.ReleaseTrack()).api_version
 
   @classmethod
-  def GetSchemaPath(cls, for_help=False):
-    """Returns the resource schema path."""
-    return export_util.GetSchemaPath(
-        'dataproc', cls.GetApiVersion(), 'WorkflowTemplate', for_help=for_help)
-
-  @classmethod
   def Args(cls, parser):
     flags.AddTemplateResourceArg(
         parser, 'import', api_version=cls.GetApiVersion())
-    export_util.AddImportFlags(parser, cls.GetSchemaPath(for_help=True))
+    export_util.AddImportFlags(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -68,13 +60,8 @@ class Import(base.UpdateCommand):
     parent = '/'.join(template_ref.RelativeName().split('/')[0:4])
 
     data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
-    try:
-      template = export_util.Import(
-          message_type=msgs.WorkflowTemplate,
-          stream=data,
-          schema_path=self.GetSchemaPath())
-    except yaml_validator.ValidationError as e:
-      raise exceptions.ValidationError(e.message)
+    template = export_util.Import(
+        message_type=msgs.WorkflowTemplate, stream=data)
 
     # Populate id field.
     template.id = template_ref.Name()

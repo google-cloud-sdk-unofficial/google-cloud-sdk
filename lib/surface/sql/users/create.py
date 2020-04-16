@@ -61,7 +61,6 @@ def RunBaseCreateCommand(args, release_track):
       collection='sql.instances')
   operation_ref = None
 
-  host = users.GetHostValue(args)
   if release_track == base.ReleaseTrack.ALPHA:
     user_type = users.ParseUserType(sql_messages, args)
     new_user = sql_messages.User(
@@ -69,7 +68,7 @@ def RunBaseCreateCommand(args, release_track):
         project=instance_ref.project,
         instance=args.instance,
         name=args.username,
-        host=host,
+        host=args.host,
         password=args.password,
         type=user_type)
   else:
@@ -78,7 +77,7 @@ def RunBaseCreateCommand(args, release_track):
         project=instance_ref.project,
         instance=args.instance,
         name=args.username,
-        host=host,
+        host=args.host,
         password=args.password)
 
   result_operation = sql_client.users.Insert(new_user)

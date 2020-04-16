@@ -14,6 +14,10 @@
 
 """Unit test support library for GAE Externalized Runtimes."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import logging
 import os
 import shutil
@@ -81,7 +85,7 @@ class TestBase(unittest.TestCase):
         rt = ext_runtime.ExternalizedRuntime.Load(self.runtime_def_root,
                                                   self.exec_env)
         params = params or ext_runtime.Params(**kwargs)
-        print params.ToDict()
+        print(params.ToDict())
         configurator = rt.Detect(self.temp_path, params)
         return configurator
 

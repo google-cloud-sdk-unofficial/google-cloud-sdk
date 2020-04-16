@@ -32,15 +32,10 @@ import six
 import tensorflow as tf
 
 # pylint: disable=g-import-not-at-top
-if tf.__version__.startswith("2."):
-  import tensorflow.compat.v1 as tf
-  from tensorflow import dtypes
-  from tensorflow import compat
-  SERVING = tf.saved_model.SERVING
-  DEFAULT_SERVING_SIGNATURE_DEF_KEY = (
-      tf.saved_model.DEFAULT_SERVING_SIGNATURE_DEF_KEY)
-  tf.disable_v2_behavior()
-else:
+# Conditionally import files based on whether this is TF 2.x or TF 1.x.
+# A direct check for tf.__version__ fails in some cases, so using the
+# hammer of `try`/`catch` blocks instead.
+try:
   # tf.dtypes and tf.compat weren't added until later versions of TF.
   # These imports and constants work for all TF 1.X.
   from tensorflow.python.util import compat  # pylint: disable=g-direct-tensorflow-import
@@ -61,6 +56,14 @@ else:
     dir(tensorflow.contrib)
   except:  # pylint: disable=bare-except
     pass
+except:  # pylint: disable=bare-except
+  import tensorflow.compat.v1 as tf
+  from tensorflow import dtypes
+  from tensorflow import compat
+  SERVING = tf.saved_model.SERVING
+  DEFAULT_SERVING_SIGNATURE_DEF_KEY = (
+      tf.saved_model.DEFAULT_SERVING_SIGNATURE_DEF_KEY)
+  tf.disable_v2_behavior()
 # pylint: enable=g-import-not-at-top
 
 # --------------------------
@@ -561,7 +564,7 @@ def encode_base64(instances, outputs_map):
       return ValueError("The first instance was a string, but there are "
                         "more than one output tensor, so dict expected.")
     # Only string tensors whose name ends in _bytes needs encoding.
-    tensor_name, tensor_info = outputs_map.items()[0]
+    tensor_name, tensor_info = next(iter(outputs_map.items()))
     tensor_type = tensor_info.dtype
     if tensor_type == dtypes.string:
       instances = _encode_str_tensor(instances, tensor_name)

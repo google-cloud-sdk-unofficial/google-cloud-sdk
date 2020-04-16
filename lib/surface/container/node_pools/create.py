@@ -143,6 +143,7 @@ def ParseCreateNodePoolOptionsBase(args):
       metadata=metadata,
       max_pods_per_node=args.max_pods_per_node,
       enable_autoprovisioning=args.enable_autoprovisioning,
+      workload_metadata=args.workload_metadata,
       workload_metadata_from_node=args.workload_metadata_from_node,
       shielded_secure_boot=args.shielded_secure_boot,
       shielded_integrity_monitoring=args.shielded_integrity_monitoring,
@@ -165,7 +166,7 @@ class Create(base.CreateCommand):
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
-    flags.AddWorkloadMetadataFromNodeFlag(parser)
+    flags.AddWorkloadMetadataFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
@@ -248,7 +249,7 @@ class CreateBeta(Create):
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
-    flags.AddWorkloadMetadataFromNodeFlag(parser, use_mode=False)
+    flags.AddWorkloadMetadataFlag(parser, use_mode=False)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
@@ -265,7 +266,6 @@ class CreateBeta(Create):
     ops = ParseCreateNodePoolOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
-    ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
     ops.node_locations = args.node_locations
@@ -280,7 +280,6 @@ class CreateAlpha(Create):
     ops = ParseCreateNodePoolOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
-    ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.local_ssd_volume_configs = args.local_ssd_volumes
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
@@ -300,7 +299,7 @@ class CreateAlpha(Create):
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
-    flags.AddWorkloadMetadataFromNodeFlag(parser, use_mode=False)
+    flags.AddWorkloadMetadataFlag(parser, use_mode=False)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)

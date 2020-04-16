@@ -13,6 +13,10 @@
 # limitations under the License.
 """Support for externalized runtimes."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import json
 import logging
 import os
@@ -20,7 +24,9 @@ import subprocess
 import sys
 import threading
 
+from . import comm
 import ruamel.yaml as yaml
+from six.moves import input
 
 # Try importing these modules from the cloud SDK first.
 try:
@@ -33,7 +39,6 @@ try:
 except ImportError:
   import subprocess
 
-from . import comm
 
 WRITING_FILE_MESSAGE = 'Writing [{0}] to [{1}].'
 FILE_EXISTS_MESSAGE = 'Not writing [{0}], it already exists.'
@@ -161,7 +166,7 @@ class DefaultExecutionEnvironment(ExecutionEnvironment):
   def PromptResponse(self, message):
     sys.stdout.write(message)
     sys.stdout.flush()
-    return raw_input('> ')
+    return input('> ')
 
   def Print(self, message):
     print(message)

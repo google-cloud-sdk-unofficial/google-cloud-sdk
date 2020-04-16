@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import resource_args
+from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
@@ -58,9 +59,13 @@ class List(base.ListCommand):
           name.scope().segment(-3):label=ISSUER,
           name.scope().segment(-5):label=LOCATION,
           revocation_details.yesno(yes="REVOKED", no="ACTIVE"):label=REVOCATION_STATUS,
-          certificate_description.subject_description.not_before_time:label=NOT_BEFORE,
-          certificate_description.subject_description.not_after_time:label=NOT_AFTER)
+          certificate_description.subject_description.not_before_time():label=NOT_BEFORE,
+          certificate_description.subject_description.not_after_time():label=NOT_AFTER)
         """)
+    parser.display_info.AddTransforms({
+        'not_before_time': text_utils.TransformNotBeforeTime,
+        'not_after_time': text_utils.TransformNotAfterTime
+    })
 
   def Run(self, args):
     client = privateca_base.GetClientInstance()

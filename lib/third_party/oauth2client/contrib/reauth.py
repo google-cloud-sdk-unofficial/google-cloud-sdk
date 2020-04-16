@@ -20,13 +20,13 @@ import json
 import logging
 import sys
 
-from six.moves import urllib
+from oauth2client.contrib import reauth_errors
 
 from pyu2f import errors as u2ferrors
 from pyu2f import model
 from pyu2f.convenience import authenticator
 
-from oauth2client.contrib import reauth_errors
+from six.moves import urllib
 
 
 REAUTH_API = 'https://reauth.googleapis.com/v2/sessions'
@@ -167,6 +167,19 @@ class SecurityKeyChallenge(ReauthChallenge):
         return None
 
 
+class SamlChallenge(ReauthChallenge):
+    """Challenge that asks users to complete SAML login."""
+
+    def GetName(self):
+        return 'SAML'
+
+    def IsLocallyEligible(self):
+        return True
+
+    def InternalObtainCredentials(self, unused_metadata):
+        raise reauth_errors.ReauthSamlLoginRequiredError()
+
+
 class ReauthManager(object):
     """Reauth manager class that handles reauth challenges."""
 
@@ -178,7 +191,8 @@ class ReauthManager(object):
     def InternalBuildChallenges(self):
         out = {}
         for c in [SecurityKeyChallenge(self.http_request, self.access_token),
-                  PasswordChallenge(self.http_request, self.access_token)]:
+                  PasswordChallenge(self.http_request, self.access_token),
+                  SamlChallenge(self.http_request, self.access_token)]:
             if c.IsLocallyEligible():
                 out[c.GetName()] = c
         return out

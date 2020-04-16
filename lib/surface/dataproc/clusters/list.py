@@ -87,7 +87,7 @@ class List(base.ListCommand):
             config.firstof(
                 gkeClusterConfig.namespacedGkeDeploymentTarget.targetGkeCluster,
                 gceClusterConfig.zoneUri
-              ).scope('locations'):label=ZONE,
+              ).scope('locations').segment(0):label=ZONE,
             config.lifecycleConfig.yesno(yes=enabled, no=''):label=SCHEDULED_DELETE
           )
     """)

@@ -57,13 +57,10 @@ class InstantiateFromFile(base.CreateCommand):
     # Generate uuid for request.
     instance_id = uuid.uuid4().hex
     regions_ref = dp_util.ParseRegion(dataproc)
-    # Read template from YAML file and validate it using a schema.
+
     data = console_io.ReadFromFileOrStdin(args.file or '-', binary=False)
     template = export_util.Import(
-        message_type=msgs.WorkflowTemplate,
-        stream=data,
-        schema_path=export_util.GetSchemaPath(
-            'dataproc', message_name='WorkflowTemplate'))
+        message_type=msgs.WorkflowTemplate, stream=data)
 
     # Send instantiate inline request.
     request = \

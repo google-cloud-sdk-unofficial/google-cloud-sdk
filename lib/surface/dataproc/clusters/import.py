@@ -19,12 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.export import util as export_util
-from googlecloudsdk.core import yaml_validator
 from googlecloudsdk.core.console import console_io
 
 
@@ -57,16 +55,10 @@ To import a cluster from standard output, run:
     return 'v1beta2'
 
   @classmethod
-  def GetSchemaPath(cls, for_help=False):
-    """Returns the resource schema path."""
-    return export_util.GetSchemaPath(
-        'dataproc', cls.GetApiVersion(), 'Cluster', for_help=for_help)
-
-  @classmethod
   def Args(cls, parser):
     dataproc = dp.Dataproc(cls.ReleaseTrack())
     flags.AddClusterResourceArg(parser, 'import', dataproc.api_version)
-    export_util.AddImportFlags(parser, cls.GetSchemaPath(for_help=True))
+    export_util.AddImportFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     # 30m is backend timeout + 5m for safety buffer.
     flags.AddTimeoutFlag(parser, default='35m')
@@ -76,13 +68,7 @@ To import a cluster from standard output, run:
     msgs = dataproc.messages
 
     data = console_io.ReadFromFileOrStdin(args.source or '-', binary=False)
-    try:
-      cluster = export_util.Import(
-          message_type=msgs.Cluster,
-          stream=data,
-          schema_path=self.GetSchemaPath())
-    except yaml_validator.ValidationError as e:
-      raise exceptions.ValidationError(e.message)
+    cluster = export_util.Import(message_type=msgs.Cluster, stream=data)
 
     cluster_ref = args.CONCEPTS.cluster.Parse()
     cluster.clusterName = cluster_ref.clusterName

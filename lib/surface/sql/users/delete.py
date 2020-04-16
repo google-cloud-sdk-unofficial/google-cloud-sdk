@@ -25,7 +25,6 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.command_lib.sql import users
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
@@ -66,12 +65,10 @@ class Delete(base.DeleteCommand):
         collection='sql.instances')
     operation_ref = None
 
-    host = users.GetHostValue(args)
-
     console_io.PromptContinue(
         message='{0}@{1} will be deleted. New connections can no longer be '
         'made using this user. Existing connections are not affected.'.format(
-            args.username, host),
+            args.username, args.host),
         default=True,
         cancel_on_no=True)
 
@@ -80,7 +77,7 @@ class Delete(base.DeleteCommand):
             project=instance_ref.project,
             instance=instance_ref.Name(),
             name=args.username,
-            host=host))
+            host=args.host))
     operation_ref = client.resource_parser.Create(
         'sql.operations',
         operation=result_operation.name,

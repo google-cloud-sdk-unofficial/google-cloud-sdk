@@ -2,9 +2,9 @@
 
   help_text:
     brief:
-      Upgrade a Memorystore Redis instance to a specified Redis version.
+      Upgrade a Memorystore for Redis instance to a specified Redis version.
     description: |
-      Upgrade a Memorystore Redis instance to a specified Redis version.
+      Upgrade a Memorystore for Redis instance to a specified Redis version.
     examples: |
       To upgrade an instance with the name `my-redis-instance` in region
       `us-central1` to Redis version 4.0 run:
@@ -15,18 +15,21 @@
     resource:
       spec: !REF googlecloudsdk.command_lib.redis.resources:instance
       help_text: |
-        Arguments and flags that specify the Memorystore Redis instance you want
+        Arguments and flags that specify the Memorystore for Redis instance you want
         to upgrade.
     params:
     - arg_name: redis-version
       api_field: upgradeInstanceRequest.redisVersion
       required: true
       metavar: VERSION
-      help_text: Target version of Redis software.
+      help_text: Target version of Redis software. You can only upgrade to the next highest version. For example, you must upgrade an instance from redis_3_2 to redis_4_0 before you can upgrade the instance to redis_5_0.
       choices:
       - enum_value: REDIS_4_0
         arg_value: redis_4_0
         help_text: Redis 4.0 compatibility
+      - enum_value: REDIS_5_0
+        arg_value: redis_5_0
+        help_text: Redis 5.0 compatibility
 
   input:
     confirmation_prompt: |-

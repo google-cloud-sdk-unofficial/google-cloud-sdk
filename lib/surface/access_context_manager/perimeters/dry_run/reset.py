@@ -25,6 +25,11 @@ from googlecloudsdk.command_lib.accesscontextmanager import policies
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command has been renamed to `drop`. Please use '
+             '`gcloud beta access-context-manager perimeters dry-run drop` '
+             'instead.'))
 class ResetPerimeterDryRunBeta(base.UpdateCommand):
   """Resets the dry-run state of a Service Perimeter."""
   _API_VERSION = 'v1'
@@ -46,6 +51,11 @@ class ResetPerimeterDryRunBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command has been renamed to `drop`. Please use '
+             '`gcloud alpha access-context-manager perimeters dry-run drop` '
+             'instead.'))
 class ResetPerimeterDryRunAlpha(ResetPerimeterDryRunBeta):
   """Resets the dry-run mode configuration of a Service Perimeter."""
   _API_VERSION = 'v1alpha'

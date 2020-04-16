@@ -124,7 +124,7 @@ class Create(base.CreateCommand):
     concept_parsers.ConceptParser([
         presentation_specs.ResourcePresentationSpec(
             '--reusable-config',
-            resource_args.CreateReusableConfigResourceSpec(),
+            resource_args.CreateReusableConfigResourceSpec('certificate'),
             'The Reusable Config containing X.509 values for this certificate.',
             flag_name_overrides={
                 'location': '',
@@ -148,7 +148,7 @@ class Create(base.CreateCommand):
       raise exceptions.BadFileException(
           "Could not write certificate to '{}'.".format(cert_file))
 
-  def _GenerateCertificateConfig(self, request, args):
+  def _GenerateCertificateConfig(self, request, args, location):
     messages = privateca_base.GetMessagesModule()
     private_key, public_key = key_generation.RSAKeyGen(2048)
     key_generation.ExportPrivateKey(args.key_output_file, private_key)
@@ -158,7 +158,7 @@ class Create(base.CreateCommand):
     config.publicKey.key = public_key
     config.publicKey.type = messages.PublicKey.TypeValueValuesEnum.PEM_RSA_KEY
     config.reusableConfig = flags.ParseReusableConfig(
-        args, is_ca=args.is_ca_cert)
+        args, location, is_ca=args.is_ca_cert)
     config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=args.is_ca_cert)
 
     return config
@@ -188,7 +188,7 @@ class Create(base.CreateCommand):
       request.certificate.pemCsr = self._ReadCsr(request, args.csr)
     elif args.generate_key:
       request.certificate.config = self._GenerateCertificateConfig(
-          request, args)
+          request, args, cert_ref.locationsId)
     else:
       # This should not happen because of the required arg group, but protects
       # in case of future additions.

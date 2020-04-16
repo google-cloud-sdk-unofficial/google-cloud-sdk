@@ -301,6 +301,7 @@ def ParseCreateOptionsBase(args):
           args.enable_resource_consumption_metering,
       database_encryption_key=args.database_encryption_key,
       workload_pool=args.workload_pool,
+      workload_metadata=args.workload_metadata,
       workload_metadata_from_node=args.workload_metadata_from_node,
       enable_vertical_pod_autoscaling=args.enable_vertical_pod_autoscaling,
       enable_autoprovisioning=args.enable_autoprovisioning,
@@ -378,7 +379,7 @@ class Create(base.CreateCommand):
     flags.AddResourceUsageExportFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)
     flags.AddWorkloadIdentityFlags(parser)
-    flags.AddWorkloadMetadataFromNodeFlag(parser)
+    flags.AddWorkloadMetadataFlag(parser)
     flags.AddReservationAffinityFlags(parser)
     flags.AddSurgeUpgradeFlag(parser)
     flags.AddMaxUnavailableUpgradeFlag(parser)
@@ -529,7 +530,7 @@ class CreateBeta(Create):
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddEnableIntraNodeVisibilityFlag(parser)
     flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
-    flags.AddWorkloadMetadataFromNodeFlag(parser, use_mode=False)
+    flags.AddWorkloadMetadataFlag(parser, use_mode=False)
     flags.AddEnableAutoUpgradeFlag(parser, default=True)
     flags.AddSurgeUpgradeFlag(parser, default=1)
     flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
@@ -603,7 +604,7 @@ class CreateAlpha(Create):
     flags.AddEnableStackdriverKubernetesFlag(parser)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(parser)
     flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
-    flags.AddWorkloadMetadataFromNodeFlag(parser, use_mode=False)
+    flags.AddWorkloadMetadataFlag(parser, use_mode=False)
     flags.AddResourceUsageExportFlags(parser)
     flags.AddAuthenticatorSecurityGroupFlags(parser)
     flags.AddVerticalPodAutoscalingFlag(parser)

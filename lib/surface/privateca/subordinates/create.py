@@ -137,7 +137,7 @@ class Create(base.CreateCommand):
             required=True),
         presentation_specs.ResourcePresentationSpec(
             '--reusable-config',
-            privateca_resource_args.CreateReusableConfigResourceSpec(),
+            privateca_resource_args.CreateReusableConfigResourceSpec('CA'),
             'The Reusable Config containing X.509 values for this CA.',
             flag_name_overrides={
                 'location': '',
@@ -212,7 +212,9 @@ class Create(base.CreateCommand):
     subject_config = flags.ParseSubjectFlags(args, is_ca=True)
     issuing_options = flags.ParseIssuingOptions(args)
     issuance_policy = flags.ParseIssuancePolicy(args)
-    reusable_config_wrapper = flags.ParseReusableConfig(args, is_ca=True)
+    reusable_config_wrapper = flags.ParseReusableConfig(args,
+                                                        ca_ref.locationsId,
+                                                        is_ca=True)
     lifetime = flags.ParseValidityFlag(args)
     labels = labels_util.ParseCreateArgs(
         args, self.messages.CertificateAuthority.LabelsValue)

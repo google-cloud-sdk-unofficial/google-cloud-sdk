@@ -146,7 +146,8 @@ class Submit(base.CreateCommand):
         args.machine_type, args.disk_size)
 
     # Start the build.
-    return submit_util.Build(messages, args.async_, build_config)
+    build, _ = submit_util.Build(messages, args.async_, build_config)
+    return build
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -203,4 +204,5 @@ class SubmitAlpha(SubmitBeta):
         args.machine_type, args.disk_size, args.pack)
 
     # Start the build.
-    return submit_util.Build(messages, args.async_, build_config)
+    build, _ = submit_util.Build(messages, args.async_, build_config)
+    return build

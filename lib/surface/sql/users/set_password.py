@@ -27,7 +27,6 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
-from googlecloudsdk.command_lib.sql import users
 from googlecloudsdk.core import properties
 
 
@@ -81,18 +80,17 @@ class SetPassword(base.CreateCommand):
         collection='sql.instances')
     operation_ref = None
 
-    host = users.GetHostValue(args)
     result_operation = sql_client.users.Update(
         sql_messages.SqlUsersUpdateRequest(
             project=instance_ref.project,
             instance=args.instance,
             name=args.username,
-            host=host,
+            host=args.host,
             user=sql_messages.User(
                 project=instance_ref.project,
                 instance=args.instance,
                 name=args.username,
-                host=host,
+                host=args.host,
                 password=args.password)))
     operation_ref = client.resource_parser.Create(
         'sql.operations',

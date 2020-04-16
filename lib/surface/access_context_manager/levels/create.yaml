@@ -10,12 +10,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=accessLevel.name
     - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
-    BETA:
-      api_version: v1
-      modify_request_hooks:
-      - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=accessLevel.name
-      - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
-      - googlecloudsdk.command_lib.accesscontextmanager.levels:ClearCombiningFunctionUnlessBasicSpecSet
+    - googlecloudsdk.command_lib.accesscontextmanager.levels:ClearCombiningFunctionUnlessBasicSpecSet
     ALPHA:
       api_version: v1alpha
       modify_request_hooks:
@@ -28,164 +23,67 @@
     resource:
       help_text: The access level to create.
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:level
-    GA:
-      params:
-      - api_field: accessLevel.description
-        arg_name: description
-        required: false
-        help_text: Long-form description of access level.
-      - api_field: accessLevel.title
-        arg_name: title
+    params:
+    - api_field: accessLevel.description
+      arg_name: description
+      required: false
+      help_text: Long-form description of access level.
+    - api_field: accessLevel.title
+      arg_name: title
+      required: true
+      help_text: Short human-readable title of the access level.
+    - group:
         required: true
-        help_text: Short human-readable title of the access level.
-      - api_field: accessLevel.basic.combiningFunction
-        arg_name: combine-function
-        required: false
-        default: and
-        help_text: For a basic level, determines how conditions are combined.
-        choices:
-        - arg_value: and
-          enum_value: AND
-        - arg_value: or
-          enum_value: OR
-      - api_field: accessLevel.basic.conditions
-        arg_name: basic-level-spec
-        required: true
-        help_text: |
-          Path to a file containing a list of basic access level conditions.
+        mutex: true
+        help_text: Level specification.
+        params:
+        - group:
+            help_text: Basic level specification.
+            params:
+            - api_field: accessLevel.basic.combiningFunction
+              arg_name: combine-function
+              default: and
+              help_text: For a basic level, determines how conditions are combined.
+              choices:
+              - arg_value: and
+                enum_value: AND
+              - arg_value: or
+                enum_value: OR
+            - api_field: accessLevel.basic.conditions
+              arg_name: basic-level-spec
+              required: true
+              help_text: |
+                Path to a file containing a list of basic access level conditions.
 
-          An access level condition file is a YAML-formatted list of
-          conditions, which are YAML objects representing a Condition as
-          described in the API reference. For example:
+                An access level condition file is a YAML-formatted list of
+                conditions, which are YAML objects representing a Condition as
+                described in the API reference. For example:
 
-              ```
-               - ipSubnetworks:
-                 - 162.222.181.197/24
-                 - 2001:db8::/48
-               - members
-                 - user:user@example.com
-              ```
-        repeated: false
-        processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditions:api_version=v1
-    BETA:
-      params:
-      - api_field: accessLevel.description
-        arg_name: description
-        required: false
-        help_text: Long-form description of access level.
-      - api_field: accessLevel.title
-        arg_name: title
-        required: true
-        help_text: Short human-readable title of the access level.
-      - group:
-          required: true
-          mutex: true
-          help_text: Level specification.
-          params:
-          - group:
-              help_text: Basic level specification.
-              params:
-              - api_field: accessLevel.basic.combiningFunction
-                arg_name: combine-function
-                default: and
-                help_text: For a basic level, determines how conditions are combined.
-                choices:
-                - arg_value: and
-                  enum_value: AND
-                - arg_value: or
-                  enum_value: OR
-              - api_field: accessLevel.basic.conditions
-                arg_name: basic-level-spec
-                required: true
-                help_text: |
-                  Path to a file containing a list of basic access level conditions.
-
-                  An access level condition file is a YAML-formatted list of
-                  conditions, which are YAML objects representing a Condition as
-                  described in the API reference. For example:
-
-                      ```
-                       - ipSubnetworks:
-                         - 162.222.181.197/24
-                         - 2001:db8::/48
-                       - members
-                         - user:user@example.com
-                      ```
-                repeated: false
-                processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditions:api_version=v1
-          - group:
-              help_text: Custom level specification.
-              params:
-              - api_field: accessLevel.custom.expr
-                arg_name: custom-level-spec
-                help_text: |
-                  Path to a file representing an expression that represents an access level.
-
-                  The expression is in the Common Expression Langague (CEL) format. For example:
-
-                      ```
-                        expression: "origin.region_code in ['US', 'CA']"
-                      ```
-                repeated: false
-                processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseCustomLevel:api_version=v1
-    ALPHA:
-      params:
-      - api_field: accessLevel.description
-        arg_name: description
-        required: false
-        help_text: Long-form description of access level.
-      - api_field: accessLevel.title
-        arg_name: title
-        required: true
-        help_text: Short human-readable title of the access level.
-      - group:
-          required: true
-          mutex: true
-          help_text: Level specification.
-          params:
-          - group:
-              help_text: Basic level specification.
-              params:
-              - api_field: accessLevel.basic.combiningFunction
-                arg_name: combine-function
-                default: and
-                help_text: For a basic level, determines how conditions are combined.
-                choices:
-                - arg_value: and
-                  enum_value: AND
-                - arg_value: or
-                  enum_value: OR
-              - api_field: accessLevel.basic.conditions
-                arg_name: basic-level-spec
-                required: true
-                help_text: |
-                  Path to a file containing a list of basic access level conditions.
-
-                  An access level condition file is a YAML-formatted list of
-                  conditions, which are YAML objects representing a Condition as
-                  described in the API reference. For example:
-
-                      ```
-                       - ipSubnetworks:
-                         - 162.222.181.197/24
-                         - 2001:db8::/48
-                       - members
-                         - user:user@example.com
-                      ```
-                repeated: false
+                    ```
+                     - ipSubnetworks:
+                       - 162.222.181.197/24
+                       - 2001:db8::/48
+                     - members
+                       - user:user@example.com
+                    ```
+              repeated: false
+              processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditions:api_version=v1
+              ALPHA:
                 processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseBasicLevelConditions:api_version=v1alpha
-          - group:
-              help_text: Custom level specification.
-              params:
-              - api_field: accessLevel.custom.expr
-                arg_name: custom-level-spec
-                help_text: |
-                  Path to a file representing an expression that represents an access level.
+        - group:
+            help_text: Custom level specification.
+            params:
+            - api_field: accessLevel.custom.expr
+              arg_name: custom-level-spec
+              help_text: |
+                Path to a file representing an expression that represents an access level.
 
-                  The expression is in the Common Expression Langague (CEL) format. For example:
+                The expression is in the Common Expression Language (CEL) format. For example:
 
-                      ```
-                        expression: "origin.region_code in ['US', 'CA']"
-                      ```
-                repeated: false
+                    ```
+                      expression: "origin.region_code in ['US', 'CA']"
+                    ```
+              repeated: false
+              processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseCustomLevel:api_version=v1
+              ALPHA:
                 processor: googlecloudsdk.command_lib.accesscontextmanager.levels:ParseCustomLevel:api_version=v1alpha

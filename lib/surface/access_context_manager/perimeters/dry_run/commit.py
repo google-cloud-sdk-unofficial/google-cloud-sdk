@@ -25,6 +25,12 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command has been renamed to `enforce-all`. Please use '
+        '`gcloud beta access-context-manager perimeters dry-run enforce-all` '
+        'instead.'))
 class CommitPerimeterDryRunBeta(base.UpdateCommand):
   """Commit dry-run specs for Service Perimeters in the given Access Policy."""
   _API_VERSION = 'v1'
@@ -62,6 +68,12 @@ class CommitPerimeterDryRunBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command has been renamed to `enforce-all`. Please use '
+        '`gcloud alpha access-context-manager perimeters dry-run enforce-all` '
+        'instead.'))
 class CommitPerimeterDryRunAlpha(CommitPerimeterDryRunBeta):
   """Commit dry-run specs for Service Perimeters in the given Access Policy."""
   _API_VERSION = 'v1alpha'
