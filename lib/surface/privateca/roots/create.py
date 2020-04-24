@@ -198,4 +198,13 @@ class Create(base.CreateCommand):
     ca_response = operations.Await(operation, 'Creating Certificate Authority.')
     ca = operations.GetMessageFromResponse(ca_response,
                                            self.messages.CertificateAuthority)
+
+    log.status.Print('Creating the initial Certificate Revocation List.')
+    self.client.projects_locations_certificateAuthorities.PublishCrl(
+        self.messages
+        .PrivatecaProjectsLocationsCertificateAuthoritiesPublishCrlRequest(
+            name=ca.name,
+            publishCertificateRevocationListRequest=self.messages
+            .PublishCertificateRevocationListRequest()))
+
     log.status.Print('Created Certificate Authority [{}].'.format(ca.name))

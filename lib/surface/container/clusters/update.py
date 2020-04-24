@@ -127,6 +127,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                 api_adapter.APPLICATIONMANAGER: _ParseAddonDisabled,
                 api_adapter.NODELOCALDNS: _ParseAddonDisabled,
                 api_adapter.GCEPDCSIDRIVER: _ParseAddonDisabled,
+                api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
             }),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
@@ -138,6 +139,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {application_manager}=ENABLED|DISABLED
 {network_policy}=ENABLED|DISABLED
 {cloudrun}=ENABLED|DISABLED
+{configconnector}=ENABLED|DISABLED
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED""".format(
     hpa=api_adapter.HPA,
@@ -147,6 +149,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
     istio=api_adapter.ISTIO,
     application_manager=api_adapter.APPLICATIONMANAGER,
     cloudrun=api_adapter.CLOUDRUN,
+    configconnector=api_adapter.CONFIGCONNECTOR,
     nodelocaldns=api_adapter.NODELOCALDNS,
     gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
     ))

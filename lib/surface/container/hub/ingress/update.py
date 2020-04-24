@@ -44,7 +44,7 @@ class Update(base.UpdateCommand):
   """
 
   FEATURE_NAME = 'multiclusteringress'
-  FEATURE_DISPLAY_NAME = 'MultiClusterIngress'
+  FEATURE_DISPLAY_NAME = 'Ingress'
 
   @classmethod
   def Args(cls, parser):

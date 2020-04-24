@@ -34,8 +34,7 @@ DEFAULT_LIST_FORMAT = """\
          updateTime.date(tz=LOCAL))",
 
       GCR:format="table[title="CONTAINER_REGISTRY"](
-         name.basename():label=REPOSITORY,
-         format:label=FORMAT,
+         name.basename():label=HOSTNAME,
          name.segment(3):label=LOCATION
       )"
     )"""

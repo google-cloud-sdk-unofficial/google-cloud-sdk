@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import certificate_utils
+from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import flags
@@ -143,14 +144,23 @@ class Revoke(base.SilentCommand):
         PrivatecaProjectsLocationsCertificateAuthoritiesCertificatesRevokeRequest(
             name=cert_ref.RelativeName(),
             revokeCertificateRequest=messages.RevokeCertificateRequest(
-                reason=reason)))
+                reason=reason,
+                requestId=request_utils.GenerateRequestId())))
 
     response = operations.Await(operation, 'Revoking Certificate.')
     certificate = operations.GetMessageFromResponse(response,
                                                     messages.Certificate)
 
+    log.status.Print('Publishing a new Certificate Revocation List.')
+    client.projects_locations_certificateAuthorities.PublishCrl(
+        messages
+        .PrivatecaProjectsLocationsCertificateAuthoritiesPublishCrlRequest(
+            name=cert_ref.Parent().RelativeName(),
+            publishCertificateRevocationListRequest=messages
+            .PublishCertificateRevocationListRequest()))
+
     revoke_time = times.ParseDateTime(
         certificate.revocationDetails.revocationTime)
-    log.Print('Revoked certificate [{}] at {}.'.format(
+    log.status.Print('Revoked certificate [{}] at {}.'.format(
         certificate.name, times.FormatDateTime(revoke_time,
                                                tzinfo=times.LOCAL)))

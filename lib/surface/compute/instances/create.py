@@ -173,6 +173,7 @@ class Create(base.CreateCommand):
   _support_image_csek = False
   _support_confidential_compute = False
   _support_post_key_revocation_action_type = False
+  _support_rsa_encrypted = False
 
   @classmethod
   def Args(cls, parser):
@@ -442,13 +443,9 @@ class Create(base.CreateCommand):
       confidential_instance_config = (
           self._BuildConfidentialInstanceConfigMessage(
               messages=compute_client.messages, args=args))
-    # TODO(b/80138906): Release track should not be used like this.
-    # These feature are only exposed in alpha/beta
-    allow_rsa_encrypted = False
-    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      allow_rsa_encrypted = True
 
-    csek_keys = csek_utils.CsekKeyStore.FromArgs(args, allow_rsa_encrypted)
+    csek_keys = csek_utils.CsekKeyStore.FromArgs(args,
+                                                 self._support_rsa_encrypted)
     disks_messages = self._GetDiskMessages(args, skip_defaults, instance_refs,
                                            compute_client, resource_parser,
                                            create_boot_disk, boot_disk_size_gb,
@@ -632,6 +629,7 @@ class CreateBeta(Create):
   _support_image_csek = False
   _support_confidential_compute = False
   _support_post_key_revocation_action_type = False
+  _support_rsa_encrypted = True
 
   def _GetNetworkInterfaces(self, args, client, holder, project, zone,
                             skip_defaults):
@@ -689,6 +687,7 @@ class CreateAlpha(CreateBeta):
   _support_image_csek = True
   _support_confidential_compute = True
   _support_post_key_revocation_action_type = True
+  _support_rsa_encrypted = True
 
   def _GetNetworkInterfaces(self, args, client, holder, project, zone,
                             skip_defaults):

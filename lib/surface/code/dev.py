@@ -35,7 +35,6 @@ from googlecloudsdk.core import config
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
-from googlecloudsdk.core.util import platforms
 import six
 
 DEFAULT_CLUSTER_NAME = 'gcloud-local-dev'
@@ -300,10 +299,6 @@ class Dev(base.Command):
     if args.IsSpecified('kube_context'):
       return External()
     elif args.IsSpecified('kind_cluster'):
-      return Kind()
-    elif args.IsSpecified('minikube_profile'):
-      return Minikube()
-    elif platforms.OperatingSystem.Current() == platforms.OperatingSystem.LINUX:
       return Kind()
     else:
       return Minikube()

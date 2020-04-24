@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import copy
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
@@ -33,13 +35,14 @@ from six.moves import range  # pylint: disable=redefined-builtin
 
 
 def _Args(parser, support_global_access, support_l7_internal_load_balancing,
-          support_target_grpc_proxy):
+          support_target_grpc_proxy, support_psc_google_apis):
   """Add the flags to create a forwarding rule."""
 
   flags.AddUpdateArgs(
       parser,
       include_l7_internal_load_balancing=support_l7_internal_load_balancing,
-      include_target_grpc_proxy=support_target_grpc_proxy)
+      include_target_grpc_proxy=support_target_grpc_proxy,
+      include_psc_google_apis=support_psc_google_apis)
   flags.AddIPProtocols(parser)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
@@ -54,11 +57,11 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing,
   parser.add_argument(
       '--service-label',
       help='(Only for Internal Load Balancing): '
-           'https://cloud.google.com/load-balancing/docs/dns-names/\n'
-           'The DNS label to use as the prefix of the fully qualified domain '
-           'name for this forwarding rule. The full name will be internally '
-           'generated and output as dnsName. If this field is not specified, '
-           'no DNS record will be generated and no DNS name will be output. ')
+      'https://cloud.google.com/load-balancing/docs/dns-names/\n'
+      'The DNS label to use as the prefix of the fully qualified domain '
+      'name for this forwarding rule. The full name will be internally '
+      'generated and output as dnsName. If this field is not specified, '
+      'no DNS record will be generated and no DNS name will be output. ')
   flags.AddAddressesAndIPVersions(
       parser,
       required=False,
@@ -75,23 +78,26 @@ class CreateHelper(object):
   FORWARDING_RULE_ARG = None
 
   def __init__(self, holder, support_global_access,
-               support_l7_internal_load_balancing, support_target_grpc_proxy):
+               support_l7_internal_load_balancing, support_target_grpc_proxy,
+               support_psc_google_apis):
     self._holder = holder
     self._support_global_access = support_global_access
     self._support_l7_internal_load_balancing = support_l7_internal_load_balancing
     self._support_target_grpc_proxy = support_target_grpc_proxy
+    self._support_psc_google_apis = support_psc_google_apis
 
   @classmethod
   def Args(cls, parser, support_global_access,
-           support_l7_internal_load_balancing, support_target_grpc_proxy):
+           support_l7_internal_load_balancing, support_target_grpc_proxy,
+           support_psc_google_apis):
     cls.FORWARDING_RULE_ARG = _Args(parser, support_global_access,
                                     support_l7_internal_load_balancing,
-                                    support_target_grpc_proxy)
+                                    support_target_grpc_proxy,
+                                    support_psc_google_apis)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
-      return messages.ForwardingRule.IPProtocolValueValuesEnum(
-          args.ip_protocol)
+      return messages.ForwardingRule.IPProtocolValueValuesEnum(args.ip_protocol)
     else:
       return
 
@@ -115,16 +121,44 @@ class CreateHelper(object):
 
   def _CreateGlobalRequests(self, client, resources, args, forwarding_rule_ref):
     """Create a globally scoped request."""
+
+    is_psc_google_apis = False
+    if hasattr(args,
+               'target_google_apis_bundle') and args.target_google_apis_bundle:
+      if not self._support_psc_google_apis:
+        raise exceptions.InvalidArgumentException(
+            '--target-google-apis-bundle',
+            'Private Service Connect for Google APIs (the target-google-apis-bundle option '
+            'for forwarding rules) is not supported in this API version.')
+      else:
+        is_psc_google_apis = True
+
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
     port_range = _ResolvePortRange(args.port_range, range_list)
-    if ports_all_specified:
+
+    if ports_all_specified and not is_psc_google_apis:
       raise exceptions.ToolException(
           '[--ports] can not be specified to all for global forwarding rules.')
-    if not port_range:
+    if is_psc_google_apis and port_range:
+      raise exceptions.ToolException(
+          '[--ports] is not allowed for PSC-GoogleApis forwarding rules.')
+    if not is_psc_google_apis and not port_range:
       raise exceptions.ToolException(
           '[--ports] is required for global forwarding rules.')
-    target_ref = utils.GetGlobalTarget(resources, args,
-                                       self._support_target_grpc_proxy)
+
+    if is_psc_google_apis:
+      if args.target_google_apis_bundle in flags.PSC_GOOGLE_APIS_BUNDLES:
+        target_as_str = args.target_google_apis_bundle
+      else:
+        bundles_list = ', '.join(flags.PSC_GOOGLE_APIS_BUNDLES)
+        raise exceptions.InvalidArgumentException(
+            '--target-google-apis-bundle',
+            'The valid values for target-google-apis-bundle are: ' +
+            bundles_list)
+    else:
+      target_ref = utils.GetGlobalTarget(resources, args,
+                                         self._support_target_grpc_proxy)
+      target_as_str = target_ref.SelfLink()
     protocol = self.ConstructProtocol(client.messages, args)
 
     if args.address is None or args.ip_version:
@@ -143,7 +177,7 @@ class CreateHelper(object):
         IPAddress=address,
         IPProtocol=protocol,
         portRange=port_range,
-        target=target_ref.SelfLink(),
+        target=target_as_str,
         ipVersion=ip_version,
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=_GetLoadBalancingScheme(args, client.messages))
@@ -157,8 +191,7 @@ class CreateHelper(object):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
 
     request = client.messages.ComputeGlobalForwardingRulesInsertRequest(
-        forwardingRule=forwarding_rule,
-        project=forwarding_rule_ref.project)
+        forwardingRule=forwarding_rule, project=forwarding_rule_ref.project)
 
     return [(client.apitools_client.globalForwardingRules, 'Insert', request)]
 
@@ -300,18 +333,21 @@ class Create(base.CreateCommand):
   _support_global_access = True
   _support_l7_internal_load_balancing = True
   _support_target_grpc_proxy = False
+  _support_psc_google_apis = False
 
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(parser, cls._support_global_access,
                       cls._support_l7_internal_load_balancing,
-                      cls._support_target_grpc_proxy)
+                      cls._support_target_grpc_proxy,
+                      cls._support_psc_google_apis)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(holder, self._support_global_access,
                         self._support_l7_internal_load_balancing,
-                        self._support_target_grpc_proxy).Run(args)
+                        self._support_target_grpc_proxy,
+                        self._support_psc_google_apis).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -320,6 +356,7 @@ class CreateBeta(Create):
   _support_global_access = True
   _support_l7_internal_load_balancing = True
   _support_target_grpc_proxy = False
+  _support_psc_google_apis = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -328,6 +365,7 @@ class CreateAlpha(CreateBeta):
   _support_global_access = True
   _support_l7_internal_load_balancing = True
   _support_target_grpc_proxy = True
+  _support_psc_google_apis = True
 
 
 Create.detailed_help = {
@@ -337,9 +375,10 @@ Create.detailed_help = {
 When creating a forwarding rule, exactly one of  ``--target-instance'',
 ``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
 ``--target-ssl-proxy'', ``--target-tcp-proxy'', ``--target-vpn-gateway''
-or ``--backend-service'' must be specified."""
-                    .format(overview=flags.FORWARDING_RULES_OVERVIEW)),
-    'EXAMPLES': """
+or ``--backend-service'' must be specified.""".format(
+    overview=flags.FORWARDING_RULES_OVERVIEW)),
+    'EXAMPLES':
+        """
     To create a global forwarding rule that will forward all traffic on port
     8080 for IP address ADDRESS to a target http proxy PROXY, run:
 
@@ -353,9 +392,16 @@ or ``--backend-service'' must be specified."""
 """
 }
 
-
 CreateBeta.detailed_help = Create.detailed_help
-CreateAlpha.detailed_help = Create.detailed_help
+CreateAlpha.detailed_help = copy.deepcopy(Create.detailed_help)
+CreateAlpha.detailed_help['DESCRIPTION'] = """
+*{{command}}* is used to create a forwarding rule. {overview}
+
+When creating a forwarding rule, exactly one of  ``--target-instance'',
+``--target-pool'', ``--target-http-proxy'', ``--target-https-proxy'',
+``--target-ssl-proxy'', ``--target-tcp-proxy'', ``--target-vpn-gateway'',
+``--target-google-apis-bundle'' or ``--backend-service'' must be specified.""".format(
+    overview=flags.FORWARDING_RULES_OVERVIEW)
 
 
 def _GetPortRange(ports_range_list):
@@ -383,8 +429,9 @@ def _ExtractPortsAndAll(ports_with_all):
 def _ResolvePortRange(port_range, port_range_list):
   """Reconciles deprecated port_range value and list of port ranges."""
   if port_range:
-    log.warning('The --port-range flag is deprecated. Use equivalent --ports=%s'
-                ' flag.', port_range)
+    log.warning(
+        'The --port-range flag is deprecated. Use equivalent --ports=%s'
+        ' flag.', port_range)
   elif port_range_list:
     port_range = _GetPortRange(port_range_list)
   return six.text_type(port_range) if port_range else None
@@ -404,8 +451,8 @@ def _GetLoadBalancingScheme(args, messages):
   elif args.load_balancing_scheme == 'EXTERNAL':
     return messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL
   elif args.load_balancing_scheme == 'INTERNAL_SELF_MANAGED':
-    return (messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.
-            INTERNAL_SELF_MANAGED)
+    return (messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum
+            .INTERNAL_SELF_MANAGED)
   elif args.load_balancing_scheme == 'INTERNAL_MANAGED':
     return (messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum
             .INTERNAL_MANAGED)

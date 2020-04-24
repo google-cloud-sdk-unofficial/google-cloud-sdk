@@ -59,6 +59,18 @@ def _WarnIfSettingProjectWithNoAccess(scope, project):
       base.EnableUserProjectQuota()
 
 
+def _WarnIfActivateUseClientCertificate(prop):
+  """Warns if setting context_aware/use_client_certificate to True."""
+  if not prop.GetBool():
+    return
+  mtls_not_supported_msg = (
+      'Some services may not support client certificate authorization in '
+      'this version of gcloud. When a command sends requests to such services, '
+      'the requests will be executed without using a client certificate.\n\n'
+      'Please run $ gcloud topic client-certificate for more information.')
+  log.warning(mtls_not_supported_msg)
+
+
 class Set(base.Command):
   """Set a Cloud SDK property.
 
@@ -146,3 +158,5 @@ class Set(base.Command):
 
     if prop == properties.VALUES.core.project:
       _WarnIfSettingProjectWithNoAccess(scope, prop.Get())
+    if prop == properties.VALUES.context_aware.use_client_certificate:
+      _WarnIfActivateUseClientCertificate(prop)

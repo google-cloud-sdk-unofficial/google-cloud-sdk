@@ -35,6 +35,8 @@ from googlecloudsdk.core.credentials import devshell as c_devshell
 from googlecloudsdk.core.credentials import gce as c_gce
 from googlecloudsdk.core.credentials import store as c_store
 
+from google.auth import jwt
+
 
 class Login(base.Command):
   """Authorize gcloud to access the Cloud Platform with Google user credentials.
@@ -112,6 +114,14 @@ class Login(base.Command):
         'when --update-adc is specified.')
     parser.add_argument(
         'account', nargs='?', help='User account used for authorization.')
+    parser.add_argument(
+        '--use-oauth2client',
+        action='store_true',
+        default=False,
+        hidden=True,
+        help='The gcloud command-line tool is using google-auth-library-python '
+             'as its new auth library during login. Use this flag to switch '
+             'back to the oauth2client.')
     parser.display_info.AddFormat('none')
 
   def Run(self, args):
@@ -171,8 +181,14 @@ class Login(base.Command):
 
     # No valid creds, do the web flow.
     launch_browser = check_browser.ShouldLaunchBrowser(args.launch_browser)
-    creds = auth_util.DoInstalledAppBrowserFlow(launch_browser, scopes)
-    web_flow_account = creds.id_token['email']
+    if args.use_oauth2client:
+      creds = auth_util.DoInstalledAppBrowserFlow(launch_browser, scopes)
+      web_flow_account = creds.id_token['email']
+    else:
+      creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
+          launch_browser, scopes)
+      decoded_id_token = jwt.decode(creds.id_token, verify=False)
+      web_flow_account = decoded_id_token['email']
     if account and account.lower() != web_flow_account.lower():
       raise auth_exceptions.WrongAccountError(
           'You attempted to log in as account [{account}] but the received '

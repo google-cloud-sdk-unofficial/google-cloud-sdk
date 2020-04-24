@@ -35,7 +35,7 @@ class Describe(base.DescribeCommand):
   """
 
   FEATURE_NAME = 'multiclusteringress'
-  FEATURE_DISPLAY_NAME = 'MultiClusterIngress'
+  FEATURE_DISPLAY_NAME = 'Ingress'
 
   def Run(self, args):
     return self.RunCommand(args)

@@ -45,7 +45,6 @@
       help_text: Short human-readable title for the service perimeter.
     - api_field: servicePerimeter.status.resources
       arg_name: resources
-      required: true
       help_text: |
         Comma-separated list of resources (currently only projects, in the
         form `projects/<projectnumber>`) in this perimeter.

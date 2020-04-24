@@ -3325,6 +3325,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--prefix-length": "value",
                     "--purpose": [
                       "GCE_ENDPOINT",
+                      "PRIVATE_SERVICE_CONNECT",
                       "SHARED_LOADBALANCER_VIP",
                       "VPC_PEERING"
                     ],
@@ -3938,6 +3939,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--size": "value",
                     "--source-disk": "dynamic",
                     "--source-disk-zone": "dynamic",
+                    "--source-in-place-snapshot": "dynamic",
+                    "--source-in-place-snapshot-region": "dynamic",
+                    "--source-in-place-snapshot-zone": "dynamic",
                     "--source-snapshot": "dynamic",
                     "--type": "dynamic",
                     "--zone": "dynamic"
@@ -4215,6 +4219,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--service-label": "value",
                     "--subnet": "value",
                     "--subnet-region": "dynamic",
+                    "--target-google-apis-bundle": "value",
                     "--target-grpc-proxy": "value",
                     "--target-http-proxy": "value",
                     "--target-http-proxy-region": "dynamic",
@@ -4976,6 +4981,50 @@ STATIC_COMPLETION_CLI_TREE = {
                     }
                   },
                   "flags": {}
+                }
+              },
+              "flags": {}
+            },
+            "in-place-snapshots": {
+              "commands": {
+                "add-labels": {
+                  "commands": {},
+                  "flags": {
+                    "--labels": "value",
+                    "--region": "dynamic",
+                    "--zone": "dynamic"
+                  }
+                },
+                "create": {
+                  "commands": {},
+                  "flags": {
+                    "--labels": "value",
+                    "--region": "dynamic",
+                    "--source-disk": "dynamic",
+                    "--source-disk-region": "dynamic",
+                    "--source-disk-zone": "dynamic",
+                    "--zone": "dynamic"
+                  }
+                },
+                "delete": {
+                  "commands": {},
+                  "flags": {
+                    "--region": "dynamic",
+                    "--zone": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--regexp": "value",
+                    "--regions": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool",
+                    "--zones": "value"
+                  }
                 }
               },
               "flags": {}
@@ -10252,6 +10301,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-legacy-authorization": "bool",
                     "--enable-logging-monitoring-system-only": "bool",
                     "--enable-master-authorized-networks": "bool",
+                    "--enable-master-global-access": "bool",
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
                     "--enable-pod-security-policy": "bool",
@@ -10416,6 +10466,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-legacy-authorization": "bool",
                     "--enable-logging-monitoring-system-only": "bool",
                     "--enable-master-authorized-networks": "bool",
+                    "--enable-master-global-access": "bool",
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
                     "--enable-pod-security-policy": "bool",
@@ -10536,33 +10587,32 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {}
                 },
                 "features": {
+                  "commands": {},
+                  "flags": {}
+                },
+                "ingress": {
                   "commands": {
-                    "multiclusteringress": {
-                      "commands": {
-                        "describe": {
-                          "commands": {},
-                          "flags": {}
-                        },
-                        "disable": {
-                          "commands": {},
-                          "flags": {
-                            "--force": "bool"
-                          }
-                        },
-                        "enable": {
-                          "commands": {},
-                          "flags": {
-                            "--config-membership": "value"
-                          }
-                        },
-                        "update": {
-                          "commands": {},
-                          "flags": {
-                            "--config-membership": "value"
-                          }
-                        }
-                      },
+                    "describe": {
+                      "commands": {},
                       "flags": {}
+                    },
+                    "disable": {
+                      "commands": {},
+                      "flags": {
+                        "--force": "bool"
+                      }
+                    },
+                    "enable": {
+                      "commands": {},
+                      "flags": {
+                        "--config-membership": "value"
+                      }
+                    },
+                    "update": {
+                      "commands": {},
+                      "flags": {
+                        "--config-membership": "value"
+                      }
                     }
                   },
                   "flags": {}
@@ -11428,46 +11478,6 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--job-id": "value",
                     "--region": "value"
-                  }
-                }
-              },
-              "flags": {}
-            },
-            "sql": {
-              "commands": {
-                "query": {
-                  "commands": {},
-                  "flags": {
-                    "--bigquery-dataset": "value",
-                    "--bigquery-project": "value",
-                    "--bigquery-table": "value",
-                    "--bigquery-write-disposition": [
-                      "write-append",
-                      "write-empty",
-                      "write-truncate"
-                    ],
-                    "--dataflow-kms-key": "value",
-                    "--disable-public-ips": "bool",
-                    "--dry-run": "bool",
-                    "--job-name": "value",
-                    "--max-workers": "value",
-                    "--network": "value",
-                    "--num-workers": "value",
-                    "--parameter": "value",
-                    "--parameters-file": "value",
-                    "--pubsub-create-disposition": [
-                      "create-if-not-found",
-                      "fail-if-not-found"
-                    ],
-                    "--pubsub-project": "value",
-                    "--pubsub-topic": "value",
-                    "--region": "value",
-                    "--service-account-email": "value",
-                    "--subnetwork": "value",
-                    "--worker-machine-type": "value",
-                    "--worker-region": "value",
-                    "--worker-zone": "value",
-                    "--zone": "value"
                   }
                 }
               },
@@ -32645,6 +32655,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-legacy-authorization": "bool",
                     "--enable-logging-monitoring-system-only": "bool",
                     "--enable-master-authorized-networks": "bool",
+                    "--enable-master-global-access": "bool",
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
                     "--enable-pod-security-policy": "bool",
@@ -32801,6 +32812,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--enable-legacy-authorization": "bool",
                     "--enable-logging-monitoring-system-only": "bool",
                     "--enable-master-authorized-networks": "bool",
+                    "--enable-master-global-access": "bool",
                     "--enable-network-egress-metering": "bool",
                     "--enable-network-policy": "bool",
                     "--enable-pod-security-policy": "bool",
@@ -50981,6 +50993,46 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--environment": "bool",
                 "--region": "value",
                 "--steps": "bool"
+              }
+            }
+          },
+          "flags": {}
+        },
+        "sql": {
+          "commands": {
+            "query": {
+              "commands": {},
+              "flags": {
+                "--bigquery-dataset": "value",
+                "--bigquery-project": "value",
+                "--bigquery-table": "value",
+                "--bigquery-write-disposition": [
+                  "write-append",
+                  "write-empty",
+                  "write-truncate"
+                ],
+                "--dataflow-kms-key": "value",
+                "--disable-public-ips": "bool",
+                "--dry-run": "bool",
+                "--job-name": "value",
+                "--max-workers": "value",
+                "--network": "value",
+                "--num-workers": "value",
+                "--parameter": "value",
+                "--parameters-file": "value",
+                "--pubsub-create-disposition": [
+                  "create-if-not-found",
+                  "fail-if-not-found"
+                ],
+                "--pubsub-project": "value",
+                "--pubsub-topic": "value",
+                "--region": "value",
+                "--service-account-email": "value",
+                "--subnetwork": "value",
+                "--worker-machine-type": "value",
+                "--worker-region": "value",
+                "--worker-zone": "value",
+                "--zone": "value"
               }
             }
           },

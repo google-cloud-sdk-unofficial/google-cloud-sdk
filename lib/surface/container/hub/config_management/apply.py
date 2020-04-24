@@ -135,7 +135,9 @@ def _parse_config(configmanagement, git_config):
     if field not in spec_git:
       raise exceptions.Error('Missing required field [{}].'.format(field))
   for field in [
-      'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev', 'syncWait'
+      'policyDir', 'secretType', 'syncBranch', 'syncRepo', 'syncRev'
   ]:
     if field in spec_git:
       setattr(git_config, field, spec_git[field])
+  if 'syncWait' in spec_git:
+    git_config.syncWaitSecs = spec_git['syncWait']

@@ -34,6 +34,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
@@ -75,7 +76,9 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser, source_disk_enabled=False):
+def _SourceArgs(parser,
+                source_disk_enabled=False,
+                source_in_place_snapshot_enabled=False):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -108,6 +111,9 @@ def _SourceArgs(parser, source_disk_enabled=False):
         version of an image is needed.
         """)
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
+  if source_in_place_snapshot_enabled:
+    source_ips = source_group.add_group('Source in place snapshot options')
+    disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.AddArgument(source_ips)
   if source_disk_enabled:
     source_disk = source_group.add_group('Source disk options')
     disks_flags.SOURCE_DISK_ARG.AddArgument(source_disk)
@@ -116,7 +122,8 @@ def _SourceArgs(parser, source_disk_enabled=False):
 def _CommonArgs(parser,
                 include_physical_block_size_support=False,
                 vss_erase_enabled=False,
-                source_disk_enabled=False):
+                source_disk_enabled=False,
+                source_in_place_snapshot_enabled=False):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
   parser.add_argument(
@@ -160,7 +167,7 @@ def _CommonArgs(parser,
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser, source_disk_enabled)
+  _SourceArgs(parser, source_disk_enabled, source_in_place_snapshot_enabled)
 
   csek_utils.AddCsekKeyArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
@@ -211,6 +218,7 @@ class Create(base.Command):
 
   source_disk_enabled = False
   pd_balanced_enabled = False
+  source_in_place_snapshot_enabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -303,6 +311,13 @@ class Create(base.Command):
       return snapshot_ref.SelfLink()
     return None
 
+  def GetSourceInPlaceSnapshotUri(self, args, compute_holder, default_scope):
+    in_place_snapshot_ref = disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.ResolveAsResource(
+        args, compute_holder.resources, default_scope=default_scope)
+    if in_place_snapshot_ref:
+      return in_place_snapshot_ref.SelfLink()
+    return None
+
   def GetSourceDiskUri(self, args, compute_holder):
     disk_ref = disks_flags.SOURCE_DISK_ARG.ResolveAsResource(
         args, compute_holder.resources)
@@ -374,6 +389,9 @@ class Create(base.Command):
     if self.source_disk_enabled:
       self.show_unformated_message = self.show_unformated_message and not (
           args.IsSpecified('source_disk'))
+    if self.source_in_place_snapshot_enabled:
+      self.show_unformated_message = self.show_unformated_message and not (
+          args.IsSpecified('source_in_place_snapshot'))
 
     disk_refs = self.ValidateAndParseDiskRefs(args, compute_holder)
     from_image = self.GetFromImage(args)
@@ -463,6 +481,13 @@ class Create(base.Command):
       if self.source_disk_enabled:
         source_disk_ref = self.GetSourceDiskUri(args, compute_holder)
         disk.sourceDisk = source_disk_ref
+      if self.source_in_place_snapshot_enabled:
+        if disk_ref.Collection() == 'compute.regionDisks':
+          disk.sourceInPlaceSnapshot = self.GetSourceInPlaceSnapshotUri(
+              args, compute_holder, compute_scope.ScopeEnum.REGION)
+        else:
+          disk.sourceInPlaceSnapshot = self.GetSourceInPlaceSnapshotUri(
+              args, compute_holder, compute_scope.ScopeEnum.ZONE)
       if (support_shared_disk and
           disk_ref.Collection() == 'compute.regionDisks' and
           args.IsSpecified('multi_writer')):
@@ -521,6 +546,8 @@ class CreateBeta(Create):
   """Create Google Compute Engine persistent disks."""
 
   source_disk_enabled = False
+  pd_balanced_enabled = False
+  source_in_place_snapshot_enabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -549,6 +576,7 @@ class CreateAlpha(CreateBeta):
 
   source_disk_enabled = True
   pd_balanced_enabled = True
+  source_in_place_snapshot_enabled = True
 
   @classmethod
   def Args(cls, parser):
@@ -558,7 +586,8 @@ class CreateAlpha(CreateBeta):
         parser,
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
-        source_disk_enabled=True)
+        source_disk_enabled=True,
+        source_in_place_snapshot_enabled=True)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(

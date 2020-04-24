@@ -33,6 +33,13 @@ def _GetBaseConfig(perimeter):
   return perimeter.status
 
 
+def _IsFieldSpecified(field_name, args):
+  # We leave out the deprecated 'set' arg
+  list_command_prefixes = ['remove_', 'add_', 'clear_']
+  list_args = [command + field_name for command in list_command_prefixes]
+  return any(args.IsSpecified(arg) for arg in list_args)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdatePerimeterDryRunBeta(base.UpdateCommand):
   """Updates the dry-run mode configuration for a Service Perimeter."""
@@ -86,19 +93,33 @@ class UpdatePerimeterDryRunBeta(base.UpdateCommand):
     policies.ValidateAccessPolicyArg(perimeter_ref, args)
     original_perimeter = client.Get(perimeter_ref)
     base_config = _GetBaseConfig(original_perimeter)
-    updated_resources = repeated.ParsePrimitiveArgs(
-        args, 'resources', lambda: base_config.resources or [])
-    updated_restricted_services = repeated.ParsePrimitiveArgs(
-        args, 'restricted-services',
-        lambda: base_config.restrictedServices or [])
-    updated_access_levels = repeated.ParsePrimitiveArgs(
-        args, 'access-levels', lambda: base_config.accessLevels or [])
+    if _IsFieldSpecified('resources', args):
+      updated_resources = repeated.ParsePrimitiveArgs(
+          args, 'resources', lambda: base_config.resources or [])
+    else:
+      updated_resources = base_config.resources
+    if _IsFieldSpecified('restricted_services', args):
+      updated_restricted_services = repeated.ParsePrimitiveArgs(
+          args, 'restricted-services',
+          lambda: base_config.restrictedServices or [])
+    else:
+      updated_restricted_services = base_config.restrictedServices
+    if _IsFieldSpecified('access_levels', args):
+      updated_access_levels = repeated.ParsePrimitiveArgs(
+          args, 'access-levels', lambda: base_config.accessLevels or [])
+    else:
+      updated_access_levels = base_config.accessLevels
     base_vpc_config = base_config.vpcAccessibleServices
     if base_vpc_config is None:
       base_vpc_config = messages.VpcAccessibleServices()
-    updated_vpc_services = repeated.ParsePrimitiveArgs(
-        args, 'vpc-allowed-services',
-        lambda: base_vpc_config.allowedServices or [])
+    if _IsFieldSpecified('vpc_allowed_services', args):
+      updated_vpc_services = repeated.ParsePrimitiveArgs(
+          args, 'vpc-allowed-services',
+          lambda: base_vpc_config.allowedServices or [])
+    elif base_config.vpcAccessibleServices is not None:
+      updated_vpc_services = base_vpc_config.allowedServices
+    else:
+      updated_vpc_services = None
     if args.IsSpecified('enable_vpc_accessible_services'):
       updated_vpc_enabled = args.enable_vpc_accessible_services
     elif base_config.vpcAccessibleServices is not None:

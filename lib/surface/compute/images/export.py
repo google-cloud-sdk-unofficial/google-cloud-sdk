@@ -31,7 +31,7 @@ _OUTPUT_FILTER = ['[Daisy', '[image-export', '  image', 'ERROR']
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Export(base.CreateCommand):
-  """Export a Google Compute Engine image."""
+  """Export a Compute Engine image."""
 
   @staticmethod
   def Args(parser):
@@ -56,7 +56,7 @@ class Export(base.CreateCommand):
     parser.add_argument(
         '--destination-uri',
         required=True,
-        help=('The Google Cloud Storage URI destination for '
+        help=('The Cloud Storage URI destination for '
               'the exported virtual disk file.'),
     )
 
@@ -72,7 +72,7 @@ class Export(base.CreateCommand):
     parser.add_argument(
         '--network',
         help=('The name of the network in your project to use for the image '
-              'export. The network must have access to Google Cloud Storage. '
+              'export. The network must have access to Cloud Storage. '
               'If not specified, the network named `default` is used.'),
     )
 
@@ -139,7 +139,7 @@ class Export(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ExportBeta(Export):
-  """Export a Google Compute Engine image for Beta release track."""
+  """Export a Compute Engine image for Beta release track."""
 
   @classmethod
   def Args(cls, parser):
@@ -153,7 +153,7 @@ class ExportBeta(Export):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ExportAlpha(ExportBeta):
-  """Export a Google Compute Engine image for Alpha release track."""
+  """Export a Compute Engine image for Alpha release track."""
 
 
 Export.detailed_help = {
@@ -164,7 +164,7 @@ Export.detailed_help = {
         *{command}* exports virtual disk images from Compute Engine.
 
         By default, images are exported in the Compute Engine format,
-        which is a 'disk.raw' file that is tarred and gzipped.
+        which is a `disk.raw` file that is tarred and gzipped.
 
         The `--export-format` flag exports the image to a format supported
         by QEMU using qemu-img. Valid formats include 'vmdk', 'vhdx', 'vpc',
@@ -172,9 +172,9 @@ Export.detailed_help = {
         """,
     'EXAMPLES':
         """\
-        To export a VMDK file 'my-image' from a project 'my-project' to a
-        Cloud Storage bucket 'my-bucket', run:
+        To export a VMDK file ``my-image'' from a project ``my-project'' to a
+        Cloud Storage bucket ``my-bucket'', run:
 
-          $ {command} --image=my-image --destination-uri=gs://my-bucket/my-image.vmdk --image=my-image --format=vmdk --project=my-project
+          $ {command} --image=my-image --destination-uri=gs://my-bucket/my-image.vmdk --export-format=vmdk --project=my-project
     """
 }

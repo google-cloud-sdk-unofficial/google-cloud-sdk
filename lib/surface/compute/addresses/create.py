@@ -28,7 +28,8 @@ from googlecloudsdk.command_lib.compute.addresses import flags
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 
-def _Args(cls, parser, support_shared_loadbalancer_vip):
+def _Args(cls, parser, support_shared_loadbalancer_vip,
+          support_psc_google_apis):
   """Argument parsing."""
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
@@ -39,7 +40,8 @@ def _Args(cls, parser, support_shared_loadbalancer_vip):
   flags.AddAddressesAndIPVersions(parser, required=False)
   flags.AddNetworkTier(parser)
   flags.AddPrefixLength(parser)
-  flags.AddPurpose(parser, support_shared_loadbalancer_vip)
+  flags.AddPurpose(parser, support_shared_loadbalancer_vip,
+                   support_psc_google_apis)
 
   cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
   cls.SUBNETWORK_ARG.AddArgument(parser)
@@ -95,13 +97,15 @@ class Create(base.CreateCommand):
   NETWORK_ARG = None
 
   _support_shared_loadbalancer_vip = False
+  _support_psc_google_apis = False
 
   @classmethod
   def Args(cls, parser):
     _Args(
         cls,
         parser,
-        support_shared_loadbalancer_vip=cls._support_shared_loadbalancer_vip)
+        support_shared_loadbalancer_vip=cls._support_shared_loadbalancer_vip,
+        support_psc_google_apis=cls._support_psc_google_apis)
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
@@ -235,18 +239,28 @@ class Create(base.CreateCommand):
           args, resource_parser).SelfLink()
       purpose = messages.Address.PurposeValueValuesEnum(args.purpose or
                                                         'VPC_PEERING')
-      if purpose != messages.Address.PurposeValueValuesEnum.VPC_PEERING:
+      supported_purposes = {
+          'VPC_PEERING': messages.Address.PurposeValueValuesEnum.VPC_PEERING
+      }
+      if self._support_psc_google_apis:
+        supported_purposes[
+            'PRIVATE_SERVICE_CONNECT'] = messages.Address.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT
+
+      if purpose not in supported_purposes.values():
         raise exceptions.InvalidArgumentException(
-            '--purpose', 'must be VPC_PEERING for global internal addresses.')
-      if not args.prefix_length:
-        raise exceptions.RequiredArgumentException(
-            '--prefix-length',
-            'prefix length is needed for reserving IP ranges.')
+            '--purpose', 'must be {} for '
+            'global internal addresses.'.format(' or '.join(
+                supported_purposes.keys())))
 
     if args.prefix_length:
       if purpose != messages.Address.PurposeValueValuesEnum.VPC_PEERING:
         raise exceptions.InvalidArgumentException(
             '--prefix-length', 'can only be used with [--purpose VPC_PEERING].')
+    if not args.prefix_length:
+      if purpose == messages.Address.PurposeValueValuesEnum.VPC_PEERING:
+        raise exceptions.RequiredArgumentException(
+            '--prefix-length',
+            'prefix length is needed for reserving VPC peering IP ranges.')
 
     return messages.Address(
         address=address,
@@ -262,8 +276,8 @@ class Create(base.CreateCommand):
         network=network_url)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   # pylint: disable=line-too-long
   r"""Reserve IP addresses.
 
@@ -310,3 +324,59 @@ class CreateAlpha(Create):
   """
 
   _support_shared_loadbalancer_vip = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  # pylint: disable=line-too-long
+  r"""Reserve IP addresses.
+
+  *{command}* is used to reserve one or more IP addresses. Once an IP address
+  is reserved, it will be associated with the project until it is released
+  using 'gcloud compute addresses delete'. Ephemeral IP addresses that are in
+  use by resources in the project can be reserved using the '--addresses' flag.
+
+  ## EXAMPLES
+  To reserve three IP addresses in the 'us-central1' region, run:
+
+    $ {command} ADDRESS-1 ADDRESS-2 ADDRESS-3 --region=us-central1
+
+  To reserve ephemeral IP addresses '162.222.181.198' and '23.251.146.189' which
+  are being used by virtual machine instances in the 'us-central1' region, run:
+
+    $ {command} --addresses=162.222.181.198,23.251.146.189 --region=us-central1
+
+  In the above invocation, the two addresses will be assigned random names.
+
+  To reserve an IP address from the subnet 'default' in the 'us-central1'
+  region, run:
+
+    $ {command} SUBNET-ADDRESS-1 --region=us-central1 --subnet=default
+
+  To reserve an IP address that can be used by multiple internal load balancers
+  from the subnet 'default' in the 'us-central1' region, run:
+
+    $ {command} SHARED-ADDRESS-1 --region=us-central1 --subnet=default \
+      --purpose=SHARED_LOADBALANCER_VIP
+
+  To reserve an IP range '10.110.0.0/16' from the network 'default' for
+  'VPC_PEERING', run:
+
+    $ {command} IP-RANGE-1 --global --addresses=10.110.0.0 --prefix-length=16 \
+      --purpose=VPC_PEERING --network=default
+
+  To reserve any IP range with prefix length '16' from the network 'default' for
+  'VPC_PEERING', run:
+
+    $ {command} IP-RANGE-1 --global --prefix-length=16 --purpose=VPC_PEERING \
+      --network=default
+
+   To reserve an address from network 'default' for PRIVATE_SERVICE_CONNECT,
+   run:
+
+    $ {command} IP-RESOURCE-URI --global --addresses=10.110.0.0 \
+      --purpose=PRIVATE_SERVICE_CONNECT --network=default
+  """
+
+  _support_shared_loadbalancer_vip = True
+  _support_psc_google_apis = True
