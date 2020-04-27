@@ -24,7 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ssl_certificates import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Compute Engine SSL certificates."""
 
@@ -54,25 +55,3 @@ List.detailed_help = base_classes.GetMultiScopeListerHelp(
         base_classes.ScopeType.global_scope,
         base_classes.ScopeType.regional_scope
     ])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(List):
-  """List Google Compute Engine SSL certificates."""
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.BETA_LIST_FORMAT)
-    lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
-    parser.display_info.AddCacheUpdater(flags.SslCertificatesCompleterBeta)
-
-
-ListBeta.detailed_help = List.detailed_help
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  pass
-
-
-ListAlpha.detailed_help = ListBeta.detailed_help

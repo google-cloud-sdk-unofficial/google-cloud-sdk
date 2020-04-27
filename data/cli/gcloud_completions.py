@@ -48934,6 +48934,7 @@ STATIC_COMPLETION_CLI_TREE = {
               "flags": {
                 "--certificate": "value",
                 "--description": "value",
+                "--domains": "value",
                 "--global": "bool",
                 "--private-key": "value",
                 "--region": "dynamic"

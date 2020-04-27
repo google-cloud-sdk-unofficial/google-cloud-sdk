@@ -27,9 +27,7 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates
 from googlecloudsdk.core.util import files
 
 
-def _Args(parser,
-          include_l7_internal_load_balancing=False,
-          support_managed_certs=False):
+def _Args(parser, include_l7_internal_load_balancing=False):
   """Add the SSL certificates command line flags to the parser."""
   parser.add_argument(
       '--description',
@@ -39,158 +37,56 @@ def _Args(parser,
       flags.SslCertificatesCompleterBeta
       if include_l7_internal_load_balancing else flags.SslCertificatesCompleter)
 
-  if support_managed_certs:
-    managed_or_not = parser.add_group(
-        mutex=True,
-        required=True,
-        help='Flags for managed or self-managed certificate. ')
+  managed_or_not = parser.add_group(
+      mutex=True,
+      required=True,
+      help='Flags for managed or self-managed certificate. ')
 
-    managed_or_not.add_argument(
-        '--domains',
-        metavar='DOMAIN',
-        type=arg_parsers.ArgList(min_length=1),
-        default=[],
-        help="""\
-        List of domains to create a managed certificate for.
-        """)
+  managed_or_not.add_argument(
+      '--domains',
+      metavar='DOMAIN',
+      type=arg_parsers.ArgList(min_length=1),
+      default=[],
+      help="""\
+      List of domains to create a managed certificate for.
+      """)
 
-    not_managed = managed_or_not.add_group('Flags for self-managed certificate')
-    not_managed.add_argument(
-        '--certificate',
-        metavar='LOCAL_FILE_PATH',
-        required=True,
-        help="""\
-        Path to a local certificate file to create a self-managed
-        certificate. The certificate must be in PEM format. The certificate
-        chain must be no greater than 5 certs long. The chain must include at
-        least one intermediate cert.
-        """)
-    not_managed.add_argument(
-        '--private-key',
-        metavar='LOCAL_FILE_PATH',
-        required=True,
-        help="""\
-        Path to a local private key file. The private key must be in PEM
-        format and must use RSA or ECDSA encryption.
-        """)
-  else:
-    parser.add_argument(
-        '--certificate',
-        required=True,
-        metavar='LOCAL_FILE_PATH',
-        help="""\
-        Path to a local certificate file. The certificate must be in PEM
-        format. The certificate chain must be no greater than 5 certs long. The
-        chain must include at least one intermediate cert.
-        """)
-
-    parser.add_argument(
-        '--private-key',
-        required=True,
-        metavar='LOCAL_FILE_PATH',
-        help="""\
-        Path to a local private key file. The private key must be in PEM
-        format and must use RSA or ECDSA encryption.
-        """)
-
-
-def _ParseCertificateArguments(client, args):
-  """Parse commands arguments connected with certificate type.
-
-  Args:
-    client: Client object.
-    args: Command line arguments.
-
-  Returns:
-    Tuple of certificate type, SslCertificateManagedSslCertificate and
-    SslCertificateSelfManagedSslCertificate. Only one of SslCertificate
-    messages can be not None.
-  """
-  self_managed = None
-  managed = None
-  certificate_type = None
-  if args.certificate:
-    certificate_type = \
-        client.messages.SslCertificate.TypeValueValuesEnum.SELF_MANAGED
-    certificate = files.ReadFileContents(args.certificate)
-    private_key = files.ReadFileContents(args.private_key)
-    self_managed = client.messages.SslCertificateSelfManagedSslCertificate(
-        certificate=certificate, privateKey=private_key)
-  if args.domains:
-    certificate_type = \
-        client.messages.SslCertificate.TypeValueValuesEnum.MANAGED
-    managed = client.messages.SslCertificateManagedSslCertificate(
-        domains=args.domains)
-  return certificate_type, self_managed, managed
+  not_managed = managed_or_not.add_group('Flags for self-managed certificate')
+  not_managed.add_argument(
+      '--certificate',
+      metavar='LOCAL_FILE_PATH',
+      required=True,
+      help="""\
+      Path to a local certificate file to create a self-managed
+      certificate. The certificate must be in PEM format. The certificate
+      chain must be no greater than 5 certs long. The chain must include at
+      least one intermediate cert.
+      """)
+  not_managed.add_argument(
+      '--private-key',
+      metavar='LOCAL_FILE_PATH',
+      required=True,
+      help="""\
+      Path to a local private key file. The private key must be in PEM
+      format and must use RSA or ECDSA encryption.
+      """)
 
 
 def _Run(args, holder, ssl_certificate_ref):
   """Make a SslCertificates.Insert request."""
   client = holder.client
 
-  certificate_type, self_managed, managed = _ParseCertificateArguments(
-      client, args)
-
-  if ssl_certificates_utils.IsRegionalSslCertificatesRef(ssl_certificate_ref):
-    request = client.messages.ComputeRegionSslCertificatesInsertRequest(
-        sslCertificate=client.messages.SslCertificate(
-            type=certificate_type,
-            name=ssl_certificate_ref.Name(),
-            selfManaged=self_managed,
-            managed=managed,
-            description=args.description),
-        region=ssl_certificate_ref.region,
-        project=ssl_certificate_ref.project)
-  else:
+  if args.domains:
     request = client.messages.ComputeSslCertificatesInsertRequest(
         sslCertificate=client.messages.SslCertificate(
-            type=certificate_type,
+            type=client.messages.SslCertificate.TypeValueValuesEnum.MANAGED,
             name=ssl_certificate_ref.Name(),
-            selfManaged=self_managed,
-            managed=managed,
+            managed=client.messages.SslCertificateManagedSslCertificate(
+                domains=args.domains),
             description=args.description),
         project=ssl_certificate_ref.project)
-
-  if ssl_certificates_utils.IsRegionalSslCertificatesRef(ssl_certificate_ref):
-    collection = client.apitools_client.regionSslCertificates
-  else:
     collection = client.apitools_client.sslCertificates
-
-  return client.MakeRequests([(collection, 'Insert', request)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(base.CreateCommand):
-  """Create a Google Compute Engine SSL certificate.
-
-  *{command}* is used to create SSL certificates which can be used to
-  configure a target HTTPS proxy. An SSL certificate consists of a
-  certificate and private key. The private key is encrypted before it is
-  stored. For more information, see:
-  [](https://cloud.google.com/load-balancing/docs/ssl-certificates)
-  """
-
-  SSL_CERTIFICATE_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
-        include_l7_internal_load_balancing=True)
-    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
-    _Args(
-        parser,
-        include_l7_internal_load_balancing=True,
-        support_managed_certs=False)
-
-  def Run(self, args):
-    """Issues the request necessary for adding the SSL certificate."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
-
+  else:
     certificate = files.ReadFileContents(args.certificate)
     private_key = files.ReadFileContents(args.private_key)
 
@@ -214,12 +110,13 @@ class Create(base.CreateCommand):
           project=ssl_certificate_ref.project)
       collection = client.apitools_client.sslCertificates
 
-    return client.MakeRequests([(collection, 'Insert', request)])
+  return client.MakeRequests([(collection, 'Insert', request)])
 
 
 @base.UnicodeIsSupported
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
+class Create(base.CreateCommand):
   """Create a Google Compute Engine SSL certificate.
 
   *{command}* is used to create SSL certificates which can be used to configure
@@ -237,14 +134,11 @@ class CreateBeta(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(flags.BETA_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
         include_l7_internal_load_balancing=True)
     cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
-    _Args(
-        parser,
-        include_l7_internal_load_balancing=True,
-        support_managed_certs=True)
+    _Args(parser, include_l7_internal_load_balancing=True)
 
   def Run(self, args):
     """Issues the request necessary for adding the SSL certificate."""
@@ -252,68 +146,10 @@ class CreateBeta(base.CreateCommand):
 
     ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
         args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
-    return _Run(args, holder, ssl_certificate_ref)
-
-
-@base.UnicodeIsSupported
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
-  """Create a Google Compute Engine SSL certificate.
-
-  *{command}* is used to create SSL certificates which can be used to configure
-  a target HTTPS proxy. An SSL certificate consists of a certificate and
-  private key. The private key is encrypted before it is stored.
-
-  You can create either a managed or a self-managed SslCertificate. A managed
-  SslCertificate will be provisioned and renewed for you, when you specify
-  the `--domains` flag. A self-managed certificate is created by passing the
-  certificate obtained from Certificate Authority through `--certificate` and
-  `--private-key` flags.
-  """
-
-  SSL_CERTIFICATE_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.ALPHA_LIST_FORMAT)
-    cls.SSL_CERTIFICATE_ARG = flags.SslCertificateArgument(
-        include_l7_internal_load_balancing=True)
-    cls.SSL_CERTIFICATE_ARG.AddArgument(parser, operation_type='create')
-    _Args(
-        parser,
-        include_l7_internal_load_balancing=True,
-        support_managed_certs=True)
-
-  def Run(self, args):
-    """Issues the request necessary for adding the SSL certificate."""
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-
-    ssl_certificate_ref = self.SSL_CERTIFICATE_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
-
     return _Run(args, holder, ssl_certificate_ref)
 
 
 Create.detailed_help = {
-    'brief':
-        'Create a Google Compute Engine SSL certificate',
-    'DESCRIPTION':
-        """\
-        *{command}* creates SSL certificates, which you can use in a target
-        HTTPS or target SSL proxy. An SSL certificate resource consists of a
-        certificate and private key. The private key is encrypted before it is
-        stored. For more information, see:
-        [](https://cloud.google.com/load-balancing/docs/ssl-certificates)
-        """,
-    'EXAMPLES':
-        """\
-        To create a certificate 'my-cert' from a certificate placed under path
-        'foo/cert' and a private key placed under path 'foo/pk', run:
-
-            $ {command} my-cert --certificate=foo/cert --private-key=foo/pk
-        """,
-}
-CreateBeta.detailed_help = {
     'brief':
         'Create a Google Compute Engine SSL certificate',
     'DESCRIPTION':
@@ -337,4 +173,3 @@ CreateBeta.detailed_help = {
             $ {command} my-cert --certificate=foo/cert --private-key=foo/pk
         """,
 }
-CreateAlpha.detailed_help = CreateBeta.detailed_help
