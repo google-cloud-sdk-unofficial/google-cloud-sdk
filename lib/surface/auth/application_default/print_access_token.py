@@ -23,12 +23,17 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.auth import util as auth_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
-from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.credentials import google_auth_credentials as c_google_auth
+from googlecloudsdk.core.credentials import store as c_store
 
-from oauth2client import client
 import six
+from google.auth import _default as google_auth_default
+from google.auth import exceptions as google_auth_exceptions
+from google.auth.transport import requests
+
+from google.oauth2 import credentials as google_auth_creds
 
 
 class PrintAccessToken(base.Command):
@@ -52,7 +57,7 @@ class PrintAccessToken(base.Command):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('value(access_token)')
+    parser.display_info.AddFormat('value(token)')
 
   def Run(self, args):
     """Run the helper command."""
@@ -66,23 +71,16 @@ class PrintAccessToken(base.Command):
           'token.'.format(impersonate_service_account))
 
     try:
-      creds = client.GoogleCredentials.get_application_default()
-    except client.ApplicationDefaultCredentialsError as e:
+      creds, _ = google_auth_default.default(
+          scopes=[auth_util.CLOUD_PLATFORM_SCOPE])
+    except google_auth_exceptions.DefaultCredentialsError as e:
       log.debug(e, exc_info=True)
       raise c_exc.ToolException(six.text_type(e))
 
-    if creds.create_scoped_required():
-      creds_type = creds.serialization_data['type']
-      token_uri_override = properties.VALUES.auth.token_host.Get()
-      if creds_type == client.SERVICE_ACCOUNT and token_uri_override:
-        creds = creds.create_scoped([auth_util.CLOUD_PLATFORM_SCOPE],
-                                    token_uri=token_uri_override)
-      else:
-        creds = creds.create_scoped([auth_util.CLOUD_PLATFORM_SCOPE])
-
-    access_token_info = creds.get_access_token(http.Http())
-    if not access_token_info:
-      raise c_exc.ToolException(
-          'No access token could be obtained from the current credentials.')
-
-    return access_token_info
+    # Converts the user credentials so that it can handle reauth during refresh.
+    if isinstance(creds, google_auth_creds.Credentials):
+      creds = c_google_auth.UserCredWithReauth.FromGoogleAuthUserCredentials(
+          creds)
+    with c_store.HandleGoogleAuthCredentialsRefreshError():
+      creds.refresh(requests.Request())
+    return creds

@@ -21,6 +21,7 @@
     collection: remotebuildexecution.projects.instances.workerpools
     modify_request_hooks:
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAcceleratorConfig
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAutoscale
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:UpdateLabels
 
   async:
@@ -122,4 +123,26 @@
       required: false
       help_text: |
         Maximum actions each worker VM can run concurrently.
+    - group:
+        mutex: true
+        params:
+        - group:
+            help_text: |
+                Either both or none of autoscale-min-size and autoscale-max-size should be set.
+            params:
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.autoscale.minSize
+              arg_name: autoscale-min-size
+              required: true
+              help_text: The minimal number of autoscale workers. Must be greater than 0.
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.autoscale.maxSize
+              arg_name: autoscale-max-size
+              required: true
+              help_text: |
+                The maximal number of autoscale workers. Must be equal to or greater than
+                autoscale-min-size.
+        - arg_name: clear-autoscale
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Remove the autoscale settings.
     additional_arguments_hook: googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:AddLabelsFlags

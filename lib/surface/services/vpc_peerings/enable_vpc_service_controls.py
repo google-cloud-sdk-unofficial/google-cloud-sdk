@@ -30,7 +30,7 @@ OP_BASE_CMD = 'gcloud services vpc-peerings operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class EnableVpcServiceControls(base.SilentCommand):
   """Enable VPC Service Controls for a connection."""
 

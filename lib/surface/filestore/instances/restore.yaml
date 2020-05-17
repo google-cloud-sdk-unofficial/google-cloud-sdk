@@ -17,21 +17,42 @@
       api_field: restoreInstanceRequest.fileShare
       help_text: |
         File share destination of the restored snapshot.
-    - arg_name: source-snapshot
-      required: true
-      help_text: |
-        Name of the Filestore snapshot to restore from.
-    - arg_name: source-snapshot-region
-      required: false
-      help_text: |
-        Region of the Filestore snapshot to restore from. If unspecified, it
-        is assumed that the Filestore snapshot is local.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - group:
+            help_text: |
+              The name and region of the Filestore snapshot to restore from.
+            params:
+            - arg_name: source-snapshot
+              required: true
+              help_text: |
+                Name of the Filestore snapshot to restore from.
+            - arg_name: source-snapshot-region
+              required: false
+              help_text: |
+                Region of the Filestore snapshot to restore from. If unspecified, it
+                is assumed that the Filestore snapshot is local.
+        - group:
+            help_text: |
+              The name and region of the Filestore backup to restore from.
+            params:
+            - arg_name: source-backup
+              required: true
+              help_text: |
+                Name of the Filestore backup to restore from.
+            - arg_name: source-backup-region
+              required: true
+              help_text: |
+                Region of the Filestore backup to restore from.
 
   request:
     api_version: v1p1alpha1
     collection: file.projects.locations.instances
     method: restore
     modify_request_hooks:
+    - googlecloudsdk.command_lib.filestore.backups.util:AddBackupNameToRequest
     - googlecloudsdk.command_lib.filestore.snapshots.util:AddSnapshotNameToRequest
 
   async:

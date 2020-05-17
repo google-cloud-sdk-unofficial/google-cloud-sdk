@@ -70,7 +70,9 @@ class Create(base.CreateCommand):
                              help='Configuration files for the API.')
     group.add_argument(
         '--openapi-spec',
-        help=('The OpenAPI v2 specification containing service '
+        type=arg_parsers.ArgList(),
+        metavar='FILE',
+        help=('The OpenAPI v2 specifications containing service '
               'configuration information, and API specification for the gateway'
               '.'))
     group.add_argument(
@@ -142,12 +144,12 @@ class Create(base.CreateCommand):
         wait_string=wait,
         is_async=args.async_)
 
-  def __PushOpenApiServiceFile(self, open_api_spec, service_name, project_id,
+  def __PushOpenApiServiceFile(self, open_api_specs, service_name, project_id,
                                config_id):
     """Creates a new ServiceConfig in Service Management from OpenAPI spec.
 
     Args:
-      open_api_spec: Spec to be pushed to Service Management
+      open_api_specs: Specs to be pushed to Service Management
       service_name: Name of the service to push configs to
       project_id: Project the service belongs to
       config_id: ID to assign to the new ServiceConfig
@@ -160,28 +162,32 @@ class Create(base.CreateCommand):
     """
     messages = endpoints.GetMessagesModule()
     file_types = messages.ConfigFile.FileTypeValueValuesEnum
-    config_contents = endpoints.ReadServiceConfigFile(open_api_spec)
+    config_files = []
+    for config_file in open_api_specs:
+      config_contents = endpoints.ReadServiceConfigFile(config_file)
 
-    config_dict = self.__ValidJsonOrYaml(open_api_spec, config_contents)
-    if config_dict:
-      if 'swagger' in config_dict:
-        # Always use YAML for OpenAPI because JSON is a subset of YAML.
-        config_file = self.__MakeConfigFileMessage(config_contents,
-                                                   open_api_spec,
-                                                   file_types.OPEN_API_YAML)
-      elif 'openapi' in config_dict:
-        raise calliope_exceptions.BadFileException(
-            'API Gateway does not currently support OpenAPI v3 configurations.')
+      config_dict = self.__ValidJsonOrYaml(config_file, config_contents)
+      if config_dict:
+        if 'swagger' in config_dict:
+          # Always use YAML for OpenAPI because JSON is a subset of YAML.
+          config_files.append(self.__MakeConfigFileMessage(
+              config_contents,
+              config_file,
+              file_types.OPEN_API_YAML))
+        elif 'openapi' in config_dict:
+          raise calliope_exceptions.BadFileException(
+              'API Gateway does not currently support OpenAPI v3 configurations.'
+              )
+        else:
+          raise calliope_exceptions.BadFileException(
+              'The file {} is not a valid OpenAPI v2 configuration file.'
+              .format(config_file))
       else:
         raise calliope_exceptions.BadFileException(
-            'The file {} is not a valid OpenAPI v2 configuration file.'.format(
-                open_api_spec))
-    else:
-      raise calliope_exceptions.BadFileException(
-          'OpenAPI files should be of JSON or YAML format')
+            'OpenAPI files should be of JSON or YAML format')
 
     return self.__PushServiceConfigFiles(
-        [config_file], service_name, project_id, config_id)
+        config_files, service_name, project_id, config_id)
 
   def __PushGrpcConfigFiles(self, files, service_name, project_id, config_id):
     """Creates a new ServiceConfig in SerivceManagement from gRPC files.

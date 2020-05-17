@@ -29,8 +29,24 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from six.moves import zip
 
+DETAILED_HELP = {
+    'brief':
+        'Resume a virtual machine instance.',
+    'DESCRIPTION':
+        """\
+        *{command}* is used to resume a previously suspended Google Compute
+        Engine virtual machine.
+        """,
+    'EXAMPLES':
+        """\
+        To resume an instance named ``test-instance'', run:
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+          $ {command} test-instance
+      """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Resume(base.SilentCommand):
   """Resume a virtual machine instance.
 
@@ -143,3 +159,6 @@ class Resume(base.SilentCommand):
       log.status.Print('Updated [{0}].'.format(instance_ref))
 
     return result
+
+
+Resume.detailed_help = DETAILED_HELP

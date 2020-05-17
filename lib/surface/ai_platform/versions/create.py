@@ -65,10 +65,10 @@ def _AddCreateArgs(parser, hide_region_arg=True):
       help="""\
           Path to a YAML configuration file containing configuration parameters
           for the
-          [Version](https://cloud.google.com/ml/reference/rest/v1/projects.models.versions)
+          [version](https://cloud.google.com/ml/reference/rest/v1/projects.models.versions)
           to create.
 
-          The file is in YAML format. Note that not all attributes of a Version
+          The file is in YAML format. Note that not all attributes of a version
           are configurable; available attributes (with example values) are:
 
               description: A free-form description of the version.
@@ -84,11 +84,11 @@ def _AddCreateArgs(parser, hide_region_arg=True):
           The name of the version must always be specified via the required
           VERSION argument.
 
-          Only one of manualScaling or autoScaling must be specified. If both
+          Only one of manualScaling or autoScaling can be specified. If both
           are specified in same yaml file an error will be returned.
 
           If an option is specified both in the configuration file and via
-          command line arguments, the command line arguments override the
+          command-line arguments, the command-line arguments override the
           configuration file.
       """
   ).AddToParser(parser)

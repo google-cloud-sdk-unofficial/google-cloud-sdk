@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.compute import instance_template_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
@@ -270,12 +271,12 @@ class CreateWithContainer(base.CreateCommand):
             holder.client, holder.resources, project,
             getattr(args, 'create_disk', []),
             container_mount_disk=container_mount_disk))
-    local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
+    local_nvdimms = create_utils.CreateLocalNvdimmMessages(
         args,
         holder.resources,
         holder.client.messages,
     )
-    local_ssds = instance_utils.CreateLocalSsdMessages(
+    local_ssds = create_utils.CreateLocalSsdMessages(
         args,
         holder.resources,
         holder.client.messages,

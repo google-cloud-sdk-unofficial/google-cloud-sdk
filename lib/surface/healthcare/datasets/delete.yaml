@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief:  Delete a Cloud Healthcare API dataset.
@@ -14,6 +14,8 @@
       api_version: v1alpha2
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:

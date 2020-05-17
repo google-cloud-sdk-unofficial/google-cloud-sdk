@@ -22,12 +22,13 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import revision_printer
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.resource import resource_printer
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Obtain details about revisions."""
 
@@ -53,15 +54,18 @@ class Describe(base.DescribeCommand):
     concept_parsers.ConceptParser([
         revision_presentation]).AddToParser(parser)
 
-    parser.display_info.AddFormat(
-        'yaml(apiVersion, kind, metadata, spec, status)')
-
   @staticmethod
   def Args(parser):
     Describe.CommonArgs(parser)
 
   def Run(self, args):
     """Show details about a revision."""
+    # TODO(b/143898356) Begin code that should be in Args
+    resource_printer.RegisterFormatter(
+        revision_printer.REVISION_PRINTER_FORMAT,
+        revision_printer.RevisionPrinter)
+    args.GetDisplayInfo().AddFormat(revision_printer.REVISION_PRINTER_FORMAT)
+    # End code that should be in Args
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     revision_ref = args.CONCEPTS.revision.Parse()
@@ -73,14 +77,3 @@ class Describe(base.DescribeCommand):
       raise flags.ArgumentError(
           'Cannot find revision [{}]'.format(revision_ref.revisionsId))
     return wrapped_revision
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDescribe(Describe):
-  """Obtain details about revisions."""
-
-  @staticmethod
-  def Args(parser):
-    Describe.CommonArgs(parser)
-
-AlphaDescribe.__doc__ = Describe.__doc__

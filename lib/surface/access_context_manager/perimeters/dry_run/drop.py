@@ -24,8 +24,8 @@ from googlecloudsdk.command_lib.accesscontextmanager import perimeters
 from googlecloudsdk.command_lib.accesscontextmanager import policies
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DropPerimeterDryRunBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class DropPerimeterDryRun(base.UpdateCommand):
   """Resets the dry-run state of a Service Perimeter."""
   _API_VERSION = 'v1'
 
@@ -46,7 +46,7 @@ class DropPerimeterDryRunBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DropPerimeterDryRunAlpha(DropPerimeterDryRunBeta):
+class DropPerimeterDryRunAlpha(DropPerimeterDryRun):
   """Resets the dry-run mode configuration of a Service Perimeter."""
   _API_VERSION = 'v1alpha'
 
@@ -65,4 +65,4 @@ detailed_help = {
 }
 
 DropPerimeterDryRunAlpha.detailed_help = detailed_help
-DropPerimeterDryRunBeta.detailed_help = detailed_help
+DropPerimeterDryRun.detailed_help = detailed_help

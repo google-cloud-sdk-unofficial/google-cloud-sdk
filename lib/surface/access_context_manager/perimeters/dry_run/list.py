@@ -24,8 +24,8 @@ from googlecloudsdk.command_lib.accesscontextmanager import policies
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListPerimeterDryRunBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class ListPerimeterDryRun(base.ListCommand):
   """Lists the effective dry-run configuration across all Service Perimeters."""
   _API_VERSION = 'v1'
 
@@ -69,7 +69,7 @@ class ListPerimeterDryRunBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListPerimeterDryRunAlpha(ListPerimeterDryRunBeta):
+class ListPerimeterDryRunAlpha(ListPerimeterDryRun):
   """Lists the effective dry-run configuration across all Service Perimeters."""
   _API_VERSION = 'v1alpha'
 
@@ -77,23 +77,23 @@ class ListPerimeterDryRunAlpha(ListPerimeterDryRunBeta):
 detailed_help = {
     'brief': ('List the effective dry-run configuration across all Service '
               'Perimeters.'),
-    'DESCRIPTION': (
-        'By default, only the Service Perimeter name, title, type and the '
-        'dry-run mode configuration (as `spec`) is displayed.\n\nNote: For '
-        'Service Perimeters without an explicit dry-run mode configuration, '
-        'the enforcement mode configuration is used as the dry-run mode '
-        'configuration, resulting in no audit logs being generated.'),
-    'EXAMPLES': (
-        'To list the dry-run mode configuration across all Service '
-        'Perimeter:\n\n  $ {command}\n\nOutput:\n\n  name: perimeter_1*\n  '
-        'spec:\n    resources:\n    - projects/123\n    - projects/456\n    '
-        'restrictedServices:\n    - storage.googleapis.com\n  title: Perimeter'
-        ' 1\n  ---\n  name: perimeter_2\n  spec:\n    resources:\n    - '
-        'projects/789\n    restrictedServices:\n    - '
-        'bigquery.googleapis.com\n    vpcAccessibleServices:\n      '
-        'allowedServices:\n      - bigquery.googleapis.com\n      '
-        'enableRestriction: true\n  title: Perimeter 2')
+    'DESCRIPTION':
+        ('By default, only the Service Perimeter name, title, type and the '
+         'dry-run mode configuration (as `spec`) is displayed.\n\nNote: For '
+         'Service Perimeters without an explicit dry-run mode configuration, '
+         'the enforcement mode configuration is used as the dry-run mode '
+         'configuration, resulting in no audit logs being generated.'),
+    'EXAMPLES':
+        ('To list the dry-run mode configuration across all Service '
+         'Perimeter:\n\n  $ {command}\n\nOutput:\n\n  name: perimeter_1*\n  '
+         'spec:\n    resources:\n    - projects/123\n    - projects/456\n    '
+         'restrictedServices:\n    - storage.googleapis.com\n  title: Perimeter'
+         ' 1\n  ---\n  name: perimeter_2\n  spec:\n    resources:\n    - '
+         'projects/789\n    restrictedServices:\n    - '
+         'bigquery.googleapis.com\n    vpcAccessibleServices:\n      '
+         'allowedServices:\n      - bigquery.googleapis.com\n      '
+         'enableRestriction: true\n  title: Perimeter 2')
 }
 
 ListPerimeterDryRunAlpha.detailed_help = detailed_help
-ListPerimeterDryRunBeta.detailed_help = detailed_help
+ListPerimeterDryRun.detailed_help = detailed_help

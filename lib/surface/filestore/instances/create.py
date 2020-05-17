@@ -51,10 +51,18 @@ class Create(base.CreateCommand):
         client.messages).GetEnumForChoice(args.tier)
     labels = labels_util.ParseCreateArgs(args,
                                          client.messages.Instance.LabelsValue)
-    instance = client.ParseFilestoreConfig(
-        tier=tier, description=args.description,
-        file_share=args.file_share, network=args.network,
-        labels=labels, zone=instance_ref.locationsId)
+
+    try:
+      instance = client.ParseFilestoreConfig(
+          tier=tier,
+          description=args.description,
+          file_share=args.file_share,
+          network=args.network,
+          labels=labels,
+          zone=instance_ref.locationsId)
+    except filestore_client.InvalidArgumentError as e:
+      raise exceptions.InvalidArgumentException('--file-share',
+                                                six.text_type(e))
     try:
       client.ValidateFileShares(instance)
     except filestore_client.InvalidCapacityError as e:

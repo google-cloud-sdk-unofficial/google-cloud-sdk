@@ -6,7 +6,7 @@
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 #  Unless required by applicable law or agreed to in writing, software
 #  distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,55 +14,47 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-'''Data transformation functions.
+"""Data transformation functions.
 
 From bytes to a number, number to bytes, etc.
-'''
+"""
 
 from __future__ import absolute_import
 
-try:
-    # We'll use psyco if available on 32-bit architectures to speed up code.
-    # Using psyco (if available) cuts down the execution time on Python 2.5
-    # at least by half.
-    import psyco
-    psyco.full()
-except ImportError:
-    pass
-
 import binascii
 from struct import pack
-from rsa import common
-from rsa._compat import is_integer, b, byte, get_word_alignment, ZERO_BYTE, EMPTY_BYTE
+
+from rsa._compat import byte, is_integer
+from rsa import common, machine_size
 
 
 def bytes2int(raw_bytes):
-    r'''Converts a list of bytes or an 8-bit string to an integer.
+    r"""Converts a list of bytes or an 8-bit string to an integer.
 
     When using unicode strings, encode it to some encoding like UTF8 first.
 
     >>> (((128 * 256) + 64) * 256) + 15
     8405007
-    >>> bytes2int('\x80@\x0f')
+    >>> bytes2int(b'\x80@\x0f')
     8405007
 
-    '''
+    """
 
     return int(binascii.hexlify(raw_bytes), 16)
 
 
 def _int2bytes(number, block_size=None):
-    r'''Converts a number to a string of bytes.
+    r"""Converts a number to a string of bytes.
 
     Usage::
 
         >>> _int2bytes(123456789)
-        '\x07[\xcd\x15'
+        b'\x07[\xcd\x15'
         >>> bytes2int(_int2bytes(123456789))
         123456789
 
         >>> _int2bytes(123456789, 6)
-        '\x00\x00\x07[\xcd\x15'
+        b'\x00\x00\x07[\xcd\x15'
         >>> bytes2int(_int2bytes(123456789, 128))
         123456789
 
@@ -78,11 +70,12 @@ def _int2bytes(number, block_size=None):
 
     @throws OverflowError when block_size is given and the number takes up more
         bytes than fit into the block.
-    '''
+    """
+
     # Type checking
     if not is_integer(number):
         raise TypeError("You must pass an integer for 'number', not %s" %
-            number.__class__)
+                        number.__class__)
 
     if number < 0:
         raise ValueError('Negative numbers cannot be used: %i' % number)
@@ -90,7 +83,7 @@ def _int2bytes(number, block_size=None):
     # Do some bounds checking
     if number == 0:
         needed_bytes = 1
-        raw_bytes = [ZERO_BYTE]
+        raw_bytes = [b'\x00']
     else:
         needed_bytes = common.byte_size(number)
         raw_bytes = []
@@ -99,7 +92,7 @@ def _int2bytes(number, block_size=None):
     if block_size and block_size > 0:
         if needed_bytes > block_size:
             raise OverflowError('Needed %i bytes for number, but block size '
-                'is %i' % (needed_bytes, block_size))
+                                'is %i' % (needed_bytes, block_size))
 
     # Convert the number to bytes.
     while number > 0:
@@ -108,15 +101,15 @@ def _int2bytes(number, block_size=None):
 
     # Pad with zeroes to fill the block
     if block_size and block_size > 0:
-        padding = (block_size - needed_bytes) * ZERO_BYTE
+        padding = (block_size - needed_bytes) * b'\x00'
     else:
-        padding = EMPTY_BYTE
+        padding = b''
 
-    return padding + EMPTY_BYTE.join(raw_bytes)
+    return padding + b''.join(raw_bytes)
 
 
-def bytes_leading(raw_bytes, needle=ZERO_BYTE):
-    '''
+def bytes_leading(raw_bytes, needle=b'\x00'):
+    """
     Finds the number of prefixed byte occurrences in the haystack.
 
     Useful when you want to deal with padding.
@@ -124,10 +117,11 @@ def bytes_leading(raw_bytes, needle=ZERO_BYTE):
     :param raw_bytes:
         Raw bytes.
     :param needle:
-        The byte to count. Default \000.
+        The byte to count. Default \x00.
     :returns:
         The number of leading needle bytes.
-    '''
+    """
+
     leading = 0
     # Indexing keeps compatibility between Python 2.x and Python 3.x
     _byte = needle[0]
@@ -140,7 +134,7 @@ def bytes_leading(raw_bytes, needle=ZERO_BYTE):
 
 
 def int2bytes(number, fill_size=None, chunk_size=None, overflow=False):
-    '''
+    """
     Convert an unsigned integer to bytes (base-256 representation)::
 
     Does not preserve leading zeros if you don't specify a chunk size or
@@ -172,7 +166,8 @@ def int2bytes(number, fill_size=None, chunk_size=None, overflow=False):
         bytes than fit into the block. This requires the ``overflow``
         argument to this function to be set to ``False`` otherwise, no
         error will be raised.
-    '''
+    """
+
     if number < 0:
         raise ValueError("Number must be an unsigned integer: %d" % number)
 
@@ -182,11 +177,11 @@ def int2bytes(number, fill_size=None, chunk_size=None, overflow=False):
     # Ensure these are integers.
     number & 1
 
-    raw_bytes = b('')
+    raw_bytes = b''
 
     # Pack the integer one machine word at a time into bytes.
     num = number
-    word_bits, _, max_uint, pack_type = get_word_alignment(num)
+    word_bits, _, max_uint, pack_type = machine_size.get_word_alignment(num)
     pack_format = ">%s" % pack_type
     while num > 0:
         raw_bytes = pack(pack_format, num & max_uint) + raw_bytes
@@ -194,7 +189,7 @@ def int2bytes(number, fill_size=None, chunk_size=None, overflow=False):
     # Obtain the index of the first non-zero byte.
     zero_leading = bytes_leading(raw_bytes)
     if number == 0:
-        raw_bytes = ZERO_BYTE
+        raw_bytes = b'\x00'
     # De-padding.
     raw_bytes = raw_bytes[zero_leading:]
 
@@ -202,19 +197,19 @@ def int2bytes(number, fill_size=None, chunk_size=None, overflow=False):
     if fill_size and fill_size > 0:
         if not overflow and length > fill_size:
             raise OverflowError(
-                "Need %d bytes for number, but fill size is %d" %
-                (length, fill_size)
+                    "Need %d bytes for number, but fill size is %d" %
+                    (length, fill_size)
             )
-        raw_bytes = raw_bytes.rjust(fill_size, ZERO_BYTE)
+        raw_bytes = raw_bytes.rjust(fill_size, b'\x00')
     elif chunk_size and chunk_size > 0:
         remainder = length % chunk_size
         if remainder:
             padding_size = chunk_size - remainder
-            raw_bytes = raw_bytes.rjust(length + padding_size, ZERO_BYTE)
+            raw_bytes = raw_bytes.rjust(length + padding_size, b'\x00')
     return raw_bytes
 
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
 
+    doctest.testmod()

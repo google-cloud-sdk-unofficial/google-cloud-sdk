@@ -59,10 +59,14 @@ class UpdatePerimetersGA(base.UpdateCommand):
         restricted_services=perimeters.ParseRestrictedServices(args, result),
         levels=perimeters.ParseLevels(args, result,
                                       perimeter_ref.accessPoliciesId),
+        vpc_allowed_services=perimeters.ParseVpcRestriction(
+            args, result, self._API_VERSION),
+        enable_vpc_accessible_services=args.enable_vpc_accessible_services,
     )
 
   def Patch(self, client, args, result, perimeter_ref, description, title,
-            perimeter_type, resources, restricted_services, levels):
+            perimeter_type, resources, restricted_services, levels,
+            vpc_allowed_services, enable_vpc_accessible_services):
     return client.Patch(
         perimeter_ref,
         description=description,
@@ -70,7 +74,9 @@ class UpdatePerimetersGA(base.UpdateCommand):
         perimeter_type=perimeter_type,
         resources=resources,
         restricted_services=restricted_services,
-        levels=levels)
+        levels=levels,
+        vpc_allowed_services=vpc_allowed_services,
+        enable_vpc_accessible_services=enable_vpc_accessible_services)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -82,24 +88,6 @@ class UpdatePerimetersBeta(UpdatePerimetersGA):
   @staticmethod
   def Args(parser):
     UpdatePerimetersGA.ArgsVersioned(parser, version='v1', track='BETA')
-
-  def Patch(self, client, args, perimeter_ref, result, description, title,
-            perimeter_type, resources, restricted_services, levels):
-    vpc_allowed_services = perimeters.ParseVpcRestriction(
-        args, result, self._API_VERSION)
-    enable_vpc_accessible_services = args.enable_vpc_accessible_services
-
-    return client.Patch(
-        perimeter_ref,
-        description=description,
-        title=title,
-        perimeter_type=perimeter_type,
-        resources=resources,
-        restricted_services=restricted_services,
-        levels=levels,
-        vpc_allowed_services=vpc_allowed_services,
-        enable_vpc_accessible_services=enable_vpc_accessible_services,
-    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

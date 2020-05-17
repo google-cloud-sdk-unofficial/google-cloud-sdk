@@ -118,7 +118,13 @@ class GetLogs(base.ListCommand):
       entries = reversed(list(entries))  # Force generator expansion with list.
 
     for entry in entries:
-      row = {'log': entry.textPayload}
+      message = entry.textPayload
+      if entry.jsonPayload:
+        props = [prop.value for prop in entry.jsonPayload.additionalProperties
+                 if prop.key == 'message']
+        if len(props) == 1 and hasattr(props[0], 'string_value'):
+          message = props[0].string_value
+      row = {'log': message}
       if entry.severity:
         severity = six.text_type(entry.severity)
         if severity in flags.SEVERITIES:

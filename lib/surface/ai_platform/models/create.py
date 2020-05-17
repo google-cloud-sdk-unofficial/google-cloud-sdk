@@ -110,7 +110,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _AddCreateArgs(parser, support_console_logging=True)
+    _AddCreateArgs(parser, support_console_logging=True, hide_region_flag=False)
 
   def Run(self, args):
     self._Run(args, support_console_logging=True)

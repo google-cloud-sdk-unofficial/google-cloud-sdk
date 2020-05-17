@@ -85,7 +85,7 @@ class Push(object):
     return six.moves.urllib.parse.urljoin(
         base=self._scheme_and_host(), url=location)
 
-  def _blob_exists(self, digest):
+  def blob_exists(self, digest):
     """Check the remote for the given layer."""
     # HEAD the blob, and check for a 200
     resp, unused_content = self._transport.Request(
@@ -98,7 +98,7 @@ class Push(object):
 
     return resp.status == six.moves.http_client.OK  # pytype: disable=attribute-error
 
-  def _manifest_exists(self, image):
+  def manifest_exists(self, image):
     """Check the remote for the given manifest by digest."""
     # GET the manifest by digest, and check for 200
     resp, unused_content = self._transport.Request(
@@ -144,8 +144,8 @@ class Push(object):
         accepted_codes=[six.moves.http_client.CREATED])
 
   # pylint: disable=missing-docstring
-  def _patch_upload(self, image,
-                    digest):
+  def patch_upload(self, source,
+                   digest):
     mounted, location = self._start_upload(digest, self._mount)
 
     if mounted:
@@ -153,11 +153,14 @@ class Push(object):
       return
 
     location = self._get_absolute_url(location)
+    blob = source
+    if isinstance(source, docker_image.DockerImage):
+      blob = source.blob(digest)
 
     resp, unused_content = self._transport.Request(
         location,
         method='PATCH',
-        body=image.blob(digest),
+        body=blob,
         content_type='application/octet-stream',
         accepted_codes=[
             six.moves.http_client.NO_CONTENT, six.moves.http_client.ACCEPTED,
@@ -195,7 +198,7 @@ class Push(object):
     # * We attempt to perform a cross-repo mount if any repositories are
     # specified in the "mount" parameter. This does a fast copy from a
     # repository that is known to contain this blob and skips the upload.
-    self._patch_upload(image, digest)
+    self.patch_upload(image, digest)
 
   def _remote_tag_digest(self):
     """Check the remote for the given manifest by digest."""
@@ -215,7 +218,7 @@ class Push(object):
 
     return resp.get('docker-content-digest')
 
-  def _put_manifest(self, image):
+  def put_manifest(self, image):
     """Upload the manifest for this image."""
     self._transport.Request(
         '{base_url}/manifests/{tag_or_digest}'.format(
@@ -257,7 +260,7 @@ class Push(object):
 
   def _upload_one(self, image, digest):
     """Upload a single layer, after checking whether it exists already."""
-    if self._blob_exists(digest):
+    if self.blob_exists(digest):
       logging.info('Layer %s exists, skipping', digest)
       return
 
@@ -272,7 +275,7 @@ class Push(object):
     """
     # If the manifest (by digest) exists, then avoid N layer existence
     # checks (they must exist).
-    if self._manifest_exists(image):
+    if self.manifest_exists(image):
       if isinstance(self._name, docker_name.Tag):
         if self._remote_tag_digest() == image.digest():
           logging.info('Tag points to the right manifest, skipping push.')
@@ -294,7 +297,7 @@ class Push(object):
           future.result()
 
     # This should complete the upload by uploading the manifest.
-    self._put_manifest(image)
+    self.put_manifest(image)
 
   # __enter__ and __exit__ allow use as a context manager.
   def __enter__(self):

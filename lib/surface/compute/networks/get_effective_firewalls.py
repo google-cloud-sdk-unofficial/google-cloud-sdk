@@ -24,27 +24,7 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags
-
-DEFAULT_LIST_FORMAT = """\
-  table(
-    type,
-    priority,
-    action,
-    direction,
-    src_ip_ranges,
-    dest_ip_ranges,
-    target_svc_acct,
-    enableLogging,
-    description,
-    name,
-    disabled,
-    security_policy_id,
-    target_tags,
-    src_svc_acct,
-    src_tags,
-    ruleTupleCount,
-    targetResources:label=TARGET_RESOURCES
-  )"""
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -107,6 +87,10 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
             network_firewall))
     return result
 
+  def Epilog(self, resources_were_displayed):
+    del resources_were_displayed
+    log.status.Print('\n' + firewalls_utils.LIST_NOTICE)
+
 
 GetEffectiveFirewalls.detailed_help = {
     'EXAMPLES':
@@ -116,5 +100,26 @@ GetEffectiveFirewalls.detailed_help = {
       $ {command} example-network,
     To show all fields of the firewall rules, please show in JSON format with
     option --format=json
-    """,
+
+    To list more the fields of the rules of network example-network in table
+    format, run:
+
+      $ {command} example-network --format="table(
+        type,
+        security_policy_id,
+        priority,
+        action,
+        direction,
+        ip_ranges.list():label=IP_RANGES,
+        target_svc_acct,
+        enableLogging,
+        description,
+        name,
+        disabled,
+        target_tags,
+        src_svc_acct,
+        src_tags,
+        ruleTupleCount,
+        targetResources:label=TARGET_RESOURCES)"
+        """,
 }

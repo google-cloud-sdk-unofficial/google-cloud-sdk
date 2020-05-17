@@ -26,10 +26,19 @@ import six.moves.http_client
 DEFAULT_SOURCE_TRANSPORT_CALLABLE = httplib2.Http
 DEFAULT_MAX_RETRIES = 2
 DEFAULT_BACKOFF_FACTOR = 0.5
-RETRYABLE_EXCEPTION_TYPES = [
-    six.moves.http_client.IncompleteRead,
-    six.moves.http_client.ResponseNotReady
-]
+if six.PY3:
+  import builtins  # pylint: disable=g-import-not-at-top,import-error
+  BrokenPipeError = builtins.BrokenPipeError
+  RETRYABLE_EXCEPTION_TYPES = [
+      BrokenPipeError,
+      six.moves.http_client.IncompleteRead,
+      six.moves.http_client.ResponseNotReady
+  ]
+else:
+  RETRYABLE_EXCEPTION_TYPES = [
+      six.moves.http_client.IncompleteRead,
+      six.moves.http_client.ResponseNotReady
+  ]
 
 
 def ShouldRetry(err):
@@ -64,14 +73,12 @@ class Factory(object):
     return self
 
   def Build(self):
-    """Returns a RetryTransport constructed with the given values.
-    """
+    """Returns a RetryTransport constructed with the given values."""
     return RetryTransport(self.source_transport_callable(), **self.kwargs)
 
 
 class RetryTransport(nested.NestedTransport):
-  """A wrapper for the given transport which automatically retries errors.
-  """
+  """A wrapper for the given transport which automatically retries errors."""
 
   def __init__(self,
                source_transport,
@@ -88,8 +95,8 @@ class RetryTransport(nested.NestedTransport):
 
     Backoff is backoff_factor * (2 ^ (retry #)) seconds.
     Args:
-      *args: The sequence of positional arguments to forward to the
-        source transport.
+      *args: The sequence of positional arguments to forward to the source
+        transport.
       **kwargs: The keyword arguments to forward to the source transport.
 
     Returns:

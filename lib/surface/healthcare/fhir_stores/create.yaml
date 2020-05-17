@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief:  Create a Cloud Healthcare API FHIR store.
@@ -7,11 +7,11 @@
     examples: |
       To create a FHIR store called 'test-fhir-store', run:
 
-        $ {command} test-fhir-store --dataset=test-dataset
+        $ {command} test-fhir-store --dataset=test-dataset --version=r4
 
       To create a fhir store with the Cloud Pub/Sub topic 'test-pubsub-topic', run:
 
-        $ {command} test-fhir-store --dataset=test-dataset --pubsub-topic=projects/my-project/topics/test-pubsub-topic
+        $ {command} test-fhir-store --dataset=test-dataset --version=r4 --pubsub-topic=projects/my-project/topics/test-pubsub-topic
 
   request:
     collection: healthcare.projects.locations.datasets.fhirStores
@@ -19,6 +19,8 @@
       api_version: v1alpha2
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:
@@ -27,6 +29,28 @@
 
     params:
     - arg_name: version
+      release_tracks: [ALPHA, BETA]
+      api_field: fhirStore.version
+      choices:
+      - arg_value: dstu2
+        enum_value: DSTU2
+        help_text: |
+          Draft Standard for Trial Use, [Release 2](https://www.hl7.org/fhir/DSTU2)
+      - arg_value: stu3
+        enum_value: STU3
+        help_text: |
+          Standard for Trial Use, [Release 3](https://www.hl7.org/fhir/STU3)
+      - arg_value: r4
+        enum_value: R4
+        help_text: |
+          [Release 4](https://www.hl7.org/fhir/R4)
+      help_text: |
+        The FHIR specification version that this FHIR store supports natively. This field is
+        immutable after store creation. Requests are rejected if they contain FHIR resources of a
+        different version. An empty value is treated as STU3.
+    - arg_name: version
+      release_tracks: [GA]
+      required: true
       api_field: fhirStore.version
       choices:
       - arg_value: dstu2

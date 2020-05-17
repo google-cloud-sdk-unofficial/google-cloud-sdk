@@ -52,7 +52,7 @@ class List(base.ListCommand):
 
   To see the list of all clusters in Dataproc's 'us-central1' region, run:
 
-    $ {command} --region='us=central1'
+    $ {command} --region='us-central1'
 
   To show a cluster in Dataproc's 'global' region with the name 'mycluster',
   run:

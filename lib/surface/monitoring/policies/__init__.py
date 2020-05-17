@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Stackdriver Monitoring policies."""
+"""Command group for Cloud Monitoring policies."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,11 +23,11 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Policies(base.Group):
-  """Manage Stackdriver Monitoring alerting policies."""
+  """Manage Cloud Monitoring alerting policies."""
 
   detailed_help = {
       'DESCRIPTION': """\
-          Manage Stackdriver Monitoring alerting policies.
+          Manage Monitoring alerting policies.
 
           More information can be found here:
           https://cloud.google.com/monitoring/api/v3/

@@ -31,6 +31,9 @@ class Uninstall(base.TopicCommand):
   Note: For installations completed using an OS package (such as `apt-get`,
   `yum`, etc.), uninstall Cloud SDK via the OS package manager.
 
+  Note: For Windows installations, execute the uninstaller.exe found under
+  your Cloud SDK directory.
+
   To completely remove Cloud SDK, follow these instructions:
 
       * Locate your installation directory by running:

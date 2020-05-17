@@ -31,22 +31,3 @@ iam:
   enable_condition: true
   policy_version: 3
   get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
-
-GA:
-  help_text:
-    brief: Add IAM policy binding for a folder.
-    description: |
-      Adds a policy binding to the IAM policy of a folder, given a folder ID and the binding.
-    examples: |
-      To add an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      on the folder 'folder-id', run:
-
-        $ {command} folder-id --member='user:test-user@gmail.com' --role='roles/editor'
-
-      See https://cloud.google.com/iam/docs/managing-policies for details of
-      policy role and member types.
-
-  iam:
-    enable_condition: false
-    policy_version: 3
-    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

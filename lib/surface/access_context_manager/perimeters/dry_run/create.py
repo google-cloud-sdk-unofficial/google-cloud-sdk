@@ -69,7 +69,9 @@ def _AddCommonArgsForDryRunCreate(parser, prefix=''):
       type=arg_parsers.ArgList(),
       default=None,
       help="""Comma-separated list of APIs accessible from within the Service
-              Perimeter. Requires vpc-accessible-services be enabled.""")
+              Perimeter. In order to include all restricted services, use
+              reference "RESTRICTED-SERVICES". Requires vpc-accessible-services
+              be enabled.""")
 
 
 def _ParseArgWithShortName(args, short_name):
@@ -89,8 +91,8 @@ def _ParseArgWithShortName(args, short_name):
   return None
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreatePerimeterDryRunBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class CreatePerimeterDryRun(base.UpdateCommand):
   """Creates a dry-run spec for a new or existing Service Perimeter."""
   _API_VERSION = 'v1'
 
@@ -187,7 +189,7 @@ class CreatePerimeterDryRunBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreatePerimeterDryRunAlpha(CreatePerimeterDryRunBeta):
+class CreatePerimeterDryRunAlpha(CreatePerimeterDryRun):
   """Creates a dry-run spec for a new or existing Service Perimeter."""
   _API_VERSION = 'v1alpha'
 
@@ -224,4 +226,4 @@ detailed_help = {
 }
 
 CreatePerimeterDryRunAlpha.detailed_help = detailed_help
-CreatePerimeterDryRunBeta.detailed_help = detailed_help
+CreatePerimeterDryRun.detailed_help = detailed_help

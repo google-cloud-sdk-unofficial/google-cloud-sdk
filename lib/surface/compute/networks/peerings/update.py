@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.Command):
   r"""Update a Google Compute Engine network peering.
 
@@ -38,9 +39,14 @@ class Update(base.Command):
       --export-custom-routes \
       --import-custom-routes
 
-  """
 
-  enable_subnet_routes_with_public_ip = False
+  To update the peering named peering-name to both export and import subnet
+  routes with public ip, run:
+
+    $ {command} peering-name \
+      --export-subnet-routes-with-public-ip \
+      --import-subnet-routes-with-public-ip
+  """
 
   @classmethod
   def Args(cls, parser):
@@ -53,9 +59,8 @@ class Update(base.Command):
     flags.AddImportCustomRoutesFlag(parser)
     flags.AddExportCustomRoutesFlag(parser)
 
-    if cls.enable_subnet_routes_with_public_ip:
-      flags.AddImportSubnetRoutesWithPublicIpFlag(parser)
-      flags.AddExportSubnetRoutesWithPublicIpFlag(parser)
+    flags.AddImportSubnetRoutesWithPublicIpFlag(parser)
+    flags.AddExportSubnetRoutesWithPublicIpFlag(parser)
 
   def Run(self, args):
     """Issues the request necessary for updating the peering."""
@@ -68,9 +73,8 @@ class Update(base.Command):
         exportCustomRoutes=args.export_custom_routes,
         importCustomRoutes=args.import_custom_routes)
 
-    if self.enable_subnet_routes_with_public_ip:
-      network_peering.exportSubnetRoutesWithPublicIp = args.export_subnet_routes_with_public_ip
-      network_peering.importSubnetRoutesWithPublicIp = args.import_subnet_routes_with_public_ip
+    network_peering.exportSubnetRoutesWithPublicIp = args.export_subnet_routes_with_public_ip
+    network_peering.importSubnetRoutesWithPublicIp = args.import_subnet_routes_with_public_ip
 
     request = client.messages.ComputeNetworksUpdatePeeringRequest(
         network=args.network,
@@ -87,34 +91,9 @@ class Update(base.Command):
         args.export_custom_routes is None,
         args.import_custom_routes is None]
 
-    if self.enable_subnet_routes_with_public_ip:
-      check_args.extend([
-          args.export_subnet_routes_with_public_ip is None,
-          args.import_subnet_routes_with_public_ip is None])
+    check_args.extend([
+        args.export_subnet_routes_with_public_ip is None,
+        args.import_subnet_routes_with_public_ip is None])
 
     if all(check_args):
       raise exceptions.ToolException('At least one property must be modified.')
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  r"""Update a Google Compute Engine network peering.
-
-  ## EXAMPLES
-
-  To update the peering named peering-name to both export and import custom
-  routes, run:
-
-    $ {command} peering-name \
-      --export-custom-routes \
-      --import-custom-routes
-
-  To update the peering named peering-name to both export and import subnet
-  routes with public ip, run:
-
-    $ {command} peering-name \
-      --export-subnet-routes-with-public-ip \
-      --import-subnet-routes-with-public-ip
-
-  """
-  enable_subnet_routes_with_public_ip = True

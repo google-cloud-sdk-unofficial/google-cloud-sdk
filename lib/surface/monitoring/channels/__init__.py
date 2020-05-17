@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Stackdriver Monitoring notification channels."""
+"""Command group for Cloud Monitoring notification channels."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,12 +23,12 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Channels(base.Group):
-  """Manage Stackdriver Monitoring notification channels."""
+  """Manage Cloud Monitoring notification channels."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-          Manage Stackdriver Monitoring notification channels.
+          Manage Monitoring notification channels.
 
           More information can be found here:
           https://cloud.google.com/monitoring/api/v3/

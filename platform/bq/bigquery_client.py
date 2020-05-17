@@ -1922,6 +1922,28 @@ class BigqueryClient(object):
         name=reference.path(), updateMask=update_mask,
         body=reservation).execute()
 
+  def CreateCapacityCommitment(self, reference, slots, plan, renewal_plan):
+    """Create a capacity commitment.
+
+    Arguments:
+      reference: Project to create a capacity commitment within.
+      slots: Number of slots in this commitment.
+      plan: Commitment plan for this capacity commitment.
+      renewal_plan: Renewal plan for this capacity commitment.
+
+    Returns:
+      Capacity commitment object that was created.
+    """
+    capacity_commitment = {}
+    capacity_commitment['slot_count'] = slots
+    capacity_commitment['plan'] = plan
+    capacity_commitment['renewal_plan'] = renewal_plan
+    client = self.GetReservationApiClient()
+    parent = 'projects/%s/locations/%s' % (reference.projectId,
+                                           reference.location)
+    return client.projects().locations().capacityCommitments().create(
+        parent=parent, body=capacity_commitment).execute()
+
   def ListCapacityCommitments(self, reference, page_size, page_token):
     """Lists capacity commitments for given project and location.
 
@@ -2288,13 +2310,18 @@ class BigqueryClient(object):
     return table_reader.ReadSchemaAndRows(start_row, max_rows,
                                           selected_fields=selected_fields)
 
-  def ReadSchemaAndJobRows(self, job_dict, start_row=None, max_rows=None):
+  def ReadSchemaAndJobRows(self,
+                           job_dict,
+                           start_row=None,
+                           max_rows=None,
+                           result_first_page=None):
     """Convenience method to get the schema and rows from job query result.
 
     Arguments:
       job_dict: job reference dictionary.
       start_row: first row to read.
       max_rows: number of rows to read.
+      result_first_page: the first page of the result of a query job.
 
     Returns:
       A tuple where the first item is the list of fields and the
@@ -2308,8 +2335,12 @@ class BigqueryClient(object):
     if max_rows is None:
       raise ValueError('max_rows is required')
     job_ref = ApiClientHelper.JobReference.Create(**job_dict)
-    reader = _JobTableReader(self.apiclient, self.max_rows_per_request,
-                             job_ref)
+    if flags.FLAGS.jobs_query_use_results_from_response and result_first_page:
+      reader = _QueryTableReader(self.apiclient, self.max_rows_per_request,
+                                 job_ref, result_first_page)
+    else:
+      reader = _JobTableReader(self.apiclient, self.max_rows_per_request,
+                               job_ref)
     return reader.ReadSchemaAndRows(start_row, max_rows)
 
   @staticmethod
@@ -5180,6 +5211,12 @@ class BigqueryClient(object):
         if job_reference is None:
           # We haven't yet run a successful Query(), so we don't
           # have a job id to check on.
+          rows_to_read = max_results
+          if self.max_rows_per_request is not None:
+            if rows_to_read is None:
+              rows_to_read = self.max_rows_per_request
+            else:
+              rows_to_read = min(self.max_rows_per_request, int(rows_to_read))
           result = self._StartQueryRpc(
               query=query,
               preserve_nulls=preserve_nulls,
@@ -5187,7 +5224,7 @@ class BigqueryClient(object):
               dry_run=dry_run,
               min_completion_ratio=min_completion_ratio,
               timeout_ms=current_wait_ms,
-              max_results=0,
+              max_results=rows_to_read,
               external_table_definitions_json=external_table_definitions_json,
               udf_resources=udf_resources,
               location=location,
@@ -5205,13 +5242,15 @@ class BigqueryClient(object):
           printer.Print(job_reference.jobId, elapsed_time, 'RUNNING')
           result = self.GetQueryResults(
               job_reference.jobId,
-              max_results=0,
+              max_results=max_results,
               timeout_ms=current_wait_ms,
               location=location)
         if result['jobComplete']:
-          (schema, rows) = self.ReadSchemaAndJobRows(dict(job_reference),
-                                                     start_row=0,
-                                                     max_rows=max_results)
+          (schema, rows) = self.ReadSchemaAndJobRows(
+              dict(job_reference),
+              start_row=0,
+              max_rows=max_results,
+              result_first_page=result)
           # If we get here, we must have succeeded.  We could still have
           # non-fatal errors though.
           status = {}
@@ -5734,6 +5773,56 @@ class _JobTableReader(_TableReader):
     page_token = data.get('pageToken', None)
     schema = data.get('schema', None)
     rows = data.get('rows', [])
+    return (rows, page_token, schema)
+
+
+class _QueryTableReader(_TableReader):
+  """A TableReader that reads from a completed query."""
+
+  def __init__(self, local_apiclient, max_rows_per_request, job_ref, results):
+    self.job_ref = job_ref
+    self.max_rows_per_request = max_rows_per_request
+    self._apiclient = local_apiclient
+    self._results = results
+
+  def _GetPrintContext(self):
+    return '%r' % (self.job_ref,)
+
+  def _ReadOnePage(self,
+                   start_row,
+                   max_rows,
+                   page_token=None,
+                   selected_fields=None):
+    kwds = dict(self.job_ref)
+    kwds['maxResults'] = max_rows
+    # Sets the timeout to 0 because we assume the table is already ready.
+    kwds['timeoutMs'] = 0
+    if page_token:
+      kwds['pageToken'] = page_token
+    else:
+      kwds['startIndex'] = start_row
+    if not self._results['jobComplete']:
+      raise BigqueryError('Job %s is not done' % (self,))
+    # DDL and DML statements return no rows, just delegate them to
+    # getQueryResults.
+    result_rows = self._results.get('rows', None)
+    total_rows = self._results.get('totalRows', None)
+    if (total_rows is not None and result_rows is not None and
+        start_row is not None and
+        len(result_rows) >= min(int(total_rows), start_row + max_rows)):
+      page_token = self._results.get('pageToken', None)
+      if (len(result_rows) < int(total_rows) and page_token is None):
+        raise BigqueryError('Synchronous query %s did not return all rows, '
+                            'yet it did not return a page token' % (self,))
+      schema = self._results.get('schema', None)
+      rows = self._results.get('rows', [])
+    else:
+      data = self._apiclient.jobs().getQueryResults(**kwds).execute()
+      if not data['jobComplete']:
+        raise BigqueryError('Job %s is not done' % (self,))
+      page_token = data.get('pageToken', None)
+      schema = data.get('schema', None)
+      rows = data.get('rows', [])
     return (rows, page_token, schema)
 
 

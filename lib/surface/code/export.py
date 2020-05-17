@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.core.util import files
@@ -40,6 +41,8 @@ class Export(base.Command):
 
   @classmethod
   def Args(cls, parser):
+    flags.CommonFlags(parser)
+
     skaffold_output_group = parser.add_mutually_exclusive_group(required=False)
     skaffold_output_group.add_argument(
         '--skaffold-file',

@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "4.49",
+  "CLI_VERSION": "4.50",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -364,7 +364,7 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "The Bucket Policy Only feature is now known as `uniform bucket-level access\n<https://cloud.google.com/storage/docs/uniform-bucket-level-access>`_.\nThe ``bucketpolicyonly`` command is still supported, but we recommend using\nthe equivalent ``ubla`` `command<https://cloud.google.com/storage/docs/gsutil/commands/ubla>`_.\n\nThe ``bucketpolicyonly`` command is used to retrieve or configure the\nuniform bucket-level access setting of Cloud Storage buckets. This command has\ntwo sub-commands, ``get`` and ``set``.",
+        "DESCRIPTION": "The Bucket Policy Only feature is now known as `uniform bucket-level access\n<https://cloud.google.com/storage/docs/uniform-bucket-level-access>`_.\nThe ``bucketpolicyonly`` command is still supported, but we recommend using\nthe equivalent ``ubla`` `command\n<https://cloud.google.com/storage/docs/gsutil/commands/ubla>`_.\n\nThe ``bucketpolicyonly`` command is used to retrieve or configure the\nuniform bucket-level access setting of Cloud Storage buckets. This command has\ntwo sub-commands, ``get`` and ``set``.",
         "EXAMPLES": "Configure your buckets to use uniform bucket-level access:\n\n  gsutil bucketpolicyonly set on gs://redbucket gs://bluebucket\n\nConfigure your buckets to NOT use uniform bucket-level access:\n\n  gsutil bucketpolicyonly set off gs://redbucket gs://bluebucket",
         "GET": "The ``bucketpolicyonly get`` command shows whether uniform bucket-level\naccess is enabled for the specified Cloud Storage bucket.",
         "SET": "The ``bucketpolicyonly set`` command enables or disables the uniform bucket-level\naccess feature on Google Cloud Storage buckets."
@@ -511,7 +511,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "Write the configuration file without authentication configured.\nis flag is mutually exlusive with all flags other than ``-o``.",
+          "description": "Write the configuration file without authentication configured.\nis flag is mutually exclusive with all flags other than ``-o``.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -815,7 +815,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "<ext,...> Applies gzip transport encoding to any file upload whose\n extension matches the -j extension list. This is useful when\n uploading files with compressible content (such as .js, .css,\n or .html files) because it saves network bandwidth while\n also leaving the data uncompressed in Google Cloud Storage.\n When you specify the -j option, files being uploaded are\n compressed in-memory and on-the-wire only. Both the local\n files and Cloud Storage objects remain uncompressed. The\n uploaded objects retain the Content-Type and name of the\n original files.\n Note that if you want to use the top-level -m option to\n parallelize copies along with the -j/-J options, you should\n prefer using multiple processes instead of multiple threads;\n when using -j/-J, multiple threads in the same process are\n bottlenecked by Python's GIL. Thread and process count can be\n set using the \"parallel_thread_count\" and\n \"parallel_process_count\" boto config options, e.g.:\n gsutil -o \"GSUtil:parallel_process_count=8\" \\\n -o \"GSUtil:parallel_thread_count=1\" \\\n -m cp -j html -r /local/source/dir gs://bucket/path",
+          "description": "<ext,...> Applies gzip transport encoding to any file upload whose\n extension matches the -j extension list. This is useful when\n uploading files with compressible content (such as .js, .css,\n or .html files) because it saves network bandwidth while\n also leaving the data uncompressed in Google Cloud Storage.\n When you specify the -j option, files being uploaded are\n compressed in-memory and on-the-wire only. Both the local\n files and Cloud Storage objects remain uncompressed. The\n uploaded objects retain the Content-Type and name of the\n original files.\n Note that if you want to use the top-level -m option to\n parallelize copies along with the -j/-J options, your\n performance may be bottlenecked by the\n \"max_upload_compression_buffer_size\" boto config option,\n which is set to 2 GiB by default. This compression buffer\n size can be changed to a higher limit, e.g.:\n gsutil -o \"GSUtil:max_upload_compression_buffer_size=8G\" \\\n -m cp -j html -r /local/source/dir gs://bucket/path",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -899,7 +899,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "<ext,...> Applies gzip content-encoding to any file upload whose\n extension matches the -z extension list. This is useful when\n uploading files with compressible content (such as .js, .css,\n or .html files) because it saves network bandwidth and space\n in Google Cloud Storage, which in turn reduces storage costs.\n When you specify the -z option, the data from your files is\n compressed before it is uploaded, but your actual files are\n left uncompressed on the local disk. The uploaded objects\n retain the Content-Type and name of the original files but are\n given a Content-Encoding header with the value \"gzip\" to\n indicate that the object data stored are compressed on the\n Google Cloud Storage servers.\n For example, the following command:\n gsutil cp -z html -a public-read \\\n cattypes.html tabby.jpeg gs://mycats\n will do all of the following:\n - Upload the files cattypes.html and tabby.jpeg to the bucket\n gs://mycats (cp command)\n - Set the Content-Type of cattypes.html to text/html and\n tabby.jpeg to image/jpeg (based on file extensions)\n - Compress the data in the file cattypes.html (-z option)\n - Set the Content-Encoding for cattypes.html to gzip\n (-z option)\n - Set the ACL for both files to public-read (-a option)\n - If a user tries to view cattypes.html in a browser, the\n browser will know to uncompress the data based on the\n Content-Encoding header and to render it as HTML based on\n the Content-Type header.\n Note that if you download an object with Content-Encoding:gzip\n gsutil will decompress the content before writing the local\n file.",
+          "description": "<ext,...> Applies gzip content-encoding to any file upload whose\n extension matches the -z extension list. This is useful when\n uploading files with compressible content (such as .js, .css,\n or .html files) because it saves network bandwidth and space\n in Google Cloud Storage, which in turn reduces storage costs.\n When you specify the -z option, the data from your files is\n compressed before it is uploaded, but your actual files are\n left uncompressed on the local disk. The uploaded objects\n retain the Content-Type and name of the original files but are\n given a Content-Encoding header with the value \"gzip\" to\n indicate that the object data stored are compressed on the\n Google Cloud Storage servers.\n For example, the following command:\n gsutil cp -z html -a public-read \\\n cattypes.html tabby.jpeg gs://mycats\n will do all of the following:\n - Upload the files cattypes.html and tabby.jpeg to the bucket\n gs://mycats (cp command)\n - Set the Content-Type of cattypes.html to text/html and\n tabby.jpeg to image/jpeg (based on file extensions)\n - Compress the data in the file cattypes.html (-z option)\n - Set the Content-Encoding for cattypes.html to gzip\n (-z option)\n - Set the ACL for both files to public-read (-a option)\n - If a user tries to view cattypes.html in a browser, the\n browser will know to uncompress the data based on the\n Content-Encoding header and to render it as HTML based on\n the Content-Type header.\n Because the -z/-Z options compress data prior to upload, they\n are not subject to the same compression buffer bottleneck that\n can affect the -j/-J options.\n Note that if you download an object with Content-Encoding:gzip\n gsutil decompresses the content before writing the local file.",
           "group": "",
           "is_global": false,
           "is_hidden": false,
@@ -3835,7 +3835,7 @@
           "attr": {},
           "category": "",
           "default": "",
-          "description": "The -R and -r options are synonymous. Causes bucket or bucket\nbdirectory contents (all objects and subdirectories that it\nntains) to be removed recursively. If used with a bucket-only\nL (like gs://bucket), after deleting objects and subdirectories\nutil will delete the bucket. This option implies the -a option\nd will delete all object versions.",
+          "description": "The -R and -r options are synonymous. Causes bucket or bucket\nbdirectory contents (all objects and subdirectories that it\nntains) to be removed recursively. If used with a bucket-only\nL (like gs://bucket), after deleting objects and subdirectories\nutil deletes the bucket. This option implies the -a option and\nletes all object versions. If you only want to delete live\nject versions, use the '**' wildcard instead of -r.",
           "group": "",
           "is_global": false,
           "is_hidden": false,

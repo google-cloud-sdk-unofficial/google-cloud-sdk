@@ -184,18 +184,6 @@ class Delete(base.DeleteCommand):
         creds=util.CredentialProvider(), name=tag_or_digest, transport=http_obj)
     log.DeletedResource(tag_or_digest)
 
-  def _DeleteDigestAndAssociatedTags(self, digest, http_obj):
-    # Digest must not have any tags in order to be deleted.
-    # Errors raised from tag deletion are deliberately uncaught.
-    util.DeleteTagsFromDigest(digest, http_obj)
-    tag_list = util.GetTagNamesForDigest(digest, http_obj)
-    for tag in tag_list:
-      log.DeletedResource(tag)
-
-    docker_session.Delete(
-        creds=util.CredentialProvider(), name=digest, transport=http_obj)
-    log.DeletedResource(digest)
-
   def _PrintDigest(self, digest, http_obj):
     log.status.Print('- ' + six.text_type(digest))
     self._DisplayDigestTags(digest, http_obj)

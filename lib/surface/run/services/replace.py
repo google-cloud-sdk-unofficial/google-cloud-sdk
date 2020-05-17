@@ -87,10 +87,13 @@ class Replace(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack())
 
     with serverless_operations.Connect(conn_context) as client:
-      new_service = service.Service(
-          messages_util.DictToMessageWithErrorCheck(
-              args.FILE, client.messages_module.Service),
-          client.messages_module)
+      try:
+        new_service = service.Service(
+            messages_util.DictToMessageWithErrorCheck(
+                args.FILE, client.messages_module.Service),
+            client.messages_module)
+      except messages_util.ScalarTypeMismatchError as e:
+        exceptions.MaybeRaiseCustomFieldMismatch(e)
 
       # If managed, namespace must match project (or will default to project if
       # not specified).

@@ -274,6 +274,9 @@ class BaseImportStager(object):
     daisy_utils.AppendNetworkAndSubnetArgs(self.args, import_args)
     daisy_utils.AppendArg(import_args, 'description', self.args.description)
     daisy_utils.AppendArg(import_args, 'family', self.args.family)
+    if 'sysprep_windows' in self.args:
+      daisy_utils.AppendBoolArg(import_args, 'sysprep_windows',
+                                self.args.sysprep_windows)
 
     return import_args
 
@@ -418,6 +421,11 @@ class ImportBeta(Import):
   def Args(cls, parser):
     super(ImportBeta, cls).Args(parser)
     daisy_utils.AddExtraCommonDaisyArgs(parser)
+    parser.add_argument(
+        '--sysprep-windows',
+        action='store_true',
+        hidden=True,
+        help='Whether to generalize the image using Windows Sysprep.')
 
   def _RunImageImport(self, args, import_args, tags, output_filter):
     return daisy_utils.RunImageImport(args, import_args, tags, _OUTPUT_FILTER,

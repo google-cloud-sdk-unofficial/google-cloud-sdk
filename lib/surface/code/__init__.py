@@ -40,10 +40,6 @@ class Code(base.Group):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
-    flags.CommonFlags(parser)
-
   def Filter(self, context, args):
     flags.Validate(args)
     return context

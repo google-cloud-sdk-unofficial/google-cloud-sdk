@@ -118,6 +118,8 @@ flags.DEFINE_multi_string(
 flags.DEFINE_integer('max_rows_per_request', None,
                      'Specifies the max number of rows to return per read.')
 
+flags.DEFINE_boolean('jobs_query_use_results_from_response', True,
+                     'If true, results from jobs.query response are used.')
 flags.DEFINE_boolean(
     'enable_gdrive', None,
     'When set to true, requests new OAuth token with GDrive scope. '

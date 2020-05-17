@@ -21,13 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DryRunBeta(base.Group):
-  """Manage the dry-run mode configuration for Service Perimeters."""
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DryRunAlpha(DryRunBeta):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
+class DryRun(base.Group):
   """Manage the dry-run mode configuration for Service Perimeters."""
 
 
@@ -49,5 +45,4 @@ detailed_help = {
         mode configuration, resulting in no audit logs being generated."""
 }
 
-DryRunAlpha.detailed_help = detailed_help
-DryRunBeta.detailed_help = detailed_help
+DryRun.detailed_help = detailed_help

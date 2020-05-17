@@ -10,6 +10,7 @@
     modify_request_hooks:
     - googlecloudsdk.command_lib.accesscontextmanager.policies:ValidateAccessPolicyArg
     - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddAccessLevelsGA
+    - googlecloudsdk.command_lib.accesscontextmanager.perimeters:AddVpcAccessibleServicesGA
     - googlecloudsdk.command_lib.util.hooks.request_modifiers:SetFieldFromRelativeName:api_field=servicePerimeter.name
     ALPHA:
       api_version: v1alpha
@@ -89,7 +90,6 @@
           must be empty.
 
     - group:
-        release_tracks: [ALPHA, BETA]
         params:
         - api_field: servicePerimeter.status.vpcAccessibleServices.allowedServices
           arg_name: vpc-allowed-services
@@ -97,7 +97,9 @@
           required: false
           help_text: |
             Comma-separated list of APIs accessible from within the Service
-            Perimeter. Requires vpc-accessible-services be enabled.
+            Perimeter. In order to include all restricted services, use
+            reference "RESTRICTED-SERVICES".
+            Requires vpc-accessible-services be enabled.
         - api_field: servicePerimeter.status.vpcAccessibleServices.enableRestriction
           arg_name: enable-vpc-accessible-services
           required: false

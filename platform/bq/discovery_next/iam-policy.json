@@ -209,7 +209,7 @@
                 "type": "string"
               },
               "view": {
-                "description": "[Pick one] A view from a different dataset to grant access to. Queries\nexecuted against that view will have read access to tables in this dataset.\nThe role field is not required when this field is set. If that view is\nupdated by any user, access to the view needs to be granted again via an\nupdate operation.",
+                "description": "[Pick one] A view from a different dataset to grant access to. Queries\nexecuted against that view will have read access to views\/tables\/routines\nin this dataset.\nThe role field is not required when this field is set. If that view is\nupdated by any user, access to the view needs to be granted again via an\nupdate operation.",
                 "$ref": "TableReference"
               }
             }
@@ -808,9 +808,9 @@
             "No seasonality",
             "Daily period, 24 hours.",
             "Weekly period, 7 days.",
-            "Monthly period, can be as 30 days or irregular.",
-            "Quarterly period, can be as 90 days or irregular.",
-            "Yearly period, can be as 365 days or irregular."
+            "Monthly period, 30 days or irregular.",
+            "Quarterly period, 90 days or irregular.",
+            "Yearly period, 365 days or irregular."
           ],
           "type": "array",
           "items": {
@@ -844,6 +844,39 @@
         "arimaFittingMetrics": {
           "description": "Arima fitting metrics.",
           "$ref": "ArimaFittingMetrics"
+        },
+        "hasDrift": {
+          "description": "Whether Arima model fitted with drift or not. It is always false\nwhen d is not 1.",
+          "type": "boolean"
+        },
+        "timeSeriesId": {
+          "description": "The id to indicate different time series.",
+          "type": "string"
+        },
+        "seasonalPeriods": {
+          "description": "Seasonal periods. Repeated because multiple periods are supported\nfor one time series.",
+          "enumDescriptions": [
+            "",
+            "No seasonality",
+            "Daily period, 24 hours.",
+            "Weekly period, 7 days.",
+            "Monthly period, 30 days or irregular.",
+            "Quarterly period, 90 days or irregular.",
+            "Yearly period, 365 days or irregular."
+          ],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "SEASONAL_PERIOD_TYPE_UNSPECIFIED",
+              "NO_SEASONALITY",
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "YEARLY"
+            ]
+          }
         }
       }
     },
@@ -903,17 +936,17 @@
       "type": "object",
       "properties": {
         "logLikelihood": {
-          "description": "log-likelihood",
+          "description": "Log-likelihood.",
           "type": "number",
           "format": "double"
         },
         "aic": {
-          "description": "AIC",
+          "description": "AIC.",
           "type": "number",
           "format": "double"
         },
         "variance": {
-          "description": "variance.",
+          "description": "Variance.",
           "type": "number",
           "format": "double"
         }
@@ -1670,12 +1703,8 @@
           "description": "[Optional] Additional options if sourceFormat is set to GOOGLE_SHEETS.",
           "$ref": "GoogleSheetsOptions"
         },
-        "hivePartitioningMode": {
-          "description": "[Optional, Trusted Tester] When set, what mode of hive partitioning to use\nwhen reading data.  Two modes are supported.\n* AUTO: automatically infer partition key name(s) and type(s).\n* STRINGS: automatically infer partition key name(s).  All types are\nstrings.\nNot all storage formats support hive partitioning -- requesting hive\npartitioning on an unsupported format will lead to an error.",
-          "type": "string"
-        },
         "hivePartitioningOptions": {
-          "description": "[Optional, Trusted Tester] When set, configures hive partitioning support.\nNot all storage formats support hive partitioning -- requesting hive\npartitioning on an unsupported format will lead to an error, as will\nproviding an invalid specification.",
+          "description": "[Optional] When set, configures hive partitioning support. Not all storage\nformats support hive partitioning -- requesting hive partitioning on an\nunsupported format will lead to an error, as will providing an invalid\nspecification.",
           "$ref": "HivePartitioningOptions"
         },
         "connectionId": {
@@ -1743,10 +1772,11 @@
     },
     "CsvOptions": {
       "id": "CsvOptions",
+      "description": "Options for external data sources.",
       "type": "object",
       "properties": {
         "fieldDelimiter": {
-          "description": "[Optional] The separator for fields in a CSV file. BigQuery converts\nthe string to ISO-8859-1 encoding, and then uses the first byte of the\nencoded string to split the data in its raw, binary state. BigQuery also\nsupports the escape sequence \"\\t\" to specify a tab separator.\nThe default value is a comma (',').",
+          "description": "[Optional] The separator character for fields in a CSV file. The separator\nis interpreted as a single byte. For files encoded in ISO-8859-1, any\nsingle character can be used as a separator. For files encoded in UTF-8,\ncharacters represented in decimal range 1-127 (U+0001-U+007F) can be used\nwithout any modification. UTF-8 characters encoded with multiple bytes\n(i.e. U+0080 and above) will have only the first byte used for separating\nfields. The remaining bytes will be treated as a part of the field.\nBigQuery also supports the escape sequence \"\\t\" (U+0009) to specify a tab\nseparator. The default value is comma (\",\", U+002C).",
           "type": "string"
         },
         "skipLeadingRows": {
@@ -1874,20 +1904,20 @@
       "type": "object",
       "properties": {
         "mode": {
-          "description": "Optional. [Experimental] When set, what mode of hive partitioning to use\nwhen reading data.  Two modes are supported.\n* AUTO: automatically infer partition key name(s) and type(s).\n* STRINGS: automatically infer partition key name(s).  All types are\nNot all storage formats support hive partitioning. Requesting hive\npartitioning on an unsupported format will lead to an error.\nCurrently supported formats are: JSON, CSV, ORC, Avro and Parquet.",
+          "description": "Optional. When set, what mode of hive partitioning to use when reading data.  Two\nmodes are supported.\n* AUTO: automatically infer partition key name(s) and type(s).\n* STRINGS: automatically infer partition key name(s).  All types are\nstrings.\n* CUSTOM: partition key schema is encoded in the source URI prefix.\nNot all storage formats support hive partitioning. Requesting hive\npartitioning on an unsupported format will lead to an error.\nCurrently supported formats are: JSON, CSV, ORC, Avro and Parquet.",
           "type": "string"
         },
         "sourceUriPrefix": {
-          "description": "Optional. [Experimental] When hive partition detection is requested,\na common for all source uris must be required.  The prefix must end\nimmediately before the partition key encoding begins.\nFor example, consider files following this data layout.\ngs:\/\/bucket\/path_to_table\/dt=2019-06-01\/country=USA\/id=7\/file.avro\ngs:\/\/bucket\/path_to_table\/dt=2019-05-31\/country=CA\/id=3\/file.avro\nWhen hive partitioning is requested with either AUTO or STRINGS detection,\nthe common prefix can be either of gs:\/\/bucket\/path_to_table or\ngs:\/\/bucket\/path_to_table\/.",
+          "description": "Optional. When hive partition detection is requested, a common prefix for all source\nuris must be required.  The prefix must end immediately before the\npartition key encoding begins. For example, consider files following this\ndata layout:\ngs:\/\/bucket\/path_to_table\/dt=2019-06-01\/country=USA\/id=7\/file.avro\ngs:\/\/bucket\/path_to_table\/dt=2019-05-31\/country=CA\/id=3\/file.avro\nWhen hive partitioning is requested with either AUTO or STRINGS detection,\nthe common prefix can be either of gs:\/\/bucket\/path_to_table or\ngs:\/\/bucket\/path_to_table\/.\nCUSTOM detection requires encoding the partitioning schema immediately\nafter the common prefix.  For CUSTOM, any of\n* gs:\/\/bucket\/path_to_table\/{dt:DATE}\/{country:STRING}\/{id:INTEGER}\n* gs:\/\/bucket\/path_to_table\/{dt:STRING}\/{country:STRING}\/{id:INTEGER}\n* gs:\/\/bucket\/path_to_table\/{dt:DATE}\/{country:STRING}\/{id:STRING}\nwould all be valid source URI prefixes.",
           "type": "string"
         },
         "requirePartitionFilter": {
-          "description": "Optional. [Experimental]  If set to true, queries over this table require\na partition filter that can be used for partition elimination to be\nspecified. Note that this field should only be true when creating\na permanent external table or querying a temporary external table.\nHive-partitioned loads with require_partition_filter explicitly set to\ntrue will fail.",
+          "description": "Optional. If set to true, queries over this table require a partition filter that can\nbe used for partition elimination to be specified. Note that this field\nshould only be true when creating a permanent external table or querying a\ntemporary external table.\nHive-partitioned loads with require_partition_filter explicitly set to\ntrue will fail.",
           "default": "false",
           "type": "boolean"
         },
         "fields": {
-          "description": "Output only. [Experimental] For permanent external tables, this field is populated with\nthe hive partition keys in the order they were inferred. The types of the\npartition keys can be deduced by checking the table schema (which will\ninclude the partition keys). Not every API will populate this field in the\noutput. For example, Tables.Get will populate it, but Tables.List will not\ncontain this field.",
+          "description": "Output only. For permanent external tables, this field is populated with the hive\npartition keys in the order they were inferred. The types of the partition\nkeys can be deduced by checking the table schema (which will include the\npartition keys). Not every API will populate this field in the output. For\nexample, Tables.Get will populate it, but Tables.List will not contain this\nfield.",
           "type": "array",
           "items": {
             "type": "string"
@@ -2138,7 +2168,7 @@
           "type": "string"
         },
         "fieldDelimiter": {
-          "description": "[Optional] The separator for fields in a CSV file. The separator can be\nany ISO-8859-1 single-byte character. To use a character in the range\n128-255, you must encode the character as UTF8. BigQuery converts\nthe string to ISO-8859-1 encoding, and then uses the first byte of the\nencoded string to split the data in its raw, binary state. BigQuery also\nsupports the escape sequence \"\\t\" to specify a tab separator.\nThe default value is a comma (',').",
+          "description": "[Optional] The separator character for fields in a CSV file. The separator\nis interpreted as a single byte. For files encoded in ISO-8859-1, any\nsingle character can be used as a separator. For files encoded in UTF-8,\ncharacters represented in decimal range 1-127 (U+0001-U+007F) can be used\nwithout any modification. UTF-8 characters encoded with multiple bytes\n(i.e. U+0080 and above) will have only the first byte used for separating\nfields. The remaining bytes will be treated as a part of the field.\nBigQuery also supports the escape sequence \"\\t\" (U+0009) to specify a tab\nseparator. The default value is comma (\",\", U+002C).",
           "type": "string"
         },
         "skipLeadingRows": {
@@ -2222,12 +2252,8 @@
           "description": "[Optional] If sourceFormat is set to \"AVRO\", indicates whether to enable\ninterpreting logical types into their corresponding types (ie. TIMESTAMP),\ninstead of only using their raw types (ie. INTEGER). The default value will\nbe true once this feature launches, but can be set now in preparation.",
           "type": "boolean"
         },
-        "hivePartitioningMode": {
-          "description": "[Optional, Trusted Tester] When set, what mode of hive partitioning to use\nwhen reading data.  Two modes are supported.\n* AUTO: automatically infer partition key name(s) and type(s).\n* STRINGS: automatically infer partition key name(s).  All types are\nstrings.\nNot all storage formats support hive partitioning -- requesting hive\npartitioning on an unsupported format will lead to an error.",
-          "type": "string"
-        },
         "hivePartitioningOptions": {
-          "description": "[Optional, Trusted Tester] When set, configures hive partitioning support.\nNot all storage formats support hive partitioning -- requesting hive\npartitioning on an unsupported format will lead to an error, as will\nproviding an invalid specification.",
+          "description": "[Optional] When set, configures hive partitioning support.\nNot all storage formats support hive partitioning -- requesting hive\npartitioning on an unsupported format will lead to an error, as will\nproviding an invalid specification.",
           "$ref": "HivePartitioningOptions"
         }
       }
@@ -2566,6 +2592,13 @@
         "ddlTargetRoutine": {
           "description": "Output only. [Beta] The DDL target routine. Present only for\nCREATE\/DROP FUNCTION\/PROCEDURE queries.",
           "$ref": "RoutineReference"
+        },
+        "externalServiceCosts": {
+          "description": "Output only. Job cost breakdown as bigquery internal cost and external service costs.",
+          "type": "array",
+          "items": {
+            "$ref": "ExternalServiceCost"
+          }
         }
       }
     },
@@ -2795,6 +2828,32 @@
         "routineId": {
           "description": "Required. The ID of the routine. The ID must contain only\nletters (a-z, A-Z), numbers (0-9), or underscores (_). The maximum\nlength is 256 characters.",
           "type": "string"
+        }
+      }
+    },
+    "ExternalServiceCost": {
+      "id": "ExternalServiceCost",
+      "description": "The external service cost is a portion of the total cost, these costs are not\nadditive with total_bytes_billed. Moreover, this field only track external\nservice costs that will show up as BigQuery costs (e.g. training BigQuery\nML job with google cloud CAIP or Automl Tables services), not other costs\nwhich may be accrued by running the query (e.g. reading from Bigtable or\nCloud Storage). The external service costs with different billing sku (e.g.\nCAIP job is charged based on VM usage) are converted to BigQuery\nbilled_bytes and slot_ms with equivalent amount of US dollars. Services may\nnot directly correlate to these metrics, but these are the equivalents for\nbilling purposes.\nOutput only.",
+      "type": "object",
+      "properties": {
+        "externalService": {
+          "description": "External service name.",
+          "type": "string"
+        },
+        "bytesProcessed": {
+          "description": "External service cost in terms of bigquery bytes processed.",
+          "type": "string",
+          "format": "int64"
+        },
+        "bytesBilled": {
+          "description": "External service cost in terms of bigquery bytes billed.",
+          "type": "string",
+          "format": "int64"
+        },
+        "slotMs": {
+          "description": "External service cost in terms of bigquery slot milliseconds.",
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -3174,7 +3233,7 @@
       "type": "object",
       "properties": {
         "useInt64Timestamp": {
-          "description": "Optional. Output timestamp as usec int64. Default is false.\n(== doc: go\/timestamp-usec-int ==)",
+          "description": "Optional. Output timestamp as usec int64. Default is false.",
           "type": "boolean"
         }
       }
@@ -3848,7 +3907,7 @@
           "$ref": "Policy"
         },
         "updateMask": {
-          "description": "OPTIONAL: A FieldMask specifying which fields of the policy to modify. Only\nthe fields in the mask will be modified. If no mask is provided, the\nfollowing default mask is used:\npaths: \"bindings, etag\"\nThis field is only used by Cloud IAM.",
+          "description": "OPTIONAL: A FieldMask specifying which fields of the policy to modify. Only\nthe fields in the mask will be modified. If no mask is provided, the\nfollowing default mask is used:\n\n`paths: \"bindings, etag\"`",
           "type": "string",
           "format": "google-fieldmask"
         }
@@ -3856,11 +3915,11 @@
     },
     "Policy": {
       "id": "Policy",
-      "description": "An Identity and Access Management (IAM) policy, which specifies access\ncontrols for Google Cloud resources.\n\n\nA `Policy` is a collection of `bindings`. A `binding` binds one or more\n`members` to a single `role`. Members can be user accounts, service accounts,\nGoogle groups, and domains (such as G Suite). A `role` is a named list of\npermissions; each `role` can be an IAM predefined role or a user-created\ncustom role.\n\nOptionally, a `binding` can specify a `condition`, which is a logical\nexpression that allows access to a resource only if the expression evaluates\nto `true`. A condition can add constraints based on attributes of the\nrequest, the resource, or both.\n\n**JSON example:**\n\n    {\n      \"bindings\": [\n        {\n          \"role\": \"roles\/resourcemanager.organizationAdmin\",\n          \"members\": [\n            \"user:mike@example.com\",\n            \"group:admins@example.com\",\n            \"domain:google.com\",\n            \"serviceAccount:my-project-id@appspot.gserviceaccount.com\"\n          ]\n        },\n        {\n          \"role\": \"roles\/resourcemanager.organizationViewer\",\n          \"members\": [\"user:eve@example.com\"],\n          \"condition\": {\n            \"title\": \"expirable access\",\n            \"description\": \"Does not grant access after Sep 2020\",\n            \"expression\": \"request.time < timestamp('2020-10-01T00:00:00.000Z')\",\n          }\n        }\n      ],\n      \"etag\": \"BwWWja0YfJA=\",\n      \"version\": 3\n    }\n\n**YAML example:**\n\n    bindings:\n    - members:\n      - user:mike@example.com\n      - group:admins@example.com\n      - domain:google.com\n      - serviceAccount:my-project-id@appspot.gserviceaccount.com\n      role: roles\/resourcemanager.organizationAdmin\n    - members:\n      - user:eve@example.com\n      role: roles\/resourcemanager.organizationViewer\n      condition:\n        title: expirable access\n        description: Does not grant access after Sep 2020\n        expression: request.time < timestamp('2020-10-01T00:00:00.000Z')\n    - etag: BwWWja0YfJA=\n    - version: 3\n\nFor a description of IAM and its features, see the\n[IAM documentation](https:\/\/cloud.google.com\/iam\/docs\/).",
+      "description": "An Identity and Access Management (IAM) policy, which specifies access\ncontrols for Google Cloud resources.\n\n\nA `Policy` is a collection of `bindings`. A `binding` binds one or more\n`members` to a single `role`. Members can be user accounts, service accounts,\nGoogle groups, and domains (such as G Suite). A `role` is a named list of\npermissions; each `role` can be an IAM predefined role or a user-created\ncustom role.\n\nFor some types of Google Cloud resources, a `binding` can also specify a\n`condition`, which is a logical expression that allows access to a resource\nonly if the expression evaluates to `true`. A condition can add constraints\nbased on attributes of the request, the resource, or both. To learn which\nresources support conditions in their IAM policies, see the\n[IAM documentation](https:\/\/cloud.google.com\/iam\/help\/conditions\/resource-policies).\n\n**JSON example:**\n\n    {\n      \"bindings\": [\n        {\n          \"role\": \"roles\/resourcemanager.organizationAdmin\",\n          \"members\": [\n            \"user:mike@example.com\",\n            \"group:admins@example.com\",\n            \"domain:google.com\",\n            \"serviceAccount:my-project-id@appspot.gserviceaccount.com\"\n          ]\n        },\n        {\n          \"role\": \"roles\/resourcemanager.organizationViewer\",\n          \"members\": [\n            \"user:eve@example.com\"\n          ],\n          \"condition\": {\n            \"title\": \"expirable access\",\n            \"description\": \"Does not grant access after Sep 2020\",\n            \"expression\": \"request.time < timestamp('2020-10-01T00:00:00.000Z')\",\n          }\n        }\n      ],\n      \"etag\": \"BwWWja0YfJA=\",\n      \"version\": 3\n    }\n\n**YAML example:**\n\n    bindings:\n    - members:\n      - user:mike@example.com\n      - group:admins@example.com\n      - domain:google.com\n      - serviceAccount:my-project-id@appspot.gserviceaccount.com\n      role: roles\/resourcemanager.organizationAdmin\n    - members:\n      - user:eve@example.com\n      role: roles\/resourcemanager.organizationViewer\n      condition:\n        title: expirable access\n        description: Does not grant access after Sep 2020\n        expression: request.time < timestamp('2020-10-01T00:00:00.000Z')\n    - etag: BwWWja0YfJA=\n    - version: 3\n\nFor a description of IAM and its features, see the\n[IAM documentation](https:\/\/cloud.google.com\/iam\/docs\/).",
       "type": "object",
       "properties": {
         "version": {
-          "description": "Specifies the format of the policy.\n\nValid values are `0`, `1`, and `3`. Requests that specify an invalid value\nare rejected.\n\nAny operation that affects conditional role bindings must specify version\n`3`. This requirement applies to the following operations:\n\n* Getting a policy that includes a conditional role binding\n* Adding a conditional role binding to a policy\n* Changing a conditional role binding in a policy\n* Removing any role binding, with or without a condition, from a policy\n  that includes conditions\n\n**Important:** If you use IAM Conditions, you must include the `etag` field\nwhenever you call `setIamPolicy`. If you omit this field, then IAM allows\nyou to overwrite a version `3` policy with a version `1` policy, and all of\nthe conditions in the version `3` policy are lost.\n\nIf a policy does not include any conditions, operations on that policy may\nspecify any valid version or leave the field unset.",
+          "description": "Specifies the format of the policy.\n\nValid values are `0`, `1`, and `3`. Requests that specify an invalid value\nare rejected.\n\nAny operation that affects conditional role bindings must specify version\n`3`. This requirement applies to the following operations:\n\n* Getting a policy that includes a conditional role binding\n* Adding a conditional role binding to a policy\n* Changing a conditional role binding in a policy\n* Removing any role binding, with or without a condition, from a policy\n  that includes conditions\n\n**Important:** If you use IAM Conditions, you must include the `etag` field\nwhenever you call `setIamPolicy`. If you omit this field, then IAM allows\nyou to overwrite a version `3` policy with a version `1` policy, and all of\nthe conditions in the version `3` policy are lost.\n\nIf a policy does not include any conditions, operations on that policy may\nspecify any valid version or leave the field unset.\n\nTo learn which resources support conditions in their IAM policies, see the\n[IAM documentation](https:\/\/cloud.google.com\/iam\/help\/conditions\/resource-policies).",
           "type": "integer",
           "format": "int32"
         },
@@ -3902,7 +3961,7 @@
           }
         },
         "condition": {
-          "description": "The condition that is associated with this binding.\nNOTE: An unsatisfied condition will not allow user access via current\nbinding. Different bindings, including their conditions, are examined\nindependently.",
+          "description": "The condition that is associated with this binding.\n\nIf the condition evaluates to `true`, then this binding applies to the\ncurrent request.\n\nIf the condition evaluates to `false`, then this binding does not apply to\nthe current request. However, a different role binding might grant the same\nrole to one or more of the members in this binding.\n\nTo learn which resources support conditions in their IAM policies, see the\n[IAM\ndocumentation](https:\/\/cloud.google.com\/iam\/help\/conditions\/resource-policies).",
           "$ref": "Expr"
         }
       }
@@ -3984,7 +4043,7 @@
       "type": "object",
       "properties": {
         "options": {
-          "description": "OPTIONAL: A `GetPolicyOptions` object for specifying options to\n`GetIamPolicy`. This field is only used by Cloud IAM.",
+          "description": "OPTIONAL: A `GetPolicyOptions` object for specifying options to\n`GetIamPolicy`.",
           "$ref": "GetPolicyOptions"
         }
       }
@@ -3995,7 +4054,7 @@
       "type": "object",
       "properties": {
         "requestedPolicyVersion": {
-          "description": "Optional. The policy format version to be returned.\n\nValid values are 0, 1, and 3. Requests specifying an invalid value will be\nrejected.\n\nRequests for policies with any conditional bindings must specify version 3.\nPolicies without any conditional bindings may specify any valid value or\nleave the field unset.",
+          "description": "Optional. The policy format version to be returned.\n\nValid values are 0, 1, and 3. Requests specifying an invalid value will be\nrejected.\n\nRequests for policies with any conditional bindings must specify version 3.\nPolicies without any conditional bindings may specify any valid value or\nleave the field unset.\n\nTo learn which resources support conditions in their IAM policies, see the\n[IAM\ndocumentation](https:\/\/cloud.google.com\/iam\/help\/conditions\/resource-policies).",
           "type": "integer",
           "format": "int32"
         }
@@ -4329,7 +4388,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy.\n\nCan return Public Errors: NOT_FOUND, INVALID_ARGUMENT and PERMISSION_DENIED"
+          "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy.\n\nCan return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors."
         },
         "getIamPolicy": {
           "id": "bigquery.datasets.getIamPolicy",
@@ -4391,7 +4450,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Returns permissions that a caller has on the specified resource.\nIf the resource does not exist, this will return an empty set of\npermissions, not a NOT_FOUND error.\n\nNote: This operation is designed to be used for building permission-aware\nUIs and command-line tools, not for authorization checking. This operation\nmay \"fail open\" without warning."
+          "description": "Returns permissions that a caller has on the specified resource.\nIf the resource does not exist, this will return an empty set of\npermissions, not a `NOT_FOUND` error.\n\nNote: This operation is designed to be used for building permission-aware\nUIs and command-line tools, not for authorization checking. This operation\nmay \"fail open\" without warning."
         }
       }
     },
@@ -4830,7 +4889,7 @@
               "type": "string"
             },
             "formatOptions.useInt64Timestamp": {
-              "description": "Optional. Output timestamp as usec int64. Default is false.\n(== doc: go\/timestamp-usec-int ==)",
+              "description": "Optional. Output timestamp as usec int64. Default is false.",
               "location": "query",
               "type": "boolean"
             }
@@ -5470,7 +5529,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy.\n\nCan return Public Errors: NOT_FOUND, INVALID_ARGUMENT and PERMISSION_DENIED"
+          "description": "Sets the access control policy on the specified resource. Replaces any\nexisting policy.\n\nCan return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors."
         },
         "getIamPolicy": {
           "id": "bigquery.tables.getIamPolicy",
@@ -5532,7 +5591,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Returns permissions that a caller has on the specified resource.\nIf the resource does not exist, this will return an empty set of\npermissions, not a NOT_FOUND error.\n\nNote: This operation is designed to be used for building permission-aware\nUIs and command-line tools, not for authorization checking. This operation\nmay \"fail open\" without warning."
+          "description": "Returns permissions that a caller has on the specified resource.\nIf the resource does not exist, this will return an empty set of\npermissions, not a `NOT_FOUND` error.\n\nNote: This operation is designed to be used for building permission-aware\nUIs and command-line tools, not for authorization checking. This operation\nmay \"fail open\" without warning."
         }
       }
     },
@@ -5631,7 +5690,7 @@
               "type": "string"
             },
             "formatOptions.useInt64Timestamp": {
-              "description": "Optional. Output timestamp as usec int64. Default is false.\n(== doc: go\/timestamp-usec-int ==)",
+              "description": "Optional. Output timestamp as usec int64. Default is false.",
               "location": "query",
               "type": "boolean"
             }

@@ -4,7 +4,7 @@
  "id": "bigquery:v2",
  "name": "bigquery",
  "version": "v2",
- "revision": "20200325",
+ "revision": "20200428",
  "title": "BigQuery API",
  "description": "A data platform for customers to create, manage, share and query data.",
  "ownerDomain": "google.com",
@@ -294,6 +294,20 @@
      "items": {
       "type": "string"
      }
+    }
+   }
+  },
+  "ConnectionProperty": {
+   "id": "ConnectionProperty",
+   "type": "object",
+   "properties": {
+    "key": {
+     "type": "string",
+     "description": "[Required] Name of the connection property to set."
+    },
+    "value": {
+     "type": "string",
+     "description": "[Required] Value of the connection property."
     }
    }
   },
@@ -769,10 +783,6 @@
      "$ref": "GoogleSheetsOptions",
      "description": "[Optional] Additional options if sourceFormat is set to GOOGLE_SHEETS."
     },
-    "hivePartitioningMode": {
-     "type": "string",
-     "description": "[Optional, Trusted Tester] Deprecated, do not use. Please set hivePartitioningOptions instead."
-    },
     "hivePartitioningOptions": {
      "$ref": "HivePartitioningOptions",
      "description": "[Optional, Trusted Tester] Options to configure hive partitioning support."
@@ -1101,10 +1111,6 @@
      "type": "string",
      "description": "[Optional] The separator for fields in a CSV file. The separator can be any ISO-8859-1 single-byte character. To use a character in the range 128-255, you must encode the character as UTF8. BigQuery converts the string to ISO-8859-1 encoding, and then uses the first byte of the encoded string to split the data in its raw, binary state. BigQuery also supports the escape sequence \"\\t\" to specify a tab separator. The default value is a comma (',')."
     },
-    "hivePartitioningMode": {
-     "type": "string",
-     "description": "[Optional, Trusted Tester] Deprecated, do not use. Please set hivePartitioningOptions instead."
-    },
     "hivePartitioningOptions": {
      "$ref": "HivePartitioningOptions",
      "description": "[Optional, Trusted Tester] Options to configure hive partitioning support."
@@ -1205,7 +1211,7 @@
      "type": "array",
      "description": "Connection properties.",
      "items": {
-      "type": "any"
+      "$ref": "ConnectionProperty"
      }
     },
     "createDisposition": {
@@ -1979,7 +1985,7 @@
      "type": "array",
      "description": "Connection properties.",
      "items": {
-      "type": "any"
+      "$ref": "ConnectionProperty"
      }
     },
     "defaultDataset": {

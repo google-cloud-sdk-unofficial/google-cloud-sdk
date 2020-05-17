@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for Stackdriver Monitoring dashboards."""
+"""The command group for Cloud Monitoring dashboards."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,4 +24,10 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Web(base.Group):
-  """Manage Stackdriver Monitoring dashboards."""
+  """Manage Cloud Monitoring dashboards.
+
+  The {command} group lets you manage Monitoring dashboards.
+
+  More information on managing dashboards can be found here:
+  https://cloud.google.com/monitoring/dashboards/api-dashboard
+  """

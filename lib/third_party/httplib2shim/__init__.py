@@ -218,7 +218,9 @@ def _map_response(response, decode=False):
     """Maps a urllib3 response to a httplib/httplib2 Response."""
     # This causes weird deepcopy errors, so it's commented out for now.
     # item._urllib3_response = response
-    item = httplib2.Response(response.getheaders())
+    headers = response.getheaders()
+    headers.pop('status', None)  # httplib2 ignores this header too
+    item = httplib2.Response(headers)
     item.status = response.status
     item['status'] = str(item.status)
     item.reason = response.reason

@@ -27,6 +27,7 @@ import tempfile
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import kubernetes
 from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
@@ -36,8 +37,6 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
 import six
-
-DEFAULT_CLUSTER_NAME = 'gcloud-local-dev'
 
 
 def _EmptyHandler(unused_signum, unused_stack):
@@ -216,6 +215,8 @@ class Dev(base.Command):
 
   @classmethod
   def Args(cls, parser):
+    flags.CommonFlags(parser)
+
     group = parser.add_mutually_exclusive_group(required=False)
 
     group.add_argument('--kube-context', help='Kubernetes context.')
@@ -284,14 +285,14 @@ class Dev(base.Command):
       if args.IsSpecified('kind_cluster'):
         cluster_name = args.kind_cluster
       else:
-        cluster_name = DEFAULT_CLUSTER_NAME
+        cluster_name = kubernetes.DEFAULT_CLUSTER_NAME
       return kubernetes.KindClusterContext(cluster_name, args.stop_cluster)
 
     def Minikube():
       if args.IsSpecified('minikube_profile'):
         cluster_name = args.minikube_profile
       else:
-        cluster_name = DEFAULT_CLUSTER_NAME
+        cluster_name = kubernetes.DEFAULT_CLUSTER_NAME
 
       return kubernetes.Minikube(cluster_name, args.stop_cluster,
                                  args.minikube_vm_driver)

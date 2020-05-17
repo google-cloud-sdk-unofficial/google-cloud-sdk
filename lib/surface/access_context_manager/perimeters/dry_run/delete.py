@@ -24,8 +24,8 @@ from googlecloudsdk.command_lib.accesscontextmanager import perimeters
 from googlecloudsdk.command_lib.accesscontextmanager import policies
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeletePerimeterDryRunBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class DeletePerimeterDryRun(base.UpdateCommand):
   """Marks the Service Perimeter for deletion in the dry-run mode."""
   _API_VERSION = 'v1'
 
@@ -46,7 +46,7 @@ class DeletePerimeterDryRunBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeletePerimeterDryRunAlpha(DeletePerimeterDryRunBeta):
+class DeletePerimeterDryRunAlpha(DeletePerimeterDryRun):
   """Marks the Service Perimeter for deletion in the dry-run mode."""
   _API_VERSION = 'v1alpha'
 
@@ -65,4 +65,4 @@ detailed_help = {
 }
 
 DeletePerimeterDryRunAlpha.detailed_help = detailed_help
-DeletePerimeterDryRunBeta.detailed_help = detailed_help
+DeletePerimeterDryRun.detailed_help = detailed_help

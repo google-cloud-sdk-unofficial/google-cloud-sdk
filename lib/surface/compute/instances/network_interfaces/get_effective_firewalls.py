@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -96,7 +97,7 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
             .InstancesGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
                 id=sp.id, rules=org_firewall_rule))
     if args.IsSpecified('format') and args.format == 'json':
-      return client.messages.InstancesGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
+      return client.messages.InstancesGetEffectiveFirewallsResponse(
           organizationFirewalls=org_firewall, firewalls=network_firewall)
 
     result = []
@@ -108,6 +109,10 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
             network_firewall))
     return result
 
+  def Epilog(self, resources_were_displayed):
+    del resources_were_displayed
+    log.status.Print('\n' + firewalls_utils.LIST_NOTICE)
+
 
 GetEffectiveFirewalls.detailed_help = {
     'EXAMPLES':
@@ -117,5 +122,26 @@ GetEffectiveFirewalls.detailed_help = {
       $ {command} example-instance,
     To show all fields of the firewall rules, please show in JSON format with
     option --format=json
-    """,
+
+    To see more firewall rule fields in table format, run the following for
+    "example-instance":
+
+      $ {command} example-instance --format="table(
+        type,
+        security_policy_id,
+        priority,
+        action,
+        direction,
+        ip_ranges.list():label=IP_RANGES,
+        target_svc_acct,
+        enableLogging,
+        description,
+        name,
+        disabled,
+        target_tags,
+        src_svc_acct,
+        src_tags,
+        ruleTupleCount,
+        targetResources:label=TARGET_RESOURCES)"
+        """,
 }

@@ -30,11 +30,6 @@
       help_text: |
         Arguments and flags specifying the worker pool you want to create.
     params:
-    - api_field: workerPool.workerCount
-      arg_name: worker-count
-      required: true
-      help_text: |
-        Number of workers that should be in the worker pool.
     - api_field: workerPool.workerConfig.diskSizeGb
       arg_name: disk-size
       required: false
@@ -92,6 +87,28 @@
             Type of accelerator to attach to each VM in the pool, e.g. 'nvidia-tesla-k80' for
             nVidia Tesla K80. Run `gcloud compute accelerator-types list` to learn about all
             available accelerator types.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: worker-count
+          api_field: workerPool.workerCount
+          help_text: |
+            Number of workers that should be in the worker pool.
+        - group:
+            help_text: |
+                Either both or none of autoscale-min-size and autoscale-max-size should be set.
+            params:
+            - api_field: workerPool.autoscale.minSize
+              arg_name: autoscale-min-size
+              required: true
+              help_text: The minimal number of autoscale workers. Must be greater than 0.
+            - api_field: workerPool.autoscale.maxSize
+              arg_name: autoscale-max-size
+              required: true
+              help_text: |
+                The maximal number of autoscale workers. Must be equal to or greater than
+                autoscale-min-size.
     - api_field: workerPool.workerConfig.networkAccess
       arg_name: network-access
       required: false

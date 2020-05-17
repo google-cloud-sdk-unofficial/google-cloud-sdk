@@ -9,9 +9,9 @@
       the policy file format and contents.
     examples: |
       The following command will read am IAM policy defined in a JSON file
-      'policy.json' and set it for the CA 'prod-root' with the location 'us':
+      'policy.json' and set it for the CA 'prod-root' with the location 'us-west1':
 
-        $ {command} prod-root policy.json --location us
+        $ {command} prod-root policy.json --location us-west1
 
   request:
     collection: privateca.projects.locations.certificateAuthorities

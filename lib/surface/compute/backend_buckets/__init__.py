@@ -27,7 +27,7 @@ class BackendBuckets(base.Group):
   Backend buckets define Cloud Storage buckets that can serve content.
   URL maps define which requests are sent to which backend buckets. For more
   information, see:
-  https://cloud.google.com/compute/docs/load-balancing/http/adding-a-backend-bucket-to-content-based-load-balancing.
+  https://cloud.google.com/load-balancing/docs/https/ext-load-balancer-backend-buckets.
   """
 
 
@@ -40,7 +40,7 @@ BackendBuckets.detailed_help = {
         requests are sent to which backend buckets.
 
         For more information about backend buckets, see the
-        [backend buckets documentation](https://cloud.google.com/load-balancing/docs/https/adding-backend-buckets-to-load-balancers).
+        [backend buckets documentation](https://cloud.google.com/load-balancing/docs/https/ext-load-balancer-backend-buckets).
 
         See also: [Backend buckets API](https://cloud.google.com/compute/docs/reference/rest/v1/backendBuckets).
     """,

@@ -1644,7 +1644,6 @@ def _CreateExternalTableDefinition(
       external_table_def['schema'] = {'fields': fields}
 
     if connection_id:
-      print('Connection Id: %s' % (connection_id,))
       external_table_def['connectionId'] = connection_id
 
     external_table_def['sourceUris'] = source_uris.split(',')
@@ -2335,9 +2334,9 @@ def _GetExternalDataConfig(file_path_or_simple_spec):
     try:
       with open(file_path_or_simple_spec) as external_config_file:
         return yaml.safe_load(external_config_file)
-    except ValueError as e:
+    except yaml.error.YAMLError as e:
       raise app.UsageError(
-          ('Error decoding JSON external table definition from '
+          ('Error decoding YAML external table definition from '
            'file %s: %s') % (file_path_or_simple_spec, e))
   else:
     source_format = 'CSV'
@@ -3764,6 +3763,35 @@ class _Make(BigqueryCmd):
         None,
         'Creates a reservation described by this identifier. ',
         flag_values=fv)
+    flags.DEFINE_boolean(
+        'capacity_commitment',
+        None,
+        'Creates a capacity commitment. You do not need to specify a capacity '
+        'commitment id, this will be assigned automatically.',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'plan',
+        None,
+        [
+            'FLEX',
+            'MONTHLY',
+            'ANNUAL',
+        ],
+        'Commitment plan for this capacity commitment. Plans cannot be deleted '
+        'before their commitment period is over. Options include:'
+        '\n FLEX'
+        '\n MONTHLY'
+        '\n ANNUAL',
+        flag_values=fv)
+    flags.DEFINE_enum(
+        'renewal_plan',
+        None, ['FLEX', 'MONTHLY', 'ANNUAL'],
+        'The plan this capacity commitment is converted to after committed '
+        'period ends. Options include:'
+        '\n FLEX'
+        '\n MONTHLY'
+        '\n ANNUAL',
+        flag_values=fv)
     flags.DEFINE_integer(
         'slots',
         0,
@@ -3916,6 +3944,21 @@ class _Make(BigqueryCmd):
       except BaseException as e:
         raise bigquery_client.BigqueryError(
             "Failed to create reservation '%s': %s" % (identifier, e))
+      if object_info is not None:
+        _PrintObjectInfo(object_info, reference, custom_format='show')
+    elif self.capacity_commitment:
+      reference = client.GetCapacityCommitmentReference(
+          identifier=identifier,
+          default_location=FLAGS.location,
+          default_capacity_commitment_id=' ')
+      try:
+        object_info = client.CreateCapacityCommitment(reference, self.slots,
+                                                      self.plan,
+                                                      self.renewal_plan)
+      except BaseException as e:
+        raise bigquery_client.BigqueryError(
+            "Failed to create capacity commitment in '%s': %s" %
+            (identifier, e))
       if object_info is not None:
         _PrintObjectInfo(object_info, reference, custom_format='show')
     elif self.reservation_assignment:
@@ -6219,6 +6262,8 @@ def _ParseParameterValue(type_dict, value_input):
     values = [
         _ParseParameterValue(type_dict['arrayType'], x) for x in value_input
     ]
+    if not values:          # Workaround to pass empty array parameter.
+      return {'value': {}}  # An empty arrayValues list is the same as NULL.
     return {'arrayValues': values}
   return {'value': value_input if value_input != 'NULL' else None}
 

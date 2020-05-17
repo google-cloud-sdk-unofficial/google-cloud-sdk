@@ -1,6 +1,6 @@
 - help_text:
-    brief: Delete a Stackdriver alerting policy.
-    description: Delete a Stackdriver alerting policy.
+    brief: Delete a Cloud Monitoring alerting policy.
+    description: Delete a Monitoring alerting policy.
 
   request:
     collection: monitoring.projects.alertPolicies

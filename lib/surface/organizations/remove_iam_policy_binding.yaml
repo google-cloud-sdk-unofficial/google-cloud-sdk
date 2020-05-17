@@ -44,29 +44,3 @@ iam:
   enable_condition: true
   policy_version: 3
   get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion
-
-GA:
-  help_text:
-    brief: Remove IAM policy binding for an organization
-    description: |
-      Removes a policy binding from the IAM policy of an organization, given an organization ID and
-      the binding. One binding consists of a member and a role.
-
-    examples: |
-      To remove an IAM policy binding for the role of 'roles/editor' for the user
-      'test-user@gmail.com' on organization with identifier 'example-organization-id-1', run:
-
-          $ {command} example-organization-id-1 --member='user:test-user@gmail.com' --role='roles/editor'
-
-      To remove an IAM policy binding for the role of 'roles/editor' from all authenticated users on
-      organization 'example-organization-id-1', run:
-
-          $ {command} example-organization-id-1 --member='allAuthenticatedUsers' --role='roles/editor'
-
-      See https://cloud.google.com/iam/help/members/types for details about member types.
-      See https://cloud.google.com/iam/help/roles/reference for details about roles.
-
-  iam:
-    enable_condition: false
-    policy_version: 3
-    get_iam_policy_version_path: getIamPolicyRequest.options.requestedPolicyVersion

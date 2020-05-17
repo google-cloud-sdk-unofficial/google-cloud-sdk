@@ -168,7 +168,7 @@ class SecurityKeyChallenge(ReauthChallenge):
 
 
 class SamlChallenge(ReauthChallenge):
-    """Challenge that asks users to complete SAML login."""
+    """Challenge that asks SAML users to complete SAML login."""
 
     def GetName(self):
         return 'SAML'
@@ -177,6 +177,9 @@ class SamlChallenge(ReauthChallenge):
         return True
 
     def InternalObtainCredentials(self, unused_metadata):
+        # Margic Arch has not fully supported returning a proper redirect URL
+        # for programmatic SAML users today. So we error out here and request
+        # users to complete a web login.
         raise reauth_errors.ReauthSamlLoginRequiredError()
 
 

@@ -8,9 +8,9 @@
       Returns an empty policy if the resource does not have a policy
       set.
     examples: |
-     To get the IAM policy for the CA 'prod-root' with the location 'us', run:
+     To get the IAM policy for the CA 'prod-root' with the location 'us-west1', run:
 
-       $ {command} prod-root --location us
+       $ {command} prod-root --location us-west1
 
   request:
     collection: privateca.projects.locations.certificateAuthorities

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.auth import auth_util as command_auth_util
 from googlecloudsdk.command_lib.util import check_browser
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import gce as c_gce
@@ -111,6 +112,14 @@ class Login(base.Command):
              'tool and write it to application default credentials as the '
              'quota project.'
     )
+    parser.add_argument(
+        '--use-oauth2client',
+        action='store_true',
+        default=False,
+        hidden=True,
+        help='The gcloud command-line tool is using google-auth-library-python '
+        'as its new auth library during login. Use this flag to switch '
+        'back to the oauth2client.')
     parser.display_info.AddFormat('none')
 
   def Run(self, args):
@@ -131,21 +140,29 @@ class Login(base.Command):
           message=message, throw_if_unattended=True, cancel_on_no=True)
 
     command_auth_util.PromptIfADCEnvVarIsSet()
-    scopes = args.scopes or auth_util.DEFAULT_SCOPES
     # This reauth scope is only used here and when refreshing the access token.
-    scopes += [config.REAUTH_SCOPE]
+    scopes = (args.scopes or auth_util.DEFAULT_SCOPES) + [config.REAUTH_SCOPE]
     launch_browser = check_browser.ShouldLaunchBrowser(args.launch_browser)
-    if args.client_id_file:
-      creds = auth_util.DoInstalledAppBrowserFlow(
-          launch_browser=launch_browser,
-          scopes=scopes,
-          client_id_file=args.client_id_file)
+    if args.use_oauth2client:
+      if args.client_id_file:
+        creds = auth_util.DoInstalledAppBrowserFlow(
+            launch_browser=launch_browser,
+            scopes=scopes,
+            client_id_file=args.client_id_file)
+      else:
+        creds = auth_util.DoInstalledAppBrowserFlow(
+            launch_browser=launch_browser,
+            scopes=scopes,
+            client_id=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID,
+            client_secret=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
+
     else:
-      creds = auth_util.DoInstalledAppBrowserFlow(
-          launch_browser=launch_browser,
-          scopes=scopes,
-          client_id=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID,
-          client_secret=auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
+      properties.VALUES.auth.client_id.Set(
+          auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID)
+      properties.VALUES.auth.client_secret.Set(
+          auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
+      creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
+          launch_browser, scopes, client_id_file=args.client_id_file)
 
     if args.IsSpecified('client_id_file') or not args.add_quota_project:
       full_path = c_creds.ADC(creds).DumpADCToFile()

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Stackdriver Monitoring channel descriptors."""
+"""Command group for Cloud Monitoring channel descriptors."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,12 +23,12 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ChannelDescriptors(base.Group):
-  """Read Stackdriver Monitoring notification channel descriptors."""
+  """Read Cloud Monitoring notification channel descriptors."""
 
   detailed_help = {
       'DESCRIPTION':
           """\
-          Manage Stackdriver Monitoring notification channel descriptors.
+          Manage Monitoring notification channel descriptors.
 
           More information can be found here:
           https://cloud.google.com/monitoring/api/v3/

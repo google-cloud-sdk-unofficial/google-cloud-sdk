@@ -81,7 +81,7 @@ class RestoreTables(base.RestoreCommand):
     operation_ref = util.GetOperationRef(operation)
     if args.async_:
       log.CreatedResource(
-          operation_ref,
+          operation_ref.RelativeName(),
           kind='bigtable table {0}'.format(table_ref.Name()),
           is_async=True)
       return

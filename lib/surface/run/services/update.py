@@ -35,14 +35,15 @@ from googlecloudsdk.core.console import progress_tracker
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.Command):
-  """Update Cloud Run environment variables and other configuration settings.
-  """
+  """Update Cloud Run environment variables and other configuration settings."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION':
+          """\
           {description}
           """,
-      'EXAMPLES': """\
+      'EXAMPLES':
+          """\
           To update one or more env vars:
 
               $ {command} myservice --update-env-vars=KEY1=VALUE1,KEY2=VALUE2
@@ -59,6 +60,9 @@ class Update(base.Command):
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
+    flags.AddSecretsFlags(cluster_group)
+    flags.AddConfigMapsFlags(cluster_group)
+    flags.AddHttp2Flag(cluster_group)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -78,6 +82,7 @@ class Update(base.Command):
     flags.AddArgsFlag(parser)
     flags.AddPortFlag(parser)
     flags.AddCpuFlag(parser)
+    flags.AddNoTrafficFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -87,6 +92,10 @@ class Update(base.Command):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddServiceAccountFlag(managed_group)
+
+    # Flags only supported on GKE and Knative
+    cluster_group = flags.GetClusterArgGroup(parser)
+    flags.AddMinInstancesFlag(cluster_group)
 
   def Run(self, args):
     """Update configuration information about the service.
@@ -109,21 +118,20 @@ class Update(base.Command):
 
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
-      has_latest = (service is None or
-                    traffic.LATEST_REVISION_KEY in service.spec_traffic)
+      has_latest = (
+          service is None or
+          traffic.LATEST_REVISION_KEY in service.spec_traffic)
       deployment_stages = stages.ServiceStages(
-          include_iam_policy_set=False,
-          include_route=has_latest)
+          include_iam_policy_set=False, include_route=has_latest)
       with progress_tracker.StagedProgressTracker(
           'Deploying...',
           deployment_stages,
           failure_message='Deployment failed',
           suppress_output=args.async_) as tracker:
-        client.ReleaseService(service_ref, changes, tracker, asyn=args.async_,
-                              prefetch=service)
+        client.ReleaseService(
+            service_ref, changes, tracker, asyn=args.async_, prefetch=service)
       if args.async_:
-        pretty_print.Success(
-            'Deploying asynchronously.')
+        pretty_print.Success('Deploying asynchronously.')
       else:
         service = client.GetService(service_ref)
         latest_ready = service.status.latestReadyRevisionName
@@ -144,8 +152,7 @@ class Update(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
-  """Update Cloud Run environment variables and other configuration settings.
-  """
+  """Update Cloud Run environment variables and other configuration settings."""
 
   @staticmethod
   def Args(parser):
@@ -154,12 +161,6 @@ class AlphaUpdate(Update):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddVpcConnectorArg(managed_group)
-
-    # Flags specific to connecting to a cluster
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddSecretsFlags(cluster_group)
-    flags.AddConfigMapsFlags(cluster_group)
-    flags.AddHttp2Flag(cluster_group)
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)

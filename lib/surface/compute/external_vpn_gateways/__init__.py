@@ -37,8 +37,8 @@ ExternalVpnGateways.detailed_help = {
     'DESCRIPTION': """
         Read and manipulate external VPN gateways for Cloud VPN.
 
-        For more information about external VPN Gateways, see the
-        [external VPN Gateways documentation](https://cloud.google.com/vpn/docs/concepts/overview#external-vpn-gateway-definition).
+        For more information about external VPN gateways, see the
+        [external VPN Gateways documentation](https://cloud.google.com/vpn/docs/concepts/key-terms#external-vpn-gateway-definition).
 
         See also: [External VPN Gateways API](https://cloud.google.com/compute/docs/reference/rest/v1/externalVpnGateways).
     """,

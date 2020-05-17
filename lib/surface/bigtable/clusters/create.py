@@ -68,7 +68,7 @@ class CreateCluster(base.CreateCommand):
     operation_ref = util.GetOperationRef(operation)
     if args.async_:
       log.CreatedResource(
-          operation_ref,
+          operation_ref.RelativeName(),
           kind='bigtable cluster {0}'.format(cluster_ref.Name()),
           is_async=True)
       return

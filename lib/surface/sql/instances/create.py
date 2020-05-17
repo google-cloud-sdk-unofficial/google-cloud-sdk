@@ -219,7 +219,9 @@ def RunBaseCreateCommand(args, release_track):
       args.region = master_instance_resource.region
     if not args.IsSpecified('database_version'):
       args.database_version = master_instance_resource.databaseVersion.name
-    if not args.IsSpecified('tier') and master_instance_resource.settings:
+    if not args.IsSpecified('tier') and not (
+        args.IsSpecified('cpu') or
+        args.IsSpecified('memory')) and master_instance_resource.settings:
       args.tier = master_instance_resource.settings.tier
 
     # Validate master/replica CMEK configurations.

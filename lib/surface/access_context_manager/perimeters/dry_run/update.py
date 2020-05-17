@@ -40,8 +40,8 @@ def _IsFieldSpecified(field_name, args):
   return any(args.IsSpecified(arg) for arg in list_args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdatePerimeterDryRunBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class UpdatePerimeterDryRun(base.UpdateCommand):
   """Updates the dry-run mode configuration for a Service Perimeter."""
   _API_VERSION = 'v1'
 
@@ -136,7 +136,7 @@ class UpdatePerimeterDryRunBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdatePerimeterDryRunAlpha(UpdatePerimeterDryRunBeta):
+class UpdatePerimeterDryRunAlpha(UpdatePerimeterDryRun):
   """Updates the dry-run mode configuration for a Service Perimeter."""
   _API_VERSION = 'v1alpha'
 
@@ -166,4 +166,4 @@ detailed_help = {
 }
 
 UpdatePerimeterDryRunAlpha.detailed_help = detailed_help
-UpdatePerimeterDryRunBeta.detailed_help = detailed_help
+UpdatePerimeterDryRun.detailed_help = detailed_help

@@ -70,7 +70,7 @@ class Describe(base.Command):
     resource_printer.RegisterFormatter(
         service_printer.SERVICE_PRINTER_FORMAT,
         service_printer.ServicePrinter)
-    args.GetDisplayInfo().AddFormat('service')
+    args.GetDisplayInfo().AddFormat(service_printer.SERVICE_PRINTER_FORMAT)
     # End code that should be in Args
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())

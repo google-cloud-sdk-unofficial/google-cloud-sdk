@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Delete a Stackdriver Monitoring dashboard.
-    description: Delete a Stackdriver Monitoring dashboard.
+    brief: Delete a Cloud Monitoring dashboard.
+    description: Delete a Monitoring dashboard.
     examples: |
       To delete a dashboard, run:
 

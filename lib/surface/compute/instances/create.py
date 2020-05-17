@@ -23,14 +23,15 @@ import re
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import base_classes_resource_registry as resource_registry
 from googlecloudsdk.api_lib.compute import csek_utils
-from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
+from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags as maintenance_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as maintenance_util
@@ -161,6 +162,7 @@ def _CommonArgs(parser,
 class Create(base.CreateCommand):
   """Create Google Compute Engine virtual machine instances."""
 
+  _support_regional = False
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
@@ -174,6 +176,9 @@ class Create(base.CreateCommand):
   _support_confidential_compute = False
   _support_post_key_revocation_action_type = False
   _support_rsa_encrypted = False
+  _deprecate_maintenance_policy = False
+  _support_create_disk_snapshots = True
+  _support_boot_snapshot_uri = True
 
   @classmethod
   def Args(cls, parser):
@@ -197,207 +202,6 @@ class Create(base.CreateCommand):
   def GetSourceMachineImage(self, args, resources):
     """Get sourceMachineImage value as required by API."""
     return None
-
-  def _BuildShieldedInstanceConfigMessage(self, messages, args):
-    if (args.IsSpecified('shielded_vm_secure_boot') or
-        args.IsSpecified('shielded_vm_vtpm') or
-        args.IsSpecified('shielded_vm_integrity_monitoring')):
-      return instance_utils.CreateShieldedInstanceConfigMessage(
-          messages, args.shielded_vm_secure_boot, args.shielded_vm_vtpm,
-          args.shielded_vm_integrity_monitoring)
-    else:
-      return None
-
-  def _BuildConfidentialInstanceConfigMessage(self, messages, args):
-    if args.IsSpecified('confidential_compute'):
-      return instance_utils.CreateConfidentialInstanceMessage(
-          messages, args.confidential_compute)
-    else:
-      return None
-
-  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
-                            skip_defaults):
-    return instance_utils.GetNetworkInterfaces(args, client, holder, project,
-                                               zone, skip_defaults)
-
-  def _GetDiskMessages(self, args, skip_defaults, instance_refs, compute_client,
-                       resource_parser, create_boot_disk, boot_disk_size_gb,
-                       image_uri, csek_keys):
-    flags_to_check = [
-        'disk',
-        'local_ssd',
-        'boot_disk_type',
-        'boot_disk_device_name',
-        'boot_disk_auto_delete',
-        'require_csek_key_create',
-    ]
-    if self._support_kms:
-      flags_to_check.extend([
-          'create_disk',
-          'boot_disk_kms_key',
-          'boot_disk_kms_project',
-          'boot_disk_kms_location',
-          'boot_disk_kms_keyring',
-      ])
-    if self._support_nvdimm:
-      flags_to_check.extend(['local_nvdimm'])
-
-    if (skip_defaults and
-        not instance_utils.IsAnySpecified(args, *flags_to_check)):
-      return [[] for _ in instance_refs]
-
-    # A list of lists where the element at index i contains a list of
-    # disk messages that should be set for the instance at index i.
-    disks_messages = []
-
-    # A mapping of zone to boot disk references for all existing boot
-    # disks that are being attached.
-    # TODO(b/36050875): Simplify since resources.Resource is now hashable.
-    for instance_ref in instance_refs:
-      disks_messages.append(
-          self._CreateDiskMessage(args, skip_defaults, instance_ref.Name(),
-                                  instance_ref.project, instance_ref.zone,
-                                  compute_client, resource_parser,
-                                  create_boot_disk, boot_disk_size_gb,
-                                  image_uri, csek_keys))
-    return disks_messages
-
-  def _CreateDiskMessage(self, args, skip_defaults, instance_name, project,
-                         zone, compute_client, resource_parser,
-                         create_boot_disk, boot_disk_size_gb, image_uri,
-                         csek_keys):
-    persistent_disks = (
-        instance_utils.CreatePersistentAttachedDiskMessages(
-            resource_parser, compute_client, csek_keys, args.disk or [],
-            project, zone))
-    persistent_create_disks = (
-        instance_utils.CreatePersistentCreateDiskMessages(
-            compute_client,
-            resource_parser,
-            csek_keys,
-            getattr(args, 'create_disk', []),
-            project,
-            zone,
-            enable_kms=self._support_kms,
-            enable_snapshots=True,
-            resource_policy=self._support_disk_resource_policy,
-            enable_source_snapshot_csek=self._support_source_snapshot_csek,
-            enable_image_csek=self._support_image_csek))
-    local_nvdimms = []
-    if self._support_nvdimm:
-      local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
-          args, resource_parser, compute_client.messages, zone, project)
-    local_ssds = instance_utils.CreateLocalSsdMessages(args, resource_parser,
-                                                       compute_client.messages,
-                                                       zone, project)
-
-    if create_boot_disk:
-      boot_snapshot_uri = instance_utils.ResolveSnapshotURI(
-          user_project=project,
-          snapshot=args.source_snapshot,
-          resource_parser=resource_parser)
-
-      boot_disk = instance_utils.CreateDefaultBootAttachedDiskMessage(
-          compute_client,
-          resource_parser,
-          disk_type=args.boot_disk_type,
-          disk_device_name=args.boot_disk_device_name,
-          disk_auto_delete=args.boot_disk_auto_delete,
-          disk_size_gb=boot_disk_size_gb,
-          require_csek_key_create=(args.require_csek_key_create
-                                   if csek_keys else None),
-          image_uri=image_uri,
-          instance_name=instance_name,
-          project=project,
-          zone=zone,
-          csek_keys=csek_keys,
-          kms_args=args,
-          snapshot_uri=boot_snapshot_uri,
-          enable_kms=self._support_kms)
-      persistent_disks = [boot_disk] + persistent_disks
-    return persistent_disks + persistent_create_disks + local_nvdimms + local_ssds
-
-  def _GetProjectToServiceAccountMap(self, args, instance_refs, client,
-                                     skip_defaults):
-    project_to_sa = {}
-    for instance_ref in instance_refs:
-      if instance_ref.project not in project_to_sa:
-        project_to_sa[instance_ref.project] = self._GetProjectServiceAccount(
-            args, instance_ref.Name(), instance_ref.project, client,
-            skip_defaults)
-    return project_to_sa
-
-  def _GetProjectServiceAccount(
-      self,
-      args,
-      instance_name,
-      project,
-      client,
-      skip_defaults,
-  ):
-    scopes = None
-    if not args.no_scopes and not args.scopes:
-      # User didn't provide any input on scopes. If project has no default
-      # service account then we want to create a VM with no scopes
-      request = (client.apitools_client.projects, 'Get',
-                 client.messages.ComputeProjectsGetRequest(project=project))
-      errors = []
-      result = client.MakeRequests([request], errors)
-      if not errors:
-        if not result[0].defaultServiceAccount:
-          scopes = []
-          log.status.Print(
-              'There is no default service account for project {}. '
-              'Instance {} will not have scopes.'.format(
-                  project, instance_name))
-    if scopes is None:
-      scopes = [] if args.no_scopes else args.scopes
-
-    if args.no_service_account:
-      service_account = None
-    else:
-      service_account = args.service_account
-    if (skip_defaults and not args.IsSpecified('scopes') and
-        not args.IsSpecified('no_scopes') and
-        not args.IsSpecified('service_account') and
-        not args.IsSpecified('no_service_account')):
-      service_accounts = []
-    else:
-      service_accounts = instance_utils.CreateServiceAccountMessages(
-          messages=client.messages,
-          scopes=scopes,
-          service_account=service_account)
-    return service_accounts
-
-  def _GetImageUri(self, args, client, create_boot_disk, project,
-                   resource_parser):
-    if create_boot_disk:
-      image_expander = image_utils.ImageExpander(client, resource_parser)
-      image_uri, _ = image_expander.ExpandImageFlag(
-          user_project=project,
-          image=args.image,
-          image_family=args.image_family,
-          image_project=args.image_project,
-          return_image_resource=False)
-      return image_uri
-
-  def _GetNetworkInterfacesWithValidation(self, args, resource_parser,
-                                          compute_client, holder, project, zone,
-                                          skip_defaults):
-    if args.network_interface:
-      return instance_utils.CreateNetworkInterfaceMessages(
-          resources=resource_parser,
-          compute_client=compute_client,
-          network_interface_arg=args.network_interface,
-          project=project,
-          zone=zone)
-    else:
-      instances_flags.ValidatePublicPtrFlags(args)
-      if self._support_public_dns:
-        instances_flags.ValidatePublicDnsFlags(args)
-
-      return self._GetNetworkInterfaces(args, compute_client, holder, project,
-                                        zone, skip_defaults)
 
   def _CreateRequests(self, args, instance_refs, project, zone, compute_client,
                       resource_parser, holder):
@@ -425,45 +229,79 @@ class Create(base.CreateCommand):
     metadata = instance_utils.GetMetadata(args, compute_client, skip_defaults)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
 
-    network_interfaces = self._GetNetworkInterfacesWithValidation(
-        args, resource_parser, compute_client, holder, project, zone,
-        skip_defaults)
-
-    machine_type_uris = instance_utils.GetMachineTypeUris(
-        args, compute_client, holder, instance_refs, skip_defaults)
+    network_interfaces = create_utils.GetNetworkInterfacesWithValidation(
+        args=args,
+        resource_parser=resource_parser,
+        compute_client=compute_client,
+        holder=holder,
+        project=project,
+        zone=zone,
+        skip_defaults=skip_defaults,
+        support_public_dns=self._support_public_dns)
 
     create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
-    image_uri = self._GetImageUri(args, compute_client, create_boot_disk,
-                                  project, resource_parser)
+    image_uri = create_utils.GetImageUri(args, compute_client, create_boot_disk,
+                                         project, resource_parser)
 
-    shielded_instance_config = self._BuildShieldedInstanceConfigMessage(
+    shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
         messages=compute_client.messages, args=args)
 
     if self._support_confidential_compute:
       confidential_instance_config = (
-          self._BuildConfidentialInstanceConfigMessage(
+          create_utils.BuildConfidentialInstanceConfigMessage(
               messages=compute_client.messages, args=args))
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args,
                                                  self._support_rsa_encrypted)
-    disks_messages = self._GetDiskMessages(args, skip_defaults, instance_refs,
-                                           compute_client, resource_parser,
-                                           create_boot_disk, boot_disk_size_gb,
-                                           image_uri, csek_keys)
 
-    project_to_sa = self._GetProjectToServiceAccountMap(args, instance_refs,
-                                                        compute_client,
-                                                        skip_defaults)
+    project_to_sa = create_utils.GetProjectToServiceAccountMap(
+        args, instance_refs, compute_client, skip_defaults)
 
     requests = []
-    for instance_ref, machine_type_uri, disks in zip(instance_refs,
-                                                     machine_type_uris,
-                                                     disks_messages):
+    for instance_ref in instance_refs:
+
+      disks = []
+      if create_utils.CheckSpecifiedDiskArgs(
+          args=args, skip_defaults=skip_defaults,
+          support_kms=self._support_kms):
+        disks = create_utils.CreateDiskMessages(
+            args=args,
+            instance_name=instance_ref.Name(),
+            project=instance_ref.project,
+            location=instance_ref.zone,
+            scope=compute_scopes.ScopeEnum.ZONE,
+            compute_client=compute_client,
+            resource_parser=resource_parser,
+            boot_disk_size_gb=boot_disk_size_gb,
+            image_uri=image_uri,
+            create_boot_disk=create_boot_disk,
+            csek_keys=csek_keys,
+            support_kms=self._support_kms,
+            support_nvdimm=self._support_nvdimm,
+            support_disk_resource_policy=self._support_disk_resource_policy,
+            support_source_snapshot_csek=self._support_source_snapshot_csek,
+            support_boot_snapshot_uri=self._support_boot_snapshot_uri,
+            support_image_csek=self._support_image_csek,
+            support_create_disk_snapshots=self._support_create_disk_snapshots)
+
+      machine_type_uri = None
+      if instance_utils.CheckSpecifiedMachineTypeArgs(args, skip_defaults):
+        machine_type_uri = instance_utils.CreateMachineTypeUri(
+            args=args,
+            compute_client=compute_client,
+            resource_parser=resource_parser,
+            project=instance_ref.project,
+            location=instance_ref.zone,
+            scope=compute_scopes.ScopeEnum.ZONE)
 
       can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
-      guest_accelerators = instance_utils.GetAccelerators(
-          args, compute_client, resource_parser, instance_ref.project,
-          instance_ref.zone)
+      guest_accelerators = create_utils.GetAccelerators(
+          args=args,
+          compute_client=compute_client,
+          resource_parser=resource_parser,
+          project=instance_ref.project,
+          location=instance_ref.zone,
+          scope=compute_scopes.ScopeEnum.ZONE)
 
       instance = compute_client.messages.Instance(
           canIpForward=can_ip_forward,
@@ -617,6 +455,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create Google Compute Engine virtual machine instances."""
 
+  _support_regional = True
   _support_kms = True
   _support_nvdimm = False
   _support_public_dns = False
@@ -630,11 +469,9 @@ class CreateBeta(Create):
   _support_confidential_compute = False
   _support_post_key_revocation_action_type = False
   _support_rsa_encrypted = True
-
-  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
-                            skip_defaults):
-    return instance_utils.GetNetworkInterfaces(args, client, holder,
-                                               project, zone, skip_defaults)
+  _deprecate_maintenance_policy = False
+  _support_create_disk_snapshots = True
+  _support_boot_snapshot_uri = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -656,8 +493,8 @@ class CreateBeta(Create):
   def Args(cls, parser):
     _CommonArgs(
         parser,
-        enable_regional=True,
-        enable_kms=True,
+        enable_regional=cls._support_regional,
+        enable_kms=cls._support_kms,
         enable_resource_policy=cls._support_disk_resource_policy,
         supports_erase_vss=cls._support_erase_vss,
         supports_min_node_cpu=cls._support_min_node_cpu)
@@ -675,6 +512,7 @@ class CreateBeta(Create):
 class CreateAlpha(CreateBeta):
   """Create Google Compute Engine virtual machine instances."""
 
+  _support_regional = True
   _support_kms = True
   _support_nvdimm = True
   _support_public_dns = True
@@ -688,26 +526,23 @@ class CreateAlpha(CreateBeta):
   _support_confidential_compute = True
   _support_post_key_revocation_action_type = True
   _support_rsa_encrypted = True
-
-  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
-                            skip_defaults):
-    return instance_utils.GetNetworkInterfacesAlpha(args, client, holder,
-                                                    project, zone,
-                                                    skip_defaults)
+  _deprecate_maintenance_policy = True
+  _support_create_disk_snapshots = True
+  _support_boot_snapshot_uri = True
 
   @classmethod
   def Args(cls, parser):
     _CommonArgs(
         parser,
-        enable_regional=True,
-        enable_kms=True,
-        deprecate_maintenance_policy=True,
+        enable_regional=cls._support_regional,
+        enable_kms=cls._support_kms,
+        deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
         enable_resource_policy=cls._support_disk_resource_policy,
         supports_min_node_cpu=cls._support_min_node_cpu,
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
-        snapshot_csek=True,
-        image_csek=True)
+        snapshot_csek=cls._support_source_snapshot_csek,
+        image_csek=cls._support_image_csek)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -720,5 +555,6 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+
 
 Create.detailed_help = DETAILED_HELP

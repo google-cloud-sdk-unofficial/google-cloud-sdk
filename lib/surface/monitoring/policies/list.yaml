@@ -33,7 +33,7 @@
 
   arguments:
     resource:
-      help_text: The Stackdriver Account project from which to list policies from.
+      help_text: The Cloud Monitoring Workspace from which to list policies from.
       spec: !REF googlecloudsdk.command_lib.monitoring.resources:project
 
   output:

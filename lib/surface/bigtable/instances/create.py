@@ -103,7 +103,7 @@ class CreateInstance(base.CreateCommand):
 
     if args.async_:
       log.CreatedResource(
-          operation_ref,
+          operation_ref.RelativeName(),
           kind='bigtable instance {0}'.format(ref.Name()),
           is_async=True)
       return result

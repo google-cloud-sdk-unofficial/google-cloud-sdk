@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.compute import instance_template_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -533,13 +534,13 @@ def _RunCreate(compute_api,
   else:
     boot_disk_list = []
 
-  local_nvdimms = instance_utils.CreateLocalNvdimmMessages(
+  local_nvdimms = create_utils.CreateLocalNvdimmMessages(
       args,
       compute_api.resources,
       client.messages,
   )
 
-  local_ssds = instance_utils.CreateLocalSsdMessages(
+  local_ssds = create_utils.CreateLocalSsdMessages(
       args,
       compute_api.resources,
       client.messages,

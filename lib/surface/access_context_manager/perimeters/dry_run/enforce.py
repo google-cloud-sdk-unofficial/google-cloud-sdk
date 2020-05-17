@@ -24,8 +24,8 @@ from googlecloudsdk.command_lib.accesscontextmanager import perimeters
 from googlecloudsdk.command_lib.accesscontextmanager import policies
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class EnforcePerimeterDryRunBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class EnforcePerimeterDryRun(base.UpdateCommand):
   """Enforces a Service Perimeter's dry-run configuration."""
   _API_VERSION = 'v1'
 
@@ -46,7 +46,7 @@ class EnforcePerimeterDryRunBeta(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class EnforcePerimeterDryRunAlpha(EnforcePerimeterDryRunBeta):
+class EnforcePerimeterDryRunAlpha(EnforcePerimeterDryRun):
   """Enforces a Service Perimeter's dry-run configuration."""
   _API_VERSION = 'v1alpha'
 
@@ -72,4 +72,4 @@ detailed_help = {
 }
 
 EnforcePerimeterDryRunAlpha.detailed_help = detailed_help
-EnforcePerimeterDryRunBeta.detailed_help = detailed_help
+EnforcePerimeterDryRun.detailed_help = detailed_help

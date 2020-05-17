@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.monitoring import util
 
 
 class Describe(base.CreateCommand):
-  """Describe a condition in a Stackdriver alerting policy."""
+  """Describe a condition in a Cloud Monitoring alerting policy."""
 
   @staticmethod
   def Args(parser):

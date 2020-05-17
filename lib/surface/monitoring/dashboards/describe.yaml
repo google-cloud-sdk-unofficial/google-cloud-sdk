@@ -1,8 +1,8 @@
 - release_tracks: [ALPHA, BETA, GA]
 
   help_text:
-    brief: Describe a Stackdriver Monitoring dashboard.
-    description: Describe a Stackdriver Monitoring dashboard.
+    brief: Describe a Cloud Monitoring dashboard.
+    description: Describe a Monitoring dashboard.
     examples: |
       To describe a dashboard, run:
 

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief:  Export Cloud Healthcare API FHIR resources to BigQuery.
@@ -19,6 +19,8 @@
       api_version: v1alpha2
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
 
   arguments:
     resource:
@@ -33,6 +35,7 @@
       help_text: |
         BigQuery dataset that houses the BigQuery tables.
     - arg_name: schema-type
+      release_tracks: [ALPHA, BETA]
       api_field: exportResourcesRequest.bigqueryDestination.schemaConfig.schemaType
       help_text: |
         Specifies the output schema type. If unspecified, the default
@@ -48,6 +51,18 @@
         enum_value: LOSSLESS
         help_text: |
           Schema generated from original FHIR data.
+    - arg_name: schema-type
+      release_tracks: [GA]
+      api_field: exportResourcesRequest.bigqueryDestination.schemaConfig.schemaType
+      help_text: |
+        Specifies the output schema type.
+      type: str
+      choices:
+      - arg_value: analytics
+        enum_value: ANALYTICS
+        help_text: |
+          Analytics schema defined by the FHIR community.
+          See https://github.com/rbrush/sql-on-fhir/blob/master/sql-on-fhir.md.
     - arg_name: recursive-depth
       api_field: exportResourcesRequest.bigqueryDestination.schemaConfig.recursiveStructureDepth
       help_text: |

@@ -63,12 +63,12 @@ class Status(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat("""
     multi(nomos_status:format='table(
-            name:label=Name,
+            name:label=Name:sort=1,
             status:label=Status,
             last_synced_token:label="Last_Synced_Token",
             sync_branch:label="Sync_Branch",
             last_synced:label="Last_Synced_Time"
-      )', nomos_errors:format=list)
+      )' , nomos_errors:format=list)
     """)
 
   def Run(self, args):
