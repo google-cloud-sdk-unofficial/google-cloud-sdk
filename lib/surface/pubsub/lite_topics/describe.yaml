@@ -1,5 +1,4 @@
 release_tracks: [ALPHA, BETA]
-hidden: true
 help_text:
   brief: Describe a Pub/Sub Lite topic.
   description: Describe a Pub/Sub Lite topic.

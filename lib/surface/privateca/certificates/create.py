@@ -124,7 +124,13 @@ class Create(base.CreateCommand):
     concept_parsers.ConceptParser([
         presentation_specs.ResourcePresentationSpec(
             '--reusable-config',
-            resource_args.CreateReusableConfigResourceSpec('certificate'),
+            resource_args.CreateReusableConfigResourceSpec(
+                location_fallthrough=deps.Fallthrough(
+                    function=lambda: '',
+                    hint=('location will default to the same location as the '
+                          'certificate'),
+                    active=False,
+                    plural=False)),
             'The Reusable Config containing X.509 values for this certificate.',
             flag_name_overrides={
                 'location': '',

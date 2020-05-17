@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.compute import base_classes_resource_registry as res
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.calliope import base
@@ -179,6 +180,7 @@ class Create(base.CreateCommand):
   _deprecate_maintenance_policy = False
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
+  _support_private_ipv6_google_access = False
 
   @classmethod
   def Args(cls, parser):
@@ -235,7 +237,8 @@ class Create(base.CreateCommand):
         compute_client=compute_client,
         holder=holder,
         project=project,
-        zone=zone,
+        location=zone,
+        scope=compute_scopes.ScopeEnum.ZONE,
         skip_defaults=skip_defaults,
         support_public_dns=self._support_public_dns)
 
@@ -319,6 +322,13 @@ class Create(base.CreateCommand):
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
           tags=tags)
+
+      if (self._support_private_ipv6_google_access and
+          args.private_ipv6_google_access_type is not None):
+        instance.privateIpv6GoogleAccess = (
+            instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
+                compute_client.messages).GetEnumForChoice(
+                    args.private_ipv6_google_access_type))
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -472,6 +482,7 @@ class CreateBeta(Create):
   _deprecate_maintenance_policy = False
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
+  _support_private_ipv6_google_access = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -506,6 +517,8 @@ class CreateBeta(Create):
     instances_flags.AddSourceMachineImageEncryptionKey(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(
+        parser, utils.COMPUTE_BETA_API_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -529,6 +542,7 @@ class CreateAlpha(CreateBeta):
   _deprecate_maintenance_policy = True
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
+  _support_private_ipv6_google_access = True
 
   @classmethod
   def Args(cls, parser):
@@ -555,6 +569,8 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddConfidentialComputeArgs(parser)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(
+        parser, utils.COMPUTE_ALPHA_API_VERSION)
 
 
 Create.detailed_help = DETAILED_HELP

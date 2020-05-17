@@ -26,3 +26,7 @@
     resource:
       help_text: The certificate for which to obtain metadata.
       spec: !REF googlecloudsdk.command_lib.privateca.resources:certificate
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.privateca.hooks:ConvertCertificateLifetimeToIso8601

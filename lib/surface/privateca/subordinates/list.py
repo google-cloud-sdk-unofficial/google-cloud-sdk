@@ -23,6 +23,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.privateca import response_utils
 from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.core import properties
 
@@ -74,4 +75,5 @@ class List(base.ListCommand):
         request,
         field='certificateAuthorities',
         limit=args.limit,
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+        get_field_func=response_utils.GetFieldAndLogUnreachable)

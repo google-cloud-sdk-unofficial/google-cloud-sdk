@@ -44,6 +44,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddCreateArgsToParser(parser)
+    flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

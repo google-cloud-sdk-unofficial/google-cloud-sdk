@@ -25,13 +25,16 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy.node_groups import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine node group."""
 
   detailed_help = {
-      'brief': 'Update a Compute Engine node group.',
-      'EXAMPLES': """
+      'brief':
+          'Update a Compute Engine node group.',
+      'EXAMPLES':
+          """
          To update a node group to have two more nodes, run:
 
            $ {command} my-node-group --add-nodes=2
@@ -42,15 +45,17 @@ class Update(base.UpdateCommand):
   def Args(parser):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddUpdateArgsToParser(parser)
+    flags.AddAutoscalingPolicyArgToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     messages = holder.client.messages
-    groups_client = node_groups.NodeGroupsClient(
-        holder.client.apitools_client, messages, holder.resources)
+    groups_client = node_groups.NodeGroupsClient(holder.client.apitools_client,
+                                                 messages, holder.resources)
 
     node_group_ref = flags.MakeNodeGroupArg().ResolveAsResource(
-        args, holder.resources,
+        args,
+        holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
     autoscaling_policy = (hasattr(args, 'autoscaler_mode') and args.IsSpecified('autoscaler_mode')) or \
@@ -63,20 +68,3 @@ class Update(base.UpdateCommand):
         additional_node_count=args.add_nodes,
         delete_nodes=args.delete_nodes,
         autoscaling_policy_args=args if autoscaling_policy else None)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Update a Compute Engine node group."""
-
-  @staticmethod
-  def Args(parser):
-    flags.MakeNodeGroupArg().AddArgument(parser)
-    flags.AddUpdateArgsToParser(parser)
-    flags.AddAutoscalingPolicyArgToParser(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(UpdateBeta):
-  """Update a Compute Engine node group."""
-

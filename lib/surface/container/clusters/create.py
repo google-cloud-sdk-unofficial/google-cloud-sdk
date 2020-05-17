@@ -537,6 +537,7 @@ class CreateBeta(Create):
     flags.AddReservationAffinityFlags(parser)
     flags.AddMasterGlobalAccessFlag(parser)
     flags.AddEnableGvnicFlag(parser)
+    flags.AddSystemConfigFlag(parser, hidden=True)
     _AddReleaseChannelGroup(parser)
 
   def ParseCreateOptions(self, args):
@@ -561,6 +562,7 @@ class CreateBeta(Create):
     ops.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     ops.enable_master_global_access = args.enable_master_global_access
     ops.enable_gvnic = args.enable_gvnic
+    ops.system_config_from_file = args.system_config_from_file
     return ops
 
 
@@ -618,7 +620,7 @@ class CreateAlpha(Create):
     flags.AddSurgeUpgradeFlag(parser, default=1)
     flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
     flags.AddLinuxSysctlFlags(parser)
-    flags.AddNodeConfigFlag(parser)
+    flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddCostManagementConfigFlag(parser)
     flags.AddReservationAffinityFlags(parser)
     flags.AddDatapathProviderFlag(parser)
@@ -656,7 +658,7 @@ class CreateAlpha(Create):
     ops.linux_sysctls = args.linux_sysctls
     ops.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     ops.disable_default_snat = args.disable_default_snat
-    ops.node_config = args.node_config
+    ops.system_config_from_file = args.system_config_from_file
     ops.enable_cost_management = args.enable_cost_management
     ops.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
     ops.datapath_provider = args.datapath_provider

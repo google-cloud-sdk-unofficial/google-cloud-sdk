@@ -56,11 +56,6 @@ _CONTROL_PLANE_REQUIRED_SERVICES = [
     'storage-component.googleapis.com',
 ]
 
-# As an alternative to the more fine-grained permissions above, we allow this
-# service accounts with this role which should give it all necessary current and
-# future permissions.
-_OWNER_ROLE = 'roles/owner'
-
 
 class Init(base.Command):
   """Initialize a cluster for eventing."""
@@ -83,7 +78,6 @@ class Init(base.Command):
   @staticmethod
   def CommonArgs(parser):
     """Defines arguments common to all release tracks."""
-    # TODO(b/147151675): Make service account optional and create if missing.
     flags.AddServiceAccountFlag(parser)
 
   @staticmethod
@@ -100,8 +94,14 @@ class Init(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
+    _EnableMissingServices(project)
+    if not args.IsSpecified('service_account'):
+      sa_email = iam_util.GetOrCreateEventingServiceAccountWithPrompt()
+    else:
+      sa_email = args.service_account
+
     service_account_ref = resources.REGISTRY.Parse(
-        args.service_account,
+        sa_email,
         params={'projectsId': '-'},
         collection=core_iam_util.SERVICE_ACCOUNTS_COLLECTION)
     secret_ref = resources.REGISTRY.Parse(
@@ -111,8 +111,8 @@ class Init(base.Command):
         api_version='v1')
 
     with eventflow_operations.Connect(conn_context) as client:
-      _EnableMissingServices(project)
-      _BindMissingRoles(service_account_ref)
+      iam_util.BindMissingRolesWithPrompt(
+          service_account_ref, _CONTROL_PLANE_REQUIRED_ROLES)
       _PromptIfCanPrompt(
           '\nThis will create a new key for the provided service account.')
       _, key_ref = client.CreateOrReplaceServiceAccountSecret(
@@ -130,24 +130,6 @@ class Init(base.Command):
                          key_ref.Name(),
                          service_account_ref.Name(),
                          command_string))
-
-
-def _BindMissingRoles(service_account_ref):
-  """Binds any required project roles to the provided service account."""
-  roles = iam_util.GetProjectRolesForServiceAccount(service_account_ref)
-  if _OWNER_ROLE in roles:
-    return
-  missing_roles = set(_CONTROL_PLANE_REQUIRED_ROLES) - roles
-  if not missing_roles:
-    return
-
-  formatted_roles = '\n'.join(
-      ['- {}'.format(r) for r in sorted(missing_roles)])
-  _PromptIfCanPrompt(
-      '\nThis will bind the following project roles to this service '
-      'account:\n{}'.format(formatted_roles))
-  iam_util.BindProjectRolesForServiceAccount(service_account_ref, missing_roles)
-  log.status.Print('Roles successfully bound')
 
 
 def _EnableMissingServices(project):
@@ -170,7 +152,7 @@ def _EnableMissingServices(project):
     op = serviceusage.BatchEnableApiCall(project, missing_services)
   if not op.done:
     op = services_util.WaitOperation(op.name, serviceusage.GetOperation)
-  log.status.Print('Services successfully enabled')
+  log.status.Print('Services successfully enabled.')
 
 
 def _PromptIfCanPrompt(message):

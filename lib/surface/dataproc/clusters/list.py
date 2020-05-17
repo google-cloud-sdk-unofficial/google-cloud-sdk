@@ -80,7 +80,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
           table(
             clusterName:label=NAME,
-            config.gkeClusterConfig.yesno(yes=GKE, no=GCE):label=PLATFORM,
+            config.gceClusterConfig.yesno(yes=GCE, no=GKE):label=PLATFORM,
             config.workerConfig.numInstances:label=WORKER_COUNT,
             config.secondaryWorkerConfig.numInstances:label=PREEMPTIBLE_WORKER_COUNT,
             status.state:label=STATUS,

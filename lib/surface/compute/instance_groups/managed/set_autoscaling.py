@@ -49,8 +49,7 @@ class SetAutoscaling(base.Command):
 
   @staticmethod
   def Args(parser):
-    managed_instance_groups_utils.AddAutoscalerArgs(
-        parser=parser, queue_scaling_enabled=False)
+    managed_instance_groups_utils.AddAutoscalerArgs(parser=parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -204,7 +203,6 @@ class SetAutoscalingAlpha(SetAutoscaling):
   def Args(parser):
     managed_instance_groups_utils.AddAutoscalerArgs(
         parser=parser,
-        queue_scaling_enabled=True,
         autoscaling_file_enabled=True,
         stackdriver_metrics_flags=True,
         scale_in=True,

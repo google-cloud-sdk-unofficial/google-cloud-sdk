@@ -40,11 +40,6 @@ _DATA_PLANE_SECRET_NAME = 'google-cloud-key'
 # These permissions are needed at a minimum for all Source kinds
 _DATA_PLANE_SECRET_MIN_REQUIRED_ROLES = frozenset(['roles/pubsub.editor'])
 
-# As an alternative to the more fine-grained permissions above, we allow this
-# service accounts with this role which should give it all necessary current and
-# future permissions.
-_OWNER_ROLE = 'roles/owner'
-
 _INJECTION_LABELS = {'knative-eventing-injection': 'enabled'}
 
 
@@ -68,7 +63,6 @@ class Create(base.Command):
   @staticmethod
   def CommonArgs(parser):
     """Defines arguments common to all release tracks."""
-    # TODO(b/147151675): Make service account optional and create if missing.
     flags.AddServiceAccountFlag(parser)
     flags.AddBrokerArg(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
@@ -85,7 +79,7 @@ class Create(base.Command):
     Create.CommonArgs(parser)
 
   def Run(self, args):
-    """Executes when the user runs the delete command."""
+    """Executes when the user runs the create command."""
     if serverless_flags.GetPlatform() == serverless_flags.PLATFORM_MANAGED:
       raise exceptions.UnsupportedArgumentError(
           'This command is only available with Cloud Run for Anthos.')
@@ -97,8 +91,13 @@ class Create(base.Command):
     conn_context = connection_context.GetConnectionContext(
         args, serverless_flags.Product.EVENTS, self.ReleaseTrack())
 
+    if not args.IsSpecified('service_account'):
+      sa_email = iam_util.GetOrCreateEventingServiceAccountWithPrompt()
+    else:
+      sa_email = args.service_account
+
     service_account_ref = resources.REGISTRY.Parse(
-        args.service_account,
+        sa_email,
         params={'projectsId': '-'},
         collection=core_iam_util.SERVICE_ACCOUNTS_COLLECTION)
     namespace_ref = args.CONCEPTS.namespace.Parse()
@@ -108,16 +107,9 @@ class Create(base.Command):
         collection='run.api.v1.namespaces.secrets',
         api_version='v1')
 
-    # Validate the service account has the necessary roles
-    roles = iam_util.GetProjectRolesForServiceAccount(service_account_ref)
-    if not (_OWNER_ROLE in roles or
-            _DATA_PLANE_SECRET_MIN_REQUIRED_ROLES.issubset(roles)):
-      missing_roles = _DATA_PLANE_SECRET_MIN_REQUIRED_ROLES - roles
-      raise exceptions.ServiceAccountMissingRequiredPermissions(
-          'Service account [{}] does not have necessary role(s): {}'.format(
-              service_account_ref.Name(), ', '.join(missing_roles)))
-
     with eventflow_operations.Connect(conn_context) as client:
+      iam_util.BindMissingRolesWithPrompt(
+          service_account_ref, _DATA_PLANE_SECRET_MIN_REQUIRED_ROLES)
       if console_io.CanPrompt():
         console_io.PromptContinue(
             message='This will create a new key for the provided '

@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.workflows import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Deploy(base.CacheCommand):
   """Create or update a workflow."""
 
@@ -41,7 +41,8 @@ class Deploy(base.CacheCommand):
 
   def Run(self, args):
     """Deploy a workflow."""
-    client = workflows.WorkflowsClient()
+    api_version = workflows.ReleaseTrackToApiVersion(self.ReleaseTrack())
+    client = workflows.WorkflowsClient(api_version)
     workflow_ref = flags.ParseWorkflow(args)
     old_workflow = client.Get(workflow_ref)
     first_deployment = old_workflow is None
@@ -58,3 +59,5 @@ class Deploy(base.CacheCommand):
       return operation
     else:
       return client.WaitForOperation(operation, workflow_ref)
+
+

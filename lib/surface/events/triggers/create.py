@@ -56,6 +56,7 @@ class Create(base.Command):
     # Flags specific to connecting to a cluster
     cluster_group = serverless_flags.GetClusterArgGroup(parser)
     flags.AddBrokerFlag(cluster_group)
+    flags.AddFiltersFlags(cluster_group)
 
     # Flags not specific to any platform
     flags.AddEventTypeFlagArg(parser)
@@ -134,7 +135,7 @@ class Create(base.Command):
           trigger_obj = client.CreateTrigger(
               trigger_ref, source_obj,
               event_type if args.custom_type else event_type.type,
-              args.target_service, args.broker)
+              args.trigger_filters, args.target_service, args.broker)
         if not args.custom_type:
           client.CreateSource(source_obj, event_type.crd, trigger_obj,
                               namespace_ref, args.broker, parameters)

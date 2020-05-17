@@ -41,6 +41,8 @@ def _AddArgsCommon(parser, messages):
   flags.GetManagedZoneVisibilityArg().AddToParser(parser)
   flags.GetForwardingTargetsArg().AddToParser(parser)
   flags.GetDnsPeeringArgs().AddToParser(parser)
+  flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
+  flags.GetReverseLookupArg().AddToParser(parser)
 
 
 def _MakeDnssecConfig(args, messages):
@@ -131,11 +133,14 @@ class Create(base.CreateCommand):
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
           networks=network_configs)
 
-    if args.forwarding_targets:
-      forward_config = command_util.ParseManagedZoneForwardingConfig(
-          args.forwarding_targets, messages)
+    if args.IsSpecified('forwarding_targets') or args.IsSpecified(
+        'private_forwarding_targets'):
+      forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
+          messages=messages,
+          server_list=args.forwarding_targets,
+          private_server_list=args.private_forwarding_targets)
     else:
-      forward_config = None
+      forwarding_config = None
 
     dnssec_config = _MakeDnssecConfig(args, messages)
 
@@ -149,6 +154,11 @@ class Create(base.CreateCommand):
       peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
           networkUrl=peering_network)
 
+    reverse_lookup_config = None
+    if args.IsSpecified(
+        'managed_reverse_lookup') and args.managed_reverse_lookup:
+      reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
+
     zone = messages.ManagedZone(
         name=zone_ref.managedZone,
         dnsName=util.AppendTrailingDot(args.dns_name),
@@ -156,9 +166,10 @@ class Create(base.CreateCommand):
         dnssecConfig=dnssec_config,
         labels=labels,
         visibility=visibility,
-        forwardingConfig=forward_config,
+        forwardingConfig=forwarding_config,
         privateVisibilityConfig=visibility_config,
-        peeringConfig=peering_config)
+        peeringConfig=peering_config,
+        reverseLookupConfig=reverse_lookup_config)
 
     result = dns.managedZones.Create(
         messages.DnsManagedZonesCreateRequest(managedZone=zone,
@@ -191,8 +202,6 @@ class CreateBeta(base.CreateCommand):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
-    flags.GetReverseLookupArg().AddToParser(parser)
     flags.GetServiceDirectoryArg().AddToParser(parser)
 
   def Run(self, args):
@@ -319,6 +328,4 @@ class CreateAlpha(CreateBeta):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
-    flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
-    flags.GetReverseLookupArg().AddToParser(parser)
     flags.GetServiceDirectoryArg().AddToParser(parser)

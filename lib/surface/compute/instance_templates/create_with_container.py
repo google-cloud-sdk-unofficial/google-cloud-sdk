@@ -292,6 +292,8 @@ class CreateWithContainerBeta(CreateWithContainer):
   @staticmethod
   def Args(parser):
     _Args(parser, base.ReleaseTrack.BETA, container_mount_enabled=True)
+    instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
+        parser, utils.COMPUTE_BETA_API_VERSION)
 
   def _ValidateArgs(self, args):
     super(CreateWithContainerBeta, self)._ValidateArgs(args)
@@ -336,21 +338,28 @@ class CreateWithContainerBeta(CreateWithContainer):
         args, client, holder, instance_template_ref, image_uri,
         match_container_mount_disks=True)
 
+    properties = client.messages.InstanceProperties(
+        machineType=machine_type,
+        disks=disks,
+        canIpForward=args.can_ip_forward,
+        labels=labels,
+        metadata=metadata,
+        minCpuPlatform=args.min_cpu_platform,
+        networkInterfaces=network_interfaces,
+        serviceAccounts=service_accounts,
+        scheduling=scheduling,
+        tags=containers_utils.CreateTagsMessage(client.messages, args.tags),
+    )
+
+    if args.private_ipv6_google_access_type is not None:
+      properties.privateIpv6GoogleAccess = (
+          instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapperForTemplate(
+              client.messages).GetEnumForChoice(
+                  args.private_ipv6_google_access_type))
+
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
-            properties=client.messages.InstanceProperties(
-                machineType=machine_type,
-                disks=disks,
-                canIpForward=args.can_ip_forward,
-                labels=labels,
-                metadata=metadata,
-                minCpuPlatform=args.min_cpu_platform,
-                networkInterfaces=network_interfaces,
-                serviceAccounts=service_accounts,
-                scheduling=scheduling,
-                tags=containers_utils.CreateTagsMessage(
-                    client.messages, args.tags),
-            ),
+            properties=properties,
             description=args.description,
             name=instance_template_ref.Name(),
         ),
@@ -368,6 +377,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   def Args(parser):
     _Args(parser, base.ReleaseTrack.ALPHA, container_mount_enabled=True)
     instances_flags.AddLocalNvdimmArgs(parser)
+    instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
+        parser, utils.COMPUTE_ALPHA_API_VERSION)
 
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.
@@ -409,21 +420,28 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         args, client, holder, instance_template_ref, image_uri,
         match_container_mount_disks=True)
 
+    properties = client.messages.InstanceProperties(
+        machineType=machine_type,
+        disks=disks,
+        canIpForward=args.can_ip_forward,
+        labels=labels,
+        metadata=metadata,
+        minCpuPlatform=args.min_cpu_platform,
+        networkInterfaces=network_interfaces,
+        serviceAccounts=service_accounts,
+        scheduling=scheduling,
+        tags=containers_utils.CreateTagsMessage(client.messages, args.tags),
+    )
+
+    if args.private_ipv6_google_access_type is not None:
+      properties.privateIpv6GoogleAccess = (
+          instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapperForTemplate(
+              client.messages).GetEnumForChoice(
+                  args.private_ipv6_google_access_type))
+
     request = client.messages.ComputeInstanceTemplatesInsertRequest(
         instanceTemplate=client.messages.InstanceTemplate(
-            properties=client.messages.InstanceProperties(
-                machineType=machine_type,
-                disks=disks,
-                canIpForward=args.can_ip_forward,
-                labels=labels,
-                metadata=metadata,
-                minCpuPlatform=args.min_cpu_platform,
-                networkInterfaces=network_interfaces,
-                serviceAccounts=service_accounts,
-                scheduling=scheduling,
-                tags=containers_utils.CreateTagsMessage(
-                    client.messages, args.tags),
-            ),
+            properties=properties,
             description=args.description,
             name=instance_template_ref.Name(),
         ),

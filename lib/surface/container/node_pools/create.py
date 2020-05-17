@@ -261,6 +261,7 @@ class CreateBeta(Create):
     flags.AddMaxUnavailableUpgradeFlag(
         parser, for_node_pool=True, is_create=True)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
+    flags.AddSystemConfigFlag(parser, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -269,6 +270,7 @@ class CreateBeta(Create):
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.sandbox = args.sandbox
     ops.node_locations = args.node_locations
+    ops.system_config_from_file = args.system_config_from_file
     return ops
 
 
@@ -286,7 +288,7 @@ class CreateAlpha(Create):
     ops.node_group = args.node_group
     ops.linux_sysctls = args.linux_sysctls
     ops.node_locations = args.node_locations
-    ops.node_config = args.node_config
+    ops.system_config_from_file = args.system_config_from_file
     return ops
 
   @staticmethod
@@ -311,7 +313,7 @@ class CreateAlpha(Create):
     flags.AddMaxUnavailableUpgradeFlag(
         parser, for_node_pool=True, is_create=True)
     flags.AddNodePoolLocationsFlag(parser, for_create=True)
-    flags.AddNodeConfigFlag(parser)
+    flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddReservationAffinityFlags(parser, for_node_pool=True)
 
 

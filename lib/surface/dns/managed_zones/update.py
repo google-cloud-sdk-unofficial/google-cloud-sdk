@@ -29,6 +29,7 @@ from googlecloudsdk.core import properties
 
 
 def _CommonArgs(parser, messages):
+  """Helper function to retrieve necessary flag values."""
   flags.GetZoneResourceArg(
       'The name of the managed-zone to be updated.').AddToParser(parser)
   flags.AddCommonManagedZonesDnssecArgs(parser, messages)
@@ -38,6 +39,8 @@ def _CommonArgs(parser, messages):
   base.ASYNC_FLAG.AddToParser(parser)
   flags.GetForwardingTargetsArg().AddToParser(parser)
   flags.GetDnsPeeringArgs().AddToParser(parser)
+  flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
+  flags.GetReverseLookupArg().AddToParser(parser)
 
 
 def _Update(zones_client,
@@ -97,9 +100,14 @@ class UpdateGA(base.UpdateCommand):
     messages = apis.GetMessagesModule('dns', 'v1')
 
     forwarding_config = None
-    if args.forwarding_targets:
-      forwarding_config = command_util.ParseManagedZoneForwardingConfig(
-          args.forwarding_targets, messages)
+    if args.IsSpecified('forwarding_targets') or args.IsSpecified(
+        'private_forwarding_targets'):
+      forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
+          messages=messages,
+          server_list=args.forwarding_targets,
+          private_server_list=args.private_forwarding_targets)
+    else:
+      forwarding_config = None
 
     peering_config = None
     if args.target_project and args.target_network:
@@ -129,10 +137,18 @@ class UpdateGA(base.UpdateCommand):
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
           networks=network_configs)
 
-    return _Update(zones_client, args,
-                   private_visibility_config=visibility_config,
-                   forwarding_config=forwarding_config,
-                   peering_config=peering_config)
+    reverse_lookup_config = None
+    if args.IsSpecified(
+        'managed_reverse_lookup') and args.managed_reverse_lookup:
+      reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
+
+    return _Update(
+        zones_client,
+        args,
+        private_visibility_config=visibility_config,
+        forwarding_config=forwarding_config,
+        peering_config=peering_config,
+        reverse_lookup_config=reverse_lookup_config)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -153,8 +169,6 @@ class UpdateBeta(base.UpdateCommand):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1beta2')
     _CommonArgs(parser, messages)
-    flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
-    flags.GetReverseLookupArg().AddToParser(parser)
 
   def Run(self, args):
     api_version = util.GetApiFromTrack(self.ReleaseTrack())
@@ -230,5 +244,3 @@ class UpdateAlpha(UpdateBeta):
   def Args(parser):
     messages = apis.GetMessagesModule('dns', 'v1alpha2')
     _CommonArgs(parser, messages)
-    flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
-    flags.GetReverseLookupArg().AddToParser(parser)

@@ -1,5 +1,4 @@
 release_tracks: [ALPHA, BETA]
-hidden: true
 help_text:
   brief: Delete a Pub/Sub Lite topic.
   description: Delete a Pub/Sub Lite topic.

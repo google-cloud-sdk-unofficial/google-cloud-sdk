@@ -19,27 +19,28 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import firewalls_utils
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+from googlecloudsdk.core import log
 import six
 
+LIST_NOTICE = """\
+To show all fields of the firewall, please show in JSON format: --format=json
+To show more fields in table format, please see the examples in --help.
+"""
 
 DEFAULT_LIST_FORMAT = """\
   table(
     priority,
-    action,
     direction,
-    match.config.srcIpRanges.list(),
-    match.config.destIpRanges.list(),
-    match.config.layer4Configs.map().org_firewall_rule().list():label=PORT_RANGE,
-    targetServiceAccounts.list():label=TARGET_SVC_ACCT,
-    targetResources:label=TARGET_RESOURCES,
-    ruleTupleCount,
-    enableLogging,
-    description
+    action,
+    match.config.srcIpRanges.list():label=SRC_RANGES,
+    match.config.destIpRanges.list():label=DEST_RANGES,
+    match.config.layer4Configs.map().org_firewall_rule().list():label=PORT_RANGES
   )"""
 
 
@@ -79,7 +80,12 @@ class ListRules(base.DescribeCommand, base.ListCommand):
         sp_id=sp_id, only_generate_request=False)
     if not response:
       return None
-    return response[0].rules
+    return firewalls_utils.SortOrgFirewallRules(holder.client,
+                                                response[0].rules)
+
+  def Epilog(self, resources_were_displayed):
+    del resources_were_displayed
+    log.status.Print('\n' + LIST_NOTICE)
 
 
 ListRules.detailed_help = {
@@ -89,5 +95,21 @@ ListRules.detailed_help = {
     ``123456789", run:
 
       $ {command} list-rules 123456789
-    """,
+
+    To list all the fields of the rules of an organization security policy with
+    ID ``123456789", run:
+
+      $ {command} list-rules 123456789 --format="table(
+        priority,
+        action,
+        direction,
+        match.config.srcIpRanges.list():label=SRC_RANGES,
+        match.config.destIpRanges.list():label=DEST_RANGES,
+        match.config.layer4Configs.map().org_firewall_rule().list():label=PORT_RANGES,
+        targetServiceAccounts.list():label=TARGET_SVC_ACCT,
+        targetResources:label=TARGET_RESOURCES,
+        ruleTupleCount,
+        enableLogging,
+        description)"
+        """,
 }

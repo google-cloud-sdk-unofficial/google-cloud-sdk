@@ -161,6 +161,8 @@ class UpdateBeta(Update):
 
     flags.AddNodePoolLocationsFlag(group)
 
+    flags.AddSystemConfigFlag(group, hidden=True)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     ops = api_adapter.UpdateNodePoolOptions(
@@ -174,7 +176,8 @@ class UpdateBeta(Update):
         workload_metadata_from_node=args.workload_metadata_from_node,
         node_locations=args.node_locations,
         max_surge_upgrade=args.max_surge_upgrade,
-        max_unavailable_upgrade=args.max_unavailable_upgrade)
+        max_unavailable_upgrade=args.max_unavailable_upgrade,
+        system_config_from_file=args.system_config_from_file)
     return ops
 
 
@@ -202,6 +205,8 @@ class UpdateAlpha(Update):
 
     flags.AddNodePoolLocationsFlag(group)
 
+    flags.AddSystemConfigFlag(group, hidden=False)
+
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
     ops = api_adapter.UpdateNodePoolOptions(
@@ -215,7 +220,8 @@ class UpdateAlpha(Update):
         workload_metadata_from_node=args.workload_metadata_from_node,
         node_locations=args.node_locations,
         max_surge_upgrade=args.max_surge_upgrade,
-        max_unavailable_upgrade=args.max_unavailable_upgrade)
+        max_unavailable_upgrade=args.max_unavailable_upgrade,
+        system_config_from_file=args.system_config_from_file)
     return ops
 
 

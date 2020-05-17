@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import resource_args
+from googlecloudsdk.command_lib.privateca import response_utils
 from googlecloudsdk.command_lib.privateca import text_utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -96,4 +97,5 @@ class List(base.ListCommand):
         request,
         field='certificates',
         limit=args.limit,
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+        get_field_func=response_utils.GetFieldAndLogUnreachable)

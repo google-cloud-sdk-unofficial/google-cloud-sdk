@@ -117,7 +117,7 @@ class Login(base.Command):
     parser.add_argument(
         '--use-oauth2client',
         action='store_true',
-        default=False,
+        default=True,
         hidden=True,
         help='The gcloud command-line tool is using google-auth-library-python '
              'as its new auth library during login. Use this flag to switch '

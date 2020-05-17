@@ -18,16 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import os
-
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as c_exc
+from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.command_lib.resource_manager import completers
-from googlecloudsdk.core import config
-from googlecloudsdk.core import log
-from googlecloudsdk.core.credentials import creds as c_creds
-
-from oauth2client import client
 
 
 class SetQuotaProject(base.SilentCommand):
@@ -35,7 +28,9 @@ class SetQuotaProject(base.SilentCommand):
 
   Before running this command, an ADC must already be generated using
   $gcloud auth application-default login. The quota project can be used by
-  Google client libraries for billing purpose.
+  client libraries for the billing purpose. The existing application default
+  credentials must have the "serviceusage.services.use" permission on the
+  given project.
 
   ## EXAMPLES
 
@@ -56,19 +51,4 @@ class SetQuotaProject(base.SilentCommand):
             parser)
 
   def Run(self, args):
-    cred_file = config.ADCFilePath()
-    if not os.path.isfile(cred_file):
-      raise c_exc.BadFileException(
-          'Application default credentials have not been set up. '
-          'Run $gcloud auth application-default login to set it up before '
-          'running this command.')
-
-    creds = client.GoogleCredentials.from_stream(cred_file)
-    if creds.serialization_data['type'] != 'authorized_user':
-      raise c_exc.BadFileException(
-          'The credentials are not user credentials, quota project '
-          'cannot be inserted.')
-    c_creds.ADC(creds).DumpExtendedADCToFile(
-        quota_project=args.quota_project_id)
-    log.status.Print("Updated the quota project in application default "
-                     "credentials (ADC) to '{}'.".format(args.quota_project_id))
+    return auth_util.AddQuotaProjectToADC(args.quota_project_id)

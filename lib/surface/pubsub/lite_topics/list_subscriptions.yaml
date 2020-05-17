@@ -1,5 +1,4 @@
 release_tracks: [ALPHA, BETA]
-hidden: true
 command_type: LIST
 help_text:
   brief: List Pub/Sub Lite subscriptions for a given Lite topic.

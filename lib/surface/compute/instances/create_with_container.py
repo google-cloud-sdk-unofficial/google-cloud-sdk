@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import containers_utils
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import metadata_utils
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -81,6 +82,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
+  _support_private_ipv6_google_access = False
 
   @staticmethod
   def Args(parser):
@@ -124,22 +126,23 @@ class CreateWithContainer(base.CreateCommand):
       image_uri = containers_utils.ExpandKonletCosImageFlag(compute_client)
     return image_uri
 
-  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
-                            skip_defaults):
+  def _GetNetworkInterfaces(self, args, client, holder, project, location,
+                            scope, skip_defaults):
     return create_utils.GetNetworkInterfaces(args, client, holder, project,
-                                             zone, skip_defaults)
+                                             location, scope, skip_defaults)
 
-  def GetNetworkInterfaces(self, args, resources, client, holder, project, zone,
-                           skip_defaults):
+  def GetNetworkInterfaces(self, args, resources, client, holder, project,
+                           location, scope, skip_defaults):
     if args.network_interface:
       return create_utils.CreateNetworkInterfaceMessages(
           resources=resources,
           compute_client=client,
           network_interface_arg=args.network_interface,
           project=project,
-          zone=zone)
-    return self._GetNetworkInterfaces(args, client, holder, project, zone,
-                                      skip_defaults)
+          location=location,
+          scope=scope)
+    return self._GetNetworkInterfaces(args, client, holder, project, location,
+                                      scope, skip_defaults)
 
   def CheckDiskMessageArgs(self, args, skip_defaults):
     """Creates API messages with disks attached to VM instance."""
@@ -173,11 +176,9 @@ class CreateWithContainer(base.CreateCommand):
     user_metadata = instance_utils.GetValidatedMetadata(args, compute_client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, compute_client, holder)
-    network_interfaces = self.GetNetworkInterfaces(args, resource_parser,
-                                                   compute_client, holder,
-                                                   instance_refs[0].project,
-                                                   instance_refs[0].zone,
-                                                   skip_defaults)
+    network_interfaces = self.GetNetworkInterfaces(
+        args, resource_parser, compute_client, holder, instance_refs[0].project,
+        instance_refs[0].zone, compute_scopes.ScopeEnum.ZONE, skip_defaults)
     image_uri = self.GetImageUri(args, compute_client, resource_parser,
                                  instance_refs)
     labels = containers_utils.GetLabelsMessageWithCosVersion(
@@ -231,21 +232,30 @@ class CreateWithContainer(base.CreateCommand):
           project=instance_ref.project,
           location=instance_ref.zone,
           scope=compute_scopes.ScopeEnum.ZONE)
+
+      instance = compute_client.messages.Instance(
+          canIpForward=can_ip_forward,
+          disks=disks,
+          guestAccelerators=guest_accelerators,
+          description=args.description,
+          labels=labels,
+          machineType=machine_type_uri,
+          metadata=metadata,
+          minCpuPlatform=args.min_cpu_platform,
+          name=instance_ref.Name(),
+          networkInterfaces=network_interfaces,
+          serviceAccounts=service_accounts,
+          scheduling=scheduling,
+          tags=tags)
+      if (self._support_private_ipv6_google_access and
+          args.private_ipv6_google_access_type is not None):
+        instance.privateIpv6GoogleAccess = (
+            instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
+                compute_client.messages).GetEnumForChoice(
+                    args.private_ipv6_google_access_type))
+
       request = compute_client.messages.ComputeInstancesInsertRequest(
-          instance=compute_client.messages.Instance(
-              canIpForward=can_ip_forward,
-              disks=disks,
-              guestAccelerators=guest_accelerators,
-              description=args.description,
-              labels=labels,
-              machineType=machine_type_uri,
-              metadata=metadata,
-              minCpuPlatform=args.min_cpu_platform,
-              name=instance_ref.Name(),
-              networkInterfaces=network_interfaces,
-              serviceAccounts=service_accounts,
-              scheduling=scheduling,
-              tags=tags),
+          instance=instance,
           sourceInstanceTemplate=source_instance_template,
           project=instance_ref.project,
           zone=instance_ref.zone)
@@ -264,6 +274,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
+  _support_private_ipv6_google_access = True
 
   @staticmethod
   def Args(parser):
@@ -272,6 +283,8 @@ class CreateWithContainerBeta(CreateWithContainer):
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(
+        parser, utils.COMPUTE_BETA_API_VERSION)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)
@@ -285,6 +298,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = True
+  _support_private_ipv6_google_access = True
 
   @staticmethod
   def Args(parser):
@@ -296,17 +310,24 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(
+        parser, utils.COMPUTE_ALPHA_API_VERSION)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)
     instances_flags.ValidatePublicDnsFlags(args)
     instances_flags.ValidatePublicPtrFlags(args)
 
-  def _GetNetworkInterfaces(self, args, client, holder, project, zone,
+  def _GetNetworkInterfaces(self, args, client, holder, project, location, scope,
                             skip_defaults):
-    return create_utils.GetNetworkInterfacesAlpha(args, client, holder,
-                                                  project, zone,
-                                                  skip_defaults)
+    return create_utils.GetNetworkInterfacesAlpha(
+        args,
+        client,
+        holder,
+        project,
+        location,
+        scope,
+        skip_defaults)
 
 
 CreateWithContainer.detailed_help = {

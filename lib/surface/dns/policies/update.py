@@ -33,6 +33,7 @@ def _AddArgsCommon(parser):
   flags.GetPolicyInboundForwardingArg().AddToParser(parser)
   flags.GetPolicyAltNameServersArg().AddToParser(parser)
   flags.GetPolicyLoggingArg().AddToParser(parser)
+  flags.GetPolicyPrivateAltNameServersArg().AddToParser(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -87,11 +88,16 @@ class UpdateGA(base.UpdateCommand):
                                                       policy_ref.project,
                                                       api_version)
 
-    if args.IsSpecified('alternative_name_servers'):
+    if args.IsSpecified('alternative_name_servers') or args.IsSpecified(
+        'private_alternative_name_servers'):
       if args.alternative_name_servers == ['']:
         args.alternative_name_servers = []
+      if args.private_alternative_name_servers == ['']:
+        args.private_alternative_name_servers = []
       to_update.alternativeNameServerConfig = command_util.ParseAltNameServers(
-          version=api_version, server_list=args.alternative_name_servers)
+          version=api_version,
+          server_list=args.alternative_name_servers,
+          private_server_list=args.private_alternative_name_servers)
 
     if args.IsSpecified('enable_inbound_forwarding'):
       to_update.enableInboundForwarding = args.enable_inbound_forwarding
@@ -133,7 +139,6 @@ class UpdateBeta(UpdateGA):
     resource_args.AddPolicyResourceArg(
         parser, verb='to update', api_version='v1beta2')
     _AddArgsCommon(parser)
-    flags.GetPolicyPrivateAltNameServersArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -209,5 +214,4 @@ class UpdateAlpha(UpdateBeta):
     resource_args.AddPolicyResourceArg(
         parser, verb='to update', api_version='v1alpha2')
     _AddArgsCommon(parser)
-    flags.GetPolicyPrivateAltNameServersArg().AddToParser(parser)
     parser.display_info.AddFormat('json')

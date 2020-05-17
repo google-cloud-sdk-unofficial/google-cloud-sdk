@@ -33,7 +33,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
 
@@ -148,6 +148,18 @@ class Update(base.Command):
             url=service.domain if 'domain' in dir(service) else service.url,
             latest_percent_traffic=latest_percent_traffic)
         pretty_print.Success(msg)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaUpdate(Update):
+  """Update Cloud Run environment variables and other configuration settings."""
+
+  @staticmethod
+  def Args(parser):
+    Update.Args(parser)
+
+    # Flags specific to VPCAccess
+    flags.AddVpcConnectorArg(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

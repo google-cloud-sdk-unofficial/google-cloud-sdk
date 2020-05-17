@@ -114,7 +114,7 @@ def GetSuccessMessageForSynchronousDeploy(operations, service_ref):
       latest_percent_traffic=latest_percent_traffic)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Deploy a container to Cloud Run."""
 
@@ -263,6 +263,18 @@ class Deploy(base.Command):
       else:
         pretty_print.Success(GetSuccessMessageForSynchronousDeploy(
             operations, service_ref))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaDeploy(Deploy):
+  """Deploy a container to Cloud Run."""
+
+  @staticmethod
+  def Args(parser):
+    Deploy.Args(parser)
+
+    # Flags specific to VPCAccess
+    flags.AddVpcConnectorArg(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

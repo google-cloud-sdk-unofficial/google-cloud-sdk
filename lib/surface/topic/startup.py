@@ -41,8 +41,8 @@ class Startup(base.TopicCommand):
 
   Currently `gcloud` requires Python version 2.7.x or 3.5 and up.
 
-  Other Python tools shipped in the Cloud SDK do not yet support Python 3,
-  including:
+  Other Python tools shipped in the Cloud SDK do not support Python 3 and
+  require Python 2.7.x, including:
 
       * `dev_appserver`
       * `endpointscfg`

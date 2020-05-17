@@ -31,6 +31,7 @@ table[box](
   message.data.decode(base64).decode(utf-8),
   message.messageId,
   message.attributes.list(separator='\n'),
+  deliveryAttempt,
   ackId.if(NOT auto_ack)
 )
 """

@@ -195,10 +195,10 @@ def _SetImagePush(skaffold_file, shared_docker):
     # to rewrite the skaffold file.
     yield skaffold_file
   else:
-    sakffold_yaml = yaml.load_path(skaffold_file.name)
-    local_block = yaml_helper.GetOrCreate(sakffold_yaml, ('build', 'local'))
+    skaffold_yaml = yaml.load_path(skaffold_file.name)
+    local_block = yaml_helper.GetOrCreate(skaffold_yaml, ('build', 'local'))
     local_block['push'] = False
-    with _NamedTempFile(yaml.dump(sakffold_yaml)) as patched_skaffold_file:
+    with _NamedTempFile(yaml.dump(skaffold_yaml)) as patched_skaffold_file:
       yield patched_skaffold_file
 
 

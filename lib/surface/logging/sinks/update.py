@@ -187,9 +187,10 @@ class Update(base.UpdateCommand):
         util.GetParentFromArgs(args), sink_data, update_mask)
 
     log.UpdatedResource(sink_ref)
-    self._epilog_result_destination = result.destination
-    self._epilog_writer_identity = result.writerIdentity
-    self._epilog_is_dlp_sink = bool(dlp_options)
+    if args.IsSpecified('destination'):
+      self._epilog_result_destination = result.destination
+      self._epilog_writer_identity = result.writerIdentity
+      self._epilog_is_dlp_sink = bool(dlp_options)
     return result
 
   def Run(self, args):
@@ -205,9 +206,10 @@ class Update(base.UpdateCommand):
     return self._Run(args)
 
   def Epilog(self, unused_resources_were_displayed):
-    util.PrintPermissionInstructions(self._epilog_result_destination,
-                                     self._epilog_writer_identity,
-                                     self._epilog_is_dlp_sink)
+    if hasattr(self, '_epilog_result_destination'):
+      util.PrintPermissionInstructions(self._epilog_result_destination,
+                                       self._epilog_writer_identity,
+                                       self._epilog_is_dlp_sink)
 
 
 # pylint: disable=missing-docstring
