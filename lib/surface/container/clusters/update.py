@@ -578,6 +578,7 @@ class UpdateBeta(Update):
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
     flags.AddMasterGlobalAccessFlag(group)
     flags.AddEnableGvnicFlag(group)
+    flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
 
   def ParseUpdateOptions(self, args, locations):
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
@@ -624,6 +625,7 @@ class UpdateBeta(Update):
     opts.enable_tpu_service_networking = args.enable_tpu_service_networking
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_gvnic = args.enable_gvnic
+    opts.disable_default_snat = args.disable_default_snat
 
     return opts
 

@@ -33,6 +33,12 @@
       help_text: |
         Arguments and flags specifying the worker pool to update.
     params:
+    - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.channel
+      arg_name: channel
+      required: false
+      default: current
+      help_text: |
+        The release channel of the worker pool.
     - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerCount
       arg_name: worker-count
       required: false

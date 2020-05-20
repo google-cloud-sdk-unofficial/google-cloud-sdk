@@ -26,15 +26,22 @@ from googlecloudsdk.command_lib.compute.http_health_checks import flags
 
 
 class Create(base.CreateCommand):
-  """Create an HTTP legacy health check to monitor load balanced instances.
+  """Create a legacy HTTP health check.
 
-  *{command}* is used to create a legacy health check with a health check type
-  of HTTP. HTTP health checks monitor instances in a load balancer controlled
-  by a target pool. All arguments to the command are optional except for the
-  name of the health check. For more information on load balancing, see
-  [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/).
-  Note, creating a legacy health check is recommended only for a network load
-  balancer.
+  Legacy HTTP health checks are required if you want to implement health
+  checking of a target pool for a Network TCP/UDP Load Balancer. Though you can
+  use legacy HTTP health checks in certain other Google Cloud Platform load
+  balancing configurations and for managed instance group autohealing, you
+  should consider a non-legacy HTTP health check created with `health-checks
+  create http` instead.
+
+  For more information about the differences between legacy and non-legacy
+  health checks see:
+  [](https://cloud.google.com/load-balancing/docs/health-check-concepts#category_and_protocol)
+
+  For information about what type of health check to use for a particular load
+  balancer, see:
+  [](https://cloud.google.com/load-balancing/docs/health-check-concepts#lb_guide)
   """
 
   HTTP_HEALTH_CHECKS_ARG = None

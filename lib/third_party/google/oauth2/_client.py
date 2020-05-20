@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2016 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ def _token_endpoint_request(request, token_uri, body):
         google.auth.exceptions.RefreshError: If the token endpoint returned
             an error.
     """
-    body = urllib.parse.urlencode(body)
+    body = urllib.parse.urlencode(body).encode("utf-8")
     headers = {"content-type": _URLENCODED_CONTENT_TYPE}
 
     retry = 0

@@ -1,0 +1,2 @@
+# anthoscli workaround
+bin/anthoscli filter=lfs diff=lfs merge=lfs -text

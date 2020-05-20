@@ -6,7 +6,7 @@
       Create a worker pool in the specified instance.
     examples: |
       The following command creates a worker pool called 'pool1' in the instance called
-      'default_instance' with 25 workers configured with default machine type (n1-standard-2) and
+      'default_instance' with 25 workers configured with default machine type (e2-standard-2) and
       disk size (200Gb):
 
         $ {command} pool1 --instance=default_instance --worker-count=25
@@ -30,6 +30,12 @@
       help_text: |
         Arguments and flags specifying the worker pool you want to create.
     params:
+    - api_field: workerPool.channel
+      arg_name: channel
+      required: false
+      default: current
+      help_text: |
+        The release channel of the worker pool.
     - api_field: workerPool.workerConfig.diskSizeGb
       arg_name: disk-size
       required: false
@@ -54,7 +60,7 @@
     - api_field: workerPool.workerConfig.machineType
       arg_name: machine-type
       required: false
-      default: "n1-standard-2"
+      default: "e2-standard-2"
       help_text: |
         Type of VM to use for each worker. To get a list of valid machine types, use the
         following command:

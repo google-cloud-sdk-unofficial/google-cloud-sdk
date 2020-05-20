@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.code import local
 from googlecloudsdk.command_lib.code import local_files
 from googlecloudsdk.command_lib.code import yaml_helper
 from googlecloudsdk.core import config
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files as file_utils
@@ -74,6 +75,10 @@ def _FindSkaffold():
   if not skaffold:
     raise EnvironmentError('Unable to locate skaffold.')
   return skaffold
+
+
+class RuntimeMissingDependencyError(exceptions.Error):
+  """A runtime dependency is missing."""
 
 
 class WindowsNamedTempFile(object):
@@ -255,6 +260,8 @@ class Dev(base.Command):
 
     kubernetes_config = six.ensure_text(local_file_generator.KubernetesConfig())
 
+    self._EnsureDockerInstalled()
+
     with _NamedTempFile(kubernetes_config) as kubernetes_file:
       skaffold_config = six.ensure_text(
           local_file_generator.SkaffoldConfig(kubernetes_file.name))
@@ -321,3 +328,9 @@ class Dev(base.Command):
         yield
     else:
       yield
+
+  @staticmethod
+  def _EnsureDockerInstalled():
+    """Make sure docker is installed."""
+    if not file_utils.FindExecutableOnPath('docker'):
+      raise RuntimeMissingDependencyError('Cannot locate docker on $PATH.')

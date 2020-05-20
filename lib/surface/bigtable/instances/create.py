@@ -20,13 +20,14 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from googlecloudsdk.api_lib.bigtable import util as bigtable_util
+from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateInstance(base.CreateCommand):
   """Create a new Bigtable instance."""
 
@@ -71,35 +72,26 @@ class CreateInstance(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    cli = bigtable_util.GetAdminClient()
-    ref = bigtable_util.GetInstanceRef(args.instance)
+    cli = util.GetAdminClient()
+    ref = args.CONCEPTS.instance.Parse()
+    # TODO(b/153576330): This is a workaround for inconsistent collection names.
     parent_ref = resources.REGISTRY.Create(
         'bigtableadmin.projects', projectId=ref.projectsId)
-    msgs = bigtable_util.GetAdminMessages()
-
+    cluster = self._Cluster(args)
+    msgs = util.GetAdminMessages()
     instance_type = msgs.Instance.TypeValueValuesEnum(args.instance_type)
-    num_nodes = arguments.ProcessInstanceTypeAndNodes(args, instance_type)
-
     msg = msgs.CreateInstanceRequest(
         instanceId=ref.Name(),
         parent=parent_ref.RelativeName(),
         instance=msgs.Instance(
             displayName=args.display_name,
-            type=msgs.Instance.TypeValueValuesEnum(args.instance_type)),
+            type=instance_type),
         clusters=msgs.CreateInstanceRequest.ClustersValue(additionalProperties=[
             msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
-                key=args.cluster,
-                value=msgs.Cluster(
-                    serveNodes=num_nodes,
-                    defaultStorageType=(
-                        msgs.Cluster.DefaultStorageTypeValueValuesEnum(
-                            args.cluster_storage_type.upper())),
-                    # TODO(b/36056455): switch location to resource
-                    # when b/29566669 is fixed on API
-                    location=bigtable_util.LocationUrl(args.cluster_zone)))
+                key=args.cluster, value=cluster)
         ]))
     result = cli.projects_instances.Create(msg)
-    operation_ref = bigtable_util.GetOperationRef(result)
+    operation_ref = util.GetOperationRef(result)
 
     if args.async_:
       log.CreatedResource(
@@ -108,5 +100,45 @@ class CreateInstance(base.CreateCommand):
           is_async=True)
       return result
 
-    return bigtable_util.AwaitInstance(
+    return util.AwaitInstance(
         operation_ref, 'Creating bigtable instance {0}'.format(ref.Name()))
+
+  def _Cluster(self, args):
+    msgs = util.GetAdminMessages()
+    num_nodes = arguments.ProcessInstanceTypeAndNodes(args)
+    storage_type = msgs.Cluster.DefaultStorageTypeValueValuesEnum(
+        args.cluster_storage_type.upper())
+    return msgs.Cluster(
+        serveNodes=num_nodes,
+        defaultStorageType=storage_type,
+        # TODO(b/36049938): switch location to resource
+        # when b/29566669 is fixed on API
+        location=util.LocationUrl(args.cluster_zone))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateInstanceAlpha(CreateInstance):
+  """Create a new Bigtable instance."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    CreateInstance.Args(parser)
+    arguments.AddKmsKeyResourceArg(parser, 'cluster')
+
+  def _Cluster(self, args):
+    msgs = util.GetAdminMessages()
+    num_nodes = arguments.ProcessInstanceTypeAndNodes(args)
+    storage_type = msgs.Cluster.DefaultStorageTypeValueValuesEnum(
+        args.cluster_storage_type.upper())
+    cluster = msgs.Cluster(
+        serveNodes=num_nodes,
+        defaultStorageType=storage_type,
+        # TODO(b/36049938): switch location to resource
+        # when b/29566669 is fixed on API
+        location=util.LocationUrl(args.cluster_zone))
+    kms_key = arguments.GetAndValidateKmsKeyName(args)
+    if kms_key:
+      cluster.encryptionConfig = msgs.EncryptionConfig(
+          kmsKeyName=kms_key)
+    return cluster

@@ -115,8 +115,7 @@ def _SourceArgs(parser,
     source_ips = source_group.add_group('Source in place snapshot options')
     disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.AddArgument(source_ips)
   if source_disk_enabled:
-    source_disk = source_group.add_group('Source disk options')
-    disks_flags.SOURCE_DISK_ARG.AddArgument(source_disk)
+    disks_flags.SOURCE_DISK_ARG.AddArgument(source_group)
 
 
 def _CommonArgs(parser,
@@ -256,11 +255,17 @@ class Create(base.Command):
       return False
     return args.source_disk
 
+  def GetFromSourceInPlaceSnapshot(self, args):
+    if not self.source_in_place_snapshot_enabled:
+      return False
+    return args.source_in_place_snapshot
+
   def GetDiskSizeGb(self, args, from_image):
     size_gb = utils.BytesToGb(args.size)
 
     if (not size_gb and not args.source_snapshot and not from_image and
-        not self.GetFromSourceDisk(args)):
+        not self.GetFromSourceDisk(args) and
+        not self.GetFromSourceInPlaceSnapshot(args)):
       pd_disk_types = ['pd-ssd']
       if self.pd_balanced_enabled:
         pd_disk_types.append('pd-balanced')
@@ -319,10 +324,11 @@ class Create(base.Command):
     return None
 
   def GetSourceDiskUri(self, args, compute_holder):
-    disk_ref = disks_flags.SOURCE_DISK_ARG.ResolveAsResource(
-        args, compute_holder.resources)
-    if disk_ref:
-      return disk_ref.SelfLink()
+    if args.source_disk:
+      disk_ref = disks_flags.SOURCE_DISK_ARG.ResolveAsResource(
+          args, compute_holder.resources)
+      if disk_ref:
+        return disk_ref.SelfLink()
     return None
 
   def GetLabels(self, args, client):

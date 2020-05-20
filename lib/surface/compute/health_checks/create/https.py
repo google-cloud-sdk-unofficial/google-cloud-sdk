@@ -32,13 +32,11 @@ def _DetailedHelp():
           'Create a HTTPS health check to monitor load balanced instances',
       'DESCRIPTION':
           """\
-        *{command}* is used to create an HTTPS non-legacy health check. HTTPS
-        health checks monitor instances in a load balancer controlled by a
-        target pool. All arguments to the command are optional except for the
-        name of the health check. Note, by default, this health check monitors
-        TCP port 80.
-        For more information on load balancing, see
-        [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+        *{command}* is used to create a non-legacy health check using the HTTPS
+        protocol. You can use this health check for Google Cloud Platform
+        load balancers or for managed instance group autohealing. For more
+        information, see the health checks overview at:
+        [](https://cloud.google.com/load-balancing/docs/health-check-concepts)
         """,
   }
 

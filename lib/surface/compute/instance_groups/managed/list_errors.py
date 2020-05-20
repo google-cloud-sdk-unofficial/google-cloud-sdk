@@ -31,7 +31,8 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListErrors(base.ListCommand):
   """List errors produced by managed instances in a managed instance group."""
 
@@ -118,7 +119,7 @@ ListErrors.detailed_help = {
         *   Viewer
 
         For more information regarding permissions required by managed
-        instance groups, refer to Compute Engine's access control guide :
+        instance groups, refer to Compute Engine's access control guide:
         https://cloud.google.com/compute/docs/access/iam-permissions#instancegroupmanagers_collection.
       """,
     'EXAMPLES':

@@ -34,9 +34,9 @@ CHECK_INTERVAL_LOWER_BOUND_SEC = 1
 
 
 class Update(base.UpdateCommand):
-  """Update an HTTP health check.
+  """Update a legacy HTTP health check.
 
-  *{command}* is used to update an existing HTTP health check. Only
+  *{command}* is used to update an existing legacy HTTP health check. Only
   arguments passed in will be updated on the health check. Other
   attributes will remain unaffected.
   """

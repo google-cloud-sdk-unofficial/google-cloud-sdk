@@ -38,7 +38,7 @@ class Create(base.CreateCommand):
         '--description',
         help='A textual description for the view.')
     parser.add_argument(
-        '--filter',
+        '--log-filter',
         help='A filter for the view.')
     util.AddParentArgs(parser, 'Create view')
     util.AddBucketLocationArg(
@@ -61,8 +61,8 @@ class Create(base.CreateCommand):
     view_data = {}
     if args.IsSpecified('description'):
       view_data['description'] = args.description
-    if args.IsSpecified('filter'):
-      view_data['filter'] = args.filter
+    if args.IsSpecified('log_filter'):
+      view_data['filter'] = args.log_filter
 
     return util.GetClient().projects_locations_buckets_views.Create(
         util.GetMessages().LoggingProjectsLocationsBucketsViewsCreateRequest(

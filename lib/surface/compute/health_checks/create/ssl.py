@@ -31,11 +31,11 @@ def _DetailedHelp():
           'Create a SSL health check to monitor load balanced instances.',
       'DESCRIPTION':
           """\
-          *{command}* is used to create a SSL health check. SSL health checks
-          monitor instances in a load balancer controlled by a target pool. All
-          arguments to the command are optional except for the name of the
-          health check. For more information on load balancing, see
-          [](https://cloud.google.com/compute/docs/load-balancing-and-autoscaling/)
+          *{command}* is used to create a non-legacy health check using the SSL
+          protocol. You can use this health check for Google Cloud Platform
+          load balancers or for managed instance group autohealing. For more
+          information, see the health checks overview at:
+          [](https://cloud.google.com/load-balancing/docs/health-check-concepts)
           """,
   }
 

@@ -538,6 +538,7 @@ class CreateBeta(Create):
     flags.AddMasterGlobalAccessFlag(parser)
     flags.AddEnableGvnicFlag(parser)
     flags.AddSystemConfigFlag(parser, hidden=True)
+    flags.AddDisableDefaultSnatFlag(parser, for_cluster_create=True)
     _AddReleaseChannelGroup(parser)
 
   def ParseCreateOptions(self, args):
@@ -563,6 +564,7 @@ class CreateBeta(Create):
     ops.enable_master_global_access = args.enable_master_global_access
     ops.enable_gvnic = args.enable_gvnic
     ops.system_config_from_file = args.system_config_from_file
+    ops.disable_default_snat = args.disable_default_snat
     return ops
 
 

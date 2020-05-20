@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2016 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import json
 
 import six
 
+from google.auth import _cloud_sdk
 from google.auth import _helpers
 from google.auth import credentials
 from google.auth import exceptions
@@ -95,6 +96,26 @@ class Credentials(credentials.ReadOnlyScoped, credentials.Credentials):
         self._client_id = client_id
         self._client_secret = client_secret
         self._quota_project_id = quota_project_id
+
+    def __getstate__(self):
+        """A __getstate__ method must exist for the __setstate__ to be called
+        This is identical to the default implementation.
+        See https://docs.python.org/3.7/library/pickle.html#object.__setstate__
+        """
+        return self.__dict__
+
+    def __setstate__(self, d):
+        """Credentials pickled with older versions of the class do not have
+        all the attributes."""
+        self.token = d.get("token")
+        self.expiry = d.get("expiry")
+        self._refresh_token = d.get("_refresh_token")
+        self._id_token = d.get("_id_token")
+        self._scopes = d.get("_scopes")
+        self._token_uri = d.get("_token_uri")
+        self._client_id = d.get("_client_id")
+        self._client_secret = d.get("_client_secret")
+        self._quota_project_id = d.get("_quota_project_id")
 
     @property
     def refresh_token(self):
@@ -272,3 +293,50 @@ class Credentials(credentials.ReadOnlyScoped, credentials.Credentials):
             prep = {k: v for k, v in prep.items() if k not in strip}
 
         return json.dumps(prep)
+
+
+class UserAccessTokenCredentials(credentials.Credentials):
+    """Access token credentials for user account.
+
+    Obtain the access token for a given user account or the current active
+    user account with the ``gcloud auth print-access-token`` command.
+
+    Args:
+        account (Optional[str]): Account to get the access token for. If not
+            specified, the current active account will be used.
+    """
+
+    def __init__(self, account=None):
+        super(UserAccessTokenCredentials, self).__init__()
+        self._account = account
+
+    def with_account(self, account):
+        """Create a new instance with the given account.
+
+        Args:
+            account (str): Account to get the access token for.
+
+        Returns:
+            google.oauth2.credentials.UserAccessTokenCredentials: The created
+                credentials with the given account.
+        """
+        return self.__class__(account=account)
+
+    def refresh(self, request):
+        """Refreshes the access token.
+
+        Args:
+            request (google.auth.transport.Request): This argument is required
+                by the base class interface but not used in this implementation,
+                so just set it to `None`.
+
+        Raises:
+            google.auth.exceptions.UserAccessTokenError: If the access token
+                refresh failed.
+        """
+        self.token = _cloud_sdk.get_auth_access_token(self._account)
+
+    @_helpers.copy_docstring(credentials.Credentials)
+    def before_request(self, request, method, url, headers):
+        self.refresh(request)
+        self.apply(headers)

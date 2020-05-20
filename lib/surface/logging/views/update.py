@@ -53,7 +53,7 @@ class Update(base.UpdateCommand):
         '--description',
         help='New description for the view.')
     parser.add_argument(
-        '--filter',
+        '--log-filter',
         help='New filter for the view.')
     util.AddParentArgs(parser, 'Update view')
     util.AddBucketLocationArg(
@@ -75,9 +75,9 @@ class Update(base.UpdateCommand):
     """
     view_data = {}
     update_mask = []
-    parameter_names = ['--filter', '--description']
-    if args.IsSpecified('filter'):
-      view_data['filter'] = args.filter
+    parameter_names = ['--log-filter', '--description']
+    if args.IsSpecified('log_filter'):
+      view_data['filter'] = args.log_filter
       update_mask.append('filter')
     if args.IsSpecified('description'):
       view_data['description'] = args.description

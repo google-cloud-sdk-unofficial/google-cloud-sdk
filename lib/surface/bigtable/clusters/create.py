@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateCluster(base.CreateCommand):
   """Create a bigtable cluster."""
 
@@ -62,9 +63,10 @@ class CreateCluster(base.CreateCommand):
     Returns:
       Some value that we want to have printed later.
     """
+
+    cluster = self._Cluster(args)
     cluster_ref = args.CONCEPTS.cluster.Parse()
-    operation = clusters.Create(
-        cluster_ref, args.zone, serve_nodes=args.num_nodes)
+    operation = clusters.Create(cluster_ref, cluster)
     operation_ref = util.GetOperationRef(operation)
     if args.async_:
       log.CreatedResource(
@@ -75,3 +77,37 @@ class CreateCluster(base.CreateCommand):
     return util.AwaitCluster(
         operation_ref,
         'Creating bigtable cluster {0}'.format(cluster_ref.Name()))
+
+  def _Cluster(self, args):
+    msgs = util.GetAdminMessages()
+    storage_type = (
+        msgs.Cluster.DefaultStorageTypeValueValuesEnum.STORAGE_TYPE_UNSPECIFIED)
+    cluster = msgs.Cluster(
+        serveNodes=args.num_nodes,
+        location=util.LocationUrl(args.zone),
+        defaultStorageType=storage_type)
+    return cluster
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateClusterAlpha(CreateCluster):
+  """Create a bigtable cluster."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    CreateCluster.Args(parser)
+    arguments.AddKmsKeyResourceArg(parser, 'cluster')
+
+  def _Cluster(self, args):
+    msgs = util.GetAdminMessages()
+    storage_type = (
+        msgs.Cluster.DefaultStorageTypeValueValuesEnum.STORAGE_TYPE_UNSPECIFIED)
+    cluster = msgs.Cluster(
+        serveNodes=args.num_nodes,
+        location=util.LocationUrl(args.zone),
+        defaultStorageType=storage_type)
+    kms_key = arguments.GetAndValidateKmsKeyName(args)
+    if kms_key:
+      cluster.encryptionConfig = msgs.EncryptionConfig(kmsKeyName=kms_key)
+    return cluster

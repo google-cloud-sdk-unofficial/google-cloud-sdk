@@ -26,8 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Apply(base.BinaryBackedCommand):
   """Apply configuration changes for Anthos infrastructure."""
 
@@ -36,7 +35,7 @@ class Apply(base.BinaryBackedCommand):
       To apply Anthos package to a Google Kubernetes Engine cluster in
       project `my-project`:
 
-          $ {command} my-config --project my-project
+          $ {command} my-config --project=my-project
       """,
   }
 

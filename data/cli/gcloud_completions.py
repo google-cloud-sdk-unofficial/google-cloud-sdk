@@ -1709,6 +1709,10 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "anthos": {
           "commands": {
+            "apply": {
+              "commands": {},
+              "flags": {}
+            },
             "auth": {
               "commands": {
                 "login": {
@@ -2365,6 +2369,10 @@ STATIC_COMPLETION_CLI_TREE = {
                   "flags": {
                     "--async": "bool",
                     "--instance": "dynamic",
+                    "--kms-key": "dynamic",
+                    "--kms-keyring": "dynamic",
+                    "--kms-location": "dynamic",
+                    "--kms-project": "dynamic",
                     "--num-nodes": "value",
                     "--zone": "value"
                   }
@@ -2429,7 +2437,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--instance-type": [
                       "DEVELOPMENT",
                       "PRODUCTION"
-                    ]
+                    ],
+                    "--kms-key": "dynamic",
+                    "--kms-keyring": "dynamic",
+                    "--kms-location": "dynamic",
+                    "--kms-project": "dynamic"
                   }
                 },
                 "delete": {
@@ -2490,6 +2502,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--instance": "dynamic",
                         "--view": [
+                          "encryption",
                           "full",
                           "name",
                           "replication",
@@ -4121,7 +4134,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--resource-policies": "value",
                     "--size": "value",
                     "--source-disk": "dynamic",
-                    "--source-disk-zone": "dynamic",
                     "--source-in-place-snapshot": "dynamic",
                     "--source-in-place-snapshot-region": "dynamic",
                     "--source-in-place-snapshot-zone": "dynamic",
@@ -17547,9 +17559,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--billing-account": "value",
                     "--bucket": "value",
                     "--description": "value",
-                    "--filter": "value",
                     "--folder": "value",
                     "--location": "value",
+                    "--log-filter": "value",
                     "--organization": "dynamic"
                   }
                 },
@@ -17594,9 +17606,9 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--billing-account": "value",
                     "--bucket": "value",
                     "--description": "value",
-                    "--filter": "value",
                     "--folder": "value",
                     "--location": "value",
+                    "--log-filter": "value",
                     "--organization": "dynamic"
                   }
                 }
@@ -20462,6 +20474,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--autoscale-max-size": "value",
                     "--autoscale-min-size": "value",
+                    "--channel": "value",
                     "--disk-size": "value",
                     "--disk-type": [
                       "pd-ssd",
@@ -20512,6 +20525,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--async": "bool",
                     "--autoscale-max-size": "value",
                     "--autoscale-min-size": "value",
+                    "--channel": "value",
                     "--clear-accelerator-config": "bool",
                     "--clear-autoscale": "bool",
                     "--clear-labels": "bool",
@@ -25187,6 +25201,10 @@ STATIC_COMPLETION_CLI_TREE = {
         },
         "anthos": {
           "commands": {
+            "apply": {
+              "commands": {},
+              "flags": {}
+            },
             "auth": {
               "commands": {
                 "login": {
@@ -29461,6 +29479,13 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "value"
                   }
                 },
+                "get-screenshot": {
+                  "commands": {},
+                  "flags": {
+                    "--destination": "value",
+                    "--zone": "dynamic"
+                  }
+                },
                 "get-serial-port-output": {
                   "commands": {},
                   "flags": {
@@ -33378,6 +33403,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--create-subnetwork": "value",
                     "--database-encryption-key": "value",
                     "--default-max-pods-per-node": "value",
+                    "--disable-default-snat": "bool",
                     "--disk-size": "value",
                     "--disk-type": [
                       "pd-ssd",
@@ -33550,6 +33576,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--complete-ip-rotation": "bool",
                     "--database-encryption-key": "value",
                     "--disable-database-encryption": "bool",
+                    "--disable-default-snat": "bool",
                     "--disable-workload-identity": "bool",
                     "--enable-autoprovisioning": "bool",
                     "--enable-autoprovisioning-autorepair": "bool",
@@ -46984,6 +47011,18 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zones": "value"
                   }
                 },
+                "list-errors": {
+                  "commands": {},
+                  "flags": {
+                    "--filter": "value",
+                    "--limit": "value",
+                    "--page-size": "value",
+                    "--region": "dynamic",
+                    "--sort-by": "value",
+                    "--uri": "bool",
+                    "--zone": "dynamic"
+                  }
+                },
                 "list-instances": {
                   "commands": {},
                   "flags": {
@@ -53890,6 +53929,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "run": {
                   "commands": {},
                   "flags": {
+                    "--additional-apks": "value",
                     "--app": "value",
                     "--app-package": "value",
                     "--async": "bool",
@@ -53901,10 +53941,12 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--filter": "value",
                     "--limit": "value",
                     "--locales": "value",
+                    "--network-profile": "value",
                     "--num-flaky-test-attempts": "value",
                     "--obb-files": "value",
                     "--orientations": "dynamic",
                     "--os-version-ids": "value",
+                    "--other-files": "value",
                     "--page-size": "value",
                     "--performance-metrics": "bool",
                     "--record-video": "bool",
@@ -53912,6 +53954,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--results-dir": "value",
                     "--results-history-name": "value",
                     "--robo-directives": "value",
+                    "--robo-script": "value",
                     "--scenario-labels": "value",
                     "--scenario-numbers": "value",
                     "--sort-by": "value",
@@ -59156,6 +59199,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "MYSQL_5_7",
                   "POSTGRES_10",
                   "POSTGRES_11",
+                  "POSTGRES_12",
                   "POSTGRES_9_6",
                   "SQLSERVER_2017_ENTERPRISE",
                   "SQLSERVER_2017_EXPRESS",
@@ -59242,6 +59286,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "MYSQL_5_7",
                   "POSTGRES_10",
                   "POSTGRES_11",
+                  "POSTGRES_12",
                   "POSTGRES_9_6",
                   "SQLSERVER_2017_ENTERPRISE",
                   "SQLSERVER_2017_EXPRESS",

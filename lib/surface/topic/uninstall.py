@@ -50,4 +50,9 @@ class Uninstall(base.TopicCommand):
       * Additionally, remove lines sourcing `completion.bash.inc` and
         `paths.bash.inc` in your `.bashrc` or equivalent shell init file,
         if you added them during installation.
+
+      * Review the contents of the `.boto` file in your home directory and
+        remove the sections '[GoogleCompute]' and '[GSUtil]'. In addition,
+        review the sections '[OAuth2]' and '[Credentials]' for settings that
+        are no longer needed.
   """
