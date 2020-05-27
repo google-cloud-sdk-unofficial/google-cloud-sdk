@@ -444,7 +444,7 @@ reasonable default value is used.''')
             pipeline.actions.insert(0, genomics_messages.Action(
                 imageUri=CLOUD_SDK_IMAGE,
                 commands=['/bin/sh', '-c', 'echo "%s" | base64 -d > ${%s}' %
-                          (base64.b64encode(value), name)]))
+                          (base64.b64encode(value.encode()), name)]))
           else:
             env[name] = value
 

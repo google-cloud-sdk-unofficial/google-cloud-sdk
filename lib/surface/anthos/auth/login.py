@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.anthos import anthoscli_backend
 from googlecloudsdk.command_lib.anthos import flags
 from googlecloudsdk.command_lib.anthos.common import kube_flags
-from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core import log
 
 
 class Login(base.BinaryBackedCommand):
@@ -43,6 +43,23 @@ class Login(base.BinaryBackedCommand):
             """,
   }
 
+  _LOGIN_CONFIG_MESSAGE = 'Configuring Anthos authentication '
+  _LOGIN_CONFIG_SUCCESS_MESSAGE = _LOGIN_CONFIG_MESSAGE + 'success.'
+  _LOGIN_CONFIG_FAILED_MESSAGE = _LOGIN_CONFIG_MESSAGE + 'failed\n {}'
+
+  def _LoginResponseHandler(self, response):
+    if response.stdout:
+      log.status.Print(response.stdout)
+
+    if response.stderr:
+      log.status.Print(response.stderr)
+
+    if response.failed:
+      log.error(self._LOGIN_CONFIG_FAILED_MESSAGE.format(response.stderr))
+      return None
+    log.status.Print(self._LOGIN_CONFIG_SUCCESS_MESSAGE)
+    return response.stdout
+
   @staticmethod
   def Args(parser):
     kube_flags.GetKubeConfigFlag(
@@ -57,16 +74,15 @@ class Login(base.BinaryBackedCommand):
 
   def Run(self, args):
     command_executor = anthoscli_backend.AnthosAuthWrapper()
-    with progress_tracker.ProgressTracker(
-        'Configuring Anthos authentication.', interruptable=True):
-      response = command_executor(
-          command='login',
-          cluster=args.cluster,
-          kube_config=args.kubeconfig,
-          user=args.user,
-          login_config=args.login_config,
-          login_config_cert=args.login_config_cert,
-          dry_run=args.dry_run,
-          show_exec_error=args.show_exec_error,
-          env=anthoscli_backend.GetEnvArgsForCommand())
-      return self._DefaultOperationResponseHandler(response)
+    log.status.Print(self._LOGIN_CONFIG_MESSAGE)
+    response = command_executor(
+        command='login',
+        cluster=args.cluster,
+        kube_config=args.kubeconfig,
+        user=args.user,
+        login_config=args.login_config,
+        login_config_cert=args.login_config_cert,
+        dry_run=args.dry_run,
+        show_exec_error=args.show_exec_error,
+        env=anthoscli_backend.GetEnvArgsForCommand())
+    return self._LoginResponseHandler(response)

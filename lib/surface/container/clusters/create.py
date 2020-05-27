@@ -625,7 +625,7 @@ class CreateAlpha(Create):
     flags.AddSystemConfigFlag(parser, hidden=False)
     flags.AddCostManagementConfigFlag(parser)
     flags.AddReservationAffinityFlags(parser)
-    flags.AddDatapathProviderFlag(parser)
+    flags.AddDatapathProviderFlag(parser, hidden=True)
     flags.AddMasterGlobalAccessFlag(parser)
     flags.AddEnableGvnicFlag(parser)
 

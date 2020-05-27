@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
-from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
@@ -55,8 +54,7 @@ class Update(base.UpdateCommand):
     labels_util.AddUpdateLabelsFlags(parser)
 
   def _RunUpdate(self, original, args):
-    messages = secrets_api.GetMessages(
-        version=secrets_util.GetVersionFromReleasePath(self.ReleaseTrack()))
+    messages = secrets_api.GetMessages()
     secret_ref = args.CONCEPTS.secret.Parse()
 
     # Collect the list of update masks
@@ -77,10 +75,8 @@ class Update(base.UpdateCommand):
     if labels_update.needs_update:
       labels = labels_update.labels
 
-    secret = secrets_api.Secrets(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).Update(
-                secret_ref=secret_ref, labels=labels, update_mask=update_mask)
+    secret = secrets_api.Secrets().Update(
+        secret_ref=secret_ref, labels=labels, update_mask=update_mask)
     secrets_log.Secrets().Updated(secret_ref)
 
     return secret
@@ -88,9 +84,7 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     secret_ref = args.CONCEPTS.secret.Parse()
     # Attempt to get the secret
-    secret = secrets_api.Secrets(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).GetOrNone(secret_ref)
+    secret = secrets_api.Secrets().GetOrNone(secret_ref)
 
     # Secret does not exist
     if secret is None:
@@ -119,6 +113,6 @@ class UpdateBeta(Update):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddBetaSecret(
+    secrets_args.AddSecret(
         parser, purpose='to update', positional=True, required=True)
     labels_util.AddUpdateLabelsFlags(parser)

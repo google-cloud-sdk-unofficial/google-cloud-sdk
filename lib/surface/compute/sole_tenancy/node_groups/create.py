@@ -104,7 +104,6 @@ class CreateBeta(Create):
   def Args(parser):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddCreateArgsToParser(parser)
-    flags.AddMaintenancePolicyArgToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
 
 
@@ -116,7 +115,6 @@ class CreateAlpha(CreateBeta):
   def Args(parser):
     flags.MakeNodeGroupArg().AddArgument(parser)
     flags.AddCreateArgsToParser(parser)
-    flags.AddMaintenancePolicyArgToParser(parser)
     flags.AddAutoscalingPolicyArgToParser(parser, required_mode=True)
     flags.AddMaintenanceWindowArgToParser(parser)
     flags.AddLocationHintArgToParser(parser)

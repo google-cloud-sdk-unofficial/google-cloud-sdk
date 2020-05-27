@@ -172,10 +172,7 @@ class CreateAlpha(CreateBeta):
         'to create.', plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(
-        parser,
-        support_message_ordering=True,
-        support_filtering=True,
-        support_retry_policy=True)
+        parser, support_message_ordering=True, support_filtering=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()

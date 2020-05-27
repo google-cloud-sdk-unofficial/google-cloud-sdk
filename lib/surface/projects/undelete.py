@@ -51,8 +51,7 @@ class Undelete(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('id', metavar='PROJECT_ID',
-                        help='ID for the project you want to undelete.')
+    flags.GetProjectIDNumberFlag('undelete').AddToParser(parser)
 
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)

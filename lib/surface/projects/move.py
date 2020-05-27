@@ -60,7 +60,7 @@ class Move(base.Command):
 
   @staticmethod
   def Args(parser):
-    project_flags.GetProjectFlag('move').AddToParser(parser)
+    project_flags.GetProjectIDNumberFlag('move').AddToParser(parser)
     folder_flags.AddParentFlagsToParser(parser)
     parser.display_info.AddFormat(command_lib_util.LIST_FORMAT)
 

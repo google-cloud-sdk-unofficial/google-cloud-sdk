@@ -30,7 +30,6 @@ from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.command_lib.sql import flags as sql_flags
 from googlecloudsdk.command_lib.sql import instances as instances_command_util
 from googlecloudsdk.core.util import files
@@ -278,6 +277,7 @@ def RunProxyConnectCommand(args,
   Raises:
     HttpException: An http error response was received while executing api
         request.
+    CloudSqlProxyError: Cloud SQL Proxy could not be found.
     SqlClientNotFoundError: A local SQL client could not be found.
     ConnectionError: An error occurred while trying to connect to the instance.
   """
@@ -296,7 +296,12 @@ def RunProxyConnectCommand(args,
     return RunConnectCommand(args, supports_database)
 
   # If the instance is V2, keep going with the proxy.
-  util.EnsureComponentIsInstalled('cloud_sql_proxy', '`sql connect` command')
+  exe = files.FindExecutableOnPath('cloud_sql_proxy')
+  if not exe:
+    raise exceptions.CloudSqlProxyError(
+        'Cloud SQL Proxy could not be found in PATH. See '
+        'https://cloud.google.com/sql/docs/mysql/sql-proxy#install for '
+        'information on installing.')
 
   # Check for the executable based on the db version.
   db_type = instance_info.databaseVersion.name.split('_')[0]

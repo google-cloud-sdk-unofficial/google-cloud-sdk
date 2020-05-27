@@ -34,6 +34,9 @@ from googlecloudsdk.core import log
 import six
 
 
+_APK_MIME_TYPE = 'application/vnd.android.package-archive'
+
+
 @base.UnicodeIsSupported
 class _BaseRun(object):
   """Invoke a test in Firebase Test Lab for Android and view test results."""
@@ -194,20 +197,21 @@ class _BaseRun(object):
     bucket_ops = results_bucket.ResultsBucketOps(
         project, args.results_bucket, args.results_dir,
         tr_client, tr_messages, storage_client)
-    bucket_ops.UploadFileToGcs(args.app)
+    bucket_ops.UploadFileToGcs(args.app, _APK_MIME_TYPE)
     if args.test:
-      bucket_ops.UploadFileToGcs(args.test)
+      bucket_ops.UploadFileToGcs(args.test, _APK_MIME_TYPE)
     for obb_file in (args.obb_files or []):
-      bucket_ops.UploadFileToGcs(obb_file)
+      bucket_ops.UploadFileToGcs(obb_file, 'application/octet-stream')
     if getattr(args, 'robo_script', None):
-      bucket_ops.UploadFileToGcs(args.robo_script)
+      bucket_ops.UploadFileToGcs(args.robo_script, 'application/json')
     additional_apks = getattr(args, 'additional_apks', None) or []
     for additional_apk in additional_apks:
-      bucket_ops.UploadFileToGcs(additional_apk)
+      bucket_ops.UploadFileToGcs(additional_apk, _APK_MIME_TYPE)
     other_files = getattr(args, 'other_files', None) or {}
     for device_path, file_to_upload in six.iteritems(other_files):
       bucket_ops.UploadFileToGcs(
           file_to_upload,
+          None,
           destination_object=util.GetRelativeDevicePath(device_path))
     bucket_ops.LogGcsResultsUrl()
 

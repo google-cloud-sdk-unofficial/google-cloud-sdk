@@ -76,8 +76,8 @@ class AdjustTraffic(base.Command):
          """,
   }
 
-  @staticmethod
-  def CommonArgs(parser):
+  @classmethod
+  def CommonArgs(cls, parser):
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(prompt=True),
@@ -85,12 +85,12 @@ class AdjustTraffic(base.Command):
         required=True,
         prefixes=False)
     flags.AddAsyncFlag(parser)
-    flags.AddUpdateTrafficFlags(parser)
+    flags.AddUpdateTrafficFlags(parser, cls.ReleaseTrack())
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
-  @staticmethod
-  def Args(parser):
-    AdjustTraffic.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
 
   def Run(self, args):
     """Update the traffic split for the service.
@@ -158,8 +158,8 @@ class AdjustTraffic(base.Command):
 class AlphaAdjustTraffic(AdjustTraffic):
   """Adjust the traffic assignments for a Cloud Run service."""
 
-  @staticmethod
-  def Args(parser):
-    AdjustTraffic.CommonArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
     flags.AddTrafficTagsFlags(parser)
 

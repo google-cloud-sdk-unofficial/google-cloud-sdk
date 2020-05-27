@@ -54,7 +54,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    client = operations.Client.FromApiVersion('v1alpha1')
+    client = operations.Client.FromApiVersion('v1alpha2')
 
     location_ref = args.CONCEPTS.location.Parse()
 

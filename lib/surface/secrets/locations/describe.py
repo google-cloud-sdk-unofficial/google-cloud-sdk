@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
-from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
 class Describe(base.DescribeCommand):
@@ -43,6 +42,4 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     location_ref = args.CONCEPTS.location.Parse()
-    return secrets_api.Locations(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).Get(location_ref)
+    return secrets_api.Locations().Get(location_ref)

@@ -40,7 +40,7 @@ class GetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetProjectFlag('get IAM policy for').AddToParser(parser)
+    flags.GetProjectIDNumberFlag('get IAM policy for').AddToParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):

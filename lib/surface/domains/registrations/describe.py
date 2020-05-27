@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.domains import registrations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import resource_args
+from googlecloudsdk.command_lib.domains import util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -42,4 +43,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     client = registrations.RegistrationsClient()
+    args.registration = util.NormalizeResourceName(args.registration)
     return client.Get(args.CONCEPTS.registration.Parse())

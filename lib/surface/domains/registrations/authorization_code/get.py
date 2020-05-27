@@ -18,9 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.domains import authorization_code
+from googlecloudsdk.api_lib.domains import registrations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import resource_args
+from googlecloudsdk.command_lib.domains import util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -46,5 +47,11 @@ class GetAuthorizationCode(base.DescribeCommand):
 
   def Run(self, args):
     """Run get authorization code command."""
-    client = authorization_code.Client.FromApiVersion('v1alpha1')
-    return client.Get(args.CONCEPTS.registration.Parse())
+    client = registrations.RegistrationsClient()
+    args.registration = util.NormalizeResourceName(args.registration)
+    registration_ref = args.CONCEPTS.registration.Parse()
+
+    registration = client.Get(registration_ref)
+    util.AssertRegistrationOperational(registration)
+
+    return client.RetrieveAuthorizationCode(registration_ref)

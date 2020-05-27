@@ -42,7 +42,7 @@ class SetIamPolicy(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetProjectFlag('set IAM policy for').AddToParser(parser)
+    flags.GetProjectIDNumberFlag('set IAM policy for').AddToParser(parser)
     iam_util.AddArgForPolicyFile(parser)
 
   def Run(self, args):

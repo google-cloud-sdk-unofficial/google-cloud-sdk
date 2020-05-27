@@ -31,19 +31,27 @@ if os.path.isdir(_THIRD_PARTY_DIR):
   sys.path.insert(0, _THIRD_PARTY_DIR)
 
 
+def _fix_google_module():
+  """Reloads the google module to prefer our vendored copy.
+
+  When python is not invoked with the -S option, it can preload google module
+  via .pth file setting its __path__. After this happens, our vendored google
+  package may not in the __path__. After our vendored dependency directory is
+  put at the first place in the sys.path, google module should be reloaded,
+  so that our vendored copy can be preferred.
+  """
+  if 'google' not in sys.modules:
+    return
+  import google  # pylint: disable=g-import-not-at-top
+  try:
+    reload(google)
+  except NameError:
+    import importlib  # pylint: disable=g-import-not-at-top
+    importlib.reload(google)
+
+
 def _import_gcloud_main():
   """Returns reference to gcloud_main module."""
-
-  if 'google' in sys.modules:
-    # By this time 'google' should NOT be in sys.modules, but some releases of
-    # protobuf preload google package via .pth file setting its __path__. This
-    # prevents loading of other packages in the same namespace.
-    # Below add our vendored 'google' packages to its path if this is the case.
-    google_paths = getattr(sys.modules['google'], '__path__', [])
-    vendored_google_path = os.path.join(_THIRD_PARTY_DIR, 'google')
-    if vendored_google_path not in google_paths:
-      google_paths.append(vendored_google_path)
-
   # pylint:disable=g-import-not-at-top
   import googlecloudsdk.gcloud_main
   return googlecloudsdk.gcloud_main
@@ -64,6 +72,7 @@ def main():
         raise
 
   try:
+    _fix_google_module()
     gcloud_main = _import_gcloud_main()
   except Exception as err:  # pylint: disable=broad-except
     # We want to catch *everything* here to display a nice message to the user

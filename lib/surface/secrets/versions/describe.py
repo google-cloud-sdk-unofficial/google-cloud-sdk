@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
-from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -45,9 +44,7 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     version_ref = args.CONCEPTS.version.Parse()
-    return secrets_api.Versions(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).Get(version_ref)
+    return secrets_api.Versions().Get(version_ref)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -66,5 +63,5 @@ class DescribeBeta(Describe):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddBetaVersion(
+    secrets_args.AddVersion(
         parser, purpose='to describe', positional=True, required=True)

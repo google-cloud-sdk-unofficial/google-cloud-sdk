@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.console import console_io
 
 DOMAIN_MAPPINGS_HELP_DOCS_URL = ('https://cloud.google.com/run/docs/'
                                  'mapping-custom-domains/')
@@ -115,8 +116,20 @@ class Create(base.Command):
                 help=DOMAIN_MAPPINGS_HELP_DOCS_URL, domains=domains_text))
 
     with serverless_operations.Connect(conn_context) as client:
-      mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
-                                           args.force_override)
+      try:
+        mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
+                                             args.force_override)
+      except exceptions.DomainMappingAlreadyExistsError as e:
+        if console_io.CanPrompt() and console_io.PromptContinue(
+            ('This domain is already being used as a mapping elsewhere. '
+             'The existing mapping can be overriden by passing '
+             '`--force-override` or by continuing at the prompt below.'),
+            prompt_string='Override the existing mapping'):
+          mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
+                                               True)
+        else:
+          raise e
+
       for record in mapping.records:
         record.name = record.name or mapping.route_name
       return mapping.records

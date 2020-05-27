@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud domains registrations detach` command."""
+"""`gcloud domains registrations export` command."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.domains import operations
 from googlecloudsdk.api_lib.domains import registrations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import flags
@@ -29,54 +28,45 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Detach(base.DeleteCommand):
-  """Detach a domain registration.
+class Export(base.DeleteCommand):
+  """Export a Cloud Domains registration.
 
-  This command transfers the domain to direct management by Google Domains.
-  The domain remains valid until expiry.
+  Export the domain to direct management by Google Domains. The domain remains
+  valid until expiry. See https://support.google.com/domains/answer/6339340 for
+  information how to access it in Google Domains after exporting.
 
-  See https://support.google.com/domains/answer/6339340 for information how to
-  access it in Google Domains after detaching.
+  Export can only be called on registrations in state ACTIVE or SUSPENDED.
 
   ## EXAMPLES
 
-  To detach a registration for example.com, run:
+  To export a registration for ``example.com'', run:
 
     $ {command} example.com
-
   """
 
   @staticmethod
   def Args(parser):
-    resource_args.AddRegistrationResourceArg(parser, 'to detach')
+    resource_args.AddRegistrationResourceArg(parser, 'to export')
     flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):
     client = registrations.RegistrationsClient()
+    args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
 
-    # TODO(b/110077203) Tweak the message.
     console_io.PromptContinue(
-        'You are about to detach registration [{}]'.format(
+        'You are about to export registration \'{}\''.format(
             registration_ref.registrationsId),
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    response = client.Detach(registration_ref)
+    response = client.Export(registration_ref)
 
-    if args.async_:
-      # TODO(b/110077203): Log something sensible.
-      return response
-
-    operations_client = operations.Client.FromApiVersion('v1alpha1')
-    operation_ref = util.ParseOperation(response.name)
-    response = operations_client.WaitForOperation(
-        operation_ref,
-        'Waiting for [{}] to complete'.format(operation_ref.Name()))
-
-    log.UpdatedResource(
+    response = util.WaitForOperation(response, args.async_)
+    log.ExportResource(
         registration_ref.Name(),
         'registration',
+        is_async=args.async_,
         details=('Note:\nRegistration remains valid until expiry. See '
                  'https://support.google.com/domains/answer/6339340 for '
                  'information how to access it in Google Domains.'))

@@ -41,8 +41,8 @@ class Wait(base.SilentCommand):
     resource_args.AddOperationResourceArg(parser, 'to wait for')
 
   def Run(self, args):
-    client = operations.Client.FromApiVersion('v1alpha1')
+    client = operations.Client.FromApiVersion('v1alpha2')
     operation_ref = args.CONCEPTS.operation.Parse()
     return client.WaitForOperation(
         operation_ref,
-        'Waiting for [{}] to complete'.format(operation_ref.Name()))
+        'Waiting for \'{}\' to complete'.format(operation_ref.Name()))

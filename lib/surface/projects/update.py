@@ -49,7 +49,7 @@ class UpdateAlpha(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetProjectFlag('update').AddToParser(parser)
+    flags.GetProjectIDNumberFlag('update').AddToParser(parser)
     update_flags = parser.add_group(required=True)
     update_flags.add_argument('--name', help='New name for the project.')
 

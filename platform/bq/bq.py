@@ -119,7 +119,7 @@ ConnectionReference = bigquery_client.ApiClientHelper.ConnectionReference
 def _GetVersion():
   """Returns content of VERSION file which is same directory as this file."""
   root = 'bq'
-  return pkgutil.get_data(root, 'VERSION')
+  return six.ensure_text(pkgutil.get_data(root, 'VERSION'))
 
 
 _VERSION_NUMBER = _GetVersion()

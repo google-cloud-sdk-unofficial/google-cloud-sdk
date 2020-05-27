@@ -26,9 +26,9 @@ from googlecloudsdk.command_lib.domains import util
 _FORMAT = """\
 table(
     domainName:label=DOMAIN,
-    available:label=AVAILABILITY,
+    availability:label=AVAILABILITY,
     yearlyPrice.price():label=YEARLY_PRICE,
-    notices.list():label=NOTICES
+    domainNotices.list():label=NOTICES
 )
 """
 
@@ -67,4 +67,5 @@ class SearchDomains(base.DescribeCommand):
 
     location_ref = args.CONCEPTS.location.Parse()
 
-    return client.SearchAvailability(location_ref, args.domain_query)
+    # Sending the query direcyly to server (without normalization).
+    return client.SearchDomains(location_ref, args.domain_query)

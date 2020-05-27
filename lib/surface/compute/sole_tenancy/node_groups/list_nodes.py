@@ -30,9 +30,11 @@ class ListNodes(base.ListCommand):
   """List Compute Engine sole-tenant nodes present in a node group."""
 
   detailed_help = {
-      'brief': 'List Compute Engine sole-tenant nodes present in a node'
-               'group.',
-      'EXAMPLES': """
+      'brief':
+          'List Compute Engine sole-tenant nodes present in a node'
+          'group.',
+      'EXAMPLES':
+          """
          To list sole-tenant nodes present in a node group, run:
 
            $ {command} my-node-group
@@ -54,8 +56,9 @@ class ListNodes(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat('table(name, status, nodeType.basename(),'
-                                  'instances.map().basename().list())')
+    parser.display_info.AddFormat(
+        'table(name, status, nodeType.basename(),'
+        'instances.map().basename().list(), serverId)')
     flags.MakeNodeGroupArg().AddArgument(parser)
 
   def Run(self, args):
@@ -76,8 +79,8 @@ class ListNodes(base.ListCommand):
     errors = []
     results = list(
         request_helper.MakeRequests(
-            requests=[(client.apitools_client.nodeGroups, 'ListNodes',
-                       request)],
+            requests=[(client.apitools_client.nodeGroups, 'ListNodes', request)
+                     ],
             http=client.apitools_client.http,
             batch_url=client.batch_url,
             errors=errors))

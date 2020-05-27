@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.tasks import list_formats
 from googlecloudsdk.command_lib.tasks import parsers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List all queues."""
   detailed_help = {
@@ -60,4 +60,14 @@ class AlphaList(List):
   @staticmethod
   def Args(parser):
     flags.AddLocationFlag(parser)
-    list_formats.AddListQueuesFormats(parser, is_alpha=True)
+    list_formats.AddListQueuesFormats(parser, version=base.ReleaseTrack.ALPHA)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaList(List):
+  """List all queues including their type."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddLocationFlag(parser)
+    list_formats.AddListQueuesFormats(parser, version=base.ReleaseTrack.BETA)

@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
-from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -44,7 +43,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     secrets_args.AddProject(parser)
-    secrets_fmt.UseSecretTable(parser, 'v1')
+    secrets_fmt.UseSecretTable(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
@@ -54,10 +53,8 @@ class List(base.ListCommand):
           'project',
           'Please set a project with "--project" flag or "gcloud config set project <project_id>".'
       )
-    return secrets_api.Secrets(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).ListWithPager(
-                project_ref=project_ref, limit=args.limit)
+    return secrets_api.Secrets().ListWithPager(
+        project_ref=project_ref, limit=args.limit)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -78,5 +75,5 @@ class ListBeta(List):
   @staticmethod
   def Args(parser):
     secrets_args.AddProject(parser)
-    secrets_fmt.UseSecretTable(parser, 'v1beta1')
+    secrets_fmt.UseSecretTable(parser)
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)

@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml_engine import jobs
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.ml_engine import flags
 from googlecloudsdk.command_lib.ml_engine import jobs_util
@@ -62,6 +63,19 @@ def _AddSubmitTrainingArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
 
 
+def _GetAndValidateKmsKey(args):
+  """Parse CMEK resource arg, and check if the arg was partially specified."""
+  if hasattr(args.CONCEPTS, 'kms_key'):
+    kms_ref = args.CONCEPTS.kms_key.Parse()
+    if kms_ref:
+      return kms_ref.RelativeName()
+    else:
+      for keyword in ['kms-key', 'kms-keyring', 'kms-location', 'kms-project']:
+        if getattr(args, keyword.replace('-', '_'), None):
+          raise exceptions.InvalidArgumentException(
+              '--kms-key', 'Encryption key not fully specified.')
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Train(base.Command):
   """Submit an AI Platform training job."""
@@ -99,6 +113,7 @@ class Train(base.Command):
         labels=labels,
         stream_logs=stream_logs,
         user_args=args.user_args,
+        kms_key=_GetAndValidateKmsKey(args),
         custom_train_server_config=custom_container_config)
     # If the job itself failed, we will return a failure status.
     if stream_logs and job.state is not job.StateValueValuesEnum.SUCCEEDED:
@@ -111,6 +126,14 @@ class TrainAlphaBeta(Train):
   """Submit an AI Platform training job."""
 
   _SUPPORT_TPU_TF_VERSION = True
+
+  @classmethod
+  def Args(cls, parser):
+    _AddSubmitTrainingArgs(parser)
+    flags.AddKmsKeyFlag(parser, 'job')
+    flags.AddCustomContainerFlags(
+        parser, support_tpu_tf_version=cls._SUPPORT_TPU_TF_VERSION)
+    parser.display_info.AddFormat(jobs_util.JOB_FORMAT)
 
 
 _DETAILED_HELP = {

@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
-from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -46,9 +45,7 @@ class Create(base.DeleteCommand):
 
   def Run(self, args):
     version_ref = args.CONCEPTS.version.Parse()
-    result = secrets_api.Versions(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).Disable(version_ref)
+    result = secrets_api.Versions().Disable(version_ref)
     secrets_log.Versions().Disabled(version_ref)
     return result
 
@@ -69,5 +66,5 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddBetaVersion(
+    secrets_args.AddVersion(
         parser, purpose='to disable', positional=True, required=True)

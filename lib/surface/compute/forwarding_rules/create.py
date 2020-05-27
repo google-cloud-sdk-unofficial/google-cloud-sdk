@@ -61,7 +61,10 @@ def _Args(parser, support_global_access, support_l7_internal_load_balancing,
       'The DNS label to use as the prefix of the fully qualified domain '
       'name for this forwarding rule. The full name will be internally '
       'generated and output as dnsName. If this field is not specified, '
-      'no DNS record will be generated and no DNS name will be output. ')
+      'no DNS record will be generated and no DNS name will be output. '
+      'You cannot use the `--service-label` flag  if the forwarding rule '
+      'references an internal IP address that has the '
+      '`--purpose=SHARED_LOADBALANCER_VIP` flag set.')
   flags.AddAddressesAndIPVersions(
       parser,
       required=False,

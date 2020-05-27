@@ -52,7 +52,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetProjectFlag('delete').AddToParser(parser)
+    flags.GetProjectIDNumberFlag('delete').AddToParser(parser)
     parser.display_info.AddCacheUpdater(completers.ProjectCompleter)
 
   def Run(self, args):

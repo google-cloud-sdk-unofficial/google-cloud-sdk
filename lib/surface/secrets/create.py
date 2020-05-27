@@ -114,8 +114,7 @@ class Create(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    messages = secrets_api.GetMessages(
-        version=secrets_util.GetVersionFromReleasePath(self.ReleaseTrack()))
+    messages = secrets_api.GetMessages()
     secret_ref = args.CONCEPTS.secret.Parse()
     data = secrets_util.ReadFileOrStdin(args.data_file)
     labels = labels_util.ParseCreateArgs(args, messages.Secret.LabelsValue)
@@ -162,18 +161,14 @@ class Create(base.CreateCommand):
     if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
       raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
     # Create the secret
-    response = secrets_api.Secrets(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).Create(
-                secret_ref,
-                labels=labels,
-                locations=locations,
-                policy=replication_policy)
+    response = secrets_api.Secrets().Create(
+        secret_ref,
+        labels=labels,
+        locations=locations,
+        policy=replication_policy)
 
     if data:
-      version = secrets_api.Secrets(
-          version=secrets_util.GetVersionFromReleasePath(
-              self.ReleaseTrack())).AddVersion(secret_ref, data)
+      version = secrets_api.Secrets().AddVersion(secret_ref, data)
       version_ref = secrets_args.ParseVersionRef(version.name)
       secrets_log.Versions().Created(version_ref)
     else:
@@ -218,7 +213,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddBetaSecret(
+    secrets_args.AddSecret(
         parser, purpose='to create', positional=True, required=True)
     secrets_args.AddLocations(parser, resource='secret')
     secrets_args.AddDataFile(parser)

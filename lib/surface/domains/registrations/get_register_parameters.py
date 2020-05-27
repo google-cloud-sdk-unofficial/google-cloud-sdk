@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2019 Google LLC. All Rights Reserved.
+# Copyright 2020 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""`gcloud domains registrations check-availability` command."""
+"""`gcloud domains registrations get-register-parameters` command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,18 +21,21 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.domains import registrations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.domains import resource_args
+from googlecloudsdk.command_lib.domains import util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CheckAvailability(base.DescribeCommand):
-  """Check availability of a specific domain.
+class GetRegisterParameters(base.DescribeCommand):
+  """Get register parameters (including availability) of a specific domain.
 
-  This command checks availability of a single domain and provides additional
-  information such as pricing, supported WHOIS privacy modes & notices.
+  Get parameters needed to register a new domain, including
+  price, availability, supported privacy modes and notices.
+
+  This command uses fresh information from the registry.
 
   ## EXAMPLES
 
-  To check if example.com is available for registration, run:
+  To check if ``example.com'' is available for registration, run:
 
     $ {command} example.com
   """
@@ -42,13 +45,14 @@ class CheckAvailability(base.DescribeCommand):
     resource_args.AddLocationResourceArg(parser)
     base.Argument(
         'domain',
-        help='Domain to check availability for.',
+        help='Domain to get register parameters for.',
     ).AddToParser(parser)
 
   def Run(self, args):
-    """Run the check availability command."""
+    """Run the get register parameters command."""
     client = registrations.RegistrationsClient()
 
     location_ref = args.CONCEPTS.location.Parse()
 
-    return client.CheckAvailability(location_ref, args.domain).availability
+    domain = util.NormalizeDomainName(args.domain)
+    return client.RetrieveRegisterParameters(location_ref, domain)

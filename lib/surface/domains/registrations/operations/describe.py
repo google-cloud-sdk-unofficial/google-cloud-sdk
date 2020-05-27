@@ -41,6 +41,6 @@ class Describe(base.DescribeCommand):
     resource_args.AddOperationResourceArg(parser, 'to describe')
 
   def Run(self, args):
-    client = operations.Client.FromApiVersion('v1alpha1')
+    client = operations.Client.FromApiVersion('v1alpha2')
     operation_ref = args.CONCEPTS.operation.Parse()
     return client.Get(operation_ref)

@@ -53,9 +53,6 @@ class List(base.ListCommand):
   A valid image has the format of
   LOCATION-docker.pkg.dev/PROJECT-ID/REPOSITORY-ID/IMAGE_PATH
 
-  Without location in input path, all images across all locations under all
-  matched projects and repositories are listed.
-
   To specify the maximum number of images to list, use the --limit flag.
   """
 
@@ -75,14 +72,6 @@ class List(base.ListCommand):
       To list images under repository `my-repo`, project `my-project`, in `us-central1`:
 
           $ {command} us-central1-docker.pkg.dev/my-project/my-repo
-
-      To list images under repository `my-repo`, project `my-project` across all locations:
-
-          $ {command} docker.pkg.dev/my-project/my-repo
-
-      To list all image digests under image `busy-box`, in repository `my-repo`, project `my-project` across all locations:
-
-          $ {command} docker.pkg.dev/my-project/my-repo/busy-box
 
       The following command lists a maximum of five images:
 

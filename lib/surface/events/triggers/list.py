@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.events import trigger
 from googlecloudsdk.command_lib.events import eventflow_operations
 from googlecloudsdk.command_lib.events import flags
+from googlecloudsdk.command_lib.events import resource_args
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags as serverless_flags
 from googlecloudsdk.command_lib.run import pretty_print
-from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 

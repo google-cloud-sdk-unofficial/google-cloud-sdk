@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
-from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.core.console import console_io
 
 
@@ -59,9 +58,7 @@ class Destroy(base.DeleteCommand):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    result = secrets_api.Versions(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).Destroy(version_ref)
+    result = secrets_api.Versions().Destroy(version_ref)
     secrets_log.Versions().Destroyed(version_ref)
     return result
 
@@ -82,5 +79,5 @@ class DestroyBeta(Destroy):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddBetaVersion(
+    secrets_args.AddVersion(
         parser, purpose='to destroy', positional=True, required=True)

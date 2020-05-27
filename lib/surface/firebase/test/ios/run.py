@@ -138,11 +138,11 @@ class Run(base.ListCommand):
                                                  args.results_dir, tr_client,
                                                  tr_messages, storage_client)
     if getattr(args, 'app', None):
-      bucket_ops.UploadFileToGcs(args.app)
+      bucket_ops.UploadFileToGcs(args.app, 'application/octet-stream')
     if args.test:
-      bucket_ops.UploadFileToGcs(args.test)
+      bucket_ops.UploadFileToGcs(args.test, 'application/zip')
     if args.xctestrun_file:
-      bucket_ops.UploadFileToGcs(args.xctestrun_file)
+      bucket_ops.UploadFileToGcs(args.xctestrun_file, 'text/xml')
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(

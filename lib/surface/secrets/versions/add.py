@@ -66,9 +66,7 @@ class Create(base.CreateCommand):
     if args.data_file == '':  # pylint: disable=g-explicit-bool-comparison
       raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
 
-    version = secrets_api.Secrets(
-        version=secrets_util.GetVersionFromReleasePath(
-            self.ReleaseTrack())).AddVersion(secret_ref, data)
+    version = secrets_api.Secrets().AddVersion(secret_ref, data)
     version_ref = secrets_args.ParseVersionRef(version.name)
     secrets_log.Versions().Created(version_ref)
     return version
@@ -96,6 +94,6 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    secrets_args.AddBetaSecret(
+    secrets_args.AddSecret(
         parser, purpose='to create', positional=True, required=True)
     secrets_args.AddDataFile(parser, required=True)

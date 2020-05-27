@@ -44,7 +44,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.GetProjectFlag('describe').AddToParser(parser)
+    flags.GetProjectIDNumberFlag('describe').AddToParser(parser)
 
   def Run(self, args):
     project_ref = command_lib_util.ParseProject(args.id)
