@@ -1727,11 +1727,19 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--kubeconfig": "value",
                     "--login-config": "value",
                     "--login-config-cert": "value",
+                    "--set-preferred-auth": "bool",
                     "--user": "value"
                   }
                 }
               },
               "flags": {}
+            },
+            "export": {
+              "commands": {},
+              "flags": {
+                "--location": "value",
+                "--output-directory": "value"
+              }
             }
           },
           "flags": {}
@@ -1744,6 +1752,7 @@ STATIC_COMPLETION_CLI_TREE = {
                   "commands": {},
                   "flags": {
                     "--api": "value",
+                    "--basepath": "value",
                     "--environment": "value",
                     "--organization": "value",
                     "--override": "bool"
@@ -6020,6 +6029,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-with-container": {
                   "commands": {},
                   "flags": {
+                    "--accelerator": "value",
                     "--address": "value",
                     "--boot-disk-auto-delete": "bool",
                     "--boot-disk-device-name": "value",
@@ -9999,6 +10009,28 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--zone": "value"
                   }
                 },
+                "execution-groups": {
+                  "commands": {
+                    "delete": {
+                      "commands": {},
+                      "flags": {
+                        "--zone": "dynamic"
+                      }
+                    },
+                    "list": {
+                      "commands": {},
+                      "flags": {
+                        "--filter": "value",
+                        "--limit": "value",
+                        "--page-size": "value",
+                        "--sort-by": "value",
+                        "--uri": "bool",
+                        "--zone": "dynamic"
+                      }
+                    }
+                  },
+                  "flags": {}
+                },
                 "list": {
                   "commands": {},
                   "flags": {
@@ -11022,6 +11054,10 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--location": "value"
                       }
+                    },
+                    "get-credentials": {
+                      "commands": {},
+                      "flags": {}
                     },
                     "list": {
                       "commands": {},
@@ -15014,6 +15050,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--clear-labels": "bool",
+                        "--description": "value",
                         "--dry-run": "bool",
                         "--location": "value",
                         "--preview-time": "value",
@@ -15121,6 +15158,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--clear-labels": "bool",
+                        "--description": "value",
                         "--location": "value",
                         "--remove-labels": "value",
                         "--update-labels": "value"
@@ -15181,6 +15219,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--clear-labels": "bool",
+                        "--description": "value",
                         "--dry-run": "bool",
                         "--location": "value",
                         "--preview-time": "value",
@@ -17582,6 +17621,32 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--location": "value",
                     "--locked": "bool",
                     "--retention-days": "value"
+                  }
+                }
+              },
+              "flags": {}
+            },
+            "locations": {
+              "commands": {
+                "describe": {
+                  "commands": {},
+                  "flags": {
+                    "--billing-account": "value",
+                    "--folder": "value",
+                    "--organization": "dynamic"
+                  }
+                },
+                "list": {
+                  "commands": {},
+                  "flags": {
+                    "--billing-account": "value",
+                    "--filter": "value",
+                    "--folder": "value",
+                    "--limit": "value",
+                    "--organization": "dynamic",
+                    "--page-size": "value",
+                    "--sort-by": "value",
+                    "--uri": "bool"
                   }
                 }
               },
@@ -20017,10 +20082,10 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--dead-letter-topic-project": "value",
                     "--enable-message-ordering": "bool",
                     "--expiration-period": "value",
-                    "--filter": "value",
                     "--labels": "value",
                     "--max-delivery-attempts": "value",
                     "--max-retry-delay": "value",
+                    "--message-filter": "value",
                     "--message-retention-duration": "value",
                     "--min-retry-delay": "value",
                     "--push-auth-service-account": "value",
@@ -21004,6 +21069,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--set-config-maps": "value",
                 "--set-env-vars": "value",
                 "--set-secrets": "value",
+                "--tag": "value",
                 "--timeout": "value",
                 "--update-config-maps": "value",
                 "--update-env-vars": "value",
@@ -21365,6 +21431,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--set-config-maps": "value",
                     "--set-env-vars": "value",
                     "--set-secrets": "value",
+                    "--tag": "value",
                     "--timeout": "value",
                     "--update-config-maps": "value",
                     "--update-env-vars": "value",
@@ -23910,6 +23977,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--kubeconfig": "value",
                 "--login-config": "value",
                 "--login-config-cert": "value",
+                "--set-preferred-auth": "bool",
                 "--user": "value"
               }
             }
@@ -25410,11 +25478,19 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--kubeconfig": "value",
                     "--login-config": "value",
                     "--login-config-cert": "value",
+                    "--set-preferred-auth": "bool",
                     "--user": "value"
                   }
                 }
               },
               "flags": {}
+            },
+            "export": {
+              "commands": {},
+              "flags": {
+                "--location": "value",
+                "--output-directory": "value"
+              }
             }
           },
           "flags": {}
@@ -28764,6 +28840,14 @@ STATIC_COMPLETION_CLI_TREE = {
                         "--zone": "dynamic"
                       }
                     },
+                    "describe-instance": {
+                      "commands": {},
+                      "flags": {
+                        "--instance": "value",
+                        "--region": "dynamic",
+                        "--zone": "dynamic"
+                      }
+                    },
                     "export-autoscaling": {
                       "commands": {},
                       "flags": {
@@ -29210,6 +29294,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--boot-disk-size": "value",
                     "--boot-disk-type": "value",
                     "--can-ip-forward": "bool",
+                    "--confidential-compute": "bool",
                     "--configure-disk": "value",
                     "--create-disk": "value",
                     "--custom-cpu": "value",
@@ -29270,6 +29355,7 @@ STATIC_COMPLETION_CLI_TREE = {
                 "create-with-container": {
                   "commands": {},
                   "flags": {
+                    "--accelerator": "value",
                     "--address": "value",
                     "--boot-disk-auto-delete": "bool",
                     "--boot-disk-device-name": "value",
@@ -29467,6 +29553,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--boot-disk-size": "value",
                     "--boot-disk-type": "value",
                     "--can-ip-forward": "bool",
+                    "--confidential-compute": "bool",
                     "--create-disk": "value",
                     "--csek-key-file": "value",
                     "--custom-cpu": "value",
@@ -37421,6 +37508,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--clear-labels": "bool",
+                        "--description": "value",
                         "--dry-run": "bool",
                         "--location": "value",
                         "--preview-time": "value",
@@ -37528,6 +37616,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "flags": {
                         "--async": "bool",
                         "--clear-labels": "bool",
+                        "--description": "value",
                         "--location": "value",
                         "--remove-labels": "value",
                         "--update-labels": "value"
@@ -37588,6 +37677,7 @@ STATIC_COMPLETION_CLI_TREE = {
                       "commands": {},
                       "flags": {
                         "--clear-labels": "bool",
+                        "--description": "value",
                         "--dry-run": "bool",
                         "--location": "value",
                         "--preview-time": "value",
@@ -41730,6 +41820,7 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--labels": "value",
                     "--max-delivery-attempts": "value",
                     "--max-retry-delay": "value",
+                    "--message-filter": "value",
                     "--message-retention-duration": "value",
                     "--min-retry-delay": "value",
                     "--push-auth-service-account": "value",
@@ -47582,6 +47673,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--node-affinity-file": "value",
                 "--node-group": "value",
                 "--preemptible": "bool",
+                "--private-ipv6-google-access-type": [
+                  "enable-bidirectional-access",
+                  "enable-outbound-vm-access",
+                  "inherit-subnetwork"
+                ],
                 "--private-network-ip": "value",
                 "--region": "dynamic",
                 "--reservation": "value",
@@ -47653,6 +47749,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--no-scopes": "bool",
                 "--no-service-account": "bool",
                 "--preemptible": "bool",
+                "--private-ipv6-google-access-type": [
+                  "enable-bidirectional-access",
+                  "enable-outbound-vm-access",
+                  "inherit-subnetwork"
+                ],
                 "--private-network-ip": "value",
                 "--region": "dynamic",
                 "--restart-on-failure": "bool",
@@ -47827,6 +47928,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--node-affinity-file": "value",
                 "--node-group": "value",
                 "--preemptible": "bool",
+                "--private-ipv6-google-access-type": [
+                  "enable-bidirectional-access",
+                  "enable-outbound-vm-access",
+                  "inherit-subnetwork"
+                ],
                 "--private-network-ip": "value",
                 "--public-ptr": "bool",
                 "--public-ptr-domain": "value",
@@ -47905,6 +48011,11 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--no-scopes": "bool",
                 "--no-service-account": "bool",
                 "--preemptible": "bool",
+                "--private-ipv6-google-access-type": [
+                  "enable-bidirectional-access",
+                  "enable-outbound-vm-access",
+                  "inherit-subnetwork"
+                ],
                 "--private-network-ip": "value",
                 "--public-ptr": "bool",
                 "--public-ptr-domain": "value",
@@ -48698,6 +48809,11 @@ STATIC_COMPLETION_CLI_TREE = {
                     ],
                     "--logging-metadata-fields": "value",
                     "--network": "dynamic",
+                    "--private-ipv6-google-access-type": [
+                      "disable",
+                      "enable-bidirectional-access",
+                      "enable-outbound-vm-access"
+                    ],
                     "--purpose": [
                       "INTERNAL_HTTPS_LOAD_BALANCER",
                       "PRIVATE"
@@ -48800,6 +48916,11 @@ STATIC_COMPLETION_CLI_TREE = {
                       "include-all"
                     ],
                     "--logging-metadata-fields": "value",
+                    "--private-ipv6-google-access-type": [
+                      "disable",
+                      "enable-bidirectional-access",
+                      "enable-outbound-vm-access"
+                    ],
                     "--region": "dynamic",
                     "--remove-secondary-ranges": "value",
                     "--role": [
@@ -57676,7 +57797,8 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--redis-config": "value",
                 "--redis-version": [
                   "redis_3_2",
-                  "redis_4_0"
+                  "redis_4_0",
+                  "redis_5_0"
                 ],
                 "--region": "dynamic",
                 "--reserved-ip-range": "value",
@@ -57749,6 +57871,17 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--size": "value",
                 "--update-labels": "value",
                 "--update-redis-config": "value"
+              }
+            },
+            "upgrade": {
+              "commands": {},
+              "flags": {
+                "--async": "bool",
+                "--redis-version": [
+                  "redis_4_0",
+                  "redis_5_0"
+                ],
+                "--region": "dynamic"
               }
             }
           },

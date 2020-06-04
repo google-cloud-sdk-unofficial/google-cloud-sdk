@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief:
@@ -40,5 +40,5 @@
 
   request:
     collection: redis.projects.locations.instances
-    api_version: v1beta1
+    api_version: v1
     method: upgrade

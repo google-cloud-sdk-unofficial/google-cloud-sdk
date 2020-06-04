@@ -23,10 +23,10 @@ import os.path
 import signal
 import subprocess
 import sys
-import tempfile
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.code import cross_platform_temp_file
 from googlecloudsdk.command_lib.code import flags
 from googlecloudsdk.command_lib.code import kubernetes
 from googlecloudsdk.command_lib.code import local
@@ -79,55 +79,6 @@ def _FindSkaffold():
 
 class RuntimeMissingDependencyError(exceptions.Error):
   """A runtime dependency is missing."""
-
-
-class WindowsNamedTempFile(object):
-  """Wrapper around named temporary file for Windows.
-
-  NamedTemporaryFiles cannot be read by other processes on windows because
-  only one process can open a file at a time. This file will be unlinked
-  at the end of the context.
-  """
-
-  def __init__(self, *args, **kwargs):
-    self._args = args
-    self._kwargs = kwargs.copy()
-    self._kwargs['delete'] = False
-    self._f = None
-
-  def __enter__(self):
-    self._f = tempfile.NamedTemporaryFile(*self._args, **self._kwargs)
-    return self._f
-
-  def __exit__(self, exc_type, exc_value, tb):
-    if self._f:
-      try:
-        os.unlink(self._f.name)
-      except OSError:
-        # File already unlinked. No need to clean up.
-        pass
-
-
-@contextlib.contextmanager
-def _NamedTempFile(contents):
-  """Write a named temporary with given contents.
-
-  Args:
-    contents: (str) File contents.
-
-  Yields:
-    The temporary file object.
-  """
-  if os.name == 'nt':
-    with WindowsNamedTempFile(mode='w+t') as f:
-      f.write(contents)
-      f.close()
-      yield f
-  else:
-    with tempfile.NamedTemporaryFile(mode='w+t') as f:
-      f.write(contents)
-      f.flush()
-      yield f
 
 
 @contextlib.contextmanager
@@ -203,7 +154,8 @@ def _SetImagePush(skaffold_file, shared_docker):
     skaffold_yaml = yaml.load_path(skaffold_file.name)
     local_block = yaml_helper.GetOrCreate(skaffold_yaml, ('build', 'local'))
     local_block['push'] = False
-    with _NamedTempFile(yaml.dump(skaffold_yaml)) as patched_skaffold_file:
+    with cross_platform_temp_file.NamedTempFile(
+        yaml.dump(skaffold_yaml)) as patched_skaffold_file:
       yield patched_skaffold_file
 
 
@@ -262,10 +214,11 @@ class Dev(base.Command):
 
     self._EnsureDockerInstalled()
 
-    with _NamedTempFile(kubernetes_config) as kubernetes_file:
+    with cross_platform_temp_file.NamedTempFile(
+        kubernetes_config) as kubernetes_file:
       skaffold_config = six.ensure_text(
           local_file_generator.SkaffoldConfig(kubernetes_file.name))
-      with _NamedTempFile(skaffold_config) as skaffold_file, \
+      with cross_platform_temp_file.NamedTempFile(skaffold_config) as skaffold_file, \
            self._GetKubernetesEngine(args) as kube_context, \
            self._WithKubeNamespace(args.namespace, kube_context.context_name), \
            _SetImagePush(skaffold_file, kube_context.shared_docker) as patched_skaffold_file, \

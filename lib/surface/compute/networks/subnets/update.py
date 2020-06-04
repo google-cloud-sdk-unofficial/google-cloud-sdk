@@ -33,6 +33,7 @@ class Update(base.UpdateCommand):
   _include_l7_internal_load_balancing = True
   _include_private_ipv6_access_alpha = False
   _include_private_ipv6_access_beta = False
+  _include_private_ipv6_access_v1 = True
 
   @classmethod
   def Args(cls, parser):
@@ -47,7 +48,8 @@ class Update(base.UpdateCommand):
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
                         cls._include_l7_internal_load_balancing,
                         cls._include_private_ipv6_access_alpha,
-                        cls._include_private_ipv6_access_beta)
+                        cls._include_private_ipv6_access_beta,
+                        cls._include_private_ipv6_access_v1)
 
   def Run(self, args):
     """Issues requests necessary to update Subnetworks."""
@@ -77,15 +79,12 @@ class Update(base.UpdateCommand):
         set_role_active = getattr(args, 'role', None) == 'ACTIVE'
 
     enable_private_ipv6_access = None
-    private_ipv6_google_access_type = None
     private_ipv6_google_access_service_accounts = None
     if self._include_private_ipv6_access_alpha:
       enable_private_ipv6_access = args.enable_private_ipv6_access
-      private_ipv6_google_access_type = args.private_ipv6_google_access_type
       private_ipv6_google_access_service_accounts = (
           args.private_ipv6_google_access_service_accounts)
-    elif self._include_private_ipv6_access_beta:
-      private_ipv6_google_access_type = args.private_ipv6_google_access_type
+    private_ipv6_google_access_type = args.private_ipv6_google_access_type
 
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,

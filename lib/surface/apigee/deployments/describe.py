@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.apigee import defaults
+from googlecloudsdk.command_lib.apigee import errors
 from googlecloudsdk.command_lib.apigee import resource_args
 
 
@@ -77,4 +78,7 @@ class Describe(base.DescribeCommand):
 
     # Deployments have no identifier of their own, so the API to get deployment
     # details looks like a List call with all possible parents specified.
-    return apigee.DeploymentsClient.List(identifiers)[0]
+    deployments = apigee.DeploymentsClient.List(identifiers)
+    if not deployments:
+      raise errors.EntityNotFoundError("deployment", identifiers, "GET")
+    return deployments[0]

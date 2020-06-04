@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
 from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import arg_parsers
@@ -28,6 +29,7 @@ from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import messages_util as run_messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -37,7 +39,6 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
-from surface.run import deploy
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -122,7 +123,8 @@ class Replace(base.Command):
           collection='run.namespaces.services')
       original_service = client.GetService(service_ref)
 
-      pretty_print.Info(deploy.GetStartDeployMessage(conn_context, service_ref))
+      pretty_print.Info(
+          run_messages_util.GetStartDeployMessage(conn_context, service_ref))
 
       deployment_stages = stages.ServiceStages()
       header = (
@@ -144,5 +146,6 @@ class Replace(base.Command):
             'Service [{{bold}}{serv}{{reset}}] is deploying '
             'asynchronously.'.format(serv=service_ref.servicesId))
       else:
-        pretty_print.Success(deploy.GetSuccessMessageForSynchronousDeploy(
-            client, service_ref))
+        pretty_print.Success(
+            run_messages_util.GetSuccessMessageForSynchronousDeploy(
+                client, service_ref))

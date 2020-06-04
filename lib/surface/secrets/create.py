@@ -33,8 +33,9 @@ class Create(base.CreateCommand):
   r"""Create a new secret.
 
   Create a secret with the given name and creates a secret version with the
-  given data, if any. If a secret already exists with the given name, this
-  command will return an error.
+  given data, if any. Note, the created secret ends with a newline.
+  If a secret already exists with the given name, this command will return
+  an error.
 
   ## EXAMPLES
 

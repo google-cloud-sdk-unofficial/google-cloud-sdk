@@ -35,6 +35,10 @@
       help_text: Cloud Game Server Cluster to update.
       spec: !REF googlecloudsdk.command_lib.game.resources:cluster
     params:
+    - arg_name: description
+      api_field: gameServerCluster.description
+      help_text: |
+        Description for the game server cluster.
     - arg_name: dry-run
       type: bool
       required: true

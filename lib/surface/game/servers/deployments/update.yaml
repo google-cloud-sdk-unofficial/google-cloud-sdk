@@ -7,7 +7,12 @@
 
       ## EXAMPLES
 
-      To update labels for Game Server Deployment 'my-deployment' in project 'my-project' and location in 'global'(deployments only support the 'global' location) run:
+      To update description for Game Server Deployment 'my-deployment' in project 'my-project', and
+      location in 'global'(deployments only support the default 'global' location) run:
+
+        $ {command} my-deployment --project=my-project --location=global --description="New description"
+
+      To update labels for Game Server Deployment 'my-deployment' in project 'my-project' run:
 
         $ {command} my-deployment --project=my-project --location=global --update-labels="key1=val1"
 
@@ -25,7 +30,11 @@
     resource:
       help_text: Cloud Game Server Deployment to update.
       spec: !REF googlecloudsdk.command_lib.game.resources:deployment
-
+    params:
+    - arg_name: description
+      api_field: gameServerDeployment.description
+      help_text: |
+        Description for the game server deployment.
     labels:
       api_field: gameServerDeployment.labels
 

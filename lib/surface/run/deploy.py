@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.builds import submit_util
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -65,53 +66,6 @@ def GetAllowUnauth(args, operations, service_ref, service_exists):
     if not service_exists and not allow_unauth:
       allow_unauth = None
   return allow_unauth
-
-
-def GetStartDeployMessage(conn_context, service_ref):
-  """Returns a user mesage for starting a deploy.
-
-  Args:
-    conn_context: connection_context.ConnectionInfo, Metadata for the
-      run API client.
-    service_ref: protorpc.messages.Message, A resource reference object
-      for the service See googlecloudsdk.core.resources.Registry.ParseResourceId
-      for details.
-  """
-  msg = ('Deploying container to {operator} service '
-         '[{{bold}}{service}{{reset}}] in {ns_label} [{{bold}}{ns}{{reset}}]')
-  msg += conn_context.location_label
-
-  return msg.format(
-      operator=conn_context.operator,
-      ns_label=conn_context.ns_label,
-      service=service_ref.servicesId,
-      ns=service_ref.namespacesId)
-
-
-def GetSuccessMessageForSynchronousDeploy(operations, service_ref):
-  """Returns a user message for a successful synchronous deploy.
-
-  Args:
-    operations: serverless_operations.ServerlessOperations, A
-      ServerlessOperations instance for fetching the service.
-    service_ref: protorpc.messages.Message, A resource reference object
-      for the service See googlecloudsdk.core.resources.Registry.ParseResourceId
-      for details.
-  """
-  service = operations.GetService(service_ref)
-  latest_ready = service.status.latestReadyRevisionName
-  latest_percent_traffic = service.latest_percent_traffic
-  msg = ('Service [{{bold}}{serv}{{reset}}] '
-         'revision [{{bold}}{rev}{{reset}}] '
-         'has been deployed and is serving '
-         '{{bold}}{latest_percent_traffic}{{reset}} percent of traffic')
-  if latest_percent_traffic:
-    msg += (' at {{bold}}{url}{{reset}}')
-  return msg.format(
-      serv=service_ref.servicesId,
-      rev=latest_ready,
-      url=service.domain,
-      latest_percent_traffic=latest_percent_traffic)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -229,7 +183,8 @@ class Deploy(base.Command):
       service = operations.GetService(service_ref)
       allow_unauth = GetAllowUnauth(args, operations, service_ref, service)
 
-      pretty_print.Info(GetStartDeployMessage(conn_context, service_ref))
+      pretty_print.Info(
+          messages_util.GetStartDeployMessage(conn_context, service_ref))
       has_latest = (service is None or
                     traffic.LATEST_REVISION_KEY in service.spec_traffic)
       deployment_stages = stages.ServiceStages(
@@ -261,8 +216,9 @@ class Deploy(base.Command):
             'Service [{{bold}}{serv}{{reset}}] is deploying '
             'asynchronously.'.format(serv=service_ref.servicesId))
       else:
-        pretty_print.Success(GetSuccessMessageForSynchronousDeploy(
-            operations, service_ref))
+        pretty_print.Success(
+            messages_util.GetSuccessMessageForSynchronousDeploy(
+                operations, service_ref))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -291,6 +247,7 @@ class AlphaDeploy(Deploy):
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddServiceAccountFlagAlpha(parser)
+    flags.AddDeployTagFlag(parser)
 
     # Flags inherited from gcloud builds submit
     flags.AddConfigFlags(parser)

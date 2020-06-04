@@ -25,6 +25,3 @@ from googlecloudsdk.calliope import base
 class Databases(base.Group):
   """Manage Creation of Cloud Firestore in Native mode Database."""
 
-  def Filter(self, context, args):
-    del context, args
-    base.DisableUserProjectQuota()

@@ -374,8 +374,7 @@ def _RunCreate(compute_api,
                support_kms=False,
                support_min_node_cpu=False,
                support_confidential_compute=False,
-               support_location_hint=False,
-               support_private_ipv6_google_access=False):
+               support_location_hint=False):
   """Common routine for creating instance template.
 
   This is shared between various release tracks.
@@ -391,8 +390,6 @@ def _RunCreate(compute_api,
       support_confidential_compute: Indicate whether confidential compute is
         supported.
       support_location_hint: Indicate whether location hint is supported.
-      support_private_ipv6_google_access: Indicate whether private ipv6 google
-        access is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -591,8 +588,7 @@ def _RunCreate(compute_api,
     instance_template.properties.confidentialInstanceConfig = (
         confidential_instance_config_message)
 
-  if (support_private_ipv6_google_access and
-      args.private_ipv6_google_access_type is not None):
+  if args.private_ipv6_google_access_type is not None:
     instance_template.properties.privateIpv6GoogleAccess = (
         instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapperForTemplate(
             client.messages).GetEnumForChoice(
@@ -630,7 +626,6 @@ class Create(base.CreateCommand):
   _support_kms = True
   _support_min_node_cpu = False
   _support_location_hint = False
-  _support_private_ipv6_google_access = False
 
   @classmethod
   def Args(cls, parser):
@@ -643,6 +638,8 @@ class Create(base.CreateCommand):
         support_location_hint=cls._support_location_hint
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
+    instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
+        parser, utils.COMPUTE_GA_API_VERSION)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -660,9 +657,7 @@ class Create(base.CreateCommand):
         support_source_instance=self._support_source_instance,
         support_kms=self._support_kms,
         support_min_node_cpu=self._support_min_node_cpu,
-        support_location_hint=self._support_location_hint,
-        support_private_ipv6_google_access=self
-        ._support_private_ipv6_google_access)
+        support_location_hint=self._support_location_hint)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -684,7 +679,7 @@ class CreateBeta(Create):
   _support_resource_policy = True
   _support_min_node_cpu = True
   _support_location_hint = False
-  _support_private_ipv6_google_access = True
+  _support_confidential_compute = True
 
   @classmethod
   def Args(cls, parser):
@@ -701,6 +696,7 @@ class CreateBeta(Create):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
+    instances_flags.AddConfidentialComputeArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -719,8 +715,7 @@ class CreateBeta(Create):
         support_kms=self._support_kms,
         support_min_node_cpu=self._support_min_node_cpu,
         support_location_hint=self._support_location_hint,
-        support_private_ipv6_google_access=self
-        ._support_private_ipv6_google_access)
+        support_confidential_compute=self._support_confidential_compute)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -743,7 +738,6 @@ class CreateAlpha(Create):
   _support_min_node_cpu = True
   _support_confidential_compute = True
   _support_location_hint = True
-  _support_private_ipv6_google_access = True
 
   @classmethod
   def Args(cls, parser):
@@ -781,9 +775,7 @@ class CreateAlpha(Create):
         support_kms=self._support_kms,
         support_min_node_cpu=self._support_min_node_cpu,
         support_confidential_compute=self._support_confidential_compute,
-        support_location_hint=self._support_location_hint,
-        support_private_ipv6_google_access=self
-        ._support_private_ipv6_google_access)
+        support_location_hint=self._support_location_hint)
 
 
 DETAILED_HELP = {

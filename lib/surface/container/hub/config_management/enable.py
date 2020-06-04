@@ -18,7 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.services import services_util
+from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.command_lib.container.hub.features import base
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 class Enable(base.EnableCommand):
@@ -41,5 +45,17 @@ class Enable(base.EnableCommand):
     pass
 
   def Run(self, args):
+    enable_service()
     return self.RunCommand(args, configmanagementFeatureSpec=(
         base.CreateConfigManagementFeatureSpec()))
+
+
+def enable_service():
+  project = properties.VALUES.core.project.Get(required=True)
+  service_name = 'anthosconfigmanagement.googleapis.com'
+  op = serviceusage.EnableApiCall(project, service_name)
+  log.status.Print('Enabling service {0}'.format(service_name))
+  if op.done:
+    return
+  op = services_util.WaitOperation(op.name, serviceusage.GetOperation)
+  services_util.PrintOperation(op)

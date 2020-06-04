@@ -23,3 +23,14 @@ from googlecloudsdk.calliope import base
 
 class Deployments(base.Group):
   """Manage deployments of Apigee proxies in runtime environments."""
+
+  detailed_help = {
+      "DESCRIPTION": """
+          {description}
+
+          Commands to list deployments are available in the command groups of
+          the desired search terms. For example, to list all deployments to an
+          environment, use `{parent_command} environments deployments list`
+          instead of this command group.
+          """
+  }

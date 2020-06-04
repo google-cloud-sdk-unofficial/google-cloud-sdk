@@ -68,4 +68,13 @@ class SearchDomains(base.DescribeCommand):
     location_ref = args.CONCEPTS.location.Parse()
 
     # Sending the query direcyly to server (without normalization).
-    return client.SearchDomains(location_ref, args.domain_query)
+    suggestions = client.SearchDomains(location_ref, args.domain_query)
+    for s in suggestions:
+      try:
+        s.domainName = util.PunycodeToUnicode(s.domainName)
+      except UnicodeError:
+        pass  # Do not change the domain name.
+    if not suggestions:
+      messages = registrations.GetMessagesModule()
+      suggestions.append(messages.RegisterParameters())
+    return suggestions

@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an existing Cloud Pub/Sub subscription."""
 
@@ -114,8 +114,8 @@ class Update(base.UpdateCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class UpdateBeta(Update):
   """Updates an existing Cloud Pub/Sub subscription."""
 
   @classmethod
@@ -127,4 +127,4 @@ class UpdateAlpha(Update):
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
-    return super(UpdateAlpha, self).Run(args)
+    return super(UpdateBeta, self).Run(args)

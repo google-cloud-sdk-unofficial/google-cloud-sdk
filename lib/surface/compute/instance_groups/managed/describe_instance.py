@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DescribeInstance(base.DescribeCommand):
   """Describe an instance in a managed instance group."""
 
@@ -37,11 +37,12 @@ class DescribeInstance(base.DescribeCommand):
   def Args(parser):
     instance_groups_flags.GetInstanceGroupManagerArg(
         region_flag=True).AddArgument(
-            parser, operation_type='describe instance in')
+            parser, operation_type='describe the instance')
     parser.add_argument(
         '--instance',
         required=True,
-        help='Name of the instance in the managed instance group to describe.')
+        help='Name of the managed instance group that ' +
+        'contains the instance to describe.')
 
   def Run(self, args):
     """Retrieves response with instance in the instance group."""
@@ -105,7 +106,7 @@ DescribeInstance.detailed_help = {
     'DESCRIPTION':
         """\
           *{command}* describes an instance in a managed instance group, listing
-          all it's attributes in the YAML format.
+          all its attributes in YAML format.
         """,
     'EXAMPLES':
         """\

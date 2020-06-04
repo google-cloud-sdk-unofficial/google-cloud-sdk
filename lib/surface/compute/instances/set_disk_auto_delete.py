@@ -19,14 +19,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.core import log
-from six.moves import zip
+from googlecloudsdk.core import resources as cloud_resources
+from googlecloudsdk.core.console import console_io
 
 
 class SetDiskAutoDelete(base.UpdateCommand):
@@ -93,61 +95,133 @@ class SetDiskAutoDelete(base.UpdateCommand):
             'Get',
             client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
 
-  def GetSetRequest(self, client, instance_ref, replacement, existing):
-    # Our protocol buffers are mutable, so they cannot be
-    # hashed. Because of this, we cannot do a set subraction on the
-    # lists of disks. Instead, the task of finding the changed disk is
-    # relegated to a for-loop.
-    for existing_disk, replacement_disk in zip(
-        existing.disks, replacement.disks):
-      if existing_disk != replacement_disk:
-        changed_disk = replacement_disk
-
+  def GetSetRequest(self, client, instance_ref, attached_disk):
     return (client.apitools_client.instances,
             'SetDiskAutoDelete',
             client.messages.ComputeInstancesSetDiskAutoDeleteRequest(
-                deviceName=changed_disk.deviceName,
+                deviceName=attached_disk.deviceName,
                 instance=instance_ref.instance,
                 project=instance_ref.project,
                 zone=instance_ref.zone,
-                autoDelete=changed_disk.autoDelete))
+                autoDelete=attached_disk.autoDelete))
 
-  def Modify(self, resources, args, instance_ref, existing):
-    replacement = encoding.CopyProtoMessage(existing)
-    disk_found = False
+  def _GetPossibleDisks(self, resources, name, instance_ref):
+    """Gets the possible disks that match the provided disk name.
 
-    if args.disk:
-      disk_ref = resources.Parse(
-          args.disk, collection='compute.disks',
-          params={
-              'project': instance_ref.project,
-              'zone': instance_ref.zone
-          })
+    First, we attempt to parse the provided disk name as a regional and as a
+    zonal disk. Next, we iterate over the attached disks to find the ones that
+    match the parsed regional and zonal disks.
 
-      for disk in replacement.disks:
-        disk_rel_name = resources.ParseURL(disk.source).RelativeName()
-        if disk_rel_name == disk_ref.RelativeName():
-          disk.autoDelete = args.auto_delete
-          disk_found = True
+    If the disk can match either a zonal or regional disk, we prompt the user to
+    choose one.
 
-      if not disk_found:
-        raise exceptions.ToolException(
-            'Disk [{0}] is not attached to instance [{1}] in zone [{2}].'
-            .format(disk_ref.Name(), instance_ref.instance, instance_ref.zone))
+    Args:
+      resources: resources.Registry, The resource registry
+      name: str, name of the disk.
+      instance_ref: Reference of the instance instance.
 
-    else:
-      for disk in replacement.disks:
-        if disk.deviceName == args.device_name:
-          disk.autoDelete = args.auto_delete
-          disk_found = True
+    Returns:
+      List of possible disks references that possibly match the provided disk
+          name.
+    """
+    possible_disks = []
+    try:
+      regional_disk = instance_utils.ParseDiskResource(
+          resources, name, instance_ref.project, instance_ref.zone,
+          compute_scopes.ScopeEnum.REGION)
+      possible_disks.append(regional_disk)
+    except cloud_resources.WrongResourceCollectionException:
+      pass
+    try:
+      zonal_disk = instance_utils.ParseDiskResource(
+          resources, name, instance_ref.project, instance_ref.zone,
+          compute_scopes.ScopeEnum.ZONE)
+      possible_disks.append(zonal_disk)
+    except cloud_resources.WrongResourceCollectionException:
+      pass
 
-      if not disk_found:
-        raise exceptions.ToolException(
-            'No disk with device name [{0}] is attached to instance [{1}] '
-            'in zone [{2}].'
-            .format(args.device_name, instance_ref.instance, instance_ref.zone))
+    return possible_disks
 
-    return replacement
+  def GetAttachedDiskByName(self, resources, name, instance_ref, instance):
+    """Gets an attached disk with the specified disk name.
+
+    First, we attempt to parse the provided disk name to find the possible disks
+    that it may describe. Next, we iterate over the attached disks to find the
+    ones that match the possible disks.
+
+    If the disk can match multiple disks, we prompt the user to choose one.
+
+    Args:
+      resources: resources.Registry, The resource registry
+      name: str, name of the attached disk.
+      instance_ref: Reference of the instance instance.
+      instance: Instance object.
+
+    Returns:
+      An attached disk object.
+
+    Raises:
+      exceptions.ToolException: If a disk with name cannot be found attached to
+          the instance or if the user does not choose a specific disk when
+          prompted.
+    """
+    possible_disks = self._GetPossibleDisks(resources, name, instance_ref)
+
+    matched_attached_disks = []
+    for attached_disk in instance.disks:
+      parsed_disk = instance_utils.ParseDiskResourceFromAttachedDisk(
+          resources, attached_disk)
+      for d in possible_disks:
+        if d and d.RelativeName() == parsed_disk.RelativeName():
+          matched_attached_disks.append(attached_disk)
+
+    if not matched_attached_disks:
+      raise exceptions.ToolException(
+          'Disk [{}] is not attached to instance [{}] in zone [{}].'
+          .format(name, instance_ref.instance, instance_ref.zone))
+    elif len(matched_attached_disks) == 1:
+      return matched_attached_disks[0]
+
+    choice_names = []
+    for attached_disk in matched_attached_disks:
+      disk_ref = instance_utils.ParseDiskResourceFromAttachedDisk(
+          resources, attached_disk)
+      choice_names.append(disk_ref.RelativeName())
+    idx = console_io.PromptChoice(
+        options=choice_names,
+        message='[{}] matched multiple disks. Choose one:'.format(name))
+    if idx is None:
+      raise exceptions.ToolException(
+          'Found multiple disks matching [{}] attached to instance [{}] '
+          'in zone [{}].'
+          .format(name, instance_ref.instance, instance_ref.zone))
+    return matched_attached_disks[idx]
+
+  def GetAttachedDiskByDeviceName(self, resources, device_name, instance_ref,
+                                  instance):
+    """Gets an attached disk with the specified device name.
+
+    Args:
+      resources: resources.Registry, The resource registry
+      device_name: str, device name of the attached disk.
+      instance_ref: Reference of the instance instance.
+      instance: Instance object.
+
+    Returns:
+      An attached disk object.
+
+    Raises:
+      exceptions.ToolException: If a disk with device name cannot be found
+          attached to the instance.
+    """
+    for disk in instance.disks:
+      if disk.deviceName == device_name:
+        return disk
+
+    raise exceptions.ToolException(
+        'No disk with device name [{}] is attached to instance [{}] '
+        'in zone [{}].'
+        .format(device_name, instance_ref.instance, instance_ref.zone))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -157,17 +231,20 @@ class SetDiskAutoDelete(base.UpdateCommand):
     get_request = self.GetGetRequest(client, instance_ref)
 
     objects = client.MakeRequests([get_request])
+    if args.disk:
+      disk = self.GetAttachedDiskByName(holder.resources, args.disk,
+                                        instance_ref, objects[0])
+    else:
+      disk = self.GetAttachedDiskByDeviceName(holder.resources,
+                                              args.device_name, instance_ref,
+                                              objects[0])
 
-    new_object = self.Modify(holder.resources, args, instance_ref, objects[0])
-
-    # If existing object is equal to the proposed object or if
-    # Modify() returns None, then there is no work to be done, so we
-    # print the resource and return.
-    if objects[0] == new_object:
+    if disk.autoDelete == args.auto_delete:
       log.status.Print(
-          'No change requested; skipping update for [{0}].'.format(
+          'No change requested; skipping update for [{}].'.format(
               objects[0].name))
       return objects
 
+    disk.autoDelete = args.auto_delete
     return client.MakeRequests(
-        [self.GetSetRequest(client, instance_ref, new_object, objects[0])])
+        [self.GetSetRequest(client, instance_ref, disk)])

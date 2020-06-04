@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -133,21 +134,9 @@ class Update(base.Command):
       if args.async_:
         pretty_print.Success('Deploying asynchronously.')
       else:
-        service = client.GetService(service_ref)
-        latest_ready = service.status.latestReadyRevisionName
-        latest_percent_traffic = service.latest_percent_traffic
-        msg = ('Service [{{bold}}{serv}{{reset}}] '
-               'revision [{{bold}}{rev}{{reset}}] '
-               'has been deployed and is serving '
-               '{{bold}}{latest_percent_traffic}{{reset}} percent of traffic')
-        if latest_percent_traffic:
-          msg += (' at {{bold}}{url}{{reset}}')
-        msg = msg.format(
-            serv=service_ref.servicesId,
-            rev=latest_ready,
-            url=service.domain if 'domain' in dir(service) else service.url,
-            latest_percent_traffic=latest_percent_traffic)
-        pretty_print.Success(msg)
+        pretty_print.Success(
+            messages_util.GetSuccessMessageForSynchronousDeploy(
+                client, service_ref))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -177,6 +166,7 @@ class AlphaUpdate(Update):
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)
     flags.AddServiceAccountFlagAlpha(parser)
+    flags.AddDeployTagFlag(parser)
 
 
 AlphaUpdate.__doc__ = Update.__doc__

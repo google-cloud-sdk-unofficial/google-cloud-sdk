@@ -41,7 +41,7 @@ def _Run(args, enable_labels=False, legacy_output=False):
   topic_ref = args.CONCEPTS.topic.Parse()
   push_config = util.ParsePushConfig(args)
   enable_message_ordering = getattr(args, 'enable_message_ordering', None)
-  filter_string = getattr(args, 'filter', None)
+  filter_string = getattr(args, 'message_filter', None)
   dead_letter_topic = getattr(args, 'dead_letter_topic', None)
   max_delivery_attempts = getattr(args, 'max_delivery_attempts', None)
   retain_acked_messages = getattr(args, 'retain_acked_messages', None)
@@ -150,10 +150,11 @@ class CreateBeta(Create):
         'to create.',
         plural=True)
     resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser)
+    flags.AddSubscriptionSettingsFlags(parser, support_filtering=True)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
+    flags.ValidateFilterString(args)
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
     return _Run(args, enable_labels=True, legacy_output=legacy_output)
 
@@ -177,5 +178,4 @@ class CreateAlpha(CreateBeta):
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
-    flags.ValidateFilterString(args)
     return super(CreateAlpha, self).Run(args)

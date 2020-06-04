@@ -82,10 +82,12 @@ def _CommonArgs(parser,
                 supports_location_hint=False,
                 supports_erase_vss=False,
                 snapshot_csek=False,
-                image_csek=False):
+                image_csek=False,
+                enable_pd_interface=False):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
-  instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
+  instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms,
+                              enable_pd_interface=enable_pd_interface)
   instances_flags.AddCreateDiskArgs(
       parser,
       enable_kms=enable_kms,
@@ -180,7 +182,7 @@ class Create(base.CreateCommand):
   _deprecate_maintenance_policy = False
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _support_private_ipv6_google_access = False
+  _enable_pd_interface = False
 
   @classmethod
   def Args(cls, parser):
@@ -190,6 +192,8 @@ class Create(base.CreateCommand):
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(
+        parser, utils.COMPUTE_GA_API_VERSION)
 
   def Collection(self):
     return 'compute.instances'
@@ -323,8 +327,7 @@ class Create(base.CreateCommand):
           scheduling=scheduling,
           tags=tags)
 
-      if (self._support_private_ipv6_google_access and
-          args.private_ipv6_google_access_type is not None):
+      if args.private_ipv6_google_access_type is not None:
         instance.privateIpv6GoogleAccess = (
             instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
                 compute_client.messages).GetEnumForChoice(
@@ -476,13 +479,13 @@ class CreateBeta(Create):
   _support_location_hint = False
   _support_source_snapshot_csek = False
   _support_image_csek = False
-  _support_confidential_compute = False
+  _support_confidential_compute = True
   _support_post_key_revocation_action_type = False
   _support_rsa_encrypted = True
   _deprecate_maintenance_policy = False
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _support_private_ipv6_google_access = True
+  _enable_pd_interface = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -508,7 +511,8 @@ class CreateBeta(Create):
         enable_kms=cls._support_kms,
         enable_resource_policy=cls._support_disk_resource_policy,
         supports_erase_vss=cls._support_erase_vss,
-        supports_min_node_cpu=cls._support_min_node_cpu)
+        supports_min_node_cpu=cls._support_min_node_cpu,
+        enable_pd_interface=cls._enable_pd_interface)
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
@@ -519,6 +523,7 @@ class CreateBeta(Create):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
+    instances_flags.AddConfidentialComputeArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -542,7 +547,7 @@ class CreateAlpha(CreateBeta):
   _deprecate_maintenance_policy = True
   _support_create_disk_snapshots = True
   _support_boot_snapshot_uri = True
-  _support_private_ipv6_google_access = True
+  _enable_pd_interface = True
 
   @classmethod
   def Args(cls, parser):
@@ -556,7 +561,8 @@ class CreateAlpha(CreateBeta):
         supports_location_hint=cls._support_location_hint,
         supports_erase_vss=cls._support_erase_vss,
         snapshot_csek=cls._support_source_snapshot_csek,
-        image_csek=cls._support_image_csek)
+        image_csek=cls._support_image_csek,
+        enable_pd_interface=cls._enable_pd_interface)
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)

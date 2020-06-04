@@ -82,7 +82,6 @@ class CreateWithContainer(base.CreateCommand):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
-  _support_private_ipv6_google_access = False
 
   @staticmethod
   def Args(parser):
@@ -90,6 +89,8 @@ class CreateWithContainer(base.CreateCommand):
     _Args(parser, container_mount_enabled=True)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(
+        parser, utils.COMPUTE_GA_API_VERSION)
 
   def _ValidateArgs(self, args):
     self._ValidateTrackSpecificArgs(args)
@@ -247,8 +248,7 @@ class CreateWithContainer(base.CreateCommand):
           serviceAccounts=service_accounts,
           scheduling=scheduling,
           tags=tags)
-      if (self._support_private_ipv6_google_access and
-          args.private_ipv6_google_access_type is not None):
+      if args.private_ipv6_google_access_type is not None:
         instance.privateIpv6GoogleAccess = (
             instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
                 compute_client.messages).GetEnumForChoice(
@@ -274,7 +274,6 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
-  _support_private_ipv6_google_access = True
 
   @staticmethod
   def Args(parser):
@@ -298,7 +297,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = True
-  _support_private_ipv6_google_access = True
 
   @staticmethod
   def Args(parser):

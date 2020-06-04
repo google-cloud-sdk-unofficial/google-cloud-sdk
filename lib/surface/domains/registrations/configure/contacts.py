@@ -52,7 +52,7 @@ class ConfigureContacts(base.UpdateCommand):
     $ {command} example.com --contact-privacy=private-contact-data
 
   To change contact data for ``example.com'' according to information from a
-  YAML file ``contants.yaml'', run:
+  YAML file ``contacts.yaml'', run:
 
     $ {command} example.com --contact-data-from-file=contacts.yaml
   """

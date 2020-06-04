@@ -58,11 +58,11 @@ class Update(base.UpdateCommand):
     args.registration = util.NormalizeResourceName(args.registration)
     registration_ref = args.CONCEPTS.registration.Parse()
 
-    new_labels = None
+    labels_update = None
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
       orig_resource = client.Get(registration_ref)
-      new_labels = labels_diff.Apply(
+      labels_update = labels_diff.Apply(
           client.messages.Registration.LabelsValue,
           orig_resource.labels).GetOrNone()
     else:
@@ -70,9 +70,8 @@ class Update(base.UpdateCommand):
           'Specify labels to update.\n'
           'Run `gcloud help alpha domains registrations configure` to see '
           'how to change management, DNS or contact settings.')
-
-    response = client.Patch(registration_ref, labels=new_labels)
-
-    response = util.WaitForOperation(response, args.async_)
-    log.UpdatedResource(registration_ref.Name(), 'registration', args.async_)
-    return response
+    if labels_update:
+      response = client.Patch(registration_ref, labels=labels_update)
+      response = util.WaitForOperation(response, args.async_)
+      log.UpdatedResource(registration_ref.Name(), 'registration', args.async_)
+      return response

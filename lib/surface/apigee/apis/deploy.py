@@ -81,6 +81,11 @@ class Deploy(base.DescribeCommand):
         "which will use the latest revision of the API proxy.",
         fallthroughs=fallthroughs, help_texts=help_text)
 
+    # The default "/" basepath is added on the server side.
+    parser.add_argument("--basepath",
+                        help=("Base path where the API proxy revision should "
+                              "be deployed. Defaults to `/` if not provided."))
+
   def Run(self, args):
     """Run the deploy command."""
     identifiers = args.CONCEPTS.revision.Parse().AsDict()
@@ -89,5 +94,5 @@ class Deploy(base.DescribeCommand):
       log.status.Print("Using current latest revision `%s`"%latest_revision)
       identifiers["revisionsId"] = latest_revision
 
-    result = apigee.APIsClient.Deploy(identifiers, args.override)
+    result = apigee.APIsClient.Deploy(identifiers, args.override, args.basepath)
     return result

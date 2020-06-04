@@ -45,7 +45,7 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     """Delete a Cloud Filestore instance."""
     instance_ref = args.CONCEPTS.instance.Parse()
-    delete_warning = ('You are about to delete Cloud Filestore instance {}. '
+    delete_warning = ('You are about to delete Cloud Filestore instance {}.\n'
                       'Are you sure?'.format(instance_ref.RelativeName()))
     if not console_io.PromptContinue(message=delete_warning):
       return None

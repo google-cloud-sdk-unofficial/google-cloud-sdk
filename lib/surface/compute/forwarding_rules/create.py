@@ -138,18 +138,28 @@ class CreateHelper(object):
 
     ports_all_specified, range_list = _ExtractPortsAndAll(args.ports)
     port_range = _ResolvePortRange(args.port_range, range_list)
+    load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages)
 
     if ports_all_specified and not is_psc_google_apis:
       raise exceptions.ToolException(
           '[--ports] can not be specified to all for global forwarding rules.')
-    if is_psc_google_apis and port_range:
-      raise exceptions.ToolException(
-          '[--ports] is not allowed for PSC-GoogleApis forwarding rules.')
     if not is_psc_google_apis and not port_range:
       raise exceptions.ToolException(
           '[--ports] is required for global forwarding rules.')
 
     if is_psc_google_apis:
+      if port_range:
+        raise exceptions.ToolException(
+            '[--ports] is not allowed for PSC-GoogleApis forwarding rules.')
+      if (load_balancing_scheme != client.messages
+          .ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL):
+        raise exceptions.InvalidArgumentException(
+            '--load-balancing-scheme',
+            'The --load-balancing-scheme flag is not allowed for PSC-GoogleApis'
+            ' forwarding rules.')
+      else:
+        load_balancing_scheme = None
+
       if args.target_google_apis_bundle in flags.PSC_GOOGLE_APIS_BUNDLES:
         target_as_str = args.target_google_apis_bundle
       else:
@@ -173,7 +183,6 @@ class CreateHelper(object):
     address = self._ResolveAddress(resources, args,
                                    compute_flags.compute_scope.ScopeEnum.GLOBAL,
                                    forwarding_rule_ref)
-
     forwarding_rule = client.messages.ForwardingRule(
         description=args.description,
         name=forwarding_rule_ref.Name(),
@@ -183,7 +192,7 @@ class CreateHelper(object):
         target=target_as_str,
         ipVersion=ip_version,
         networkTier=_ConstructNetworkTier(client.messages, args),
-        loadBalancingScheme=_GetLoadBalancingScheme(args, client.messages))
+        loadBalancingScheme=load_balancing_scheme)
 
     if args.IsSpecified('network'):
       forwarding_rule.network = flags.NetworkArg(

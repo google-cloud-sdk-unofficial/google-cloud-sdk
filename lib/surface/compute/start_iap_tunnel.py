@@ -33,9 +33,13 @@ from googlecloudsdk.core import log
 class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel.
 
-  Starts a tunnel to the Cloud Identity-Aware Proxy through which another
-  process can create a connection (eg. SSH, RDP) to a Google Compute Engine
-  instance.
+  Starts a tunnel to Cloud Identity-Aware Proxy for TCP forwarding through which
+  another process can create a connection (eg. SSH, RDP) to a Google Compute
+  Engine instance.
+
+  To learn more, see the
+  [IAP for TCP forwarding documentation](
+  https://cloud.google.com/iap/docs/tcp-forwarding-overview).
 
   ## EXAMPLES
 

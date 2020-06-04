@@ -44,7 +44,8 @@ def _DetailedHelp():
 
 def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
              include_private_ipv6_access_alpha,
-             include_private_ipv6_access_beta, include_aggregate_purpose):
+             include_private_ipv6_access_beta, include_private_ipv6_access_v1,
+             include_aggregate_purpose):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
 
@@ -202,8 +203,13 @@ def _AddArgs(parser, include_alpha_logging, include_l7_internal_load_balancing,
   elif include_private_ipv6_access_beta:
     messages = apis.GetMessagesModule('compute',
                                       compute_api.COMPUTE_BETA_API_VERSION)
-    GetPrivateIpv6GoogleAccessTypeFlagMapperBeta(
-        messages).choice_arg.AddToParser(parser)
+    GetPrivateIpv6GoogleAccessTypeFlagMapper(messages).choice_arg.AddToParser(
+        parser)
+  elif include_private_ipv6_access_v1:
+    messages = apis.GetMessagesModule('compute',
+                                      compute_api.COMPUTE_GA_API_VERSION)
+    GetPrivateIpv6GoogleAccessTypeFlagMapper(messages).choice_arg.AddToParser(
+        parser)
 
   parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
 
@@ -226,7 +232,7 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapperAlpha(messages):
   )
 
 
-def GetPrivateIpv6GoogleAccessTypeFlagMapperBeta(messages):
+def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   return arg_utils.ChoiceEnumMapper(
       '--private-ipv6-google-access-type',
       messages.Subnetwork.PrivateIpv6GoogleAccessValueValuesEnum,
@@ -245,7 +251,6 @@ def GetPrivateIpv6GoogleAccessTypeFlagMapperBeta(messages):
 def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
                       include_alpha_logging, include_l7_internal_load_balancing,
                       include_private_ipv6_access_alpha,
-                      include_private_ipv6_access_beta,
                       include_aggregate_purpose):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -335,18 +340,17 @@ def _CreateSubnetwork(messages, subnet_ref, network_ref, args,
     if args.private_ipv6_google_access_service_accounts is not None:
       subnetwork.privateIpv6GoogleAccessServiceAccounts = (
           args.private_ipv6_google_access_service_accounts)
-  elif include_private_ipv6_access_beta:
-    if args.private_ipv6_google_access_type is not None:
-      subnetwork.privateIpv6GoogleAccess = (
-          flags.GetPrivateIpv6GoogleAccessTypeFlagMapperBeta(
-              messages).GetEnumForChoice(args.private_ipv6_google_access_type))
+  elif args.private_ipv6_google_access_type is not None:
+    subnetwork.privateIpv6GoogleAccess = (
+        flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
+            messages).GetEnumForChoice(args.private_ipv6_google_access_type))
 
   return subnetwork
 
 
 def _Run(args, holder, include_alpha_logging,
          include_l7_internal_load_balancing, include_private_ipv6_access_alpha,
-         include_private_ipv6_access_beta, include_aggregate_purpose):
+         include_aggregate_purpose):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
 
@@ -362,7 +366,6 @@ def _Run(args, holder, include_alpha_logging,
                                  include_alpha_logging,
                                  include_l7_internal_load_balancing,
                                  include_private_ipv6_access_alpha,
-                                 include_private_ipv6_access_beta,
                                  include_aggregate_purpose)
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
@@ -391,6 +394,7 @@ class Create(base.CreateCommand):
   _include_l7_internal_load_balancing = True
   _include_private_ipv6_access_alpha = False
   _include_private_ipv6_access_beta = False
+  _include_private_ipv6_access_v1 = True
   _include_aggregate_purpose = False
 
   detailed_help = _DetailedHelp()
@@ -401,6 +405,7 @@ class Create(base.CreateCommand):
              cls._include_l7_internal_load_balancing,
              cls._include_private_ipv6_access_alpha,
              cls._include_private_ipv6_access_beta,
+             cls._include_private_ipv6_access_v1,
              cls._include_aggregate_purpose)
 
   def Run(self, args):
@@ -409,7 +414,6 @@ class Create(base.CreateCommand):
     return _Run(args, holder, self._include_alpha_logging,
                 self._include_l7_internal_load_balancing,
                 self._include_private_ipv6_access_alpha,
-                self._include_private_ipv6_access_beta,
                 self._include_aggregate_purpose)
 
 

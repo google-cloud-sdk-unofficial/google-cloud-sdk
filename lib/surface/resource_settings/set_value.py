@@ -25,7 +25,7 @@ from googlecloudsdk.api_lib.resourcesettings import utils as api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_settings import arguments
 from googlecloudsdk.command_lib.resource_settings import exceptions
-from googlecloudsdk.command_lib.resource_settings import utils as utils
+from googlecloudsdk.command_lib.resource_settings import utils
 
 
 @base.Hidden
@@ -35,7 +35,9 @@ class SetValue(base.Command):
 
   This first converts the contents of the specified file into a setting
   object. It then fetches the current setting using GetSetting. If it does not
-  exist, the setting is created using CreateSetting.
+  exist, the setting is created using CreateSetting.  If it does, the retrieved
+  setting is checked to see if it needs to be updated. If so, the setting is
+  updated using UpdateSetting.
 
   ## EXAMPLES
 
@@ -77,14 +79,9 @@ class SetValue(base.Command):
         args.value_file,
         settings_message.GoogleCloudResourcesettingsV1alpha1SettingValue)
 
-    # test input
-    # return input_setting
-
     if not input_setting.name:
       raise exceptions.InvalidInputError(
           'Name field not present in the resource setting.')
-
-    # return input_setting.value.boolean_value
 
     setting_name = '{}/value'.format(utils.GetSettingsPathFromArgs(args))
     get_request = api_utils.GetGetValueRequestFromArgs(args, setting_name)
@@ -100,6 +97,9 @@ class SetValue(base.Command):
     if setting_value == input_setting:
       return setting_value
 
-    # TODO(b/157055376): "The retrieved setting is checked to see if it needs to
-    # be updated. If so, the setting is updated using UpdateSetting."
+    update_request = api_utils.GetUpdateValueRequestFromArgs(args,
+                                                             input_setting)
+    update_response = settings_service.UpdateValue(update_request)
+    return update_response
+
 
