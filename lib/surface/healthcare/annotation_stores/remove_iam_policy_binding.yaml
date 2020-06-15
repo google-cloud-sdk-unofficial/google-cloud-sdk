@@ -1,4 +1,5 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
+
   help_text:
     brief: Remove an IAM policy binding from a Cloud Healthcare API annotation store.
     description: |
@@ -14,7 +15,10 @@
 
   request:
     collection: healthcare.projects.locations.datasets.annotationStores
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

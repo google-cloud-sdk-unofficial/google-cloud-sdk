@@ -30,10 +30,10 @@ from googlecloudsdk.core.util import files
 class Decrypt(base.Command):
   r"""Decrypt a ciphertext file using a Cloud KMS key.
 
-  {command} decrypts the given ciphertext file using the given Cloud KMS key and
-  writes the result to the named plaintext file. Note that to permit users to
-  decrypt using a key, they must be have at least one of the following IAM roles
-  for that key: `roles/cloudkms.cryptoKeyDecrypter`,
+  `{command}` decrypts the given ciphertext file using the given Cloud KMS key
+  and writes the result to the named plaintext file. Note that to permit users
+  to decrypt using a key, they must be have at least one of the following IAM
+  roles for that key: `roles/cloudkms.cryptoKeyDecrypter`,
   `roles/cloudkms.cryptoKeyEncrypterDecrypter`.
 
   Additional authenticated data (AAD) is used as an additional check by Cloud
@@ -77,7 +77,17 @@ class Decrypt(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyResourceFlags(parser, 'Cloud KMS key to use for decryption.')
+    flags.AddKeyResourceFlags(
+        parser,
+        'Cloud KMS key to use for decryption.\n'
+        '* For symmetric keys, Cloud KMS detects the decryption key version '
+        'from the ciphertext. If you specify a key version as part of a '
+        'symmetric decryption request, an error is logged and decryption '
+        'fails.\n'
+        '* For asymmetric keys, the encryption key version can\'t be detected '
+        'automatically. You must keep track of this information and provide '
+        'the key version in the decryption request. The key version itself '
+        'is not sensitive data and does not need to be encrypted.')
     flags.AddCiphertextFileFlag(parser, 'to decrypt')
     flags.AddPlaintextFileFlag(parser, 'to output')
     flags.AddAadFileFlag(parser)

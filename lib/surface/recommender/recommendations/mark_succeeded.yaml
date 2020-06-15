@@ -1,10 +1,9 @@
 - release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
-      Mark a recommendation's state as SUCCEEDED. mark-succeeded can be applied to recommendations
-      in ACTIVE, CLAIMED, SUCCEEDED, or FAILED state.
+      Mark a recommendation's state as SUCCEEDED.
     description: |
-      Mark a recommendation's state as SUCCEEDED. mark-succeeded can be applied to recommendations
+      Mark a recommendation's state as SUCCEEDED. Can be applied to recommendations
       in ACTIVE, CLAIMED, SUCCEEDED, or FAILED state.
     examples: |
       To mark a recommendation as SUCCEEDED:

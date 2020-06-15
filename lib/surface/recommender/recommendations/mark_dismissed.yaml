@@ -1,10 +1,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: |
-      Mark the Recommendation State as DISMISSED. Can only be performed on recommendations in ACTIVE
-      state.
+      Mark recommendation's state as DISMISSED.
     description: |
-      Mark the Recommendation State as DISMISSED. Can only be performed on recommendations in ACTIVE
+      Mark recommendation's state as DISMISSED. Can be applied to recommendations in ACTIVE
       state.
     examples: |
       To mark a recommendation as DISMISSED:

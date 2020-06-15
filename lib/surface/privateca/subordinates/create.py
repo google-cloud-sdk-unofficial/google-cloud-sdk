@@ -163,6 +163,7 @@ class Create(base.CreateCommand):
         default_value_text='10 years')
     flags.AddCertificateAuthorityIssuancePolicyFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
+    flags.AddBucketFlag(parser)
 
     offline_issuer_group = issuer_configuration_group.add_group(
         help=('If the issuing CA is not hosted on Private CA, you must provide '
@@ -231,7 +232,11 @@ class Create(base.CreateCommand):
       iam.CheckCreateCertificatePermissions(issuer_ref)
 
     p4sa_email = p4sa.GetOrCreate(project_ref)
-    bucket_ref = storage.CreateBucketForCertificateAuthority(ca_ref)
+
+    if args.IsSpecified('bucket'):
+      bucket_ref = storage.ValidateBucketForCertificateAuthority(args.bucket)
+    else:
+      bucket_ref = storage.CreateBucketForCertificateAuthority(ca_ref)
 
     p4sa.AddResourceRoleBindings(p4sa_email, kms_key_ref, bucket_ref)
 

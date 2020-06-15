@@ -34,7 +34,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.compute.kms import resource_args as kms_resource_args
@@ -112,8 +111,7 @@ def _SourceArgs(parser,
         """)
   disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
   if source_in_place_snapshot_enabled:
-    source_ips = source_group.add_group('Source in place snapshot options')
-    disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.AddArgument(source_ips)
+    disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.AddArgument(source_group)
   if source_disk_enabled:
     disks_flags.SOURCE_DISK_ARG.AddArgument(source_group)
 
@@ -129,6 +127,8 @@ def _CommonArgs(parser,
       '--description',
       help='An optional, textual description for the disks being created.')
 
+  # TODO(b/158105978) Add help text for pd-balanced before GA.
+  # TODO(b/158105562) Add help text for pd-extreme before GA.
   parser.add_argument(
       '--size',
       type=arg_parsers.BinarySize(
@@ -143,8 +143,9 @@ def _CommonArgs(parser,
         to 2TB to account for MBR partition table limitations. If disk size is
         not specified, the default size of {}GB for standard disks and {}GB for
         pd-ssd disks will be used.
-        """.format(constants.DEFAULT_STANDARD_DISK_SIZE_GB,
-                   constants.DEFAULT_SSD_DISK_SIZE_GB))
+        """.format(
+            constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_STANDARD],
+            constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_SSD]))
 
   parser.add_argument(
       '--type',
@@ -216,7 +217,6 @@ class Create(base.Command):
   """Create Google Compute Engine persistent disks."""
 
   source_disk_enabled = False
-  pd_balanced_enabled = False
   source_in_place_snapshot_enabled = False
 
   @classmethod
@@ -263,16 +263,22 @@ class Create(base.Command):
   def GetDiskSizeGb(self, args, from_image):
     size_gb = utils.BytesToGb(args.size)
 
-    if (not size_gb and not args.source_snapshot and not from_image and
-        not self.GetFromSourceDisk(args) and
-        not self.GetFromSourceInPlaceSnapshot(args)):
-      pd_disk_types = ['pd-ssd']
-      if self.pd_balanced_enabled:
-        pd_disk_types.append('pd-balanced')
-      if args.type and args.type in pd_disk_types:
-        size_gb = constants.DEFAULT_SSD_DISK_SIZE_GB
-      else:
-        size_gb = constants.DEFAULT_STANDARD_DISK_SIZE_GB
+    if size_gb:
+      # if disk size is given, use it.
+      pass
+    elif (args.source_snapshot or from_image or self.GetFromSourceDisk(args) or
+          self.GetFromSourceInPlaceSnapshot(args)):
+      # if source is a snapshot/image/disk/in-place-snapshot, it is ok not to
+      # set size_gb since disk size can be obtained from the source.
+      pass
+    elif args.type in constants.DEFAULT_DISK_SIZE_GB_MAP:
+      # Get default disk size from disk_type.
+      size_gb = constants.DEFAULT_DISK_SIZE_GB_MAP[args.type]
+    else:
+      # If disk type is unspecified or unknown, we use the default size of
+      # pd-standard.
+      size_gb = constants.DEFAULT_DISK_SIZE_GB_MAP[
+          constants.DISK_TYPE_PD_STANDARD]
     utils.WarnIfDiskSizeIsTooSmall(size_gb, args.type)
     return size_gb
 
@@ -316,11 +322,12 @@ class Create(base.Command):
       return snapshot_ref.SelfLink()
     return None
 
-  def GetSourceInPlaceSnapshotUri(self, args, compute_holder, default_scope):
-    in_place_snapshot_ref = disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.ResolveAsResource(
-        args, compute_holder.resources, default_scope=default_scope)
-    if in_place_snapshot_ref:
-      return in_place_snapshot_ref.SelfLink()
+  def GetSourceInPlaceSnapshotUri(self, args, compute_holder):
+    if args.source_in_place_snapshot:
+      in_place_snapshot_ref = disks_flags.SOURCE_IN_PLACE_SNAPSHOT_ARG.ResolveAsResource(
+          args, compute_holder.resources)
+      if in_place_snapshot_ref:
+        return in_place_snapshot_ref.SelfLink()
     return None
 
   def GetSourceDiskUri(self, args, compute_holder):
@@ -488,12 +495,8 @@ class Create(base.Command):
         source_disk_ref = self.GetSourceDiskUri(args, compute_holder)
         disk.sourceDisk = source_disk_ref
       if self.source_in_place_snapshot_enabled:
-        if disk_ref.Collection() == 'compute.regionDisks':
-          disk.sourceInPlaceSnapshot = self.GetSourceInPlaceSnapshotUri(
-              args, compute_holder, compute_scope.ScopeEnum.REGION)
-        else:
-          disk.sourceInPlaceSnapshot = self.GetSourceInPlaceSnapshotUri(
-              args, compute_holder, compute_scope.ScopeEnum.ZONE)
+        disk.sourceInPlaceSnapshot = self.GetSourceInPlaceSnapshotUri(
+            args, compute_holder)
       if (support_shared_disk and
           disk_ref.Collection() == 'compute.regionDisks' and
           args.IsSpecified('multi_writer')):
@@ -552,7 +555,6 @@ class CreateBeta(Create):
   """Create Google Compute Engine persistent disks."""
 
   source_disk_enabled = False
-  pd_balanced_enabled = False
   source_in_place_snapshot_enabled = False
 
   @classmethod
@@ -581,7 +583,6 @@ class CreateAlpha(CreateBeta):
   """Create Google Compute Engine persistent disks."""
 
   source_disk_enabled = True
-  pd_balanced_enabled = True
   source_in_place_snapshot_enabled = True
 
   @classmethod

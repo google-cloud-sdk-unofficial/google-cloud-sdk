@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import export_printer
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
@@ -44,9 +45,14 @@ class Describe(base.Command):
 
               $ {command} <service-name>
 
-          To get those details in the Knative yaml format:
+          To get those details in the YAML format:
 
               $ {command} <service-name> --format=yaml
+
+          To get them in YAML format suited to export (omitting metadata
+          specific to this deployment and status info):
+
+              $ {command} <service-name> --format=export
           """,
   }
 
@@ -71,6 +77,9 @@ class Describe(base.Command):
         service_printer.SERVICE_PRINTER_FORMAT,
         service_printer.ServicePrinter)
     args.GetDisplayInfo().AddFormat(service_printer.SERVICE_PRINTER_FORMAT)
+    resource_printer.RegisterFormatter(
+        export_printer.EXPORT_PRINTER_FORMAT,
+        export_printer.ExportPrinter)
     # End code that should be in Args
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())

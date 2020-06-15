@@ -83,6 +83,6 @@ Delete.detailed_help = {
         """\
 To delete a Cloud Filestore instance named NAME in us-central1-c:
 
-  $ {command} NAME --location=us-central1-c
+  $ {command} NAME --zone=us-central1-c
 """
 }

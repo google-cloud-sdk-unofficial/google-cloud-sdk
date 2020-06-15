@@ -69,8 +69,8 @@ class List(base.ListCommand):
         action='store_true',
         default=True,
         help="""\
-       Show images from well-known image projects.  The well known image
-       projects are: {0}.
+       List images from public image projects. The public image projects
+       that are available include the following: {0}.
        """.format(', '.join(constants.PUBLIC_IMAGE_PROJECTS)))
 
   def Run(self, args):

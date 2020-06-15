@@ -549,6 +549,7 @@ class UpdateBeta(Update):
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
+    flags.AddEnableMasterSignalsFlags(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -613,6 +614,9 @@ class UpdateBeta(Update):
 
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
+    opts.master_logs = args.master_logs
+    opts.no_master_logs = args.no_master_logs
+    opts.enable_master_metrics = args.enable_master_metrics
     opts.release_channel = args.release_channel
     opts.autoscaling_profile = args.autoscaling_profile
 
@@ -648,6 +652,7 @@ class UpdateAlpha(Update):
     flags.AddMonitoringServiceFlag(group_logging_monitoring)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
+    flags.AddEnableMasterSignalsFlags(group)
     flags.AddMasterAuthorizedNetworksFlags(
         parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
@@ -715,6 +720,9 @@ class UpdateAlpha(Update):
             cancel_on_no=True)
     opts.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
     opts.enable_logging_monitoring_system_only = args.enable_logging_monitoring_system_only
+    opts.no_master_logs = args.no_master_logs
+    opts.master_logs = args.master_logs
+    opts.enable_master_metrics = args.enable_master_metrics
     opts.release_channel = args.release_channel
     opts.enable_tpu = args.enable_tpu
     opts.tpu_ipv4_cidr = args.tpu_ipv4_cidr

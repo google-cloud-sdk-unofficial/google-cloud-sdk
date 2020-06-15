@@ -39,12 +39,14 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
-ID_DESCRIPTION = ('Project IDs must start with a lowercase letter and can '
-                  'have lowercase ASCII letters, digits or hyphens. '
+ID_DESCRIPTION = ('Project IDs are immutable and can be set only during '
+                  'project creation. They must start with a lowercase letter '
+                  'and can have lowercase ASCII letters, digits or hyphens. '
                   'Project IDs must be between 6 and 30 characters.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a new project.
 

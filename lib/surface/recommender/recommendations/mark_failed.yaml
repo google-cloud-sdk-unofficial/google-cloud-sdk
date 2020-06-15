@@ -1,10 +1,9 @@
 - release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
-      Mark a recommendation's state as FAILED. mark-failed can be applied to recommendations in
-      ACTIVE, CLAIMED, SUCCEEDED, or FAILED state.
+      Mark a recommendation's state as FAILED.
     description: |
-      Mark a recommendation's state as FAILED. mark-failed can be applied to recommendations in
+      Mark a recommendation's state as FAILED. Can be applied to recommendations in
       ACTIVE, CLAIMED, SUCCEEDED, or FAILED state.
     examples: |
       To mark a recommendation as FAILED:

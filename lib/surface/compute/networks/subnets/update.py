@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import subnets_utils
+from googlecloudsdk.api_lib.compute import utils as compute_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 
@@ -31,9 +32,7 @@ class Update(base.UpdateCommand):
   _include_alpha_logging = False
   # TODO(b/144022508): Remove _include_l7_internal_load_balancing
   _include_l7_internal_load_balancing = True
-  _include_private_ipv6_access_alpha = False
-  _include_private_ipv6_access_beta = False
-  _include_private_ipv6_access_v1 = True
+  _api_version = compute_api.COMPUTE_GA_API_VERSION
 
   @classmethod
   def Args(cls, parser):
@@ -47,9 +46,7 @@ class Update(base.UpdateCommand):
 
     flags.AddUpdateArgs(parser, cls._include_alpha_logging,
                         cls._include_l7_internal_load_balancing,
-                        cls._include_private_ipv6_access_alpha,
-                        cls._include_private_ipv6_access_beta,
-                        cls._include_private_ipv6_access_v1)
+                        cls._api_version)
 
   def Run(self, args):
     """Issues requests necessary to update Subnetworks."""
@@ -78,12 +75,6 @@ class Update(base.UpdateCommand):
       if args.role is not None:
         set_role_active = getattr(args, 'role', None) == 'ACTIVE'
 
-    enable_private_ipv6_access = None
-    private_ipv6_google_access_service_accounts = None
-    if self._include_private_ipv6_access_alpha:
-      enable_private_ipv6_access = args.enable_private_ipv6_access
-      private_ipv6_google_access_service_accounts = (
-          args.private_ipv6_google_access_service_accounts)
     private_ipv6_google_access_type = args.private_ipv6_google_access_type
 
     return subnets_utils.MakeSubnetworkUpdateRequest(
@@ -100,17 +91,15 @@ class Update(base.UpdateCommand):
         metadata_fields=metadata_fields,
         set_role_active=set_role_active,
         drain_timeout_seconds=drain_timeout_seconds,
-        enable_private_ipv6_access=enable_private_ipv6_access,
         private_ipv6_google_access_type=private_ipv6_google_access_type,
-        private_ipv6_google_access_service_accounts=(
-            private_ipv6_google_access_service_accounts))
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
-  _include_private_ipv6_access_beta = True
+  _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -118,4 +107,4 @@ class UpdateAlpha(UpdateBeta):
   """Updates properties of an existing Google Compute Engine subnetwork."""
 
   _include_alpha_logging = True
-  _include_private_ipv6_access_alpha = True
+  _api_version = compute_api.COMPUTE_ALPHA_API_VERSION

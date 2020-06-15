@@ -2,7 +2,10 @@
     brief: |
       List Filestore regions
     description: |
-      List all regions where Filestore API is available.
+       List all regions where Filestore API is available.
+       The listed regions only apply for Basic instances.
+       High Scale is only available in a more restricted set of regions.
+       For details, please see https://cloud.google.com/filestore/docs/regions.
     examples: |
       To list all the regions where Filestore instances can be created, run:
 

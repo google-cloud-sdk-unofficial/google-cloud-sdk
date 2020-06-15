@@ -1,4 +1,6 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
     brief:  Update a Cloud Healthcare API annotation store.
     description: |
       Update a Cloud Healthcare API annotation store.
@@ -8,7 +10,10 @@
         $ {command} test-annotation-store --dataset=test-dataset
   request:
     collection: healthcare.projects.locations.datasets.annotationStores
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

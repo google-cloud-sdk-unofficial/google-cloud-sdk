@@ -230,7 +230,8 @@ class BetaDeploy(Deploy):
     Deploy.Args(parser)
 
     # Flags specific to VPCAccess
-    flags.AddVpcConnectorArg(parser)
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddVpcConnectorArg(managed_group)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -242,7 +243,8 @@ class AlphaDeploy(Deploy):
     Deploy.CommonArgs(parser)
 
     # Flags specific to VPCAccess
-    flags.AddVpcConnectorArg(parser)
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddVpcConnectorArg(managed_group)
 
     # Flags not specific to any platform
     flags.AddMinInstancesFlag(parser)

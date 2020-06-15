@@ -64,6 +64,12 @@ Multiple locations can be specified, separated by commas. For example:
 """)
 
 
+def _AddAdditionalZonesGroup(parser):
+  group = parser.add_mutually_exclusive_group()
+  _AddAdditionalZonesFlag(group, deprecated=True)
+  flags.AddNodeLocationsFlag(group)
+
+
 def _Args(parser):
   """Register flags for this command.
 
@@ -207,6 +213,20 @@ def ValidateBasicAuthFlags(args):
     raise util.Error(constants.USERNAME_PASSWORD_ERROR_MSG)
 
 
+def _AddReleaseChannelGroup(parser):
+  """Add flag group for release channels."""
+  versioning_groups = parser.add_mutually_exclusive_group("""\
+--release-channel cannot be specified if Custom Version Flags
+(--cluster-version or --node-version) are used.
+""")
+  flags.AddReleaseChannelFlag(versioning_groups)
+  custom_version_group = versioning_groups.add_group("""\
+Custom Version Flags:
+""")
+  flags.AddClusterVersionFlag(custom_version_group)
+  flags.AddNodeVersionFlag(custom_version_group)
+
+
 def ParseCreateOptionsBase(args):
   """Parses the flags provided with the cluster creation command."""
   if args.IsSpecified('addons') and api_adapter.DASHBOARD in args.addons:
@@ -328,6 +348,251 @@ def ParseCreateOptionsBase(args):
       max_surge_upgrade=args.max_surge_upgrade,
       max_unavailable_upgrade=args.max_unavailable_upgrade)
 
+_GA = 'ga'
+_BETA = 'beta'
+_ALPHA = 'alpha'
+
+
+def AddAutoRepair(parser):
+  flags.AddEnableAutoRepairFlag(parser, for_create=True)
+
+
+def AddPrivateClusterDeprecated(parser):
+  flags.AddPrivateClusterFlags(parser, with_deprecated=True)
+
+
+def AddEnableAutoUpgradeWithDefault(parser):
+  flags.AddEnableAutoUpgradeFlag(parser, default=True)
+
+
+def AddAutoprovisioningGA(parser):
+  flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True, ga=True)
+
+
+def AddAutoprovisioning(parser):
+  flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
+
+
+def AddTpuWithServiceNetworking(parser):
+  flags.AddTpuFlags(parser, enable_tpu_service_networking=True)
+
+
+def AddWorkloadIdentityNoPool(parser):
+  flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
+
+
+def AddDisableDefaultSnatFlagForClusterCreate(parser):
+  flags.AddDisableDefaultSnatFlag(parser, for_cluster_create=True)
+
+
+def AddMasterSignalsFlag(parser):
+  flags.AddEnableMasterSignalsFlags(parser, for_create=True)
+
+
+flags_to_add = {
+    _GA: {
+        'additionalzones': _AddAdditionalZonesFlag,
+        'addons': flags.AddAddonsFlags,
+        'autorepair': AddAutoRepair,
+        'autoprovisioning': AddAutoprovisioningGA,
+        'autoupgrade': AddEnableAutoUpgradeWithDefault,
+        'args': _Args,
+        'binauthz': flags.AddEnableBinAuthzFlag,
+        'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
+        'clusterautoscaling': flags.AddClusterAutoscalingFlags,
+        'clusterversion': flags.AddClusterVersionFlag,
+        'intranodevisibility': flags.AddEnableIntraNodeVisibilityFlag,
+        'ipalias': flags.AddIPAliasFlags,
+        'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
+        'labels': flags.AddLabelsFlag,
+        'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
+        'localssd': flags.AddLocalSSDFlag,
+        'maintenancewindow': flags.AddMaintenanceWindowGroup,
+        'masterauth': flags.AddMasterAuthorizedNetworksFlags,
+        'maxpodspernode': flags.AddMaxPodsPerNodeFlag,
+        'maxunavailable': flags.AddMaxUnavailableUpgradeFlag,
+        'mincpu': flags.AddMinCpuPlatformFlag,
+        'networkpolicy': flags.AddNetworkPolicyFlags,
+        'nodeidentity': flags.AddClusterNodeIdentityFlags,
+        'nodelocations': flags.AddNodeLocationsFlag,
+        'nodetaints': flags.AddNodeTaintsFlag,
+        'nodeversion': flags.AddNodeVersionFlag,
+        'preemptible': flags.AddPreemptibleFlag,
+        'privatecluster': flags.AddPrivateClusterFlags,
+        'reservationaffinity': flags.AddReservationAffinityFlags,
+        'resourceusageexport': flags.AddResourceUsageExportFlags,
+        'surgeupgrade': flags.AddSurgeUpgradeFlag,
+        'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
+        'tpu': flags.AddTpuFlags,
+        'verticalpodautoscaling': flags.AddVerticalPodAutoscalingFlag,
+        'workloadidentity': flags.AddWorkloadIdentityFlags,
+        'workloadmetadata': flags.AddWorkloadMetadataFlag,
+    },
+    _BETA: {
+        'additionalzones':
+            _AddAdditionalZonesGroup,
+        'addons':
+            flags.AddBetaAddonsFlags,
+        'allowrouteoverlap':
+            flags.AddAllowRouteOverlapFlag,
+        'args':
+            _Args,
+        'autorepair':
+            AddAutoRepair,
+        'autoprovisioning':
+            AddAutoprovisioning,
+        'autoscalingprofiles':
+            flags.AddAutoscalingProfilesFlag,
+        'authenticatorsecurity':
+            flags.AddAuthenticatorSecurityGroupFlags,
+        'autoupgrade':
+            AddEnableAutoUpgradeWithDefault,
+        'binauthz':
+            flags.AddEnableBinAuthzFlag,
+        'bootdiskkms':
+            flags.AddBootDiskKmsKeyFlag,
+        'cloudrunalpha':
+            flags.AddEnableCloudRunAlphaFlag,
+        'clusterautoscaling':
+            flags.AddClusterAutoscalingFlags,
+        'disabledefaultsnat':
+            AddDisableDefaultSnatFlagForClusterCreate,
+        'intranodevisibility':
+            flags.AddEnableIntraNodeVisibilityFlag,
+        'ipalias':
+            flags.AddIPAliasFlags,
+        'istioconfig':
+            flags.AddIstioConfigFlag,
+        'kubernetesalpha':
+            flags.AddEnableKubernetesAlphaFlag,
+        'gvnic':
+            flags.AddEnableGvnicFlag,
+        'localssd':
+            flags.AddLocalSSDFlag,
+        'loggingmonitoring':
+            flags.AddEnableLoggingMonitoringSystemOnlyFlag,
+        'labels':
+            flags.AddLabelsFlag,
+        'legacyauth':
+            flags.AddEnableLegacyAuthorizationFlag,
+        'maintenancewindow':
+            flags.AddMaintenanceWindowGroup,
+        'masterglobalaccess':
+            flags.AddMasterGlobalAccessFlag,
+        'masterauth':
+            flags.AddMasterAuthorizedNetworksFlags,
+        'mastersignals':
+            AddMasterSignalsFlag,
+        'maxpodspernode':
+            flags.AddMaxPodsPerNodeFlag,
+        'maxunavailable':
+            (lambda p: flags.AddMaxUnavailableUpgradeFlag(p, is_create=True)),
+        'mincpu':
+            flags.AddMinCpuPlatformFlag,
+        'networkpolicy':
+            flags.AddNetworkPolicyFlags,
+        'nodetaints':
+            flags.AddNodeTaintsFlag,
+        'nodeidentity':
+            flags.AddClusterNodeIdentityFlags,
+        'podsecuritypolicy':
+            flags.AddPodSecurityPolicyFlag,
+        'preemptible':
+            flags.AddPreemptibleFlag,
+        'privatecluster':
+            AddPrivateClusterDeprecated,
+        'releasechannel':
+            _AddReleaseChannelGroup,
+        'resourceusageexport':
+            flags.AddResourceUsageExportFlags,
+        'reservationaffinity':
+            flags.AddReservationAffinityFlags,
+        'stackdriver':
+            flags.AddEnableStackdriverKubernetesFlag,
+        'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
+        'systemconfig':
+            lambda p: flags.AddSystemConfigFlag(p, hidden=True),
+        'tpu':
+            AddTpuWithServiceNetworking,
+        'verticalpodautoscaling':
+            flags.AddVerticalPodAutoscalingFlag,
+        'workloadidentity':
+            AddWorkloadIdentityNoPool,
+        'workloadmetadata':
+            (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
+    },
+    _ALPHA: {
+        'additionalzones': _AddAdditionalZonesGroup,
+        'addons': flags.AddAlphaAddonsFlags,
+        'allowrouteoverlap': flags.AddAllowRouteOverlapFlag,
+        'args': _Args,
+        'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
+        'autoprovisioning': AddAutoprovisioning,
+        'autorepair': AddAutoRepair,
+        'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
+        'autoupgrade': AddEnableAutoUpgradeWithDefault,
+        'binauthz': flags.AddEnableBinAuthzFlag,
+        'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
+        'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
+        'clusterautoscaling': flags.AddClusterAutoscalingFlags,
+        'costmanagementconfig': flags.AddCostManagementConfigFlag,
+        'datapath': lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
+        'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
+        'gvnic': flags.AddEnableGvnicFlag,
+        'ilbsubsetting': flags.AddILBSubsettingFlags,
+        'intranodevisibility': flags.AddEnableIntraNodeVisibilityFlag,
+        'ipalias': flags.AddIPAliasFlags,
+        'istioconfig': flags.AddIstioConfigFlag,
+        'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
+        'labels': flags.AddLabelsFlag,
+        'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
+        'linuxsysctl': flags.AddLinuxSysctlFlags,
+        'localssdandlocalssdvol': flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag,
+        'loggingmonitoring': flags.AddEnableLoggingMonitoringSystemOnlyFlag,
+        'npname': lambda p: flags.AddInitialNodePoolNameArg(p, hidden=False),
+        'maxunavailable':
+            (lambda p: flags.AddMaxUnavailableUpgradeFlag(p, is_create=True)),
+        'masterglobalaccess': flags.AddMasterGlobalAccessFlag,
+        'maxpodspernode': flags.AddMaxPodsPerNodeFlag,
+        'maintenancewindow': flags.AddMaintenanceWindowGroup,
+        'masterauth': flags.AddMasterAuthorizedNetworksFlags,
+        'mastersignals': AddMasterSignalsFlag,
+        'mincpu': flags.AddMinCpuPlatformFlag,
+        'networkpolicy': flags.AddNetworkPolicyFlags,
+        'nodetaints': flags.AddNodeTaintsFlag,
+        'nodeidentity': flags.AddClusterNodeIdentityFlags,
+        'podsecuritypolicy': flags.AddPodSecurityPolicyFlag,
+        'preemptible': flags.AddPreemptibleFlag,
+        'privatecluster': AddPrivateClusterDeprecated,
+        'privateipv6':
+            (lambda p: flags.AddEnablePrivateIpv6AccessFlag(p, hidden=True)),
+        'reservationaffinity': flags.AddReservationAffinityFlags,
+        'resourceusageexport': flags.AddResourceUsageExportFlags,
+        'releasechannel': _AddReleaseChannelGroup,
+        'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
+        'securityprofile': flags.AddSecurityProfileForCreateFlags,
+        'surgeupgrade': (lambda p: flags.AddSurgeUpgradeFlag(p, default=1)),
+        'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
+        'tpu': AddTpuWithServiceNetworking,
+        'verticalpodautoscaling': flags.AddVerticalPodAutoscalingFlag,
+        'workloadidentity': AddWorkloadIdentityNoPool,
+        'workloadmetadata':
+            (lambda p: flags.AddWorkloadMetadataFlag(p, use_mode=False)),
+    },
+}
+
+
+def _AddFlags(channel, parser):
+  """Adds flags to the current parser.
+
+  Args:
+    channel: channel from which to add flags. eg. "GA" or "BETA"
+    parser: parser to add current flags to
+  """
+  add_flag_for_channel = flags_to_add[channel]
+  for flagname in add_flag_for_channel:
+    add_flag_for_channel[flagname](parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -346,43 +611,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
-    _AddAdditionalZonesFlag(parser, deprecated=True)
-    flags.AddNodeLocationsFlag(parser)
-    flags.AddAddonsFlags(parser)
-    flags.AddClusterAutoscalingFlags(parser)
-    flags.AddMaxPodsPerNodeFlag(parser)
-    flags.AddEnableAutoRepairFlag(parser, for_create=True)
-    flags.AddEnableBinAuthzFlag(parser)
-    flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddEnableCloudRunAlphaFlag(parser)
-    flags.AddEnableStackdriverKubernetesFlag(parser)
-    flags.AddEnableLegacyAuthorizationFlag(parser)
-    flags.AddIPAliasFlags(parser)
-    flags.AddLabelsFlag(parser)
-    flags.AddLocalSSDFlag(parser)
-    flags.AddMaintenanceWindowGroup(parser)
-    flags.AddMasterAuthorizedNetworksFlags(parser)
-    flags.AddMinCpuPlatformFlag(parser)
-    flags.AddNetworkPolicyFlags(parser)
-    flags.AddNodeTaintsFlag(parser)
-    flags.AddPreemptibleFlag(parser)
-    flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddPrivateClusterFlags(parser, with_deprecated=False)
-    flags.AddClusterVersionFlag(parser)
-    flags.AddNodeVersionFlag(parser)
-    flags.AddEnableAutoUpgradeFlag(parser, default=True)
-    flags.AddEnableIntraNodeVisibilityFlag(parser)
-    flags.AddTpuFlags(parser, hidden=False)
-    flags.AddAutoprovisioningFlags(
-        parser, hidden=False, for_create=True, ga=True)
-    flags.AddResourceUsageExportFlags(parser)
-    flags.AddVerticalPodAutoscalingFlag(parser)
-    flags.AddWorkloadIdentityFlags(parser)
-    flags.AddWorkloadMetadataFlag(parser)
-    flags.AddReservationAffinityFlags(parser)
-    flags.AddSurgeUpgradeFlag(parser)
-    flags.AddMaxUnavailableUpgradeFlag(parser)
+    _AddFlags(_GA, parser)
 
   def ParseCreateOptions(self, args):
     return ParseCreateOptionsBase(args)
@@ -493,53 +722,7 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
-    group = parser.add_mutually_exclusive_group()
-    _AddAdditionalZonesFlag(group, deprecated=True)
-    flags.AddNodeLocationsFlag(group)
-    flags.AddBetaAddonsFlags(parser)
-    flags.AddBootDiskKmsKeyFlag(parser)
-    flags.AddClusterAutoscalingFlags(parser)
-    flags.AddMaxPodsPerNodeFlag(parser)
-    flags.AddEnableAutoRepairFlag(parser, for_create=True)
-    flags.AddEnableBinAuthzFlag(parser)
-    flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddEnableLoggingMonitoringSystemOnlyFlag(parser)
-    flags.AddEnableCloudRunAlphaFlag(parser)
-    flags.AddEnableLegacyAuthorizationFlag(parser)
-    flags.AddIPAliasFlags(parser)
-    flags.AddIstioConfigFlag(parser)
-    flags.AddLabelsFlag(parser)
-    flags.AddLocalSSDFlag(parser)
-    flags.AddMaintenanceWindowGroup(parser)
-    flags.AddMasterAuthorizedNetworksFlags(parser)
-    flags.AddMinCpuPlatformFlag(parser)
-    flags.AddNetworkPolicyFlags(parser)
-    flags.AddNodeTaintsFlag(parser)
-    flags.AddPreemptibleFlag(parser)
-    flags.AddPodSecurityPolicyFlag(parser)
-    flags.AddAllowRouteOverlapFlag(parser)
-    flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddPrivateClusterFlags(parser, with_deprecated=True)
-    flags.AddEnableStackdriverKubernetesFlag(parser)
-    flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
-    flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
-    flags.AddAutoscalingProfilesFlag(parser)
-    flags.AddVerticalPodAutoscalingFlag(parser)
-    flags.AddResourceUsageExportFlags(parser)
-    flags.AddAuthenticatorSecurityGroupFlags(parser)
-    flags.AddEnableIntraNodeVisibilityFlag(parser)
-    flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
-    flags.AddWorkloadMetadataFlag(parser, use_mode=False)
-    flags.AddEnableAutoUpgradeFlag(parser, default=True)
-    flags.AddSurgeUpgradeFlag(parser, default=1)
-    flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
-    flags.AddReservationAffinityFlags(parser)
-    flags.AddMasterGlobalAccessFlag(parser)
-    flags.AddEnableGvnicFlag(parser)
-    flags.AddSystemConfigFlag(parser, hidden=True)
-    flags.AddDisableDefaultSnatFlag(parser, for_cluster_create=True)
-    _AddReleaseChannelGroup(parser)
+    _AddFlags(_BETA, parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -565,6 +748,8 @@ class CreateBeta(Create):
     ops.enable_gvnic = args.enable_gvnic
     ops.system_config_from_file = args.system_config_from_file
     ops.disable_default_snat = args.disable_default_snat
+    ops.enable_master_metrics = args.enable_master_metrics
+    ops.master_logs = args.master_logs
     return ops
 
 
@@ -574,60 +759,7 @@ class CreateAlpha(Create):
 
   @staticmethod
   def Args(parser):
-    _Args(parser)
-    group = parser.add_mutually_exclusive_group()
-    _AddAdditionalZonesFlag(group, deprecated=True)
-    flags.AddNodeLocationsFlag(group)
-    flags.AddAlphaAddonsFlags(parser)
-    flags.AddBootDiskKmsKeyFlag(parser)
-    flags.AddClusterAutoscalingFlags(parser)
-    flags.AddMaxPodsPerNodeFlag(parser)
-    flags.AddEnableAutoRepairFlag(parser, for_create=True)
-    flags.AddEnableBinAuthzFlag(parser)
-    flags.AddEnableKubernetesAlphaFlag(parser)
-    flags.AddEnableCloudRunAlphaFlag(parser)
-    flags.AddEnableLegacyAuthorizationFlag(parser)
-    flags.AddIPAliasFlags(parser)
-    flags.AddIstioConfigFlag(parser)
-    flags.AddLabelsFlag(parser)
-    flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser)
-    flags.AddMaintenanceWindowGroup(parser)
-    flags.AddMasterAuthorizedNetworksFlags(parser)
-    flags.AddMinCpuPlatformFlag(parser)
-    flags.AddNetworkPolicyFlags(parser)
-    flags.AddILBSubsettingFlags(parser)
-    flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
-    flags.AddAutoscalingProfilesFlag(parser)
-    flags.AddNodeTaintsFlag(parser)
-    flags.AddPreemptibleFlag(parser)
-    flags.AddPodSecurityPolicyFlag(parser)
-    flags.AddAllowRouteOverlapFlag(parser)
-    flags.AddPrivateClusterFlags(parser, with_deprecated=True)
-    flags.AddClusterNodeIdentityFlags(parser)
-    flags.AddTpuFlags(parser, hidden=False, enable_tpu_service_networking=True)
-    flags.AddEnableStackdriverKubernetesFlag(parser)
-    flags.AddEnableLoggingMonitoringSystemOnlyFlag(parser)
-    flags.AddWorkloadIdentityFlags(parser, use_workload_pool=False)
-    flags.AddWorkloadMetadataFlag(parser, use_mode=False)
-    flags.AddResourceUsageExportFlags(parser)
-    flags.AddAuthenticatorSecurityGroupFlags(parser)
-    flags.AddVerticalPodAutoscalingFlag(parser)
-    flags.AddSecurityProfileForCreateFlags(parser)
-    flags.AddInitialNodePoolNameArg(parser, hidden=False)
-    flags.AddEnablePrivateIpv6AccessFlag(parser, hidden=True)
-    flags.AddEnableIntraNodeVisibilityFlag(parser)
-    flags.AddDisableDefaultSnatFlag(parser, for_cluster_create=True)
-    _AddReleaseChannelGroup(parser)
-    flags.AddEnableAutoUpgradeFlag(parser, default=True)
-    flags.AddSurgeUpgradeFlag(parser, default=1)
-    flags.AddMaxUnavailableUpgradeFlag(parser, is_create=True)
-    flags.AddLinuxSysctlFlags(parser)
-    flags.AddSystemConfigFlag(parser, hidden=False)
-    flags.AddCostManagementConfigFlag(parser)
-    flags.AddReservationAffinityFlags(parser)
-    flags.AddDatapathProviderFlag(parser, hidden=True)
-    flags.AddMasterGlobalAccessFlag(parser)
-    flags.AddEnableGvnicFlag(parser)
+    _AddFlags(_ALPHA, parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
@@ -666,18 +798,6 @@ class CreateAlpha(Create):
     ops.datapath_provider = args.datapath_provider
     ops.enable_master_global_access = args.enable_master_global_access
     ops.enable_gvnic = args.enable_gvnic
+    ops.enable_master_metrics = args.enable_master_metrics
+    ops.master_logs = args.master_logs
     return ops
-
-
-def _AddReleaseChannelGroup(parser):
-  """Add flag group for release channels."""
-  versioning_groups = parser.add_mutually_exclusive_group("""\
---release-channel cannot be specified if Custom Version Flags
-(--cluster-version or --node-version) are used.
-""")
-  flags.AddReleaseChannelFlag(versioning_groups)
-  custom_version_group = versioning_groups.add_group("""\
-Custom Version Flags:
-""")
-  flags.AddClusterVersionFlag(custom_version_group)
-  flags.AddNodeVersionFlag(custom_version_group)

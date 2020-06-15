@@ -12,12 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""The command group for the Apigee CLI."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-"""The command group for the Apigee CLI."""
 from googlecloudsdk.calliope import base
 
 
@@ -32,20 +32,23 @@ class Apigee(base.Group):
 
   detailed_help = {
       "DESCRIPTION": "Manage Apigee resources.",
-      "EXAMPLES": """\
-  To list API proxies in the active Cloud Platform project, run:
+      "EXAMPLES":
+          """
+          To list API proxies in the active Cloud Platform project, run:
 
-    $ gcloud alpha apis list
+            $ {command} apis list
 
-  To deploy an API proxy named ``hello-world'' to the ``test'' environment, run:
+          To deploy an API proxy named ``hello-world'' to the ``test''
+          environment, run:
 
-    $ gcloud alpha apis deploy --environment=test --api=hello-world
+            $ {command} apis deploy --environment=test --api=hello-world
 
-  To get the status of that deployment, run:
+          To get the status of that deployment, run:
 
-    $ gcloud alpha deployments describe --environment=test --api=hello-world
+            $ {command} deployments describe --environment=test --api=hello-world
 
-  To undeploy that API proxy, run:
+          To undeploy that API proxy, run:
 
-    $ gcloud alpha apis undeploy --environment=test --api=hello-world
-  """}
+            $ {command} apis undeploy --environment=test --api=hello-world
+          """
+  }

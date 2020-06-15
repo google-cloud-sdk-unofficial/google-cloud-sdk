@@ -1,10 +1,9 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: |
-      Mark a recommendation's state as ACTIVE. Can only be performed on a recommendation
-      in DISMISSED state.
+      Mark a recommendation's state as ACTIVE.
     description: |
-      Mark a recommendation's state as ACTIVE. Can only be performed on a recommendation
+      Mark a recommendation's state as ACTIVE. Can be applied to recommendations
       in DISMISSED state.
     examples: |
       To mark a recommenation as ACTIVE:

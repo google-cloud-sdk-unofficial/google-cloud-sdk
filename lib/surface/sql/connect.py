@@ -39,13 +39,35 @@ from googlecloudsdk.core.util import text
 import six
 import six.moves.http_client
 
-DETAILED_HELP = {
-    'EXAMPLES':
-        """\
-        To connect to a Cloud SQL instance, run:
+EXAMPLES = (
+    """\
+    To connect to a Cloud SQL instance, run:
 
-          $ {command} my-instance --user=root
+      $ {command} my-instance --user=root
+    """
+)
+
+DETAILED_GA_HELP = {
+    'DESCRIPTION':
+        """
+        Connects to a Cloud SQL instance.
+
+        NOTE: If you're connecting from an IPv6 address, or are constrained by
+        certain organization policies (restrictPublicIP,
+        restrictAuthorizedNetworks), consider running the beta version of this
+        command to avoid error by connecting through the Cloud SQL proxy:
+        *gcloud beta sql connect*
         """,
+    'EXAMPLES': EXAMPLES,
+}
+
+DETAILED_ALPHA_BETA_HELP = {
+    'DESCRIPTION':
+        """
+        Connects to Cloud SQL V2 instances through the Cloud SQL Proxy.
+        Connects to Cloud SQL V1 instances directly.
+        """,
+    'EXAMPLES': EXAMPLES,
 }
 
 # TODO(b/62055574): Improve test coverage in this file.
@@ -347,7 +369,7 @@ def RunProxyConnectCommand(args,
 class Connect(base.Command):
   """Connects to a Cloud SQL instance."""
 
-  detailed_help = DETAILED_HELP
+  detailed_help = DETAILED_GA_HELP
 
   @staticmethod
   def Args(parser):
@@ -363,13 +385,9 @@ class Connect(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ConnectBeta(base.Command):
-  """Connects to a Cloud SQL instance.
+  """Connects to a Cloud SQL instance."""
 
-  Connects to Cloud SQL V2 instances through the Cloud SQL Proxy. Connects to
-  Cloud SQL V1 instances directly.
-  """
-
-  detailed_help = DETAILED_HELP
+  detailed_help = DETAILED_ALPHA_BETA_HELP
 
   @staticmethod
   def Args(parser):

@@ -35,7 +35,7 @@ class ConfigureDockerError(exceptions.Error):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
-class ConfigureDockerBeta(base.Command):
+class ConfigureDocker(base.Command):
   # pylint: disable=line-too-long
   r"""Register `gcloud` as a Docker credential helper.
 

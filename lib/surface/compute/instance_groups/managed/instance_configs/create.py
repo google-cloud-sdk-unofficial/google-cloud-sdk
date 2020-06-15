@@ -107,7 +107,8 @@ class Create(base.CreateCommand):
           instance_configs_messages.CallApplyUpdatesToInstances)(
               holder=holder,
               igm_ref=igm_ref,
-              instances=[six.text_type(instance_ref)])
+              instances=[six.text_type(instance_ref)],
+              minimal_action=args.instance_update_minimal_action)
       return waiter.WaitFor(operation_poller, apply_operation_ref,
                             'Applying updates to instances.')
 

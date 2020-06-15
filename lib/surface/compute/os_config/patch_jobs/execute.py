@@ -126,6 +126,46 @@ def _AddTopLevelArgumentsAlpha(parser):
       patching initially fails. If omitted, the agent uses its default retry
       strategy.""",
   )
+  rollout_group = base.ArgumentGroup(
+      mutex=False, help='Rollout configurations for this patch job:')
+  rollout_group.AddArgument(
+      base.ChoiceArgument(
+          '--rollout-mode',
+          help_str='Mode of the rollout.',
+          choices={
+              'zone-by-zone':
+                  """\
+              Patches are applied one zone at a time. The patch job begins in
+              the region with the lowest number of targeted VMs. Within the
+              region, patching begins in the zone with the lowest number of
+              targeted VMs. If multiple regions (or zones within a region) have
+              the same number of targeted VMs, a tie-breaker is achieved by
+              sorting the regions or zones in alphabetical order.""",
+              'concurrent-zones':
+                  'Patches are applied to VMs in all zones at the same time.',
+          },
+      ))
+  disruption_budget_group = base.ArgumentGroup(
+      mutex=True,
+      help="""\
+      Disruption budget for this rollout. A running VM with an active agent is
+      considered disrupted if its patching operation fails anytime between the
+      time the agent is notified until the patch process completes.""")
+  disruption_budget_group.AddArgument(
+      base.Argument(
+          '--rollout-disruption-budget',
+          help='Number of VMs per zone to disrupt at any given moment.',
+      ))
+  disruption_budget_group.AddArgument(
+      base.Argument(
+          '--rollout-disruption-budget-percent',
+          help="""\
+          Percentage of VMs per zone to disrupt at any given moment. The number
+          of VMs calculated from multiplying the percentage by the total number
+          of VMs in a zone is rounded up.""",
+      ))
+  rollout_group.AddArgument(disruption_budget_group)
+  rollout_group.AddToParser(parser)
 
 
 def _AddCommonTopLevelArguments(parser):
@@ -731,8 +771,42 @@ def _CreatePatchInstanceFilter(messages, filter_all, filter_group_labels,
   )
 
 
+def _CreatePatchRollout(args, messages):
+  """Creates a PatchRollout message from input arguments."""
+  if not any([
+      args.rollout_mode, args.rollout_disruption_budget,
+      args.rollout_disruption_budget_percent
+  ]):
+    return None
+
+  if args.rollout_mode and not (args.rollout_disruption_budget or
+                                args.rollout_disruption_budget_percent):
+    raise exceptions.InvalidArgumentException(
+        'rollout-mode',
+        '[rollout-disruption-budget] or [rollout-disruption-budget-percent] '
+        'must also be specified.')
+
+  if args.rollout_disruption_budget and not args.rollout_mode:
+    raise exceptions.InvalidArgumentException(
+        'rollout-disruption-budget', '[rollout-mode] must also be specified.')
+
+  if args.rollout_disruption_budget_percent and not args.rollout_mode:
+    raise exceptions.InvalidArgumentException(
+        'rollout-disruption-budget-percent',
+        '[rollout-mode] must also be specified.')
+
+  rollout_modes = messages.PatchRollout.ModeValueValuesEnum
+  return messages.PatchRollout(
+      mode=arg_utils.ChoiceToEnum(args.rollout_mode, rollout_modes),
+      disruptionBudget=messages.FixedOrPercent(
+          fixed=int(args.rollout_disruption_budget)
+          if args.rollout_disruption_budget else None,
+          percent=int(args.rollout_disruption_budget_percent)
+          if args.rollout_disruption_budget_percent else None))
+
+
 def _CreateExecuteRequest(messages, project, description, dry_run, duration,
-                          patch_config, display_name, filter_all,
+                          patch_config, patch_rollout, display_name, filter_all,
                           filter_group_labels, filter_zones, filter_names,
                           filter_name_prefixes):
   """Creates an ExecuteRequest message for the Beta track."""
@@ -745,22 +819,36 @@ def _CreateExecuteRequest(messages, project, description, dry_run, duration,
       filter_name_prefixes,
   )
 
-  return messages.OsconfigProjectsPatchJobsExecuteRequest(
-      executePatchJobRequest=messages.ExecutePatchJobRequest(
-          description=description,
-          displayName=display_name,
-          dryRun=dry_run,
-          duration=duration,
-          instanceFilter=patch_instance_filter,
-          patchConfig=patch_config,
-      ),
-      parent=osconfig_command_utils.GetProjectUriPath(project))
+  if patch_rollout:
+    return messages.OsconfigProjectsPatchJobsExecuteRequest(
+        executePatchJobRequest=messages.ExecutePatchJobRequest(
+            description=description,
+            displayName=display_name,
+            dryRun=dry_run,
+            duration=duration,
+            instanceFilter=patch_instance_filter,
+            patchConfig=patch_config,
+            rollout=patch_rollout,
+        ),
+        parent=osconfig_command_utils.GetProjectUriPath(project))
+  else:
+    return messages.OsconfigProjectsPatchJobsExecuteRequest(
+        executePatchJobRequest=messages.ExecutePatchJobRequest(
+            description=description,
+            displayName=display_name,
+            dryRun=dry_run,
+            duration=duration,
+            instanceFilter=patch_instance_filter,
+            patchConfig=patch_config,
+        ),
+        parent=osconfig_command_utils.GetProjectUriPath(project))
 
 
 def _CreateExecuteRequestAlpha(messages, project, description, dry_run,
-                               duration, patch_config, display_name, filter_all,
-                               filter_group_labels, filter_zones, filter_names,
-                               filter_name_prefixes, filter_expression):
+                               duration, patch_config, patch_rollout,
+                               display_name, filter_all, filter_group_labels,
+                               filter_zones, filter_names, filter_name_prefixes,
+                               filter_expression):
   """Creates an ExecuteRequest message for the Alpha track."""
   if filter_expression:
     return messages.OsconfigProjectsPatchJobsExecuteRequest(
@@ -771,6 +859,7 @@ def _CreateExecuteRequestAlpha(messages, project, description, dry_run,
             duration=duration,
             filter=filter_expression,
             patchConfig=patch_config,
+            rollout=patch_rollout,
         ),
         parent=osconfig_command_utils.GetProjectUriPath(project))
   elif not any([
@@ -785,13 +874,15 @@ def _CreateExecuteRequestAlpha(messages, project, description, dry_run,
             duration=duration,
             instanceFilter=messages.PatchInstanceFilter(all=True),
             patchConfig=patch_config,
+            rollout=patch_rollout,
         ),
         parent=osconfig_command_utils.GetProjectUriPath(project))
   else:
     return _CreateExecuteRequest(messages, project, description, dry_run,
-                                 duration, patch_config, display_name,
-                                 filter_all, filter_group_labels, filter_zones,
-                                 filter_names, filter_name_prefixes)
+                                 duration, patch_config, patch_rollout,
+                                 display_name, filter_all, filter_group_labels,
+                                 filter_zones, filter_names,
+                                 filter_name_prefixes)
 
 
 def _CreateExecuteResponse(client, messages, request, is_async, command_prefix):
@@ -903,6 +994,7 @@ class Execute(base.Command):
 
     duration = _GetDuration(args)
     patch_config = _CreatePatchConfig(args, messages)
+    patch_rollout = None
 
     request = _CreateExecuteRequest(
         messages,
@@ -911,6 +1003,7 @@ class Execute(base.Command):
         args.dry_run,
         duration,
         patch_config,
+        patch_rollout,
         args.display_name,
         args.instance_filter_all,
         args.instance_filter_group_labels
@@ -1005,6 +1098,7 @@ class ExecuteAlpha(ExecuteBeta):
 
     duration = _GetDuration(args)
     patch_config = _CreatePatchConfig(args, messages)
+    patch_rollout = _CreatePatchRollout(args, messages)
 
     request = _CreateExecuteRequestAlpha(
         messages,
@@ -1013,6 +1107,7 @@ class ExecuteAlpha(ExecuteBeta):
         args.dry_run,
         duration,
         patch_config,
+        patch_rollout,
         args.display_name,
         args.instance_filter_all,
         args.instance_filter_group_labels

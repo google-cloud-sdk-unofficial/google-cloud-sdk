@@ -65,12 +65,12 @@ def AddIapFlag(parser):
   flags.AddIap(
       parser,
       help="""\
-      Configure Identity Aware Proxy (IAP) service. You can configure IAP to be
-      'enabled' or 'disabled' (default). If it is enabled you can provide values
-      for 'oauth2-client-id' and 'oauth2-client-secret'. For example,
-      '--iap=enabled,oauth2-client-id=foo,oauth2-client-secret=bar' will
-      turn IAP on, and '--iap=disabled' will turn it off. See
-      https://cloud.google.com/iap/ for more information about this feature.
+      Configure Identity Aware Proxy (IAP) for external HTTP(S) load balancing.
+      You can configure IAP to be `enabled` or `disabled` (default). If enabled,
+      you can provide values for `oauth2-client-id` and `oauth2-client-secret`.
+      For example, `--iap=enabled,oauth2-client-id=foo,oauth2-client-secret=bar`
+      turns IAP on, and `--iap=disabled` turns it off. For more information, see
+      https://cloud.google.com/iap/.
       """)
 
 
@@ -303,17 +303,19 @@ class CreateHelper(object):
 class CreateGA(base.CreateCommand):
   """Create a backend service.
 
-  *{command}* is used to create backend services. Backend
-  services define groups of backends that can receive
-  traffic. Each backend group has parameters that define the
-  group's capacity (e.g. max CPU utilization, max queries per
-  second, ...). URL maps define which requests are sent to which
-  backend services.
+  *{command}* creates a backend service. A backend service defines how Cloud
+  Load Balancing distributes traffic. The backend service configuration contains
+  a set of values, such as the protocol used to connect to backends, various
+  distribution and session settings, health checks, and timeouts. These settings
+  provide fine-grained control over how your load balancer behaves. Most of the
+  settings have default values that allow for easy configuration if you need to
+  get started quickly.
 
-  Backend services created through this command will start out
-  without any backend groups. To add backend groups, use 'gcloud
-  compute backend-services add-backend' or 'gcloud compute
-  backend-services edit'.
+  After you create a backend service, you add backends by using `gcloud
+  compute backend-services add-backend`.
+
+  For more information about the available settings, see
+  https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
   _support_l7_internal_load_balancer = True
@@ -351,17 +353,19 @@ class CreateGA(base.CreateCommand):
 class CreateBeta(CreateGA):
   """Create a backend service.
 
-  *{command}* is used to create backend services. Backend
-  services define groups of backends that can receive
-  traffic. Each backend group has parameters that define the
-  group's capacity (e.g. max CPU utilization, max queries per
-  second, ...). URL maps define which requests are sent to which
-  backend services.
+  *{command}* creates a backend service. A backend service defines how Cloud
+  Load Balancing distributes traffic. The backend service configuration contains
+  a set of values, such as the protocol used to connect to backends, various
+  distribution and session settings, health checks, and timeouts. These settings
+  provide fine-grained control over how your load balancer behaves. Most of the
+  settings have default values that allow for easy configuration if you need to
+  get started quickly.
 
-  Backend services created through this command will start out
-  without any backend groups. To add backend groups, use 'gcloud
-  compute backend-services add-backend' or 'gcloud compute
-  backend-services edit'.
+  After you create a backend service, you add backends by using `gcloud
+  compute backend-services add-backend`.
+
+  For more information about the available settings, see
+  https://cloud.google.com/load-balancing/docs/backend-service.
   """
   _support_multinic = True
   _support_client_only = False
@@ -372,17 +376,19 @@ class CreateBeta(CreateGA):
 class CreateAlpha(CreateBeta):
   """Create a backend service.
 
-  *{command}* is used to create backend services. Backend
-  services define groups of backends that can receive
-  traffic. Each backend group has parameters that define the
-  group's capacity (e.g. max CPU utilization, max queries per
-  second, ...). URL maps define which requests are sent to which
-  backend services.
+  *{command}* creates a backend service. A backend service defines how Cloud
+  Load Balancing distributes traffic. The backend service configuration contains
+  a set of values, such as the protocol used to connect to backends, various
+  distribution and session settings, health checks, and timeouts. These settings
+  provide fine-grained control over how your load balancer behaves. Most of the
+  settings have default values that allow for easy configuration if you need to
+  get started quickly.
 
-  Backend services created through this command will start out
-  without any backend groups. To add backend groups, use 'gcloud
-  compute backend-services add-backend' or 'gcloud compute
-  backend-services edit'.
+  After you create a backend service, you add backends by using `gcloud
+  compute backend-services add-backend`.
+
+  For more information about the available settings, see
+  https://cloud.google.com/load-balancing/docs/backend-service.
   """
   _support_client_only = True
   _support_grpc_protocol = True

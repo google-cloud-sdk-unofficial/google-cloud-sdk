@@ -1,13 +1,12 @@
 - release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
-      Mark the Recommendation State as CLAIMED. Can only be performed on recommendations in CLAIMED
-      or ACTIVE state.
+      Mark a recommendation's state as CLAIMED.
     description: |
-      Mark the Recommendation State as CLAIMED. Users can use this method to.
+      Mark a recommendation's state as CLAIMED. Can be applied to recommendations in
+      CLAIMED, SUCCEEDED, FAILED, or ACTIVE state. Users can use this method to
       indicate to the Recommender API that they are starting to apply the
-      recommendation themselves. This stops the recommendation content from being
-      updated. mark-claimed can be applied to recommendations in CLAIMED or ACTIVE state.
+      recommendation themselves. This stops the recommendation content from being updated.
     examples: |
       To mark a recommendation as CLAIMED:
 

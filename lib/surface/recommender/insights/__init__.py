@@ -24,3 +24,9 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Insights(base.Group):
   """Manage Cloud resource insights."""
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class InsightsGA(base.Group):
+  """Manage Cloud resource insights."""

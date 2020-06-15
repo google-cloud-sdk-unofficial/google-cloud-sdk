@@ -37,18 +37,21 @@ class UpdateBackend(base.UpdateCommand):
   *{command}* updates a backend that is part of a backend
   service. This is useful for changing the way a backend
   behaves. Example changes that can be made include changing the
-  load balancing policy and `draining` a backend by setting
+  load balancing policy and draining a backend by setting
   its capacity scaler to zero.
 
-  Backends are named by their associated instances groups, and one
-  of the `--group` or `--instance-group` flags is required to
-  identify the backend that you are modifying.  You cannot "change"
-  the instance group associated with a backend, but you can accomplish
-  something similar with `backend-services remove-backend` and
-  `backend-services add-backend`.
+  Backends are instance groups or network endpoint groups. One
+  of the `--network-endpoint-group` or `--instance-group` flags is required to
+  identify the backend that you are modifying. You cannot change
+  the instance group or network endpoint group associated with a backend, but
+  you can remove a backend and add a new one with `backend-services
+  remove-backend` and `backend-services add-backend`.
 
-  `gcloud compute backend-services edit` can also be used to
+  The `gcloud compute backend-services edit` command can also
   update a backend if the use of a text editor is desired.
+
+  For more information about the available settings, see
+  https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
   @staticmethod
@@ -208,19 +211,21 @@ class UpdateBackendBeta(UpdateBackend):
   *{command}* updates a backend that is part of a backend
   service. This is useful for changing the way a backend
   behaves. Example changes that can be made include changing the
-  load balancing policy and `draining` a backend by setting
+  load balancing policy and draining a backend by setting
   its capacity scaler to zero.
 
-  Backends are named by their associated instances groups or network
-  endpoint groups, and one of the `--network-endpoint-group` or
-  `--instance-group` flags is required to identify the backend that
-  you are modifying. You cannot "change" the instance group or
-  network endpoint group associated with a backend, but you can accomplish
-  something similar with `backend-services remove-backend` and
-  `backend-services add-backend`.
+  Backends are instance groups or network endpoint groups. One
+  of the `--network-endpoint-group` or `--instance-group` flags is required to
+  identify the backend that you are modifying. You cannot change
+  the instance group or network endpoint group associated with a backend, but
+  you can remove a backend and add a new one with `backend-services
+  remove-backend` and `backend-services add-backend`.
 
-  `gcloud compute backend-services edit` can also be used to
+  The `gcloud compute backend-services edit` command can also
   update a backend if the use of a text editor is desired.
+
+  For more information about the available settings, see
+  https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
   @classmethod
@@ -259,19 +264,21 @@ class UpdateBackendAlpha(UpdateBackendBeta):
   *{command}* updates a backend that is part of a backend
   service. This is useful for changing the way a backend
   behaves. Example changes that can be made include changing the
-  load balancing policy and `draining` a backend by setting
+  load balancing policy and draining a backend by setting
   its capacity scaler to zero.
 
-  Backends are named by their associated instances groups or network
-  endpoint groups, and one of the `--network-endpoint-group` or
-  `--instance-group` flags is required to identify the backend that
-  you are modifying. You cannot "change" the instance group or
-  network endpoint group associated with a backend, but you can accomplish
-  something similar with `backend-services remove-backend` and
-  `backend-services add-backend`.
+  Backends are instance groups or network endpoint groups. One
+  of the `--network-endpoint-group` or `--instance-group` flags is required to
+  identify the backend that you are modifying. You cannot change
+  the instance group or network endpoint group associated with a backend, but
+  you can remove a backend and add a new one with `backend-services
+  remove-backend` and `backend-services add-backend`.
 
-  `gcloud compute backend-services edit` can also be used to
+  The `gcloud compute backend-services edit` command can also
   update a backend if the use of a text editor is desired.
+
+  For more information about the available settings, see
+  https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
   @classmethod

@@ -31,7 +31,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 KUBECONTEXT_FORMAT = 'connectgateway_{project}_{membership}'
-SERVER_FORMAT = 'https://{env}connectgateway.googleapis.com/projects/{project_number}/memberships/{membership}'
+SERVER_FORMAT = 'https://{env}connectgateway.googleapis.com/{version}/projects/{project_number}/memberships/{membership}'
 REQUIRED_PERMISSIONS = [
     'gkehub.memberships.get',
     # TODO(b/153385543): add Gateway IAM permission here when its rolled out.
@@ -101,6 +101,7 @@ class GetCredentials(base.Command):
         'server':
             SERVER_FORMAT.format(
                 env=self.get_url_prefix(),
+                version=self.GetVersion(),
                 project_number=project_number,
                 membership=membership),
         'auth_provider':
@@ -144,3 +145,14 @@ class GetCredentials(base.Command):
       return 'staging-'
     else:
       raise Exception('Unknown api_endpoint_overrides for gkehub.')
+
+  @classmethod
+  def GetVersion(cls):
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      return 'v1alpha1'
+    elif cls.ReleaseTrack() is base.ReleaseTrack.BETA:
+      return 'v1beta1'
+    elif cls.ReleaseTrack() is base.ReleaseTrack.GA:
+      return 'v1'
+    else:
+      return ''

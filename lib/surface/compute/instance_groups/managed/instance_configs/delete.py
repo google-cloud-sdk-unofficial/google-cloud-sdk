@@ -125,7 +125,10 @@ class Delete(base.DeleteCommand):
     if args.update_instance:
       apply_operation_ref = (
           instance_configs_messages.CallApplyUpdatesToInstances)(
-              holder=holder, igm_ref=igm_ref, instances=instances)
+              holder=holder,
+              igm_ref=igm_ref,
+              instances=instances,
+              minimal_action=args.instance_update_minimal_action)
       return waiter.WaitFor(operation_poller, apply_operation_ref,
                             'Applying updates to instances.')
     return delete_result

@@ -19,13 +19,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import datetime
 import sys
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.docker import credential_utils
+
+
+TOKEN_MIN_LIFETIME = '3300s'  # 55 minutes
 
 
 @base.Hidden
@@ -55,10 +59,9 @@ class DockerHelper(base.Command):
       }
 
     elif args.method == DockerHelper.GET:
-      cred = c_store.Load()
-      if (not cred.token_expiry or cred.token_expiry.utcnow() >
-          cred.token_expiry - datetime.timedelta(minutes=55)):
-        c_store.Refresh(cred)
+      use_google_auth = not properties.VALUES.auth.disable_google_auth.GetBool()
+      cred = c_store.Load(use_google_auth=use_google_auth)
+      c_store.RefreshIfExpireWithinWindow(cred, window=TOKEN_MIN_LIFETIME)
       url = sys.stdin.read().strip()
       if (url.replace('https://', '',
                       1) not in credential_utils.SupportedRegistries()):
@@ -66,8 +69,12 @@ class DockerHelper(base.Command):
             'Repository url [{url}] is not supported'.format(url=url))
       # Putting an actual username in the response doesn't work. Docker will
       # then prompt for a password instead of using the access token.
+      token = (
+          cred.token
+          if c_creds.IsGoogleAuthCredentials(cred) else cred.access_token)
+
       return {
-          'Secret': cred.access_token,
+          'Secret': token,
           'Username': '_dcgcloud_token',
       }
 

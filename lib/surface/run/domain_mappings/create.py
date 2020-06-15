@@ -125,6 +125,7 @@ class Create(base.Command):
              'The existing mapping can be overriden by passing '
              '`--force-override` or by continuing at the prompt below.'),
             prompt_string='Override the existing mapping'):
+          client.DeleteDomainMapping(domain_mapping_ref)
           mapping = client.CreateDomainMapping(domain_mapping_ref, args.service,
                                                True)
         else:

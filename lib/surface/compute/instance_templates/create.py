@@ -34,7 +34,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
-from googlecloudsdk.command_lib.compute.instance_templates import mesh_mode_aux_data
+from googlecloudsdk.command_lib.compute.instance_templates import service_proxy_aux_data
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
@@ -284,25 +284,22 @@ def PackageLabels(labels_cls, labels):
 # Function copied from labels_util.
 # Temporary fix for adoption tracking of Managed Envoy.
 # TODO(b/146051298) Remove this fix when structured metadata is available.
-def ParseCreateArgsWithMeshMode(args, labels_cls, labels_dest='labels'):
+def ParseCreateArgsWithServiceProxy(args, labels_cls, labels_dest='labels'):
   """Initializes labels based on args and the given class."""
   labels = getattr(args, labels_dest)
-  if getattr(args, 'mesh',
-             False) and args.mesh['mode'] == mesh_mode_aux_data.MeshModes.ON:
+  if getattr(args, 'service_proxy', False):
     if labels is None:
       labels = collections.OrderedDict()
-    labels['mesh-mode'] = 'on'
+    labels['gce-service-proxy'] = 'on'
 
   if labels is None:
     return None
   return PackageLabels(labels_cls, labels)
 
 
-def AddScopesForMeshMode(args):
+def AddScopesForServiceProxy(args):
 
-  if getattr(args, 'mesh', False) and args.mesh[
-      'mode'] == mesh_mode_aux_data.MeshModes.ON:
-
+  if getattr(args, 'service_proxy', False):
     if args.scopes is None:
       args.scopes = constants.DEFAULT_SCOPES[:]
 
@@ -310,62 +307,74 @@ def AddScopesForMeshMode(args):
       args.scopes.append('cloud-platform')
 
 
-def AddMeshArgsToMetadata(args):
-  """Inserts the Mesh mode arguments provided by the user to the instance metadata.
+def AddServiceProxyArgsToMetadata(args):
+  """Inserts the Service Proxy arguments provided by the user to the instance metadata.
 
   Args:
       args: argparse.Namespace, An object that contains the values for the
         arguments specified in the .Args() method.
   """
-  if getattr(args, 'mesh', False):
+  if getattr(args, 'service_proxy', False):
 
-    mesh_mode_config = collections.OrderedDict()
+    service_proxy_config = collections.OrderedDict()
+    proxy_spec = collections.OrderedDict()
 
-    # add --mesh flag data to metadata.
-    mesh_mode_config['mode'] = args.mesh['mode']
-    if 'workload-ports' in args.mesh:
+    service_proxy_config['api-version'] = '0.2'
+
+    # add --service-proxy flag data to metadata.
+    if 'serving-ports' in args.service_proxy:
       # convert list of strings to list of integers.
-      workload_ports = list(map(int, args.mesh['workload-ports'].split(';')))
+      serving_ports = list(
+          map(int, args.service_proxy['serving-ports'].split(';')))
       # find unique ports by converting list of integers to set of integers.
-      unique_workload_ports = set(workload_ports)
+      unique_serving_ports = set(serving_ports)
       # convert it back to list of integers.
       # this is done to make it JSON serializable.
-      workload_ports = list(unique_workload_ports)
-      mesh_mode_config['service'] = {
-          'workload-ports': workload_ports,
+      serving_ports = list(unique_serving_ports)
+      service_proxy_config['service'] = {
+          'serving-ports': serving_ports,
       }
 
-    # add --mesh_labels flag to metadata as described by go/gce-envoy-gcloud
-    if getattr(args, 'mesh_labels', False):
-      mesh_mode_config['labels'] = args.mesh_labels
+    if 'proxy-port' in args.service_proxy:
+      proxy_spec['proxy-port'] = args.service_proxy['proxy-port']
 
-    # add --mesh-proxy-config flag to metadata
-    # as described by go/gce-envoy-gcloud
-    if getattr(args, 'mesh_proxy_config', False):
-      mesh_mode_config['proxy-spec'] = {
-          'trafficdirector-config': args.mesh_proxy_config
-      }
+    if 'tracing' in args.service_proxy:
+      proxy_spec['tracing'] = args.service_proxy['tracing']
 
-    if args.mesh['mode'] == mesh_mode_aux_data.MeshModes.ON:
-      args.metadata['enable-osconfig'] = 'true'
-      gce_software_declaration = collections.OrderedDict()
-      mesh_agent_recipe = collections.OrderedDict()
+    if 'access-log' in args.service_proxy:
+      proxy_spec['access-log'] = args.service_proxy['access-log']
 
-      mesh_agent_recipe['name'] = 'install-gce-mesh-agent'
-      mesh_agent_recipe['desired_state'] = 'INSTALLED'
-      mesh_agent_recipe['installSteps'] = [{
-          'scriptRun': {
-              'script': mesh_mode_aux_data.startup_script
-          }
-      }]
+    if 'network' in args.service_proxy:
+      proxy_spec['network'] = args.service_proxy['network']
+    else:
+      proxy_spec['network'] = ''
 
-      gce_software_declaration['softwareRecipes'] = [mesh_agent_recipe]
+    # add --service-proxy-labels flag data to metadata.
+    if getattr(args, 'service_proxy_labels', False):
+      service_proxy_config['labels'] = args.service_proxy_labels
 
-      args.metadata['gce-software-declaration'] = json.dumps(
-          gce_software_declaration)
-      args.metadata['enable-guest-attributes'] = 'TRUE'
+    args.metadata['enable-osconfig'] = 'true'
+    gce_software_declaration = collections.OrderedDict()
+    mesh_agent_recipe = collections.OrderedDict()
 
-    args.metadata['gce-mesh'] = json.dumps(mesh_mode_config)
+    mesh_agent_recipe['name'] = 'install-gce-mesh-agent'
+    mesh_agent_recipe['desired_state'] = 'INSTALLED'
+    mesh_agent_recipe['installSteps'] = [{
+        'scriptRun': {
+            'script': service_proxy_aux_data.startup_script
+        }
+    }]
+
+    gce_software_declaration['softwareRecipes'] = [mesh_agent_recipe]
+
+    args.metadata['gce-software-declaration'] = json.dumps(
+        gce_software_declaration)
+    args.metadata['enable-guest-attributes'] = 'TRUE'
+
+    if proxy_spec:
+      service_proxy_config['proxy-spec'] = proxy_spec
+
+    args.metadata['gce-service-proxy'] = json.dumps(service_proxy_config)
 
 
 def _RunCreate(compute_api,
@@ -398,7 +407,7 @@ def _RunCreate(compute_api,
       args, support_kms=support_kms)
   instances_flags.ValidateNetworkTierArgs(args)
 
-  instance_templates_flags.ValidateMeshModeFlags(args)
+  instance_templates_flags.ValidateServiceProxyFlags(args)
 
   client = compute_api.client
 
@@ -409,8 +418,8 @@ def _RunCreate(compute_api,
       Create.InstanceTemplateArg.ResolveAsResource(
           args, compute_api.resources))
 
-  AddScopesForMeshMode(args)
-  AddMeshArgsToMetadata(args)
+  AddScopesForServiceProxy(args)
+  AddServiceProxyArgsToMetadata(args)
 
   metadata = metadata_utils.ConstructMetadataMessage(
       client.messages,
@@ -598,7 +607,7 @@ def _RunCreate(compute_api,
       instanceTemplate=instance_template,
       project=instance_template_ref.project)
 
-  request.instanceTemplate.properties.labels = ParseCreateArgsWithMeshMode(
+  request.instanceTemplate.properties.labels = ParseCreateArgsWithServiceProxy(
       args, client.messages.InstanceProperties.LabelsValue)
 
   _AddSourceInstanceToTemplate(
@@ -754,7 +763,7 @@ class CreateAlpha(Create):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddConfidentialComputeArgs(parser)
-    instance_templates_flags.AddMeshModeConfigArgs(parser)
+    instance_templates_flags.AddServiceProxyConfigArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION)
 

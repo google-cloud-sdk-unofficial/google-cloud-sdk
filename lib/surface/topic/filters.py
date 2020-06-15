@@ -175,9 +175,9 @@ class Filters(base.TopicCommand):
             $ gcloud compute instances list --filter="machineType:f1-micro"
 
           List Compute Engine instance resources using a regular expression for
-          zone prefix *us* and not MachineType *f1-micro*:
+          zone *us* and not MachineType *f1-micro*:
 
-            $ gcloud compute instances list --filter="zone ~ ^us AND -machineType:f1-micro"
+            $ gcloud compute instances list --filter="zone ~ us AND -machineType:f1-micro"
 
           List Compute Engine instance resources with tag *my-tag*:
 

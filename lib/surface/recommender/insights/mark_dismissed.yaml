@@ -1,7 +1,7 @@
 - release_tracks: [ALPHA]
   help_text:
     brief: |
-      Mark an insight's state as DISMISSED. Can be applied to insights in ACTIVE state.
+      Mark an insight's state as DISMISSED.
     description: |
       Mark an insight's state as DISMISSED. Can be applied to insights in ACTIVE state.
     examples: |

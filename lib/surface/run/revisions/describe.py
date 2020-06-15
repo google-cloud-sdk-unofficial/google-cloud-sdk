@@ -18,8 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import export_printer
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import revision_printer
@@ -65,6 +67,9 @@ class Describe(base.DescribeCommand):
         revision_printer.REVISION_PRINTER_FORMAT,
         revision_printer.RevisionPrinter)
     args.GetDisplayInfo().AddFormat(revision_printer.REVISION_PRINTER_FORMAT)
+    resource_printer.RegisterFormatter(
+        export_printer.EXPORT_PRINTER_FORMAT,
+        export_printer.ExportPrinter)
     # End code that should be in Args
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief:  Evaluate a Cloud Healthcare API Annotation store and report to BigQuery.
@@ -13,7 +13,10 @@
   request:
     collection: healthcare.projects.locations.datasets.annotationStores
     method: evaluate
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

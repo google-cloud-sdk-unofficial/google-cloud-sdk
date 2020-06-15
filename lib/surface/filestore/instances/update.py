@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Updates a Cloud Filestore instance."""
+"""Update a Cloud Filestore instance."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,6 +28,10 @@ from googlecloudsdk.core import log
 import six
 
 
+def _CommonArgs(parser, api_version=filestore_client.V1_API_VERSION):
+  instances_flags.AddInstanceUpdateArgs(parser, api_version)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.CreateCommand):
   """Update a Cloud Filestore instance."""
@@ -36,7 +40,7 @@ class Update(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    instances_flags.AddInstanceUpdateArgs(parser)
+    _CommonArgs(parser, Update._API_VERSION)
 
   def Run(self, args):
     """Update a Cloud Filestore instance in the current project."""
@@ -53,7 +57,8 @@ class Update(base.CreateCommand):
     try:
       instance = client.ParseUpdatedInstanceConfig(
           orig_instance,
-          description=args.description, labels=labels,
+          description=args.description,
+          labels=labels,
           file_share=args.file_share)
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException('--file-share',
@@ -62,33 +67,100 @@ class Update(base.CreateCommand):
     updated_fields = []
     if args.IsSpecified('description'):
       updated_fields.append('description')
-    if (args.IsSpecified('update_labels')
-        or args.IsSpecified('remove_labels')
-        or args.IsSpecified('clear_labels')):
+    if (args.IsSpecified('update_labels') or
+        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
       updated_fields.append('labels')
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
     update_mask = ','.join(updated_fields)
 
-    result = client.UpdateInstance(
-        instance_ref, instance, update_mask, args.async_)
+    result = client.UpdateInstance(instance_ref, instance, update_mask,
+                                   args.async_)
     if args.async_:
-      if self._API_VERSION == 'V1':
-        log.status.Print(
-            'To check the status of the operation, run `gcloud filestore '
-            'operations describe {}`'.format(result.name))
-      else:
-        log.status.Print(
-            'To check the status of the operation, run `gcloud beta filestore '
-            'operations describe {}`'.format(result.name))
+      log.status.Print(
+          'To check the status of the operation, run `gcloud filestore '
+          'operations describe {}`'.format(result.name))
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Cloud Filestore instance in the current project."""
+
+  _API_VERSION = filestore_client.ALPHA_API_VERSION
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, UpdateAlpha._API_VERSION)
+
+  def Run(self, args):
+    """Run command line arguments.
+
+    Args:
+      args: cmd line arguments.
+
+    Raises:
+       InvalidArgumentException: for invalid jason formatted --file-args.
+       KeyError: for key errors in Jason values.
+    Returns:
+       client: client instance.
+    """
+
+    instance_ref = args.CONCEPTS.instance.Parse()
+    client = filestore_client.FilestoreClient(self._API_VERSION)
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    orig_instance = client.GetInstance(instance_ref)
+    try:
+      if args.file_share:
+        client.MakeNFSExportOptionsMsg(
+            messages=client.messages,
+            nfs_export_options=args.file_share.get('nfs-export-options', []))
+    except KeyError as err:
+      raise exceptions.InvalidArgumentException('--file-share',
+                                                six.text_type(err))
+    if labels_diff.MayHaveUpdates():
+      labels = labels_diff.Apply(client.messages.Instance.LabelsValue,
+                                 orig_instance.labels).GetOrNone()
+    else:
+      labels = None
+    try:
+      instance = client.ParseUpdatedInstanceConfig(
+          orig_instance,
+          description=args.description,
+          labels=labels,
+          file_share=args.file_share)
+    except filestore_client.Error as e:
+      raise exceptions.InvalidArgumentException('--file-share',
+                                                six.text_type(e))
+
+    updated_fields = []
+    if args.IsSpecified('description'):
+      updated_fields.append('description')
+    if (args.IsSpecified('update_labels') or
+        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
+      updated_fields.append('labels')
+    if args.IsSpecified('file_share'):
+      updated_fields.append('fileShares')
+    update_mask = ','.join(updated_fields)
+
+    result = client.UpdateInstance(instance_ref, instance, update_mask,
+                                   args.async_)
+    if args.async_:
+      log.status.Print(
+          'To check the status of the operation, run `gcloud {} filestore '
+          'operations describe {}`'.format(self._API_VERSION, result.name))
     return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
+class UpdateBeta(UpdateAlpha):
   """Update a Cloud Filestore instance."""
 
   _API_VERSION = filestore_client.BETA_API_VERSION
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, UpdateBeta._API_VERSION)
 
 
 Update.detailed_help = {
@@ -107,3 +179,57 @@ label "key1=value1" and remove any metadata with the label "key2".
   $ {command} NAME --update-labels=key1=value1 --remove-labels=key2
 """
 }
+
+
+UpdateAlpha.detailed_help = {
+    'DESCRIPTION':
+        'Update a Cloud Filestore instance.',
+    'EXAMPLES':
+        """\
+The following command updates the Cloud Filestore instance NAME to change the
+description to "A new description."
+
+  $ {command} NAME --description="A new description."
+
+The following command updates a Cloud Filestore instance named NAME to add the
+label "key1=value1" and remove any metadata with the label "key2".
+
+  $ {command} NAME --update-labels=key1=value1 --remove-labels=key2
+
+  $ {command} NAME --zone=ZONE --flags-file=FILE_PATH
+
+Example json configuration file:
+  {
+  "--file-share":
+  {
+    "capacity": "102400",
+    "name": "my_vol",
+    "nfs-export-options": [
+      {
+        "access-mode": "READ_WRITE",
+        "ip-ranges": [
+          "10.0.0.0/29",
+          "10.2.0.0/29"
+        ],
+        "squash-mode": "ROOT_SQUASH",
+        "anon_uid": 1003,
+        "anon_gid": 1003
+      },
+       {
+        "access-mode": "READ_ONLY",
+        "ip-ranges": [
+          "192.168.0.0/24"
+        ],
+        "squash-mode": "NO_ROOT_SQUASH"
+      }
+    ],
+  }
+  }
+
+
+The following command updates a Cloud Filestore instance named NAME to change the
+capacity to CAPACITY.\
+
+  $ {command} NAME --project=PROJECT_ID --zone=ZONE\
+    --file-share=name=VOLUME_NAME,capacity=CAPACITY
+"""}

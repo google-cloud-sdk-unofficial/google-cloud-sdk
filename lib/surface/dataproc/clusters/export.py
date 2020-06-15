@@ -74,8 +74,9 @@ To export a cluster to standard output, run:
 
     cluster = dataproc.client.projects_regions_clusters.Get(request)
 
-    # Filter out Dataproc-generated labels.
+    # Filter out Dataproc-generated labels and properties.
     clusters.DeleteGeneratedLabels(cluster, dataproc)
+    clusters.DeleteGeneratedProperties(cluster, dataproc)
 
     RemoveNonImportableFields(cluster)
 
