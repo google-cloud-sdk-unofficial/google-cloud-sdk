@@ -1727,7 +1727,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--kubeconfig": "value",
                     "--login-config": "value",
                     "--login-config-cert": "value",
-                    "--set-preferred-auth": "bool",
                     "--user": "value"
                   }
                 }
@@ -24104,7 +24103,6 @@ STATIC_COMPLETION_CLI_TREE = {
                 "--kubeconfig": "value",
                 "--login-config": "value",
                 "--login-config-cert": "value",
-                "--set-preferred-auth": "bool",
                 "--user": "value"
               }
             }
@@ -25605,7 +25603,6 @@ STATIC_COMPLETION_CLI_TREE = {
                     "--kubeconfig": "value",
                     "--login-config": "value",
                     "--login-config-cert": "value",
-                    "--set-preferred-auth": "bool",
                     "--user": "value"
                   }
                 }
