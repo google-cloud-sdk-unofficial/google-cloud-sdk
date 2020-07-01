@@ -50,30 +50,7 @@ class CreateCSR(base.CreateCommand):
         to capture some information, but behaves like an ArgumentParser.
     """
 
-    parser.display_info.AddFormat("""
-          table(
-            name,
-            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
-            status
-          )
-        """)
-
-    trigger_config = parser.add_mutually_exclusive_group(required=True)
-
-    # Allow trigger config to be specified on the command line or by file.
-    trigger_config.add_argument(
-        '--trigger-config',
-        metavar='PATH',
-        help="""\
-Path to a YAML or JSON file containing the trigger configuration.
-
-For more details, see: https://cloud.google.com/cloud-build/docs/api/reference/rest/v1/projects.triggers
-""")
-
-    # Trigger configuration
-    flag_config = trigger_config.add_argument_group(
-        help='Flag based trigger configuration')
-    flag_config.add_argument('--description', help='Build trigger description.')
+    flag_config = trigger_utils.AddTriggerArgs(parser)
     repo_spec = presentation_specs.ResourcePresentationSpec(
         '--repo',  # This defines how the "anchor" or leaf argument is named.
         repo_resource.GetRepoResourceSpec(),
@@ -87,6 +64,39 @@ For more details, see: https://cloud.google.com/cloud-build/docs/api/reference/r
 
     trigger_utils.AddBuildConfigArgs(flag_config)
 
+  def ParseTriggerFromFlags(self, args):
+    """Parses command line arguments into a build trigger.
+
+    Args:
+      args: An argparse arguments object.
+
+    Returns:
+      A build trigger object.
+    """
+    messages = cloudbuild_util.GetMessagesModule()
+
+    trigger, done = trigger_utils.ParseTriggerArgs(args, messages)
+    if done:
+      return trigger
+
+    repo_ref = args.CONCEPTS.repo.Parse()
+    repo = repo_ref.reposId
+    trigger = messages.BuildTrigger(
+        description=args.description,
+        triggerTemplate=messages.RepoSource(
+            repoName=repo,
+            branchName=args.branch_pattern,
+            tagName=args.tag_pattern,
+        ),
+    )
+
+    # Build Config
+    project = properties.VALUES.core.project.Get(required=True)
+    default_image = 'gcr.io/%s/%s:$COMMIT_SHA' % (project, repo)
+    trigger_utils.ParseBuildConfigArgs(trigger, args, messages, default_image)
+
+    return trigger
+
   def Run(self, args):
     """This is what gets called when the user runs this command.
 
@@ -98,51 +108,11 @@ For more details, see: https://cloud.google.com/cloud-build/docs/api/reference/r
       Some value that we want to have printed later.
     """
 
-    client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()
-
-    trigger = messages.BuildTrigger()
-    if args.trigger_config:
-      trigger = cloudbuild_util.LoadMessageFromPath(
-          path=args.trigger_config,
-          msg_type=messages.BuildTrigger,
-          msg_friendly_name='build trigger config',
-          skip_camel_case=['substitutions'])
-    else:
-      repo_ref = args.CONCEPTS.repo.Parse()
-      repo = repo_ref.reposId
-      trigger = messages.BuildTrigger(
-          description=args.description,
-          triggerTemplate=messages.RepoSource(
-              repoName=repo,
-              branchName=args.branch_pattern,
-              tagName=args.tag_pattern,
-          ),
-      )
-
-      # Build Config
-      if args.build_config:
-        trigger.filename = args.build_config
-        trigger.substitutions = cloudbuild_util.EncodeTriggerSubstitutions(
-            args.substitutions, messages)
-      if args.dockerfile:
-        project = properties.VALUES.core.project.Get(required=True)
-        image = args.dockerfile_image if args.dockerfile_image else 'gcr.io/%s/%s:$COMMIT_SHA' % (
-            project, repo)
-        trigger.build = messages.Build(steps=[
-            messages.BuildStep(
-                name='gcr.io/cloud-builders/docker',
-                dir=args.dockerfile_dir,
-                args=['build', '-t', image, '-f', args.dockerfile, '.'],
-            )
-        ])
-      # Include/Exclude files
-      if args.included_files:
-        trigger.includedFiles = args.included_files
-      if args.ignored_files:
-        trigger.ignoredFiles = args.ignored_files
+    trigger = self.ParseTriggerFromFlags(args)
 
     # Send the Create request
+    client = cloudbuild_util.GetClientInstance()
     project = properties.VALUES.core.project.Get(required=True)
     created_trigger = client.projects_triggers.Create(
         messages.CloudbuildProjectsTriggersCreateRequest(

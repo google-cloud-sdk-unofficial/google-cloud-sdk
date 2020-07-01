@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
+from googlecloudsdk.command_lib.kms import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
@@ -125,7 +126,10 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyResourceArgument(parser, 'to create')
+    if Create.ReleaseTrack() == base.ReleaseTrack.GA:
+      flags.AddKeyResourceArgument(parser, 'to create')
+    else:
+      resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
     flags.AddSkipInitialVersionCreationFlag(parser)
@@ -162,9 +166,12 @@ class Create(base.CreateCommand):
           'algorithms for --purpose={}: {}'.format(args.purpose,
                                                    ', '.join(valid_algorithms)))
 
-    crypto_key_ref = flags.ParseCryptoKeyName(args)
-    parent_ref = flags.ParseParentFromResource(crypto_key_ref)
-
+    if Create.ReleaseTrack() == base.ReleaseTrack.GA:
+      crypto_key_ref = flags.ParseCryptoKeyName(args)
+      parent_ref = flags.ParseParentFromResource(crypto_key_ref)
+    else:
+      crypto_key_ref = args.CONCEPTS.key.Parse()
+      parent_ref = crypto_key_ref.Parent()
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCreateRequest(
         parent=parent_ref.RelativeName(),
         cryptoKeyId=crypto_key_ref.Name(),

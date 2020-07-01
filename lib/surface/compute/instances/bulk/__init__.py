@@ -23,11 +23,11 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Bulk(base.Group):
-  """TBD."""
+  """Manipulate multiple Compute Engine virtual machines with single command executions."""
 
 
 Bulk.detailed_help = {
     'DESCRIPTION': """
-      TBD
+      Manipulate multiple Compute Engine virtual machines with single command executions.
     """,
 }

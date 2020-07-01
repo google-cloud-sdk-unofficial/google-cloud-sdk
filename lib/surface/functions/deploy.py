@@ -370,3 +370,21 @@ class DeployAlpha(base.Command):
 
   def Run(self, args):
     return _Run(args, track=self.ReleaseTrack(), enable_build_worker_pool=True)
+
+
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To deploy a function that is triggered by write events on the document
+        ``/messages/{pushId}'', run:
+
+          $ {command} my_function --runtime=python37 --trigger-event=providers/cloud.firestore/eventTypes/document.write --trigger-resource=projects/project_id/databases/(default)/documents/messages/{pushId}
+
+        See https://cloud.google.com/functions/docs/calling for more details
+        of using other types of resource as triggers.
+        """
+}
+
+Deploy.detailed_help = DETAILED_HELP
+DeployBeta.detailed_help = DETAILED_HELP
+DeployAlpha.detailed_help = DETAILED_HELP

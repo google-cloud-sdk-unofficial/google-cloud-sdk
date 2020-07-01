@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.compute.addresses import flags
 class Delete(base.DeleteCommand):
   r"""Release reserved IP addresses.
 
-  *{command}* releases one or more Google Compute Engine IP addresses.
+  *{command}* releases one or more Compute Engine IP addresses.
 
   ## EXAMPLES
 

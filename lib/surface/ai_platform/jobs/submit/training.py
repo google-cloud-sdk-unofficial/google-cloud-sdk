@@ -100,7 +100,8 @@ class Train(base.Command):
             args, self._SUPPORT_TPU_TF_VERSION))
     custom_container_config.ValidateConfig()
     job = jobs_util.SubmitTraining(
-        jobs_client, args.job,
+        jobs_client,
+        args.job,
         job_dir=args.job_dir,
         staging_bucket=args.staging_bucket,
         packages=args.packages,
@@ -110,6 +111,7 @@ class Train(base.Command):
         module_name=args.module_name,
         runtime_version=args.runtime_version,
         python_version=args.python_version,
+        network=args.network if hasattr(args, 'network') else None,
         labels=labels,
         stream_logs=stream_logs,
         user_args=args.user_args,
@@ -131,6 +133,7 @@ class TrainAlphaBeta(Train):
   def Args(cls, parser):
     _AddSubmitTrainingArgs(parser)
     flags.AddKmsKeyFlag(parser, 'job')
+    flags.NETWORK.AddToParser(parser)
     flags.AddCustomContainerFlags(
         parser, support_tpu_tf_version=cls._SUPPORT_TPU_TF_VERSION)
     parser.display_info.AddFormat(jobs_util.JOB_FORMAT)

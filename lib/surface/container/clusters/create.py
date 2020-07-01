@@ -250,7 +250,6 @@ def ParseCreateOptionsBase(args):
   flags.WarnForNodeModification(args, enable_autorepair)
   metadata = metadata_utils.ConstructMetadataDict(args.metadata,
                                                   args.metadata_from_file)
-
   return api_adapter.CreateClusterOptions(
       accelerators=args.accelerator,
       additional_zones=args.additional_zones,
@@ -534,6 +533,7 @@ flags_to_add = {
         'binauthz': flags.AddEnableBinAuthzFlag,
         'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
         'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
+        'cloudrunconfig': flags.AddCloudRunConfigFlag,
         'clusterautoscaling': flags.AddClusterAutoscalingFlags,
         'costmanagementconfig': flags.AddCostManagementConfigFlag,
         'datapath': lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
@@ -765,6 +765,7 @@ class CreateAlpha(Create):
     ops = ParseCreateOptionsBase(args)
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
+    flags.ValidateCloudRunConfigCreateArgs(args.cloud_run_config, args.addons)
     ops.boot_disk_kms_key = args.boot_disk_kms_key
     ops.autoscaling_profile = args.autoscaling_profile
     ops.local_ssd_volume_configs = args.local_ssd_volumes
@@ -776,6 +777,7 @@ class CreateAlpha(Create):
     ops.master_ipv4_cidr = args.master_ipv4_cidr
     ops.enable_tpu_service_networking = args.enable_tpu_service_networking
     ops.istio_config = args.istio_config
+    ops.cloud_run_config = args.cloud_run_config
     ops.identity_namespace = args.identity_namespace
     ops.security_group = args.security_group
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)

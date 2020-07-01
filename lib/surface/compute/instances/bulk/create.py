@@ -38,30 +38,25 @@ from googlecloudsdk.core import properties
 
 
 DETAILED_HELP = {
+    'brief':
+        """
+          Create multiple Compute Engine virtual machines.
+        """,
     'DESCRIPTION':
         """
-        *{command}* facilitates the creation of Google Compute Engine
-        virtual machines.
-
-        When an instance is in RUNNING state and the system begins to boot,
-        the instance creation is considered finished, and the command returns
-        with a list of new virtual machines.  Note that you usually cannot log
-        into a new instance until it finishes booting. Check the progress of an
-        instance using `gcloud compute instances get-serial-port-output`.
-
-        For more examples, refer to the *EXAMPLES* section below.
+        *{command}* facilitates the creation of multiple Google Compute Engine
+        virtual machines with a single command. They offer a number of advantages
+        compared to the single instance creation command. This includes the
+        ability to automatically pick a zone in which to create instances based
+        on resource availability, the ability to specify that the request be
+        atomic or best-effort, and a faster rate of instance creation.
         """,
     'EXAMPLES':
         """
-        To create an instance with the latest 'Red Hat Enterprise Linux 8' image
-        available, run:
-
-          $ {command} example-instance --image-family=rhel-8 --image-project=rhel-cloud --zone=us-central1-a
-
         To create instances called 'example-instance-1', 'example-instance-2',
         and 'example-instance-3' in the 'us-central1-a' zone, run:
 
-          $ {command} example-instance-1 example-instance-2 example-instance-3 --zone=us-central1-a
+          $ {command} --predefined-names=example-instance-1,example-instance-2,example-instance-3 --zone=us-central1-a
         """,
 }
 
@@ -146,10 +141,9 @@ class CreateAlpha(base.Command):
   _support_public_dns = False
   _support_disk_resource_policy = True
   _support_erase_vss = True
-  _support_machine_image_key = True
   _support_min_node_cpu = True
   _support_location_hint = True
-  _support_source_snapshot_csek = True
+  _support_source_snapshot_csek = False
   _support_image_csek = True
   _support_confidential_compute = True
   _support_post_key_revocation_action_type = True
@@ -174,9 +168,6 @@ class CreateAlpha(base.Command):
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg())
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
-    CreateAlpha.SOURCE_MACHINE_IMAGE = (instances_flags.AddMachineImageArg())
-    CreateAlpha.SOURCE_MACHINE_IMAGE.AddArgument(parser)
-    instances_flags.AddSourceMachineImageEncryptionKey(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -193,22 +184,6 @@ class CreateAlpha(base.Command):
     if not args.IsSpecified('source_instance_template'):
       return None
     ref = self.SOURCE_INSTANCE_TEMPLATE.ResolveAsResource(args, resources)
-    return ref.SelfLink()
-
-  def GetSourceMachineImage(self, args, resources):
-    """Retrieves the specified source machine image's selflink.
-
-    Args:
-      args: The arguments passed into the gcloud command calling this function.
-      resources: Resource parser used to retrieve the specified resource
-        reference.
-
-    Returns:
-      A string containing the specified source machine image's selflink.
-    """
-    if not args.IsSpecified('source_machine_image'):
-      return None
-    ref = self.SOURCE_MACHINE_IMAGE.ResolveAsResource(args, resources)
     return ref.SelfLink()
 
   def _CreateRequests(self, args, holder, compute_client, resource_parser,
@@ -229,16 +204,6 @@ class CreateAlpha(base.Command):
     source_instance_template = self.GetSourceInstanceTemplate(
         args, resource_parser)
     skip_defaults = source_instance_template is not None
-
-    source_machine_image = self.GetSourceMachineImage(args, resource_parser)
-    skip_defaults = skip_defaults or source_machine_image is not None
-
-    key = None
-    if source_machine_image and args.IsSpecified(
-        'source_machine_image_csek_key_file'):
-      key = instance_utils.GetSourceMachineImageKey(args,
-                                                    self.SOURCE_MACHINE_IMAGE,
-                                                    compute_client, holder)
 
     scheduling = instance_utils.GetScheduling(
         args,
@@ -355,8 +320,6 @@ class CreateAlpha(base.Command):
         tags=tags,
         resourcePolicies=parsed_resource_policies,
         shieldedInstanceConfig=shielded_instance_config,
-        sourceMachineImage=source_machine_image,
-        sourceMachineImageEncryptionKey=key,
         displayDevice=display_device,
         reservationAffinity=reservation_affinity)
 
@@ -372,14 +335,6 @@ class CreateAlpha(base.Command):
       instance.postKeyRevocationActionType = arg_utils.ChoiceToEnum(
           args.post_key_revocation_action_type, compute_client.messages.Instance
           .PostKeyRevocationActionTypeValueValuesEnum)
-
-    if self._support_machine_image_key and \
-        args.IsSpecified('source_machine_image_csek_key_file'):
-      if not args.IsSpecified('source_machine_image'):
-        raise exceptions.RequiredArgumentException(
-            '`--source-machine-image`',
-            '`--source-machine-image-csek-key-file` requires '
-            '`--source-machine-image` to be specified`')
 
     bulk_instance_resource = compute_client.messages.BulkInsertInstanceResource(
         count=instance_count,
@@ -446,11 +401,15 @@ class CreateAlpha(base.Command):
       except exceptions.HttpError as error:
         raise error
 
+    errors_to_collect = []
     response = compute_client.MakeRequests(
         [(instances_service, 'BulkInsert', request)],
+        errors_to_collect=errors_to_collect,
         log_result=False,
+        always_return_operation=True,
         no_followup=True)
 
+    self._errors = errors_to_collect
     self._status_message = response[0].statusMessage
 
     return
@@ -461,6 +420,8 @@ class CreateAlpha(base.Command):
       log.status.Print('Bulk instance creation in progress: {}'.format(
           self._operation_selflink))
     else:
+      if self._errors:
+        log.warning(self._errors[0][1])
       log.status.Print(
           'Bulk create request finished with status message: [{}]'.format(
               self._status_message))

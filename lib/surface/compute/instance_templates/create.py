@@ -67,7 +67,8 @@ def _CommonArgs(
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(parser, enable_kms=support_kms)
   instances_flags.AddCreateDiskArgs(parser, enable_kms=support_kms,
-                                    resource_policy=support_resource_policy)
+                                    resource_policy=support_resource_policy,
+                                    support_boot=True)
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -489,7 +490,9 @@ def _RunCreate(compute_api,
       scopes=[] if args.no_scopes else args.scopes,
       service_account=service_account)
 
-  create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
+  create_boot_disk = not (
+      instance_utils.UseExistingBootDisk((args.disk or []) +
+                                         (args.create_disk or [])))
   if create_boot_disk:
     image_expander = image_utils.ImageExpander(client, compute_api.resources)
     try:

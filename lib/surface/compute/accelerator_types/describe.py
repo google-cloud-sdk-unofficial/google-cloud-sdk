@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.compute.accelerator_types import flags
 
 
 class Describe(base.DescribeCommand):
-  """Describe a Google Compute Engine accelerator type."""
+  """Describe a Compute Engine accelerator type."""
 
   @staticmethod
   def Args(parser):
@@ -47,10 +47,10 @@ class Describe(base.DescribeCommand):
 
 Describe.detailed_help = {
     'brief':
-        'Describe Google Compute Engine accelerator types',
+        'Describe Compute Engine accelerator types',
     'DESCRIPTION':
         """\
-        *{command}* displays all data associated with a Google Compute
-        Engine accelerator type.
+        *{command}* displays all data associated with a Compute Engine
+        accelerator type.
         """,
 }

@@ -48,6 +48,8 @@ class AccessToken(base.Command):
   detailed_help = {
       'DESCRIPTION': """\
         {description}
+        See [RFC6749](https://tools.ietf.org/html/rfc6749) for more
+        information about access tokens.
         """,
       'EXAMPLES': """\
         To print access tokens:

@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
+from googlecloudsdk.command_lib.privateca import create_utils
 from googlecloudsdk.command_lib.privateca import flags
 from googlecloudsdk.command_lib.privateca import iam
 from googlecloudsdk.command_lib.privateca import operations
@@ -36,45 +37,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
-from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
-
-
-def _ParseResourceArgs(args):
-  """Parses, validates and returns the resource args from the CLI.
-
-  Args:
-    args: The parsed arguments from the command-line.
-
-  Returns:
-    Tuple containing the Resource objects for (KMS key version, CA, issuer).
-  """
-  kms_key_version_ref = args.CONCEPTS.kms_key_version.Parse()
-  # TODO(b/149316889): Use concepts library once attribute fallthroughs work.
-  ca_ref = resources.REGISTRY.Parse(
-      args.CERTIFICATE_AUTHORITY,
-      collection='privateca.projects.locations.certificateAuthorities',
-      params={
-          'projectsId': kms_key_version_ref.projectsId,
-          'locationsId': kms_key_version_ref.locationsId,
-      })
-  issuer_ref = None if args.create_csr else args.CONCEPTS.issuer.Parse()
-
-  if ca_ref.projectsId != kms_key_version_ref.projectsId:
-    raise exceptions.InvalidArgumentException(
-        'CERTIFICATE_AUTHORITY',
-        'Certificate Authority must be in the same project as the KMS key '
-        'version.')
-
-  if ca_ref.locationsId != kms_key_version_ref.locationsId:
-    raise exceptions.InvalidArgumentException(
-        'CERTIFICATE_AUTHORITY',
-        'Certificate Authority must be in the same location as the KMS key '
-        'version.')
-
-  privateca_resource_args.ValidateKmsKeyVersionLocation(kms_key_version_ref)
-
-  return (kms_key_version_ref, ca_ref, issuer_ref)
 
 
 class Create(base.CreateCommand):
@@ -86,7 +49,8 @@ class Create(base.CreateCommand):
     $ {command} server-tls-1 \
       --subject "CN=Joonix TLS CA" \
       --issuer prod-root --issuer-location us-west1 \
-      --kms-crypto-key-version "projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+      --kms-crypto-key-version \
+      "projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
 
   To create a subordinate CA named 'server-tls-1' whose issuer is located
   elsewhere:
@@ -95,7 +59,17 @@ class Create(base.CreateCommand):
       --subject "CN=Joonix TLS CA" \
       --create-csr \
       --csr-output-file "./csr.pem" \
-      --kms-crypto-key-version "projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+      --kms-crypto-key-version \
+      "projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
+
+  To create a subordinate CA named 'server-tls-1' chaining up to a root CA
+  named 'prod-root'based on an existing CA:
+
+    $ {command} server-tls-1 \
+      --issuer prod-root --issuer-location us-west1 \
+      --from-ca source-ca --from-ca-location us-central1 \
+      --kms-crypto-key-version \
+      "projects/joonix-pki/locations/us-west1/keyRings/kr1/cryptoKeys/key2/cryptoKeyVersions/1"
   """
 
   def __init__(self, *args, **kwargs):
@@ -106,10 +80,12 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     reusable_config_group = parser.add_group(
-        mutex=True, required=False,
+        mutex=True,
+        required=False,
         help='The X.509 configuration used for the CA certificate.')
     issuer_configuration_group = parser.add_group(
-        mutex=True, required=True,
+        mutex=True,
+        required=True,
         help='The issuer configuration used for this CA certificate.')
 
     concept_parsers.ConceptParser([
@@ -150,9 +126,16 @@ class Create(base.CreateCommand):
                 'location': '',
                 'project': '',
             },
-            group=reusable_config_group)
+            group=reusable_config_group),
+        presentation_specs.ResourcePresentationSpec(
+            '--from-ca',
+            privateca_resource_args.CreateCertificateAuthorityResourceSpec(
+                'Certificate Authority source'),
+            'The name of the CA source for this CA.',
+            flag_name_overrides={'project': '--from-ca-project'},
+            prefixes=True)
     ]).AddToParser(parser)
-    flags.AddSubjectFlags(parser, subject_required=True)
+    flags.AddSubjectFlags(parser, subject_required=False)
     flags.AddPublishCaCertFlag(parser, use_update_help_text=False)
     flags.AddPublishCrlFlag(parser, use_update_help_text=False)
     flags.AddInlineReusableConfigFlags(reusable_config_group, is_ca=True)
@@ -213,44 +196,22 @@ class Create(base.CreateCommand):
     return operations.Await(operation, 'Activating CA.')
 
   def Run(self, args):
-    kms_key_version_ref, ca_ref, issuer_ref = _ParseResourceArgs(args)
-    kms_key_ref = kms_key_version_ref.Parent()
+    new_ca, ca_ref, issuer_ref = create_utils.CreateCAFromArgs(
+        args, is_subordinate=True)
     project_ref = ca_ref.Parent().Parent()
-
-    subject_config = flags.ParseSubjectFlags(args, is_ca=True)
-    issuing_options = flags.ParseIssuingOptions(args)
-    issuance_policy = flags.ParseIssuancePolicy(args)
-    reusable_config_wrapper = flags.ParseReusableConfig(args,
-                                                        ca_ref.locationsId,
-                                                        is_ca=True)
-    lifetime = flags.ParseValidityFlag(args)
-    labels = labels_util.ParseCreateArgs(
-        args, self.messages.CertificateAuthority.LabelsValue)
+    kms_key_ref = args.CONCEPTS.kms_key_version.Parse().Parent()
 
     iam.CheckCreateCertificateAuthorityPermissions(project_ref, kms_key_ref)
     if issuer_ref:
       iam.CheckCreateCertificatePermissions(issuer_ref)
 
     p4sa_email = p4sa.GetOrCreate(project_ref)
-
     if args.IsSpecified('bucket'):
       bucket_ref = storage.ValidateBucketForCertificateAuthority(args.bucket)
     else:
       bucket_ref = storage.CreateBucketForCertificateAuthority(ca_ref)
-
     p4sa.AddResourceRoleBindings(p4sa_email, kms_key_ref, bucket_ref)
-
-    new_ca = self.messages.CertificateAuthority(
-        type=self.messages.CertificateAuthority.TypeValueValuesEnum.SUBORDINATE,
-        lifetime=lifetime,
-        config=self.messages.CertificateConfig(
-            reusableConfig=reusable_config_wrapper,
-            subjectConfig=subject_config),
-        cloudKmsKeyVersion=kms_key_version_ref.RelativeName(),
-        certificatePolicy=issuance_policy,
-        issuingOptions=issuing_options,
-        gcsBucket=bucket_ref.bucket,
-        labels=labels)
+    new_ca.gcsBucket = bucket_ref.bucket
 
     operations.Await(
         self.client.projects_locations_certificateAuthorities.Create(
@@ -276,7 +237,7 @@ class Create(base.CreateCommand):
       return
 
     if issuer_ref:
-      ca_certificate = self._SignCsr(issuer_ref, csr, lifetime)
+      ca_certificate = self._SignCsr(issuer_ref, csr, new_ca.lifetime)
       self._ActivateCertificateAuthority(ca_ref, ca_certificate)
       log.status.Print('Created Certificate Authority [{}].'.format(
           ca_ref.RelativeName()))

@@ -111,7 +111,8 @@ def _CommonArgs(parser,
       enable_snapshots=True,
       resource_policy=enable_resource_policy,
       source_snapshot_csek=snapshot_csek,
-      image_csek=image_csek)
+      image_csek=image_csek,
+      support_boot=True)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(parser, instances=True)
   instances_flags.AddAcceleratorArgs(parser)
@@ -263,7 +264,9 @@ class Create(base.CreateCommand):
         skip_defaults=skip_defaults,
         support_public_dns=self._support_public_dns)
 
-    create_boot_disk = not instance_utils.UseExistingBootDisk(args.disk or [])
+    create_boot_disk = not (
+        instance_utils.UseExistingBootDisk((args.disk or []) +
+                                           (args.create_disk or [])))
     image_uri = create_utils.GetImageUri(args, compute_client, create_boot_disk,
                                          project, resource_parser)
 

@@ -29,7 +29,9 @@ MODE_OPTIONS = {
     'ro': 'Read-only.',
     'rw': (
         'Read-write. It is an error to attach a disk in read-write mode to '
-        'more than one instance.'),
+        'more than one instance. For details on how to share persistent '
+        'disks between multiple instances, refer to https://cloud.google.com/'
+        'compute/docs/disks/add-persistent-disk#use_multi_instances'),
 }
 
 DETAILED_HELP = {

@@ -24,12 +24,11 @@ from googlecloudsdk.command_lib.resource_settings import arguments
 from googlecloudsdk.command_lib.resource_settings import utils
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UnsetValue(base.DescribeCommand):
-  r"""Unset a resource setting.
+  r"""Remove the value of a resource setting.
 
-  Unset a resource setting
+  Remove the value of a resource setting
 
   ## EXAMPLES
 

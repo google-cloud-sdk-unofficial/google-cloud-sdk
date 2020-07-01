@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.certificate_manager import certificate_maps
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.certificate_manager import flags
 from googlecloudsdk.command_lib.certificate_manager import resource_args
 from googlecloudsdk.command_lib.certificate_manager import util
 from googlecloudsdk.core import log
@@ -42,6 +43,7 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddCertificateMapResourceArg(parser, 'to delete')
+    flags.AddAsyncFlagToParser(parser)
 
   def Run(self, args):
     client = certificate_maps.CertificateMapClient()
@@ -55,6 +57,6 @@ class Delete(base.DeleteCommand):
 
     response = client.Delete(map_ref)
 
-    response = util.WaitForOperation(response)
-    log.DeletedResource(map_ref.Name(), 'map')
+    response = util.WaitForOperation(response, is_async=args.async_)
+    log.DeletedResource(map_ref.Name(), 'map', is_async=args.async_)
     return response

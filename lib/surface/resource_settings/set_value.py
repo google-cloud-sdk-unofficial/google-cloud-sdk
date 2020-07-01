@@ -28,10 +28,11 @@ from googlecloudsdk.command_lib.resource_settings import exceptions
 from googlecloudsdk.command_lib.resource_settings import utils
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetValue(base.Command):
-  r"""Set an resource setting from a JSON or YAML file.
+  r"""Update the value of a resource setting.
+
+  Update the value of a resource setting
 
   This first converts the contents of the specified file into a setting
   object. It then fetches the current setting using GetSetting. If it does not

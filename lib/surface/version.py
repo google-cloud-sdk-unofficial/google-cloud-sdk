@@ -53,6 +53,12 @@ class Version(base.Command):
     else:
       versions = {}
     versions['Google Cloud SDK'] = config.CLOUD_SDK_VERSION
+    if 'core' in versions:
+      core_version = versions['core']
+      if 'alpha' in versions:
+        versions['alpha'] = core_version
+      if 'beta' in versions:
+        versions['beta'] = core_version
     return versions
 
   def Epilog(self, resources_were_displayed):

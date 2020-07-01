@@ -49,4 +49,4 @@ class CreateSignaturePayload(base.Command):
     # achieves the desired result.
     payload_bytes = binauthz_command_util.MakeSignaturePayload(
         args.artifact_url)
-    return payload_bytes.decode('utf8')
+    return payload_bytes.decode('utf-8')

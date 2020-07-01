@@ -19,7 +19,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import certificate_utils
 from googlecloudsdk.api_lib.privateca import request_utils
@@ -35,7 +34,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
-
 
 KEY_OUTPUT_HELP = """The path where the generated private key file should be written (in PEM format).
 

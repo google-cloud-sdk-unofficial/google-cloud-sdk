@@ -115,7 +115,7 @@ def _get_handshake_headers(resource, host, port, options):
             headers.append("Origin: http://%s" % hostport)
 
     key = _create_sec_websocket_key()
-    
+
     # Append Sec-WebSocket-Key & Sec-WebSocket-Version if not manually specified
     if not 'header' in options or 'Sec-WebSocket-Key' not in options['header']:
         key = _create_sec_websocket_key()
@@ -177,10 +177,11 @@ def _validate(headers, key, subprotocols):
             return False, None
 
     if subprotocols:
-        subproto = headers.get("sec-websocket-protocol", None).lower()
-        if not subproto or subproto not in [s.lower() for s in subprotocols]:
+        subproto = headers.get("sec-websocket-protocol", None)
+        if not subproto or subproto.lower() not in [s.lower() for s in subprotocols]:
             error("Invalid subprotocol: " + str(subprotocols))
             return False, None
+        subproto = subproto.lower()
 
     result = headers.get("sec-websocket-accept", None)
     if not result:

@@ -220,4 +220,5 @@ class CreateAlpha(CreateBeta):
           accelerator_config=accelerator,
           explanation_method=args.explanation_method,
           num_integral_steps=args.num_integral_steps,
-          num_paths=args.num_paths)
+          num_paths=args.num_paths,
+          containers_hidden=False)

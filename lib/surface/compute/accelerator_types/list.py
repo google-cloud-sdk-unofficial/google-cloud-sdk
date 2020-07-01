@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.compute.accelerator_types import flags
 
 
 class List(base.ListCommand):
-  """List Google Compute Engine accelerator types."""
+  """List Compute Engine accelerator types."""
 
   @staticmethod
   def Args(parser):

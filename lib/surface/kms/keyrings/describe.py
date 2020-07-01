@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import flags
+from googlecloudsdk.command_lib.kms import resource_args
 
 
 class Describe(base.DescribeCommand):
@@ -39,13 +40,19 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser, 'keyring')
-    flags.AddKeyRingArgument(parser, 'to describe')
+    if Describe.ReleaseTrack() == base.ReleaseTrack.GA:
+      flags.AddLocationFlag(parser, 'keyring')
+      flags.AddKeyRingArgument(parser, 'to describe')
+    else:
+      resource_args.AddKmsKeyringResourceArgForKMS(parser, True, 'keyring')
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
-    key_ring_ref = flags.ParseKeyRingName(args)
+    if Describe.ReleaseTrack() == base.ReleaseTrack.GA:
+      key_ring_ref = flags.ParseKeyRingName(args)
+    else:
+      key_ring_ref = args.CONCEPTS.keyring.Parse()
     if not key_ring_ref.Name():
       raise exceptions.InvalidArgumentException('keyring',
                                                 'keyring id must be non-empty.')

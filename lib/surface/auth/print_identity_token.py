@@ -27,15 +27,20 @@ from googlecloudsdk.command_lib.auth import auth_util
 from googlecloudsdk.command_lib.auth import flags
 from googlecloudsdk.command_lib.config import config_helper
 from googlecloudsdk.core import config
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
 
 def _Run(args):
   """Run the print_identity_token command."""
+  use_google_auth = (
+      not properties.VALUES.auth.disable_load_google_auth.GetBool())
   do_impersonation = args.IsSpecified('impersonate_service_account')
   cred = c_store.Load(
-      args.account, allow_account_impersonation=do_impersonation)
+      args.account,
+      allow_account_impersonation=do_impersonation,
+      use_google_auth=use_google_auth)
   is_impersonated_account = auth_util.IsImpersonationCredential(cred)
   if args.audiences:
     if not auth_util.ValidIdTokenCredential(cred):

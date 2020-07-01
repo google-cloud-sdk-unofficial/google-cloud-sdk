@@ -113,7 +113,7 @@ class GenerateHelpDocs(base.Command):
   def Run(self, args):
     out_of_date = set()
 
-    def Generate(kind, generator, directory, encoding='utf8', hidden=False):
+    def Generate(kind, generator, directory, encoding='utf-8', hidden=False):
       """Runs generator and optionally updates help docs in directory."""
       console_attr.ResetConsoleAttr(encoding)
       if not args.update:

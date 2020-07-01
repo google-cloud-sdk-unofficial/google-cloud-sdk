@@ -100,6 +100,27 @@
         set of services should be included in the budget. If omitted, the report will include usage
         for all services. The service names are available through the Catalog API:
         https://cloud.google.com/billing/v1/how-tos/catalog-api.
+    - arg_name: filter-subaccounts
+      api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.subaccounts
+      help_text: |
+        A set of subaccounts of the form `billingAccounts/{account_id}`, specifying that usage from
+        only this set of subaccounts should be included in the budget. If a subaccount is set to the
+        name of the master account, usage from the master account will be included. If omitted, the
+        report will include usage from the master account and all subaccounts, if they exist.
+    - arg_name: filter-labels
+      api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.labels.additionalProperties
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+            type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+      processor: googlecloudsdk.command_lib.billingbudgets.hooks:ParseLabels
+      help_text: |
+        A single label and value pair specifying that usage from only this set of labeled resources
+        should be included in the budget. Currently, multiple entries or multiple values per entry
+        are not allowed. If omitted, the report will include all labeled and unlabeled usage.
     - arg_name: all-updates-rule-pubsub-topic
       api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.allUpdatesRule.pubsubTopic
       help_text: |

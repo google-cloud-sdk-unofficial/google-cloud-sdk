@@ -64,6 +64,10 @@ DETAILED_HELP = {
         image (using `gcloud compute images create`) and creating a
         new disk using `--image` in the desired project and/or
         zone.
+
+        For a comprehensive guide, including details on minimum and maximum
+        disk size, refer to:
+        https://cloud.google.com/compute/docs/disks
         """,
     'EXAMPLES':
         """\
@@ -132,7 +136,7 @@ def _CommonArgs(parser,
   parser.add_argument(
       '--size',
       type=arg_parsers.BinarySize(
-          lower_bound='1GB',
+          lower_bound='10GB',
           suggested_binary_size_scales=['GB', 'GiB', 'TB', 'TiB', 'PiB', 'PB']),
       help="""\
         Size of the disks. The value must be a whole
@@ -142,7 +146,8 @@ def _CommonArgs(parser,
         disks. Disk size must be a multiple of 1 GB. Limit your boot disk size
         to 2TB to account for MBR partition table limitations. If disk size is
         not specified, the default size of {}GB for standard disks and {}GB for
-        pd-ssd disks will be used.
+        pd-ssd disks will be used. For details about disk size limits,
+        refer to: https://cloud.google.com/compute/docs/disks
         """.format(
             constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_STANDARD],
             constants.DEFAULT_DISK_SIZE_GB_MAP[constants.DISK_TYPE_PD_SSD]))

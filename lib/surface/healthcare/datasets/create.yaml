@@ -31,6 +31,11 @@
       api_field: dataset.timeZone
       help_text: |
         Default timezone used by this dataset.
+    - arg_name: storage-class
+      api_field: dataset.storageOptions.defaultBlobStorageClass
+      help_text: |
+        Default blob storage class to store DICOM instances in this dataset.
+      release_tracks: [ALPHA]
 
   async:
     collection: healthcare.projects.locations.datasets.operations

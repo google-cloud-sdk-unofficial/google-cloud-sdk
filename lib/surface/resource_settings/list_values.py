@@ -24,12 +24,11 @@ from googlecloudsdk.command_lib.resource_settings import arguments
 from googlecloudsdk.command_lib.resource_settings import utils
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListValues(base.ListCommand):
-  r"""List all setting values that exist on the resource.
+  r"""List the values for any configured resource settings.
 
-  Get a resource setting
+  List the values for any configured resource settings
 
   ## EXAMPLES
 

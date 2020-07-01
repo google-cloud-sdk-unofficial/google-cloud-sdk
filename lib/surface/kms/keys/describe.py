@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import flags
+from googlecloudsdk.command_lib.kms import resource_args
 
 
 class Describe(base.DescribeCommand):
@@ -39,13 +40,19 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyResourceArgument(parser, 'to describe')
+    if Describe.ReleaseTrack() == base.ReleaseTrack.GA:
+      flags.AddKeyResourceArgument(parser, 'to describe')
+    else:
+      resource_args.AddKmsKeyResourceArgForKMS(parser, True, 'key')
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
 
-    crypto_key_ref = flags.ParseCryptoKeyName(args)
+    if Describe.ReleaseTrack() == base.ReleaseTrack.GA:
+      crypto_key_ref = flags.ParseCryptoKeyName(args)
+    else:
+      crypto_key_ref = args.CONCEPTS.key.Parse()
     if not crypto_key_ref.Name():
       raise exceptions.InvalidArgumentException('key',
                                                 'key id must be non-empty.')

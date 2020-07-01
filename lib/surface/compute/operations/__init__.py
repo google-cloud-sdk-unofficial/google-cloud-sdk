@@ -32,7 +32,7 @@ Operations.detailed_help = {
         Read and manipulate Compute Engine operations.
 
         For more information about operations, see the
-        [operations documentation](https://cloud.google.com/compute/docs/audit-logging).
+        [operations documentation](https://cloud.google.com/compute/docs/api/how-tos/api-requests-responses#handling_api_responses).
 
         See also: [Operations API](https://cloud.google.com/compute/docs/reference/rest/v1/regionOperations).
     """,

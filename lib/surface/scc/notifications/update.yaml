@@ -4,7 +4,7 @@
     brief: Update a Cloud Security Command Center notification config.
     description: Update a Cloud Security Command Center notification config.
     examples: |
-        Update all mutable fields in my-config (description + pubsub topic):
+        Update all mutable fields in ``my-config'' (description + pubsub topic + filter):
 
         $ {command} my-config --organization=123456 --description "New description" --pubsub_topic "projects/22222/topics/newtopic"
 
@@ -22,6 +22,11 @@
 
         $ {command} organizations/123456/notificationConfigs/my-config --pubsub_topic "projects/22222/topics/newtopic"
 
+        Update my-config's filter
+
+        $ {command} my-config --organization=123456 --filter='state = \"ACTIVE\"'
+
+        $ {command} organizations/123456/notificationConfigs/my-config --filter='state = \"ACTIVE\"'
   request:
     collection: securitycenter.organizations.notificationConfigs
     disable_resource_check: true
@@ -46,3 +51,4 @@
 
     - !REF googlecloudsdk.command_lib.scc.notifications.flags:description
     - !REF googlecloudsdk.command_lib.scc.notifications.flags:pubsub_topic
+    - !REF googlecloudsdk.command_lib.scc.notifications.flags:filter

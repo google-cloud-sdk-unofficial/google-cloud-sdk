@@ -30,9 +30,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
-  r"""Update a Google Compute Engine address.
+  r"""Update a Compute Engine address.
 
-  *{command}* updates labels for a Google Compute Engine
+  *{command}* updates labels for a Compute Engine
   address.
 
   ## EXAMPLES

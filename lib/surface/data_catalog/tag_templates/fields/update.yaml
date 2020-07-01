@@ -9,9 +9,9 @@
 
         $ {command} FIELD --display-name=NAME
 
-      Add enum values 'A' and 'B' to tag template field:
+      Set tag template enum field values to be 'A' and 'B':
 
-        $ {command} FIELD --add-enum-values=A,B
+        $ {command} FIELD --enum-values=A,B
 
       Set a tag template field to be optional:
 
@@ -32,10 +32,14 @@
     - api_field: googleCloudDatacatalogV1TagTemplateField.displayName
       arg_name: display-name
       help_text: Display name of the tag template field.
-    - arg_name: add-enum-values
+    - arg_name: enum-values
       type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
       help_text: |
-        Comma-separated list of enum values to add to the tag template field.
+        Comma-separated list of enum values. The list of enum values passed with this flag replaces the existing one in tag template enum field. That means:
+        - the enum values passed to the flag and not present in tag template enum field get created
+        - the enum values present in tag template enum field and missing in the list get removed
+        - the order of the items on the list is preserved
+        Enum values can only be removed from optional enum fields for now.
     - api_field: googleCloudDatacatalogV1TagTemplateField.isRequired
       arg_name: required
       help_text: |
@@ -52,9 +56,9 @@
 
         $ {command} FIELD --display-name=NAME
 
-      Add enum values 'A' and 'B' to tag template field:
+      Set tag template enum field values to be 'A' and 'B':
 
-        $ {command} FIELD --add-enum-values=A,B
+        $ {command} FIELD --enum-values=A,B
 
       Set a tag template field to be optional:
 
@@ -74,10 +78,14 @@
     - api_field: googleCloudDatacatalogV1beta1TagTemplateField.displayName
       arg_name: display-name
       help_text: Display name of the tag template field.
-    - arg_name: add-enum-values
+    - arg_name: enum-values
       type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
       help_text: |
-        Comma-separated list of enum values to add to the tag template field.
+        Comma-separated list of enum values. The list of enum values passed with this flag replaces the existing one in tag template enum field. That means:
+        - the enum values passed to the flag and not present in tag template enum field get created
+        - the enum values present in tag template enum field and missing in the list get removed
+        - the order of the items on the list is preserved
+        Enum values can only be removed from optional enum fields for now.
     - api_field: googleCloudDatacatalogV1beta1TagTemplateField.isRequired
       arg_name: required
       help_text: |
